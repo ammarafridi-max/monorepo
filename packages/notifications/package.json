@@ -1,0 +1,14 @@
+{
+  "name": "@travel-suite/notifications",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {},
+  "dependencies": {
+    "date-fns": "^4.1.0"
+  }
+}

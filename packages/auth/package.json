@@ -1,0 +1,29 @@
+{
+  "name": "@travel-suite/auth",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./schema": "./src/schema.js"
+  },
+  "scripts": {},
+  "dependencies": {
+    "@travel-suite/utils": "workspace:*",
+    "jsonwebtoken": "^9.0.3",
+    "validator": "^13.12.0"
+  },
+  "peerDependencies": {
+    "bcryptjs": "^3.0.3",
+    "express": "^5.0.0",
+    "express-rate-limit": "^8.0.0",
+    "mongoose": "^9.0.0"
+  },
+  "devDependencies": {
+    "bcryptjs": "^3.0.3",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.2.1",
+    "mongoose": "^9.0.2"
+  }
+}

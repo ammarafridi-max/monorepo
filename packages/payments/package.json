@@ -1,0 +1,21 @@
+{
+  "name": "@travel-suite/payments",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {},
+  "dependencies": {
+    "@travel-suite/utils": "workspace:*",
+    "stripe": "^17.0.0"
+  },
+  "peerDependencies": {
+    "mongoose": "^9.0.0"
+  },
+  "devDependencies": {
+    "mongoose": "^9.0.2"
+  }
+}

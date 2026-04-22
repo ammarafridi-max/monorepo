@@ -1,0 +1,39 @@
+{
+  "name": "@travel-suite/mdt-backend",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "NODE_ENV=development node --env-file=.env.development --watch src/server.js",
+    "start": "node --env-file=.env.production src/server.js",
+    "seed-admin:dev": "node --env-file=.env.development scripts/seed-admin.js",
+    "seed-admin:prod": "node --env-file=.env.production scripts/seed-admin.js"
+  },
+  "dependencies": {
+    "@travel-suite/admin-users": "workspace:*",
+    "@travel-suite/affiliates": "workspace:*",
+    "@travel-suite/auth": "workspace:*",
+    "@travel-suite/blog": "workspace:*",
+    "@travel-suite/cloudinary": "workspace:*",
+    "@travel-suite/currencies": "workspace:*",
+    "@travel-suite/flights": "workspace:*",
+    "@travel-suite/insurance": "workspace:*",
+    "@travel-suite/notifications": "workspace:*",
+    "@travel-suite/payments": "workspace:*",
+    "@travel-suite/tickets": "workspace:*",
+    "@travel-suite/users": "workspace:*",
+    "@travel-suite/utils": "workspace:*",
+    "compression": "^1.8.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.2.1",
+    "helmet": "8.1",
+    "mongoose": "^9.0.2"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": "22.x"
+  }
+}

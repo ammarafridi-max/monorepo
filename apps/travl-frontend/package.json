@@ -1,0 +1,31 @@
+{
+  "name": "travl-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "next": "16.2.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "@travel-suite/config": "workspace:*",
+    "@travel-suite/frontend-shared": "workspace:*",
+    "@travel-suite/utils": "workspace:*",
+    "react-ga4": "^3.0.1",
+    "@tanstack/react-query": "^5.95.2",
+    "react-hot-toast": "^2.6.0",
+    "react-icons": "^5.6.0",
+    "lucide-react": "^0.511.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.4",
+    "tailwindcss": "^4"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "@travel-suite/flights",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {},
+  "dependencies": {
+    "@travel-suite/utils": "workspace:*",
+    "amadeus": "^10.0.0"
+  },
+  "peerDependencies": {
+    "express": "^5.0.0",
+    "mongoose": "^9.0.0"
+  },
+  "devDependencies": {
+    "express": "^5.2.1",
+    "mongoose": "^9.0.2"
+  }
+}

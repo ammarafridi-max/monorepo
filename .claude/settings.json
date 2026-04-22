@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(**)",
+      "Write(**)",
+      "Edit(**)",
+      "Glob(**)",
+      "Grep(**)",
+      "Bash(mkdir *)",
+      "Bash(mkdir -p *)",
+      "Bash(cp *)",
+      "Bash(cp -r *)",
+      "Bash(mv *)",
+      "Bash(rm *)",
+      "Bash(rm -rf *)",
+      "Bash(sed -i *)",
+      "Bash(pnpm *)",
+      "Bash(npm *)",
+      "Bash(node *)",
+      "Bash(python3 *)",
+      "Bash(for *)",
+      "Bash(ls *)",
+      "Bash(find *)",
+      "Bash(grep *)",
+      "Bash(cat *)",
+      "Bash(head *)"
+    ],
+    "deny": []
+  }
+}

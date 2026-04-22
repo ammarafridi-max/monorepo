@@ -1,0 +1,42 @@
+import mongoose from 'mongoose';
+
+const faqSchema = new mongoose.Schema(
+  {
+    question: { type: String, required: [true, 'An FAQ must have a question'], trim: true, maxlength: 300 },
+    answer: { type: String, required: [true, 'An FAQ must have an answer'], trim: true },
+  },
+  { _id: false },
+);
+
+const BlogSchema = new mongoose.Schema(
+  {
+    title: { type: String, required: [true, 'A blog post must have a title'], trim: true, maxlength: 200 },
+    slug: { type: String, required: [true, 'A blog post must have a slug'], unique: true, lowercase: true, trim: true, index: true },
+    content: { type: String, required: [true, 'A blog post must have content'] },
+    excerpt: { type: String, trim: true },
+    quickAnswer: { type: String, trim: true, maxlength: 500 },
+    coverImageUrl: { type: String, required: [true, 'A blog post must have a cover image'] },
+    status: { type: String, enum: ['draft', 'published', 'scheduled'], default: 'draft', index: true },
+    author: { type: mongoose.Schema.ObjectId, ref: 'AdminUser', default: null },
+    publisher: { type: mongoose.Schema.ObjectId, ref: 'AdminUser', default: null },
+    tags: { type: [String], default: [], index: true },
+    faqs: { type: [faqSchema], default: [] },
+    metaTitle: { type: String },
+    metaDescription: { type: String, maxlength: 160 },
+    readingTime: { type: Number, min: 0 },
+    publishedAt: { type: Date },
+    scheduledAt: { type: Date, index: true },
+  },
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } },
+);
+
+BlogSchema.index({ createdAt: -1 });
+
+BlogSchema.pre('save', function () {
+  if (this.status === 'published' && !this.publishedAt) this.publishedAt = new Date();
+  if (this.status === 'published') this.scheduledAt = null;
+  if (this.status === 'scheduled' && !this.scheduledAt) this.status = 'draft';
+  if (this.status === 'draft') { this.publishedAt = null; this.scheduledAt = null; }
+});
+
+export default BlogSchema;

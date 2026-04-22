@@ -1,0 +1,34 @@
+{
+  "name": "@travel-suite/frontend-shared",
+  "version": "1.0.0",
+  "private": true,
+  "exports": {
+    "./services/*": "./src/services/*.js",
+    "./hooks/*": "./src/hooks/*.js",
+    "./contexts/*": "./src/contexts/*.js",
+    "./utils/*": "./src/utils/*.js",
+    "./components/v1/*": "./src/components/v1/*.js",
+    "./components/v2/*": "./src/components/v2/*.js",
+    "./hooks/auth/*": "./src/hooks/auth/*.js"
+  },
+  "dependencies": {
+    "@tinymce/tinymce-react": "^6.3.0",
+    "date-fns": "^4.1.0",
+    "lucide-react": "^1.6.0",
+    "next-auth": "^4.24.0",
+    "react-hook-form": "^7.72.0",
+    "react-icons": "^5.6.0",
+    "react-spinners": "^0.17.0",
+    "react-tooltip": "^5.30.1",
+    "swiper": "^12.1.3",
+    "validator": "^13.15.35",
+    "react-ga4": "^3.0.1"
+  },
+  "peerDependencies": {
+    "next": ">=14.0.0",
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0",
+    "@tanstack/react-query": ">=5.0.0",
+    "react-hot-toast": ">=2.0.0"
+  }
+}
