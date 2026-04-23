@@ -20,6 +20,9 @@ WORKDIR /repo
 COPY packages/ packages/
 COPY apps/travl-frontend/ apps/travl-frontend/
 
+# Committed .env.build contains public NEXT_PUBLIC_* vars; Next reads it at build time
+RUN cp apps/travl-frontend/.env.build apps/travl-frontend/.env.production
+
 RUN pnpm --filter travl-frontend build
 
 # Next standalone in a monorepo nests the output under apps/travl-frontend/
