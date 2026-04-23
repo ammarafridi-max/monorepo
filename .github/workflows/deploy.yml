@@ -190,4 +190,4 @@ jobs:
           fi
 
           echo "Triggering redeploy for $DO_APP_NAME ($APP_ID)"
-          doctl apps create-deployment "$APP_ID" --force-rebuild=false
+          doctl apps create-deployment "$APP_ID" --force-rebuild --wait
