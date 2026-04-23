@@ -1,8 +1,8 @@
-import Container from '../layout/Container';
-import PrimarySection from '../PrimarySection';
-import { HiCheck, HiStar } from 'react-icons/hi2';
+import Container from "../layout/Container";
+import PrimarySection from "../PrimarySection";
+import { HiCheck, HiStar } from "react-icons/hi2";
 
-export default function Hero({ title, subtitle, form, sectionId = 'form' }) {
+export default function Hero({ title, subtitle, form, sectionId = "form" }) {
   return (
     <PrimarySection
       className="relative overflow-hidden bg-[linear-gradient(160deg,#f5fbfb_0%,#eef4ff_52%,#fff9f4_100%)] pt-24 pb-14 md:pt-30 md:pb-16 lg:pt-30 lg:pb-20"
@@ -15,10 +15,10 @@ export default function Hero({ title, subtitle, form, sectionId = 'form' }) {
 
       <Container className="relative flex flex-col lg:flex-row items-start lg:items-center justify-between gap-9 lg:gap-14">
         <div className="w-full lg:w-1/2 text-left">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary-200 bg-white/75 px-3 py-1 text-[12px] font-medium text-primary-900 backdrop-blur-sm">
+          {/* <div className="inline-flex items-center gap-2 rounded-full border border-primary-200 bg-white/75 px-3 py-1 text-[12px] font-medium text-primary-900 backdrop-blur-sm">
             <HiStar className="text-accent-500" />
             Trusted by thousands of visa applicants
-          </div>
+          </div> */}
 
           <h1 className="mt-4 text-[30px] md:text-[46px] leading-[1.3] font-bold font-outfit text-gray-900 mb-5">
             {title}
