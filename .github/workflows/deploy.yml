@@ -168,3 +168,26 @@ jobs:
           tags: ${{ env.REGISTRY }}/${{ matrix.app }}:latest
           cache-from: type=gha,scope=${{ matrix.app }}
           cache-to: type=gha,scope=${{ matrix.app }},mode=max
+
+      - name: Trigger DO app redeploy
+        env:
+          APP: ${{ matrix.app }}
+        run: |
+          # Map image name → DO app name (only override where they differ)
+          case "$APP" in
+            dt365-frontend) DO_APP_NAME="dummyticket365-frontend" ;;
+            dt365-backend)  DO_APP_NAME="dummyticket365-backend" ;;
+            mdt-frontend)   DO_APP_NAME="mydummyticket-frontend" ;;
+            mdt-backend)    DO_APP_NAME="mydummyticket-backend" ;;
+            *)              DO_APP_NAME="$APP" ;;
+          esac
+
+          APP_ID=$(doctl apps list --format ID,Spec.Name --no-header | grep -w "$DO_APP_NAME" | awk '{print $1}' | head -1)
+
+          if [ -z "$APP_ID" ]; then
+            echo "⚠️  DO app '$DO_APP_NAME' not found — skipping redeploy (app probably not yet created)"
+            exit 0
+          fi
+
+          echo "Triggering redeploy for $DO_APP_NAME ($APP_ID)"
+          doctl apps create-deployment "$APP_ID" --force-rebuild=false
