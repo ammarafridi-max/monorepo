@@ -21,7 +21,7 @@ function slugify(str) {
     .replace(/-+/g, '-');
 }
 
-function buildFormData(data, editorRef) {
+function buildFormData(data, editorRef, isEdit) {
   const fd = new FormData();
   fd.append('title',           data.title           || '');
   fd.append('slug',            data.slug            || '');
@@ -39,7 +39,7 @@ function buildFormData(data, editorRef) {
   }
   (data.tags || []).forEach((t) => fd.append('tags', t));
   if (data.coverImage?.[0]) {
-    fd.append('coverImage', data.coverImage[0]);
+    fd.append(isEdit ? 'newCoverImage' : 'coverImage', data.coverImage[0]);
   }
   return fd;
 }
@@ -207,7 +207,7 @@ export default function BlogForm({ initialData, onSubmit, isPending }) {
         return;
       }
     }
-    onSubmit(buildFormData(data, editorRef));
+    onSubmit(buildFormData(data, editorRef, isEdit));
   }
 
   const isEdit = !!initialData;

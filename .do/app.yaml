@@ -8,14 +8,7 @@ services:
       branch: master
       deploy_on_push: true
     source_dir: /
-    build_command: >-
-      npm install -g pnpm@9.15.0 &&
-      pnpm install --frozen-lockfile &&
-      pnpm --filter @travel-suite/travl-frontend build &&
-      cp -r apps/travl-frontend/.next/static apps/travl-frontend/.next/standalone/.next/static &&
-      cp -r apps/travl-frontend/public apps/travl-frontend/.next/standalone/public
-    run_command: node apps/travl-frontend/.next/standalone/server.js
-    environment_slug: node-js
+    dockerfile_path: apps/travl-frontend/Dockerfile
     http_port: 3000
     instance_count: 1
     instance_size_slug: basic-xxs
