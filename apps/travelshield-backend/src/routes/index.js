@@ -38,7 +38,7 @@ const imageStorage = createCloudinaryStorage({
   apiKey:    config.cloudinary.apiKey,
   apiSecret: config.cloudinary.apiSecret,
   logger,
-  folder: 'blog',
+  folder: 'travelshield/blog',
 });
 router.use('/blogs', createBlogRouter({ db, auth, imageStorage }));
 router.use('/blog-tags', createBlogTagRouter({ db, auth }));

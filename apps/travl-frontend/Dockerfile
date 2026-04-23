@@ -5,7 +5,6 @@ RUN npm install -g pnpm@9.15.0
 FROM base AS deps
 WORKDIR /repo
 
-# Copy workspace manifests first (better layer caching)
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY packages/config/package.json             packages/config/package.json
 COPY packages/utils/package.json              packages/utils/package.json
@@ -18,17 +17,17 @@ RUN pnpm install --frozen-lockfile
 FROM deps AS builder
 WORKDIR /repo
 
-# Copy all source
 COPY packages/ packages/
 COPY apps/travl-frontend/ apps/travl-frontend/
 
 RUN pnpm --filter travl-frontend build
 
-# Copy static assets into the standalone output
+# Next standalone in a monorepo nests the output under apps/travl-frontend/
+# Static + public must be copied into that same nested location
 RUN cp -r apps/travl-frontend/.next/static \
-         apps/travl-frontend/.next/standalone/.next/static && \
+         apps/travl-frontend/.next/standalone/apps/travl-frontend/.next/static && \
     cp -r apps/travl-frontend/public \
-         apps/travl-frontend/.next/standalone/public
+         apps/travl-frontend/.next/standalone/apps/travl-frontend/public
 
 # ── Production image ──────────────────────────────────────────────────────────
 FROM node:22-alpine AS runner
@@ -38,7 +37,8 @@ ENV NODE_ENV=production
 ENV HOSTNAME=0.0.0.0
 ENV PORT=3000
 
+# Standalone already contains its own node_modules
 COPY --from=builder /repo/apps/travl-frontend/.next/standalone ./
 
 EXPOSE 3000
-CMD ["node", "apps/travl-frontend/.next/standalone/server.js"]
+CMD ["node", "apps/travl-frontend/server.js"]
