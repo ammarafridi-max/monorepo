@@ -1,0 +1,167 @@
+name: Build & Deploy
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+    inputs:
+      force-all:
+        description: 'Rebuild every app (ignore path filters)'
+        type: boolean
+        default: false
+
+env:
+  REGISTRY: registry.digitalocean.com/travl
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────────
+  # 1. Work out which apps actually need rebuilding
+  # ─────────────────────────────────────────────────────────────────────
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      apps: ${{ steps.final.outputs.apps }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect changed paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            travl-frontend:
+              - 'apps/travl-frontend/**'
+              - 'packages/frontend-shared/**'
+              - 'packages/config/**'
+              - 'packages/utils/**'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+            travl-backend:
+              - 'apps/travl-backend/**'
+              - 'packages/auth/**'
+              - 'packages/admin-users/**'
+              - 'packages/affiliates/**'
+              - 'packages/blog/**'
+              - 'packages/cloudinary/**'
+              - 'packages/currencies/**'
+              - 'packages/flights/**'
+              - 'packages/insurance/**'
+              - 'packages/notifications/**'
+              - 'packages/payments/**'
+              - 'packages/tickets/**'
+              - 'packages/users/**'
+              - 'packages/utils/**'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+            dt365-frontend:
+              - 'apps/dt365-frontend/**'
+              - 'packages/frontend-shared/**'
+              - 'packages/config/**'
+              - 'packages/utils/**'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+            dt365-backend:
+              - 'apps/dt365-backend/**'
+              - 'packages/auth/**'
+              - 'packages/admin-users/**'
+              - 'packages/affiliates/**'
+              - 'packages/blog/**'
+              - 'packages/cloudinary/**'
+              - 'packages/currencies/**'
+              - 'packages/flights/**'
+              - 'packages/notifications/**'
+              - 'packages/payments/**'
+              - 'packages/tickets/**'
+              - 'packages/users/**'
+              - 'packages/utils/**'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+            mdt-frontend:
+              - 'apps/mdt-frontend/**'
+              - 'packages/frontend-shared/**'
+              - 'packages/config/**'
+              - 'packages/utils/**'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+            mdt-backend:
+              - 'apps/mdt-backend/**'
+              - 'packages/auth/**'
+              - 'packages/admin-users/**'
+              - 'packages/affiliates/**'
+              - 'packages/blog/**'
+              - 'packages/cloudinary/**'
+              - 'packages/currencies/**'
+              - 'packages/flights/**'
+              - 'packages/insurance/**'
+              - 'packages/notifications/**'
+              - 'packages/payments/**'
+              - 'packages/tickets/**'
+              - 'packages/users/**'
+              - 'packages/utils/**'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+            travelshield-frontend:
+              - 'apps/travelshield-frontend/**'
+              - 'packages/frontend-shared/**'
+              - 'packages/config/**'
+              - 'packages/utils/**'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+            travelshield-backend:
+              - 'apps/travelshield-backend/**'
+              - 'packages/auth/**'
+              - 'packages/admin-users/**'
+              - 'packages/affiliates/**'
+              - 'packages/blog/**'
+              - 'packages/cloudinary/**'
+              - 'packages/currencies/**'
+              - 'packages/insurance/**'
+              - 'packages/notifications/**'
+              - 'packages/users/**'
+              - 'packages/utils/**'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+
+      - name: Decide which apps to build
+        id: final
+        run: |
+          if [[ "${{ inputs.force-all }}" == "true" ]]; then
+            echo 'apps=["travl-frontend","travl-backend","dt365-frontend","dt365-backend","mdt-frontend","mdt-backend","travelshield-frontend","travelshield-backend"]' >> "$GITHUB_OUTPUT"
+          else
+            echo "apps=${{ steps.filter.outputs.changes }}" >> "$GITHUB_OUTPUT"
+          fi
+
+  # ─────────────────────────────────────────────────────────────────────
+  # 2. Build + push each changed app in parallel
+  # ─────────────────────────────────────────────────────────────────────
+  build:
+    needs: changes
+    if: needs.changes.outputs.apps != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: ${{ fromJSON(needs.changes.outputs.apps) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Log in to DO Container Registry
+        run: doctl registry login --expiry-seconds 1800
+
+      - name: Build & push ${{ matrix.app }}
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: apps/${{ matrix.app }}/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ matrix.app }}:latest
+          cache-from: type=gha,scope=${{ matrix.app }}
+          cache-to: type=gha,scope=${{ matrix.app }},mode=max
