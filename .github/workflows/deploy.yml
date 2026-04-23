@@ -124,11 +124,14 @@ jobs:
 
       - name: Decide which apps to build
         id: final
+        env:
+          CHANGES: ${{ steps.filter.outputs.changes }}
+          FORCE_ALL: ${{ inputs.force-all }}
         run: |
-          if [[ "${{ inputs.force-all }}" == "true" ]]; then
+          if [[ "$FORCE_ALL" == "true" ]]; then
             echo 'apps=["travl-frontend","travl-backend","dt365-frontend","dt365-backend","mdt-frontend","mdt-backend","travelshield-frontend","travelshield-backend"]' >> "$GITHUB_OUTPUT"
           else
-            echo "apps=${{ steps.filter.outputs.changes }}" >> "$GITHUB_OUTPUT"
+            echo "apps=$CHANGES" >> "$GITHUB_OUTPUT"
           fi
 
   # ─────────────────────────────────────────────────────────────────────
