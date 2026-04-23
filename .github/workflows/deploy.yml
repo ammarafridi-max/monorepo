@@ -205,4 +205,5 @@ jobs:
           fi
 
           echo "Triggering redeploy for $DO_APP_NAME ($APP_ID)"
-          doctl apps create-deployment "$APP_ID" --force-rebuild --wait
+          doctl apps create-deployment "$APP_ID" --force-rebuild
+          echo "✅ Redeploy triggered. Check progress at: https://cloud.digitalocean.com/apps/$APP_ID"
