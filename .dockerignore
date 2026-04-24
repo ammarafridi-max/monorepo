@@ -1,0 +1,49 @@
+# Node
+**/node_modules
+**/.pnpm-store
+
+# Next.js build output
+**/.next
+**/out
+
+# Turborepo
+**/.turbo
+
+# Logs
+**/*.log
+**/npm-debug.log*
+**/pnpm-debug.log*
+**/yarn-debug.log*
+
+# Git
+.git
+.gitignore
+
+# Env files (secrets — never ship to build context)
+**/.env
+**/.env.local
+**/.env.development
+**/.env.production
+**/.env.*.local
+# ...but keep .env.build — frontend Dockerfiles COPY it to bake public NEXT_PUBLIC_* vars into the Next.js bundle
+!**/.env.build
+
+# IDE / OS
+**/.DS_Store
+**/.vscode
+**/.idea
+**/Thumbs.db
+
+# CI / deployment config (not needed in builds)
+.github
+.do
+
+# Fly config (not needed inside containers)
+fly.*.toml
+
+# Docs / misc
+README.md
+**/*.md
+
+# Test coverage
+**/coverage
