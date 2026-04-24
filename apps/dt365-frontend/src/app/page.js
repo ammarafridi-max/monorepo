@@ -166,7 +166,7 @@ const pageData = {
   },
 };
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: pageData.meta.title,
