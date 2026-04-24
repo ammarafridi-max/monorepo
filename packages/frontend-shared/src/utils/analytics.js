@@ -180,25 +180,26 @@ export function trackSelectItem({
 export function trackBeginCheckout({
   plan,
   total,
+  value,
   currency = 'AED',
   journeyType,
   region,
   days,
   totalTravellers,
+  items,
 }) {
   if (!shouldTrackAnalytics()) return;
 
+  // Callers can either supply a `plan` (insurance flow — we build the item)
+  // or supply their own `items` array directly (e.g. dummy-ticket flow)
+  const finalItems = items ?? (plan
+    ? [buildItem(plan, { journeyType, regionName: region?.name, days, totalTravellers })]
+    : []);
+
   ReactGA.event('begin_checkout', {
     currency,
-    value: parseFloat(total),
-    items: [
-      buildItem(plan, {
-        journeyType,
-        regionName: region?.name,
-        days,
-        totalTravellers,
-      }),
-    ],
+    value: parseFloat(value ?? total ?? 0),
+    items: finalItems,
   });
 }
 
