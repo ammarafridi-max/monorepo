@@ -32,6 +32,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# ...but allow .env.build — contains only public NEXT_PUBLIC_* vars for Docker builds
+!.env.build
 
 # vercel
 .vercel

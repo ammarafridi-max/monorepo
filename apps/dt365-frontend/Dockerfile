@@ -20,6 +20,9 @@ WORKDIR /repo
 COPY packages/ packages/
 COPY apps/dt365-frontend/ apps/dt365-frontend/
 
+# Committed .env.build contains public NEXT_PUBLIC_* vars; Next reads it at build time
+RUN cp apps/dt365-frontend/.env.build apps/dt365-frontend/.env.production
+
 RUN pnpm --filter dt365-frontend build
 
 RUN cp -r apps/dt365-frontend/.next/static \
