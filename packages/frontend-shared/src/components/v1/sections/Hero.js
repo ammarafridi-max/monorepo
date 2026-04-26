@@ -33,8 +33,8 @@ export default function Hero({ title, subtitle, form, sectionId = "form" }) {
           <div className="hidden mt-8 lg:grid grid-cols-2 sm:grid-cols-2 gap-2">
             <ValuePill text="Dummy tickets from AED 49" />
             <ValuePill text="Travel insurance from AED 30" />
-            <ValuePill text="Documents in minutes" />
-            <ValuePill text="Accepted by VFS and embassies" />
+            {/* <ValuePill text="Documents in minutes" />
+            <ValuePill text="Accepted by VFS and embassies" /> */}
           </div>
         </div>
 

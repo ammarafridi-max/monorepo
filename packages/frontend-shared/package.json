@@ -8,8 +8,12 @@
     "./contexts/*": "./src/contexts/*.js",
     "./utils/*": "./src/utils/*.js",
     "./components/v1/*": "./src/components/v1/*.js",
+    "./components/v1/blog/*": "./src/components/v1/blog/*.js",
     "./components/v2/*": "./src/components/v2/*.js",
-    "./hooks/auth/*": "./src/hooks/auth/*.js"
+    "./hooks/auth/*": "./src/hooks/auth/*.js",
+    "./pages/client/*": "./src/pages/client/*.js",
+    "./pages/admin/*": "./src/pages/admin/*.js",
+    "./layouts/*": "./src/layouts/*.js"
   },
   "dependencies": {
     "@tinymce/tinymce-react": "^6.3.0",
