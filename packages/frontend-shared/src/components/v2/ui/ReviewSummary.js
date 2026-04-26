@@ -15,12 +15,12 @@ import {
   X,
   ListChecks,
 } from "lucide-react";
-import { InsuranceContext } from "../../contexts/InsuranceContext.js";
-import { useCurrency } from "../../contexts/CurrencyContext.js";
-import { useFinalizeInsurance } from "../../hooks/insurance/useFinalizeInsurance.js";
-import { calcDays } from "../../utils/insuranceHelpers.js";
-import { pixelInitiateCheckout } from "../../utils/pixel";
-import { getBaseBenefits, parsePlanName } from "../../utils/insurancePlans";
+import { InsuranceContext } from "../../../contexts/InsuranceContext.js";
+import { useCurrency } from "../../../contexts/CurrencyContext.js";
+import { useFinalizeInsurance } from "../../../hooks/insurance/useFinalizeInsurance.js";
+import { calcDays } from "../../../utils/insuranceHelpers.js";
+import { pixelInitiateCheckout } from "../../../utils/pixel";
+import { getBaseBenefits, parsePlanName } from "../../../utils/insurancePlans";
 
 function BenefitsModal({ quote, onClose }) {
   const benefits = getBaseBenefits(quote.benefits);

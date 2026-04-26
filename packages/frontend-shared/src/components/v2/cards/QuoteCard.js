@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { Check, X, ChevronDown } from "lucide-react";
-import { useCurrency } from "../../contexts/CurrencyContext.js";
-import { getBaseBenefits, parsePlanName } from "../../utils/insurancePlans";
+import { useCurrency } from "../../../contexts/CurrencyContext.js";
+import { getBaseBenefits, parsePlanName } from "../../../utils/insurancePlans";
 
 function BenefitRow({ b }) {
   const notCovered = b.amount === "Not Covered";

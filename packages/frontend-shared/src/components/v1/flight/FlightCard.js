@@ -3,7 +3,7 @@
 import React, { useContext } from "react";
 import FlightForm from "../forms/FlightForm.js";
 import FlightItinerary from "./FlightItinerary.js";
-import PrimaryButtonOutline from "../PrimaryButtonOutline.js";
+import PrimaryButtonOutline from "../ui/PrimaryButtonOutline.js";
 import { useDummyTicketPricing } from '../../../hooks/pricing/useDummyTicketPricing.js';
 import { getTicketPriceByValidity } from '../../../utils/dummyTicketPricing.js';
 import { useCurrency } from '../../../contexts/CurrencyContext.js';

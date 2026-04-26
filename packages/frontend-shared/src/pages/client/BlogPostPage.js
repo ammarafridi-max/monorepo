@@ -1,9 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import Container from "../../components/v1/layout/Container";
-import PrimarySection from "../../components/v1/PrimarySection";
-import FAQAccordion from "../../components/v1/FAQAccordion";
-import ShareButtons from "../../components/v1/blog/ShareButtons";
+import PrimarySection from "../../components/v1/layout/PrimarySection";
+import FAQAccordion from "../../components/v1/ui/FAQAccordion";
+import ShareButtons from "../../components/v1/ui/ShareButtons";
 
 /**
  * BlogPostPage — shared UI component for the blog post detail page.

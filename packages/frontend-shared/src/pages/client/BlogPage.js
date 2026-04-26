@@ -1,8 +1,8 @@
-import Container from '../../components/v1/layout/Container';
-import PrimarySection from '../../components/v1/PrimarySection';
-import BlogHero from '../../components/v1/blog/BlogHero';
-import BlogCard from '../../components/v1/blog/BlogCard';
-import BlogPaginationBar from '../../components/v1/blog/BlogPaginationBar';
+import Container from "../../components/v1/layout/Container";
+import PrimarySection from "../../components/v1/layout/PrimarySection";
+import PageHero from "../../components/v1/sections/PageHero";
+import BlogCard from "../../components/v1/cards/BlogCard";
+import BlogPaginationBar from "../../components/v1/ui/BlogPaginationBar";
 
 /**
  * BlogPage — shared UI component for the /blog listing page.
@@ -40,7 +40,7 @@ export default function BlogPage({
         />
       )}
 
-      <BlogHero
+      <PageHero
         title={hero?.title}
         subtitle={hero?.subtitle}
         paths={breadcrumbPaths}
@@ -48,7 +48,7 @@ export default function BlogPage({
 
       <PrimarySection>
         <Container>
-          <div className="block items-start gap-7 py-10 lg:grid lg:grid-cols-3 lg:gap-7 lg:py-15">
+          <div className="block items-start gap-7 py-10 lg:grid lg:grid-cols-3 lg:gap-10 lg:py-15">
             {blogs.map((post) => (
               <BlogCard key={post._id} blog={post} />
             ))}

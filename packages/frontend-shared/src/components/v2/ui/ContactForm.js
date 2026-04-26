@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Send, Loader2, CheckCircle } from "lucide-react";
-import { useSubmitContactRequest } from "../../hooks/contact/useSubmitContactRequest";
+import { useSubmitContactRequest } from "../../../hooks/contact/useSubmitContactRequest";
 
 const subjects = [
   "General Enquiry",

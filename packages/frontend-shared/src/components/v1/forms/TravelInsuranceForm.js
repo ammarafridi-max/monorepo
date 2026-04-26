@@ -13,7 +13,7 @@ import Label from '../form-elements/Label';
 import DatePicker from '../form-elements/DatePicker';
 import SearchableSelect from '../form-elements/SearchableSelect';
 import Counter from '../form-elements/Counter';
-import PrimaryButton from '../PrimaryButton';
+import PrimaryButton from '../ui/PrimaryButton';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 

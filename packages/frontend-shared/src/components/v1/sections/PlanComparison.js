@@ -2,7 +2,7 @@
 
 import { useContext } from 'react';
 import { Check, X, Minus } from 'lucide-react';
-import { InsuranceContext } from '../../contexts/InsuranceContext.js';
+import { InsuranceContext } from '../../../contexts/InsuranceContext.js';
 
 function formatPremium(premium) {
   return Number(premium).toFixed(2);

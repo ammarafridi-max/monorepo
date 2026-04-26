@@ -15,15 +15,15 @@ import {
   X,
   ListChecks,
 } from "lucide-react";
-import { InsuranceContext } from '../../contexts/InsuranceContext.js';
-import { useFinalizeInsurance } from '../../hooks/insurance/useFinalizeInsurance.js';
-import { trackBeginCheckout } from '../../utils/analytics';
+import { InsuranceContext } from '../../../contexts/InsuranceContext.js';
+import { useFinalizeInsurance } from '../../../hooks/insurance/useFinalizeInsurance.js';
+import { trackBeginCheckout } from '../../../utils/analytics';
 import {
   calcDays,
   formatPremium,
   getBaseBenefits,
   parsePlanName,
-} from '../../utils/insuranceHelpers.js';
+} from '../../../utils/insuranceHelpers.js';
 
 function BenefitsModal({ quote, onClose }) {
   const benefits = getBaseBenefits(quote.benefits);

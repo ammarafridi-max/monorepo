@@ -1,5 +1,5 @@
 import Container from '../layout/Container';
-import PrimarySection from '../PrimarySection';
+import PrimarySection from '../layout/PrimarySection';
 import TestimonialCard from '../cards/TestimonialCard';
 import SectionTitle from '../layout/SectionTitle';
 

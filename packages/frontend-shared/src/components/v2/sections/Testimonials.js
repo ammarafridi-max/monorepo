@@ -1,4 +1,4 @@
-import TestimonialCard from '../TestimonialCard.js';
+import TestimonialCard from '../cards/TestimonialCard.js';
 
 const defaultTestimonials = [
   {

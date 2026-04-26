@@ -1,6 +1,6 @@
 import Container from '@travel-suite/frontend-shared/components/v1/layout/Container';
-import FAQAccordion from '@travel-suite/frontend-shared/components/v1/FAQAccordion';
-import PrimarySection from '@travel-suite/frontend-shared/components/v1/PrimarySection';
+import FAQAccordion from '@travel-suite/frontend-shared/components/v1/ui/FAQAccordion';
+import PrimarySection from '@travel-suite/frontend-shared/components/v1/layout/PrimarySection';
 import PageHero from '@travel-suite/frontend-shared/components/v1/sections/PageHero';
 import { insuranceFaqs } from '@/data/faqs';
 import { buildMetadata } from '@/lib/schema';

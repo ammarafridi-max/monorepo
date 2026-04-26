@@ -11,7 +11,7 @@ import SelectTitle from '../form-elements/SelectTitle';
 import TextArea from '../form-elements/TextArea';
 import Email from '../form-elements/Email';
 import PhoneInput from '../form-elements/PhoneInput';
-import PrimaryButton from '../PrimaryButton';
+import PrimaryButton from '../ui/PrimaryButton';
 import SegmentedRadioGroup from '../form-elements/SegmentedRadioGroup';
 
 import { useDummyTicketPricing } from '../../../hooks/pricing/useDummyTicketPricing';

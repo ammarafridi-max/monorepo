@@ -12,13 +12,13 @@ import {
   ShieldCheck,
   Loader2,
 } from 'lucide-react';
-import { InsuranceContext } from '../../contexts/InsuranceContext.js';
-import { useCreateInsuranceApplication } from '../../hooks/insurance/useCreateInsuranceApplication.js';
-import { useGetNationalities } from '../../hooks/insurance/useGetNationalities.js';
-import PhoneInput from './form-elements/PhoneInput.js';
-import DatePicker from './form-elements/DatePicker.js';
-import NationalitySelect from './form-elements/NationalitySelect.js';
-import { todayDateOnly } from '../../utils/dates';
+import { InsuranceContext } from '../../../contexts/InsuranceContext.js';
+import { useCreateInsuranceApplication } from '../../../hooks/insurance/useCreateInsuranceApplication.js';
+import { useGetNationalities } from '../../../hooks/insurance/useGetNationalities.js';
+import PhoneInput from '../form-elements/PhoneInput.js';
+import DatePicker from '../form-elements/DatePicker.js';
+import NationalitySelect from '../form-elements/NationalitySelect.js';
+import { todayDateOnly } from '../../../utils/dates';
 
 const TITLES = ['Mr', 'Mrs', 'Ms', 'Miss', 'Dr', 'Prof'];
 

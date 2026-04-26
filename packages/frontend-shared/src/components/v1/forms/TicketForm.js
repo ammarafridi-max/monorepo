@@ -8,7 +8,7 @@ import { PlaneLandingIcon, PlaneTakeoff } from 'lucide-react';
 import { trackFlightSearch } from '../../../utils/analytics';
 import { TicketContext } from '../../../contexts/TicketContext.js';
 import Label from '../form-elements/Label';
-import PrimaryButton from '../PrimaryButton';
+import PrimaryButton from '../ui/PrimaryButton';
 import SelectAirport from '../form-elements/SelectAirport';
 import DatePicker from '../form-elements/DatePicker';
 import Counter from '../form-elements/Counter';

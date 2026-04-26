@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import FaqAccordion from '../FaqAccordion.js';
+import FaqAccordion from '../ui/FaqAccordion.js';
 
 export default function Faqs({
   title = 'Frequently Asked Questions',

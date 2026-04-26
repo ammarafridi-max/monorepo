@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Container from '../../components/v1/layout/Container';
-import PrimarySection from '../../components/v1/PrimarySection';
-import BlogHero from '../../components/v1/blog/BlogHero';
+import PrimarySection from '../../components/v1/layout/PrimarySection';
+import PageHero from '../../components/v1/sections/PageHero';
 
 /**
  * BlogTagsPage — shared UI component for the /blog/tags index page.
@@ -35,7 +35,7 @@ export default function BlogTagsPage({
         />
       )}
 
-      <BlogHero
+      <PageHero
         title={hero?.title}
         subtitle={hero?.subtitle}
         paths={breadcrumbPaths}

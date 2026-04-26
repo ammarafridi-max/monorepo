@@ -8,11 +8,11 @@ import {
   Loader2,
   AlertCircle,
 } from "lucide-react";
-import QuoteCard from "./QuoteCard.js";
+import QuoteCard from "../cards/QuoteCard.js";
 import PlanComparison from "./PlanComparison.js";
-import { InsuranceContext } from "../../contexts/InsuranceContext.js";
-import { useGetInsuranceQuotes } from "../../hooks/insurance/useGetInsuranceQuotes.js";
-import { pixelViewContent } from "../../utils/pixel";
+import { InsuranceContext } from "../../../contexts/InsuranceContext.js";
+import { useGetInsuranceQuotes } from "../../../hooks/insurance/useGetInsuranceQuotes.js";
+import { pixelViewContent } from "../../../utils/pixel";
 
 const sortOptions = ["Recommended", "Price: Low to high", "Price: High to low"];
 

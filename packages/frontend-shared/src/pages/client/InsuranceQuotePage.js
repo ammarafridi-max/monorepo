@@ -11,7 +11,7 @@ import {
 import { InsuranceContext } from '../../contexts/InsuranceContext';
 import { useGetInsuranceQuotes } from '../../hooks/insurance/useGetInsuranceQuotes';
 import QuoteCard from '../../components/v1/cards/QuoteCard';
-import PlanComparison from '../../components/v1/PlanComparison';
+import PlanComparison from '../../components/v1/sections/PlanComparison';
 import InsuranceLayout from '../../layouts/InsuranceLayout';
 import { calcDays } from '../../utils/insuranceHelpers';
 

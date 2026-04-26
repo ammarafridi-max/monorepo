@@ -1,5 +1,5 @@
 import Container from "../layout/Container";
-import PrimarySection from "../PrimarySection";
+import PrimarySection from "../layout/PrimarySection";
 import { HiCheck, HiStar } from "react-icons/hi2";
 
 export default function Hero({ title, subtitle, form, pills = [], sectionId = "form" }) {

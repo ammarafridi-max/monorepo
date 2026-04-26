@@ -4,9 +4,9 @@ import { useContext, useEffect, useState } from 'react';
 import FlightCard from '../../components/v1/flight/FlightCard';
 import FlightError from '../../components/v1/flight/FlightError';
 import FlightSkeleton from '../../components/v1/flight/FlightSkeleton';
-import PrimaryButton from '../../components/v1/PrimaryButton';
+import PrimaryButton from '../../components/v1/ui/PrimaryButton';
 import { TicketContext } from '../../contexts/TicketContext';
-import { useFlights } from '../../hooks/useFlights';
+import { useFlights } from '../../hooks/flights/useFlights';
 import { transformItinerary } from '../../utils/transformItinerary';
 
 export default function TicketSelectFlightsPage() {

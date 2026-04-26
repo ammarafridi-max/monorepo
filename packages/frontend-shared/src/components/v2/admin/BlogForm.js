@@ -18,8 +18,8 @@ import {
   ChevronDown,
   ChevronUp,
 } from 'lucide-react';
-import { useGetBlogTags } from '../../../../hooks/blog-tags/useGetBlogTags.js';
-import TinyEditor from '../../forms/TinyEditor.js';
+import { useGetBlogTags } from '../../../hooks/blog-tags/useGetBlogTags.js';
+import TinyEditor from '../forms/TinyEditor.js';
 
 function slugify(str) {
   return str

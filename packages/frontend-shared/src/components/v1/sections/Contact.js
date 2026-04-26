@@ -1,7 +1,7 @@
-import PrimarySection from '../PrimarySection';
+import PrimarySection from '../layout/PrimarySection';
 import Container from '../layout/Container';
 import SectionTitle from '../layout/SectionTitle';
-import PrimaryLink from '../PrimaryLink';
+import PrimaryLink from '../ui/PrimaryLink';
 
 export default function Contact({
   title = 'Contact Us Now',

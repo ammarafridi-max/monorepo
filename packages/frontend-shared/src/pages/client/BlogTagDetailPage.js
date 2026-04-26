@@ -1,8 +1,8 @@
 import Container from '../../components/v1/layout/Container';
-import PrimarySection from '../../components/v1/PrimarySection';
-import BlogHero from '../../components/v1/blog/BlogHero';
-import BlogCard from '../../components/v1/blog/BlogCard';
-import BlogPaginationBar from '../../components/v1/blog/BlogPaginationBar';
+import PrimarySection from '../../components/v1/layout/PrimarySection';
+import PageHero from '../../components/v1/sections/PageHero';
+import BlogCard from '../../components/v1/cards/BlogCard';
+import BlogPaginationBar from '../../components/v1/ui/BlogPaginationBar';
 
 /**
  * BlogTagDetailPage — shared UI component for the /blog/tags/[slug] page.
@@ -42,7 +42,7 @@ export default function BlogTagDetailPage({
         />
       )}
 
-      <BlogHero
+      <PageHero
         title={tag?.name}
         subtitle={tag?.description || 'Published posts under this tag.'}
         paths={breadcrumbPaths}

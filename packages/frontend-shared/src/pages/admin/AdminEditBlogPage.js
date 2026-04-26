@@ -3,7 +3,7 @@
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
-import BlogForm from '../../components/v1/admin/blog/BlogForm';
+import BlogForm from '../../components/v1/admin/BlogForm';
 import { useGetBlog } from '../../hooks/blog/useGetBlog';
 import { useUpdateBlog } from '../../hooks/blog/useUpdateBlog';
 

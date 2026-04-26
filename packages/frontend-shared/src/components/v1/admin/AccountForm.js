@@ -1,16 +1,14 @@
-'use client';
-
 "use client";
 
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useGetMyAccount } from '../../../../hooks/account/useGetMyAccount.js';
-import { useUpdateMyAccount } from '../../../../hooks/account/useUpdateMyAccount.js';
-import FormRow from '../../form-elements/FormRow.js';
-import Input from '../../form-elements/Input.js';
-import Label from '../../form-elements/Label.js';
-import PrimaryButton from '../../PrimaryButton.js';
-import PageHeading from '../../layout/PageHeading.js';
+import { useGetMyAccount } from "../../../hooks/account/useGetMyAccount.js";
+import { useUpdateMyAccount } from "../../../hooks/account/useUpdateMyAccount.js";
+import FormRow from "../form-elements/FormRow.js";
+import Input from "../form-elements/Input.js";
+import Label from "../form-elements/Label.js";
+import PrimaryButton from "../ui/PrimaryButton.js";
+import PageHeading from "../layout/PageHeading.js";
 
 export default function AccountForm() {
   const [updateMode, setUpdateMode] = useState(false);

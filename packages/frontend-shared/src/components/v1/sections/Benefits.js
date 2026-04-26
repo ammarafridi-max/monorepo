@@ -1,5 +1,5 @@
 import Container from '../layout/Container';
-import PrimarySection from '../PrimarySection';
+import PrimarySection from '../layout/PrimarySection';
 import SectionTitle from '../layout/SectionTitle';
 
 export default function Benefits({

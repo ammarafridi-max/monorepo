@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { useAirports } from '../../../hooks/useAirports';
+import { useAirports } from '../../../hooks/airports/useAirports';
 import { useOutsideClick } from '../../../hooks/general/useOutsideClick';
 
 export default function SelectAirport({ value, onChange, id, icon }) {

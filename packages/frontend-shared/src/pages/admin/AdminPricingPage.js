@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Breadcrumb from '../../components/v1/layout/Breadcrumb';
 import PageLoader from '../../components/v1/ui/PageLoader';
 import PageHeading from '../../components/v1/layout/PageHeading';
-import PrimaryButton from '../../components/v1/PrimaryButton';
+import PrimaryButton from '../../components/v1/ui/PrimaryButton';
 import Input from '../../components/v1/form-elements/Input';
 import Label from '../../components/v1/form-elements/Label';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';

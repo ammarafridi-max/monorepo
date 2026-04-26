@@ -1,7 +1,7 @@
 import Breadcrumb from '../layout/Breadcrumb';
 import Container from '../layout/Container';
 import PageTitle from '../layout/PageTitle';
-import PrimarySection from '../PrimarySection';
+import PrimarySection from '../layout/PrimarySection';
 
 export default function PageHero({ paths = [], title = '', subtitle = '' }) {
   return (

@@ -1,6 +1,6 @@
-import PrimaryLink from '@travel-suite/frontend-shared/components/v1/PrimaryLink';
+import PrimaryLink from '@travel-suite/frontend-shared/components/v1/ui/PrimaryLink';
 import Container from '@travel-suite/frontend-shared/components/v1/layout/Container';
-import PrimarySection from '@travel-suite/frontend-shared/components/v1/PrimarySection';
+import PrimarySection from '@travel-suite/frontend-shared/components/v1/layout/PrimarySection';
 
 export default function PageNotFound() {
   return (

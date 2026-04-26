@@ -1,5 +1,5 @@
 import Breadcrumb from '../../components/v1/layout/Breadcrumb';
-import AccountForm from '../../components/v1/admin/forms/AccountForm';
+import AccountForm from '../../components/v1/admin/AccountForm';
 
 export default function AdminAccountPage() {
   return (

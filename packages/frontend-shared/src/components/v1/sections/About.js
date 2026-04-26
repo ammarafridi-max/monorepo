@@ -4,7 +4,7 @@ import {
   MdOutlineHotel,
 } from 'react-icons/md';
 import Image from 'next/image';
-import PrimarySection from '../PrimarySection';
+import PrimarySection from '../layout/PrimarySection';
 import Container from '../layout/Container';
 import SectionTitle from '../layout/SectionTitle';
 

@@ -1,4 +1,4 @@
-import HeroQuoteForm from '../HeroQuoteForm.js';
+import HeroQuoteForm from '../ui/HeroQuoteForm.js';
 
 export default function Hero({
   title = 'Travel the World with Peace of Mind',

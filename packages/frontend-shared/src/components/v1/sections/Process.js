@@ -1,4 +1,4 @@
-import PrimarySection from '../PrimarySection';
+import PrimarySection from '../layout/PrimarySection';
 import Container from '../layout/Container';
 import SectionTitle from '../layout/SectionTitle';
 

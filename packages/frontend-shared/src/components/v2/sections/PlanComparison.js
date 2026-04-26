@@ -2,9 +2,9 @@
 
 import { useContext } from "react";
 import { Check, X, Minus } from "lucide-react";
-import { InsuranceContext } from "../../contexts/InsuranceContext.js";
-import { useCurrency } from "../../contexts/CurrencyContext.js";
-import { getBaseBenefits, parsePlanName } from "../../utils/insurancePlans";
+import { InsuranceContext } from "../../../contexts/InsuranceContext.js";
+import { useCurrency } from "../../../contexts/CurrencyContext.js";
+import { getBaseBenefits, parsePlanName } from "../../../utils/insurancePlans";
 
 function getQuoteBenefitMap(quote) {
   const map = {};

@@ -4,12 +4,12 @@ import React, { useContext, useEffect, useState } from 'react';
 import { Minus, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import { InsuranceContext } from '../../contexts/InsuranceContext.js';
-import { useLocalStorage } from '../../hooks/general/useLocalStorage.js';
-import { pixelLead } from '../../utils/pixel';
-import { trackQuoteStarted } from '../../utils/analytics';
-import DatePicker from './form-elements/DatePicker.js';
-import { todayDateOnly } from '../../utils/dates';
+import { InsuranceContext } from '../../../contexts/InsuranceContext.js';
+import { useLocalStorage } from '../../../hooks/general/useLocalStorage.js';
+import { pixelLead } from '../../../utils/pixel';
+import { trackQuoteStarted } from '../../../utils/analytics';
+import DatePicker from '../form-elements/DatePicker.js';
+import { todayDateOnly } from '../../../utils/dates';
 
 function Counter({ label, ageRange, value, onDecrement, onIncrement }) {
   return (

@@ -20,12 +20,12 @@ import {
   Loader2,
   FileText,
 } from 'lucide-react';
-import { InsuranceContext } from '../../contexts/InsuranceContext.js';
-import { confirmInsurancePaymentApi } from '../../services/apiInsurance.js';
-import { useGetInsuranceDocuments } from '../../hooks/insurance/useGetInsuranceDocuments.js';
-import { trackPurchaseEvent } from '../../utils/analytics';
-import { pixelPurchase } from '../../utils/pixel';
-import { calcDays } from '../../utils/insuranceHelpers.js';
+import { InsuranceContext } from '../../../contexts/InsuranceContext.js';
+import { confirmInsurancePaymentApi } from '../../../services/apiInsurance.js';
+import { useGetInsuranceDocuments } from '../../../hooks/insurance/useGetInsuranceDocuments.js';
+import { trackPurchaseEvent } from '../../../utils/analytics';
+import { pixelPurchase } from '../../../utils/pixel';
+import { calcDays } from '../../../utils/insuranceHelpers.js';
 
 function fmtDate(str) {
   if (!str) return '—';

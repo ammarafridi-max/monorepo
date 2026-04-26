@@ -1,9 +1,8 @@
 import { getPublishedBlogsApi } from '../../../services/apiBlog';
 import BlogCard from '../cards/BlogCard';
 import Container from '../layout/Container';
-import PrimarySection from '../PrimarySection';
+import PrimarySection from '../layout/PrimarySection';
 import SectionTitle from '../layout/SectionTitle';
-import BlogPostsCarousel from './BlogPostsCarousel';
 
 export const revalidate = 300;
 
@@ -33,9 +32,7 @@ export default async function BlogPosts({
           {title}
         </SectionTitle>
 
-        <BlogPostsCarousel blogs={blogs} />
-
-        <div className="hidden lg:grid lg:grid-cols-3 gap-8 mt-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-10">
           {blogs?.map((post) => (
             <BlogCard key={post._id} blog={post} />
           ))}

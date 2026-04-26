@@ -1,8 +1,8 @@
 import SectionTitle from '../layout/SectionTitle';
-import PrimarySection from '../PrimarySection';
+import PrimarySection from '../layout/PrimarySection';
 import Container from '../layout/Container';
-import FAQAccordion from '../FAQAccordion';
-import PrimaryLink from '../PrimaryLink';
+import FAQAccordion from '../ui/FAQAccordion';
+import PrimaryLink from '../ui/PrimaryLink';
 
 export default function FAQ({
   title = 'Frequently Asked Questions',
