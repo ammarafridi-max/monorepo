@@ -225,7 +225,13 @@ export default function HomePage() {
       <Hero
         title={pageData.sections.hero.title}
         subtitle={pageData.sections.hero.subtitle}
-        form={<AllForms />}
+        form={<AllForms forms={['ticket']} />}
+        pills={[
+          'Dummy tickets from $13',
+          'Valid PNR included',
+          'Accepted worldwide',
+          'Delivered in minutes',
+        ]}
       />
       <Process
         title={pageData.sections.process.title}

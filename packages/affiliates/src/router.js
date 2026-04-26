@@ -28,6 +28,7 @@ export function createAffiliateRouter({ controller, auth }) {
 
   router.get('/:id/stats', controller.getAffiliateStatsById);
   router.get('/:id/tickets', controller.getAffiliateTicketsById);
+  router.get('/:id/applications', controller.getAffiliateApplicationsById);
 
   router
     .route('/:id')

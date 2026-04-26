@@ -53,7 +53,7 @@ export const pageData = {
       title: 'Flight Itineraries for Travel from USD 13',
       subtitle:
         'Receive a real itinerary in standard booking format with a valid PNR and trip details delivered by email.',
-      form: <AllForms />,
+      form: <AllForms forms={['ticket']} />,
     },
     process: {
       title: 'How To Get Your Flight Itinerary?',
@@ -109,6 +109,12 @@ export default function Page() {
         title={pageData.sections.hero.title}
         subtitle={pageData.sections.hero.subtitle}
         form={pageData.sections.hero.form}
+        pills={[
+          'Flight itineraries from $13',
+          'Valid PNR included',
+          'Standard booking format',
+          'Delivered by email',
+        ]}
       />
       <Suspense fallback={null}>
         <Process

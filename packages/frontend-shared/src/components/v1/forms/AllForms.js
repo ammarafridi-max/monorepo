@@ -5,18 +5,29 @@ import { Plane, ShieldPlus } from 'lucide-react';
 import TicketForm from './TicketForm';
 import TravelInsuranceForm from './TravelInsuranceForm';
 
-const FORM_TABS = [
+const ALL_TABS = [
   { name: 'ticket', label: 'Ticket', Icon: Plane },
   { name: 'insurance', label: 'Travel Insurance', Icon: ShieldPlus },
 ];
 
-export default function AllForms({ defaultTab = 'ticket' }) {
-  const [activeForm, setActiveForm] = useState(defaultTab);
+export default function AllForms({ forms = ['ticket', 'insurance'], defaultTab }) {
+  const tabs = ALL_TABS.filter(({ name }) => forms.includes(name));
+  const [activeForm, setActiveForm] = useState(defaultTab ?? forms[0]);
+
+  // Single form — no tab switcher needed
+  if (tabs.length === 1) {
+    return (
+      <>
+        {activeForm === 'ticket' && <TicketForm />}
+        {activeForm === 'insurance' && <TravelInsuranceForm />}
+      </>
+    );
+  }
 
   return (
     <>
       <div className="flex lg:hidden items-center gap-3 mb-3 py-2 overflow-x-auto">
-        {FORM_TABS.map(({ name, label, Icon }) => (
+        {tabs.map(({ name, label, Icon }) => (
           <button
             key={name}
             type="button"
@@ -27,9 +38,7 @@ export default function AllForms({ defaultTab = 'ticket' }) {
                 : 'bg-white hover:bg-gray-50'
             }`}
           >
-            <span
-            // className={`${activeForm === name ? 'text-primary-500' : ''}`}
-            >
+            <span>
               <Icon size={18} />
             </span>
             <span>{label}</span>

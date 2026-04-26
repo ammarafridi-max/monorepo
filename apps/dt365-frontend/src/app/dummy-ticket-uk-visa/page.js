@@ -99,7 +99,7 @@ const pageData = {
       title: 'Book Your Dummy Ticket for UK Visa from $13',
       subtitle:
         'Secure a dummy ticket for UK visa applications with a verifiable PNR, without purchasing a fully paid airline ticket. Commonly used to show travel intent for UK visa submissions.',
-      form: <AllForms />,
+      form: <AllForms forms={['ticket']} />,
     },
     process: {
       title: 'How to Book Your Dummy Flight Ticket for a UK Visa',
@@ -165,6 +165,12 @@ export default function Page() {
         title={pageData.sections.hero.title}
         subtitle={pageData.sections.hero.subtitle}
         form={pageData.sections.hero.form}
+        pills={[
+          'Dummy tickets from $13',
+          'Verifiable PNR included',
+          'Accepted for UK visa submissions',
+          'Delivered in minutes',
+        ]}
       />
 
       <Suspense fallback={null}>

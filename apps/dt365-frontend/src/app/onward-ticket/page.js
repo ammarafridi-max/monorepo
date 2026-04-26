@@ -78,7 +78,7 @@ const pageData = {
       title: 'Book a Your Onward Ticket from USD 49.',
       subtitle:
         'Get onward tickets issued through official airline systems with a valid, verifiable PNR. Our flight reservations are legitimate bookings created for travel documentation purposes, not fake or falsified tickets.',
-      form: <AllForms />,
+      form: <AllForms forms={['ticket']} />,
     },
     process: {
       title: 'Your Onward Ticket, Ready in 3 Easy Steps',
@@ -150,6 +150,12 @@ export default function Page() {
         title={pageData.sections.hero.title}
         subtitle={pageData.sections.hero.subtitle}
         form={pageData.sections.hero.form}
+        pills={[
+          'Onward tickets from $13',
+          'Issued via official airline systems',
+          'Valid, verifiable PNR',
+          'Delivered in minutes',
+        ]}
       />
       <Suspense fallback={null}>
         <Process

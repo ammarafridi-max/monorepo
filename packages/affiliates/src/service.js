@@ -41,7 +41,30 @@ function buildCreatedAtRange(query = {}) {
   return Object.keys(range).length ? range : null;
 }
 
-export function createAffiliateService({ Affiliate, Ticket }) {
+async function aggregateStats(Model, match) {
+  const [summary] = await Model.aggregate([
+    { $match: match },
+    {
+      $group: {
+        _id: null,
+        total: { $sum: 1 },
+        paid: { $sum: { $cond: [{ $eq: ['$paymentStatus', 'PAID'] }, 1, 0] } },
+        unpaid: { $sum: { $cond: [{ $eq: ['$paymentStatus', 'UNPAID'] }, 1, 0] } },
+        paidRevenue: {
+          $sum: { $cond: [{ $eq: ['$paymentStatus', 'PAID'] }, { $ifNull: ['$amountPaid.amount', 0] }, 0] },
+        },
+      },
+    },
+  ]);
+  return {
+    total: summary?.total || 0,
+    paid: summary?.paid || 0,
+    unpaid: summary?.unpaid || 0,
+    paidRevenue: summary?.paidRevenue || 0,
+  };
+}
+
+export function createAffiliateService({ Affiliate, Ticket, InsuranceApplication }) {
   const createAffiliate = async (payload) => {
     if (Object.prototype.hasOwnProperty.call(payload, 'affiliateId'))
       throw new AppError('affiliateId is auto-generated and cannot be provided manually', 400);
@@ -100,6 +123,11 @@ export function createAffiliateService({ Affiliate, Ticket }) {
       if (linkedTickets > 0)
         throw new AppError('Affiliate cannot be deleted while linked tickets exist', 400);
     }
+    if (InsuranceApplication) {
+      const linkedApplications = await InsuranceApplication.countDocuments({ affiliate: affiliate._id });
+      if (linkedApplications > 0)
+        throw new AppError('Affiliate cannot be deleted while linked insurance applications exist', 400);
+    }
     await Affiliate.findByIdAndDelete(id);
     return affiliate;
   };
@@ -110,41 +138,47 @@ export function createAffiliateService({ Affiliate, Ticket }) {
     const match = { affiliate: affiliate._id };
     if (createdAtRange) match.createdAt = createdAtRange;
 
-    if (!Ticket) return {
-      affiliateId: affiliate.affiliateId,
-      dateRange: { startDate: query.startDate || null, endDate: query.endDate || null },
-      totalTickets: 0, paidTickets: 0, unpaidTickets: 0,
-      paidRevenue: { currency: 'AED', amount: 0 },
-      totalCommission: { currency: 'AED', amount: 0 },
-    };
+    const commissionableTypes = [];
+    if (Ticket) commissionableTypes.push('ticket');
+    if (InsuranceApplication) commissionableTypes.push('insurance');
 
-    const [summary] = await Ticket.aggregate([
-      { $match: match },
-      {
-        $group: {
-          _id: null,
-          totalTickets: { $sum: 1 },
-          paidTickets: { $sum: { $cond: [{ $eq: ['$paymentStatus', 'PAID'] }, 1, 0] } },
-          unpaidTickets: { $sum: { $cond: [{ $eq: ['$paymentStatus', 'UNPAID'] }, 1, 0] } },
-          paidRevenue: {
-            $sum: { $cond: [{ $eq: ['$paymentStatus', 'PAID'] }, { $ifNull: ['$amountPaid.amount', 0] }, 0] },
-          },
-        },
-      },
-    ]);
+    // Ticket aggregation
+    let ticketStats = null;
+    if (Ticket) {
+      ticketStats = await aggregateStats(Ticket, match);
+    }
 
-    const paidRevenueAmount = Number((summary?.paidRevenue || 0).toFixed(2));
+    // Insurance aggregation
+    let insuranceStats = null;
+    if (InsuranceApplication) {
+      insuranceStats = await aggregateStats(InsuranceApplication, match);
+    }
+
+    const totalPaidRevenue = Number((
+      (ticketStats?.paidRevenue || 0) + (insuranceStats?.paidRevenue || 0)
+    ).toFixed(2));
     const totalCommissionAmount = Number(
-      ((paidRevenueAmount * Number(affiliate.commissionPercent || 0)) / 100).toFixed(2),
+      ((totalPaidRevenue * Number(affiliate.commissionPercent || 0)) / 100).toFixed(2),
     );
 
     return {
       affiliateId: affiliate.affiliateId,
       dateRange: { startDate: query.startDate || null, endDate: query.endDate || null },
-      totalTickets: summary?.totalTickets || 0,
-      paidTickets: summary?.paidTickets || 0,
-      unpaidTickets: summary?.unpaidTickets || 0,
-      paidRevenue: { currency: 'AED', amount: paidRevenueAmount },
+      commissionableTypes,
+
+      ...(ticketStats !== null && {
+        totalTickets: ticketStats.total,
+        paidTickets: ticketStats.paid,
+        unpaidTickets: ticketStats.unpaid,
+      }),
+
+      ...(insuranceStats !== null && {
+        totalApplications: insuranceStats.total,
+        paidApplications: insuranceStats.paid,
+        unpaidApplications: insuranceStats.unpaid,
+      }),
+
+      paidRevenue: { currency: 'AED', amount: totalPaidRevenue },
       totalCommission: { currency: 'AED', amount: totalCommissionAmount },
     };
   };
@@ -158,7 +192,7 @@ export function createAffiliateService({ Affiliate, Ticket }) {
     if (query.paymentStatus && ['PAID', 'UNPAID', 'REFUNDED'].includes(query.paymentStatus))
       filter.paymentStatus = query.paymentStatus;
 
-    if (!Ticket) return { tickets: [], total: 0, page: 1, totalPages: 1, limit };
+    if (!Ticket) return { tickets: [], pagination: { total: 0, page: 1, totalPages: 1, limit } };
 
     const total = await Ticket.countDocuments(filter);
     const totalPages = Math.max(1, Math.ceil(total / limit));
@@ -172,6 +206,33 @@ export function createAffiliateService({ Affiliate, Ticket }) {
 
     return {
       tickets,
+      pagination: { total, page, limit, totalPages, hasNextPage: page < totalPages, hasPrevPage: page > 1 },
+    };
+  };
+
+  const getAffiliateApplicationsById = async (id, query = {}) => {
+    const affiliate = await getAffiliateById(id);
+    let page = Math.max(1, parseInt(query.page, 10) || 1);
+    const limit = Math.max(1, parseInt(query.limit, 10) || 20);
+
+    const filter = { affiliate: affiliate._id };
+    if (query.paymentStatus && ['PAID', 'UNPAID', 'REFUNDED'].includes(query.paymentStatus))
+      filter.paymentStatus = query.paymentStatus;
+
+    if (!InsuranceApplication) return { applications: [], pagination: { total: 0, page: 1, totalPages: 1, limit } };
+
+    const total = await InsuranceApplication.countDocuments(filter);
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    if (page > totalPages) page = totalPages;
+
+    const applications = await InsuranceApplication.find(filter)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .select('sessionId email journeyType paymentStatus amountPaid passengers startDate endDate region createdAt');
+
+    return {
+      applications,
       pagination: { total, page, limit, totalPages, hasNextPage: page < totalPages, hasPrevPage: page > 1 },
     };
   };
@@ -194,5 +255,15 @@ export function createAffiliateService({ Affiliate, Ticket }) {
     return created;
   };
 
-  return { createAffiliate, getAffiliates, getAffiliateById, updateAffiliateById, deleteAffiliateById, getAffiliateStatsById, getAffiliateTicketsById, seedAffiliates };
+  return {
+    createAffiliate,
+    getAffiliates,
+    getAffiliateById,
+    updateAffiliateById,
+    deleteAffiliateById,
+    getAffiliateStatsById,
+    getAffiliateTicketsById,
+    getAffiliateApplicationsById,
+    seedAffiliates,
+  };
 }

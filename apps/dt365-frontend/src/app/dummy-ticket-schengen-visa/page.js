@@ -99,7 +99,7 @@ const pageData = {
       title: 'Book Your Dummy Ticket For Schengen Visa From $13',
       subtitle:
         'Secure a dummy ticket for Schengen visa applications with a verifiable PNR, without buying an expensive flight. Widely used for embassy, VFS, and BLS submissions, and trusted worldwide for clear, credible travel plans.',
-      form: <AllForms />,
+      form: <AllForms forms={['ticket']} />,
     },
     process: {
       title: 'How to Book Your Dummy Flight Ticket for a Schengen Visa?',
@@ -167,6 +167,12 @@ export default function Page() {
         title={pageData.sections.hero.title}
         subtitle={pageData.sections.hero.subtitle}
         form={pageData.sections.hero.form}
+        pills={[
+          'Dummy tickets from $13',
+          'Verifiable PNR included',
+          'Accepted by VFS and BLS',
+          'Delivered in minutes',
+        ]}
       />
 
       <Suspense fallback={null}>

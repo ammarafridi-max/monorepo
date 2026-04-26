@@ -2,7 +2,7 @@ import Container from "../layout/Container";
 import PrimarySection from "../PrimarySection";
 import { HiCheck, HiStar } from "react-icons/hi2";
 
-export default function Hero({ title, subtitle, form, sectionId = "form" }) {
+export default function Hero({ title, subtitle, form, pills = [], sectionId = "form" }) {
   return (
     <PrimarySection
       className="relative overflow-hidden bg-[linear-gradient(160deg,#f5fbfb_0%,#eef4ff_52%,#fff9f4_100%)] pt-24 pb-14 md:pt-30 md:pb-16 lg:pt-30 lg:pb-20"
@@ -30,12 +30,13 @@ export default function Hero({ title, subtitle, form, sectionId = "form" }) {
             </p>
           )}
 
-          <div className="hidden mt-8 lg:grid grid-cols-2 sm:grid-cols-2 gap-2">
-            <ValuePill text="Dummy tickets from AED 49" />
-            <ValuePill text="Travel insurance from AED 30" />
-            {/* <ValuePill text="Documents in minutes" />
-            <ValuePill text="Accepted by VFS and embassies" /> */}
-          </div>
+          {pills.length > 0 && (
+            <div className="hidden mt-8 lg:grid grid-cols-2 sm:grid-cols-2 gap-2">
+              {pills.slice(0, 4).map((text, i) => (
+                <ValuePill key={i} text={text} />
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="w-full lg:w-[46%] rounded-3xl">{form}</div>

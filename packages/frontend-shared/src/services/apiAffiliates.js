@@ -60,3 +60,8 @@ export async function getAffiliateTicketsApi(id, params = {}) {
   const queryString = new URLSearchParams(params).toString();
   return await apiFetch(`${URL}/${id}/tickets?${queryString}`);
 }
+
+export async function getAffiliateApplicationsApi(id, params = {}) {
+  const queryString = new URLSearchParams(params).toString();
+  return await apiFetch(`${URL}/${id}/applications?${queryString}`);
+}

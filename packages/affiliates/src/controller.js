@@ -36,10 +36,25 @@ export function createAffiliateController({ service }) {
     res.json({ status: 'success', data: { tickets, pagination } });
   });
 
+  const getAffiliateApplicationsById = catchAsync(async (req, res) => {
+    const { applications, pagination } = await service.getAffiliateApplicationsById(req.params.id, req.query);
+    res.json({ status: 'success', data: { applications, pagination } });
+  });
+
   const seedAffiliates = catchAsync(async (req, res) => {
     const affiliates = await service.seedAffiliates();
     res.status(201).json({ status: 'success', message: 'Affiliate test data seeded successfully', data: affiliates });
   });
 
-  return { getAffiliates, getAffiliateById, createAffiliate, updateAffiliateById, deleteAffiliateById, getAffiliateStatsById, getAffiliateTicketsById, seedAffiliates };
+  return {
+    getAffiliates,
+    getAffiliateById,
+    createAffiliate,
+    updateAffiliateById,
+    deleteAffiliateById,
+    getAffiliateStatsById,
+    getAffiliateTicketsById,
+    getAffiliateApplicationsById,
+    seedAffiliates,
+  };
 }

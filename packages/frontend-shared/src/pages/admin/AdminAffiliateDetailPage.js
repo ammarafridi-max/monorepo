@@ -5,12 +5,13 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft, Loader2, AlertCircle, Pencil, Trash2, X,
-  Handshake, BarChart2, Ticket, Mail, Hash,
+  Handshake, BarChart2, Ticket, ShieldCheck, Mail,
   ChevronLeft, ChevronRight, ExternalLink,
 } from 'lucide-react';
 import { useGetAffiliate } from '../../hooks/affiliates/useGetAffiliate';
 import { useGetAffiliateStats } from '../../hooks/affiliates/useGetAffiliateStats';
 import { useGetAffiliateTickets } from '../../hooks/affiliates/useGetAffiliateTickets';
+import { useGetAffiliateApplications } from '../../hooks/affiliates/useGetAffiliateApplications';
 import { useUpdateAffiliate } from '../../hooks/affiliates/useUpdateAffiliate';
 import { useDeleteAffiliate } from '../../hooks/affiliates/useDeleteAffiliate';
 
@@ -38,6 +39,12 @@ function statAmount(value, fallbackCurrency = 'AED') {
   if (value == null) return '—';
   if (typeof value === 'object') return fmtAmount(value.amount, value.currency || fallbackCurrency);
   return fmtAmount(value, fallbackCurrency);
+}
+
+function leadPassenger(passengers) {
+  if (!passengers?.length) return '—';
+  const p = passengers[0];
+  return [p.title, p.firstName, p.lastName].filter(Boolean).join(' ') || '—';
 }
 
 /* --- UI primitives ----------------------------------------------------------- */
@@ -205,21 +212,41 @@ function DeleteSection({ id }) {
   );
 }
 
+/* --- Pagination --------------------------------------------------------------- */
+
+function Pagination({ page, totalPages, paramKey }) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  function goToPage(p) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set(paramKey, String(p));
+    router.push(`?${params.toString()}`);
+  }
+
+  if (totalPages <= 1) return null;
+
+  return (
+    <div className="flex items-center justify-between pt-4 border-t border-gray-100 mt-4">
+      <p className="text-xs text-gray-400">Page {page} of {totalPages}</p>
+      <div className="flex gap-2">
+        <button disabled={page === 1} onClick={() => goToPage(page - 1)} className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-primary-300 hover:text-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition">
+          <ChevronLeft size={14} />
+        </button>
+        <button disabled={page === totalPages} onClick={() => goToPage(page + 1)} className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-primary-300 hover:text-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition">
+          <ChevronRight size={14} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /* --- Tickets table ------------------------------------------------------------ */
 
 function TicketsTable({ affiliateId, commissionPercent }) {
   const searchParams = useSearchParams();
-  const router = useRouter();
-
   const page = Number(searchParams.get('ticketPage') || 1);
   const { tickets, pagination, isLoadingAffiliateTickets } = useGetAffiliateTickets(affiliateId, { page, limit: 10 });
-  const totalPages = pagination?.totalPages ?? 1;
-
-  function goToPage(p) {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('ticketPage', String(p));
-    router.push(`?${params.toString()}`);
-  }
 
   if (isLoadingAffiliateTickets) {
     return (
@@ -276,25 +303,80 @@ function TicketsTable({ affiliateId, commissionPercent }) {
           </tbody>
         </table>
       </div>
-
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between pt-4 border-t border-gray-100 mt-4">
-          <p className="text-xs text-gray-400">Page {page} of {totalPages}</p>
-          <div className="flex gap-2">
-            <button disabled={page === 1} onClick={() => goToPage(page - 1)} className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-primary-300 hover:text-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition">
-              <ChevronLeft size={14} />
-            </button>
-            <button disabled={page === totalPages} onClick={() => goToPage(page + 1)} className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-primary-300 hover:text-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition">
-              <ChevronRight size={14} />
-            </button>
-          </div>
-        </div>
-      )}
+      <Pagination page={page} totalPages={pagination?.totalPages ?? 1} paramKey="ticketPage" />
     </>
   );
 }
 
-/* --- Content (needs Suspense for useSearchParams in TicketsTable) ------------- */
+/* --- Applications table ------------------------------------------------------- */
+
+function ApplicationsTable({ affiliateId, commissionPercent }) {
+  const searchParams = useSearchParams();
+  const page = Number(searchParams.get('appPage') || 1);
+  const { applications, pagination, isLoadingAffiliateApplications } = useGetAffiliateApplications(affiliateId, { page, limit: 10 });
+
+  if (isLoadingAffiliateApplications) {
+    return (
+      <div className="flex items-center justify-center py-10">
+        <Loader2 size={20} className="animate-spin text-gray-300" />
+      </div>
+    );
+  }
+
+  if (!applications.length) {
+    return (
+      <div className="flex flex-col items-center justify-center py-10 gap-2 text-center">
+        <ShieldCheck size={20} className="text-gray-300" />
+        <p className="text-xs text-gray-400">No insurance applications yet for this affiliate.</p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="overflow-x-auto -mx-5">
+        <table className="w-full text-xs min-w-[560px]">
+          <thead>
+            <tr className="bg-gray-50/60">
+              {['Session', 'Lead Passenger', 'Journey', 'Amount', 'Commission', 'Status', 'Date'].map((h, i) => (
+                <th key={i} className="text-left text-[10px] font-bold text-gray-400 uppercase tracking-wide px-5 py-2.5 whitespace-nowrap">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-50">
+            {applications.map((a, i) => (
+              <tr key={a._id ?? i} className="hover:bg-gray-50/40">
+                <td className="px-5 py-2.5 font-mono text-gray-500 whitespace-nowrap">
+                  <Link href={`/admin/insurance/${a.sessionId}`} className="hover:text-primary-700 hover:underline flex items-center gap-1">
+                    {a.sessionId ? a.sessionId.slice(0, 8) + '…' : '—'}
+                    <ExternalLink size={10} />
+                  </Link>
+                </td>
+                <td className="px-5 py-2.5 text-gray-600">{leadPassenger(a.passengers)}</td>
+                <td className="px-5 py-2.5 text-gray-600 capitalize">{a.journeyType ?? '—'}</td>
+                <td className="px-5 py-2.5 font-semibold text-gray-800">{fmtAmount(a.amountPaid?.amount, a.amountPaid?.currency)}</td>
+                <td className="px-5 py-2.5 font-semibold text-green-700">{fmtAmount(((Number(a.amountPaid?.amount || 0) * Number(commissionPercent || 0)) / 100), a.amountPaid?.currency)}</td>
+                <td className="px-5 py-2.5">
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                    a.paymentStatus === 'PAID'
+                      ? 'bg-green-50 text-green-700 border-green-200'
+                      : 'bg-amber-50 text-amber-700 border-amber-200'
+                  }`}>
+                    {a.paymentStatus ?? '—'}
+                  </span>
+                </td>
+                <td className="px-5 py-2.5 text-gray-400 whitespace-nowrap">{fmtDate(a.createdAt)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <Pagination page={page} totalPages={pagination?.totalPages ?? 1} paramKey="appPage" />
+    </>
+  );
+}
+
+/* --- Content (needs Suspense for useSearchParams) ----------------------------- */
 
 function AffiliateDetailContent() {
   const { id } = useParams();
@@ -303,6 +385,9 @@ function AffiliateDetailContent() {
   const { affiliate, isLoadingAffiliate, isErrorAffiliate } = useGetAffiliate(id);
   const { stats, isLoadingStats }                            = useGetAffiliateStats(id);
   const { updateAffiliate, isUpdatingAffiliate }             = useUpdateAffiliate();
+
+  const hasTickets      = stats?.commissionableTypes?.includes('ticket');
+  const hasInsurance    = stats?.commissionableTypes?.includes('insurance');
 
   /* -- Loading -- */
   if (isLoadingAffiliate) {
@@ -398,16 +483,34 @@ function AffiliateDetailContent() {
         {/* -- Stats -- */}
         {!isLoadingStats && stats && (
           <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-            <StatPill
-              label="Total Tickets"
-              value={stats.totalTickets?.toLocaleString() ?? '0'}
-              sub="All time"
-            />
-            <StatPill
-              label="Paid Tickets"
-              value={stats.paidTickets?.toLocaleString() ?? '0'}
-              sub="Payment confirmed"
-            />
+            {hasTickets && (
+              <StatPill
+                label="Total Tickets"
+                value={stats.totalTickets?.toLocaleString() ?? '0'}
+                sub="All time"
+              />
+            )}
+            {hasTickets && (
+              <StatPill
+                label="Paid Tickets"
+                value={stats.paidTickets?.toLocaleString() ?? '0'}
+                sub="Payment confirmed"
+              />
+            )}
+            {hasInsurance && (
+              <StatPill
+                label="Total Applications"
+                value={stats.totalApplications?.toLocaleString() ?? '0'}
+                sub="All time"
+              />
+            )}
+            {hasInsurance && (
+              <StatPill
+                label="Paid Applications"
+                value={stats.paidApplications?.toLocaleString() ?? '0'}
+                sub="Payment confirmed"
+              />
+            )}
             <StatPill
               label="Commission Earned"
               value={statAmount(stats.totalCommission)}
@@ -415,8 +518,8 @@ function AffiliateDetailContent() {
             />
             <StatPill
               label="Total Revenue"
-              value={statAmount(stats.paidRevenue ?? stats.totalRevenue)}
-              sub="From paid tickets"
+              value={statAmount(stats.paidRevenue)}
+              sub="From paid orders"
             />
           </div>
         )}
@@ -424,12 +527,31 @@ function AffiliateDetailContent() {
         {/* -- Two-column body -- */}
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_260px] gap-5 items-start">
 
-          {/* Tickets */}
-          <Card title="Tickets" icon={Ticket}>
-            <Suspense fallback={<div className="flex justify-center py-8"><Loader2 size={18} className="animate-spin text-gray-300" /></div>}>
-              <TicketsTable affiliateId={affiliate._id} commissionPercent={affiliate.commissionPercent} />
-            </Suspense>
-          </Card>
+          {/* Main content: Tickets and/or Applications */}
+          <div className="space-y-5">
+            {hasTickets && (
+              <Card title="Tickets" icon={Ticket}>
+                <Suspense fallback={<div className="flex justify-center py-8"><Loader2 size={18} className="animate-spin text-gray-300" /></div>}>
+                  <TicketsTable affiliateId={affiliate._id} commissionPercent={affiliate.commissionPercent} />
+                </Suspense>
+              </Card>
+            )}
+            {hasInsurance && (
+              <Card title="Insurance Applications" icon={ShieldCheck}>
+                <Suspense fallback={<div className="flex justify-center py-8"><Loader2 size={18} className="animate-spin text-gray-300" /></div>}>
+                  <ApplicationsTable affiliateId={affiliate._id} commissionPercent={affiliate.commissionPercent} />
+                </Suspense>
+              </Card>
+            )}
+            {!hasTickets && !hasInsurance && !isLoadingStats && (
+              <Card title="Orders" icon={Ticket}>
+                <div className="flex flex-col items-center justify-center py-10 gap-2 text-center">
+                  <Ticket size={20} className="text-gray-300" />
+                  <p className="text-xs text-gray-400">No order data available.</p>
+                </div>
+              </Card>
+            )}
+          </div>
 
           {/* Sidebar */}
           <div className="space-y-4 xl:sticky xl:top-6">
@@ -452,10 +574,11 @@ function AffiliateDetailContent() {
               <InfoRow label="Commission rate" value={`${affiliate.commissionPercent}%`} />
               {!isLoadingStats && stats && (
                 <>
-                  <InfoRow label="Total tickets"  value={stats.totalTickets ?? 0} />
-                  <InfoRow label="Paid tickets"   value={stats.paidTickets ?? 0} />
-                  <InfoRow label="Pending tickets" value={stats.pendingApplications ?? 0} />
-                  <InfoRow label="Total revenue"  value={statAmount(stats.paidRevenue ?? stats.totalRevenue)} />
+                  {hasTickets && <InfoRow label="Total tickets"  value={stats.totalTickets ?? 0} />}
+                  {hasTickets && <InfoRow label="Paid tickets"   value={stats.paidTickets ?? 0} />}
+                  {hasInsurance && <InfoRow label="Total applications"  value={stats.totalApplications ?? 0} />}
+                  {hasInsurance && <InfoRow label="Paid applications"   value={stats.paidApplications ?? 0} />}
+                  <InfoRow label="Total revenue"  value={statAmount(stats.paidRevenue)} />
                   <InfoRow label="Commission"     value={statAmount(stats.totalCommission)} />
                 </>
               )}

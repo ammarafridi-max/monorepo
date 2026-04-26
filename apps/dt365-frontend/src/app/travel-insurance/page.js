@@ -23,7 +23,7 @@ const pageData = {
       title: 'Travel Insurance for UAE Residents',
       subtitle:
         'Book outbound travel insurance from the UAE for residents and citizens. Our travel insurances are genuine, legitimate, and accepted for various purposes, including embassies for visa applications. These are strictly for UAE residents/citizens.',
-      form: <AllForms defaultTab="insurance" />,
+      form: <AllForms forms={['ticket']} />,
     },
     process: {
       title: 'How to book your travel insurance?',
@@ -61,6 +61,12 @@ export default function Page() {
         title={pageData.sections.hero.title}
         subtitle={pageData.sections.hero.subtitle}
         form={pageData.sections.hero.form}
+        pills={[
+          'Policies issued by AXA',
+          'Accepted by embassies',
+          'For UAE residents only',
+          'Delivered instantly',
+        ]}
       />
       <Process
         title={pageData.sections.process.title}
