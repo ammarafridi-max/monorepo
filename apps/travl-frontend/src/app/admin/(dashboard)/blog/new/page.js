@@ -1,2 +1,2 @@
 'use client';
-export { default } from '@travel-suite/frontend-shared/pages/admin/AdminBlogNewPage';
+export { default } from '@travel-suite/frontend-shared/pages/admin/AdminNewBlogPage';
