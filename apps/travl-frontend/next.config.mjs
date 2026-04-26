@@ -9,6 +9,16 @@ const nextConfig = {
   // Trace from the monorepo root so workspace packages are included in standalone output
   outputFileTracingRoot: join(__dirname, '../../'),
   transpilePackages: ['@travel-suite/frontend-shared'],
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'travl.ae' }],
+        destination: 'https://www.travl.ae/:path*',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

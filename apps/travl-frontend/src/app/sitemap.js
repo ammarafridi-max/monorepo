@@ -51,7 +51,7 @@ export default async function sitemap() {
     tagEntries = tags
       .filter((tag) => tag?.slug)
       .map((tag) => ({
-        url: `${SITE_URL}/blog/tag/${tag.slug}`,
+        url: `${SITE_URL}/blog/tags/${tag.slug}`,
         lastModified: now,
         changeFrequency: 'weekly',
         priority: 0.5,

@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { faqArray, formatFaqArray } from '@/data/faqs';
-import { buildMetadata } from '@/lib/publicMetadata';
+import { buildMetadata } from '@/lib/schema';
 import {
   buildFAQPage,
   buildGraph,
@@ -14,13 +14,13 @@ import { HiCheck, HiOutlineClock, HiOutlineCurrencyDollar } from 'react-icons/hi
 import Hero from '@travel-suite/frontend-shared/components/v1/sections/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/v1/forms/AllForms';
 
-const Process = lazy(() => import('@/components/sections/Process'));
-const About = lazy(() => import('@/components/sections/About'));
-const Benefits = lazy(() => import('@/components/sections/Benefits'));
-const Testimonials = lazy(() => import('@/components/sections/Testimonials'));
-const FAQ = lazy(() => import('@/components/sections/FAQ'));
-const Contact = lazy(() => import('@/components/sections/Contact'));
-const BlogPosts = lazy(() => import('@/components/sections/BlogPosts'));
+const Process = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/Process'));
+const About = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/About'));
+const Benefits = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/Benefits'));
+const Testimonials = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/Testimonials'));
+const FAQ = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/FAQ'));
+const Contact = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/Contact'));
+const BlogPosts = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/BlogPosts'));
 
 const keyword = 'onward ticket';
 

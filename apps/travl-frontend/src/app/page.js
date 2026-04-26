@@ -165,7 +165,7 @@ export default function HomePage() {
       <Hero
         title={pageData.sections.hero.title}
         subtitle={pageData.sections.hero.subtitle}
-        form={<AllForms defaultTab="ticket" />}
+        form={<AllForms />}
       />
       <Process
         title={pageData.sections.process.title}

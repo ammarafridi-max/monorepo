@@ -1,5 +1,5 @@
-import BookingLayout from '@/layouts/BookingLayout';
-import { buildMetadata } from '@/lib/publicMetadata';
+import TicketLayout from '@travel-suite/frontend-shared/layouts/TicketLayout';
+import { buildMetadata } from '@/lib/schema';
 
 export const metadata = buildMetadata({
   title: 'Booking - Dummy Ticket 365',
@@ -9,5 +9,5 @@ export const metadata = buildMetadata({
 });
 
 export default function BookingFlowLayout({ children }) {
-  return <BookingLayout>{children}</BookingLayout>;
+  return <TicketLayout>{children}</TicketLayout>;
 }

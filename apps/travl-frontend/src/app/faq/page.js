@@ -3,7 +3,7 @@ import FAQAccordion from '@travel-suite/frontend-shared/components/v1/FAQAccordi
 import PrimarySection from '@travel-suite/frontend-shared/components/v1/PrimarySection';
 import PageHero from '@travel-suite/frontend-shared/components/v1/sections/PageHero';
 import { insuranceFaqs } from '@/data/faqs';
-import { buildMetadata } from '@/lib/publicMetadata';
+import { buildMetadata } from '@/lib/schema';
 import {
   buildFAQPage,
   buildGraph,

@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { buildMetadata } from '@/lib/publicMetadata';
+import { buildMetadata } from '@/lib/schema';
 import {
   buildFAQPage,
   buildGraph,
@@ -20,11 +20,11 @@ import {
 import Hero from '@travel-suite/frontend-shared/components/v1/sections/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/v1/forms/AllForms';
 
-const Process = lazy(() => import('@/components/sections/Process'));
-const About = lazy(() => import('@/components/sections/About'));
-const Benefits = lazy(() => import('@/components/sections/Benefits'));
-const FAQ = lazy(() => import('@/components/sections/FAQ'));
-const Contact = lazy(() => import('@/components/sections/Contact'));
+const Process = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/Process'));
+const About = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/About'));
+const Benefits = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/Benefits'));
+const FAQ = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/FAQ'));
+const Contact = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/Contact'));
 
 const benefits = [
   {

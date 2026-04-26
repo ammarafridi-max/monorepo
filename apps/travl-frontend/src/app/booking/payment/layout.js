@@ -1,4 +1,4 @@
-import { buildMetadata } from '@/lib/publicMetadata';
+import { buildMetadata } from '@/lib/schema';
 
 export const metadata = buildMetadata({
   title: 'Payment Successful',

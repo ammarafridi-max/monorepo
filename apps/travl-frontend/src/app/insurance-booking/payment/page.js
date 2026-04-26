@@ -1,7 +1,4 @@
-import { Suspense } from 'react';
-import { Loader2 } from 'lucide-react';
-import InsuranceLayout from '@/layouts/InsuranceLayout';
-import PaymentSuccess from '@travel-suite/frontend-shared/components/v1/PaymentSuccess';
+import InsurancePaymentPage from '@travel-suite/frontend-shared/pages/client/InsurancePaymentPage';
 
 export const metadata = {
   title: 'Booking Confirmed — TravelShield',
@@ -9,17 +6,5 @@ export const metadata = {
 };
 
 export default function PaymentPage() {
-  return (
-    <InsuranceLayout>
-      <Suspense
-        fallback={
-          <div className="flex items-center justify-center min-h-[60vh]">
-            <Loader2 size={28} className="animate-spin text-gray-300" />
-          </div>
-        }
-      >
-        <PaymentSuccess />
-      </Suspense>
-    </InsuranceLayout>
-  );
+  return <InsurancePaymentPage />;
 }

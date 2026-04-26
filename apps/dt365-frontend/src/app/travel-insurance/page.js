@@ -2,7 +2,7 @@ import AllForms from '@travel-suite/frontend-shared/components/v1/forms/AllForms
 import Hero from '@travel-suite/frontend-shared/components/v1/sections/Hero';
 import Process from '@travel-suite/frontend-shared/components/v1/sections/Process';
 import About from '@travel-suite/frontend-shared/components/v1/sections/About';
-import { buildMetadata } from '@/lib/publicMetadata';
+import { buildMetadata } from '@/lib/schema';
 import {
   buildGraph,
   buildOrganization,

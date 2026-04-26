@@ -1,5 +1,5 @@
-import InsuranceLayout from '@/layouts/InsuranceLayout';
-import { buildMetadata } from '@/lib/publicMetadata';
+import InsuranceLayout from '@travel-suite/frontend-shared/layouts/InsuranceLayout';
+import { buildMetadata } from '@/lib/schema';
 
 export const metadata = buildMetadata({
   title: 'Review Your Policy',
