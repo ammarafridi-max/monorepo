@@ -158,7 +158,7 @@ export default function AdminSidebar() {
   async function handleLogout() {
     setLoggingOut(true);
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/logout`, {
+      await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL ?? ''}/api/auth/logout`, {
         method: 'POST',
         credentials: 'include',
       });

@@ -1,5 +1,4 @@
-import InsuranceLayout from '@/layouts/InsuranceLayout';
-import PassengersForm from '@travel-suite/frontend-shared/components/v1/forms/PassengersForm';
+import InsurancePassengersPage from '@travel-suite/frontend-shared/pages/client/InsurancePassengersPage';
 
 export const metadata = {
   title: 'Passenger Details — TravelShield',
@@ -7,9 +6,5 @@ export const metadata = {
 };
 
 export default function PassengersPage() {
-  return (
-    <InsuranceLayout>
-      <PassengersForm />
-    </InsuranceLayout>
-  );
+  return <InsurancePassengersPage />;
 }

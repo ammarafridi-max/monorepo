@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { testimonials } from '@/data/testimonials';
-import { buildMetadata } from '@/lib/publicMetadata';
+import { buildMetadata } from '@/lib/schema';
 import {
   buildGraph,
   buildOrganization,
@@ -17,9 +17,9 @@ import {
 import Hero from '@travel-suite/frontend-shared/components/v1/sections/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/v1/forms/AllForms';
 
-const Process = lazy(() => import('@/components/sections/Process'));
-const Benefits = lazy(() => import('@/components/sections/Benefits'));
-const Contact = lazy(() => import('@/components/sections/Contact'));
+const Process = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/Process'));
+const Benefits = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/Benefits'));
+const Contact = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/Contact'));
 
 const keyword = 'flight reservation';
 

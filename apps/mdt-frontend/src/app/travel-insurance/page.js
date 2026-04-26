@@ -1,12 +1,12 @@
 import AllForms from '@travel-suite/frontend-shared/components/v1/forms/AllForms';
 import Container from '@travel-suite/frontend-shared/components/v1/layout/Container';
-import FAQAccordion from '@travel-suite/frontend-shared/components/v1/FAQAccordion';
-import PrimarySection from '@travel-suite/frontend-shared/components/v1/PrimarySection';
+import FAQAccordion from '@travel-suite/frontend-shared/components/v1/ui/FAQAccordion';
+import PrimarySection from '@travel-suite/frontend-shared/components/v1/layout/PrimarySection';
 import SectionTitle from '@travel-suite/frontend-shared/components/v1/layout/SectionTitle';
 import About from '@travel-suite/frontend-shared/components/v1/sections/About';
 import Hero from '@travel-suite/frontend-shared/components/v1/sections/Hero';
 import Process from '@travel-suite/frontend-shared/components/v1/sections/Process';
-import { buildMetadata } from '@/lib/publicMetadata';
+import { buildMetadata } from '@/lib/schema';
 import {
   buildFAQPage,
   buildGraph,

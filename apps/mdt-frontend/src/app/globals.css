@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 @source "../../../../packages/frontend-shared/src/components";
+@source "../../../../packages/frontend-shared/src/pages";
+@source "../../../../packages/frontend-shared/src/layouts";
 
 * {
   box-sizing: border-box;

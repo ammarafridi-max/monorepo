@@ -1,7 +1,2 @@
 'use client';
-
-import ReviewSummary from '@travel-suite/frontend-shared/components/v1/ReviewSummary';
-
-export default function ReviewPage() {
-  return <ReviewSummary />;
-}
+export { default } from '@travel-suite/frontend-shared/pages/client/InsuranceReviewPage';

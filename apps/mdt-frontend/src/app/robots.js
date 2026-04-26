@@ -6,6 +6,7 @@ export default function robots() {
       disallow: [
         '/admin',
         '/booking',
+        '/travel-insurance',
         '/insurance-booking/quote',
         '/insurance-booking/passengers',
         '/insurance-booking/review',

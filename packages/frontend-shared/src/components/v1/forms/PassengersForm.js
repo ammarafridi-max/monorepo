@@ -329,7 +329,9 @@ export default function PassengersForm() {
       },
       {
         onSuccess: (data) => {
-          setSessionId(data.sessionId);
+          if (data?.sessionId) {
+            setSessionId(data.sessionId);
+          }
           router.push('/insurance-booking/review');
         },
       },

@@ -273,7 +273,9 @@ export default function ReviewSummary() {
       },
       {
         onSuccess: (data) => {
-          window.location.assign(data.paymentUrl);
+          if (data?.paymentUrl) {
+            window.location.assign(data.paymentUrl);
+          }
         },
       },
     );

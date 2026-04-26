@@ -42,27 +42,22 @@ function DepartureData({ itinerary }) {
 }
 
 function ReturnData({ itinerary }) {
+  const lastSegment = itinerary?.segments?.[itinerary.segments.length - 1];
   return (
     <div className="w-[80px] text-right lg:text-center text-md lg:text-lg font-medium leading-4.5">
       <p className="mb-1 text-[13px] lg:text-[15px]">
-        {itinerary.segments[itinerary.segments.length - 1].arrival.iataCode}
+        {lastSegment?.arrival?.iataCode}
       </p>
       <span className="text-[13px] lg:text-[14px] font-light">
-        {format(
-          new Date(
-            itinerary.segments[itinerary.segments.length - 1].arrival.at,
-          ),
-          'dd MMM',
-        )}
+        {lastSegment?.arrival?.at
+          ? format(new Date(lastSegment.arrival.at), 'dd MMM')
+          : '—'}
       </span>
       <br />
       <span className="text-[13px] lg:text-[14px] font-light">
-        {format(
-          new Date(
-            itinerary.segments[itinerary.segments.length - 1].arrival.at,
-          ),
-          'HH:mm',
-        )}
+        {lastSegment?.arrival?.at
+          ? format(new Date(lastSegment.arrival.at), 'HH:mm')
+          : '—'}
       </span>
     </div>
   );
