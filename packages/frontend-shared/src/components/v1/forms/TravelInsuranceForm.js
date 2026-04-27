@@ -1,21 +1,21 @@
-'use client';
+"use client";
 
-import { Tooltip } from 'react-tooltip';
-import { FaCircle, FaInfo } from 'react-icons/fa';
-import { compareDateOnly } from '../../../utils/dates';
-import { InsuranceContext } from '../../../contexts/InsuranceContext.js';
-import { useContext, Fragment } from 'react';
-import { useLocalStorage } from '../../../hooks/general/useLocalStorage';
-import { pixelLead } from '../../../utils/pixel';
-import { trackQuoteStarted } from '../../../utils/analytics';
-import { todayDateOnly } from '../../../utils/dates';
-import Label from '../form-elements/Label';
-import DatePicker from '../form-elements/DatePicker';
-import SearchableSelect from '../form-elements/SearchableSelect';
-import Counter from '../form-elements/Counter';
-import PrimaryButton from '../ui/PrimaryButton';
-import toast from 'react-hot-toast';
-import { useRouter } from 'next/navigation';
+import { Tooltip } from "react-tooltip";
+import { FaCircle, FaInfo } from "react-icons/fa";
+import { compareDateOnly } from "../../../utils/dates";
+import { InsuranceContext } from "../../../contexts/InsuranceContext.js";
+import { useContext, Fragment } from "react";
+import { useLocalStorage } from "../../../hooks/general/useLocalStorage";
+import { pixelLead } from "../../../utils/pixel";
+import { trackQuoteStarted } from "../../../utils/analytics";
+import { todayDateOnly } from "../../../utils/dates";
+import Label from "../form-elements/Label";
+import DatePicker from "../form-elements/DatePicker";
+import SearchableSelect from "../form-elements/SearchableSelect";
+import Counter from "../form-elements/Counter";
+import PrimaryButton from "../ui/PrimaryButton";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 export default function TravelInsuranceForm() {
   const {
@@ -43,17 +43,17 @@ export default function TravelInsuranceForm() {
 
   function validateForm() {
     if (!startDate || !endDate || !region?.id) {
-      toast.error('Please select travel dates and region');
+      toast.error("Please select travel dates and region");
       return false;
     }
 
     if (compareDateOnly(startDate, endDate) > 0) {
-      toast.error('End date must be after start date');
+      toast.error("End date must be after start date");
       return false;
     }
 
     if (totalTravellers === 0) {
-      toast.error('Please add at least one traveller');
+      toast.error("Please add at least one traveller");
       return false;
     }
 
@@ -68,7 +68,7 @@ export default function TravelInsuranceForm() {
     setSchemeId(null);
     setQuoteId(null);
 
-    updateLocalStorage('travelInsurance', {
+    updateLocalStorage("travelInsurance", {
       journeyType,
       startDate,
       endDate,
@@ -91,15 +91,15 @@ export default function TravelInsuranceForm() {
 
     pixelLead();
 
-    router.push('/insurance-booking/quote');
+    router.push("/insurance-booking/quote");
   }
 
   return (
     <form className="m-0 py-7 px-4 md:p-6 rounded-2xl shadow-md bg-white">
       <div className="flex gap-5">
         {[
-          { id: 'single', label: 'Single' },
-          { id: 'annual', label: 'Annual' },
+          { id: "single", label: "Single" },
+          { id: "annual", label: "Annual" },
         ].map((tripType) => (
           <button
             key={tripType.id}
@@ -109,7 +109,7 @@ export default function TravelInsuranceForm() {
           >
             <FaCircle
               className={`mr-2 p-0.75 text-lg rounded-full border border-black ${
-                journeyType === tripType.id ? 'text-black' : 'text-transparent'
+                journeyType === tripType.id ? "text-black" : "text-transparent"
               }`}
             />
             {tripType.label}
@@ -142,22 +142,22 @@ export default function TravelInsuranceForm() {
       <div className="block md:flex gap-3 md:gap-3.5">
         <div className="w-full flex flex-col gap-1 mb-3 md:mb-3">
           <div className="flex items-center gap-1.5">
-            <Label htmlFor="region">Region</Label>
+            <Label htmlFor="region">Destination</Label>
             <span
               data-tooltip-id="region-tooltip"
               data-tooltip-content="This is your travel destination region, not where you're from. Select the region you're travelling to."
               className="w-4 h-4 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center cursor-pointer transition-colors shrink-0"
             >
-              <FaInfo className="text-gray-500" style={{ fontSize: '8px' }} />
+              <FaInfo className="text-gray-500" style={{ fontSize: "8px" }} />
             </span>
             <Tooltip
               id="region-tooltip"
               place="top"
               style={{
-                maxWidth: '220px',
-                fontSize: '12px',
-                lineHeight: '1.5',
-                borderRadius: '8px',
+                maxWidth: "220px",
+                fontSize: "12px",
+                lineHeight: "1.5",
+                borderRadius: "8px",
               }}
             />
           </div>
