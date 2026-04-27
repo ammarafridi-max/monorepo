@@ -35,7 +35,7 @@ export function createBlogController({ service, Blog }) {
     const scheduledAt = service.parseScheduledAt(req.body.scheduledAt);
     const faqs = service.parseFaqs(req.body.faqs) || [];
 
-    service.validateBlogFields(req, { requireCoverImage: true, requireTitle: true, requireContent: true });
+    service.validateBlogFields(req, { requireCoverImage: requestedStatus !== 'draft', requireTitle: true, requireContent: true });
     if (requestedStatus === 'scheduled' && !scheduledAt) return next(new AppError('Scheduled date/time is required when status is scheduled', 400));
     if (requestedStatus === 'scheduled' && scheduledAt <= new Date()) return next(new AppError('Scheduled date/time must be in the future', 400));
 
