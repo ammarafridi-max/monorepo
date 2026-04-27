@@ -1,0 +1,30 @@
+name: Travl Daily Blog Draft
+
+on:
+  schedule:
+    - cron: '0 5 * * *' # 9AM UAE (UTC+4) = 5AM UTC
+  workflow_dispatch: # allow manual trigger from GitHub UI
+
+jobs:
+  generate-blog-draft:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: scripts
+
+      - name: Generate blog draft
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TRAVL_ADMIN_EMAIL: ${{ secrets.TRAVL_ADMIN_EMAIL }}
+          TRAVL_ADMIN_PASSWORD: ${{ secrets.TRAVL_ADMIN_PASSWORD }}
+        run: node generate-blog-draft.mjs
+        working-directory: scripts
