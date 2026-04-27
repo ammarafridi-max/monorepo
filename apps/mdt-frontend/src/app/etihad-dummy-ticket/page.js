@@ -17,6 +17,11 @@ import {
   FaMoneyBillWave,
   FaUserTie,
 } from 'react-icons/fa';
+import {
+  MdOutlineAirplaneTicket,
+  MdOutlineHealthAndSafety,
+  MdOutlineHotel,
+} from 'react-icons/md';
 import Hero from '@travel-suite/frontend-shared/components/v1/sections/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/v1/forms/AllForms';
 
@@ -82,6 +87,26 @@ export const pageData = {
     about: {
       title: 'About Us',
       text: "We've been issuing verified flight reservations for visa applications since 2008 — over 16 years of specialist experience. Every year, we issue 10,000+ dummy tickets to UAE residents and GCC citizens applying for Schengen, US, UK, Canadian, and other visas. Our Etihad reservations include a live PNR verifiable on Etihad's Manage My Booking system — the same system used by VFS, BLS, and consular officers to confirm reservations. Our documentation is accepted by embassies worldwide.",
+      services: [
+        {
+          icon: <MdOutlineAirplaneTicket />,
+          title: 'Etihad Dummy Tickets',
+          description:
+            "Genuine Etihad Airways flight reservations with a live PNR verifiable on Etihad's Manage My Booking system. Accepted by VFS, BLS, and embassies worldwide. From AED 49.",
+        },
+        {
+          icon: <MdOutlineHealthAndSafety />,
+          title: 'Travel Insurance',
+          description:
+            "AXA-backed travel insurance for UAE residents. Schengen-compliant plans available if you're applying for a European visa alongside your Etihad dummy ticket.",
+        },
+        {
+          icon: <MdOutlineHotel />,
+          title: 'Hotel Reservations',
+          description:
+            'We provide hotel reservations by email, formatted to meet embassy requirements. Available alongside your Etihad dummy ticket to complete your visa file.',
+        },
+      ],
     },
     benefits: {
       title: 'Why Choose My Dummy Ticket for Etihad Flight Proof?',
@@ -179,6 +204,7 @@ export default function Page() {
         <About
           title={pageData.sections.about.title}
           text={pageData.sections.about.text}
+          services={pageData.sections.about.services}
         />
       </Suspense>
       <Suspense fallback={null}>

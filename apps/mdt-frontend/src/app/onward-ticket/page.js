@@ -15,6 +15,11 @@ import {
   HiOutlineClock,
   HiOutlineCurrencyDollar,
 } from 'react-icons/hi';
+import {
+  MdOutlineAirplaneTicket,
+  MdOutlineHealthAndSafety,
+  MdOutlineHotel,
+} from 'react-icons/md';
 import Hero from '@travel-suite/frontend-shared/components/v1/sections/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/v1/forms/AllForms';
 
@@ -107,7 +112,26 @@ export const pageData = {
     about: {
       title: 'About Us',
       text: "We've been issuing verified flight reservations since 2008 — over 16 years of specialist experience in travel documentation. Every year, we issue 10,000+ onward tickets to travelers who need proof of outbound travel for immigration, airline check-in, or visa requirements. Our reservations follow accepted airline formats, include a valid PNR, and are accepted by airlines and immigration officers worldwide.",
-      keyword,
+      services: [
+        {
+          icon: <MdOutlineAirplaneTicket />,
+          title: 'Onward Tickets',
+          description:
+            'Verifiable flight reservations with a real PNR — accepted by airlines, immigration officers, and border control worldwide. Delivered instantly and valid long enough to clear your checks.',
+        },
+        {
+          icon: <MdOutlineHealthAndSafety />,
+          title: 'Travel Insurance',
+          description:
+            'AXA-backed travel insurance for UAE residents. Covers medical emergencies, trip cancellations, and baggage loss — a practical addition to your onward ticket.',
+        },
+        {
+          icon: <MdOutlineHotel />,
+          title: 'Hotel Reservations',
+          description:
+            'We provide hotel reservations by email, formatted to meet embassy and immigration requirements — available whenever you need proof of accommodation.',
+        },
+      ],
     },
     benefits: {
       title: 'Why Book Your Onward Ticket With Us?',
@@ -207,6 +231,7 @@ export default function Page() {
         <About
           title={pageData.sections.about.title}
           text={pageData.sections.about.text}
+          services={pageData.sections.about.services}
         />
       </Suspense>
       <Suspense fallback={null}>

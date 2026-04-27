@@ -1,3 +1,4 @@
+import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineHotel } from 'react-icons/md';
 import AllForms from '@travel-suite/frontend-shared/components/v1/forms/AllForms';
 import Container from '@travel-suite/frontend-shared/components/v1/layout/Container';
 import FAQAccordion from '@travel-suite/frontend-shared/components/v1/ui/FAQAccordion';
@@ -114,6 +115,26 @@ export const pageData = {
     about: {
       title: 'About Our Travel Insurance',
       text: 'We provide travel insurance for UAE residents and citizens with instant policy delivery, genuine coverage, and pricing that makes sense. Every plan we issue meets embassy requirements and gives you real protection throughout your trip.',
+      services: [
+        {
+          icon: <MdOutlineHealthAndSafety />,
+          title: 'Travel Insurance',
+          description:
+            'Genuine AXA-backed travel insurance for UAE residents. Every plan meets embassy requirements, covers medical emergencies and trip cancellations, and is delivered instantly after payment.',
+        },
+        {
+          icon: <MdOutlineAirplaneTicket />,
+          title: 'Dummy Tickets',
+          description:
+            'Verifiable flight reservations with a real PNR code — accepted by VFS, BLS, and embassies. Often needed alongside insurance for a complete Schengen or UK visa application. From AED 49.',
+        },
+        {
+          icon: <MdOutlineHotel />,
+          title: 'Hotel Reservations',
+          description:
+            'Need proof of accommodation for your visa? We provide hotel reservations by email, formatted to meet embassy requirements and ready to submit with your application.',
+        },
+      ],
     },
   },
 };
@@ -158,6 +179,7 @@ export default function Page() {
       <About
         title={pageData.sections.about.title}
         text={pageData.sections.about.text}
+        services={pageData.sections.about.services}
       />
       <PrimarySection className="py-14 md:py-18 lg:py-24 bg-gray-50/70">
         <Container>

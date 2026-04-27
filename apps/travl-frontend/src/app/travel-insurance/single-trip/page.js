@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineHotel } from 'react-icons/md';
 import AllForms from '@travel-suite/frontend-shared/components/v1/forms/AllForms';
 import Container from '@travel-suite/frontend-shared/components/v1/layout/Container';
 import FAQAccordion from '@travel-suite/frontend-shared/components/v1/ui/FAQAccordion';
@@ -109,6 +110,26 @@ export const pageData = {
     about: {
       title: 'About Our Single Trip Insurance',
       text: 'We provide single trip travel insurance for UAE residents through AXA. Each policy covers one journey between your chosen travel dates, with no commitment beyond that trip. Whether you need coverage for a visa application or want to travel with proper protection in place, you can get your policy entirely online and receive it within minutes of payment.',
+      services: [
+        {
+          icon: <MdOutlineHealthAndSafety />,
+          title: 'Single Trip Insurance',
+          description:
+            'AXA-issued coverage for one journey between your chosen travel dates. Schengen-compliant, no annual commitment — pay only for the days you travel.',
+        },
+        {
+          icon: <MdOutlineAirplaneTicket />,
+          title: 'Dummy Tickets',
+          description:
+            'Verifiable flight reservations with a real PNR code. Accepted by VFS, BLS, and embassies — the ideal companion to your single trip insurance for a visa application. From AED 49.',
+        },
+        {
+          icon: <MdOutlineHotel />,
+          title: 'Hotel Reservations',
+          description:
+            'We provide hotel reservations by email, formatted to meet embassy requirements. A quick and easy way to complete your visa documentation.',
+        },
+      ],
     },
   },
 };
@@ -153,6 +174,7 @@ export default function Page() {
       <About
         title={pageData.sections.about.title}
         text={pageData.sections.about.text}
+        services={pageData.sections.about.services}
       />
       <PrimarySection className="py-14 md:py-18 lg:py-24 bg-gray-50/70">
         <Container>

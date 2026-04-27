@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineHotel } from 'react-icons/md';
 import AllForms from '@travel-suite/frontend-shared/components/v1/forms/AllForms';
 import Container from '@travel-suite/frontend-shared/components/v1/layout/Container';
 import FAQAccordion from '@travel-suite/frontend-shared/components/v1/ui/FAQAccordion';
@@ -115,6 +116,26 @@ export const pageData = {
     about: {
       title: 'About Our Annual Multi-Trip Plans',
       text: 'We provide annual multi-trip travel insurance for UAE residents who travel frequently. One policy from AXA covers all your international trips throughout the year, with no need to arrange new coverage before each departure. Each trip is covered from the moment you leave the UAE until you return, up to the maximum trip duration in your plan.',
+      services: [
+        {
+          icon: <MdOutlineHealthAndSafety />,
+          title: 'Annual Multi-Trip Insurance',
+          description:
+            'One AXA policy covering all your international trips for 12 months. Schengen-compliant for every European trip, from AED 245 — the smart choice for frequent travellers.',
+        },
+        {
+          icon: <MdOutlineAirplaneTicket />,
+          title: 'Dummy Tickets',
+          description:
+            'Verifiable flight reservations with a real PNR code. Useful for individual visa applications throughout the year, accepted by VFS, BLS, and embassies. From AED 49.',
+        },
+        {
+          icon: <MdOutlineHotel />,
+          title: 'Hotel Reservations',
+          description:
+            'We provide hotel reservations by email, formatted to meet embassy requirements — available whenever you need proof of accommodation for a visa application.',
+        },
+      ],
     },
   },
 };
@@ -166,6 +187,7 @@ export default function Page() {
       <About
         title={pageData.sections.about.title}
         text={pageData.sections.about.text}
+        services={pageData.sections.about.services}
       />
       <PrimarySection className="py-14 md:py-18 lg:py-24 bg-gray-50/70">
         <Container>

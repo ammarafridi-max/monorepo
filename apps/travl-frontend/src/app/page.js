@@ -18,6 +18,7 @@ import {
 } from '@/lib/schema';
 import { homepageFaqs } from '@/data/faqs';
 import { Ticket, Building2, ShieldCheck } from 'lucide-react';
+import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineHotel } from 'react-icons/md';
 
 const testimonials = [
   {
@@ -81,6 +82,26 @@ const pageData = {
     },
     about: {
       title: 'About Us',
+      services: [
+        {
+          icon: <MdOutlineHealthAndSafety />,
+          title: 'Travel Insurance',
+          description:
+            'Genuine AXA-backed travel insurance for UAE residents. Schengen-compliant plans from AED 30, worldwide coverage from AED 70, and annual multi-trip plans from AED 245. Every policy is delivered instantly after payment.',
+        },
+        {
+          icon: <MdOutlineAirplaneTicket />,
+          title: 'Dummy Tickets',
+          description:
+            'Verifiable flight reservations with a real PNR code — accepted by VFS, BLS, and embassies worldwide. The proof of onward travel required for Schengen, UK, US, and other visa applications. From AED 49.',
+        },
+        {
+          icon: <MdOutlineHotel />,
+          title: 'Hotel Reservations',
+          description:
+            'Need proof of accommodation for your visa? We provide hotel reservations by email, formatted to meet embassy requirements and ready to submit with your application.',
+        },
+      ],
     },
     benefits: {
       title: 'Why UAE Residents Choose Travl',
@@ -171,7 +192,7 @@ export default function HomePage() {
         title={pageData.sections.process.title}
         subtitle={pageData.sections.process.subtitle}
       />
-      <About title={pageData.sections.about.title} />
+      <About title={pageData.sections.about.title} services={pageData.sections.about.services} />
       <Benefits
         title={pageData.sections.benefits.title}
         subtitle={pageData.sections.benefits.subtitle}

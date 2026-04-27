@@ -18,6 +18,11 @@ import {
 } from '@/lib/schema';
 import { faqArray, formatFaqArray } from '@/data/faqs';
 import { Check, Clock, DollarSign } from 'lucide-react';
+import {
+  MdOutlineAirplaneTicket,
+  MdOutlineHealthAndSafety,
+  MdOutlineHotel,
+} from 'react-icons/md';
 
 const keyword = 'dummy ticket';
 
@@ -83,7 +88,26 @@ const pageData = {
     },
     about: {
       title: 'About Us',
-      keyword,
+      services: [
+        {
+          icon: <MdOutlineAirplaneTicket />,
+          title: 'Dummy Tickets',
+          description:
+            'Genuine flight reservations with a verifiable PNR code, issued through official airline systems. Accepted by VFS, BLS, and embassies worldwide — perfect proof of onward travel for your visa application.',
+        },
+        {
+          icon: <MdOutlineHotel />,
+          title: 'Hotel Reservations',
+          description:
+            'Need proof of accommodation for your visa application? We provide hotel reservations by email, formatted to meet embassy requirements. Just reach out and we\'ll have it ready for you quickly.',
+        },
+        {
+          icon: <MdOutlineHealthAndSafety />,
+          title: 'Travel Insurance',
+          description:
+            'Schengen-compliant travel insurance meeting the required EUR 30,000 medical coverage. Genuine AXA-backed policies issued instantly — bundled or standalone alongside your dummy ticket.',
+        },
+      ],
     },
     benefits: {
       title: 'Why Choose My Dummy Ticket?',
@@ -176,7 +200,7 @@ export default function HomePage() {
       />
       <About
         title={pageData.sections.about.title}
-        keyword={pageData.sections.about.keyword}
+        services={pageData.sections.about.services}
       />
       <Benefits
         title={pageData.sections.benefits.title}

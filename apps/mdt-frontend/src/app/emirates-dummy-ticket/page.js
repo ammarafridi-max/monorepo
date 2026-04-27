@@ -17,6 +17,11 @@ import {
   FaMoneyBillWave,
   FaSearch,
 } from 'react-icons/fa';
+import {
+  MdOutlineAirplaneTicket,
+  MdOutlineHealthAndSafety,
+  MdOutlineHotel,
+} from 'react-icons/md';
 import Hero from '@travel-suite/frontend-shared/components/v1/sections/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/v1/forms/AllForms';
 
@@ -84,7 +89,26 @@ export const pageData = {
     about: {
       title: 'About Us',
       text: 'We are a licensed travel agency based in Dubai, UAE. We offer air tickets, hotel bookings, travel insurance, flight and hotel reservations, airport transfers, tours, and holiday packages to thousands of satisfied customers annually. Our documentation is accepted by VFS, BLS, and embassies.',
-      keyword,
+      services: [
+        {
+          icon: <MdOutlineAirplaneTicket />,
+          title: 'Emirates Dummy Tickets',
+          description:
+            'Genuine Emirates flight reservations with a verifiable PNR, accepted by VFS, BLS, and embassies worldwide. Issued through official airline systems and delivered from AED 49.',
+        },
+        {
+          icon: <MdOutlineHealthAndSafety />,
+          title: 'Travel Insurance',
+          description:
+            'AXA-backed travel insurance for UAE residents. Schengen-compliant plans available if you\'re applying for a European visa alongside your Emirates dummy ticket.',
+        },
+        {
+          icon: <MdOutlineHotel />,
+          title: 'Hotel Reservations',
+          description:
+            'We provide hotel reservations by email, formatted to meet embassy requirements. Available alongside your Emirates dummy ticket to complete your visa application.',
+        },
+      ],
     },
     benefits: {
       title: 'Why Choose Us To Buy Emirates Dummy Tickets?',
@@ -172,7 +196,7 @@ export default function Page() {
         />
       </Suspense>
       <Suspense fallback={null}>
-        <About title={pageData.sections.about.title} keyword={pageData.sections.about.keyword} />
+        <About title={pageData.sections.about.title} services={pageData.sections.about.services} />
       </Suspense>
       <Suspense fallback={null}>
         <Benefits

@@ -7,6 +7,11 @@ import SectionTitle from '@travel-suite/frontend-shared/components/v1/layout/Sec
 import About from '@travel-suite/frontend-shared/components/v1/sections/About';
 import Hero from '@travel-suite/frontend-shared/components/v1/sections/Hero';
 import Process from '@travel-suite/frontend-shared/components/v1/sections/Process';
+import {
+  MdOutlineAirplaneTicket,
+  MdOutlineHealthAndSafety,
+  MdOutlineHotel,
+} from 'react-icons/md';
 import { buildMetadata } from '@/lib/schema';
 import {
   buildFAQPage,
@@ -120,6 +125,26 @@ export const pageData = {
     about: {
       title: 'About Our Services',
       text: 'We provide Schengen travel insurance specifically for UAE residents applying for European Schengen visas. Every policy meets official Schengen visa insurance requirements — including mandatory EUR 30,000 medical coverage — and is accepted by embassies, VFS Global, and BLS International centers. Buy your policy online, receive it instantly, and submit your visa application with confidence.',
+      services: [
+        {
+          icon: <MdOutlineHealthAndSafety />,
+          title: 'Schengen Travel Insurance',
+          description:
+            'Embassy-compliant Schengen travel insurance with the mandatory EUR 30,000 medical coverage. Issued by AXA, accepted by VFS Global and BLS International, and delivered instantly.',
+        },
+        {
+          icon: <MdOutlineAirplaneTicket />,
+          title: 'Dummy Tickets for Schengen Visa',
+          description:
+            'Verifiable flight reservations with a real PNR code — the proof of onward travel required alongside insurance for a Schengen visa application. From AED 49.',
+        },
+        {
+          icon: <MdOutlineHotel />,
+          title: 'Hotel Reservations',
+          description:
+            'Proof of accommodation is a Schengen visa requirement. We provide hotel reservations by email, formatted to meet embassy and consulate standards.',
+        },
+      ],
     },
   },
 };
@@ -171,6 +196,7 @@ export default function Page() {
       <About
         title={pageData.sections.about.title}
         text={pageData.sections.about.text}
+        services={pageData.sections.about.services}
       />
       <PrimarySection className="py-14 md:py-18 lg:py-24 bg-gray-50/70">
         <Container>

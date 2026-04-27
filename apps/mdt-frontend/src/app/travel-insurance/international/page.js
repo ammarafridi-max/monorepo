@@ -7,6 +7,11 @@ import SectionTitle from '@travel-suite/frontend-shared/components/v1/layout/Sec
 import About from '@travel-suite/frontend-shared/components/v1/sections/About';
 import Hero from '@travel-suite/frontend-shared/components/v1/sections/Hero';
 import Process from '@travel-suite/frontend-shared/components/v1/sections/Process';
+import {
+  MdOutlineAirplaneTicket,
+  MdOutlineHealthAndSafety,
+  MdOutlineHotel,
+} from 'react-icons/md';
 import { buildMetadata } from '@/lib/schema';
 import {
   buildFAQPage,
@@ -115,6 +120,26 @@ export const pageData = {
     about: {
       title: 'About Our International Travel Insurance',
       text: 'We provide worldwide travel insurance for UAE residents through AXA. Our international health insurance plans cover emergency medical expenses, hospital treatment, and repatriation for trips across the globe. Plans start from AED 70 with medical coverage beginning at EUR 80,000, and your policy is delivered instantly after payment.',
+      services: [
+        {
+          icon: <MdOutlineHealthAndSafety />,
+          title: 'International Travel Insurance',
+          description:
+            'Worldwide AXA coverage from AED 70 with medical cover from EUR 80,000. Includes emergency treatment, repatriation, trip cancellations, and baggage loss — all delivered instantly.',
+        },
+        {
+          icon: <MdOutlineAirplaneTicket />,
+          title: 'Dummy Tickets',
+          description:
+            'Verifiable flight reservations with a real PNR, accepted by embassies and visa centres worldwide. Often needed together with travel insurance for international visa applications.',
+        },
+        {
+          icon: <MdOutlineHotel />,
+          title: 'Hotel Reservations',
+          description:
+            'We provide hotel reservations by email, formatted to meet embassy requirements. A quick way to complete your proof of accommodation for any visa application.',
+        },
+      ],
     },
   },
 };
@@ -166,6 +191,7 @@ export default function Page() {
       <About
         title={pageData.sections.about.title}
         text={pageData.sections.about.text}
+        services={pageData.sections.about.services}
       />
       <PrimarySection className="py-14 md:py-18 lg:py-24 bg-gray-50/70">
         <Container>

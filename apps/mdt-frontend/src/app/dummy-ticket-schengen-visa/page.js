@@ -17,6 +17,11 @@ import {
   FaMoneyBillWave,
   FaShieldAlt,
 } from 'react-icons/fa';
+import {
+  MdOutlineAirplaneTicket,
+  MdOutlineHealthAndSafety,
+  MdOutlineHotel,
+} from 'react-icons/md';
 import Hero from '@travel-suite/frontend-shared/components/v1/sections/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/v1/forms/AllForms';
 
@@ -117,7 +122,26 @@ export const pageData = {
     about: {
       title: 'About Us',
       text: '',
-      keyword,
+      services: [
+        {
+          icon: <MdOutlineAirplaneTicket />,
+          title: 'Dummy Tickets for Schengen Visa',
+          description:
+            'Genuine flight reservations with a verifiable PNR, issued through official airline systems. Accepted by VFS Global, BLS International, and Schengen embassies. From AED 49.',
+        },
+        {
+          icon: <MdOutlineHealthAndSafety />,
+          title: 'Schengen Travel Insurance',
+          description:
+            'Schengen visa applications also require EUR 30,000 medical coverage. We issue AXA-backed, embassy-compliant travel insurance instantly — bundle it with your dummy ticket.',
+        },
+        {
+          icon: <MdOutlineHotel />,
+          title: 'Hotel Reservations',
+          description:
+            'Need proof of accommodation too? We provide hotel reservations by email, formatted to meet Schengen embassy requirements.',
+        },
+      ],
     },
     benefits: {
       title: 'Benefits of Choosing Our Dummy Tickets for Your Schengen Visa',
@@ -186,7 +210,7 @@ export default function Page() {
       </Suspense>
 
       <Suspense fallback={null}>
-        <About title={pageData.sections.about.title} keyword={pageData.sections.about.keyword} />
+        <About title={pageData.sections.about.title} services={pageData.sections.about.services} />
       </Suspense>
 
       <Suspense fallback={null}>

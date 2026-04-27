@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineHotel } from 'react-icons/md';
 import AllForms from '@travel-suite/frontend-shared/components/v1/forms/AllForms';
 import Container from '@travel-suite/frontend-shared/components/v1/layout/Container';
 import FAQAccordion from '@travel-suite/frontend-shared/components/v1/ui/FAQAccordion';
@@ -114,6 +115,26 @@ export const pageData = {
     about: {
       title: 'About Our Travel Medical Insurance',
       text: 'We provide travel medical insurance for UAE residents and citizens through AXA, one of the most recognised insurers in the world. Every plan is a genuine, fully underwritten policy. Whether you need cover for a visa application or want real protection during your trip, your policy is issued online and delivered instantly after payment.',
+      services: [
+        {
+          icon: <MdOutlineHealthAndSafety />,
+          title: 'Travel Medical Insurance',
+          description:
+            'AXA-backed medical cover for UAE residents travelling abroad. Covers emergency treatment, hospitalisation, repatriation, and COVID-19. Delivered instantly after payment.',
+        },
+        {
+          icon: <MdOutlineAirplaneTicket />,
+          title: 'Dummy Tickets',
+          description:
+            'Verifiable flight reservations with a real PNR, accepted by VFS, BLS, and embassies. Frequently required alongside travel medical insurance for visa applications. From AED 49.',
+        },
+        {
+          icon: <MdOutlineHotel />,
+          title: 'Hotel Reservations',
+          description:
+            'We provide hotel reservations by email, formatted to embassy standards. Quick to arrange and ready to include in your visa submission.',
+        },
+      ],
     },
   },
 };
@@ -158,6 +179,7 @@ export default function Page() {
       <About
         title={pageData.sections.about.title}
         text={pageData.sections.about.text}
+        services={pageData.sections.about.services}
       />
       <PrimarySection className="py-14 md:py-18 lg:py-24 bg-gray-50/70">
         <Container>

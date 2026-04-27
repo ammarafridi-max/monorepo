@@ -18,6 +18,11 @@ import {
   FaMoneyBillWave,
   FaShieldAlt,
 } from 'react-icons/fa';
+import {
+  MdOutlineAirplaneTicket,
+  MdOutlineHealthAndSafety,
+  MdOutlineHotel,
+} from 'react-icons/md';
 import Hero from '@travel-suite/frontend-shared/components/v1/sections/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/v1/forms/AllForms';
 
@@ -112,7 +117,26 @@ export const pageData = {
     about: {
       title: 'About Us',
       text: 'We are an international travel services provider offering verifiable flight reservations and related travel documentation for travelers worldwide. Our services are used by thousands of customers each year for onward travel, immigration checks, and airline requirements. All reservations follow accepted airline formats and include a valid PNR code for verification',
-      keyword,
+      services: [
+        {
+          icon: <MdOutlineAirplaneTicket />,
+          title: 'Dummy Tickets for US Visa',
+          description:
+            'Verifiable flight reservations with a real PNR code, in the format required for a US B1/B2 visa application. Issued through official airline systems and delivered instantly.',
+        },
+        {
+          icon: <MdOutlineHealthAndSafety />,
+          title: 'Travel Insurance',
+          description:
+            'Genuine AXA-backed travel insurance for UAE residents. Covers medical emergencies, trip cancellations, and baggage loss — delivered instantly after payment.',
+        },
+        {
+          icon: <MdOutlineHotel />,
+          title: 'Hotel Reservations',
+          description:
+            'We provide hotel reservations by email, formatted to meet embassy requirements. A practical solution when your US visa application needs proof of accommodation.',
+        },
+      ],
     },
     benefits: {
       title: 'Why Choose My Dummy Ticket for Your US Visa?',
@@ -184,7 +208,7 @@ export default function Page() {
         />
       </Suspense>
       <Suspense fallback={null}>
-        <About title={pageData.sections.about.title} keyword={pageData.sections.about.keyword} />
+        <About title={pageData.sections.about.title} services={pageData.sections.about.services} />
       </Suspense>
       <Suspense fallback={null}>
         <Benefits
