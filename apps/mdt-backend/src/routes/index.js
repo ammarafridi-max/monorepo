@@ -13,6 +13,10 @@ import { createNotificationsService } from "@travel-suite/notifications";
 import {
   createStripeClient,
   createStripeWebhookHandler,
+  createPaymentService,
+  createPaymentsController,
+  createPaymentsAdminRouter,
+  PaymentLinkSchema,
 } from "@travel-suite/payments";
 import { db } from "../utils/db.js";
 import { wis } from "../utils/wis.js";
@@ -125,12 +129,42 @@ router.use("/pricing", pricingRouter);
 // -- Affiliates ----------------------------------------------------------------
 router.use("/affiliates", createAffiliatesRouter({ db, auth, TicketModel }));
 
+// -- Payments (admin: revenue dashboard + custom payment links) ---------------
+const paymentService = createPaymentService({ stripe, db, PaymentLinkSchema });
+const paymentsController = createPaymentsController({ service: paymentService });
+router.use("/payments", createPaymentsAdminRouter({ controller: paymentsController, auth }));
+
+async function handlePaymentLinkSuccess(session) {
+  const updated = await paymentService.markPaymentLinkPaid({ session });
+  if (!updated) {
+    logger.warn("[payment-link] No matching record for session", {
+      sessionId: session.id,
+      paymentLink: session.payment_link,
+    });
+    return;
+  }
+  await notifications.sendPaymentLinkPaidToAdmin({
+    amount: updated.amount,
+    currency: updated.currency,
+    payerName: updated.paidByName || session.customer_details?.name,
+    payerEmail: updated.paidByEmail || session.customer_details?.email,
+    description: updated.description,
+    createdByName: updated.createdBy?.name,
+    paymentLinkId: updated.stripePaymentLinkId,
+    sessionId: updated.sessionId,
+    paidAt: updated.paidAt,
+  });
+}
+
 // -- Stripe webhook handler (exported for mounting in app.js before JSON middleware) --
 export const stripeWebhookHandler = createStripeWebhookHandler({
   stripe,
   webhookSecret: config.stripe.webhookSecret,
   db,
-  handlers: { ticket: handleStripeSuccess },
+  handlers: {
+    ticket: handleStripeSuccess,
+    "payment-link": handlePaymentLinkSuccess,
+  },
 });
 
 // -- Users (public-facing accounts) -------------------------------------------
