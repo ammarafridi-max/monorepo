@@ -2,6 +2,7 @@ import AllForms from '@travel-suite/frontend-shared/components/v1/forms/AllForms
 import Hero from '@travel-suite/frontend-shared/components/v1/sections/Hero';
 import Process from '@travel-suite/frontend-shared/components/v1/sections/Process';
 import About from '@travel-suite/frontend-shared/components/v1/sections/About';
+import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineLuggage } from 'react-icons/md';
 import { buildMetadata } from '@/lib/schema';
 import {
   buildGraph,
@@ -32,6 +33,23 @@ const pageData = {
     },
     about: {
       title: 'About us',
+      services: [
+        {
+          icon: <MdOutlineHealthAndSafety />,
+          title: "Travel Insurance",
+          description: "Genuine AXA-backed travel insurance meeting Schengen embassy requirements. Covers emergency medical treatment, trip cancellations, and baggage loss. Issued and delivered instantly.",
+        },
+        {
+          icon: <MdOutlineAirplaneTicket />,
+          title: "Dummy Tickets",
+          description: "Verifiable flight reservations with a real PNR code — often required alongside insurance for a Schengen visa application. Accepted by embassies and visa centres. From USD 13.",
+        },
+        {
+          icon: <MdOutlineLuggage />,
+          title: "Onward Tickets",
+          description: "Proof of onward travel for immigration and airline check-in. Verifiable PNR, accepted airline format, instant delivery.",
+        },
+      ],
     },
   },
 };
@@ -72,7 +90,10 @@ export default function Page() {
         title={pageData.sections.process.title}
         subtitle={pageData.sections.process.subtitle}
       />
-      <About title={pageData.sections.about.title} />
+      <About
+        title={pageData.sections.about.title}
+        services={pageData.sections.about.services}
+      />
     </>
   );
 }

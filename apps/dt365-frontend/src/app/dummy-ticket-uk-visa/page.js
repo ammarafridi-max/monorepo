@@ -17,6 +17,7 @@ import {
   HiOutlineClock,
   HiOutlineCalendarDays,
 } from 'react-icons/hi2';
+import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineLuggage } from 'react-icons/md';
 import Hero from '@travel-suite/frontend-shared/components/v1/sections/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/v1/forms/AllForms';
 
@@ -108,6 +109,23 @@ const pageData = {
     about: {
       title: 'About Us',
       text: 'DummyTicket365 is an international travel documentation service supporting visa applicants worldwide. We provide visa-compliant travel documents that meet immigration expectations without requiring irreversible travel purchases. Our services are used for UK, Schengen, US, Canadian, and other visa applications.',
+      services: [
+        {
+          icon: <MdOutlineAirplaneTicket />,
+          title: "Dummy Ticket for UK Visa",
+          description: "Verifiable flight reservation with a real PNR, formatted to meet UK visa requirements. Accepted by UKVI and visa centres. Instant delivery from USD 13.",
+        },
+        {
+          icon: <MdOutlineLuggage />,
+          title: "Onward Tickets",
+          description: "Proof of onward travel for immigration officers or airline check-in. Verifiable PNR, accepted airline format, and instant delivery — without a real booking commitment.",
+        },
+        {
+          icon: <MdOutlineHealthAndSafety />,
+          title: "Travel Insurance",
+          description: "Genuine AXA-backed travel insurance for visa applicants and travellers. Schengen-compliant plans available if your itinerary includes European destinations.",
+        },
+      ],
     },
     benefits: {
       title: 'Benefits of Our Dummy Ticket for UK Visa',
@@ -184,6 +202,7 @@ export default function Page() {
         <About
           title={pageData.sections.about.title}
           text={pageData.sections.about.text}
+          services={pageData.sections.about.services}
         />
       </Suspense>
 

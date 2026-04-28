@@ -109,6 +109,10 @@ export default function Page() {
         title={pageData.sections.hero.title}
         subtitle={pageData.sections.hero.subtitle}
         form={pageData.sections.hero.form}
+        breadcrumbPaths={[
+          { label: 'Home', path: '/' },
+          { label: 'Flight Itinerary', path: '/flight-itinerary' },
+        ]}
       />
       <Suspense fallback={null}>
         <Process

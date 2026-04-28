@@ -17,6 +17,7 @@ import {
   HiOutlineClock,
   HiOutlineCalendarDays,
 } from 'react-icons/hi2';
+import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineLuggage } from 'react-icons/md';
 import Hero from '@travel-suite/frontend-shared/components/v1/sections/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/v1/forms/AllForms';
 
@@ -109,6 +110,23 @@ const pageData = {
     about: {
       title: 'About DummyTicket365 Services',
       text: 'DummyTicket365 is an international travel documentation service supporting visa applicants worldwide. We provide visa-compliant travel documents that meet immigration requirements without forcing applicants to make irreversible travel purchases. Our services are used by travelers applying for Schengen, UK, US, Canadian, and other visas.',
+      services: [
+        {
+          icon: <MdOutlineAirplaneTicket />,
+          title: "Dummy Ticket for Schengen Visa",
+          description: "Verifiable flight reservation with a real PNR, issued in the format required by Schengen embassies. Accepted by VFS Global and BLS International. From USD 13.",
+        },
+        {
+          icon: <MdOutlineHealthAndSafety />,
+          title: "Schengen Travel Insurance",
+          description: "Schengen visa applications require EUR 30,000 minimum medical coverage. We issue AXA-backed, embassy-compliant insurance instantly — bundle it with your dummy ticket.",
+        },
+        {
+          icon: <MdOutlineLuggage />,
+          title: "Onward Tickets",
+          description: "Need proof of onward travel for immigration or airline check-in? Our onward tickets include a verifiable PNR and are accepted worldwide.",
+        },
+      ],
     },
     benefits: {
       title: 'Benefits of Our Dummy Ticket for Schengen Visa',
@@ -186,6 +204,7 @@ export default function Page() {
         <About
           title={pageData.sections.about.title}
           text={pageData.sections.about.text}
+          services={pageData.sections.about.services}
         />
       </Suspense>
 

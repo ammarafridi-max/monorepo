@@ -59,8 +59,9 @@ router.use(
 );
 
 // -- Affiliates ----------------------------------------------------------------
-// No TicketModel — travelshield is insurance-only; ticket stats return zeros
-router.use('/affiliates', createAffiliatesRouter({ db, auth }));
+// Insurance-only app: pass InsuranceApplicationModel (registered by createInsuranceRouter above)
+const InsuranceApplicationModel = db.model('insurance-application');
+router.use('/affiliates', createAffiliatesRouter({ db, auth, InsuranceApplicationModel }));
 
 // -- Notifications -------------------------------------------------------------
 const notifications = createNotificationsService({

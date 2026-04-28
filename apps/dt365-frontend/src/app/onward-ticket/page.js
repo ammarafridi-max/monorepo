@@ -11,6 +11,7 @@ import {
   buildWebsite,
 } from '@/lib/schema';
 import { HiCheck, HiOutlineClock, HiOutlineCurrencyDollar } from 'react-icons/hi';
+import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineLuggage } from 'react-icons/md';
 import Hero from '@travel-suite/frontend-shared/components/v1/sections/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/v1/forms/AllForms';
 
@@ -88,7 +89,23 @@ const pageData = {
     about: {
       title: 'About Us',
       text: 'We are an international travel services provider offering verifiable flight reservations and related travel documentation for travelers worldwide. Our services are used by thousands of customers each year for onward travel, immigration checks, and airline requirements. All reservations follow accepted airline formats and include a valid PNR code for verification',
-      keyword,
+      services: [
+        {
+          icon: <MdOutlineLuggage />,
+          title: "Onward Tickets",
+          description: "Verifiable flight reservations accepted by airlines and immigration officers worldwide. Includes a valid PNR, follows accepted airline formats, and is delivered instantly — without financial risk.",
+        },
+        {
+          icon: <MdOutlineAirplaneTicket />,
+          title: "Dummy Tickets",
+          description: "Verifiable dummy flight tickets for visa applications. Accepted by Schengen, UK, US, and Canadian embassies and visa centres. From USD 13.",
+        },
+        {
+          icon: <MdOutlineHealthAndSafety />,
+          title: "Travel Insurance",
+          description: "Schengen-compliant travel insurance issued by AXA. A practical addition to your travel documentation when applying for a European visa.",
+        },
+      ],
     },
     benefits: {
       title: 'Why Choose Dummy Ticket 365?',
@@ -167,7 +184,7 @@ export default function Page() {
         <About
           title={pageData.sections.about.title}
           text={pageData.sections.about.text}
-          keyword={pageData.sections.about.keyword}
+          services={pageData.sections.about.services}
         />
       </Suspense>
       <Suspense fallback={null}>

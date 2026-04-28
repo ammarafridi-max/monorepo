@@ -60,7 +60,7 @@ export default function BlogTagModal({ initial, onClose, onSave, saving }) {
             </p>
             {form.slug && (
               <p className="text-[11px] text-gray-400 mt-0.5 font-mono">
-                /blog/tag/{form.slug}
+                /blog/tags/{form.slug}
               </p>
             )}
           </div>

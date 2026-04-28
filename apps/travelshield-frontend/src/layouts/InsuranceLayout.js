@@ -35,7 +35,9 @@ export default function InsuranceLayout({ children }) {
         <StepperMobile />
       </div>
       <TripSummaryBar />
-      <main className="flex-1 pb-24">{children}</main>
+      <main className="flex-1 pb-24">
+        <div className="w-[95%] lg:w-[70%] mx-auto py-6">{children}</div>
+      </main>
       <Footer />
       <BookingFooterConditional />
     </div>

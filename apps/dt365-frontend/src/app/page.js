@@ -24,6 +24,7 @@ import {
   HiOutlineCurrencyDollar,
   HiShieldCheck,
 } from "react-icons/hi2";
+import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineLuggage } from 'react-icons/md';
 
 const keyword = "dummy ticket";
 
@@ -140,7 +141,23 @@ const pageData = {
     about: {
       title: "About Us",
       text: "We are a trusted international travel services provider offering verifiable flight reservations and essential travel documentation for travelers worldwide. Each year, thousands of customers rely on our verifiable PNR dummy ticket services to meet travel requirements, onward tickets for immigration checks, airline policies, and visa application needs. You can expect:",
-      keyword,
+      services: [
+        {
+          icon: <MdOutlineAirplaneTicket />,
+          title: "Dummy Tickets",
+          description: "Verifiable flight reservations with a real PNR code, accepted by embassies and visa centres worldwide. Used by thousands of travellers each year for Schengen, UK, US, Canadian, and other visa applications.",
+        },
+        {
+          icon: <MdOutlineLuggage />,
+          title: "Onward Tickets",
+          description: "Proof of onward travel for immigration officers and airline check-in. Verifiable PNR, accepted airline format, and instant delivery — without committing to a real booking.",
+        },
+        {
+          icon: <MdOutlineHealthAndSafety />,
+          title: "Travel Insurance",
+          description: "Schengen-compliant travel insurance meeting the mandatory EUR 30,000 medical coverage requirement. Genuine AXA-backed policies issued instantly and accepted by embassies.",
+        },
+      ],
     },
     benefits: {
       title: "Why Choose DummyTicket365 for Reliable Flight Reservations?",
@@ -239,7 +256,8 @@ export default function HomePage() {
       />
       <About
         title={pageData.sections.about.title}
-        keyword={pageData.sections.about.keyword}
+        text={pageData.sections.about.text}
+        services={pageData.sections.about.services}
       />
       <Benefits
         title={pageData.sections.benefits.title}

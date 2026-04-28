@@ -3,7 +3,7 @@
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
-import BlogForm from '@travel-suite/frontend-shared/components/v2/admin/blog/BlogForm';
+import BlogForm from '@travel-suite/frontend-shared/components/v2/admin/BlogForm';
 import { useGetBlog }    from '@travel-suite/frontend-shared/hooks/blog/useGetBlog';
 import { useUpdateBlog } from '@travel-suite/frontend-shared/hooks/blog/useUpdateBlog';
 

@@ -178,6 +178,11 @@ export default function Page() {
         title={pageData.sections.hero.title}
         subtitle={pageData.sections.hero.subtitle}
         form={pageData.sections.hero.form}
+        breadcrumbPaths={[
+          { label: 'Home', path: '/' },
+          { label: 'Travel Insurance', path: '/travel-insurance' },
+          { label: 'Annual Multi-Trip', path: '/travel-insurance/annual-multi-trip' },
+        ]}
       />
       <Process
         title={pageData.sections.process.title}
