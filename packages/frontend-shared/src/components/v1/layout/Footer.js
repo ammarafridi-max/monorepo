@@ -11,10 +11,10 @@ import {
 import Container from './Container';
 
 export default function Footer({
-  logoAlt = 'Travl',
-  email = 'info@travl.ae',
+  logoAlt,
+  email,
   disclaimer = 'Disclaimer: This service provides a flight itinerary with booking details and a verifiable PNR. It is not a paid airline ticket.',
-  copyrightName = 'TRAVL Technologies',
+  copyrightName,
 }) {
   return (
     <footer className="bg-[linear-gradient(155deg,#0b1220_0%,#0f172a_55%,#132134_100%)] text-gray-300 font-nunito">
@@ -50,8 +50,12 @@ export default function Footer({
           <FooterLink href="/terms-and-conditions">Terms & Conditions</FooterLink>
           <FaCircle className="text-[5px]" />
           <FooterLink href="/privacy-policy">Privacy Policy</FooterLink>
-          <FaCircle className="hidden md:block text-[5px]" />
-          <FooterLink href={`mailto:${email}`}>{email}</FooterLink>
+          {email && (
+            <>
+              <FaCircle className="hidden md:block text-[5px]" />
+              <FooterLink href={`mailto:${email}`}>{email}</FooterLink>
+            </>
+          )}
         </div>
 
         <p className="text-sm mt-4 text-gray-400">{disclaimer}</p>

@@ -1,6 +1,7 @@
 import { renderInsurancePaymentTemplate } from './templates/insurance-payment.js';
 import { renderTicketPaymentTemplate } from './templates/ticket-payment.js';
 import { renderTicketScheduledDeliveryTemplate } from './templates/ticket-scheduled-delivery.js';
+import { renderPaymentLinkPaidTemplate } from './templates/payment-link-paid.js';
 import { formatDate, formatToDDMMM, extractIataCode } from './helpers.js';
 
 /**
@@ -135,11 +136,46 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
     }
   }
 
+  // -- 6. Custom payment link paid (admin) -----------------------------------
+
+  async function sendPaymentLinkPaidToAdmin(data) {
+    try {
+      const currency = String(data.currency || '').toUpperCase();
+      const amountFormatted = `${currency} ${Number(data.amount || 0).toFixed(2)}`;
+      const payerName = data.payerName || 'customer';
+
+      const htmlContent = renderPaymentLinkPaidTemplate({
+        brand,
+        amountFormatted,
+        payerName,
+        payerEmail: data.payerEmail,
+        description: data.description,
+        createdByName: data.createdByName,
+        paymentLinkId: data.paymentLinkId,
+        sessionId: data.sessionId,
+        paidAt: data.paidAt ? formatDate(data.paidAt) : '',
+      });
+
+      await sendEmail({
+        email: brand.adminEmail,
+        name: brand.paymentsSenderName,
+        subject: `${amountFormatted} paid by ${payerName} using custom payment link`,
+        htmlContent,
+      });
+    } catch (err) {
+      log('[notifications] sendPaymentLinkPaidToAdmin failed', {
+        paymentLinkId: data.paymentLinkId,
+        err: err.message,
+      });
+    }
+  }
+
   return {
     sendInsuranceFormSubmission,
     sendInsurancePaymentToAdmin,
     sendTicketPaymentToAdmin,
     sendTicketScheduledDeliveryToAdmin,
     sendLaterDateDeliveryToCustomer,
+    sendPaymentLinkPaidToAdmin,
   };
 }

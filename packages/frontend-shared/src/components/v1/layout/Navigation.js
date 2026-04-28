@@ -27,11 +27,9 @@ export const defaultPages = [
     icon: <Plane size={18} />,
   },
   { name: 'Blog', links: ['/blog'], icon: <Rss size={18} /> },
-  {
-    name: 'Email Us',
-    links: ['mailto:info@travl.ae'],
-    icon: <Mail size={18} />,
-  },
+  // Note: an "Email Us" entry is intentionally NOT included in the default
+  // pages array — it would otherwise leak a brand email across all consumers.
+  // Each app should append its own { name: 'Email Us', links: [`mailto:${brandEmail}`], icon: <Mail/> }.
 ];
 
 export default function Navigation({ pages = defaultPages, logoAlt = 'Logo' }) {

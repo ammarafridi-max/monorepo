@@ -21,6 +21,8 @@ import {
   X,
   ShieldCheck,
   DollarSign,
+  TrendingUp,
+  Link2,
 } from 'lucide-react';
 
 const NAV = [
@@ -73,6 +75,18 @@ const NAV = [
   {
     section: 'Finance',
     items: [
+      {
+        label: 'Revenue',
+        href: '/admin/revenue',
+        icon: TrendingUp,
+        roles: ['admin'],
+      },
+      {
+        label: 'Payment Links',
+        href: '/admin/payment-links',
+        icon: Link2,
+        roles: ['admin', 'agent'],
+      },
       {
         label: 'Pricing',
         href: '/admin/pricing',

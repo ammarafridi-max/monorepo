@@ -1,6 +1,12 @@
 import { AlertCircle } from 'lucide-react';
 
-export default function FlightError() {
+export default function FlightError({ email }) {
+  if (!email && process.env.NODE_ENV !== 'production') {
+    console.warn(
+      '[FlightError] `email` prop is required — falling back to no email button. ' +
+        'Pass the brand-specific support email from the consuming app.',
+    );
+  }
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-6">
       <div className="flex flex-col items-center text-center gap-6 max-w-md">
@@ -14,12 +20,14 @@ export default function FlightError() {
             names and we&apos;ll help you out.
           </p>
         </div>
-        <a
-          href="mailto:info@travl.ae"
-          className="text-sm font-bold px-6 py-3 bg-primary-700 hover:bg-primary-800 text-white rounded-xl transition-colors"
-        >
-          Send email
-        </a>
+        {email && (
+          <a
+            href={`mailto:${email}`}
+            className="text-sm font-bold px-6 py-3 bg-primary-700 hover:bg-primary-800 text-white rounded-xl transition-colors"
+          >
+            Send email
+          </a>
+        )}
       </div>
     </div>
   );

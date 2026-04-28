@@ -6,7 +6,16 @@ import PrimaryLink from '../ui/PrimaryLink';
 export default function Contact({
   title = 'Contact Us Now',
   text = "Still have questions or doubts about our service? Feel free to send us an email. We'd be happy to help you out.",
+  email,
+  imageAlt = 'Contact Us',
 }) {
+  if (!email && process.env.NODE_ENV !== 'production') {
+    // Fail loudly in dev so brand emails don't silently leak.
+    console.warn(
+      '[Contact] `email` prop is required — falling back to mailto with no address. ' +
+        'Pass the brand-specific support email from the consuming app.',
+    );
+  }
   return (
     <PrimarySection id="contact" className="py-14 md:py-18 lg:py-24">
       <Container>
@@ -17,15 +26,17 @@ export default function Contact({
           <div className="relative w-full md:w-3/5 mb-6 md:mb-0">
             <SectionTitle className="mb-5">{title}</SectionTitle>
             <p className="text-[16px] md:text-[18px] text-gray-600 font-light leading-7">{text}</p>
-            <PrimaryLink size="small" href="mailto:info@travl.ae" className="mt-6">
-              Send Us An Email
-            </PrimaryLink>
+            {email && (
+              <PrimaryLink size="small" href={`mailto:${email}`} className="mt-6">
+                Send Us An Email
+              </PrimaryLink>
+            )}
           </div>
 
           <div className="relative w-full md:w-2/5">
             <img
               src="/contact-img.webp"
-              alt="Contact Travl Now"
+              alt={imageAlt}
               className="w-full h-full object-cover rounded-[16px_44px_16px_44px] shadow-lg"
             />
           </div>

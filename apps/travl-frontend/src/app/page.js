@@ -212,7 +212,7 @@ export default function HomePage() {
         title={pageData.sections.blogs.title}
         subtitle={pageData.sections.blogs.subtitle}
       />
-      <Contact />
+      <Contact email="info@travl.ae" />
     </>
   );
 }

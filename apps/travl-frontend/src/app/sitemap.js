@@ -1,32 +1,94 @@
-import { SITE_URL } from '@/lib/schema';
-import { getPublishedBlogsApi } from '@travel-suite/frontend-shared/services/apiBlog';
-import { getBlogTagsApi } from '@travel-suite/frontend-shared/services/apiBlogTags';
+import { SITE_URL } from "@/lib/schema";
+import { getPublishedBlogsApi } from "@travel-suite/frontend-shared/services/apiBlog";
+import { getBlogTagsApi } from "@travel-suite/frontend-shared/services/apiBlogTags";
 
 const staticPages = [
-  { url: '/', changeFrequency: 'weekly', priority: 1.0 },
-{ url: '/flight-itinerary', changeFrequency: 'monthly', priority: 0.9 },
-  { url: '/travel-insurance', changeFrequency: 'monthly', priority: 0.8 },
-  { url: '/travel-insurance/schengen-visa', changeFrequency: 'monthly', priority: 0.8 },
-  { url: '/travel-insurance/medical', changeFrequency: 'monthly', priority: 0.8 },
-  { url: '/travel-insurance/annual-multi-trip', changeFrequency: 'monthly', priority: 0.8 },
-  { url: '/travel-insurance/international', changeFrequency: 'monthly', priority: 0.8 },
-  { url: '/travel-insurance/single-trip', changeFrequency: 'monthly', priority: 0.8 },
-  { url: '/blog', changeFrequency: 'daily', priority: 0.8 },
-  { url: '/blog/tags', changeFrequency: 'weekly', priority: 0.6 },
-  { url: '/faq', changeFrequency: 'monthly', priority: 0.7 },
-  { url: '/terms-and-conditions', changeFrequency: 'yearly', priority: 0.3 },
-  { url: '/privacy-policy', changeFrequency: 'yearly', priority: 0.3 },
+  { url: "/", changeFrequency: "weekly", priority: 1.0, lastmod: "2026-04-28" },
+  {
+    url: "/flight-itinerary",
+    changeFrequency: "monthly",
+    priority: 0.9,
+    lastmod: "2026-04-28",
+  },
+  {
+    url: "/travel-insurance",
+    changeFrequency: "monthly",
+    priority: 0.8,
+    lastmod: "2026-04-28",
+  },
+  {
+    url: "/travel-insurance/schengen-visa",
+    changeFrequency: "monthly",
+    priority: 0.8,
+    lastmod: "2026-04-28",
+  },
+  {
+    url: "/travel-insurance/medical",
+    changeFrequency: "monthly",
+    priority: 0.8,
+    lastmod: "2026-04-28",
+  },
+  {
+    url: "/travel-insurance/annual-multi-trip",
+    changeFrequency: "monthly",
+    priority: 0.8,
+    lastmod: "2026-04-28",
+  },
+  {
+    url: "/travel-insurance/international",
+    changeFrequency: "monthly",
+    priority: 0.8,
+    lastmod: "2026-04-28",
+  },
+  {
+    url: "/travel-insurance/single-trip",
+    changeFrequency: "monthly",
+    priority: 0.8,
+    lastmod: "2026-04-28",
+  },
+  {
+    url: "/blog",
+    changeFrequency: "daily",
+    priority: 0.8,
+    lastmod: "2026-04-28",
+  },
+  {
+    url: "/blog/tags",
+    changeFrequency: "weekly",
+    priority: 0.6,
+    lastmod: "2026-04-28",
+  },
+  {
+    url: "/faq",
+    changeFrequency: "monthly",
+    priority: 0.7,
+    lastmod: "2026-04-28",
+  },
+  {
+    url: "/terms-and-conditions",
+    changeFrequency: "yearly",
+    priority: 0.3,
+    lastmod: "2026-04-28",
+  },
+  {
+    url: "/privacy-policy",
+    changeFrequency: "yearly",
+    priority: 0.3,
+    lastmod: "2026-04-28",
+  },
 ];
 
 export default async function sitemap() {
   const now = new Date().toISOString();
 
-  const staticEntries = staticPages.map(({ url, changeFrequency, priority }) => ({
-    url: `${SITE_URL}${url}`,
-    lastModified: now,
-    changeFrequency,
-    priority,
-  }));
+  const staticEntries = staticPages.map(
+    ({ url, changeFrequency, priority, lastmod }) => ({
+      url: `${SITE_URL}${url}`,
+      lastModified: lastmod,
+      changeFrequency,
+      priority,
+    }),
+  );
 
   let blogEntries = [];
   try {
@@ -37,7 +99,7 @@ export default async function sitemap() {
       .map((blog) => ({
         url: `${SITE_URL}/blog/${blog.slug}`,
         lastModified: blog.updatedAt || blog.createdAt || now,
-        changeFrequency: 'weekly',
+        changeFrequency: "weekly",
         priority: 0.7,
       }));
   } catch {
@@ -52,8 +114,8 @@ export default async function sitemap() {
       .filter((tag) => tag?.slug)
       .map((tag) => ({
         url: `${SITE_URL}/blog/tags/${tag.slug}`,
-        lastModified: now,
-        changeFrequency: 'weekly',
+        lastModified: "2026-04-28",
+        changeFrequency: "weekly",
         priority: 0.5,
       }));
   } catch {

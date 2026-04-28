@@ -9,7 +9,7 @@ import { TicketContext } from '../../contexts/TicketContext';
 import { useFlights } from '../../hooks/flights/useFlights';
 import { transformItinerary } from '../../utils/transformItinerary';
 
-export default function TicketSelectFlightsPage() {
+export default function TicketSelectFlightsPage({ supportEmail }) {
   const [maxFlights, setMaxFlights] = useState(5);
   const [expandedCardId, setExpandedCardId] = useState(null);
   const {
@@ -59,7 +59,7 @@ export default function TicketSelectFlightsPage() {
     <>
       {isLoadingFlights && Array.from({ length: 3 }).map((_, i) => <FlightSkeleton key={i} />)}
 
-      {isErrorFlights && <FlightError />}
+      {isErrorFlights && <FlightError email={supportEmail} />}
 
       {flights?.length > 0 && (
         <>

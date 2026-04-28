@@ -238,7 +238,7 @@ export default function Page() {
         />
       </Suspense>
       <Suspense fallback={null}>
-        <Contact />
+        <Contact email="info@mydummyticket.ae" />
       </Suspense>
     </>
   );
