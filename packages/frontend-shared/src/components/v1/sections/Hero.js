@@ -1,8 +1,16 @@
+import Breadcrumb from "../layout/Breadcrumb";
 import Container from "../layout/Container";
 import PrimarySection from "../layout/PrimarySection";
 import { HiCheck, HiStar } from "react-icons/hi2";
 
-export default function Hero({ title, subtitle, form, pills = [], sectionId = "form" }) {
+export default function Hero({
+  title,
+  subtitle,
+  form,
+  pills = [],
+  sectionId = "form",
+  breadcrumbPaths = [],
+}) {
   return (
     <PrimarySection
       className="relative overflow-hidden bg-[linear-gradient(160deg,#f5fbfb_0%,#eef4ff_52%,#fff9f4_100%)] pt-24 pb-14 md:pt-30 md:pb-16 lg:pt-30 lg:pb-20"
@@ -19,6 +27,10 @@ export default function Hero({ title, subtitle, form, pills = [], sectionId = "f
             <HiStar className="text-accent-500" />
             Trusted by thousands of visa applicants
           </div> */}
+
+          {breadcrumbPaths.length > 0 && (
+            <Breadcrumb paths={breadcrumbPaths} />
+          )}
 
           <h1 className="mt-4 text-[30px] md:text-[46px] leading-[1.3] font-bold font-outfit text-gray-900 mb-5">
             {title}

@@ -1,5 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
+import { HiBolt, HiOutlineCalendar, HiOutlineUser } from "react-icons/hi2";
+import Breadcrumb from "../../components/v1/layout/Breadcrumb";
 import Container from "../../components/v1/layout/Container";
 import PrimarySection from "../../components/v1/layout/PrimarySection";
 import FAQAccordion from "../../components/v1/ui/FAQAccordion";
@@ -61,30 +63,78 @@ export default function BlogPostPage({
 
             {/* Breadcrumb + title + meta */}
             <div className="mb-10">
-              <Breadcrumb paths={breadcrumbPaths} />
+              <div className="mb-4">
+                <Breadcrumb paths={breadcrumbPaths} includeSchema={false} />
+              </div>
               <h1 className="mb-4 text-2xl font-medium leading-9 lg:text-4xl lg:leading-12">
                 {blog.title}
               </h1>
-              <div className="mb-4 flex flex-wrap items-center gap-x-0 text-sm font-light text-gray-900/50">
-                {blog.updatedAt ? (
-                  <span>Updated {formatDate(blog.updatedAt)}</span>
-                ) : (
-                  <span>Published {formatDate(blog.publishedAt)}</span>
-                )}
-                <span className="mx-2">•</span>
-                <span>{blog.author?.name}</span>
-                <span className="mx-2">•</span>
-                <TagList tags={blog.tags} allBlogTags={allBlogTags} />
+              <div className="space-y-3">
+                {/* Date + author */}
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[13px] text-gray-500 md:text-sm">
+                  <span className="inline-flex items-center gap-1.5">
+                    <HiOutlineCalendar
+                      aria-hidden="true"
+                      className="text-[15px] text-gray-400"
+                    />
+                    {blog.updatedAt
+                      ? `Updated ${formatDate(blog.updatedAt)}`
+                      : `Published ${formatDate(blog.publishedAt)}`}
+                  </span>
+                  {blog.author?.name && (
+                    <span className="inline-flex items-center gap-3">
+                      <span
+                        aria-hidden="true"
+                        className="h-1 w-1 rounded-full bg-gray-300"
+                      />
+                      <span className="inline-flex items-center gap-1.5">
+                        <HiOutlineUser
+                          aria-hidden="true"
+                          className="text-[15px] text-gray-400"
+                        />
+                        {blog.author.name}
+                      </span>
+                    </span>
+                  )}
+                </div>
+
+                {/* Tag pills */}
+                <TagPills tags={blog.tags} allBlogTags={allBlogTags} />
               </div>
             </div>
 
             {/* Quick answer */}
             {blog.quickAnswer && (
-              <div className="mb-8 rounded-2xl border border-primary-100 bg-primary-50/60 p-5">
-                <p className="mb-2 text-sm font-medium uppercase tracking-[0.16em] text-primary-700">
-                  Quick Answer
-                </p>
-                <p className="text-[15px] leading-7 text-gray-700">
+              <div className="relative mb-10 overflow-hidden rounded-2xl border border-primary-100 bg-[linear-gradient(135deg,#f5fbfb_0%,#eef6ff_55%,#fff8f1_100%)] p-5 md:p-6">
+                {/* Soft decorative blob */}
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-primary-200/30 blur-3xl"
+                />
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -bottom-12 -left-8 h-24 w-24 rounded-full bg-accent-100/40 blur-3xl"
+                />
+
+                {/* Header: icon + label + hairline */}
+                <div className="relative flex items-center gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary-600 shadow-[0_6px_16px_rgba(16,24,40,0.15)]">
+                    <HiBolt
+                      aria-hidden="true"
+                      className="text-[16px] text-white"
+                    />
+                  </div>
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary-700">
+                    Quick Answer
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className="h-px flex-1 bg-linear-to-r from-primary-200/70 to-transparent"
+                  />
+                </div>
+
+                {/* Answer: full-width paragraph */}
+                <p className="relative mt-4 text-[15px] leading-7 text-gray-800 md:text-[16px]">
                   {blog.quickAnswer}
                 </p>
               </div>
@@ -167,71 +217,36 @@ function Sidebar({ recentPosts, blog, canonical }) {
   );
 }
 
-function Breadcrumb({ paths = [] }) {
-  return (
-    <nav
-      aria-label="Breadcrumb"
-      className="mb-4 text-[14px] text-gray-500 lg:text-sm"
-    >
-      <ol className="flex flex-wrap items-center gap-y-1">
-        {paths.map((item, index) => (
-          <li
-            key={`${item.label}-${index}`}
-            className="flex items-center font-light"
-          >
-            {index > 0 && <span className="mx-2 lg:mx-3">/</span>}
-            {index === paths.length - 1 ? (
-              <span aria-current="page" className="text-gray-900">
-                {item.label}
-              </span>
-            ) : (
-              <Link
-                href={item.path}
-                className="transition-colors hover:text-primary-600"
-              >
-                {item.label}
-              </Link>
-            )}
-          </li>
-        ))}
-      </ol>
-    </nav>
-  );
-}
+function TagPills({ tags, allBlogTags }) {
+  if (!Array.isArray(tags) || tags.length === 0) return null;
 
-function TagList({ tags, allBlogTags }) {
-  if (!Array.isArray(tags) || tags.length === 0) {
-    return <span>General</span>;
-  }
+  const baseClass =
+    "inline-flex items-center rounded-full border border-gray-200 bg-gray-50/60 px-3 py-1 text-[12px] font-medium text-gray-700";
 
   return (
-    <span className="flex flex-wrap items-center gap-1">
+    <div className="flex flex-wrap items-center gap-1.5">
       {tags.map((tagName, index) => {
         const tagObj = allBlogTags.find(
           (tag) =>
             String(tag.name).toLowerCase() === String(tagName).toLowerCase(),
         );
+        const slug = tagObj?.slug || tagObj?._id;
 
-        return (
-          <span
+        return slug ? (
+          <Link
             key={`${tagName}-${index}`}
-            className="inline-flex items-center gap-1"
+            href={`/blog/tags/${slug}`}
+            className={`${baseClass} transition-colors hover:border-primary-200 hover:bg-primary-100`}
           >
-            {index > 0 && <span>,</span>}
-            {tagObj ? (
-              <Link
-                href={`/blog/tags/${tagObj.slug || tagObj._id}`}
-                className="text-primary-700 hover:underline"
-              >
-                {tagName}
-              </Link>
-            ) : (
-              <span>{tagName}</span>
-            )}
+            {tagName}
+          </Link>
+        ) : (
+          <span key={`${tagName}-${index}`} className={baseClass}>
+            {tagName}
           </span>
         );
       })}
-    </span>
+    </div>
   );
 }
 
