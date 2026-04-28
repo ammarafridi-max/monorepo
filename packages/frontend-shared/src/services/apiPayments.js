@@ -47,3 +47,57 @@ export async function updatePaymentLinkActiveApi(id, active) {
     body: JSON.stringify({ active }),
   });
 }
+
+export async function updatePaymentLinkApi(id, payload) {
+  return apiFetch(`${URL}/payment-links/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function deletePaymentLinkApi(id) {
+  return apiFetch(`${URL}/payment-links/${id}`, { method: 'DELETE' });
+}
+
+// -- Products (catalog) ------------------------------------------------------
+
+export async function createProductApi(payload) {
+  return apiFetch(`${URL}/products`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function listProductsApi({ activeOnly, page = 1, limit = 50 } = {}) {
+  const params = new URLSearchParams();
+  if (activeOnly) params.set('activeOnly', 'true');
+  params.set('page', String(page));
+  params.set('limit', String(limit));
+  return apiFetch(`${URL}/products?${params.toString()}`);
+}
+
+export async function getProductApi(id) {
+  return apiFetch(`${URL}/products/${id}`);
+}
+
+export async function updateProductActiveApi(id, active) {
+  return apiFetch(`${URL}/products/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ active }),
+  });
+}
+
+export async function updateProductApi(id, payload) {
+  return apiFetch(`${URL}/products/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function deleteProductApi(id) {
+  return apiFetch(`${URL}/products/${id}`, { method: 'DELETE' });
+}

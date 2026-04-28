@@ -8,19 +8,50 @@ const PaymentLinkSchema = new mongoose.Schema(
     stripeProductId: { type: String },
     url: { type: String, required: true },
 
-    // Amount stored in major units (e.g. 49.50). Currency is lowercase ISO-4217.
+    // Total amount in major units (e.g. 150.00). For product-backed links
+    // this equals unitAmount × quantity. Currency is lowercase ISO-4217.
     amount: { type: Number, required: true, min: 0 },
     currency: { type: String, required: true, lowercase: true, trim: true },
 
     // Customer-facing name (shown on the Stripe checkout page)
     productName: { type: String, trim: true, default: '' },
 
+    // Line items the link charges for. A link can bundle multiple products
+    // (one Stripe Payment Link, multiple `line_items` under the hood).
+    //
+    // Each entry has either a `productId` (referencing a catalog Product whose
+    // Stripe Price is reused) or null `productId` for ad-hoc inline items.
+    lineItems: [
+      {
+        productId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Product',
+          default: null,
+        },
+        productName: { type: String, required: true },
+        unitAmount: { type: Number, required: true, min: 0 },
+        quantity: { type: Number, required: true, min: 1, default: 1 },
+        stripePriceId: { type: String, required: true },
+      },
+    ],
+
+    // Legacy single-product fields (kept populated when lineItems.length === 1
+    // for backward compatibility with rows created before bundling existed).
+    productId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Product',
+      default: null,
+      index: true,
+    },
+    unitAmount: { type: Number, min: 0, default: null },
+    quantity: { type: Number, min: 1, default: 1 },
+
     // Admin-facing notes (what is this link for?)
     description: { type: String, trim: true, default: '' },
 
     // Auditing
     createdBy: {
-      _id: { type: mongoose.Schema.Types.ObjectId, ref: 'AdminUser' },
+      _id: { type: mongoose.Schema.Types.ObjectId, ref: 'admin-user' },
       name: { type: String },
       email: { type: String },
     },

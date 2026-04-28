@@ -14,25 +14,25 @@
  * Idempotent — exits safely if any admin user already exists.
  */
 
-import mongoose from 'mongoose';
-import AdminUserSchema from '@travel-suite/auth/schema';
+import mongoose from "mongoose";
+import AdminUserSchema from "@travel-suite/auth/schema";
 
 const MONGO_URI = process.env.MONGO_URI;
 if (!MONGO_URI) {
-  console.error('❌  MONGO_URI is not set. Did you run with --env-file?');
+  console.error("❌  MONGO_URI is not set. Did you run with --env-file?");
   process.exit(1);
 }
 
-const NAME     = process.env.SEED_NAME     ?? 'Super Admin';
-const USERNAME = process.env.SEED_USERNAME ?? 'superadmin';
-const EMAIL    = process.env.SEED_EMAIL    ?? 'admin@example.com';
-const PASSWORD = process.env.SEED_PASSWORD ?? 'Admin1234';
+const NAME = process.env.SEED_NAME ?? "Super Admin";
+const USERNAME = process.env.SEED_USERNAME ?? "superadmin";
+const EMAIL = process.env.SEED_EMAIL ?? "admin@example.com";
+const PASSWORD = process.env.SEED_PASSWORD ?? "Admin1234";
 
 async function seed() {
   const conn = await mongoose.createConnection(MONGO_URI).asPromise();
-  console.log(`✅  Connected → ${MONGO_URI.replace(/:\/\/[^@]+@/, '://***@')}`);
+  console.log(`✅  Connected → ${MONGO_URI.replace(/:\/\/[^@]+@/, "://***@")}`);
 
-  const AdminUser = conn.model('AdminUser', AdminUserSchema);
+  const AdminUser = conn.model("admin-user", AdminUserSchema);
 
   const count = await AdminUser.countDocuments();
   if (count > 0) {
@@ -42,21 +42,28 @@ async function seed() {
   }
 
   // The AdminUserSchema pre-save hook hashes the password automatically
-  await AdminUser.create({ name: NAME, username: USERNAME, email: EMAIL, password: PASSWORD, role: 'admin', status: 'ACTIVE' });
+  await AdminUser.create({
+    name: NAME,
+    username: USERNAME,
+    email: EMAIL,
+    password: PASSWORD,
+    role: "admin",
+    status: "ACTIVE",
+  });
 
-  console.log('');
-  console.log('🎉  First admin user created!');
-  console.log('    Name     :', NAME);
-  console.log('    Username :', USERNAME);
-  console.log('    Email    :', EMAIL);
-  console.log('    Password :', PASSWORD);
-  console.log('');
-  console.log('⚠️   Change the password immediately after your first login.');
+  console.log("");
+  console.log("🎉  First admin user created!");
+  console.log("    Name     :", NAME);
+  console.log("    Username :", USERNAME);
+  console.log("    Email    :", EMAIL);
+  console.log("    Password :", PASSWORD);
+  console.log("");
+  console.log("⚠️   Change the password immediately after your first login.");
 
   await conn.close();
 }
 
 seed().catch((err) => {
-  console.error('❌  Seed failed:', err.message);
+  console.error("❌  Seed failed:", err.message);
   process.exit(1);
 });

@@ -22,7 +22,7 @@ function getOrRegisterModel(conn, name, schema) {
  * @returns {import('express').RequestHandler}
  */
 export function createStripeWebhookHandler({ stripe, webhookSecret, db, handlers = {} }) {
-  const StripeWebhookEvent = getOrRegisterModel(db, 'StripeWebhookEvent', StripeWebhookEventSchema);
+  const StripeWebhookEvent = getOrRegisterModel(db, 'stripe-webhook-event', StripeWebhookEventSchema);
 
   return async (req, res) => {
     const sig = req.headers['stripe-signature'];

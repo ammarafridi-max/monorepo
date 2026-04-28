@@ -53,7 +53,7 @@ const AdminUserSchema = new mongoose.Schema(
       index: true,
     },
   },
-  { timestamps: true, toJSON: true, collection: 'admin-users' },
+  { timestamps: true, toJSON: true },
 );
 
 AdminUserSchema.pre('save', async function () {

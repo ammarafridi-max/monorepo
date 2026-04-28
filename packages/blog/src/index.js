@@ -25,7 +25,7 @@ function getOrRegisterModel(conn, name, schema) {
  */
 export function createBlogRouter({ db, auth, imageStorage }) {
   const Blog = getOrRegisterModel(db, 'Blog', BlogSchema);
-  const BlogTag = getOrRegisterModel(db, 'BlogTag', BlogTagSchema);
+  const BlogTag = getOrRegisterModel(db, 'blog-tag', BlogTagSchema);
   const service = createBlogService({ Blog, BlogTag, imageStorage });
   const controller = createBlogController({ service, Blog });
   return createBlogRouterFromParts({ controller, auth });
@@ -40,7 +40,7 @@ export function createBlogRouter({ db, auth, imageStorage }) {
  */
 export function createBlogTagRouter({ db, auth }) {
   const Blog = getOrRegisterModel(db, 'Blog', BlogSchema);
-  const BlogTag = getOrRegisterModel(db, 'BlogTag', BlogTagSchema);
+  const BlogTag = getOrRegisterModel(db, 'blog-tag', BlogTagSchema);
   const service = createBlogTagService({ BlogTag, Blog });
   const controller = createBlogTagController({ service, BlogTag });
   return createBlogTagRouterFromParts({ controller, auth });

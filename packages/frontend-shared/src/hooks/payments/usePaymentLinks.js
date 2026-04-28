@@ -3,9 +3,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import {
   createPaymentLinkApi,
+  deletePaymentLinkApi,
   getPaymentLinkApi,
   listPaymentLinksApi,
   updatePaymentLinkActiveApi,
+  updatePaymentLinkApi,
 } from '../../services/apiPayments.js';
 
 export function usePaymentLinks({ status, page = 1, limit = 20 } = {}) {
@@ -76,4 +78,41 @@ export function useCreatePaymentLink() {
   });
 
   return { createPaymentLink, isCreatingPaymentLink };
+}
+
+export function useUpdatePaymentLink() {
+  const queryClient = useQueryClient();
+
+  const { mutate: updatePaymentLink, isPending: isUpdatingPaymentLink } = useMutation({
+    mutationFn: ({ id, ...payload }) => updatePaymentLinkApi(id, payload),
+    onSuccess: (updated) => {
+      toast.success('Payment link updated');
+      queryClient.invalidateQueries({ queryKey: ['admin-payment-links'] });
+      if (updated?._id) {
+        queryClient.invalidateQueries({ queryKey: ['admin-payment-link', updated._id] });
+      }
+    },
+    onError: (err) => {
+      toast.error(err.message || 'Failed to update payment link');
+    },
+  });
+
+  return { updatePaymentLink, isUpdatingPaymentLink };
+}
+
+export function useDeletePaymentLink() {
+  const queryClient = useQueryClient();
+
+  const { mutate: deletePaymentLink, isPending: isDeletingPaymentLink } = useMutation({
+    mutationFn: (id) => deletePaymentLinkApi(id),
+    onSuccess: () => {
+      toast.success('Payment link deleted');
+      queryClient.invalidateQueries({ queryKey: ['admin-payment-links'] });
+    },
+    onError: (err) => {
+      toast.error(err.message || 'Failed to delete payment link');
+    },
+  });
+
+  return { deletePaymentLink, isDeletingPaymentLink };
 }

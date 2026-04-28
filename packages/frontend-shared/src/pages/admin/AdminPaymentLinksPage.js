@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
-import { Copy, ExternalLink, Eye, Plus, Power, PowerOff } from 'lucide-react';
+import { Copy, ExternalLink, Eye, Plus, Power, PowerOff, Trash2 } from 'lucide-react';
 import Breadcrumb from '../../components/v1/layout/Breadcrumb';
 import PageLoader from '../../components/v1/ui/PageLoader';
 import PageHeading from '../../components/v1/layout/PageHeading';
@@ -12,6 +12,7 @@ import { useAdminAuth } from '../../contexts/AdminAuthContext';
 import {
   usePaymentLinks,
   useCreatePaymentLink,
+  useDeletePaymentLink,
   useSetPaymentLinkActive,
 } from '../../hooks/payments/usePaymentLinks';
 import AdminPaymentLinkModal from './AdminPaymentLinkModal';
@@ -34,6 +35,8 @@ export default function AdminPaymentLinksPage() {
   });
   const { createPaymentLink, isCreatingPaymentLink } = useCreatePaymentLink();
   const { setActive, isSettingActive } = useSetPaymentLinkActive();
+  const { deletePaymentLink, isDeletingPaymentLink } = useDeletePaymentLink();
+  const isAdmin = user?.role === 'admin';
 
   useEffect(() => {
     if (!loading && !isAllowed) router.replace('/admin');
@@ -123,6 +126,19 @@ export default function AdminPaymentLinksPage() {
                     link={link}
                     onToggleActive={(active) => setActive({ id: link._id, active })}
                     isToggling={isSettingActive}
+                    canDelete={isAdmin}
+                    onDelete={() => {
+                      if (
+                        typeof window !== 'undefined' &&
+                        !window.confirm(
+                          `Delete this payment link? This will deactivate it on Stripe and remove the record.`,
+                        )
+                      ) {
+                        return;
+                      }
+                      deletePaymentLink(link._id);
+                    }}
+                    isDeleting={isDeletingPaymentLink}
                   />
                 ))
               )}
@@ -168,7 +184,7 @@ export default function AdminPaymentLinksPage() {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function PaymentLinkRow({ link, onToggleActive, isToggling }) {
+function PaymentLinkRow({ link, onToggleActive, isToggling, canDelete, onDelete, isDeleting }) {
   // Treat any legacy 'pending' rows as active for display + toggling.
   const effectiveStatus = link.status === 'pending' ? 'active' : link.status;
   const canToggle = effectiveStatus === 'active' || effectiveStatus === 'inactive';
@@ -198,7 +214,25 @@ function PaymentLinkRow({ link, onToggleActive, isToggling }) {
     <tr className="hover:bg-gray-50">
       <td className="whitespace-nowrap px-5 py-3 text-gray-600">{created}</td>
       <td className="px-5 py-3 text-gray-900">
-        <div className="font-medium">{link.productName || '—'}</div>
+        <div className="font-medium">
+          {link.lineItems?.length > 1 ? (
+            <span>
+              {link.lineItems.length} items
+              <span className="ml-1.5 text-xs font-normal text-gray-500">
+                ({link.lineItems
+                  .map((li) => `${li.productName}${li.quantity > 1 ? ` × ${li.quantity}` : ''}`)
+                  .join(', ')})
+              </span>
+            </span>
+          ) : (
+            <>
+              {link.productName || '—'}
+              {link.quantity > 1 && (
+                <span className="ml-1.5 text-xs font-normal text-gray-500">× {link.quantity}</span>
+              )}
+            </>
+          )}
+        </div>
         {link.description && (
           <div className="text-xs text-gray-500">{link.description}</div>
         )}
@@ -256,6 +290,16 @@ function PaymentLinkRow({ link, onToggleActive, isToggling }) {
               ) : (
                 <Power size={14} />
               )}
+            </IconAction>
+          )}
+          {canDelete && effectiveStatus !== 'paid' && (
+            <IconAction
+              label="Delete link"
+              variant="danger"
+              disabled={isDeleting}
+              onClick={onDelete}
+            >
+              <Trash2 size={14} />
             </IconAction>
           )}
         </div>

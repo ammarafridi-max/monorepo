@@ -15,7 +15,7 @@ const TicketPricingSchema = new mongoose.Schema(
     key: { type: String, required: true, default: 'dummy-ticket', enum: ['dummy-ticket'] },
     currency: { type: String, default: 'AED', uppercase: true, trim: true },
     options: { type: [PricingOptionSchema], default: [] },
-    updatedBy: { type: mongoose.Schema.ObjectId, ref: 'AdminUser', default: null },
+    updatedBy: { type: mongoose.Schema.ObjectId, ref: 'admin-user', default: null },
   },
   { timestamps: true },
 );

@@ -23,6 +23,7 @@ import {
   DollarSign,
   TrendingUp,
   Link2,
+  Package,
 } from 'lucide-react';
 
 const NAV = [
@@ -85,6 +86,12 @@ const NAV = [
         label: 'Payment Links',
         href: '/admin/payment-links',
         icon: Link2,
+        roles: ['admin', 'agent'],
+      },
+      {
+        label: 'Products',
+        href: '/admin/products',
+        icon: Package,
         roles: ['admin', 'agent'],
       },
       {

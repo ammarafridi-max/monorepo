@@ -19,12 +19,13 @@ function getOrRegisterModel(conn, name, schema) {
 }
 
 export function createTicketsRouter({ db, auth, stripe, notifications, frontendUrl, AffiliateModel }) {
-  // 'dummyTicket' maps to the 'dummytickets' collection — matches the original standalone backend.
-  const Ticket = getOrRegisterModel(db, 'dummyTicket', TicketSchema);
+  // 'dummy-ticket' maps to the 'dummy-tickets' collection.
+  const Ticket = getOrRegisterModel(db, 'dummy-ticket', TicketSchema);
   // Use the pre-registered full Affiliate model if provided (has generateUniqueAffiliateId statics).
   // Falls back to registering the stub schema when used standalone (e.g. travelshield).
   const Affiliate = AffiliateModel ?? getOrRegisterModel(db, 'Affiliate', AffiliateSchema);
-  const TicketPricing = getOrRegisterModel(db, 'TicketPricing', TicketPricingSchema);
+  // 'dummy-ticket-pricing' maps to the 'dummy-ticket-pricings' collection.
+  const TicketPricing = getOrRegisterModel(db, 'dummy-ticket-pricing', TicketPricingSchema);
   const Currency = getOrRegisterModel(db, 'Currency', CurrencySchema);
 
   const pricingService = createPricingService({ TicketPricing });
@@ -45,8 +46,8 @@ export function createTicketsRouter({ db, auth, stripe, notifications, frontendU
 }
 
 export async function sendDueDeliveryEmails(db, notifications) {
-  const Ticket = getOrRegisterModel(db, 'dummyTicket', TicketSchema);
-  const TicketPricing = getOrRegisterModel(db, 'TicketPricing', TicketPricingSchema);
+  const Ticket = getOrRegisterModel(db, 'dummy-ticket', TicketSchema);
+  const TicketPricing = getOrRegisterModel(db, 'dummy-ticket-pricing', TicketPricingSchema);
   const Currency = getOrRegisterModel(db, 'Currency', CurrencySchema);
   const Affiliate = getOrRegisterModel(db, 'Affiliate', AffiliateSchema);
   const pricingService = createPricingService({ TicketPricing });

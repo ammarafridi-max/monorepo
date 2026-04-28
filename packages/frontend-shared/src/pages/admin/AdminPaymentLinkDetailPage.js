@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import {
@@ -16,13 +16,19 @@ import {
   Power,
   PowerOff,
   Loader2,
+  Pencil,
+  Trash2,
+  Check,
+  X,
 } from 'lucide-react';
 import Breadcrumb from '../../components/v1/layout/Breadcrumb';
 import PageLoader from '../../components/v1/ui/PageLoader';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 import {
+  useDeletePaymentLink,
   usePaymentLink,
   useSetPaymentLinkActive,
+  useUpdatePaymentLink,
 } from '../../hooks/payments/usePaymentLinks';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -130,6 +136,13 @@ export default function AdminPaymentLinkDetailPage() {
   const { paymentLink, isLoadingPaymentLink, isErrorPaymentLink, paymentLinkError } =
     usePaymentLink(id);
   const { setActive, isSettingActive } = useSetPaymentLinkActive();
+  const { deletePaymentLink, isDeletingPaymentLink } = useDeletePaymentLink();
+  const { updatePaymentLink, isUpdatingPaymentLink } = useUpdatePaymentLink();
+  const isAdmin = user?.role === 'admin';
+
+  // Inline description edit state
+  const [editingDescription, setEditingDescription] = useState(false);
+  const [descriptionDraft, setDescriptionDraft] = useState('');
 
   useEffect(() => {
     if (!loading && !isAllowed) router.replace('/admin');
@@ -244,17 +257,132 @@ export default function AdminPaymentLinkDetailPage() {
           >
             Open <ExternalLink size={13} />
           </a>
+          {isAdmin && effectiveStatus !== 'paid' && (
+            <button
+              type="button"
+              disabled={isDeletingPaymentLink}
+              onClick={() => {
+                if (
+                  typeof window !== 'undefined' &&
+                  !window.confirm(
+                    'Delete this payment link? This will deactivate it on Stripe and remove the record.',
+                  )
+                ) {
+                  return;
+                }
+                deletePaymentLink(link._id, {
+                  onSuccess: () => router.push('/admin/payment-links'),
+                });
+              }}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-600 shadow-sm transition hover:bg-red-50 disabled:opacity-50"
+            >
+              {isDeletingPaymentLink ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
+              Delete
+            </button>
+          )}
         </div>
       </div>
 
       {/* Cards grid */}
       <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-2">
         <Card title="Payment details" icon={CreditCard}>
-          <InfoRow label="Product / service" value={link.productName || '—'} />
+          {link.lineItems?.length > 1 ? (
+            <>
+              <p className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-400">
+                Line items
+              </p>
+              <div className="mb-3 space-y-2">
+                {link.lineItems.map((li, i) => (
+                  <div
+                    key={i}
+                    className="flex items-baseline justify-between gap-3 rounded-lg bg-gray-50 px-3 py-2 text-sm"
+                  >
+                    <span className="min-w-0 truncate text-gray-800">
+                      {li.productName}
+                      {li.quantity > 1 && (
+                        <span className="ml-1.5 text-xs text-gray-500">× {li.quantity}</span>
+                      )}
+                    </span>
+                    <span className="shrink-0 font-mono text-xs text-gray-600">
+                      {formatMoney(li.unitAmount * li.quantity, link.currency)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              <InfoRow label="Product / service" value={link.productName || '—'} />
+              {link.productId && link.quantity > 0 && link.unitAmount != null && (
+                <>
+                  <InfoRow
+                    label="Unit price"
+                    value={formatMoney(link.unitAmount, link.currency)}
+                  />
+                  <InfoRow label="Quantity" value={`× ${link.quantity}`} />
+                </>
+              )}
+            </>
+          )}
           <InfoRow label="Amount" value={amountFormatted} />
           <InfoRow label="Currency" value={(link.currency || '').toUpperCase()} />
           <InfoRow label="Status" value={<StatusBadge status={effectiveStatus} />} />
-          <InfoRow label="Description" value={link.description || '—'} />
+
+          {/* Editable description row */}
+          <div className="flex items-start justify-between gap-4 border-b border-gray-50 py-2 last:border-0">
+            <span className="shrink-0 pt-1 text-sm text-gray-400">Description</span>
+            {editingDescription ? (
+              <div className="flex flex-1 items-center gap-2">
+                <input
+                  type="text"
+                  value={descriptionDraft}
+                  onChange={(e) => setDescriptionDraft(e.target.value)}
+                  autoFocus
+                  className="flex-1 rounded-lg border border-gray-200 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    updatePaymentLink(
+                      { id: link._id, description: descriptionDraft },
+                      { onSuccess: () => setEditingDescription(false) },
+                    );
+                  }}
+                  disabled={isUpdatingPaymentLink}
+                  className="rounded-lg bg-primary-700 p-1.5 text-white transition hover:bg-primary-800 disabled:opacity-50"
+                  title="Save"
+                >
+                  {isUpdatingPaymentLink ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditingDescription(false)}
+                  disabled={isUpdatingPaymentLink}
+                  className="rounded-lg border border-gray-200 p-1.5 text-gray-500 transition hover:bg-gray-50 disabled:opacity-50"
+                  title="Cancel"
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-1 items-start justify-end gap-2">
+                <span className="break-all text-right text-sm font-semibold text-gray-800">
+                  {link.description || '—'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDescriptionDraft(link.description || '');
+                    setEditingDescription(true);
+                  }}
+                  className="shrink-0 rounded-md p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
+                  title="Edit description"
+                >
+                  <Pencil size={11} />
+                </button>
+              </div>
+            )}
+          </div>
         </Card>
 
         <Card title="Customer (paid by)" icon={User}>
