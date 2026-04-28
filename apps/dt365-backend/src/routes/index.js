@@ -16,6 +16,7 @@ import {
   createPaymentsController,
   createPaymentsAdminRouter,
   PaymentLinkSchema,
+  ProductSchema,
 } from '@travel-suite/payments';
 import { db } from '../utils/db.js';
 import { sendEmail } from '../utils/email.js';
@@ -96,7 +97,7 @@ router.use('/pricing', pricingRouter);
 router.use('/affiliates', createAffiliatesRouter({ db, auth, TicketModel }));
 
 // -- Payments (admin: revenue dashboard + custom payment links) ---------------
-const paymentService = createPaymentService({ stripe, db, PaymentLinkSchema });
+const paymentService = createPaymentService({ stripe, db, PaymentLinkSchema, ProductSchema });
 const paymentsController = createPaymentsController({ service: paymentService });
 router.use('/payments', createPaymentsAdminRouter({ controller: paymentsController, auth }));
 
