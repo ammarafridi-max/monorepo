@@ -180,7 +180,9 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     const transactionId = session.id;
 
     const existing = await Ticket.findOne({ sessionId });
-    if (!existing) return;
+    if (!existing) {
+      throw new Error(`[tickets] Ticket not found for sessionId: ${sessionId}`);
+    }
 
     // Re-validate affiliate attribution at payment time
     let shouldClearAffiliate = false;

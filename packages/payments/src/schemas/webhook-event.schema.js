@@ -7,6 +7,7 @@ const StripeWebhookEventSchema = new mongoose.Schema(
     productType: { type: String },
     sessionId: { type: String },
     createdAtStripe: { type: Date },
+    handlerSucceeded: { type: Boolean, default: false },
   },
   { timestamps: true },
 );

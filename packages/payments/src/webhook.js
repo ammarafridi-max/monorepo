@@ -47,18 +47,27 @@ export function createStripeWebhookHandler({ stripe, webhookSecret, db, handlers
 
     try {
       const already = await StripeWebhookEvent.findOne({ eventId: event.id });
-      if (already) return res.json({ received: true, duplicate: true });
+      if (already) {
+        // Only treat as a true duplicate if the handler previously succeeded.
+        // If it failed (no handlerSucceeded flag), let this retry through.
+        if (already.handlerSucceeded) {
+          return res.json({ received: true, duplicate: true });
+        }
+        logger.warn('[payments] Retrying previously-failed webhook event', { eventId: event.id });
+      }
 
       const productType = session.metadata?.productType || 'unknown';
       const sessionId = session.metadata?.sessionId;
 
-      await StripeWebhookEvent.create({
-        eventId: event.id,
-        type: event.type,
-        productType,
-        sessionId,
-        createdAtStripe: event.created ? new Date(event.created * 1000) : undefined,
-      });
+      if (!already) {
+        await StripeWebhookEvent.create({
+          eventId: event.id,
+          type: event.type,
+          productType,
+          sessionId,
+          createdAtStripe: event.created ? new Date(event.created * 1000) : undefined,
+        });
+      }
 
       if (session.payment_status !== 'paid') {
         return res.json({ received: true, unpaid: true });
@@ -70,6 +79,9 @@ export function createStripeWebhookHandler({ stripe, webhookSecret, db, handlers
       } else {
         logger.warn('[payments] No handler for productType', { productType, sessionId });
       }
+
+      // Mark as successfully handled so future retries are blocked
+      await StripeWebhookEvent.updateOne({ eventId: event.id }, { $set: { handlerSucceeded: true } });
 
       return res.json({ received: true });
     } catch (err) {
