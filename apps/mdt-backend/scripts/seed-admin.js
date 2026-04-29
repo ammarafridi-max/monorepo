@@ -32,7 +32,7 @@ async function seed() {
   const conn = await mongoose.createConnection(MONGO_URI).asPromise();
   console.log(`✅  Connected → ${MONGO_URI.replace(/:\/\/[^@]+@/, '://***@')}`);
 
-  const AdminUser = conn.model('AdminUser', AdminUserSchema);
+  const AdminUser = conn.model('admin-user', AdminUserSchema);
 
   const count = await AdminUser.countDocuments();
   if (count > 0) {
