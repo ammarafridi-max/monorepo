@@ -141,6 +141,18 @@ async function fetchBlogTags(token) {
   return tags.map((t) => t.name);
 }
 
+// ── Step 3b: Check if title already exists ────────────────────────────────────
+
+async function checkTitleExists(token, title) {
+  // Fetch all blogs including drafts via the admin list endpoint
+  const data = await apiFetch(`/api/blogs/admin/list?page=1&limit=1000`, {
+    headers: { Cookie: `jwt=${token}` },
+  });
+  const posts = data?.data?.blogs ?? [];
+  const normalise = (s) => s.trim().toLowerCase();
+  return posts.some((p) => normalise(p.title) === normalise(title));
+}
+
 // ── Step 4: Generate blog content with Claude ─────────────────────────────────
 
 async function generateBlogContent({
@@ -345,7 +357,14 @@ async function main() {
   // 2. Login
   const token = await login();
 
-  // 3. Fetch context
+  // 3. Check if title already exists — skip if so
+  const alreadyExists = await checkTitleExists(token, topic.title);
+  if (alreadyExists) {
+    console.log(`⏭  Post "${topic.title}" already exists — skipping.`);
+    return;
+  }
+
+  // 4. Fetch context
   const [publishedPosts, availableTags] = await Promise.all([
     fetchPublishedPosts(token),
     fetchBlogTags(token),
@@ -354,10 +373,10 @@ async function main() {
     `✓ Fetched ${publishedPosts.length} published posts, ${availableTags.length} tags`,
   );
 
-  // 4. Load site context
+  // 5. Load site context
   const siteContext = readFileSync(join(__dirname, "site-context.md"), "utf8");
 
-  // 5. Generate content
+  // 6. Generate content
   const content = await generateBlogContent({
     topic,
     siteContext,
@@ -365,7 +384,7 @@ async function main() {
     availableTags,
   });
 
-  // 6. Post draft
+  // 7. Post draft
   const draft = await postDraft({ token, topic, content, availableTags });
 
   console.log(`\n✅ Done! Draft "${draft?.title}" saved.`);

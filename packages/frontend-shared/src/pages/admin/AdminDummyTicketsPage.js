@@ -11,6 +11,7 @@ import { useDummyTickets } from '../../hooks/dummy-tickets/useDummyTickets';
 import { useDeleteDummyTicket } from '../../hooks/dummy-tickets/useDeleteDummyTicket';
 import { extractIataCode } from '../../utils/extractIataCode';
 import { convertToDubaiDate } from '../../utils/dates';
+import { useAdminAuth } from '../../contexts/AdminAuthContext';
 
 /* --- Config ------------------------------------------------------------------ */
 
@@ -94,6 +95,9 @@ function FilterPill({ label, active, onClick }) {
 function DummyTicketsContent() {
   const router       = useRouter();
   const searchParams = useSearchParams();
+  const { adminUser } = useAdminAuth();
+
+  const isAgent = adminUser?.role === 'agent';
 
   const { dummyTickets = [], pagination, isLoadingDummyTickets } = useDummyTickets();
   const { deleteDummyTicket, isDeleting }                        = useDeleteDummyTicket();
@@ -102,7 +106,8 @@ function DummyTicketsContent() {
   const paymentFilter = searchParams.get('paymentStatus')        || '';
   const orderFilter   = searchParams.get('orderStatus')          || '';
   const search        = searchParams.get('search')               ?? '';
-  const createdAt     = searchParams.get('createdAt')            ?? 'all_time';
+  // Agents are locked to last 4 hours — ignore any URL param they may set
+  const createdAt     = isAgent ? '4_hours' : (searchParams.get('createdAt') ?? 'all_time');
   const totalPages    = pagination?.totalPages                   ?? 1;
   const total         = pagination?.total                        ?? 0;
 
@@ -163,18 +168,25 @@ function DummyTicketsContent() {
 
         <div className="w-px h-5 bg-gray-200 hidden sm:block" />
 
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Created</span>
-          <select
-            value={createdAt}
-            onChange={(e) => setParam('createdAt', e.target.value)}
-            className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
-          >
-            {TIME_OPTIONS.map(({ value, label }) => (
-              <option key={value} value={value}>{label}</option>
-            ))}
-          </select>
-        </div>
+        {isAgent ? (
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Created</span>
+            <span className="px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50 text-gray-500">Last 4 hours</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Created</span>
+            <select
+              value={createdAt}
+              onChange={(e) => setParam('createdAt', e.target.value)}
+              className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+            >
+              {TIME_OPTIONS.map(({ value, label }) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       {/* Table card */}

@@ -12,17 +12,21 @@ const ROLE_DEFAULT_PATH = {
 };
 
 const ROLE_ROUTE_RULES = [
-  { prefix: '/admin', roles: ['admin', 'agent', 'blog-manager'] },
-  { prefix: '/admin/dummy-tickets', roles: ['admin', 'agent'] },
-  { prefix: '/admin/insurance-applications', roles: ['admin', 'agent'] },
-  { prefix: '/admin/users', roles: ['admin'] },
-  { prefix: '/admin/affiliates', roles: ['admin', 'agent'] },
-  { prefix: '/admin/currencies', roles: ['admin'] },
-  { prefix: '/admin/pricing', roles: ['admin'] },
-  { prefix: '/admin/blog', roles: ['admin', 'blog-manager'] },
-  { prefix: '/admin/blog-tags', roles: ['admin', 'blog-manager'] },
-
-  { prefix: '/admin/account', roles: ['admin', 'agent', 'blog-manager'] },
+  // Most-specific rules first
+  { prefix: '/admin/dummy-tickets',           roles: ['admin', 'agent'] },
+  { prefix: '/admin/payment-links',           roles: ['admin', 'agent'] },
+  { prefix: '/admin/products',                roles: ['admin', 'agent'] },
+  { prefix: '/admin/account',                 roles: ['admin', 'agent', 'blog-manager'] },
+  { prefix: '/admin/insurance-applications',  roles: ['admin'] },
+  { prefix: '/admin/affiliates',              roles: ['admin'] },
+  { prefix: '/admin/users',                   roles: ['admin'] },
+  { prefix: '/admin/currencies',              roles: ['admin'] },
+  { prefix: '/admin/pricing',                 roles: ['admin'] },
+  { prefix: '/admin/revenue',                 roles: ['admin'] },
+  { prefix: '/admin/blog',                    roles: ['admin', 'blog-manager'] },
+  { prefix: '/admin/blog-tags',               roles: ['admin', 'blog-manager'] },
+  // Dashboard — all roles but agent is shown a restricted view
+  { prefix: '/admin',                         roles: ['admin', 'agent', 'blog-manager'] },
 ];
 
 function getAllowedRoles(pathname) {

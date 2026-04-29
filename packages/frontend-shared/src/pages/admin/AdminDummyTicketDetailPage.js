@@ -16,6 +16,7 @@ import { useUpdateDummyTicket } from '../../hooks/dummy-tickets/useUpdateDummyTi
 import { convertToDubaiTime, convertToDubaiDate, formatDate } from '../../utils/dates';
 import { extractIataCode } from '../../utils/extractIataCode';
 import { formatAmount } from '../../utils/currency';
+import { useAdminAuth } from '../../contexts/AdminAuthContext';
 
 /* --- Badges ------------------------------------------------------------------ */
 
@@ -163,6 +164,8 @@ function DeleteSection({ sessionId, disabled }) {
 
 export default function AdminDummyTicketDetailPage() {
   const { sessionId } = useParams();
+  const { adminUser } = useAdminAuth();
+  const isAgent = adminUser?.role === 'agent';
 
   const { dummyTicket: ticket, isLoadingDummyTicket } = useGetDummyTicket(sessionId);
   const { updateDummyTicket, isUpdating }              = useUpdateDummyTicket();
@@ -415,7 +418,7 @@ export default function AdminDummyTicketDetailPage() {
                 <span className="text-sm text-gray-500">Status</span>
                 <PaymentBadge status={ticket?.paymentStatus} />
               </div>
-              {ticket?.amountPaid?.amount && (
+              {!isAgent && ticket?.amountPaid?.amount && (
                 <div className="flex items-center justify-between border-t border-gray-50 pt-3">
                   <span className="text-sm text-gray-500">Amount</span>
                   <span className="text-sm font-bold text-gray-900">
@@ -423,7 +426,7 @@ export default function AdminDummyTicketDetailPage() {
                   </span>
                 </div>
               )}
-              {ticket?.transactionId && (
+              {!isAgent && ticket?.transactionId && (
                 <div className="flex items-start justify-between border-t border-gray-50 pt-3 gap-2">
                   <span className="text-sm text-gray-500 shrink-0">Transaction</span>
                   <span className="text-[11px] font-mono text-gray-600 break-all text-right">{ticket.transactionId}</span>

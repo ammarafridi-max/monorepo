@@ -1,7 +1,24 @@
 export function createTicketController({ service }) {
   const getAllTickets = async (req, res, next) => {
     try {
-      const result = await service.getAllTickets(req.query);
+      const isAgent = req.user?.role === 'agent';
+      // Agents may only see the last 4 hours — override any createdAt param they send
+      const query = isAgent ? { ...req.query, createdAt: '4_hours' } : req.query;
+      let result = await service.getAllTickets(query);
+
+      // Strip payment amounts from agent responses
+      if (isAgent) {
+        result = {
+          ...result,
+          data: result.data.map((ticket) => {
+            const t = ticket.toObject ? ticket.toObject() : { ...ticket };
+            delete t.amountPaid;
+            delete t.transactionId;
+            return t;
+          }),
+        };
+      }
+
       res.json({ status: 'success', ...result });
     } catch (err) {
       next(err);

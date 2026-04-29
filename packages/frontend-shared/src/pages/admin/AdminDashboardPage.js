@@ -73,15 +73,18 @@ function DashboardContent() {
     year: 'numeric',
   });
 
+  const isAgent = adminUser?.role === 'agent';
+  const ticketTimeFilter = isAgent ? { createdAt: '4_hours' } : {};
+
   const results = useQueries({
     queries: [
       {
-        queryKey: ['dashboard', 'recent-tickets'],
-        queryFn: () => getDummyTicketsApi({ limit: 5, page: 1 }),
+        queryKey: ['dashboard', 'recent-tickets', isAgent],
+        queryFn: () => getDummyTicketsApi({ limit: 5, page: 1, ...ticketTimeFilter }),
       },
       {
-        queryKey: ['dashboard', 'all-tickets'],
-        queryFn: () => getDummyTicketsApi({ limit: 1000 }),
+        queryKey: ['dashboard', 'all-tickets', isAgent],
+        queryFn: () => getDummyTicketsApi({ limit: 1000, ...ticketTimeFilter }),
       },
       {
         queryKey: ['dashboard', 'affiliates'],
@@ -200,30 +203,36 @@ function DashboardContent() {
               value={totalTickets.toLocaleString()}
               sub="All time"
             />
-            <StatCard
-              icon={DollarSign}
-              iconBg="bg-green-50"
-              iconColor="text-green-600"
-              label="Total Revenue"
-              value={fmtRevenue(totalRevenue)}
-              sub="Paid tickets only"
-            />
-            <StatCard
-              icon={ShieldCheck}
-              iconBg="bg-accent-50"
-              iconColor="text-accent-600"
-              label="Insurance Orders"
-              value={totalInsurance.toLocaleString()}
-              sub="All time"
-            />
-            <StatCard
-              icon={Handshake}
-              iconBg="bg-purple-50"
-              iconColor="text-purple-600"
-              label="Active Affiliates"
-              value={activeAffiliates.toLocaleString()}
-              sub="Currently active"
-            />
+            {!isAgent && (
+              <StatCard
+                icon={DollarSign}
+                iconBg="bg-green-50"
+                iconColor="text-green-600"
+                label="Total Revenue"
+                value={fmtRevenue(totalRevenue)}
+                sub="Paid tickets only"
+              />
+            )}
+            {!isAgent && (
+              <StatCard
+                icon={ShieldCheck}
+                iconBg="bg-accent-50"
+                iconColor="text-accent-600"
+                label="Insurance Orders"
+                value={totalInsurance.toLocaleString()}
+                sub="All time"
+              />
+            )}
+            {!isAgent && (
+              <StatCard
+                icon={Handshake}
+                iconBg="bg-purple-50"
+                iconColor="text-purple-600"
+                label="Active Affiliates"
+                value={activeAffiliates.toLocaleString()}
+                sub="Currently active"
+              />
+            )}
           </>
         )}
       </div>
