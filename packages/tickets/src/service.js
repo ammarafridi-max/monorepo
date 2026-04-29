@@ -39,7 +39,7 @@ function buildSearchFilter(search) {
 
 function applyCreatedAtFilter(queryObj, createdAt) {
   if (!createdAt) return;
-  const hours = { '6_hours': 6, '12_hours': 12, '24_hours': 24, '7_days': 168, '14_days': 336, '30_days': 720, '90_days': 2160 };
+  const hours = { '4_hours': 4, '6_hours': 6, '12_hours': 12, '24_hours': 24, '7_days': 168, '14_days': 336, '30_days': 720, '90_days': 2160 };
   if (!hours[createdAt]) return;
   queryObj.createdAt = { $gte: new Date(Date.now() - hours[createdAt] * 3_600_000) };
 }

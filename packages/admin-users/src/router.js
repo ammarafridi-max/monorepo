@@ -17,8 +17,10 @@ export function createAdminUsersRouterFromParts({ controller, auth }) {
   const router = Router();
   const { protect, restrictTo } = auth;
 
-  // Any authenticated admin (any role) can fetch their own profile
-  router.get('/me', protect, controller.getMe);
+  // Any authenticated admin (any role) can manage their own profile
+  router.get('/me',              protect, controller.getMe);
+  router.patch('/me',            protect, controller.updateMe);
+  router.patch('/me/password',   protect, controller.updateMyPassword);
 
   router.use(protect, restrictTo('admin'));
 

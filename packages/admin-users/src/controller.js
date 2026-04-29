@@ -32,5 +32,19 @@ export function createAdminUsersController({ service }) {
     res.status(200).json({ status: 'success', data: userObj });
   };
 
-  return { getMe, getAdminUsers, getAdminUser, createAdminUser, updateAdminUser, deleteAdminUser };
+  const updateMe = catchAsync(async (req, res) => {
+    const { name, email } = req.body;
+    const user = await service.updateAdminUserByUsername(req.user.username, { name, email }, req.user);
+    const userObj = user.toObject ? user.toObject() : { ...user };
+    delete userObj.password;
+    res.status(200).json({ status: 'success', data: userObj });
+  });
+
+  const updateMyPassword = catchAsync(async (req, res) => {
+    const { passwordCurrent, currentPassword, password, passwordConfirm } = req.body;
+    await service.updateMyPassword(req.user._id, { currentPassword: passwordCurrent || currentPassword, password, passwordConfirm });
+    res.status(200).json({ status: 'success', message: 'Password updated successfully.' });
+  });
+
+  return { getMe, updateMe, updateMyPassword, getAdminUsers, getAdminUser, createAdminUser, updateAdminUser, deleteAdminUser };
 }

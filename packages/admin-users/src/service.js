@@ -135,5 +135,24 @@ export function createAdminUsersService({ AdminUser }) {
     return user;
   };
 
-  return { getAdminUsers, getAdminUserByUsername, createAdminUser, updateAdminUserByUsername, deleteAdminUserByUsername };
+  const updateMyPassword = async (userId, { currentPassword, password, passwordConfirm }) => {
+    if (!currentPassword || !password || !passwordConfirm)
+      throw new AppError('Please provide currentPassword, password, and passwordConfirm.', 400);
+    if (password !== passwordConfirm)
+      throw new AppError('Passwords do not match.', 400);
+    if (password.length < 8)
+      throw new AppError('New password must be at least 8 characters.', 400);
+
+    const user = await AdminUser.findById(userId).select('+password');
+    if (!user) throw new AppError('User not found.', 404);
+
+    const isCorrect = await user.correctPassword(currentPassword, user.password);
+    if (!isCorrect) throw new AppError('Current password is incorrect.', 401);
+
+    user.password = password;
+    await user.save();
+    return user;
+  };
+
+  return { getAdminUsers, getAdminUserByUsername, createAdminUser, updateAdminUserByUsername, deleteAdminUserByUsername, updateMyPassword };
 }

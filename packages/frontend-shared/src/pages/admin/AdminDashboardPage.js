@@ -195,14 +195,6 @@ function DashboardContent() {
           </>
         ) : (
           <>
-            <StatCard
-              icon={Ticket}
-              iconBg="bg-primary-50"
-              iconColor="text-primary-700"
-              label="Total Tickets"
-              value={totalTickets.toLocaleString()}
-              sub="All time"
-            />
             {!isAgent && (
               <StatCard
                 icon={DollarSign}
