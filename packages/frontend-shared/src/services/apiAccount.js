@@ -25,7 +25,9 @@ export async function updatePasswordApi(accountData) {
     passwordConfirm: accountData.passwordConfirm,
   };
 
-  return await apiFetch(`${URL}/password`, {
+  // Use the auth endpoint — it issues a fresh cookie so the current device
+  // stays logged in while all other devices' tokens are invalidated.
+  return await apiFetch('/api/auth/update-password', {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',

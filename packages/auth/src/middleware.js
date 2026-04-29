@@ -24,9 +24,17 @@ export function createAdminAuthMiddleware({ AdminUser, verifyToken }) {
       return next(new AppError('Invalid session type.', 401));
     }
 
-    const currentUser = await AdminUser.findById(decoded.id);
+    const currentUser = await AdminUser.findById(decoded.id).select('+passwordChangedAt');
     if (!currentUser || currentUser.status === 'INACTIVE') {
       return next(new AppError('The user belonging to this token does not exist.', 401));
+    }
+
+    // Reject tokens issued before a password change (logs out other devices)
+    if (currentUser.passwordChangedAt) {
+      const changedAt = Math.floor(currentUser.passwordChangedAt.getTime() / 1000);
+      if (decoded.iat < changedAt) {
+        return next(new AppError('Password was recently changed. Please log in again.', 401));
+      }
     }
 
     req.user = currentUser;

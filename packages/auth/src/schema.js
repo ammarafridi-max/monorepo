@@ -52,6 +52,10 @@ const AdminUserSchema = new mongoose.Schema(
       default: 'ACTIVE',
       index: true,
     },
+    passwordChangedAt: {
+      type: Date,
+      select: false,
+    },
   },
   { timestamps: true, toJSON: true },
 );
@@ -59,6 +63,11 @@ const AdminUserSchema = new mongoose.Schema(
 AdminUserSchema.pre('save', async function () {
   if (!this.isModified('password')) return;
   this.password = await bcrypt.hash(this.password, 12);
+  // Mark when the password changed so existing tokens on other devices are invalidated.
+  // Skip on first save (isNew) — no prior tokens exist yet.
+  if (!this.isNew) {
+    this.passwordChangedAt = new Date(Date.now() - 1000); // subtract 1s to avoid race with token iat
+  }
 });
 
 AdminUserSchema.methods.correctPassword = async function (candidatePassword, userPassword) {
