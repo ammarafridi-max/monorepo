@@ -26,5 +26,6 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           TRAVL_ADMIN_EMAIL: ${{ secrets.TRAVL_ADMIN_EMAIL }}
           TRAVL_ADMIN_PASSWORD: ${{ secrets.TRAVL_ADMIN_PASSWORD }}
+          UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
         run: node generate-blog-draft.mjs
         working-directory: scripts
