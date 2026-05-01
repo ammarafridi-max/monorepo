@@ -23,6 +23,7 @@
     "@travel-suite/payments": "workspace:*",
     "@travel-suite/tickets": "workspace:*",
     "@travel-suite/users": "workspace:*",
+    "@travel-suite/email-support": "workspace:*",
     "@travel-suite/utils": "workspace:*",
     "compression": "^1.8.1",
     "cookie-parser": "^1.4.7",

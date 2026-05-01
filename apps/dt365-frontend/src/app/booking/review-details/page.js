@@ -4,5 +4,5 @@ import TicketReviewDetailsPage from '@travel-suite/frontend-shared/pages/client/
 import { trackBeginCheckout } from '@travel-suite/frontend-shared/utils/analytics';
 
 export default function Page() {
-  return <TicketReviewDetailsPage onBeginCheckout={trackBeginCheckout} />;
+  return <TicketReviewDetailsPage onBeginCheckout={trackBeginCheckout} enablePayPal={false} />;
 }

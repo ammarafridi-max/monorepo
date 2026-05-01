@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { createAuthRouter } from "@travel-suite/auth";
+import { createEmailSupportFeature } from "@travel-suite/email-support";
 import { createInsuranceRouter } from "@travel-suite/insurance";
 import { createAdminUsersRouter } from "@travel-suite/admin-users";
 import { createBlogRouter, createBlogTagRouter } from "@travel-suite/blog";
@@ -143,6 +144,20 @@ async function handlePaymentLinkSuccess(session) {
     paidAt: updated.paidAt,
   });
 }
+
+// -- Email Support (AI-powered inbox) -----------------------------------------
+const brandContext = `Travl.ae is a UAE-based travel services platform offering flight reservation documents (dummy tickets) for visa applications, hotel reservations, and travel insurance. Flight reservations are valid for Schengen, US, UK, and other visa applications. They are verifiable on GDS systems. Customers sometimes worry when airline websites don't show the booking as confirmed — reassure them this is normal for reservation documents.`;
+
+const { router: emailSupportRouter, pollAndProcess } = createEmailSupportFeature({
+  db,
+  auth,
+  anthropicApiKey: config.anthropicApiKey,
+  brandContext,
+  gmailConfig: config.gmail,
+  logger,
+});
+router.use('/email-support', emailSupportRouter);
+export { pollAndProcess };
 
 // -- Stripe webhook handler (exported for mounting in app.js before JSON middleware) --
 export const stripeWebhookHandler = createStripeWebhookHandler({
