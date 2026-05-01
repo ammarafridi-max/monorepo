@@ -9,6 +9,7 @@ import {
   MessageSquare, ExternalLink,
 } from 'lucide-react';
 import { MdWhatsapp } from 'react-icons/md';
+import { FaStripe, FaPaypal } from 'react-icons/fa';
 import { useGetDummyTicket } from '../../hooks/dummy-tickets/useGetDummyTicket';
 import { useDeleteDummyTicket } from '../../hooks/dummy-tickets/useDeleteDummyTicket';
 import { useRefundDummyTicket } from '../../hooks/dummy-tickets/useRefundDummyTicket';
@@ -418,6 +419,18 @@ export default function AdminDummyTicketDetailPage() {
                 <span className="text-sm text-gray-500">Status</span>
                 <PaymentBadge status={ticket?.paymentStatus} />
               </div>
+              {ticket?.paymentMethod && ticket?.paymentStatus === 'PAID' && (
+                <div className="flex items-center justify-between border-t border-gray-50 pt-3">
+                  <span className="text-sm text-gray-500">Method</span>
+                  {ticket.paymentMethod === 'paypal' ? (
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#003087]">
+                      <FaPaypal size={13} className="text-[#009cde]" /> PayPal
+                    </span>
+                  ) : (
+                    <FaStripe size={28} className="text-[#635bff]" />
+                  )}
+                </div>
+              )}
               {!isAgent && ticket?.amountPaid?.amount && (
                 <div className="flex items-center justify-between border-t border-gray-50 pt-3">
                   <span className="text-sm text-gray-500">Amount</span>

@@ -80,3 +80,19 @@ export async function createDummyTicketApi(data) {
     body: JSON.stringify(data),
   });
 }
+
+export async function createPayPalOrderApi({ sessionId }) {
+  return await apiFetch(`${URL}/paypal/checkout`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionId }),
+  });
+}
+
+export async function capturePayPalOrderApi({ sessionId, orderId }) {
+  return await apiFetch(`${URL}/paypal/capture`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionId, orderId }),
+  });
+}

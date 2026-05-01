@@ -24,6 +24,7 @@ import {
   TrendingUp,
   Link2,
   Package,
+  Mail,
 } from 'lucide-react';
 
 const NAV = [
@@ -46,6 +47,12 @@ const NAV = [
         label: 'Dummy Tickets',
         href: '/admin/dummy-tickets',
         icon: Ticket,
+        roles: ['admin', 'agent'],
+      },
+      {
+        label: 'Email Support',
+        href: '/admin/emails',
+        icon: Mail,
         roles: ['admin', 'agent'],
       },
       {

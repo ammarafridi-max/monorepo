@@ -82,9 +82,10 @@ function formatDate(str) {
 
 function formatDOB(str) {
   if (!str) return "—";
-  const d = new Date(str);
-  if (isNaN(d)) return str;
-  return d.toLocaleDateString("en-GB", {
+  const [y, m, d] = str.split('-').map(Number);
+  const date = new Date(y, m - 1, d); // local time — avoids UTC midnight rollback
+  if (isNaN(date)) return str;
+  return date.toLocaleDateString("en-GB", {
     day: "numeric",
     month: "short",
     year: "numeric",

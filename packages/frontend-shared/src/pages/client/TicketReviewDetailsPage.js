@@ -11,11 +11,13 @@ import {
   User,
   Pencil,
 } from 'lucide-react';
+import { FaPaypal, FaStripe } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
 import { TicketContext } from '../../contexts/TicketContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useGetDummyTicket } from '../../hooks/dummy-tickets/useGetDummyTicket';
 import { useStripePaymentURL } from '../../hooks/dummy-tickets/useStripePaymentURL';
+import { usePayPalOrder } from '../../hooks/dummy-tickets/usePayPalOrder';
 import { useDummyTicketPricing } from '../../hooks/pricing/useDummyTicketPricing';
 import { formatAmount } from '../../utils/currency';
 import { formatDate } from '../../utils/dates';
@@ -51,14 +53,16 @@ function Row({ label, value }) {
   );
 }
 
-export default function TicketReviewDetailsPage({ onBeginCheckout }) {
+export default function TicketReviewDetailsPage({ onBeginCheckout, enablePayPal = false }) {
   const sessionId = typeof window === 'undefined' ? '' : localStorage.getItem('SESSION_ID');
   const { type } = useContext(TicketContext);
   const { selectedCurrency, formatMoney } = useCurrency();
   const { pricing } = useDummyTicketPricing();
   const { createStripePayment, isLoadingStripePaymentURL, isErrorStripePaymentURL } = useStripePaymentURL();
+  const { createPayPalOrder, isLoadingPayPalOrder } = usePayPalOrder();
   const { dummyTicket, isLoadingDummyTicket } = useGetDummyTicket(sessionId);
   const [agreed, setAgreed] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('card'); // 'card' | 'paypal'
 
   const totalQuantity =
     Number(dummyTicket?.quantity?.adults || 0) +
@@ -74,14 +78,20 @@ export default function TicketReviewDetailsPage({ onBeginCheckout }) {
     }
   }, [isErrorStripePaymentURL]);
 
+  const isLoading = isLoadingStripePaymentURL || isLoadingPayPalOrder;
+
   const handleConfirm = () => {
-    if (!agreed || isLoadingStripePaymentURL || !sessionId) return;
+    if (!agreed || isLoading || !sessionId) return;
     onBeginCheckout?.({
       currency: currencyCode,
       value: totalAmount,
       items: [{ item_name: `${type} flight reservation`, price: ticketPrice, quantity: totalQuantity }],
     });
-    createStripePayment({ ...dummyTicket, totalAmount, currencyCode });
+    if (enablePayPal && paymentMethod === 'paypal') {
+      createPayPalOrder({ sessionId });
+    } else {
+      createStripePayment({ ...dummyTicket, totalAmount, currencyCode });
+    }
   };
 
   if (isLoadingDummyTicket) return <PageLoader />;
@@ -207,7 +217,7 @@ export default function TicketReviewDetailsPage({ onBeginCheckout }) {
               <div className="px-5 py-3 bg-primary-50 border-t border-primary-100">
                 <p className="text-xs text-primary-700">
                   <Mail size={11} className="inline mr-1" />
-                  Ticket sent to <span className="font-semibold">{dummyTicket.email}</span>
+                  Ticket will be sent to <span className="font-semibold">{dummyTicket.email}</span>
                 </p>
               </div>
             )}
@@ -237,15 +247,53 @@ export default function TicketReviewDetailsPage({ onBeginCheckout }) {
               </p>
             </label>
 
+            {/* Payment method selector — only shown when PayPal is enabled */}
+            {enablePayPal && (
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('card')}
+                  className={`cursor-pointer flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border text-xs font-semibold transition-colors ${
+                    paymentMethod === 'card'
+                      ? 'border-primary-700 bg-primary-50 text-primary-700'
+                      : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                  }`}
+                >
+                  <FaStripe size={22} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('paypal')}
+                  className={`cursor-pointer flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border text-xs font-semibold transition-colors ${
+                    paymentMethod === 'paypal'
+                      ? 'border-[#003087] bg-blue-50 text-[#003087]'
+                      : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                  }`}
+                >
+                  <FaPaypal size={13} className="text-[#009cde]" />
+                  PayPal
+                </button>
+              </div>
+            )}
+
             <button
               onClick={handleConfirm}
-              disabled={!agreed || isLoadingStripePaymentURL}
-              className="w-full inline-flex items-center justify-center gap-2 bg-accent-500 hover:bg-accent-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-bold py-3.5 rounded-xl transition-colors"
+              disabled={!agreed || isLoading}
+              className={`cursor-pointer w-full inline-flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-bold py-3.5 rounded-xl transition-colors ${
+                enablePayPal && paymentMethod === 'paypal'
+                  ? 'bg-[#ffc439] hover:bg-[#f0b429] text-[#003087]'
+                  : 'bg-accent-500 hover:bg-accent-600'
+              }`}
             >
-              {isLoadingStripePaymentURL ? (
+              {isLoading ? (
                 <>
                   <Loader2 size={14} className="animate-spin" />
                   Processing…
+                </>
+              ) : enablePayPal && paymentMethod === 'paypal' ? (
+                <>
+                  <FaPaypal size={15} className="text-[#003087]" />
+                  <span className="text-[#003087]">Pay with PayPal</span>
                 </>
               ) : (
                 <>

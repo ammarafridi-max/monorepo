@@ -18,7 +18,7 @@ function getOrRegisterModel(conn, name, schema) {
   }
 }
 
-export function createTicketsRouter({ db, auth, stripe, notifications, frontendUrl, AffiliateModel }) {
+export function createTicketsRouter({ db, auth, stripe, paypal, notifications, frontendUrl, AffiliateModel }) {
   // 'dummy-ticket' maps to the 'dummy-tickets' collection.
   const Ticket = getOrRegisterModel(db, 'dummy-ticket', TicketSchema);
   // Use the pre-registered full Affiliate model if provided (has generateUniqueAffiliateId statics).
@@ -31,7 +31,7 @@ export function createTicketsRouter({ db, auth, stripe, notifications, frontendU
   const pricingService = createPricingService({ TicketPricing });
   const currencyService = createCurrencyService({ Currency });
 
-  const service = createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, notifications, frontendUrl });
+  const service = createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, paypal, notifications, frontendUrl });
   const controller = createTicketController({ service });
   const router = createTicketRouter({ controller, auth });
 

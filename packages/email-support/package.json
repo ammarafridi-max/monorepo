@@ -1,0 +1,17 @@
+{
+  "name": "@travel-suite/email-support",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": { ".": "./src/index.js" },
+  "scripts": {},
+  "dependencies": {
+    "googleapis": "^144.0.0",
+    "@anthropic-ai/sdk": "^0.55.0",
+    "mongoose": "^9.0.2",
+    "express": "^5.2.1",
+    "@travel-suite/utils": "workspace:*",
+    "@travel-suite/auth": "workspace:*"
+  }
+}

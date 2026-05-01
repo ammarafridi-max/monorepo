@@ -7,6 +7,8 @@ export function createTicketRouter({ controller, auth }) {
   // Public
   router.post('/', controller.createTicketRequest);
   router.post('/checkout', controller.createStripePaymentUrl);
+  router.post('/paypal/checkout', controller.createPayPalOrder);
+  router.post('/paypal/capture', controller.capturePayPalOrder);
   router.get('/:sessionId', controller.getTicketBySessionId);
 
   // Admin + Agent

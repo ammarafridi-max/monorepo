@@ -80,5 +80,23 @@ export function createTicketController({ service }) {
     }
   };
 
-  return { getAllTickets, getTicketBySessionId, createTicketRequest, createStripePaymentUrl, updateOrderStatus, deleteTicket, refundByTransactionId };
+  const createPayPalOrder = async (req, res, next) => {
+    try {
+      const result = await service.createPayPalOrder(req.body);
+      res.json({ status: 'success', data: result });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  const capturePayPalOrder = async (req, res, next) => {
+    try {
+      const ticket = await service.capturePayPalOrder(req.body);
+      res.json({ status: 'success', data: ticket });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  return { getAllTickets, getTicketBySessionId, createTicketRequest, createStripePaymentUrl, createPayPalOrder, capturePayPalOrder, updateOrderStatus, deleteTicket, refundByTransactionId };
 }

@@ -14,6 +14,7 @@ const ROLE_DEFAULT_PATH = {
 const ROLE_ROUTE_RULES = [
   // Most-specific rules first
   { prefix: '/admin/dummy-tickets',           roles: ['admin', 'agent'] },
+  { prefix: '/admin/emails',                  roles: ['admin', 'agent'] },
   { prefix: '/admin/payment-links',           roles: ['admin', 'agent'] },
   { prefix: '/admin/products',                roles: ['admin', 'agent'] },
   { prefix: '/admin/account',                 roles: ['admin', 'agent', 'blog-manager'] },

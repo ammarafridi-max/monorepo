@@ -1,7 +1,8 @@
 "use client";
 
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
+import { useCapturePayPalOrder } from "../../hooks/dummy-tickets/useCapturePayPalOrder.js";
 import Link from "next/link";
 import {
   CheckCircle2,
@@ -347,8 +348,29 @@ function SuccessContent({ sessionId, dummyTicket, onPurchaseEvent, supportEmail 
 function PaymentSuccessContent({ onPurchaseEvent, supportEmail }) {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("sessionId") || "";
+  const paymentMethod = searchParams.get("paymentMethod") || "card";
+  const paypalOrderId = searchParams.get("token") || ""; // PayPal passes orderId as `token`
+
+  const isPayPal = paymentMethod === "paypal" && !!paypalOrderId;
+
+  const { capturePayPalOrder, isCapturing, isErrorCapture } = useCapturePayPalOrder();
+  const hasCaptured = useRef(false);
+
+  // Trigger PayPal capture once on mount
+  useEffect(() => {
+    if (!isPayPal || hasCaptured.current) return;
+    hasCaptured.current = true;
+    capturePayPalOrder({ sessionId, orderId: paypalOrderId });
+  }, [isPayPal, sessionId, paypalOrderId, capturePayPalOrder]);
+
   const { dummyTicket, isLoadingDummyTicket, isErrorDummyTicket } =
     useGetDummyTicket(sessionId);
+
+  // While PayPal capture is in flight, show spinner
+  if (isPayPal && isCapturing) return <LoadingState />;
+
+  // If capture failed, show error
+  if (isPayPal && isErrorCapture) return <ErrorState supportEmail={supportEmail} />;
 
   if (isLoadingDummyTicket) return <LoadingState />;
 

@@ -44,7 +44,7 @@ function applyCreatedAtFilter(queryObj, createdAt) {
   queryObj.createdAt = { $gte: new Date(Date.now() - hours[createdAt] * 3_600_000) };
 }
 
-export function createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, notifications, frontendUrl }) {
+export function createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, paypal, notifications, frontendUrl }) {
   const getAllTickets = async (query) => {
     const queryObj = { ...query };
     ['page', 'limit', 'search', 'createdAt'].forEach((f) => delete queryObj[f]);
@@ -247,6 +247,143 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     });
   };
 
+  // -- PayPal ---------------------------------------------------------------
+
+  /**
+   * Creates a PayPal order for a ticket.
+   * Always charges in USD (PayPal does not support AED).
+   * Returns { orderId, approveUrl } — frontend redirects to approveUrl.
+   */
+  const createPayPalOrder = async (formData) => {
+    if (!paypal) throw new AppError('PayPal is not configured', 503);
+
+    const { sessionId } = formData;
+    if (!sessionId) throw new AppError('Session ID is required', 400);
+
+    const ticket = await Ticket.findOne({ sessionId });
+    if (!ticket) throw new AppError('Ticket not found', 404);
+
+    const adults = Number(ticket.quantity?.adults || 0);
+    const children = Number(ticket.quantity?.children || 0);
+    if (adults + children < 1) throw new AppError('At least 1 passenger is required for checkout', 400);
+
+    const { currency: baseCurrency, unitPrice } = await pricingService.getUnitPrice(ticket.ticketValidity);
+    const baseTotalAmount = Number((unitPrice * (adults + children)).toFixed(2));
+
+    // PayPal doesn't support AED — always charge in USD.
+    const { amount: totalAmount, currencyCode } = await currencyService.convertFromBase({
+      amount: baseTotalAmount,
+      targetCode: 'USD',
+    });
+
+    await Ticket.findOneAndUpdate({ sessionId }, { $set: { totalAmount, currency: currencyCode } });
+
+    return paypal.createOrder({
+      amount: totalAmount.toFixed(2),
+      currency: currencyCode,
+      sessionId,
+      description: `${ticket.type} Flight Reservation`,
+      returnUrl: `${frontendUrl}/booking/payment?sessionId=${sessionId}&paymentMethod=paypal`,
+      cancelUrl: `${frontendUrl}/booking/review-details`,
+    });
+  };
+
+  /**
+   * Captures an approved PayPal order and marks the ticket as PAID.
+   * Called from the frontend after PayPal redirects back with ?token=<orderId>.
+   */
+  const capturePayPalOrder = async ({ sessionId, orderId }) => {
+    if (!paypal) throw new AppError('PayPal is not configured', 503);
+    if (!sessionId) throw new AppError('Session ID is required', 400);
+    if (!orderId) throw new AppError('PayPal order ID is required', 400);
+
+    const existing = await Ticket.findOne({ sessionId });
+    if (!existing) throw new AppError('Ticket not found', 404);
+
+    // Idempotency — already paid (e.g. user refreshed the page)
+    if (existing.paymentStatus === 'PAID') return existing;
+
+    const captureData = await paypal.captureOrder(orderId);
+
+    if (captureData.status !== 'COMPLETED') {
+      throw new AppError(`PayPal payment not completed (status: ${captureData.status})`, 400);
+    }
+
+    const captureUnit = captureData.purchase_units?.[0];
+    const capture = captureUnit?.payments?.captures?.[0];
+    const amount = parseFloat(capture?.amount?.value ?? existing.totalAmount ?? 0);
+    const currency = (capture?.amount?.currency_code ?? existing.currency ?? 'USD').toUpperCase();
+    const transactionId = captureData.id; // PayPal Order ID
+
+    // Re-validate affiliate attribution at payment time (same logic as Stripe)
+    let shouldClearAffiliate = false;
+    if (existing.affiliate || existing.affiliateId) {
+      const activeAffiliate = existing.affiliate
+        ? await Affiliate.findOne({ _id: existing.affiliate, isActive: true }).select('_id')
+        : null;
+      const withinWindow = isAffiliateAttributionWithinWindow(
+        parseAffiliateCapturedAt(existing.affiliateCapturedAt),
+      );
+
+      if (!activeAffiliate || !withinWindow) {
+        shouldClearAffiliate = true;
+      } else if (existing.affiliate && existing.email) {
+        const hasPriorPaidAffiliatePurchase = await Ticket.exists({
+          _id: { $ne: existing._id },
+          email: normalizeEmail(existing.email),
+          paymentStatus: 'PAID',
+          affiliate: { $ne: null },
+        });
+        if (hasPriorPaidAffiliatePurchase) shouldClearAffiliate = true;
+      }
+    }
+
+    const ticket = await Ticket.findOneAndUpdate(
+      { sessionId },
+      {
+        $set: {
+          paymentStatus: 'PAID',
+          paymentMethod: 'paypal',
+          amountPaid: { currency, amount },
+          transactionId,
+          orderStatus: 'PENDING',
+          ...(shouldClearAffiliate ? { affiliate: null, affiliateId: null, affiliateCapturedAt: null } : {}),
+        },
+      },
+      { new: true },
+    );
+
+    if (!ticket.ticketDelivery.immediate) {
+      await notifications.sendLaterDateDeliveryToCustomer({
+        to: ticket.email,
+        passenger: ticket.passengers?.[0]?.firstName || 'Customer',
+        deliveryDate: ticket.ticketDelivery.deliveryDate,
+      });
+    }
+
+    await notifications.sendTicketPaymentToAdmin({
+      createdAt: ticket.createdAt,
+      type: ticket.type,
+      from: ticket.from,
+      to: ticket.to,
+      departureDate: ticket.departureDate,
+      returnDate: ticket.returnDate,
+      leadPassenger: ticket.leadPassenger,
+      email: ticket.email,
+      number:
+        ticket.phoneNumber?.code && ticket.phoneNumber?.digits
+          ? `${ticket.phoneNumber.code}${ticket.phoneNumber.digits}`
+          : 'Not provided',
+      flightDetails: ticket.flightDetails,
+      ticketValidity: ticket.ticketValidity,
+      ticketDelivery: ticket.ticketDelivery,
+      passengers: ticket.passengers,
+      message: ticket.message,
+    });
+
+    return ticket;
+  };
+
   const refundByTransactionId = async (transactionId) => {
     const ticket = await Ticket.findOne({ transactionId });
     if (!ticket) throw new AppError('Ticket not found', 404);
@@ -317,5 +454,5 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     }
   };
 
-  return { getAllTickets, getTicketBySessionId, updateOrderStatus, deleteTicket, createTicketRequest, createStripePaymentUrl, handleStripeSuccess, refundByTransactionId, sendDueDeliveryEmails };
+  return { getAllTickets, getTicketBySessionId, updateOrderStatus, deleteTicket, createTicketRequest, createStripePaymentUrl, handleStripeSuccess, createPayPalOrder, capturePayPalOrder, refundByTransactionId, sendDueDeliveryEmails };
 }
