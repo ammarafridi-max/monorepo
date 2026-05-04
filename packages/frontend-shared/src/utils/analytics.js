@@ -2,7 +2,6 @@ import ReactGA from 'react-ga4';
 const GA4_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID;
 
 const isProduction = process.env.NODE_ENV === 'production';
-// const isProduction = true;
 
 const isAdminPath = () =>
   typeof window !== 'undefined' &&
@@ -36,7 +35,6 @@ function markPurchaseTracked(transactionId, dedupeKey) {
   } catch {}
 }
 
-// Handles both TFI's { id, pricePerDay } and Travl's { scheme_id, premium } quote shapes
 function buildItem(
   plan,
   { journeyType, regionName, days, totalTravellers = 1, index = 0 },
@@ -56,15 +54,11 @@ function buildItem(
   };
 }
 
-/* --- Core --------------------------------------------------------------------- */
-
 export function initializeGA() {
   if (shouldTrackAnalytics()) {
     ReactGA.initialize(GA4_MEASUREMENT_ID);
   }
 }
-
-/* --- Flight tracking ---------------------------------------------------------- */
 
 export function trackFlightSearch({
   type,
@@ -103,8 +97,6 @@ export function trackFlightFormSubmission({
     });
   }
 }
-
-/* --- Insurance funnel --------------------------------------------------------- */
 
 export function trackQuoteStarted({
   journeyType,
@@ -190,8 +182,6 @@ export function trackBeginCheckout({
 }) {
   if (!shouldTrackAnalytics()) return;
 
-  // Callers can either supply a `plan` (insurance flow — we build the item)
-  // or supply their own `items` array directly (e.g. dummy-ticket flow)
   const finalItems = items ?? (plan
     ? [buildItem(plan, { journeyType, regionName: region?.name, days, totalTravellers })]
     : []);
@@ -257,8 +247,6 @@ export function trackSignUp({ provider }) {
   ReactGA.event('sign_up', { method: provider });
 }
 
-/* --- Purchase (generic, with dedup) ------------------------------------------ */
-
 export function trackPurchaseEvent({
   currency,
   value,
@@ -283,8 +271,6 @@ export function trackPurchaseEvent({
 
   markPurchaseTracked(transactionId, dedupeKey);
 }
-
-/* --- Purchase (insurance-specific, with plan data) --------------------------- */
 
 export function trackPurchase({
   transactionId,

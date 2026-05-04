@@ -31,8 +31,6 @@ import {
   useUpdatePaymentLink,
 } from '../../hooks/payments/usePaymentLinks';
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
 function formatMoney(amount, currency) {
   try {
     return new Intl.NumberFormat('en-US', {
@@ -55,8 +53,6 @@ function formatTimestamp(value) {
     minute: '2-digit',
   }).format(new Date(value));
 }
-
-// ─── UI primitives ────────────────────────────────────────────────────────────
 
 function Card({ title, icon: Icon, children, action }) {
   return (
@@ -115,7 +111,7 @@ function StatusBadge({ status }) {
       </span>
     );
   }
-  // 'active' (and legacy 'pending')
+
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
       <span className="h-2 w-2 rounded-full bg-emerald-500" />
@@ -123,8 +119,6 @@ function StatusBadge({ status }) {
     </span>
   );
 }
-
-// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function AdminPaymentLinkDetailPage() {
   const router = useRouter();
@@ -140,7 +134,6 @@ export default function AdminPaymentLinkDetailPage() {
   const { updatePaymentLink, isUpdatingPaymentLink } = useUpdatePaymentLink();
   const isAdmin = user?.role === 'admin';
 
-  // Inline description edit state
   const [editingDescription, setEditingDescription] = useState(false);
   const [descriptionDraft, setDescriptionDraft] = useState('');
 
@@ -182,7 +175,6 @@ export default function AdminPaymentLinkDetailPage() {
         ]}
       />
 
-      {/* Header strip */}
       <div className="mt-1 flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <button
@@ -283,7 +275,6 @@ export default function AdminPaymentLinkDetailPage() {
         </div>
       </div>
 
-      {/* Cards grid */}
       <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-2">
         <Card title="Payment details" icon={CreditCard}>
           {link.lineItems?.length > 1 ? (
@@ -328,7 +319,6 @@ export default function AdminPaymentLinkDetailPage() {
           <InfoRow label="Currency" value={(link.currency || '').toUpperCase()} />
           <InfoRow label="Status" value={<StatusBadge status={effectiveStatus} />} />
 
-          {/* Editable description row */}
           <div className="flex items-start justify-between gap-4 border-b border-gray-50 py-2 last:border-0">
             <span className="shrink-0 pt-1 text-sm text-gray-400">Description</span>
             {editingDescription ? (
@@ -414,7 +404,6 @@ export default function AdminPaymentLinkDetailPage() {
           <InfoRow label="Transaction ID" value={link.transactionId || '—'} mono />
         </Card>
 
-        {/* Full-width URL card */}
         <div className="lg:col-span-2">
           <Card title="Hosted URL" icon={Receipt}>
             <div className="flex items-center justify-between gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">

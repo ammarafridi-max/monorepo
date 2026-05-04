@@ -3,8 +3,7 @@ import { apiFetch } from './apiClient.js';
 const URL = '/api/admin-users';
 
 export async function getAdminUsersApi(params = {}) {
-  // Drop undefined/null/empty values so they're not serialized as the literal
-  // string "undefined" in the query string (URLSearchParams stringifies values).
+
   const clean = Object.fromEntries(
     Object.entries(params).filter(
       ([, v]) => v !== undefined && v !== null && v !== '',

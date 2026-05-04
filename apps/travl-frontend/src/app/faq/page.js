@@ -28,6 +28,7 @@ export const faqPageData = {
       title: 'Frequently Asked Questions',
       subtitle:
         'Everything you need to know about travel insurance — coverage requirements, policy delivery, Schengen compliance, and how to get the right plan for your visa application.',
+      points: ['Schengen Coverage', 'Policy Delivery', 'Visa Compliance', 'Medical & Emergency'],
     },
   },
 };
@@ -58,6 +59,7 @@ export default function Page() {
         paths={faqPageData?.breadcrumb}
         title={faqPageData?.sections?.hero?.title}
         subtitle={faqPageData?.sections?.hero?.subtitle}
+        points={faqPageData?.sections?.hero?.points ?? []}
       />
       <PrimarySection className="py-10 lg:py-15 bg-white">
         <Container>

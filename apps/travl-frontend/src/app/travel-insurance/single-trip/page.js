@@ -101,6 +101,7 @@ export const pageData = {
       subtitle:
         'Single trip travel insurance covers one specific journey, from your departure date to your return. It is the simplest way to get the coverage you need, whether you are applying for a visa or just want protection during your trip. Policies are issued by AXA and delivered instantly after payment.',
       form: <AllForms defaultTab="insurance" />,
+      pills: ['Single Journey Cover', 'Flexible Dates', 'Issued by AXA', 'Instant Delivery'],
     },
     process: {
       title: 'How to Get Single Trip Insurance',
@@ -165,6 +166,7 @@ export default function Page() {
         title={pageData.sections.hero.title}
         subtitle={pageData.sections.hero.subtitle}
         form={pageData.sections.hero.form}
+        pills={pageData.sections.hero.pills}
         breadcrumbPaths={[
           { label: 'Home', path: '/' },
           { label: 'Travel Insurance', path: '/travel-insurance' },

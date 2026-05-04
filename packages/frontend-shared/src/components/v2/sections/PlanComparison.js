@@ -37,13 +37,10 @@ function CellValue({ value }) {
   return <span className="text-sm font-semibold text-gray-800">{value}</span>;
 }
 
-/* --- Main component ------------------------------------------------------- */
-
 export default function PlanComparison({ quotes, quoteId }) {
   const { schemeId, handleSelectQuote } = useContext(InsuranceContext);
   const { formatMoney } = useCurrency();
 
-  // Collect all unique benefit names in order of first appearance (base only)
   const allBenefitNames = [];
   const seen = new Set();
   for (const quote of quotes) {
@@ -60,7 +57,7 @@ export default function PlanComparison({ quotes, quoteId }) {
   return (
     <div className="w-full overflow-x-auto rounded-2xl border border-gray-200 shadow-sm">
       <table className="w-full border-collapse min-w-[640px]">
-        {/* -- Plan headers ----------------------------------------------- */}
+
         <thead>
           <tr>
             <th className="w-44 bg-white border-b border-gray-200 p-0" />
@@ -110,7 +107,6 @@ export default function PlanComparison({ quotes, quoteId }) {
           </tr>
         </thead>
 
-        {/* -- Benefit rows ----------------------------------------------- */}
         <tbody>
           {allBenefitNames.map((cover, rowIdx) => (
             <tr key={cover} className={rowIdx % 2 === 0 ? "" : "bg-white"}>
@@ -131,7 +127,6 @@ export default function PlanComparison({ quotes, quoteId }) {
             </tr>
           ))}
 
-          {/* Bottom select row */}
           <tr className="border-t-2 border-gray-100">
             <td className="bg-white" />
             {quotes.map((quote) => {

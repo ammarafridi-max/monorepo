@@ -6,15 +6,14 @@ const URL = '/api/tickets';
 
 export async function getDummyTicketsApi(params = {}) {
   const queryString = new URLSearchParams(params).toString();
-  // Use raw fetch here — apiFetch only returns json.data, but we also need
-  // json.pagination and json.results from this paginated list endpoint.
+
   const res = await fetch(`${BACKEND}${URL}?${queryString}`, { credentials: 'include' });
   if (!res.ok) {
     let message = 'Failed to fetch tickets';
     try {
       const json = await res.json();
       message = json.message || json.error || message;
-    } catch { /* ignore */ }
+    } catch {  }
     throw new Error(message);
   }
   const json = await res.json();

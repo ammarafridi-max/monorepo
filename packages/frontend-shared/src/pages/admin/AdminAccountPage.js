@@ -6,8 +6,6 @@ import { useGetMyAccount }     from '../../hooks/account/useGetMyAccount.js';
 import { useUpdateMyAccount }  from '../../hooks/account/useUpdateMyAccount.js';
 import { useUpdateMyPassword } from '../../hooks/account/useUpdateMyPassword.js';
 
-/* --- UI primitives ----------------------------------------------------------- */
-
 const inputCls = 'w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300 transition disabled:bg-gray-50 disabled:text-gray-400';
 
 function Card({ title, icon: Icon, description, children }) {
@@ -88,8 +86,6 @@ function OverviewCard({ account }) {
     </Card>
   );
 }
-
-/* --- Profile form ------------------------------------------------------------- */
 
 function ProfileForm({ account }) {
   const { updateAccount, isUpdating } = useUpdateMyAccount();
@@ -177,8 +173,6 @@ function ProfileForm({ account }) {
     </form>
   );
 }
-
-/* --- Password form ------------------------------------------------------------ */
 
 function PasswordForm() {
   const { updatePassword, isUpdating } = useUpdateMyPassword();
@@ -292,24 +286,19 @@ function PasswordForm() {
   );
 }
 
-/* --- Page --------------------------------------------------------------------- */
-
 export default function AdminAccountPage() {
   const { account, isLoading } = useGetMyAccount();
 
   return (
     <div className="max-w-3xl mx-auto space-y-5">
 
-      {/* Header */}
       <div>
         <h2 className="text-2xl font-extrabold text-gray-900">My Account</h2>
         <p className="text-sm text-gray-400 mt-0.5">Manage your profile and password.</p>
       </div>
 
-      {/* Overview card */}
       {!isLoading && account && <OverviewCard account={account} />}
 
-      {/* Profile card */}
       <Card
         title="Profile Information"
         icon={User}
@@ -324,7 +313,6 @@ export default function AdminAccountPage() {
         )}
       </Card>
 
-      {/* Password card */}
       <Card
         title="Change Password"
         icon={Lock}

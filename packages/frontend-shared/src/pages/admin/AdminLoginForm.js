@@ -28,7 +28,7 @@ export default function AdminLoginForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-      {/* Email */}
+
       <div className="flex flex-col gap-1.5">
         <label
           htmlFor="email"
@@ -54,7 +54,6 @@ export default function AdminLoginForm() {
         </div>
       </div>
 
-      {/* Password */}
       <div className="flex flex-col gap-1.5">
         <label
           htmlFor="password"
@@ -87,7 +86,6 @@ export default function AdminLoginForm() {
         </div>
       </div>
 
-      {/* Submit */}
       <button
         type="submit"
         disabled={isLoggingIn}

@@ -25,6 +25,8 @@ import {
   Link2,
   Package,
   Mail,
+  Stamp,
+  Inbox,
 } from 'lucide-react';
 
 const NAV = [
@@ -50,16 +52,27 @@ const NAV = [
         roles: ['admin', 'agent'],
       },
       {
-        label: 'Email Support',
-        href: '/admin/emails',
-        icon: Mail,
-        roles: ['admin', 'agent'],
-      },
-      {
         label: 'Insurance',
         href: '/admin/insurance-applications',
         icon: ShieldCheck,
         roles: ['admin'],
+      },
+      {
+        label: 'Visa Leads',
+        href: '/admin/visa-leads',
+        icon: Inbox,
+        roles: ['admin'],
+      },
+    ],
+  },
+  {
+    section: 'Emails',
+    items: [
+      {
+        label: 'Email Support',
+        href: '/admin/emails',
+        icon: Mail,
+        roles: ['admin', 'agent'],
       },
     ],
   },
@@ -77,6 +90,12 @@ const NAV = [
         href: '/admin/blog-tags',
         icon: Tag,
         roles: ['admin', 'blog-manager'],
+      },
+      {
+        label: 'Visa Pages',
+        href: '/admin/visa',
+        icon: Stamp,
+        roles: ['admin'],
       },
     ],
   },
@@ -191,7 +210,7 @@ export default function AdminSidebar() {
         credentials: 'include',
       });
     } catch {
-      // continue — cookie will expire naturally
+
     } finally {
       setAdminUser(null);
       router.push('/admin/login');
@@ -201,7 +220,7 @@ export default function AdminSidebar() {
 
   const SidebarContent = (
     <div className="flex flex-col h-full">
-      {/* Logo */}
+
       <div
         className={`flex items-center gap-3 px-4 py-5 border-b border-white/10 ${collapsed ? 'justify-center' : ''}`}
       >
@@ -220,7 +239,6 @@ export default function AdminSidebar() {
         )}
       </div>
 
-      {/* Nav */}
       <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-6">
         {visibleNav.map(({ section, items }) => (
           <div key={section}>
@@ -241,7 +259,6 @@ export default function AdminSidebar() {
         ))}
       </nav>
 
-      {/* Sign out */}
       <div className="px-2 py-4 border-t border-white/10">
         <button
           onClick={handleLogout}
@@ -260,7 +277,7 @@ export default function AdminSidebar() {
 
   return (
     <>
-      {/* Mobile toggle */}
+
       <button
         onClick={() => setMobileOpen(true)}
         className="lg:hidden fixed top-4 left-4 z-40 w-9 h-9 bg-gray-900 border border-white/10 rounded-xl flex items-center justify-center text-white shadow-lg"
@@ -268,7 +285,6 @@ export default function AdminSidebar() {
         <Menu size={16} />
       </button>
 
-      {/* Mobile overlay */}
       {mobileOpen && (
         <div
           className="lg:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
@@ -276,7 +292,6 @@ export default function AdminSidebar() {
         />
       )}
 
-      {/* Mobile drawer */}
       <aside
         className={`lg:hidden fixed top-0 left-0 z-50 h-full w-64 bg-gray-900 transform transition-transform duration-200 ease-in-out ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
@@ -291,7 +306,6 @@ export default function AdminSidebar() {
         {SidebarContent}
       </aside>
 
-      {/* Desktop sidebar */}
       <aside
         className={`hidden lg:flex flex-col bg-gray-900 border-r border-white/10 transition-all duration-200 ease-in-out shrink-0 relative ${
           collapsed ? 'w-16' : 'w-56'
@@ -299,7 +313,6 @@ export default function AdminSidebar() {
       >
         {SidebarContent}
 
-        {/* Collapse toggle */}
         <button
           onClick={() => setCollapsed((c) => !c)}
           className="absolute bottom-24 -right-3 w-6 h-6 bg-gray-700 border border-white/20 rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-600 transition shadow-sm"

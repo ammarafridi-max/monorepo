@@ -4,12 +4,6 @@ import { createDummyTicketApi } from '../../services/apiDummyTickets.js';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
-/**
- * @param {object}   options
- * @param {Function} [options.onAnalytics] - Optional callback for analytics tracking.
- *   Receives { passengers, email, phoneNumber, ticketValidity, flightDetails }.
- *   Pass your app's trackFlightFormSubmission (or similar) here.
- */
 export function useCreateDummyTicket({ onAnalytics } = {}) {
   const router = useRouter();
 

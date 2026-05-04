@@ -1,6 +1,6 @@
 const toAbsoluteUrl = ({ baseUrl = '/', value = '/', basePath = '' }) => {
   if (!value) return baseUrl;
-  if (/^https?:\/\//i.test(value)) return value;
+  if (/^https?:\/\//.test(value)) return value;
   const normalizedBasePath = basePath ? `/${String(basePath).replace(/^\/+|\/+$/g, '')}` : '';
   const normalizedValue = value.startsWith('/') ? value : `/${value}`;
   const needsBasePath =

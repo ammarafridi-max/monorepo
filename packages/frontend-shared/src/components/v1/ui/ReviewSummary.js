@@ -83,7 +83,7 @@ function formatDate(str) {
 function formatDOB(str) {
   if (!str) return "—";
   const [y, m, d] = str.split('-').map(Number);
-  const date = new Date(y, m - 1, d); // local time — avoids UTC midnight rollback
+  const date = new Date(y, m - 1, d);
   if (isNaN(date)) return str;
   return date.toLocaleDateString("en-GB", {
     day: "numeric",

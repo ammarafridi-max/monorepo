@@ -12,22 +12,18 @@ export async function loginApi(credentials) {
   });
 }
 
-/** Admin panel auth — /api/admin-users/me */
 export async function getAdminMeApi() {
   return await apiFetch('/api/admin-users/me');
 }
 
-/** Alias kept for backward compatibility */
 export async function getMeApi() {
   return await getAdminMeApi();
 }
 
-/** Public user auth (travelshield) — /api/users/me */
 export async function getUserMeApi() {
   return await apiFetch('/api/users/me');
 }
 
-/** Exchange NextAuth OAuth token for a backend cookie session (travelshield) */
 export async function exchangeOAuthSessionApi() {
   const tokenRes = await fetch('/api/auth/oauth-token', {
     credentials: 'include',
@@ -69,7 +65,6 @@ export async function exchangeOAuthSessionApi() {
   return json.data || null;
 }
 
-/** Logout user session (travelshield) */
 export async function logoutUserSessionApi() {
   const res = await fetch(`${BACKEND}/api/auth/logout`, {
     method: 'POST',

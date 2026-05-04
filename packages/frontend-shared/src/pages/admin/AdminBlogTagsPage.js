@@ -30,7 +30,7 @@ function fmtDate(iso) {
 export default function AdminBlogTagsPage() {
   const [search, setSearch] = useState('');
   const [deleteId, setDeleteId] = useState(null);
-  const [modal, setModal] = useState(null); // null | 'new' | { tag object }
+  const [modal, setModal] = useState(null);
 
   const { tags, isLoadingBlogTags } = useGetBlogTags(search);
 

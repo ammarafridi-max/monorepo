@@ -32,9 +32,6 @@ export async function apiFetch(path, options = {}) {
   return await returnData(res);
 }
 
-// For server-side public reads — no credentials so Next.js data cache works.
-// Short timeout so build-time fetches fail fast when the backend is unreachable
-// from inside a Docker build; callers wrap in try/catch and render empty.
 export async function apiFetchPublic(path, options = {}) {
   const res = await fetch(`${BACKEND}${path}`, {
     ...options,

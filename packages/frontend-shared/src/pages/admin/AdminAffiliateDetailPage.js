@@ -15,8 +15,6 @@ import { useGetAffiliateApplications } from '../../hooks/affiliates/useGetAffili
 import { useUpdateAffiliate } from '../../hooks/affiliates/useUpdateAffiliate';
 import { useDeleteAffiliate } from '../../hooks/affiliates/useDeleteAffiliate';
 
-/* --- Helpers ----------------------------------------------------------------- */
-
 function fmtDate(iso) {
   if (!iso) return '—';
   return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -46,8 +44,6 @@ function leadPassenger(passengers) {
   const p = passengers[0];
   return [p.title, p.firstName, p.lastName].filter(Boolean).join(' ') || '—';
 }
-
-/* --- UI primitives ----------------------------------------------------------- */
 
 function Card({ title, icon: Icon, children }) {
   return (
@@ -82,8 +78,6 @@ function StatPill({ label, value, sub }) {
   );
 }
 
-/* --- Toggle ------------------------------------------------------------------- */
-
 function Toggle({ checked, onChange, disabled }) {
   return (
     <button
@@ -100,8 +94,6 @@ function Toggle({ checked, onChange, disabled }) {
     </button>
   );
 }
-
-/* --- Edit modal -------------------------------------------------------------- */
 
 const inputCls = 'w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300 transition disabled:bg-gray-50 disabled:text-gray-400';
 
@@ -172,8 +164,6 @@ function EditModal({ affiliate, onClose, onSave, saving }) {
   );
 }
 
-/* --- Delete section ----------------------------------------------------------- */
-
 function DeleteSection({ id }) {
   const router = useRouter();
   const [confirm, setConfirm] = useState(false);
@@ -212,8 +202,6 @@ function DeleteSection({ id }) {
   );
 }
 
-/* --- Pagination --------------------------------------------------------------- */
-
 function Pagination({ page, totalPages, paramKey }) {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -240,8 +228,6 @@ function Pagination({ page, totalPages, paramKey }) {
     </div>
   );
 }
-
-/* --- Tickets table ------------------------------------------------------------ */
 
 function TicketsTable({ affiliateId, commissionPercent }) {
   const searchParams = useSearchParams();
@@ -307,8 +293,6 @@ function TicketsTable({ affiliateId, commissionPercent }) {
     </>
   );
 }
-
-/* --- Applications table ------------------------------------------------------- */
 
 function ApplicationsTable({ affiliateId, commissionPercent }) {
   const searchParams = useSearchParams();
@@ -376,8 +360,6 @@ function ApplicationsTable({ affiliateId, commissionPercent }) {
   );
 }
 
-/* --- Content (needs Suspense for useSearchParams) ----------------------------- */
-
 function AffiliateDetailContent() {
   const { id } = useParams();
   const [editOpen, setEditOpen] = useState(false);
@@ -389,7 +371,6 @@ function AffiliateDetailContent() {
   const hasTickets      = stats?.commissionableTypes?.includes('ticket');
   const hasInsurance    = stats?.commissionableTypes?.includes('insurance');
 
-  /* -- Loading -- */
   if (isLoadingAffiliate) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -401,7 +382,6 @@ function AffiliateDetailContent() {
     );
   }
 
-  /* -- Error -- */
   if (isErrorAffiliate || !affiliate) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -441,7 +421,6 @@ function AffiliateDetailContent() {
 
       <div className="max-w-7xl mx-auto space-y-5">
 
-        {/* -- Header -- */}
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">
             <Link
@@ -480,7 +459,6 @@ function AffiliateDetailContent() {
           </button>
         </div>
 
-        {/* -- Stats -- */}
         {!isLoadingStats && stats && (
           <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
             {hasTickets && (
@@ -524,10 +502,8 @@ function AffiliateDetailContent() {
           </div>
         )}
 
-        {/* -- Two-column body -- */}
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_260px] gap-5 items-start">
 
-          {/* Main content: Tickets and/or Applications */}
           <div className="space-y-5">
             {hasTickets && (
               <Card title="Tickets" icon={Ticket}>
@@ -553,7 +529,6 @@ function AffiliateDetailContent() {
             )}
           </div>
 
-          {/* Sidebar */}
           <div className="space-y-4 xl:sticky xl:top-6">
 
             <Card title="Affiliate Info" icon={Handshake}>
@@ -584,7 +559,6 @@ function AffiliateDetailContent() {
               )}
             </Card>
 
-            {/* Danger zone */}
             <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
               <div className="px-5 py-3.5 border-b border-gray-100">
                 <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Danger Zone</p>
@@ -600,8 +574,6 @@ function AffiliateDetailContent() {
     </>
   );
 }
-
-/* --- Page --------------------------------------------------------------------- */
 
 export default function AdminAffiliateDetailPage() {
   return (

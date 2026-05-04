@@ -1,5 +1,4 @@
-// ─── Brand-aware factory ────────────────────────────────────────────────────
-// Call once per frontend to get builders pre-bound to that brand's IDs/URLs.
+
 
 export function createSchemaBuilders({
   siteUrl,
@@ -119,11 +118,9 @@ export function createSchemaBuilders({
   };
 }
 
-// ─── Pure builders (no brand data needed) ───────────────────────────────────
-
 const toAbsoluteUrl = ({ baseUrl = '', value = '/', basePath = '' }) => {
   if (!value) return baseUrl;
-  if (/^https?:\/\//i.test(value)) return value;
+  if (/^https?:\/\//.test(value)) return value;
 
   const normalizedBasePath = basePath
     ? `/${String(basePath).replace(/^\/+|\/+$/g, '')}`

@@ -6,7 +6,7 @@ import AdminLoginForm from './AdminLoginForm';
 export default function AdminLoginPage({ siteName = 'Admin' }) {
   return (
     <div className="min-h-screen flex">
-      {/* Left panel — brand */}
+
       <div className="hidden lg:flex lg:w-1/2 bg-linear-to-br from-primary-950 via-primary-900 to-primary-800 flex-col justify-between p-12 relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-white/5" />
@@ -60,10 +60,9 @@ export default function AdminLoginPage({ siteName = 'Admin' }) {
         </p>
       </div>
 
-      {/* Right panel — form */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 bg-gray-50">
         <div className="w-full max-w-md">
-          {/* Mobile logo */}
+
           <div className="lg:hidden flex items-center gap-2 mb-8">
             <Plane size={22} className="text-primary-700" />
             <span className="font-extrabold text-gray-900 text-lg">{siteName}</span>
@@ -78,7 +77,6 @@ export default function AdminLoginPage({ siteName = 'Admin' }) {
               Enter your admin credentials to continue.
             </p>
 
-            {/* Wrapped in Suspense because AdminLoginForm uses useSearchParams */}
             <Suspense
               fallback={
                 <div className="flex items-center justify-center py-10">

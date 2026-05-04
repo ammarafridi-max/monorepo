@@ -9,8 +9,6 @@ import { useCreateAdminUser } from '../../hooks/admin-users/useCreateAdminUser';
 import { useUpdateAdminUser } from '../../hooks/admin-users/useUpdateAdminUser';
 import { deleteAdminUserApi } from '../../services/apiAdminUsers';
 
-/* --- Config ----------------------------------------------------------------- */
-
 const ROLES = ['admin', 'agent', 'blog-manager'];
 const STATUSES = ['ACTIVE', 'INACTIVE'];
 
@@ -24,8 +22,6 @@ const STATUS_CFG = {
   ACTIVE:   { dot: 'bg-green-500', cls: 'text-green-700'  },
   INACTIVE: { dot: 'bg-gray-400',  cls: 'text-gray-500'   },
 };
-
-/* --- Helpers ---------------------------------------------------------------- */
 
 function fmtDate(iso) {
   if (!iso) return '—';
@@ -50,8 +46,6 @@ function StatusDot({ status }) {
     </span>
   );
 }
-
-/* --- Modal ------------------------------------------------------------------ */
 
 const inputCls =
   'w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300 transition disabled:bg-gray-50 disabled:text-gray-400';
@@ -78,7 +72,6 @@ function UserModal({ initial, onClose, onSave, saving }) {
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
 
-        {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <p className="text-sm font-bold text-gray-900">{isEdit ? 'Edit User' : 'New User'}</p>
           <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition">
@@ -86,7 +79,6 @@ function UserModal({ initial, onClose, onSave, saving }) {
           </button>
         </div>
 
-        {/* Body */}
         <div className="px-6 py-5 space-y-4 max-h-[70vh] overflow-y-auto">
 
           <div>
@@ -151,7 +143,6 @@ function UserModal({ initial, onClose, onSave, saving }) {
           </div>
         </div>
 
-        {/* Footer */}
         <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-gray-100 bg-gray-50/60">
           <button onClick={onClose} className="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-xl transition">Cancel</button>
           <button
@@ -167,8 +158,6 @@ function UserModal({ initial, onClose, onSave, saving }) {
     </div>
   );
 }
-
-/* --- Page ------------------------------------------------------------------- */
 
 export default function AdminUsersPage() {
   const [search, setSearch]  = useState('');
@@ -225,7 +214,6 @@ export default function AdminUsersPage() {
 
       <div className="max-w-7xl mx-auto space-y-5">
 
-        {/* Header */}
         <div className="flex items-center justify-between gap-4">
           <div>
             <h2 className="text-2xl font-extrabold text-gray-900">Admin Users</h2>
@@ -274,7 +262,6 @@ export default function AdminUsersPage() {
           </div>
         </div>
 
-        {/* Table card */}
         <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
           {isLoadingUsers ? (
             <div className="flex items-center justify-center py-20">
@@ -307,7 +294,6 @@ export default function AdminUsersPage() {
                   {users.map((user) => (
                     <tr key={user._id} className={`hover:bg-gray-50/60 transition-colors group ${isDeletingUser ? 'pointer-events-none' : ''}`}>
 
-                      {/* User */}
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center shrink-0">
@@ -322,19 +308,14 @@ export default function AdminUsersPage() {
                         </div>
                       </td>
 
-                      {/* Email */}
                       <td className="px-4 py-3 text-sm text-gray-600">{user.email}</td>
 
-                      {/* Role */}
                       <td className="px-4 py-3"><RoleBadge role={user.role} /></td>
 
-                      {/* Status */}
                       <td className="px-4 py-3"><StatusDot status={user.status} /></td>
 
-                      {/* Created */}
                       <td className="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">{fmtDate(user.createdAt)}</td>
 
-                      {/* Actions */}
                       <td className="px-4 py-3 w-28">
                         {deleteId === user.username ? (
                           <div className="flex items-center gap-1.5 text-xs">

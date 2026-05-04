@@ -3,16 +3,6 @@ import Container from '../../components/v1/layout/Container';
 import PrimarySection from '../../components/v1/layout/PrimarySection';
 import PageHero from '../../components/v1/sections/PageHero';
 
-/**
- * BlogTagsPage — shared UI component for the /blog/tags index page.
- *
- * Props:
- *   tags             — array of tag objects from the API
- *   hero             — { title, subtitle }
- *   breadcrumbPaths  — array of { label, path }
- *   schema           — pre-built JSON-LD graph object
- *   breadcrumbJsonLd — pre-built breadcrumb JSON-LD object
- */
 export default function BlogTagsPage({
   tags = [],
   hero,
@@ -38,6 +28,7 @@ export default function BlogTagsPage({
       <PageHero
         title={hero?.title}
         subtitle={hero?.subtitle}
+        points={hero?.points ?? []}
         paths={breadcrumbPaths}
       />
 

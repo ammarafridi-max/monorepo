@@ -23,10 +23,6 @@ export default function Hero({
 
       <Container className="relative flex flex-col lg:flex-row items-start lg:items-center justify-between gap-9 lg:gap-14">
         <div className="w-full lg:w-1/2 text-left">
-          {/* <div className="inline-flex items-center gap-2 rounded-full border border-primary-200 bg-white/75 px-3 py-1 text-[12px] font-medium text-primary-900 backdrop-blur-sm">
-            <HiStar className="text-accent-500" />
-            Trusted by thousands of visa applicants
-          </div> */}
 
           {breadcrumbPaths.length > 0 && (
             <Breadcrumb paths={breadcrumbPaths} />

@@ -14,8 +14,6 @@ import { extractIataCode } from '../../utils/extractIataCode';
 import { convertToDubaiDate } from '../../utils/dates';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 
-/* --- Config ------------------------------------------------------------------ */
-
 const PAYMENT_TABS = [
   { value: '',       label: 'All'      },
   { value: 'PAID',   label: 'Paid'     },
@@ -39,8 +37,6 @@ const TIME_OPTIONS = [
   { value: '30_days',  label: 'Last 30 days'  },
   { value: '90_days',  label: 'Last 90 days'  },
 ];
-
-/* --- Badges ------------------------------------------------------------------ */
 
 const PAYMENT_CFG = {
   PAID:     { dot: 'bg-green-500', cls: 'bg-green-50  text-green-700  border-green-200'  },
@@ -74,8 +70,6 @@ function OrderBadge({ status }) {
   );
 }
 
-/* --- Filter pill ------------------------------------------------------------- */
-
 function FilterPill({ label, active, onClick }) {
   return (
     <button
@@ -91,8 +85,6 @@ function FilterPill({ label, active, onClick }) {
   );
 }
 
-/* --- Main content ------------------------------------------------------------ */
-
 function DummyTicketsContent() {
   const router       = useRouter();
   const searchParams = useSearchParams();
@@ -107,7 +99,7 @@ function DummyTicketsContent() {
   const paymentFilter = searchParams.get('paymentStatus')        || '';
   const orderFilter   = searchParams.get('orderStatus')          || '';
   const search        = searchParams.get('search')               ?? '';
-  // Agents are locked to last 4 hours — ignore any URL param they may set
+
   const createdAt     = isAgent ? '4_hours' : (searchParams.get('createdAt') ?? 'all_time');
   const totalPages    = pagination?.totalPages                   ?? 1;
   const total         = pagination?.total                        ?? 0;
@@ -128,7 +120,6 @@ function DummyTicketsContent() {
   return (
     <div className="max-w-7xl mx-auto space-y-5">
 
-      {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-2xl font-extrabold text-gray-900">Dummy Tickets</h2>
@@ -138,7 +129,6 @@ function DummyTicketsContent() {
         </div>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-wrap items-center gap-4">
         <div className="relative w-full max-w-sm">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
@@ -190,7 +180,6 @@ function DummyTicketsContent() {
         )}
       </div>
 
-      {/* Table card */}
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
         {isLoadingDummyTickets ? (
           <div className="flex items-center justify-center py-20">
@@ -320,8 +309,6 @@ function DummyTicketsContent() {
     </div>
   );
 }
-
-/* --- Page -------------------------------------------------------------------- */
 
 export default function AdminDummyTicketsPage() {
   return (

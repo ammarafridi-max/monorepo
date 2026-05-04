@@ -57,8 +57,6 @@ function buildFormData(form, coverFile, editorRef, isEdit = false) {
   return fd;
 }
 
-/* --- UI primitives ---------------------------------------------------------- */
-
 const inputCls =
   'w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder:text-gray-300 transition';
 const textareaCls = `${inputCls} resize-none`;
@@ -124,8 +122,6 @@ function getAuthorName(person) {
   return person.name || person.username || person.email || '—';
 }
 
-/* --- Status options --------------------------------------------------------- */
-
 const STATUS_OPTIONS = [
   {
     value: 'draft',
@@ -150,22 +146,9 @@ const STATUS_OPTIONS = [
   },
 ];
 
-/* --- TinyMCE config --------------------------------------------------------- */
-
-/* --- BlogForm --------------------------------------------------------------- */
-
-/**
- * Reusable blog create / edit form.
- *
- * Props:
- *  - initialData  Blog object when editing, null when creating
- *  - onSubmit(fd: FormData)  Called with the built FormData on save
- *  - isPending    Boolean — disables submit while the mutation is in flight
- */
 export default function BlogForm({ initialData = null, onSubmit, isPending }) {
   const isEdit = !!initialData?._id;
 
-  /* -- form state ----------------------------------------------- */
   const [form, setForm] = useState(() => ({
     title: initialData?.title ?? '',
     slug: initialData?.slug ?? '',
@@ -183,7 +166,7 @@ export default function BlogForm({ initialData = null, onSubmit, isPending }) {
   }));
 
   const [slugLocked, setSlugLocked] = useState(isEdit);
-  const [faqMode, setFaqMode] = useState('plain'); // 'plain' | 'json'
+  const [faqMode, setFaqMode] = useState('plain');
   const [jsonText, setJsonText] = useState('');
   const [jsonError, setJsonError] = useState('');
   const [coverFile, setCoverFile] = useState(null);
@@ -198,8 +181,6 @@ export default function BlogForm({ initialData = null, onSubmit, isPending }) {
 
   const { tags: availableTags, isLoadingBlogTags } = useGetBlogTags();
 
-  /* -- helpers -------------------------------------------------- */
-
   function set(key, value) {
     setForm((prev) => {
       const next = { ...prev, [key]: value };
@@ -207,8 +188,6 @@ export default function BlogForm({ initialData = null, onSubmit, isPending }) {
       return next;
     });
   }
-
-  /* -- cover image ----------------------------------------------- */
 
   function handleCoverChange(e) {
     const file = e.target.files[0];
@@ -222,8 +201,6 @@ export default function BlogForm({ initialData = null, onSubmit, isPending }) {
     setCoverPreview(null);
     if (coverInputRef.current) coverInputRef.current.value = '';
   }
-
-  /* -- FAQs ------------------------------------------------------ */
 
   function addFaq() {
     set('faqs', [...form.faqs, { question: '', answer: '' }]);
@@ -275,8 +252,6 @@ export default function BlogForm({ initialData = null, onSubmit, isPending }) {
     else switchToPlain();
   }
 
-  /* -- submit ---------------------------------------------------- */
-
   function handleSubmit(e) {
     e.preventDefault();
     if (faqMode === 'json') {
@@ -300,11 +275,9 @@ export default function BlogForm({ initialData = null, onSubmit, isPending }) {
     onSubmit(buildFormData(form, coverFile, editorRef, isEdit));
   }
 
-  /* -- render ---------------------------------------------------- */
-
   return (
     <form onSubmit={handleSubmit} className="max-w-7xl mx-auto space-y-5">
-      {/* -- Page header -------------------------------------------- */}
+
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">
           <Link
@@ -335,11 +308,10 @@ export default function BlogForm({ initialData = null, onSubmit, isPending }) {
         </button>
       </div>
 
-      {/* -- Two-column body ----------------------------------------- */}
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_300px] gap-5 items-start">
-        {/* -- Main column -------------------------------------------- */}
+
         <div className="space-y-5">
-          {/* Post details */}
+
           <Card title="Post Details">
             <div className="space-y-4">
               <Field
@@ -414,7 +386,6 @@ export default function BlogForm({ initialData = null, onSubmit, isPending }) {
             </div>
           </Card>
 
-          {/* Content editor */}
           <Card title="Content">
             <TinyEditor
               editorRef={editorRef}
@@ -422,9 +393,8 @@ export default function BlogForm({ initialData = null, onSubmit, isPending }) {
             />
           </Card>
 
-          {/* FAQs */}
           <Card title="FAQs" collapsible defaultOpen={form.faqs.length > 0}>
-            {/* Mode toggle */}
+
             <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5 w-fit mb-4">
               {['plain', 'json'].map((mode) => (
                 <button
@@ -517,9 +487,8 @@ export default function BlogForm({ initialData = null, onSubmit, isPending }) {
           </Card>
         </div>
 
-        {/* -- Sidebar ------------------------------------------------- */}
         <div className="space-y-4 xl:sticky xl:top-6">
-          {/* Cover image */}
+
           {isEdit && (
             <Card title="Post Info">
               <div className="space-y-3 text-xs">
@@ -543,7 +512,6 @@ export default function BlogForm({ initialData = null, onSubmit, isPending }) {
             </Card>
           )}
 
-          {/* Cover image */}
           <Card title="Cover Image">
             {coverPreview ? (
               <div className="relative group rounded-xl overflow-hidden border border-gray-100">
@@ -609,7 +577,6 @@ export default function BlogForm({ initialData = null, onSubmit, isPending }) {
             )}
           </Card>
 
-          {/* Publish settings */}
           <Card title="Publish">
             <div className="space-y-2">
               {STATUS_OPTIONS.map(({ value, label, Icon, dot, desc }) => (
@@ -665,7 +632,6 @@ export default function BlogForm({ initialData = null, onSubmit, isPending }) {
             </div>
           </Card>
 
-          {/* Tags */}
           <Card title="Tags">
             {isLoadingBlogTags ? (
               <div className="flex items-center justify-center py-4">
@@ -711,7 +677,6 @@ export default function BlogForm({ initialData = null, onSubmit, isPending }) {
             )}
           </Card>
 
-          {/* SEO */}
           <Card title="SEO" collapsible defaultOpen={false}>
             <div className="space-y-4">
               <Field

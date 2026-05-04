@@ -12,7 +12,7 @@ const ROLE_DEFAULT_PATH = {
 };
 
 const ROLE_ROUTE_RULES = [
-  // Most-specific rules first
+
   { prefix: '/admin/dummy-tickets',           roles: ['admin', 'agent'] },
   { prefix: '/admin/emails',                  roles: ['admin', 'agent'] },
   { prefix: '/admin/payment-links',           roles: ['admin', 'agent'] },
@@ -26,7 +26,7 @@ const ROLE_ROUTE_RULES = [
   { prefix: '/admin/revenue',                 roles: ['admin'] },
   { prefix: '/admin/blog',                    roles: ['admin', 'blog-manager'] },
   { prefix: '/admin/blog-tags',               roles: ['admin', 'blog-manager'] },
-  // Dashboard — all roles but agent is shown a restricted view
+
   { prefix: '/admin',                         roles: ['admin', 'agent', 'blog-manager'] },
 ];
 

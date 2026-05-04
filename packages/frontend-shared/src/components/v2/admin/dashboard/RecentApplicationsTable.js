@@ -33,16 +33,10 @@ function JourneyBadge({ type }) {
   );
 }
 
-/**
- * @param {{ applications: Array }} props
- * `applications` shape (from backend /api/insurance):
- *  { _id, sessionId, leadPassenger (virtual), email, region, journeyType,
- *    amountPaid: { currency, amount }, paymentStatus, createdAt }
- */
 export default function RecentApplicationsTable({ applications = [] }) {
   return (
     <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-      {/* Header */}
+
       <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
         <div>
           <p className="font-bold text-gray-900 text-sm">Recent Applications</p>
@@ -57,7 +51,6 @@ export default function RecentApplicationsTable({ applications = [] }) {
         </Link>
       </div>
 
-      {/* Table */}
       {applications.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
           <div className="w-12 h-12 rounded-2xl bg-gray-100 flex items-center justify-center mb-3">

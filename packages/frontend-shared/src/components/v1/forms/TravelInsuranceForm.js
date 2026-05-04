@@ -168,9 +168,7 @@ export default function TravelInsuranceForm() {
             onChange={setRegion}
             minSearchLength={0}
           />
-          {/* {region?.description && (
-            <p className="text-xs text-gray-400 pl-1">{region.description}</p>
-          )} */}
+
         </div>
       </div>
 

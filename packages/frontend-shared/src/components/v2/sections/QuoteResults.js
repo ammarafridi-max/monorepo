@@ -83,7 +83,7 @@ export default function QuoteResults() {
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-10">
-      {/* -- Toolbar ---------------------------------------------------- */}
+
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-xl font-bold text-gray-900">
@@ -104,7 +104,7 @@ export default function QuoteResults() {
         </div>
 
         <div className="flex items-center gap-3">
-          {/* View toggle */}
+
           <div className="flex items-center bg-gray-100 rounded-xl p-1 gap-1">
             <button
               type="button"
@@ -134,7 +134,6 @@ export default function QuoteResults() {
             </button>
           </div>
 
-          {/* Sort — only shown in cards view */}
           {view === "cards" && (
             <div className="flex items-center gap-2">
               <SlidersHorizontal size={15} className="text-gray-400" />
@@ -153,7 +152,6 @@ export default function QuoteResults() {
         </div>
       </div>
 
-      {/* -- Views ------------------------------------------------------ */}
       {quotes.length === 0 ? (
         <div className="flex flex-col items-center gap-3 py-16 text-center">
           <AlertCircle size={28} className="text-gray-300" />

@@ -23,6 +23,8 @@ COPY packages/tickets/package.json         packages/tickets/package.json
 COPY packages/users/package.json           packages/users/package.json
 COPY packages/utils/package.json           packages/utils/package.json
 COPY packages/email-support/package.json   packages/email-support/package.json
+COPY packages/visa/package.json            packages/visa/package.json
+COPY packages/visa-leads/package.json      packages/visa-leads/package.json
 COPY apps/travl-backend/package.json       apps/travl-backend/package.json
 
 RUN pnpm install --frozen-lockfile

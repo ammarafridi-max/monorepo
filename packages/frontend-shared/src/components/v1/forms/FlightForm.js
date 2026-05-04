@@ -19,7 +19,6 @@ import { normalizePricingOptions } from '../../../utils/dummyTicketPricing';
 import { useCurrency } from '../../../contexts/CurrencyContext.js';
 import { todayDateOnly } from '../../../utils/dates';
 
-// Default pricing fallback (used when no dynamic pricing is returned from the API)
 const PRICING_OPTIONS = [
   { value: '2 Days', label: '2 Days', price: 49 },
   { value: '7 Days', label: '7 Days', price: 69 },

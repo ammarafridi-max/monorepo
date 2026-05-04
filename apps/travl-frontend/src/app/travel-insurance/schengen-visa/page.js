@@ -112,6 +112,7 @@ export const pageData = {
       subtitle:
         'Get an embassy-compliant Schengen visa travel insurance policy online instantly. EUR 30,000 medical coverage included, accepted by VFS and BLS centers across the UAE. Plans from AED 30.',
       form: <AllForms defaultTab="insurance" />,
+      pills: ['EUR 30,000 Coverage', 'VFS & BLS Accepted', 'Instant Delivery', 'From AED 30'],
     },
     process: {
       title: 'How to Book Travel Insurance',
@@ -182,6 +183,7 @@ export default function Page() {
       <Hero
         title={pageData.sections.hero.title}
         subtitle={pageData.sections.hero.subtitle}
+        pills={pageData.sections.hero.pills}
         form={pageData.sections.hero.form}
         breadcrumbPaths={[
           { label: 'Home', path: '/' },

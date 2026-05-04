@@ -36,7 +36,6 @@ export default function NationalitySelect({ value, onChange, nationalities = [],
     inputRef.current?.blur();
   }
 
-  // Show selected name when closed, show search query when open
   const displayValue = open ? query : (value?.nationality ?? '');
 
   return (
@@ -81,7 +80,6 @@ export default function NationalitySelect({ value, onChange, nationalities = [],
         </div>
       )}
 
-      {/* Hidden native input so the form required validation still works */}
       {required && (
         <input
           tabIndex={-1}

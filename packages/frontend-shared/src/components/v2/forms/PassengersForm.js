@@ -65,14 +65,14 @@ function dobBoundsForType(type) {
   const pad = (yr) => `${yr}-${m}-${d}`;
 
   if (type === 'children') {
-    // Age 0–16: born from today back to 17 years ago + 1 day
+
     return { minDate: pad(y - 16), maxDate: `${y}-${m}-${d}` };
   }
   if (type === 'seniors') {
-    // Age 66–75: born between 75 and 66 years ago
+
     return { minDate: pad(y - 75), maxDate: pad(y - 66) };
   }
-  // adults: Age 17–65
+
   return { minDate: pad(y - 65), maxDate: pad(y - 17) };
 }
 

@@ -8,13 +8,13 @@ import { UserAuthProvider } from "../../contexts/UserAuthContext.js";
 import { CurrencyProvider } from "../../contexts/CurrencyContext.js";
 
 export default function Providers({ children }) {
-  // useState ensures each request gets its own QueryClient (prevents shared state between users)
+
   const [queryClient] = useState(
     () =>
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 60 * 1000, // 1 minute
+            staleTime: 60 * 1000,
             retry: 1,
           },
         },

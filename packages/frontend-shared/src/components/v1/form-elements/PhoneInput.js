@@ -121,7 +121,7 @@ export default function PhoneInput({ value, onChange, required }) {
     if (!value?.code) {
       onChange({ code: selected.dial, digits: value?.digits ?? '' });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, []);
 
   useEffect(() => {

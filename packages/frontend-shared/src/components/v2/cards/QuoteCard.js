@@ -24,7 +24,6 @@ function BenefitRow({ b }) {
   );
 }
 
-// isSelected is passed from parent (already computed with == for type safety)
 export default function QuoteCard({ quote, isSelected, onSelect }) {
   const [expanded, setExpanded] = useState(false);
   const { formatMoney } = useCurrency();

@@ -4,6 +4,8 @@ import { createEmailSupportFeature } from "@travel-suite/email-support";
 import { createInsuranceRouter } from "@travel-suite/insurance";
 import { createAdminUsersRouter } from "@travel-suite/admin-users";
 import { createBlogRouter, createBlogTagRouter } from "@travel-suite/blog";
+import { createVisaRouter } from "@travel-suite/visa";
+import { createVisaLeadRouter } from "@travel-suite/visa-leads";
 import { createCurrenciesRouter } from "@travel-suite/currencies";
 import { createFlightRouter, createAirportsRouter, createAmadeusClient } from "@travel-suite/flights";
 import { createAffiliatesRouter, AffiliateSchema } from "@travel-suite/affiliates";
@@ -28,10 +30,6 @@ import { sendEmail } from "../utils/email.js";
 import { insurancePaymentCompletionEmail } from "../notifications/insurance.js";
 import config from "../utils/config.js";
 
-// -- Model pre-registration (ORDER CRITICAL) -----------------------------------
-// Must happen before ANY package factory is called. Insurance, Tickets, and
-// Affiliates all share the Affiliate model — whoever registers first wins.
-// Pre-register the full schema here so all three get the version with statics.
 function getOrRegisterModel(conn, name, schema) {
   try { return conn.model(name); } catch { return conn.model(name, schema); }
 }
@@ -39,7 +37,6 @@ const AffiliateModel = getOrRegisterModel(db, 'Affiliate', AffiliateSchema);
 
 const router = Router();
 
-// -- Auth ---------------------------------------------------------------------
 const { router: authRouter, middleware: auth, AdminUser } = createAuthRouter({
   db,
   jwtSecret: config.jwtSecret,
@@ -50,10 +47,8 @@ const { router: authRouter, middleware: auth, AdminUser } = createAuthRouter({
 
 router.use("/auth", authRouter);
 
-// -- Admin Users ---------------------------------------------------------------
 router.use("/admin-users", createAdminUsersRouter({ AdminUser, auth }));
 
-// -- Insurance -----------------------------------------------------------------
 router.use(
   "/insurance",
   createInsuranceRouter({
@@ -65,7 +60,6 @@ router.use(
   }),
 );
 
-// -- Blog ----------------------------------------------------------------------
 const imageStorage = createCloudinaryStorage({
   cloudName: config.cloudinary.cloudName,
   apiKey: config.cloudinary.apiKey,
@@ -75,9 +69,17 @@ const imageStorage = createCloudinaryStorage({
 });
 router.use("/blogs", createBlogRouter({ db, auth, imageStorage }));
 router.use("/blog-tags", createBlogTagRouter({ db, auth }));
+
+const visaImageStorage = createCloudinaryStorage({
+  cloudName: config.cloudinary.cloudName,
+  apiKey: config.cloudinary.apiKey,
+  apiSecret: config.cloudinary.apiSecret,
+  logger,
+  folder: "travl/visa",
+});
+router.use("/visas", createVisaRouter({ db, auth, imageStorage: visaImageStorage }));
 router.use("/currencies", createCurrenciesRouter({ db, auth }));
 
-// -- Flights -------------------------------------------------------------------
 const amadeus = createAmadeusClient({
   apiKey: config.amadeus.apiKey,
   apiSecret: config.amadeus.apiSecret,
@@ -86,7 +88,6 @@ const amadeus = createAmadeusClient({
 router.use("/flights", createFlightRouter({ db, amadeus, auth }));
 router.use("/airports", createAirportsRouter({ amadeus }));
 
-// -- Notifications -------------------------------------------------------------
 const notifications = createNotificationsService({
   sendEmail,
   logger,
@@ -102,23 +103,18 @@ const notifications = createNotificationsService({
   },
 });
 
-// -- Stripe --------------------------------------------------------------------
+router.use("/visa-leads", createVisaLeadRouter({ db, auth, notificationsService: notifications }));
+
 const stripe = createStripeClient({ secretKey: config.stripe.secretKey });
 
-// -- Tickets -------------------------------------------------------------------
-// AffiliateModel already pre-registered above. Tickets receives it and returns
-// its own TicketModel (full schema with handledBy for populate).
 const { router: ticketsRouter, pricingRouter, handleStripeSuccess, TicketModel } = createTicketsRouter({
   db, auth, stripe, notifications, frontendUrl: config.frontendUrl, AffiliateModel,
 });
 router.use("/tickets", ticketsRouter);
 router.use("/pricing", pricingRouter);
 
-// -- Affiliates ----------------------------------------------------------------
-// Receives the full TicketModel so affiliate stats/tickets queries hit dummytickets.
 router.use("/affiliates", createAffiliatesRouter({ db, auth, TicketModel }));
 
-// -- Payments (admin: revenue dashboard + custom payment links) ---------------
 const paymentService = createPaymentService({ stripe, db, PaymentLinkSchema, ProductSchema });
 const paymentsController = createPaymentsController({ service: paymentService });
 router.use("/payments", createPaymentsAdminRouter({ controller: paymentsController, auth }));
@@ -145,7 +141,6 @@ async function handlePaymentLinkSuccess(session) {
   });
 }
 
-// -- Email Support (AI-powered inbox) -----------------------------------------
 const brandContext = `Travl.ae is a UAE-based travel services platform offering flight reservation documents (dummy tickets) for visa applications, hotel reservations, and travel insurance. Flight reservations are valid for Schengen, US, UK, and other visa applications. They are verifiable on GDS systems. Customers sometimes worry when airline websites don't show the booking as confirmed — reassure them this is normal for reservation documents.`;
 
 const { router: emailSupportRouter, pollAndProcess } = createEmailSupportFeature({
@@ -159,7 +154,6 @@ const { router: emailSupportRouter, pollAndProcess } = createEmailSupportFeature
 router.use('/email-support', emailSupportRouter);
 export { pollAndProcess };
 
-// -- Stripe webhook handler (exported for mounting in app.js before JSON middleware) --
 export const stripeWebhookHandler = createStripeWebhookHandler({
   stripe,
   webhookSecret: config.stripe.webhookSecret,
@@ -170,7 +164,6 @@ export const stripeWebhookHandler = createStripeWebhookHandler({
   },
 });
 
-// -- Users (public-facing accounts) -------------------------------------------
 const { router: usersRouter } = createUsersRouter({
   db,
   jwtSecret: config.userJwtSecret,

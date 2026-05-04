@@ -74,10 +74,8 @@ export default function AdminEmailsPage() {
   const { skipEmail, isSkippingEmail } = useSkipEmail();
   const { updateDraft } = useUpdateEmailDraft();
 
-  // Debounce ref for draft auto-save
   const debounceRef = useRef(null);
 
-  // When selected email changes, update the draft textarea
   useEffect(() => {
     if (selectedEmail) {
       setDraftText(selectedEmail.draft || '');
@@ -86,7 +84,6 @@ export default function AdminEmailsPage() {
     }
   }, [selectedEmail?._id]);
 
-  // Sync selected email when list refreshes (e.g. after send/skip)
   useEffect(() => {
     if (selectedEmail) {
       const refreshed = emails.find((e) => e._id === selectedEmail._id);
@@ -138,7 +135,6 @@ export default function AdminEmailsPage() {
         <PageHeading>Email Support</PageHeading>
       </div>
 
-      {/* Status filter tabs */}
       <div className="mt-5 flex items-center gap-2">
         {STATUS_TABS.map((tab) => (
           <button
@@ -160,9 +156,8 @@ export default function AdminEmailsPage() {
         ))}
       </div>
 
-      {/* Two-panel layout */}
       <div className="mt-4 flex gap-4" style={{ minHeight: '600px' }}>
-        {/* Left panel — email list */}
+
         <div className="w-1/3 flex flex-col rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
           {isLoadingEmails ? (
             <div className="flex flex-1 items-center justify-center py-16 text-gray-400">
@@ -201,7 +196,6 @@ export default function AdminEmailsPage() {
             </div>
           )}
 
-          {/* Pagination */}
           {pagination && pagination.totalPages > 1 && (
             <div className="flex items-center justify-between border-t border-gray-100 px-4 py-2.5 text-xs text-gray-500">
               <span>
@@ -227,7 +221,6 @@ export default function AdminEmailsPage() {
           )}
         </div>
 
-        {/* Right panel — email detail */}
         <div className="flex-1 flex flex-col rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
           {!selectedEmail ? (
             <div className="flex flex-1 flex-col items-center justify-center gap-2 text-gray-400">
@@ -237,7 +230,7 @@ export default function AdminEmailsPage() {
             </div>
           ) : (
             <div className="flex flex-col flex-1 overflow-hidden">
-              {/* Email header */}
+
               <div className="border-b border-gray-100 px-6 py-4">
                 <div className="flex items-center justify-between gap-3 flex-wrap">
                   <h2 className="text-base font-bold text-gray-900 leading-tight">
@@ -259,9 +252,8 @@ export default function AdminEmailsPage() {
                 </div>
               </div>
 
-              {/* Scrollable content */}
               <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
-                {/* Original email body */}
+
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
                     Customer Message
@@ -271,7 +263,6 @@ export default function AdminEmailsPage() {
                   </div>
                 </div>
 
-                {/* Draft reply */}
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
                     Draft Reply {selectedEmail.status === 'sent' ? '(sent)' : '(editable)'}
@@ -287,7 +278,6 @@ export default function AdminEmailsPage() {
                 </div>
               </div>
 
-              {/* Action buttons */}
               {selectedEmail.status === 'pending' && (
                 <div className="border-t border-gray-100 px-6 py-4 flex items-center gap-3">
                   <button

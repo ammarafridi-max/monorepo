@@ -356,7 +356,6 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* -- Auth: Log in / User avatar -- */}
           {isAuthenticated ? (
             <div className="hidden lg:block relative">
               <button
@@ -438,13 +437,6 @@ export default function Navbar() {
               Login
             </Link>
           )}
-
-          {/* <Link
-            href="/insurance-booking/quote"
-            className="bg-primary-700 hover:bg-primary-800 text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-colors"
-          >
-            Get a Quote
-          </Link> */}
 
           <button
             onClick={() => setMobileOpen((p) => !p)}

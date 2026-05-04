@@ -19,6 +19,7 @@ const meta = {
 const hero = {
   title: 'Blog Tags',
   subtitle: 'Explore topics and read the latest published posts under each tag.',
+  points: ['Filter by Topic', 'Visa, Insurance & More', 'Updated Regularly', 'Written by Specialists'],
 };
 
 const breadcrumbPaths = [

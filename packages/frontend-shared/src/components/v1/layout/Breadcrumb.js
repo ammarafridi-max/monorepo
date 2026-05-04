@@ -39,9 +39,7 @@ export default function Breadcrumb({ paths = [], dark = false, includeSchema = t
         aria-label="Breadcrumb"
         className={`text-[13px] md:text-sm tracking-tight ${navClass}`}
       >
-        {/* Single-line: ancestor crumbs keep their natural width; the last
-            (current-page) crumb takes the remaining space and truncates with
-            an ellipsis when it would otherwise wrap. */}
+
         <ol className="flex items-center min-w-0">
           {normalizedPaths.map((item, index) => {
             const isLast = index === normalizedPaths.length - 1;

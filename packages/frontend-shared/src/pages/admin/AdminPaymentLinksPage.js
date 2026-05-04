@@ -17,8 +17,6 @@ import {
 } from '../../hooks/payments/usePaymentLinks';
 import AdminPaymentLinkModal from './AdminPaymentLinkModal';
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
 export default function AdminPaymentLinksPage() {
   const router = useRouter();
   const { adminUser: user, isLoadingAdminAuth: loading } = useAdminAuth();
@@ -71,7 +69,6 @@ export default function AdminPaymentLinksPage() {
         </button>
       </div>
 
-      {/* Status filter */}
       <div className="mt-6 flex items-center gap-2">
         {['', 'active', 'paid', 'inactive'].map((s) => (
           <button
@@ -92,7 +89,6 @@ export default function AdminPaymentLinksPage() {
         ))}
       </div>
 
-      {/* Table */}
       <div className="mt-3 rounded-2xl border border-gray-100 bg-white shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -182,10 +178,8 @@ export default function AdminPaymentLinksPage() {
   );
 }
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
 function PaymentLinkRow({ link, onToggleActive, isToggling, canDelete, onDelete, isDeleting }) {
-  // Treat any legacy 'pending' rows as active for display + toggling.
+
   const effectiveStatus = link.status === 'pending' ? 'active' : link.status;
   const canToggle = effectiveStatus === 'active' || effectiveStatus === 'inactive';
   const created = link.createdAt
@@ -308,7 +302,6 @@ function PaymentLinkRow({ link, onToggleActive, isToggling, canDelete, onDelete,
   );
 }
 
-// Icon-only action button. Wraps native <button>, <a>, or next/Link.
 function IconAction({ as: Tag = 'button', label, variant = 'default', children, ...rest }) {
   const variantCls = {
     default: 'text-gray-500 hover:bg-gray-100 hover:text-gray-900',
@@ -354,7 +347,7 @@ function StatusPill({ status }) {
       </span>
     );
   }
-  // 'active' (and legacy 'pending')
+
   return (
     <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
       Active

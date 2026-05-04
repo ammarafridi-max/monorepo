@@ -21,6 +21,7 @@ export const pageData = {
       title: 'Terms & Conditions',
       subtitle:
         'Welcome to Travl. By using our website (https://www.travl.ae) or purchasing any service from us, you agree to comply with the Terms & Conditions below. Please read them carefully before proceeding.',
+      points: ['Clear & Transparent', 'No Hidden Clauses', 'UAE Jurisdiction', 'Updated Regularly'],
     },
   },
 };
@@ -34,6 +35,7 @@ export default function Page() {
         paths={pageData.breadcrumb}
         title={pageData.sections.hero.title}
         subtitle={pageData.sections.hero.subtitle}
+        points={pageData.sections.hero.points ?? []}
       />
 
       <PrimarySection className="py-12.5">

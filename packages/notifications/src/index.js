@@ -2,6 +2,7 @@ import { renderInsurancePaymentTemplate } from './templates/insurance-payment.js
 import { renderTicketPaymentTemplate } from './templates/ticket-payment.js';
 import { renderTicketScheduledDeliveryTemplate } from './templates/ticket-scheduled-delivery.js';
 import { renderPaymentLinkPaidTemplate } from './templates/payment-link-paid.js';
+import { renderVisaLeadTemplate } from './templates/visa-lead.js';
 import { formatDate, formatToDDMMM, extractIataCode } from './helpers.js';
 
 /**
@@ -170,6 +171,26 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
     }
   }
 
+  // -- 7. Visa lead (admin) ---------------------------------------------------
+
+  async function sendVisaLeadToAdmin(data) {
+    try {
+      const htmlContent = renderVisaLeadTemplate({ brand, ...data });
+      const subject = `New visa lead: ${data.visaCountryName || ''} — ${data.firstName || ''} ${data.lastName || ''}`.trim();
+      await sendEmail({
+        email: brand.adminEmail,
+        name: brand.teamName,
+        subject,
+        htmlContent,
+      });
+    } catch (err) {
+      log('[notifications] sendVisaLeadToAdmin failed', {
+        leadId: data.leadId,
+        err: err.message,
+      });
+    }
+  }
+
   return {
     sendInsuranceFormSubmission,
     sendInsurancePaymentToAdmin,
@@ -177,5 +198,6 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
     sendTicketScheduledDeliveryToAdmin,
     sendLaterDateDeliveryToCustomer,
     sendPaymentLinkPaidToAdmin,
+    sendVisaLeadToAdmin,
   };
 }

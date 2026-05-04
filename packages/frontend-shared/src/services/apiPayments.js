@@ -2,8 +2,6 @@ import { apiFetch } from './apiClient.js';
 
 const URL = '/api/payments/admin';
 
-// -- Revenue dashboard -------------------------------------------------------
-
 export async function getRevenueApi({ from, to }) {
   const qs = new URLSearchParams({ from: String(from), to: String(to) }).toString();
   return apiFetch(`${URL}/revenue?${qs}`);
@@ -17,8 +15,6 @@ export async function listChargesApi({ from, to, limit = 25, startingAfter } = {
   if (startingAfter) params.set('startingAfter', startingAfter);
   return apiFetch(`${URL}/charges?${params.toString()}`);
 }
-
-// -- Payment links -----------------------------------------------------------
 
 export async function createPaymentLinkApi(payload) {
   return apiFetch(`${URL}/payment-links`, {
@@ -59,8 +55,6 @@ export async function updatePaymentLinkApi(id, payload) {
 export async function deletePaymentLinkApi(id) {
   return apiFetch(`${URL}/payment-links/${id}`, { method: 'DELETE' });
 }
-
-// -- Products (catalog) ------------------------------------------------------
 
 export async function createProductApi(payload) {
   return apiFetch(`${URL}/products`, {

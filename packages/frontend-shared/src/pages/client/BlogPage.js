@@ -4,18 +4,6 @@ import PageHero from "../../components/v1/sections/PageHero";
 import BlogCard from "../../components/v1/cards/BlogCard";
 import BlogPaginationBar from "../../components/v1/ui/BlogPaginationBar";
 
-/**
- * BlogPage — shared UI component for the /blog listing page.
- *
- * Props:
- *   blogs            — array of published blog posts for the current page
- *   pagination       — pagination object from the API
- *   currentPage      — active page number
- *   hero             — { title, subtitle }
- *   breadcrumbPaths  — array of { label, path }
- *   schema           — pre-built JSON-LD graph object
- *   breadcrumbJsonLd — pre-built breadcrumb JSON-LD object
- */
 export default function BlogPage({
   blogs = [],
   pagination = null,
@@ -43,6 +31,7 @@ export default function BlogPage({
       <PageHero
         title={hero?.title}
         subtitle={hero?.subtitle}
+        points={hero?.points ?? []}
         paths={breadcrumbPaths}
       />
 

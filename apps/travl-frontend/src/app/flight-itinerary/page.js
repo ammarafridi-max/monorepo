@@ -54,6 +54,7 @@ export const pageData = {
       subtitle:
         'Receive a real itinerary in standard booking format with a valid PNR and trip details delivered by email.',
       form: <AllForms />,
+      pills: ['Valid PNR Included', 'Embassy Accepted', 'Delivered in Minutes', 'All Airlines Covered'],
     },
     process: {
       title: 'How To Get Your Flight Itinerary?',
@@ -108,6 +109,7 @@ export default function Page() {
       <Hero
         title={pageData.sections.hero.title}
         subtitle={pageData.sections.hero.subtitle}
+        pills={pageData.sections.hero.pills}
         form={pageData.sections.hero.form}
         breadcrumbPaths={[
           { label: 'Home', path: '/' },

@@ -41,9 +41,7 @@ export default function Process({
               key={i}
             >
               <div className="absolute inset-x-0 top-10 hidden lg:block">
-                {/* {i !== steps.length - 1 && (
-                  <div className="mx-auto h-px w-4/5 border-t border-dashed border-primary-200" />
-                )} */}
+
               </div>
               <div className="relative z-10 w-10 h-10 flex items-center justify-center bg-primary-600 text-white text-md font-medium font-outfit rounded-full shadow-sm">
                 {String(i + 1).padStart(2, '0')}

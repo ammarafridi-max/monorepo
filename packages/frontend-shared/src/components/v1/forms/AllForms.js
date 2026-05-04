@@ -14,7 +14,6 @@ export default function AllForms({ forms = ['ticket', 'insurance'], defaultTab }
   const tabs = ALL_TABS.filter(({ name }) => forms.includes(name));
   const [activeForm, setActiveForm] = useState(defaultTab ?? forms[0]);
 
-  // Single form — no tab switcher needed
   if (tabs.length === 1) {
     return (
       <>

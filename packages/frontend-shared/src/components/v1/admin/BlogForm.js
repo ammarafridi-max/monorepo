@@ -16,8 +16,6 @@ import Link from "next/link";
 import { useGetBlogTags } from "../../../hooks/blog-tags/useGetBlogTags.js";
 import TinyEditor from "../forms/TinyEditor.js";
 
-/* --- Helpers --------------------------------------------------------------- */
-
 function slugify(str) {
   return str
     .toLowerCase()
@@ -49,8 +47,6 @@ function buildFormData(data, editorRef, isEdit) {
   }
   return fd;
 }
-
-/* --- Sub-components -------------------------------------------------------- */
 
 function Card({ title, children, collapsible = false }) {
   const [open, setOpen] = useState(true);
@@ -104,13 +100,11 @@ function TextareaInput({ rows = 3, ...props }) {
   );
 }
 
-/* --- Main Component -------------------------------------------------------- */
-
 export default function BlogForm({ initialData, onSubmit, isPending }) {
   const editorRef = useRef(null);
   const [slugLocked, setSlugLocked] = useState(!!initialData);
   const [seoOpen, setSeoOpen] = useState(false);
-  const [faqMode, setFaqMode] = useState("plain"); // 'plain' | 'json'
+  const [faqMode, setFaqMode] = useState("plain");
   const [jsonText, setJsonText] = useState("");
   const [jsonError, setJsonError] = useState("");
 
@@ -231,7 +225,7 @@ export default function BlogForm({ initialData, onSubmit, isPending }) {
 
   return (
     <form onSubmit={handleSubmit(onFormSubmit)}>
-      {/* Top bar */}
+
       <div className="flex items-center justify-between gap-4 mb-6">
         <Link
           href="/admin/blog"
@@ -254,11 +248,10 @@ export default function BlogForm({ initialData, onSubmit, isPending }) {
         </button>
       </div>
 
-      {/* Two-column grid */}
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_300px] gap-5 items-start">
-        {/* -- Left column ---------------------------------------------- */}
+
         <div className="space-y-5">
-          {/* Post Details */}
+
           <Card title="Post Details">
             <div className="space-y-4">
               <Field label="Title">
@@ -309,7 +302,6 @@ export default function BlogForm({ initialData, onSubmit, isPending }) {
             </div>
           </Card>
 
-          {/* Content */}
           <Card title="Content">
             <TinyEditor
               editorRef={editorRef}
@@ -317,9 +309,8 @@ export default function BlogForm({ initialData, onSubmit, isPending }) {
             />
           </Card>
 
-          {/* FAQs */}
           <Card title="FAQs" collapsible>
-            {/* Mode toggle */}
+
             <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5 w-fit mb-4">
               {["plain", "json"].map((mode) => (
                 <button
@@ -412,7 +403,6 @@ export default function BlogForm({ initialData, onSubmit, isPending }) {
             )}
           </Card>
 
-          {/* SEO — collapsible */}
           <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
             <div
               className="flex items-center justify-between px-5 py-4 border-b border-gray-100 cursor-pointer select-none"
@@ -454,9 +444,8 @@ export default function BlogForm({ initialData, onSubmit, isPending }) {
           </div>
         </div>
 
-        {/* -- Right sidebar --------------------------------------------- */}
         <div className="space-y-5 xl:sticky xl:top-6">
-          {/* Post Info (edit only) */}
+
           {isEdit && initialData && (
             <Card title="Post Info">
               <dl className="space-y-2 text-xs">
@@ -487,7 +476,6 @@ export default function BlogForm({ initialData, onSubmit, isPending }) {
             </Card>
           )}
 
-          {/* Cover Image */}
           <Card title="Cover Image">
             {initialData?.coverImageUrl && (
               <div className="mb-3">
@@ -509,7 +497,6 @@ export default function BlogForm({ initialData, onSubmit, isPending }) {
             />
           </Card>
 
-          {/* Publish */}
           <Card title="Publish">
             <div className="space-y-2">
               {["draft", "published", "scheduled"].map((s) => (
@@ -541,7 +528,6 @@ export default function BlogForm({ initialData, onSubmit, isPending }) {
             )}
           </Card>
 
-          {/* Tags */}
           <Card title="Tags">
             {allTags.length === 0 ? (
               <p className="text-xs text-gray-400">No tags available.</p>

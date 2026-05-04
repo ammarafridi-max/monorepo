@@ -22,16 +22,12 @@ import { getAllBlogsApi } from '../../services/apiBlog';
 import { getInsuranceApplicationsApi } from '../../services/apiInsurance';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 
-/* --- Helpers --------------------------------------------------------------- */
-
 function fmtRevenue(amount) {
   return `AED ${Number(amount).toLocaleString('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
 }
-
-/* --- Skeletons ------------------------------------------------------------- */
 
 function StatSkeleton() {
   return (
@@ -42,8 +38,6 @@ function StatSkeleton() {
     </div>
   );
 }
-
-/* --- Section card ---------------------------------------------------------- */
 
 function SectionCard({ title, subtitle, children, action }) {
   return (
@@ -61,8 +55,6 @@ function SectionCard({ title, subtitle, children, action }) {
     </div>
   );
 }
-
-/* --- Page ------------------------------------------------------------------ */
 
 function DashboardContent() {
   const { adminUser } = useAdminAuth();
@@ -119,7 +111,6 @@ function DashboardContent() {
     insuranceQ,
   ] = results;
 
-  /* Derived values */
   const recentTickets = recentQ.data?.data ?? [];
   const allTickets = allTicketsQ.data?.data ?? [];
   const totalTickets = allTicketsQ.data?.pagination?.total ?? 0;
@@ -166,7 +157,7 @@ function DashboardContent() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      {/* Page header */}
+
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-2xl font-extrabold text-gray-900">Dashboard</h2>
@@ -184,7 +175,6 @@ function DashboardContent() {
         </Link>
       </div>
 
-      {/* Stat cards */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         {statsLoading ? (
           <>
@@ -229,14 +219,12 @@ function DashboardContent() {
         )}
       </div>
 
-      {/* Main content: table + sidebar */}
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_280px] gap-6">
-        {/* Recent Tickets */}
+
         <RecentTicketsTable tickets={recentTickets} />
 
-        {/* Right sidebar */}
         <div className="flex flex-col gap-4">
-          {/* Payment status */}
+
           <SectionCard title="Payment Status" subtitle="All tickets">
             <div className="space-y-3">
               <div>
@@ -302,7 +290,6 @@ function DashboardContent() {
             </div>
           </SectionCard>
 
-          {/* Order status */}
           <SectionCard title="Order Status" subtitle="By delivery state">
             <div className="space-y-2.5">
               {[
@@ -344,7 +331,6 @@ function DashboardContent() {
             </div>
           </SectionCard>
 
-          {/* Blog summary */}
           <SectionCard
             title="Blog"
             subtitle="Post status overview"
@@ -395,7 +381,6 @@ function DashboardContent() {
             </Link>
           </SectionCard>
 
-          {/* Quick links */}
           <SectionCard title="Quick Access" subtitle="Jump to a section">
             <div className="space-y-1">
               {[

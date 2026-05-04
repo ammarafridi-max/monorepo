@@ -15,7 +15,6 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 
-// -- Request context -----------------------------------------------------------
 app.use((req, res, next) => {
   req.id = req.headers['x-request-id'] || randomUUID();
   res.setHeader('x-request-id', req.id);
@@ -26,10 +25,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// -- Stripe webhook (raw body required — must be before express.json) ----------
 app.post('/api/webhook', express.raw({ type: 'application/json' }), stripeWebhookHandler);
 
-// -- Security & parsing --------------------------------------------------------
 app.use(helmet());
 app.use(cors({ origin: config.corsOrigins, credentials: true }));
 app.use(compression());
@@ -38,16 +35,13 @@ app.use(express.json({ limit: '10kb' }));
 
 app.use('/api', rateLimit({ windowMs: 60 * 60 * 1000, max: 500, standardHeaders: true, legacyHeaders: false }));
 
-// -- Static: airline logos -----------------------------------------------------
 app.use('/airlines', express.static(join(__dirname, 'public/airlines'), {
   setHeaders: (res) => res.set('Cross-Origin-Resource-Policy', 'cross-origin'),
 }));
 
-// -- Health & routes -----------------------------------------------------------
 app.get('/health', (_req, res) => res.status(200).json({ status: 'ok', brand: 'travl' }));
 app.use('/api', indexRouter);
 
-// -- 404 & global error handler ------------------------------------------------
 app.all('/{*path}', (req, _res, next) => next(new AppError(`Route ${req.originalUrl} not found`, 404)));
 
 app.use((err, req, res, _next) => {

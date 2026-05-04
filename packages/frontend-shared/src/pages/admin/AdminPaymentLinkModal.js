@@ -13,8 +13,8 @@ const inputCls =
   'w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300 transition disabled:bg-gray-50 disabled:text-gray-400';
 
 const EMPTY = {
-  mode: 'product', // 'product' | 'custom'
-  selected: [], // [{ productId, quantity }]
+  mode: 'product',
+  selected: [],
   productName: '',
   amount: '',
   currency: 'AED',
@@ -43,7 +43,6 @@ export default function AdminPaymentLinkModal({ onClose, onSave, saving }) {
 
   const isProductMode = form.mode === 'product';
 
-  // Resolve selected product IDs to full product objects (preserves selection order).
   const selectedDetailed = useMemo(() => {
     return form.selected
       .map((sel) => {
@@ -53,7 +52,6 @@ export default function AdminPaymentLinkModal({ onClose, onSave, saving }) {
       .filter(Boolean);
   }, [form.selected, products]);
 
-  // Currency check — Stripe requires all line items to share a currency.
   const selectedCurrencies = new Set(selectedDetailed.map((s) => s.product.currency));
   const currencyMismatch = selectedCurrencies.size > 1;
 
@@ -126,7 +124,6 @@ export default function AdminPaymentLinkModal({ onClose, onSave, saving }) {
           </button>
         </div>
 
-        {/* Mode tabs */}
         <div className="px-6 pt-5">
           <div className="inline-flex rounded-xl border border-gray-200 bg-gray-50 p-0.5 text-xs font-semibold">
             <button
@@ -251,8 +248,6 @@ export default function AdminPaymentLinkModal({ onClose, onSave, saving }) {
   );
 }
 
-// ─── Multi-select product picker ──────────────────────────────────────────────
-
 function ProductPickerSection({
   products,
   isLoading,
@@ -268,7 +263,6 @@ function ProductPickerSection({
   const [search, setSearch] = useState('');
   const wrapperRef = useRef(null);
 
-  // Close dropdown on outside click.
   useEffect(() => {
     if (!open) return;
     function onDown(e) {
@@ -310,7 +304,6 @@ function ProductPickerSection({
           Products <span className="text-red-500">*</span>
         </label>
 
-        {/* Trigger */}
         <div ref={wrapperRef} className="relative">
           <button
             type="button"
@@ -330,7 +323,7 @@ function ProductPickerSection({
 
           {open && (
             <div className="absolute z-10 mt-1 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
-              {/* Search */}
+
               <div className="border-b border-gray-100 p-2">
                 <div className="relative">
                   <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -345,7 +338,6 @@ function ProductPickerSection({
                 </div>
               </div>
 
-              {/* Options */}
               <div className="max-h-56 overflow-y-auto py-1">
                 {filtered.length === 0 ? (
                   <p className="px-3 py-3 text-center text-xs text-gray-400">No matches</p>
@@ -386,7 +378,6 @@ function ProductPickerSection({
         </div>
       </div>
 
-      {/* Selected items list */}
       {detailed.length > 0 && (
         <div className="space-y-2 rounded-xl border border-gray-100 bg-gray-50/60 p-3">
           {detailed.map(({ product, quantity }) => (

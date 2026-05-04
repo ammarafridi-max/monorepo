@@ -1,4 +1,4 @@
-// -- Plan/quote display helpers ------------------------------------------------
+
 
 export function formatPremium(premium) {
   return Number(premium).toFixed(2);
@@ -35,8 +35,6 @@ export function createPassenger(type, index, existingPassenger) {
     passport: existingPassenger?.passport || '',
   };
 }
-
-// -- Trip duration -------------------------------------------------------------
 
 export function calcDays(journeyType, startDate, endDate) {
   if (journeyType === 'annual') return 365;

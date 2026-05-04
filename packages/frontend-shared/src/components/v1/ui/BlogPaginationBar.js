@@ -1,13 +1,5 @@
 import Link from 'next/link';
 
-/**
- * Reusable pagination bar for blog listing pages.
- *
- * Props:
- *   pagination   — pagination object from the API { totalPages, hasPrevPage, hasNextPage, total, limit, page }
- *   currentPage  — current active page number
- *   basePath     — base URL path used to build prev/next hrefs (e.g. '/blog' or '/blog/tags/my-tag')
- */
 export default function BlogPaginationBar({ pagination, currentPage, basePath = '/blog' }) {
   if (!pagination || pagination.totalPages <= 1) return null;
 

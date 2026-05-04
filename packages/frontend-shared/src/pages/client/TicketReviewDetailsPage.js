@@ -62,7 +62,7 @@ export default function TicketReviewDetailsPage({ onBeginCheckout, enablePayPal 
   const { createPayPalOrder, isLoadingPayPalOrder } = usePayPalOrder();
   const { dummyTicket, isLoadingDummyTicket } = useGetDummyTicket(sessionId);
   const [agreed, setAgreed] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('card'); // 'card' | 'paypal'
+  const [paymentMethod, setPaymentMethod] = useState('card');
 
   const totalQuantity =
     Number(dummyTicket?.quantity?.adults || 0) +
@@ -125,10 +125,8 @@ export default function TicketReviewDetailsPage({ onBeginCheckout, enablePayPal 
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start">
 
-        {/* ── Main column ── */}
         <div className="flex flex-col gap-5">
 
-          {/* Flight Details */}
           <SectionCard title="Flight Details" editHref="/booking/select-flights">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
               <Row label="Trip Type"        value={dummyTicket?.type} />
@@ -145,7 +143,6 @@ export default function TicketReviewDetailsPage({ onBeginCheckout, enablePayPal 
             </div>
           </SectionCard>
 
-          {/* Booking Details */}
           <SectionCard title="Booking Details">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
               <Row label="Email"          value={dummyTicket?.email} />
@@ -159,7 +156,6 @@ export default function TicketReviewDetailsPage({ onBeginCheckout, enablePayPal 
             </div>
           </SectionCard>
 
-          {/* Passengers */}
           {dummyTicket?.passengers?.length > 0 && (
             <SectionCard title="Passengers">
               {Object.entries(groupedPassengers).map(([key, list], groupIdx) =>
@@ -189,10 +185,8 @@ export default function TicketReviewDetailsPage({ onBeginCheckout, enablePayPal 
           )}
         </div>
 
-        {/* ── Sidebar ── */}
         <div className="lg:sticky lg:top-6 flex flex-col gap-4">
 
-          {/* Order Summary */}
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="px-5 py-4 bg-gray-50 border-b border-gray-100">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Order Summary</p>
@@ -223,7 +217,6 @@ export default function TicketReviewDetailsPage({ onBeginCheckout, enablePayPal 
             )}
           </div>
 
-          {/* T&C + Pay */}
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col gap-4">
             <label className="flex items-start gap-3 cursor-pointer select-none">
               <div
@@ -247,7 +240,6 @@ export default function TicketReviewDetailsPage({ onBeginCheckout, enablePayPal 
               </p>
             </label>
 
-            {/* Payment method selector — only shown when PayPal is enabled */}
             {enablePayPal && (
               <div className="flex gap-2">
                 <button

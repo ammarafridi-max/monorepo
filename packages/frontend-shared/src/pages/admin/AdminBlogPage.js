@@ -13,8 +13,6 @@ import { useDuplicateBlog } from '../../hooks/blog/useDuplicateBlog';
 import { usePublishBlog } from '../../hooks/blog/usePublishBlog';
 import { useUpdateBlog } from '../../hooks/blog/useUpdateBlog';
 
-/* --- Config ---------------------------------------------------------------- */
-
 const STATUS_TABS = ['all', 'published', 'draft', 'scheduled'];
 
 const STATUS_CFG = {
@@ -22,8 +20,6 @@ const STATUS_CFG = {
   draft:     { label: 'Draft',     dot: 'bg-gray-400',   cls: 'bg-gray-100  text-gray-600   border-gray-200'   },
   scheduled: { label: 'Scheduled', dot: 'bg-amber-400',  cls: 'bg-amber-50  text-amber-700  border-amber-200'  },
 };
-
-/* --- Helpers --------------------------------------------------------------- */
 
 function StatusBadge({ status }) {
   const cfg = STATUS_CFG[status] ?? { label: status, dot: 'bg-gray-400', cls: 'bg-gray-100 text-gray-500 border-gray-200' };
@@ -46,16 +42,12 @@ function getAuthorName(author) {
   return author.name || author.username || author.email || '—';
 }
 
-/* --- Page ------------------------------------------------------------------ */
-
 export default function AdminBlogPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [search, setSearch]             = useState('');
   const [page, setPage]                 = useState(1);
   const [deleteId, setDeleteId]         = useState(null);
   const [loadingId, setLoadingId]       = useState(null);
-
-  /* -- Data ------------------------------------------------------------ */
 
   const { blogs, pagination, isLoadingBlogs } = useGetBlogs({
     page,
@@ -67,16 +59,12 @@ export default function AdminBlogPage() {
   const totalPages = pagination?.totalPages ?? 1;
   const totalDocs  = pagination?.total ?? 0;
 
-  /* -- Mutations ------------------------------------------------------- */
-
   const { deleteBlog,    isDeletingBlog    } = useDeleteBlog();
   const { duplicateBlog, isDuplicatingBlog } = useDuplicateBlog();
   const { publishBlog,   isPublishingBlog  } = usePublishBlog();
   const { updateBlog,    isUpdatingBlog    } = useUpdateBlog();
 
   const isWorking = isDeletingBlog || isDuplicatingBlog || isPublishingBlog || isUpdatingBlog;
-
-  /* -- Handlers -------------------------------------------------------- */
 
   function handleTogglePublish(blog) {
     setLoadingId(blog._id);
@@ -105,12 +93,9 @@ export default function AdminBlogPage() {
     deleteBlog(id, { onSettled: () => { setDeleteId(null); setLoadingId(null); } });
   }
 
-  /* -- Render ------------------------------------------------------------ */
-
   return (
     <div className="max-w-7xl mx-auto space-y-5">
 
-      {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-extrabold text-gray-900">Blog</h2>
@@ -127,10 +112,8 @@ export default function AdminBlogPage() {
         </Link>
       </div>
 
-      {/* Main card */}
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
 
-        {/* Status tabs */}
         <div className="flex items-center gap-0.5 px-4 pt-4 border-b border-gray-100">
           {STATUS_TABS.map((key) => {
             const label    = key === 'all' ? 'All' : STATUS_CFG[key]?.label ?? key;
@@ -156,7 +139,6 @@ export default function AdminBlogPage() {
           })}
         </div>
 
-        {/* Search bar */}
         <div className="px-4 py-3 border-b border-gray-100">
           <div className="relative max-w-sm">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
@@ -178,13 +160,12 @@ export default function AdminBlogPage() {
           </div>
         </div>
 
-        {/* Loading skeleton */}
         {isLoadingBlogs ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 size={22} className="animate-spin text-gray-300" />
           </div>
         ) : blogs.length === 0 ? (
-          /* Empty state */
+
           <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
             <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
               <BookOpen size={22} className="text-gray-400" />
@@ -205,7 +186,7 @@ export default function AdminBlogPage() {
             )}
           </div>
         ) : (
-          /* Table */
+
           <div className="overflow-x-auto">
             <table className="w-full text-sm min-w-[820px]">
               <thead>
@@ -228,7 +209,7 @@ export default function AdminBlogPage() {
                       (isWorking && loadingId === blog._id) ? 'opacity-50 pointer-events-none' : ''
                     }`}
                   >
-                    {/* Cover thumbnail */}
+
                     <td className="px-4 py-3 w-14">
                       {blog.coverImageUrl ? (
                         <Image
@@ -246,7 +227,6 @@ export default function AdminBlogPage() {
                       )}
                     </td>
 
-                    {/* Title + excerpt */}
                     <td className="px-4 py-3 max-w-[260px]">
                       <p className="font-semibold text-gray-900 truncate leading-snug">
                         {blog.title}
@@ -260,12 +240,10 @@ export default function AdminBlogPage() {
                       {getAuthorName(blog.author)}
                     </td>
 
-                    {/* Status */}
                     <td className="px-4 py-3 whitespace-nowrap">
                       <StatusBadge status={blog.status} />
                     </td>
 
-                    {/* Tags */}
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap gap-1 max-w-[180px]">
                         {blog.tags?.slice(0, 3).map((tag) => (
@@ -284,7 +262,6 @@ export default function AdminBlogPage() {
                       </div>
                     </td>
 
-                    {/* Reading time */}
                     <td className="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">
                       <span className="flex items-center gap-1">
                         <Clock size={11} />
@@ -292,12 +269,10 @@ export default function AdminBlogPage() {
                       </span>
                     </td>
 
-                    {/* Date */}
                     <td className="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">
                       {fmtDate(blog.publishedAt ?? blog.createdAt)}
                     </td>
 
-                    {/* Actions */}
                     <td className="px-4 py-3 w-40">
                       {deleteId === blog._id ? (
                         <div className="flex items-center gap-1.5 text-xs">
@@ -357,7 +332,6 @@ export default function AdminBlogPage() {
           </div>
         )}
 
-        {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
             <p className="text-xs text-gray-400">

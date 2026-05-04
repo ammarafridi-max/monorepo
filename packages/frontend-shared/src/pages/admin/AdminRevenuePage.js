@@ -24,8 +24,6 @@ import { useAdminAuth } from '../../contexts/AdminAuthContext';
 import { useRevenue } from '../../hooks/payments/useRevenue';
 import { useCharges } from '../../hooks/payments/useCharges';
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
 const RANGES = [
   { id: '7d', label: 'Last 7 days', days: 7 },
   { id: '30d', label: 'Last 30 days', days: 30 },
@@ -61,8 +59,6 @@ function formatTimestamp(unixSeconds) {
   }).format(new Date(unixSeconds * 1000));
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
 export default function AdminRevenuePage() {
   const router = useRouter();
   const { adminUser: user, isLoadingAdminAuth: loading } = useAdminAuth();
@@ -83,7 +79,7 @@ export default function AdminRevenuePage() {
   const currencies = revenue?.byCurrency
     ? Object.keys(revenue.byCurrency).sort()
     : [];
-  const primaryCurrency = currencies[0]; // for the chart
+  const primaryCurrency = currencies[0];
   const primaryStats = primaryCurrency
     ? revenue.byCurrency[primaryCurrency]
     : null;
@@ -101,7 +97,6 @@ export default function AdminRevenuePage() {
         <RangeSelector value={rangeId} onChange={setRangeId} />
       </div>
 
-      {/* KPI cards */}
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {isLoadingRevenue ? (
           <SkeletonCards />
@@ -134,7 +129,6 @@ export default function AdminRevenuePage() {
         )}
       </div>
 
-      {/* Chart */}
       {primaryStats?.byDay?.length > 0 && (
         <div className="mt-6 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
@@ -181,7 +175,6 @@ export default function AdminRevenuePage() {
         </div>
       )}
 
-      {/* Charges table */}
       <div className="mt-6 rounded-2xl border border-gray-100 bg-white shadow-sm">
         <div className="flex items-center justify-between px-5 py-4">
           <h2 className="text-sm font-semibold text-gray-900">Recent charges</h2>
@@ -263,8 +256,6 @@ export default function AdminRevenuePage() {
     </>
   );
 }
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
 
 function RangeSelector({ value, onChange }) {
   return (

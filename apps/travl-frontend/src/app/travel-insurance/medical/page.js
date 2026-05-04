@@ -106,6 +106,7 @@ export const pageData = {
       subtitle:
         'Travel medical insurance covers emergency treatment, hospital stays, and medical repatriation when you get sick or injured abroad. Policies are issued by AXA and delivered to your inbox in minutes.',
       form: <AllForms defaultTab="insurance" />,
+      pills: ['Emergency Treatment', 'Hospital Cover', 'Medical Repatriation', 'Issued by AXA'],
     },
     process: {
       title: 'How to Get Travel Medical Insurance',
@@ -169,6 +170,7 @@ export default function Page() {
       <Hero
         title={pageData.sections.hero.title}
         subtitle={pageData.sections.hero.subtitle}
+        pills={pageData.sections.hero.pills}
         form={pageData.sections.hero.form}
         breadcrumbPaths={[
           { label: 'Home', path: '/' },

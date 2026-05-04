@@ -107,6 +107,7 @@ export const pageData = {
       subtitle:
         'Annual multi-trip travel insurance gives you a single policy that covers every trip you take within a 12-month period. Instead of buying a new policy each time you travel, you pay once and stay covered all year. Plans are issued by AXA and start from AED 245.',
       form: <AllForms defaultTab="insurance" />,
+      pills: ['Unlimited Trips Covered', '12-Month Validity', 'From AED 245', 'Issued by AXA'],
     },
     process: {
       title: 'How to Get Annual Travel Insurance',
@@ -177,6 +178,7 @@ export default function Page() {
       <Hero
         title={pageData.sections.hero.title}
         subtitle={pageData.sections.hero.subtitle}
+        pills={pageData.sections.hero.pills}
         form={pageData.sections.hero.form}
         breadcrumbPaths={[
           { label: 'Home', path: '/' },

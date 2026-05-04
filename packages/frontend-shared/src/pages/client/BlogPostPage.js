@@ -7,23 +7,6 @@ import PrimarySection from "../../components/v1/layout/PrimarySection";
 import FAQAccordion from "../../components/v1/ui/FAQAccordion";
 import ShareButtons from "../../components/v1/ui/ShareButtons";
 
-/**
- * BlogPostPage — shared UI component for the blog post detail page.
- *
- * Data fetching, schema building, and metadata generation all live in the
- * individual frontend's page.js (they reference brand-specific SITE_URL,
- * buildOrganization, etc.). This component is a pure render layer.
- *
- * Props:
- *   blog             — full blog document from the API
- *   recentPosts      — array of recent posts (already filtered + sliced to 3)
- *   allBlogTags      — array of all tag objects (used to resolve tag slugs)
- *   canonical        — canonical URL for this post  e.g. https://travl.ae/blog/my-post
- *   siteUrl          — brand site URL, used for the og-image fallback
- *   graph            — pre-built JSON-LD graph object (brand-specific)
- *   breadcrumbJsonLd — pre-built breadcrumb JSON-LD object (brand-specific)
- *   breadcrumbPaths  — array of { label, path } for the breadcrumb nav
- */
 export default function BlogPostPage({
   blog,
   recentPosts = [],
@@ -54,14 +37,13 @@ export default function BlogPostPage({
 
       <PrimarySection className="pb-20 pt-20 lg:pb-12 lg:pt-30">
         <Container className="grid grid-cols-1 gap-15 lg:grid-cols-[7fr_3fr]">
-          {/* ── Main column ── */}
+
           <div>
-            {/* Cover image */}
+
             <div className="relative mb-10 aspect-16/8 overflow-hidden rounded-3xl bg-gray-100">
               <CoverImage src={image} alt={blog.title} />
             </div>
 
-            {/* Breadcrumb + title + meta */}
             <div className="mb-10">
               <div className="mb-4">
                 <Breadcrumb paths={breadcrumbPaths} includeSchema={false} />
@@ -70,7 +52,7 @@ export default function BlogPostPage({
                 {blog.title}
               </h1>
               <div className="space-y-3">
-                {/* Date + author */}
+
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[13px] text-gray-500 md:text-sm">
                   <span className="inline-flex items-center gap-1.5">
                     <HiOutlineCalendar
@@ -98,15 +80,13 @@ export default function BlogPostPage({
                   )}
                 </div>
 
-                {/* Tag pills */}
                 <TagPills tags={blog.tags} allBlogTags={allBlogTags} />
               </div>
             </div>
 
-            {/* Quick answer */}
             {blog.quickAnswer && (
               <div className="relative mb-10 overflow-hidden rounded-2xl border border-primary-100 bg-[linear-gradient(135deg,#f5fbfb_0%,#eef6ff_55%,#fff8f1_100%)] p-5 md:p-6">
-                {/* Soft decorative blob */}
+
                 <div
                   aria-hidden="true"
                   className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-primary-200/30 blur-3xl"
@@ -116,7 +96,6 @@ export default function BlogPostPage({
                   className="pointer-events-none absolute -bottom-12 -left-8 h-24 w-24 rounded-full bg-accent-100/40 blur-3xl"
                 />
 
-                {/* Header: icon + label + hairline */}
                 <div className="relative flex items-center gap-3">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary-600 shadow-[0_6px_16px_rgba(16,24,40,0.15)]">
                     <HiBolt
@@ -133,20 +112,17 @@ export default function BlogPostPage({
                   />
                 </div>
 
-                {/* Answer: full-width paragraph */}
                 <p className="relative mt-4 text-[15px] leading-7 text-gray-800 md:text-[16px]">
                   {blog.quickAnswer}
                 </p>
               </div>
             )}
 
-            {/* Body content */}
             <div
               dangerouslySetInnerHTML={{ __html: blog.content }}
               className="blog_post font-outfit"
             />
 
-            {/* FAQs */}
             {faqs.length > 0 && (
               <section className="mt-14">
                 <h2 className="mb-6 text-2xl font-medium text-gray-900">
@@ -166,7 +142,6 @@ export default function BlogPostPage({
             )}
           </div>
 
-          {/* ── Sidebar ── */}
           <Sidebar
             recentPosts={recentPosts}
             blog={blog}
@@ -177,8 +152,6 @@ export default function BlogPostPage({
     </>
   );
 }
-
-// ─── Sub-components ────────────────────────────────────────────────────────────
 
 function Sidebar({ recentPosts, blog, canonical }) {
   return (

@@ -4,18 +4,6 @@ import PageHero from '../../components/v1/sections/PageHero';
 import BlogCard from '../../components/v1/cards/BlogCard';
 import BlogPaginationBar from '../../components/v1/ui/BlogPaginationBar';
 
-/**
- * BlogTagDetailPage — shared UI component for the /blog/tags/[slug] page.
- *
- * Props:
- *   tag              — the resolved tag object { name, description, slug, _id }
- *   blogs            — array of posts for this tag on the current page
- *   pagination       — pagination object from the API
- *   currentPage      — active page number
- *   breadcrumbPaths  — array of { label, path }
- *   graph            — pre-built JSON-LD graph object
- *   breadcrumbJsonLd — pre-built breadcrumb JSON-LD object
- */
 export default function BlogTagDetailPage({
   tag,
   blogs = [],
@@ -24,6 +12,7 @@ export default function BlogTagDetailPage({
   breadcrumbPaths = [],
   graph,
   breadcrumbJsonLd,
+  heroPoints = [],
 }) {
   const basePath = `/blog/tags/${tag?.slug || tag?._id}`;
 
@@ -45,6 +34,7 @@ export default function BlogTagDetailPage({
       <PageHero
         title={tag?.name}
         subtitle={tag?.description || 'Published posts under this tag.'}
+        points={heroPoints}
         paths={breadcrumbPaths}
       />
 

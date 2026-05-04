@@ -20,6 +20,7 @@ export const pageData = {
       title: 'Privacy Policy',
       subtitle:
         'At Travl, your privacy is extremely important to us. This Privacy Policy explains how we collect, use, store, and protect your personal information when you use our website (https://www.travl.ae) and our services.',
+      points: ['No Data Selling', 'Secure Storage', 'Your Rights Protected', 'UAE Governed'],
     },
   },
 };
@@ -33,6 +34,7 @@ export default function Page() {
         paths={pageData.breadcrumb}
         title={pageData.sections.hero.title}
         subtitle={pageData.sections.hero.subtitle}
+        points={pageData.sections.hero.points ?? []}
       />
 
       <PrimarySection className="py-8">

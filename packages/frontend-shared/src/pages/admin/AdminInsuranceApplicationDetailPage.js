@@ -13,8 +13,6 @@ import { useUpdateInsuranceApplication } from '../../hooks/insurance/useUpdateIn
 import { useDeleteInsuranceApplication } from '../../hooks/insurance/useDeleteInsuranceApplication';
 import { useGetInsuranceDocuments } from '../../hooks/insurance/useGetInsuranceDocuments';
 
-/* --- Badges ----------------------------------------------------------------- */
-
 const PAYMENT_CFG = {
   PAID:     { dot: 'bg-green-500',  cls: 'bg-green-50   text-green-700   border-green-200'  },
   UNPAID:   { dot: 'bg-amber-400',  cls: 'bg-amber-50   text-amber-700   border-amber-200'  },
@@ -48,8 +46,6 @@ function JourneyBadge({ type }) {
   );
 }
 
-/* --- Helpers ---------------------------------------------------------------- */
-
 function fmtDate(str) {
   if (!str) return '—';
   return new Date(str).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -76,8 +72,6 @@ function leadName(app) {
   return [p.title, name].filter(Boolean).join(' ') || '—';
 }
 
-/* --- UI primitives ----------------------------------------------------------- */
-
 function Card({ title, icon: Icon, children }) {
   return (
     <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
@@ -100,8 +94,6 @@ function InfoRow({ label, value, mono }) {
     </div>
   );
 }
-
-/* --- Passenger table -------------------------------------------------------- */
 
 const TYPE_CFG = {
   adult:  'bg-blue-50  text-blue-700  border-blue-200',
@@ -150,8 +142,6 @@ function PassengersTable({ passengers }) {
   );
 }
 
-/* --- Delete confirmation ---------------------------------------------------- */
-
 function DeleteSection({ sessionId }) {
   const [confirm, setConfirm] = useState(false);
   const { deleteInsuranceApplication, isDeleting } = useDeleteInsuranceApplication();
@@ -192,8 +182,6 @@ function DeleteSection({ sessionId }) {
   );
 }
 
-/* --- Page ------------------------------------------------------------------- */
-
 export default function AdminInsuranceApplicationDetailPage() {
   const { sessionId } = useParams();
 
@@ -201,7 +189,6 @@ export default function AdminInsuranceApplicationDetailPage() {
   const { updateInsuranceApplication, isUpdatingApplication }     = useUpdateInsuranceApplication();
   const { documents, isLoadingDocuments }                          = useGetInsuranceDocuments(application?.policyId);
 
-  /* -- Loading ---------------------------------------------------- */
   if (isLoadingApplication) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -213,7 +200,6 @@ export default function AdminInsuranceApplicationDetailPage() {
     );
   }
 
-  /* -- Error ------------------------------------------------------ */
   if (isErrorApplication || !application) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -240,7 +226,6 @@ export default function AdminInsuranceApplicationDetailPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-5">
 
-      {/* -- Page header ----------------------------------------------- */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">
           <Link
@@ -261,7 +246,6 @@ export default function AdminInsuranceApplicationDetailPage() {
           </div>
         </div>
 
-        {/* Update status */}
         <div className="flex items-center gap-2">
           <select
             value={app.paymentStatus}
@@ -278,18 +262,14 @@ export default function AdminInsuranceApplicationDetailPage() {
         </div>
       </div>
 
-      {/* -- Two-column body -------------------------------------------- */}
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_280px] gap-5 items-start">
 
-        {/* Main column */}
         <div className="space-y-5">
 
-          {/* Passengers */}
           <Card title="Passengers" icon={Users}>
             <PassengersTable passengers={app.passengers} />
           </Card>
 
-          {/* Contact information */}
           <Card title="Contact Information" icon={Mail}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
               <div>
@@ -326,7 +306,6 @@ export default function AdminInsuranceApplicationDetailPage() {
             </div>
           </Card>
 
-          {/* Policy information */}
           {(app.policyId || app.policyNumber || app.schemeId || app.quoteId || app.transactionId) && (
             <Card title="Policy Information" icon={FileText}>
               <InfoRow label="Policy Number"  value={app.policyNumber}  mono />
@@ -338,10 +317,8 @@ export default function AdminInsuranceApplicationDetailPage() {
           )}
         </div>
 
-        {/* Sidebar */}
         <div className="space-y-4 xl:sticky xl:top-6">
 
-          {/* Payment */}
           <Card title="Payment" icon={CreditCard}>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -361,7 +338,6 @@ export default function AdminInsuranceApplicationDetailPage() {
             </div>
           </Card>
 
-          {/* Documents */}
           {app.paymentStatus === 'PAID' && app.policyId && (
             <Card title="Documents" icon={Download}>
               <div className="flex flex-col gap-2">
@@ -389,7 +365,6 @@ export default function AdminInsuranceApplicationDetailPage() {
             </Card>
           )}
 
-          {/* Journey */}
           <Card title="Journey" icon={Globe}>
             <InfoRow label="Type"    value={app.journeyType ? app.journeyType.charAt(0).toUpperCase() + app.journeyType.slice(1) : '—'} />
             <InfoRow label="Region"  value={app.region?.name} />
@@ -401,14 +376,12 @@ export default function AdminInsuranceApplicationDetailPage() {
             <InfoRow label="Total"   value={totalPassengers} />
           </Card>
 
-          {/* Metadata */}
           <Card title="Record" icon={Hash}>
             <InfoRow label="Created"   value={fmtDatetime(app.createdAt)} />
             <InfoRow label="Updated"   value={fmtDatetime(app.updatedAt)} />
             <InfoRow label="Review email" value={app.reviewEmailSent ? 'Sent' : 'Not sent'} />
           </Card>
 
-          {/* Danger zone */}
           <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
             <div className="px-5 py-3.5 border-b border-gray-100">
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Danger Zone</p>

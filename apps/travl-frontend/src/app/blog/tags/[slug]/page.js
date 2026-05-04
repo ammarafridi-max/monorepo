@@ -99,6 +99,7 @@ export default async function Page({ params, searchParams }) {
       breadcrumbPaths={breadcrumbPaths}
       graph={graph}
       breadcrumbJsonLd={breadcrumbJsonLd}
+      heroPoints={['Expert-Written Articles', 'Practical & Actionable', 'Updated Regularly', 'Free to Read']}
     />
   );
 }

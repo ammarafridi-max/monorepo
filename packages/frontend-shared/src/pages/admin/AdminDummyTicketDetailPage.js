@@ -19,8 +19,6 @@ import { extractIataCode } from '../../utils/extractIataCode';
 import { formatAmount } from '../../utils/currency';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 
-/* --- Badges ------------------------------------------------------------------ */
-
 const PAYMENT_CFG = {
   PAID:     { dot: 'bg-green-500', cls: 'bg-green-50  text-green-700  border-green-200'  },
   UNPAID:   { dot: 'bg-amber-400', cls: 'bg-amber-50  text-amber-700  border-amber-200'  },
@@ -53,8 +51,6 @@ function OrderBadge({ status }) {
   );
 }
 
-/* --- UI primitives ----------------------------------------------------------- */
-
 function Card({ title, icon: Icon, children }) {
   return (
     <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
@@ -77,8 +73,6 @@ function InfoRow({ label, value, mono }) {
     </div>
   );
 }
-
-/* --- Passengers table -------------------------------------------------------- */
 
 function PassengersTable({ passengers }) {
   if (!passengers?.length) {
@@ -112,8 +106,6 @@ function PassengersTable({ passengers }) {
     </div>
   );
 }
-
-/* --- Delete section ---------------------------------------------------------- */
 
 function DeleteSection({ sessionId, disabled }) {
   const [confirm, setConfirm] = useState(false);
@@ -161,8 +153,6 @@ function DeleteSection({ sessionId, disabled }) {
   );
 }
 
-/* --- Page -------------------------------------------------------------------- */
-
 export default function AdminDummyTicketDetailPage() {
   const { sessionId } = useParams();
   const { adminUser } = useAdminAuth();
@@ -172,7 +162,6 @@ export default function AdminDummyTicketDetailPage() {
   const { updateDummyTicket, isUpdating }              = useUpdateDummyTicket();
   const { refundDummyTicket, isRefunding }             = useRefundDummyTicket();
 
-  /* -- Loading --------------------------------------------------- */
   if (isLoadingDummyTicket) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -184,7 +173,6 @@ export default function AdminDummyTicketDetailPage() {
     );
   }
 
-  /* -- Not found ------------------------------------------------- */
   if (!ticket) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -204,7 +192,6 @@ export default function AdminDummyTicketDetailPage() {
     );
   }
 
-  /* -- WhatsApp share -------------------------------------------- */
   function handleShareWhatsApp() {
     const fromCode = extractIataCode(ticket?.from);
     const toCode   = extractIataCode(ticket?.to);
@@ -244,7 +231,6 @@ export default function AdminDummyTicketDetailPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-5">
 
-      {/* -- Page header -------------------------------------------- */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">
           <Link
@@ -267,7 +253,6 @@ export default function AdminDummyTicketDetailPage() {
           </div>
         </div>
 
-        {/* Action buttons */}
         <div className="flex items-center gap-2 flex-wrap">
           {ticket?.orderStatus !== 'DELIVERED' && (
             <button
@@ -314,18 +299,14 @@ export default function AdminDummyTicketDetailPage() {
         </div>
       </div>
 
-      {/* -- Two-column body ----------------------------------------- */}
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_280px] gap-5 items-start">
 
-        {/* Main column */}
         <div className="space-y-5">
 
-          {/* Passengers */}
           <Card title="Passengers" icon={Users}>
             <PassengersTable passengers={ticket?.passengers} />
           </Card>
 
-          {/* Contact */}
           <Card title="Contact Information" icon={Mail}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
               <div>
@@ -358,7 +339,6 @@ export default function AdminDummyTicketDetailPage() {
             )}
           </Card>
 
-          {/* Trip details */}
           <Card title="Trip Details" icon={Plane}>
             <InfoRow label="From"       value={ticket?.from} />
             <InfoRow label="To"         value={ticket?.to} />
@@ -382,7 +362,6 @@ export default function AdminDummyTicketDetailPage() {
                   : '—'} />
           </Card>
 
-          {/* Affiliate */}
           {(ticket?.affiliate || ticket?.affiliateId) && (
             <Card title="Affiliate" icon={ExternalLink}>
               <InfoRow label="Affiliate ID"  value={ticket?.affiliate?.affiliateId || ticket?.affiliateId} mono />
@@ -409,10 +388,8 @@ export default function AdminDummyTicketDetailPage() {
 
         </div>
 
-        {/* Sidebar */}
         <div className="space-y-4 xl:sticky xl:top-6">
 
-          {/* Payment */}
           <Card title="Payment" icon={CreditCard}>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -448,7 +425,6 @@ export default function AdminDummyTicketDetailPage() {
             </div>
           </Card>
 
-          {/* Order status */}
           <Card title="Order Status" icon={MapPin}>
             <div className="flex flex-col gap-2">
               {['PENDING', 'PROGRESS', 'DELIVERED'].map((status) => (
@@ -468,7 +444,6 @@ export default function AdminDummyTicketDetailPage() {
             </div>
           </Card>
 
-          {/* Handled by */}
           <Card title="Record" icon={Hash}>
             <InfoRow label="Handled By"  value={ticket?.handledBy?.name} />
             <InfoRow label="Submitted"   value={`${convertToDubaiDate(ticket?.createdAt)} ${convertToDubaiTime(ticket?.createdAt)}`} />
@@ -476,7 +451,6 @@ export default function AdminDummyTicketDetailPage() {
             <InfoRow label="Session"     value={ticket?.sessionId} mono />
           </Card>
 
-          {/* Danger zone */}
           <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
             <div className="px-5 py-3.5 border-b border-gray-100">
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Danger Zone</p>

@@ -4,11 +4,11 @@ import { useState, Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { usePathname } from 'next/navigation';
-import { Mail, Plane, Rss, ShieldPlus } from 'lucide-react';
+import { Mail, Plane, ShieldPlus, Globe } from 'lucide-react';
 import { CurrencyProvider } from '@travel-suite/frontend-shared/contexts/CurrencyContext';
 import { TicketProvider } from '@travel-suite/frontend-shared/contexts/TicketContext';
 import { InsuranceProvider } from '@travel-suite/frontend-shared/contexts/InsuranceContext';
-import AppLayout from '@travel-suite/frontend-shared/layouts/AppLayout';
+import AppMegaLayout from '@travel-suite/frontend-shared/layouts/AppMegaLayout';
 import AnalyticsInit from '@travel-suite/frontend-shared/components/v1/AnalyticsInit';
 
 const LOGO_ALT = 'Travl Logo';
@@ -33,7 +33,38 @@ const defaultPages = [
     links: ['/flight-itinerary', '/booking/select-flights', '/booking/review-details'],
     icon: <Plane size={18} />,
   },
-  { name: 'Blog', links: ['/blog'], icon: <Rss size={18} /> },
+  {
+    name: 'Visa',
+    links: ['/visa'],
+    icon: <Globe size={18} />,
+    subpages: [
+      {
+        name: 'All Destinations',
+        link: '/visa',
+        description: 'Browse all visa services we offer',
+      },
+      {
+        name: 'Schengen Visa',
+        link: '/visa/schengen',
+        description: 'Access 27 European countries with one visa',
+      },
+      {
+        name: 'United Kingdom Visa',
+        link: '/visa/united-kingdom',
+        description: 'Tourism, business, and family visits to the UK',
+      },
+      {
+        name: 'US Visa',
+        link: '/visa/usa',
+        description: 'B1/B2 visitor visa with interview coaching',
+      },
+      {
+        name: 'Canada Visa',
+        link: '/visa/canada',
+        description: 'Temporary resident visa for tourism and family visits',
+      },
+    ],
+  },
   { name: 'Email Us', links: [`mailto:${EMAIL}`], icon: <Mail size={18} /> },
 ];
 
@@ -44,7 +75,6 @@ const flightItineraryPages = [
     icon: <Plane size={18} />,
   },
   { name: 'Travel Insurance', links: ['/travel-insurance'], icon: <ShieldPlus size={18} /> },
-  { name: 'Blog', links: ['/blog'], icon: <Rss size={18} /> },
   { name: 'Email Us', links: [`mailto:${EMAIL}`], icon: <Mail size={18} /> },
 ];
 
@@ -83,9 +113,9 @@ export default function Providers({ children }) {
             <TicketProvider>
               <Suspense>
                 <InsuranceProvider>
-                  <AppLayout pages={flightItineraryPages} logoAlt={LOGO_ALT} email={EMAIL}>
+                  <AppMegaLayout pages={flightItineraryPages} logoAlt={LOGO_ALT} email={EMAIL}>
                     <main>{children}</main>
-                  </AppLayout>
+                  </AppMegaLayout>
                 </InsuranceProvider>
               </Suspense>
             </TicketProvider>
@@ -104,9 +134,9 @@ export default function Providers({ children }) {
           <TicketProvider>
             <Suspense>
               <InsuranceProvider>
-                <AppLayout pages={defaultPages} logoAlt={LOGO_ALT} email={EMAIL}>
+                <AppMegaLayout pages={defaultPages} logoAlt={LOGO_ALT} email={EMAIL}>
                   <main>{children}</main>
-                </AppLayout>
+                </AppMegaLayout>
               </InsuranceProvider>
             </Suspense>
           </TicketProvider>

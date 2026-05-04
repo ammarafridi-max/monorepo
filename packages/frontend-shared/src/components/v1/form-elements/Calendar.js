@@ -41,7 +41,7 @@ export default function Calendar({
   const handleMonthChange = (delta) => {
     setCurrentDate((prev) => {
       const newDate = new Date(prev);
-      newDate.setDate(1); // 🔥 prevent overflow
+      newDate.setDate(1);
       newDate.setMonth(newDate.getMonth() + delta);
       return newDate;
     });
@@ -54,7 +54,7 @@ export default function Calendar({
 
     return (
       <div className="flex items-center justify-between w-full px-4 py-3 border-b border-gray-100 bg-white">
-        {/* Month + Year */}
+
         <div className="flex items-center gap-2">
           <select
             value={currentDate.getMonth()}
@@ -89,7 +89,6 @@ export default function Calendar({
           </select>
         </div>
 
-        {/* Navigation */}
         <div className="flex items-center gap-1">
           <button
             type="button"

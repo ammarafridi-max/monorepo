@@ -103,7 +103,7 @@ export default async function sitemap() {
         priority: 0.7,
       }));
   } catch {
-    // Blog API unavailable at build time — blog posts excluded from sitemap
+
   }
 
   let tagEntries = [];
@@ -119,7 +119,7 @@ export default async function sitemap() {
         priority: 0.5,
       }));
   } catch {
-    // Tags API unavailable at build time — tag pages excluded from sitemap
+
   }
 
   return [...staticEntries, ...blogEntries, ...tagEntries];

@@ -64,14 +64,14 @@ function dobBoundsForType(type) {
   const pad = (yr) => `${yr}-${m}-${d}`;
 
   if (type === 'children') {
-    // Age 0–16: born from today back to 17 years ago + 1 day
+
     return { minDate: pad(y - 16), maxDate: `${y}-${m}-${d}` };
   }
   if (type === 'seniors') {
-    // Age 66–75: born between 75 and 66 years ago
+
     return { minDate: pad(y - 75), maxDate: pad(y - 66) };
   }
-  // adults: Age 17–65
+
   return { minDate: pad(y - 65), maxDate: pad(y - 17) };
 }
 
@@ -402,32 +402,6 @@ export default function PassengersForm() {
           })}
         </div>
 
-        {/* <div className="mt-10 pt-8 border-t border-gray-200 flex items-center justify-between">
-          <Link
-            href="/insurance-booking/quote"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors"
-          >
-            <ArrowLeft size={15} />
-            Back to quotes
-          </Link>
-          <button
-            type="submit"
-            disabled={isCreatingApplication}
-            className="inline-flex items-center gap-2 bg-primary-700 hover:bg-primary-800 disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-bold px-8 py-3 rounded-xl transition-colors"
-          >
-            {isCreatingApplication ? (
-              <>
-                <Loader2 size={15} className="animate-spin" />
-                Saving…
-              </>
-            ) : (
-              <>
-                Continue to Review
-                <ArrowRight size={15} />
-              </>
-            )}
-          </button>
-        </div> */}
       </div>
     </form>
   );

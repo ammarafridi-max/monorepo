@@ -107,6 +107,7 @@ export const pageData = {
       subtitle:
         'International travel insurance covers you for medical emergencies, hospitalisation, and repatriation anywhere in the world. Plans are issued by AXA, start from AED 70, and include medical coverage from EUR 80,000. Get your policy online and receive it in minutes.',
       form: <AllForms defaultTab="insurance" />,
+      pills: ['Worldwide Coverage', 'EUR 80,000 Medical', 'Repatriation Included', 'From AED 70'],
     },
     process: {
       title: 'How to Get International Travel Insurance',
@@ -177,6 +178,7 @@ export default function Page() {
       <Hero
         title={pageData.sections.hero.title}
         subtitle={pageData.sections.hero.subtitle}
+        pills={pageData.sections.hero.pills}
         form={pageData.sections.hero.form}
         breadcrumbPaths={[
           { label: 'Home', path: '/' },

@@ -11,7 +11,7 @@ export default function BlogCard({ blog }) {
       className="group bg-white rounded-3xl overflow-hidden cursor-pointer duration-300 shadow-[0_14px_35px_rgba(16,24,40,0.08)] border border-gray-100 hover:-translate-y-1 hover:shadow-[0_20px_45px_rgba(16,24,40,0.14)]"
     >
       <div className="aspect-video bg-gray-100 overflow-hidden">
-        {/* dynamic content — coverImageUrl is an external API URL; next/image requires remotePatterns config */}
+
         <img
           src={coverImageUrl}
           className="h-full w-full object-cover object-center duration-500 group-hover:scale-105"

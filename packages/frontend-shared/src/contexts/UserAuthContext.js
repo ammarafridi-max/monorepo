@@ -1,11 +1,5 @@
 'use client';
 
-/**
- * UserAuthContext — public user auth for travelshield and similar apps.
- * Supports both NextAuth OAuth (Google/Facebook) and backend httpOnly cookie sessions.
- * Requires next-auth to be installed and configured in the consuming app.
- */
-
 import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { exchangeOAuthSessionApi, getUserMeApi } from '../services/apiAuth.js';
@@ -16,10 +10,8 @@ export function UserAuthProvider({ children }) {
   const [user, setUser]               = useState(null);
   const [isLoadingAuth, setIsLoading] = useState(true);
 
-  // NextAuth session (populated after Google / Facebook OAuth login)
   const { data: session, status } = useSession();
 
-  // Re-fetch the current user from the backend (used for cookie-based sessions)
   const refreshUser = useCallback(async () => {
     try {
       const data = await getUserMeApi();
@@ -30,7 +22,7 @@ export function UserAuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    // Wait until NextAuth has finished resolving the session
+
     if (status === 'loading') return;
 
     if (session?.user) {
@@ -58,7 +50,7 @@ export function UserAuthProvider({ children }) {
         })
         .finally(() => setIsLoading(false));
     } else {
-      // -- Backend cookie session (existing httpOnly JWT) -----------------------
+
       refreshUser().finally(() => setIsLoading(false));
     }
   }, [session, status, refreshUser]);

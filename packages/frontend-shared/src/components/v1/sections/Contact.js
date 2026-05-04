@@ -10,7 +10,7 @@ export default function Contact({
   imageAlt = 'Contact Us',
 }) {
   if (!email && process.env.NODE_ENV !== 'production') {
-    // Fail loudly in dev so brand emails don't silently leak.
+
     console.warn(
       '[Contact] `email` prop is required — falling back to mailto with no address. ' +
         'Pass the brand-specific support email from the consuming app.',

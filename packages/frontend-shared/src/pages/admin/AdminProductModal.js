@@ -18,12 +18,6 @@ const EMPTY = {
   description: '',
 };
 
-/**
- * Modal for create + edit. Pass `product` (existing record) to enter edit mode.
- *
- * Editing price/currency causes the backend to archive the old Stripe Price
- * and create a new one — existing Payment Links keep their old price.
- */
 export default function AdminProductModal({ product, onClose, onSave, saving }) {
   const isEdit = Boolean(product);
   const [form, setForm] = useState(() =>
@@ -45,7 +39,6 @@ export default function AdminProductModal({ product, onClose, onSave, saving }) 
   const unitNum = Number(form.unitAmount);
   const canSave = trimmedName.length > 0 && Number.isFinite(unitNum) && unitNum > 0;
 
-  // Detect price/currency change so we can show a warning in edit mode.
   const priceChanged =
     isEdit &&
     (unitNum !== product.unitAmount ||

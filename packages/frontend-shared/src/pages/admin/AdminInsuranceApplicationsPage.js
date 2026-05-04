@@ -12,8 +12,6 @@ import { useDeleteInsuranceApplication } from '../../hooks/insurance/useDeleteIn
 import { useCreateNationalities } from '../../hooks/insurance/useCreateNationalities';
 import { useGetInsuranceApplicationsSummary } from '../../hooks/insurance/useGetInsuranceApplicationsSummary';
 
-/* --- Config ----------------------------------------------------------------- */
-
 const PAYMENT_TABS = [
   { value: '',         label: 'All'      },
   { value: 'PAID',     label: 'Paid'     },
@@ -29,8 +27,6 @@ const JOURNEY_TABS = [
   { value: 'annual',   label: 'Annual'   },
   { value: 'biennial', label: 'Biennial' },
 ];
-
-/* --- Badges ----------------------------------------------------------------- */
 
 const PAYMENT_CFG = {
   PAID:     { dot: 'bg-green-500',  cls: 'bg-green-50   text-green-700   border-green-200' },
@@ -65,8 +61,6 @@ function JourneyBadge({ type }) {
   );
 }
 
-/* --- Helpers ---------------------------------------------------------------- */
-
 function fmtDate(str) {
   if (!str) return '—';
   return new Date(str).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -85,8 +79,6 @@ function leadName(app) {
   return [p.title, name].filter(Boolean).join(' ') || '—';
 }
 
-/* --- Filter pill ------------------------------------------------------------ */
-
 function FilterPill({ label, active, onClick }) {
   return (
     <button
@@ -101,8 +93,6 @@ function FilterPill({ label, active, onClick }) {
     </button>
   );
 }
-
-/* --- Main content (inside Suspense — uses useSearchParams) ------------------ */
 
 function ApplicationsContent() {
   const router       = useRouter();
@@ -147,7 +137,6 @@ function ApplicationsContent() {
   return (
     <div className="max-w-7xl mx-auto space-y-5">
 
-      {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-2xl font-extrabold text-gray-900">Applications</h2>
@@ -185,7 +174,6 @@ function ApplicationsContent() {
         )}
       </div>
 
-      {/* Filters */}
       <div className="flex flex-wrap items-center gap-4">
         <div className="relative w-full max-w-sm">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
@@ -227,7 +215,6 @@ function ApplicationsContent() {
         </div>
       </div>
 
-      {/* Table card */}
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
         {isLoadingApplications ? (
           <div className="flex items-center justify-center py-20">
@@ -337,8 +324,6 @@ function ApplicationsContent() {
     </div>
   );
 }
-
-/* --- Page ------------------------------------------------------------------- */
 
 export default function AdminInsuranceApplicationsPage() {
   return (

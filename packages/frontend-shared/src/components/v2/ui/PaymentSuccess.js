@@ -27,8 +27,6 @@ import { pixelPurchase } from "../../../utils/pixel";
 import { trackPurchaseEvent } from "../../../utils/analytics";
 import { calcDays } from "../../../utils/insuranceHelpers.js";
 
-/* --- Helpers ------------------------------------------------------------------ */
-
 function fmtDate(str) {
   if (!str) return "—";
   return new Date(str).toLocaleDateString("en-GB", {
@@ -47,8 +45,6 @@ function fmtAmount(amountPaid) {
     maximumFractionDigits: 2,
   })}`;
 }
-
-/* --- Copy button -------------------------------------------------------------- */
 
 function CopyButton({ value }) {
   const [copied, setCopied] = useState(false);
@@ -76,8 +72,6 @@ function CopyButton({ value }) {
   );
 }
 
-/* --- Detail row --------------------------------------------------------------- */
-
 function DetailRow({ label, value, mono, action }) {
   return (
     <div className="flex items-center justify-between gap-4 py-2.5 border-b border-gray-50 last:border-0">
@@ -93,8 +87,6 @@ function DetailRow({ label, value, mono, action }) {
     </div>
   );
 }
-
-/* --- Loading state ------------------------------------------------------------ */
 
 function ConfirmingState() {
   return (
@@ -147,8 +139,6 @@ function PendingConfirmationState({ onRetry }) {
     </div>
   );
 }
-
-/* --- Payment not found state -------------------------------------------------- */
 
 function PaymentNotFoundState() {
   return (
@@ -216,8 +206,6 @@ function BookingNotFoundState() {
   );
 }
 
-/* --- Generic error state ------------------------------------------------------ */
-
 function ErrorState({ onRetry }) {
   return (
     <div className="max-w-lg mx-auto px-6 py-24 flex flex-col items-center text-center gap-5">
@@ -249,8 +237,6 @@ function ErrorState({ onRetry }) {
     </div>
   );
 }
-
-/* --- Main component ----------------------------------------------------------- */
 
 export default function PaymentSuccess() {
   const searchParams = useSearchParams();
@@ -334,7 +320,6 @@ export default function PaymentSuccess() {
     }
   }, [sessionId, paymentSyncToken, paymentStatus]);
 
-  /* -- Derive display data -- */
   const app = confirmData ?? {};
 
   const resolvedJourneyType = app.journeyType ?? journeyType;
@@ -369,7 +354,6 @@ export default function PaymentSuccess() {
     biennial: "Biennial Multi-Trip",
   };
 
-  /* -- States -- */
   if (
     !sessionId ||
     !paymentSyncToken ||
@@ -400,7 +384,7 @@ export default function PaymentSuccess() {
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-10">
-      {/* -- Hero -- */}
+
       <div className="flex flex-col items-center text-center mb-10">
         <div className="relative mb-5">
           <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
@@ -425,7 +409,6 @@ export default function PaymentSuccess() {
           .
         </p>
 
-        {/* Policy number highlight */}
         {app.policyNumber && (
           <div className="mt-5 inline-flex items-center gap-2 bg-green-50 border border-green-200 rounded-full px-4 py-2">
             <Hash size={13} className="text-green-600" />
@@ -440,11 +423,10 @@ export default function PaymentSuccess() {
         )}
       </div>
 
-      {/* -- Two-column body -- */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6 items-start">
-        {/* Main: Policy details */}
+
         <div className="space-y-5">
-          {/* Trip details */}
+
           <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
             <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-gray-100">
               <Globe size={14} className="text-gray-400" />
@@ -494,7 +476,6 @@ export default function PaymentSuccess() {
             </div>
           </div>
 
-          {/* Passengers */}
           {resolvedPassengers.length > 0 && (
             <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
               <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-gray-100">
@@ -538,7 +519,6 @@ export default function PaymentSuccess() {
             </div>
           )}
 
-          {/* Policy reference */}
           {(app.policyId || app.policyNumber || app.transactionId) && (
             <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
               <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-gray-100">
@@ -576,7 +556,6 @@ export default function PaymentSuccess() {
             </div>
           )}
 
-          {/* Documents */}
           {app.policyId && (
             <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
               <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-gray-100">
@@ -635,9 +614,8 @@ export default function PaymentSuccess() {
           )}
         </div>
 
-        {/* Sidebar */}
         <div className="space-y-4 lg:sticky lg:top-6">
-          {/* Actions */}
+
           <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm p-5 flex flex-col gap-3">
             <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
               Actions
@@ -651,7 +629,6 @@ export default function PaymentSuccess() {
             </Link>
           </div>
 
-          {/* What's next */}
           <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm p-5">
             <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-4">
               What&apos;s next
@@ -702,7 +679,6 @@ export default function PaymentSuccess() {
             </div>
           </div>
 
-          {/* Contact */}
           <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 text-center">
             <p className="text-xs text-gray-500 mb-2">
               Need help with your policy?

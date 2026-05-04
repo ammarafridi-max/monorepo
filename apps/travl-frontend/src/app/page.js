@@ -74,6 +74,7 @@ const pageData = {
       title: 'Visa Documents and Travel Services for UAE Residents',
       subtitle:
         'Travl is a Dubai-based travel agency offering dummy tickets, hotel reservations, and travel insurance for visa applications. Order online and receive your documents in minutes.',
+      pills: ['Instant Document Delivery', 'Visa-Ready Formats', 'Dubai Licensed Agency', '24/7 Customer Support'],
     },
     process: {
       title: 'How It Works',
@@ -186,6 +187,7 @@ export default function HomePage() {
       <Hero
         title={pageData.sections.hero.title}
         subtitle={pageData.sections.hero.subtitle}
+        pills={pageData.sections.hero.pills}
         form={<AllForms />}
       />
       <Process

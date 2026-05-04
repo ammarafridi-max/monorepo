@@ -106,6 +106,7 @@ export const pageData = {
       subtitle:
         'Get real, embassy-compliant travel insurance online with instant policy delivery. Our plans are genuine, legally valid, and accepted for Schengen visa applications and international travel from the UAE.',
       form: <AllForms defaultTab="insurance" />,
+      pills: ['Schengen Compliant', 'Instant Policy Delivery', 'Issued by AXA', 'Embassy Accepted'],
     },
     process: {
       title: 'How to Book Travel Insurance',
@@ -169,6 +170,7 @@ export default function Page() {
       <Hero
         title={pageData.sections.hero.title}
         subtitle={pageData.sections.hero.subtitle}
+        pills={pageData.sections.hero.pills}
         form={pageData.sections.hero.form}
         breadcrumbPaths={[
           { label: 'Home', path: '/' },

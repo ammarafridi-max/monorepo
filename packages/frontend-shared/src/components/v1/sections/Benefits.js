@@ -33,9 +33,3 @@ export default function Benefits({
     </PrimarySection>
   );
 }
-
-// function IconCard({ icon, title, text }) {
-//   return (
-
-//   );
-// }

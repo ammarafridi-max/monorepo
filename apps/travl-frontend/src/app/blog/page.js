@@ -21,6 +21,7 @@ const hero = {
   title: 'Blog',
   subtitle:
     'Our blog covers travel insurance, visa requirements, flight reservations, and everything else you need to prepare a strong application. We share practical guides, tips, and updates to help you apply with confidence.',
+  points: ['Visa Guides', 'Insurance Tips', 'Document Checklists', 'Expert Insights'],
 };
 
 const breadcrumbPaths = [
@@ -60,7 +61,7 @@ export default async function Page({ searchParams }) {
     blogs = data?.blogs || [];
     pagination = data?.pagination || null;
   } catch {
-    // API unreachable at build time — ISR will populate on first request
+
   }
 
   const schema = buildGraph([

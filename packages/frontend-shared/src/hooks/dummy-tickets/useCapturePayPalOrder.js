@@ -11,7 +11,7 @@ export function useCapturePayPalOrder() {
     error,
   } = useMutation({
     mutationFn: capturePayPalOrderApi,
-    retry: 0, // never retry — capturing twice would fail on PayPal's side
+    retry: 0,
   });
 
   return { capturePayPalOrder, isCapturing, isErrorCapture, isCaptureSuccess, error };

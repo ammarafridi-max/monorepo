@@ -14,7 +14,6 @@ const start = async () => {
     });
   });
 
-  // Start email support polling (every 5 minutes)
   try {
     pollAndProcess().catch((err) =>
       logger.error('[email-support] Initial poll failed', { error: err.message }),

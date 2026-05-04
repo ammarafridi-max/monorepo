@@ -10,14 +10,10 @@ import { useUpdateAffiliate } from '../../hooks/affiliates/useUpdateAffiliate';
 import { useDeleteAffiliate } from '../../hooks/affiliates/useDeleteAffiliate';
 import { useToggleAffiliateStatus } from '../../hooks/affiliates/useToggleAffiliateStatus';
 
-/* --- Helpers ---------------------------------------------------------------- */
-
 function fmtDate(iso) {
   if (!iso) return '—';
   return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 }
-
-/* --- Toggle switch ----------------------------------------------------------- */
 
 function Toggle({ checked, onChange, disabled }) {
   return (
@@ -40,8 +36,6 @@ function Toggle({ checked, onChange, disabled }) {
   );
 }
 
-/* --- Modal ------------------------------------------------------------------ */
-
 const inputCls =
   'w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300 transition disabled:bg-gray-50 disabled:text-gray-400';
 
@@ -62,7 +56,6 @@ function AffiliateModal({ initial, onClose, onSave, saving }) {
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
 
-        {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <div>
             <p className="text-sm font-bold text-gray-900">{isEdit ? 'Edit Affiliate' : 'New Affiliate'}</p>
@@ -75,7 +68,6 @@ function AffiliateModal({ initial, onClose, onSave, saving }) {
           </button>
         </div>
 
-        {/* Body */}
         <div className="px-6 py-5 space-y-4">
 
           <div>
@@ -115,7 +107,6 @@ function AffiliateModal({ initial, onClose, onSave, saving }) {
           )}
         </div>
 
-        {/* Footer */}
         <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-gray-100 bg-gray-50/60">
           <button onClick={onClose} className="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-xl transition">Cancel</button>
           <button
@@ -131,8 +122,6 @@ function AffiliateModal({ initial, onClose, onSave, saving }) {
     </div>
   );
 }
-
-/* --- Content (needs Suspense because useAffiliates uses useSearchParams) --- */
 
 function AffiliatesContent() {
   const router       = useRouter();
@@ -208,7 +197,6 @@ function AffiliatesContent() {
 
       <div className="max-w-7xl mx-auto space-y-5">
 
-        {/* Header */}
         <div className="flex items-center justify-between gap-4">
           <div>
             <h2 className="text-2xl font-extrabold text-gray-900">Affiliates</h2>
@@ -224,7 +212,6 @@ function AffiliatesContent() {
           </button>
         </div>
 
-        {/* Table card */}
         <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
           <div className="px-4 py-3 border-b border-gray-100 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="relative w-full max-w-sm">
@@ -296,7 +283,6 @@ function AffiliatesContent() {
                     {affiliates.map((aff) => (
                       <tr key={aff._id} className={`hover:bg-gray-50/60 transition-colors group ${isDeletingAffiliate ? 'pointer-events-none' : ''}`}>
 
-                        {/* Affiliate name + email */}
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-accent-100 flex items-center justify-center shrink-0">
@@ -311,19 +297,16 @@ function AffiliatesContent() {
                           </div>
                         </td>
 
-                        {/* Affiliate ID */}
                         <td className="px-4 py-3">
                           <span className="font-mono text-xs text-gray-500 bg-gray-50 border border-gray-100 px-2 py-0.5 rounded tracking-widest">
                             {aff.affiliateId}
                           </span>
                         </td>
 
-                        {/* Commission */}
                         <td className="px-4 py-3">
                           <span className="text-sm font-semibold text-gray-800">{aff.commissionPercent}%</span>
                         </td>
 
-                        {/* Status toggle */}
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             <Toggle
@@ -337,10 +320,8 @@ function AffiliatesContent() {
                           </div>
                         </td>
 
-                        {/* Created */}
                         <td className="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">{fmtDate(aff.createdAt)}</td>
 
-                        {/* Actions */}
                         <td className="px-4 py-3 w-28">
                           {deleteId === aff._id ? (
                             <div className="flex items-center gap-1.5 text-xs">
@@ -368,7 +349,6 @@ function AffiliatesContent() {
                 </table>
               </div>
 
-              {/* Pagination */}
               {totalPages > 1 && (
                 <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
                   <p className="text-xs text-gray-400">Page {page} of {totalPages}</p>
@@ -389,8 +369,6 @@ function AffiliatesContent() {
     </>
   );
 }
-
-/* --- Page — Suspense required because useAffiliates calls useSearchParams -- */
 
 export default function AdminAffiliatesPage() {
   return (
