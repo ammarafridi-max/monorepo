@@ -5,6 +5,7 @@
   "exports": {
     "./services/*": "./src/services/*.js",
     "./hooks/*": "./src/hooks/*.js",
+    "./hooks/*/*": "./src/hooks/*/*.js",
     "./contexts/*": "./src/contexts/*.js",
     "./utils/*": "./src/utils/*.js",
     "./components/shared/*": "./src/components/shared/*.js",
