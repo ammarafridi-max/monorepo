@@ -14,7 +14,7 @@ import {
   buildWebPage,
   buildWebsite,
 } from '@/lib/schema';
-import BlogPostPage from '@travel-suite/frontend-shared/pages/client/BlogPostPage';
+import BlogPostPage from '@travel-suite/frontend-shared/pages/client/v1/BlogPostPage';
 
 export const revalidate = 300;
 

@@ -23,40 +23,37 @@ import {
   MdOutlineHealthAndSafety,
   MdOutlineHotel,
 } from 'react-icons/md';
-import Hero from '@travel-suite/frontend-shared/components/v1/sections/Hero';
-import AllForms from '@travel-suite/frontend-shared/components/v1/forms/AllForms';
+import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
+import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 
-const Process = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/Process'));
-const About = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/About'));
-const Benefits = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/Benefits'));
-const Testimonials = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/Testimonials'));
-const FAQ = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/FAQ'));
-const Contact = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/Contact'));
-const BlogPosts = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/BlogPosts'));
+const Process = lazy(() => import('@travel-suite/frontend-shared/components/sections/v1/Process'));
+const About = lazy(() => import('@travel-suite/frontend-shared/components/sections/v1/About'));
+const Benefits = lazy(() => import('@travel-suite/frontend-shared/components/sections/v1/Benefits'));
+const Testimonials = lazy(() => import('@travel-suite/frontend-shared/components/sections/v1/Testimonials'));
+const FAQ = lazy(() => import('@travel-suite/frontend-shared/components/sections/v1/FAQ'));
+const Contact = lazy(() => import('@travel-suite/frontend-shared/components/sections/v1/Contact'));
+const BlogPosts = lazy(() => import('@travel-suite/frontend-shared/components/sections/v1/BlogPosts'));
 
 const keyword = 'dummy ticket';
 
 const testimonials = [
   {
-    title: 'Stress-Free',
+    quote: 'MDT made my US visa process incredibly smooth and totally stress-free. The booking was fast, the dummy ticket looked genuine, and I had no issues at the embassy. Great service for anyone needing quick and professional US visa travel documents.',
     name: 'David S.',
-    img: '/david.webp',
-    text: 'MDT made my US visa process incredibly smooth and totally stress-free. The booking was fast, the dummy ticket looked genuine, and I had no issues at the embassy. Great service for anyone needing quick and professional US visa travel documents.',
-    purpose: 'Traveler from the United States',
+    location: 'Traveler from the United States',
+    stars: 5,
   },
   {
-    title: 'Dependable',
+    quote: 'I was in a rush for my US visa appointment and MDT delivered exactly what I needed. The process was simple, reliable, and my dummy ticket was ready in minutes. It saved me a lot of stress during my application. Definitely using this again.',
     name: 'Maria K.',
-    img: '/maria.webp',
-    text: 'I was in a rush for my US visa appointment and MDT delivered exactly what I needed. The process was simple, reliable, and my dummy ticket was ready in minutes. It saved me a lot of stress during my application. Definitely using this again.',
-    purpose: 'Tourist from the United Kingdom',
+    location: 'Tourist from the United Kingdom',
+    stars: 5,
   },
   {
-    title: 'Super Fast',
+    quote: 'The entire experience with MDT was seamless from start to finish. I got my dummy ticket for US visa within minutes and it worked perfectly for my submission. Fast response, clear instructions, and great support - highly recommend.',
     name: 'Ahmed R.',
-    img: '/ahmed.webp',
-    text: 'The entire experience with MDT was seamless from start to finish. I got my dummy ticket for US visa within minutes and it worked perfectly for my submission. Fast response, clear instructions, and great support - highly recommend.',
-    purpose: 'Frequent Flyer from India',
+    location: 'Frequent Flyer from India',
+    stars: 5,
   },
 ];
 
@@ -200,6 +197,16 @@ export default function Page() {
         title={pageData.sections.hero.title}
         subtitle={pageData.sections.hero.subtitle}
         form={pageData.sections.hero.form}
+        pills={[
+          'Verifiable PNR Code',
+          'US Embassy Accepted Format',
+          'Delivered in Minutes',
+          'Starts from AED 49',
+        ]}
+        breadcrumbPaths={[
+          { label: 'Home', href: '/' },
+          { label: 'Dummy Ticket for US Visa' },
+        ]}
       />
       <Suspense fallback={null}>
         <Process

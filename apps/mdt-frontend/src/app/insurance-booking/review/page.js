@@ -1,2 +1,2 @@
 'use client';
-export { default } from '@travel-suite/frontend-shared/pages/client/InsuranceReviewPage';
+export { default } from '@travel-suite/frontend-shared/pages/client/shared/InsuranceReviewPage';

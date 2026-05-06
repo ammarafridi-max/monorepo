@@ -1,4 +1,4 @@
-import InsurancePassengersPage from '@travel-suite/frontend-shared/pages/client/InsurancePassengersPage';
+import InsurancePassengersPage from '@travel-suite/frontend-shared/pages/client/shared/InsurancePassengersPage';
 
 export const metadata = {
   title: 'Passenger Details — TravelShield',

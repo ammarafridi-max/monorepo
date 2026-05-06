@@ -1,12 +1,12 @@
-import Hero from '@travel-suite/frontend-shared/components/v1/sections/Hero';
-import AllForms from '@travel-suite/frontend-shared/components/v1/forms/AllForms';
-import Process from '@travel-suite/frontend-shared/components/v1/sections/Process';
-import About from '@travel-suite/frontend-shared/components/v1/sections/About';
-import Benefits from '@travel-suite/frontend-shared/components/v1/sections/Benefits';
-import Testimonials from '@travel-suite/frontend-shared/components/v1/sections/Testimonials';
-import FAQ from '@travel-suite/frontend-shared/components/v1/sections/FAQ';
-import Contact from '@travel-suite/frontend-shared/components/v1/sections/Contact';
-import BlogPosts from '@travel-suite/frontend-shared/components/v1/sections/BlogPosts';
+import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
+import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
+import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
+import About from '@travel-suite/frontend-shared/components/sections/v1/About';
+import Benefits from '@travel-suite/frontend-shared/components/sections/v1/Benefits';
+import Testimonials from '@travel-suite/frontend-shared/components/sections/v1/Testimonials';
+import FAQ from '@travel-suite/frontend-shared/components/sections/v1/FAQ';
+import Contact from '@travel-suite/frontend-shared/components/sections/v1/Contact';
+import BlogPosts from '@travel-suite/frontend-shared/components/sections/v1/BlogPosts';
 import {
   SITE_URL,
   buildFAQPage,
@@ -28,25 +28,22 @@ const keyword = 'dummy ticket';
 
 const testimonials = [
   {
-    title: 'Stress-Free',
+    quote: 'MDT made my visa process incredibly smooth and totally stress-free. The booking was fast, the ticket looked real, and I had no issues at the embassy. Great service for anyone needing quick and professional travel documents on short notice.',
     name: 'David S.',
-    img: '/david.webp',
-    text: 'MDT made my visa process incredibly smooth and totally stress-free. The booking was fast, the ticket looked real, and I had no issues at the embassy. Great service for anyone needing quick and professional travel documents on short notice.',
-    purpose: 'Traveler from the United States',
+    location: 'Traveler from the United States',
+    stars: 5,
   },
   {
-    title: 'Dependable',
+    quote: 'I was in a rush and MDT delivered exactly what I needed. The process was simple, the service was reliable, and I had my ticket ready in minutes. It saved me a lot of stress when applying for my visa. Definitely using this again in the future.',
     name: 'Maria K.',
-    img: '/maria.webp',
-    text: 'I was in a rush and MDT delivered exactly what I needed. The process was simple, the service was reliable, and I had my ticket ready in minutes. It saved me a lot of stress when applying for my visa. Definitely using this again in the future.',
-    purpose: 'Tourist from the United Kingdom',
+    location: 'Tourist from the United Kingdom',
+    stars: 5,
   },
   {
-    title: 'Super Fast',
+    quote: 'The entire experience with MDT was seamless from start to finish. I got my dummy ticket within minutes, and it worked perfectly for my Schengen visa. Fast response, clear instructions, and great support - highly recommend to travelers in need.',
     name: 'Ahmed R.',
-    img: '/ahmed.webp',
-    text: 'The entire experience with MDT was seamless from start to finish. I got my dummy ticket within minutes, and it worked perfectly for my Schengen visa. Fast response, clear instructions, and great support - highly recommend to travelers in need.',
-    purpose: 'Frequent Flyer from India',
+    location: 'Frequent Flyer from India',
+    stars: 5,
   },
 ];
 
@@ -193,6 +190,12 @@ export default function HomePage() {
         title={pageData.sections.hero.title}
         subtitle={pageData.sections.hero.subtitle}
         form={<AllForms />}
+        pills={[
+          'Accepted by VFS & BLS',
+          'Verifiable PNR Code',
+          'Delivered in Minutes',
+          'Starts from AED 49',
+        ]}
       />
       <Process
         title={pageData.sections.process.title}

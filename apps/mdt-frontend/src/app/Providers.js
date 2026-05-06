@@ -9,7 +9,7 @@ import { CurrencyProvider } from '@travel-suite/frontend-shared/contexts/Currenc
 import { TicketProvider } from '@travel-suite/frontend-shared/contexts/TicketContext';
 import { InsuranceProvider } from '@travel-suite/frontend-shared/contexts/InsuranceContext';
 import AppLayout from '@travel-suite/frontend-shared/layouts/AppLayout';
-import AnalyticsInit from '@travel-suite/frontend-shared/components/v1/AnalyticsInit';
+import AnalyticsInit from '@travel-suite/frontend-shared/components/shared/AnalyticsInit';
 
 const LOGO_ALT = 'MDT Logo';
 const EMAIL = 'info@mydummyticket.ae';

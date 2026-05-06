@@ -8,7 +8,7 @@ import {
   buildWebPage,
   buildWebsite,
 } from '@/lib/schema';
-import BlogPage from '@travel-suite/frontend-shared/pages/client/BlogPage';
+import BlogPage from '@travel-suite/frontend-shared/pages/client/v1/BlogPage';
 
 const meta = {
   title: 'Dummy Ticket & Visa Travel Blog | Tips, Guides & Updates',

@@ -1,11 +1,11 @@
-import AllForms from '@travel-suite/frontend-shared/components/v1/forms/AllForms';
-import Container from '@travel-suite/frontend-shared/components/v1/layout/Container';
-import FAQAccordion from '@travel-suite/frontend-shared/components/v1/ui/FAQAccordion';
-import PrimarySection from '@travel-suite/frontend-shared/components/v1/layout/PrimarySection';
-import SectionTitle from '@travel-suite/frontend-shared/components/v1/layout/SectionTitle';
-import About from '@travel-suite/frontend-shared/components/v1/sections/About';
-import Hero from '@travel-suite/frontend-shared/components/v1/sections/Hero';
-import Process from '@travel-suite/frontend-shared/components/v1/sections/Process';
+import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
+import Container from '@travel-suite/frontend-shared/components/shared/layout/Container';
+import FaqAccordion from '@travel-suite/frontend-shared/components/ui/v1/FaqAccordion';
+import PrimarySection from '@travel-suite/frontend-shared/components/shared/layout/PrimarySection';
+import SectionTitle from '@travel-suite/frontend-shared/components/shared/layout/SectionTitle';
+import About from '@travel-suite/frontend-shared/components/sections/v1/About';
+import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
+import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
 import {
   MdOutlineAirplaneTicket,
   MdOutlineHealthAndSafety,
@@ -174,6 +174,16 @@ export default function Page() {
         title={pageData.sections.hero.title}
         subtitle={pageData.sections.hero.subtitle}
         form={pageData.sections.hero.form}
+        pills={[
+          'Real Policy, Not a Placeholder',
+          'Issued by AXA',
+          'EUR 30,000 Medical Cover',
+          'Instant Policy Delivery',
+        ]}
+        breadcrumbPaths={[
+          { label: 'Home', href: '/' },
+          { label: 'Travel Insurance' },
+        ]}
       />
       <Process
         title={pageData.sections.process.title}
@@ -238,9 +248,9 @@ export default function Page() {
           <div className="rounded-2xl border border-white bg-white p-4 md:p-7 shadow-[0_14px_35px_rgba(16,24,40,0.08)]">
             <div className="flex flex-col gap-1">
               {faqs.map((faq, i) => (
-                <FAQAccordion key={i} question={faq.question}>
+                <FaqAccordion key={i} question={faq.question}>
                   {faq.answer}
-                </FAQAccordion>
+                </FaqAccordion>
               ))}
             </div>
           </div>

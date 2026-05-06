@@ -41,13 +41,20 @@ export default function TravelInsuranceForm() {
   const totalTravellers =
     quantity.adults + quantity.children + quantity.seniors;
 
+  const isMultiYear = journeyType === "annual" || journeyType === "biennial";
+
   function validateForm() {
-    if (!startDate || !endDate || !region?.id) {
+    if (!startDate || !region?.id) {
       toast.error("Please select travel dates and region");
       return false;
     }
 
-    if (compareDateOnly(startDate, endDate) > 0) {
+    if (!isMultiYear && !endDate) {
+      toast.error("Please select an end date");
+      return false;
+    }
+
+    if (!isMultiYear && compareDateOnly(startDate, endDate) > 0) {
       toast.error("End date must be after start date");
       return false;
     }
@@ -100,6 +107,7 @@ export default function TravelInsuranceForm() {
         {[
           { id: "single", label: "Single" },
           { id: "annual", label: "Annual" },
+          { id: "biennial", label: "Biennial" },
         ].map((tripType) => (
           <button
             key={tripType.id}
@@ -118,7 +126,7 @@ export default function TravelInsuranceForm() {
       </div>
 
       <div className="block md:flex gap-3 md:gap-3.5">
-        <div className="w-full md:w-1/2 flex flex-col gap-1 mb-3 md:mb-3">
+        <div className={`flex flex-col gap-1 mb-3 md:mb-3 ${isMultiYear ? "w-full" : "w-full md:w-1/2"}`}>
           <Label htmlFor="startDate">Start Date</Label>
           <DatePicker
             value={startDate}
@@ -128,15 +136,17 @@ export default function TravelInsuranceForm() {
           />
         </div>
 
-        <div className="w-full md:w-1/2 flex flex-col gap-1 mb-3 md:mb-3">
-          <Label htmlFor="endDate">End Date</Label>
-          <DatePicker
-            value={endDate}
-            onChange={setEndDate}
-            minDate={startDate || todayDateOnly()}
-            placeholder="Select end date"
-          />
-        </div>
+        {!isMultiYear && (
+          <div className="w-full md:w-1/2 flex flex-col gap-1 mb-3 md:mb-3">
+            <Label htmlFor="endDate">End Date</Label>
+            <DatePicker
+              value={endDate}
+              onChange={setEndDate}
+              minDate={startDate || todayDateOnly()}
+              placeholder="Select end date"
+            />
+          </div>
+        )}
       </div>
 
       <div className="block md:flex gap-3 md:gap-3.5">
@@ -204,7 +214,7 @@ export default function TravelInsuranceForm() {
           size="small"
           disabled={
             !startDate ||
-            !endDate ||
+            (!isMultiYear && !endDate) ||
             !region.id ||
             !group ||
             totalTravellers === 0

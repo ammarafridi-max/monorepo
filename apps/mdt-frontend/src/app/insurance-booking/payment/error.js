@@ -1,2 +1,2 @@
 'use client';
-export { default } from '@travel-suite/frontend-shared/pages/client/InsurancePaymentError';
+export { default } from '@travel-suite/frontend-shared/pages/client/shared/InsurancePaymentError';
