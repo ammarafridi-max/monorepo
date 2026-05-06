@@ -4,79 +4,76 @@ import { useState, Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { usePathname } from 'next/navigation';
-import { Mail, Plane, ShieldPlus, Globe } from 'lucide-react';
+import {
+  Mail, Plane, ShieldPlus, Globe,
+  CalendarDays, HeartPulse, Stethoscope, MapPin, Users,
+} from 'lucide-react';
+import { UserAuthContext } from '@travel-suite/frontend-shared/contexts/AuthContextBase';
 import { CurrencyProvider } from '@travel-suite/frontend-shared/contexts/CurrencyContext';
-import { TicketProvider } from '@travel-suite/frontend-shared/contexts/TicketContext';
 import { InsuranceProvider } from '@travel-suite/frontend-shared/contexts/InsuranceContext';
 import AppMegaLayout from '@travel-suite/frontend-shared/layouts/AppMegaLayout';
-import AnalyticsInit from '@travel-suite/frontend-shared/components/v1/AnalyticsInit';
+import AnalyticsInit from '@travel-suite/frontend-shared/components/shared/AnalyticsInit';
 
-const LOGO_ALT = 'Travl Logo';
+const LOGO_ALT = 'Travl';
 const EMAIL = 'info@travl.ae';
 
 const defaultPages = [
   {
     name: 'Travel Insurance',
     links: ['/travel-insurance'],
-    icon: <ShieldPlus size={18} />,
-    subpages: [
-      { name: 'Travel Insurance', link: '/travel-insurance' },
-      { name: 'Schengen Visa Insurance', link: '/travel-insurance/schengen-visa' },
-      { name: 'Travel Medical Insurance', link: '/travel-insurance/medical' },
-      { name: 'Annual Multi-Trip Insurance', link: '/travel-insurance/annual-multi-trip' },
-      { name: 'International Travel Insurance', link: '/travel-insurance/international' },
-      { name: 'Single Trip Insurance', link: '/travel-insurance/single-trip' },
-    ],
-  },
-  {
-    name: 'Flight Itinerary',
-    links: ['/flight-itinerary', '/booking/select-flights', '/booking/review-details'],
-    icon: <Plane size={18} />,
+    mega: {
+      columns: [
+        {
+          heading: 'By Trip Type',
+          items: [
+            { Icon: ShieldPlus,    label: 'All Plans',              desc: 'Browse every insurance plan we offer',          href: '/travel-insurance' },
+            { Icon: Plane,         label: 'Schengen Visa',          desc: 'EUR 30,000 cover, VFS & BLS accepted',          href: '/travel-insurance/schengen-visa' },
+            { Icon: CalendarDays,  label: 'Annual Multi-Trip',      desc: 'One policy covering all trips for 12 months',   href: '/travel-insurance/annual-multi-trip' },
+            { Icon: HeartPulse,    label: 'Single Trip',            desc: 'Pay only for the days you travel',              href: '/travel-insurance/single-trip' },
+          ],
+        },
+        {
+          heading: 'By Coverage',
+          items: [
+            { Icon: Stethoscope,   label: 'Travel Medical',         desc: 'Emergency treatment & hospitalisation cover',   href: '/travel-insurance/medical' },
+            { Icon: Globe,         label: 'International',          desc: 'Worldwide coverage from EUR 80,000',            href: '/travel-insurance/international' },
+          ],
+        },
+      ],
+      cta: {
+        eyebrow: 'Not sure what you need?',
+        title: "Answer 3 quick questions and we'll recommend a plan.",
+        href: '/insurance-booking/quote',
+        label: 'Find my plan',
+      },
+    },
   },
   {
     name: 'Visa',
     links: ['/visa'],
-    icon: <Globe size={18} />,
-    subpages: [
-      {
-        name: 'All Destinations',
-        link: '/visa',
-        description: 'Browse all visa services we offer',
-      },
-      {
-        name: 'Schengen Visa',
-        link: '/visa/schengen',
-        description: 'Access 27 European countries with one visa',
-      },
-      {
-        name: 'United Kingdom Visa',
-        link: '/visa/united-kingdom',
-        description: 'Tourism, business, and family visits to the UK',
-      },
-      {
-        name: 'US Visa',
-        link: '/visa/usa',
-        description: 'B1/B2 visitor visa with interview coaching',
-      },
-      {
-        name: 'Canada Visa',
-        link: '/visa/canada',
-        description: 'Temporary resident visa for tourism and family visits',
-      },
-    ],
+    mega: {
+      columns: [
+        {
+          heading: 'By Destination',
+          items: [
+            { Icon: Globe,   label: 'All Destinations',    desc: 'Browse all visa services we offer',                  href: '/visa' },
+            { Icon: MapPin,  label: 'Schengen Visa',       desc: 'Access 27 European countries with one visa',         href: '/visa/schengen' },
+            { Icon: MapPin,  label: 'United Kingdom',      desc: 'Tourism, business, and family visits to the UK',     href: '/visa/united-kingdom' },
+            { Icon: MapPin,  label: 'United States',       desc: 'B1/B2 visitor visa with interview coaching',         href: '/visa/usa' },
+            { Icon: MapPin,  label: 'Canada',              desc: 'Temporary resident visa for tourism and family',     href: '/visa/canada' },
+          ],
+        },
+      ],
+    },
   },
-  { name: 'Email Us', links: [`mailto:${EMAIL}`], icon: <Mail size={18} /> },
+  { name: 'Email Us', links: [`mailto:${EMAIL}`] },
 ];
 
-const flightItineraryPages = [
-  {
-    name: 'Flight Itinerary',
-    links: ['/flight-itinerary', '/booking/select-flights', '/booking/review-details'],
-    icon: <Plane size={18} />,
-  },
-  { name: 'Travel Insurance', links: ['/travel-insurance'], icon: <ShieldPlus size={18} /> },
-  { name: 'Email Us', links: [`mailto:${EMAIL}`], icon: <Mail size={18} /> },
-];
+const GUEST_AUTH = { user: null, isAuthenticated: false, isLoadingAuth: false, setUser: () => {}, refreshUser: async () => {} };
+
+function GuestAuthProvider({ children }) {
+  return <UserAuthContext.Provider value={GUEST_AUTH}>{children}</UserAuthContext.Provider>;
+}
 
 export default function Providers({ children }) {
   const pathname = usePathname();
@@ -103,44 +100,22 @@ export default function Providers({ children }) {
     );
   }
 
-  if (pathname?.startsWith('/flight-itinerary')) {
-    return (
-      <>
-        <AnalyticsInit />
-        <Toaster />
-        <QueryClientProvider client={queryClient}>
-          <CurrencyProvider>
-            <TicketProvider>
-              <Suspense>
-                <InsuranceProvider>
-                  <AppMegaLayout pages={flightItineraryPages} logoAlt={LOGO_ALT} email={EMAIL}>
-                    <main>{children}</main>
-                  </AppMegaLayout>
-                </InsuranceProvider>
-              </Suspense>
-            </TicketProvider>
-          </CurrencyProvider>
-        </QueryClientProvider>
-      </>
-    );
-  }
-
   return (
     <>
       <AnalyticsInit />
       <Toaster />
       <QueryClientProvider client={queryClient}>
-        <CurrencyProvider>
-          <TicketProvider>
+        <GuestAuthProvider>
+          <CurrencyProvider>
             <Suspense>
               <InsuranceProvider>
-                <AppMegaLayout pages={defaultPages} logoAlt={LOGO_ALT} email={EMAIL}>
+                <AppMegaLayout pages={defaultPages} logoAlt={LOGO_ALT}>
                   <main>{children}</main>
                 </AppMegaLayout>
               </InsuranceProvider>
             </Suspense>
-          </TicketProvider>
-        </CurrencyProvider>
+          </CurrencyProvider>
+        </GuestAuthProvider>
       </QueryClientProvider>
     </>
   );

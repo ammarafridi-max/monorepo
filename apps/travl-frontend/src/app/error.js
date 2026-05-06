@@ -1,9 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import PrimaryLink from '@travel-suite/frontend-shared/components/v1/ui/PrimaryLink';
-import Container from '@travel-suite/frontend-shared/components/v1/layout/Container';
-import PrimarySection from '@travel-suite/frontend-shared/components/v1/layout/PrimarySection';
+import { useEffect } from "react";
+import Link from "next/link";
+import { AlertCircle } from "lucide-react";
 
 export default function GlobalError({ error, reset }) {
   useEffect(() => {
@@ -11,38 +10,35 @@ export default function GlobalError({ error, reset }) {
   }, [error]);
 
   return (
-    <PrimarySection className="bg-gray-50 py-28 md:py-30 font-outfit">
-      <Container>
-        <div className="text-center space-y-6">
-          <h1 className="text-[72px] md:text-[96px] font-bold text-[#ff6b00] leading-none">
-            500
-          </h1>
-
-          <h2 className="text-[26px] md:text-[32px] font-semibold text-gray-800">
-            Something Went Wrong
-          </h2>
-
-          <p className="text-[16px] md:text-[18px] text-gray-600 max-w-lg mx-auto font-light">
-            An unexpected error occurred. Please try again, or go back home if
-            the problem persists.
-          </p>
-
-          <div className="pt-6 flex items-center justify-center gap-4 flex-wrap">
-            <button
-              onClick={reset}
-              className="inline-block bg-[#ff6b00] text-white text-[16px] font-medium px-6 py-3 rounded-full shadow-md hover:bg-[#e65e00] transition-all duration-300"
-            >
-              Try Again
-            </button>
-            <PrimaryLink
-              to="/"
-              className="inline-block border border-[#ff6b00] text-[#ff6b00] text-[16px] font-medium px-6 py-3 rounded-full hover:bg-[#fff3ed] transition-all duration-300"
-            >
-              Go Back Home
-            </PrimaryLink>
-          </div>
+    <div className="min-h-[60vh] flex items-center justify-center px-6">
+      <div className="flex flex-col items-center text-center gap-5 max-w-sm">
+        <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center">
+          <AlertCircle size={26} className="text-red-400" />
         </div>
-      </Container>
-    </PrimarySection>
+        <div>
+          <p className="text-lg font-bold text-gray-900">
+            Something went wrong
+          </p>
+          <p className="text-sm text-gray-400 mt-1">
+            An unexpected error occurred. Please try again or contact support if
+            the issue persists.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={reset}
+            className="text-sm font-bold px-5 py-2.5 bg-primary-700 hover:bg-primary-800 text-white rounded-xl transition-colors"
+          >
+            Try again
+          </button>
+          <Link
+            href="/"
+            className="text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors"
+          >
+            Go home
+          </Link>
+        </div>
+      </div>
+    </div>
   );
 }

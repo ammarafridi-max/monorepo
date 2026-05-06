@@ -1,13 +1,12 @@
 import Link from 'next/link';
 import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineHotel } from 'react-icons/md';
-import AllForms from '@travel-suite/frontend-shared/components/v1/forms/AllForms';
-import Container from '@travel-suite/frontend-shared/components/v1/layout/Container';
-import FAQAccordion from '@travel-suite/frontend-shared/components/v1/ui/FAQAccordion';
-import PrimarySection from '@travel-suite/frontend-shared/components/v1/layout/PrimarySection';
-import SectionTitle from '@travel-suite/frontend-shared/components/v1/layout/SectionTitle';
-import About from '@travel-suite/frontend-shared/components/v1/sections/About';
-import Hero from '@travel-suite/frontend-shared/components/v1/sections/Hero';
-import Process from '@travel-suite/frontend-shared/components/v1/sections/Process';
+import Container from '@travel-suite/frontend-shared/components/shared/layout/Container';
+import FaqAccordion from '@travel-suite/frontend-shared/components/ui/v2/FaqAccordion';
+import PrimarySection from '@travel-suite/frontend-shared/components/shared/layout/PrimarySection';
+import SectionTitle from '@travel-suite/frontend-shared/components/shared/layout/SectionTitle';
+import About from '@travel-suite/frontend-shared/components/sections/v2/About';
+import Hero from '@travel-suite/frontend-shared/components/sections/v2/Hero';
+import HowItWorks from '@travel-suite/frontend-shared/components/sections/v2/HowItWorks';
 import { buildMetadata } from '@/lib/schema';
 import {
   buildFAQPage,
@@ -98,9 +97,8 @@ export const pageData = {
   sections: {
     hero: {
       title: 'Single Trip Travel Insurance for UAE Residents',
-      subtitle:
-        'Single trip travel insurance covers one specific journey, from your departure date to your return. It is the simplest way to get the coverage you need, whether you are applying for a visa or just want protection during your trip. Policies are issued by AXA and delivered instantly after payment.',
-      form: <AllForms defaultTab="insurance" />,
+      subtitle: 'Pay Only for Your Travel Dates',
+      text: 'Single trip travel insurance covers one specific journey, from your departure date to your return. It is the simplest way to get the coverage you need, whether you are applying for a visa or just want protection during your trip. Policies are issued by AXA and delivered instantly after payment.',
       pills: ['Single Journey Cover', 'Flexible Dates', 'Issued by AXA', 'Instant Delivery'],
     },
     process: {
@@ -165,7 +163,7 @@ export default function Page() {
       <Hero
         title={pageData.sections.hero.title}
         subtitle={pageData.sections.hero.subtitle}
-        form={pageData.sections.hero.form}
+        text={pageData.sections.hero.text}
         pills={pageData.sections.hero.pills}
         breadcrumbPaths={[
           { label: 'Home', path: '/' },
@@ -173,7 +171,7 @@ export default function Page() {
           { label: 'Single Trip', path: '/travel-insurance/single-trip' },
         ]}
       />
-      <Process
+      <HowItWorks
         title={pageData.sections.process.title}
         subtitle={pageData.sections.process.subtitle}
         steps={pageData.sections.process.steps}
@@ -216,9 +214,9 @@ export default function Page() {
           <div className="rounded-2xl border border-white bg-white p-4 md:p-7 shadow-[0_14px_35px_rgba(16,24,40,0.08)]">
             <div className="flex flex-col gap-1">
               {faqs.map((faq, i) => (
-                <FAQAccordion key={i} question={faq.question}>
+                <FaqAccordion key={i} question={faq.question}>
                   {faq.answer}
-                </FAQAccordion>
+                </FaqAccordion>
               ))}
             </div>
           </div>

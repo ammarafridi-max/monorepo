@@ -13,7 +13,7 @@ import {
   buildWebPage,
   buildWebsite,
 } from '@/lib/schema';
-import VisaDetailPage from '@travel-suite/frontend-shared/pages/client/VisaDetailPage';
+import VisaDetailPage from '@travel-suite/frontend-shared/pages/client/shared/VisaDetailPage';
 
 export const revalidate = 300;
 

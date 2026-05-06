@@ -7,7 +7,7 @@ import {
   buildWebsite,
   buildService,
 } from '@/lib/schema';
-import VisaPage from '@travel-suite/frontend-shared/pages/client/VisaPage';
+import VisaPage from '@travel-suite/frontend-shared/pages/client/shared/VisaPage';
 
 const meta = {
   title: 'Visa assistance for UAE residents | Travl',

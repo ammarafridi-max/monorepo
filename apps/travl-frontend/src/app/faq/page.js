@@ -1,7 +1,7 @@
-import Container from '@travel-suite/frontend-shared/components/v1/layout/Container';
-import FAQAccordion from '@travel-suite/frontend-shared/components/v1/ui/FAQAccordion';
-import PrimarySection from '@travel-suite/frontend-shared/components/v1/layout/PrimarySection';
-import PageHero from '@travel-suite/frontend-shared/components/v1/sections/PageHero';
+import Container from '@travel-suite/frontend-shared/components/shared/layout/Container';
+import FaqAccordion from '@travel-suite/frontend-shared/components/ui/v1/FaqAccordion';
+import PrimarySection from '@travel-suite/frontend-shared/components/shared/layout/PrimarySection';
+import PageHero from '@travel-suite/frontend-shared/components/sections/v1/PageHero';
 import { insuranceFaqs } from '@/data/faqs';
 import { buildMetadata } from '@/lib/schema';
 import {
@@ -65,9 +65,9 @@ export default function Page() {
         <Container>
           <div className="flex flex-col lg:items-center lg:justify-center lg:max-w-240 lg:mx-auto gap-5">
             {faqs.map((faq, i) => (
-              <FAQAccordion key={i} question={faq?.question}>
+              <FaqAccordion key={i} question={faq?.question}>
                 {faq.answer}
-              </FAQAccordion>
+              </FaqAccordion>
             ))}
           </div>
         </Container>

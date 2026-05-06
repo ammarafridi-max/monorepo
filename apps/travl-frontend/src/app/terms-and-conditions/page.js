@@ -1,8 +1,8 @@
 import Link from 'next/link';
-import Container from '@travel-suite/frontend-shared/components/v1/layout/Container';
-import PrimarySection from '@travel-suite/frontend-shared/components/v1/layout/PrimarySection';
-import SectionTitle from '@travel-suite/frontend-shared/components/v1/layout/SectionTitle';
-import PageHero from '@travel-suite/frontend-shared/components/v1/sections/PageHero';
+import Container from '@travel-suite/frontend-shared/components/shared/layout/Container';
+import PrimarySection from '@travel-suite/frontend-shared/components/shared/layout/PrimarySection';
+import SectionTitle from '@travel-suite/frontend-shared/components/shared/layout/SectionTitle';
+import PageHero from '@travel-suite/frontend-shared/components/sections/v1/PageHero';
 import { buildMetadata } from '@/lib/schema';
 
 export const pageData = {

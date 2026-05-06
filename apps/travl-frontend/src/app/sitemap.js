@@ -1,15 +1,9 @@
 import { SITE_URL } from "@/lib/schema";
 import { getPublishedBlogsApi } from "@travel-suite/frontend-shared/services/apiBlog";
 import { getBlogTagsApi } from "@travel-suite/frontend-shared/services/apiBlogTags";
-
+import { getPublishedVisasApi } from "@travel-suite/frontend-shared/services/apiVisa";
 const staticPages = [
   { url: "/", changeFrequency: "weekly", priority: 1.0, lastmod: "2026-04-28" },
-  {
-    url: "/flight-itinerary",
-    changeFrequency: "monthly",
-    priority: 0.9,
-    lastmod: "2026-04-28",
-  },
   {
     url: "/travel-insurance",
     changeFrequency: "monthly",
@@ -42,6 +36,12 @@ const staticPages = [
   },
   {
     url: "/travel-insurance/single-trip",
+    changeFrequency: "monthly",
+    priority: 0.8,
+    lastmod: "2026-04-28",
+  },
+  {
+    url: "/visa",
     changeFrequency: "monthly",
     priority: 0.8,
     lastmod: "2026-04-28",
@@ -102,9 +102,21 @@ export default async function sitemap() {
         changeFrequency: "weekly",
         priority: 0.7,
       }));
-  } catch {
+  } catch {}
 
-  }
+  let visaEntries = [];
+  try {
+    const data = await getPublishedVisasApi({ page: 1, limit: 1000 });
+    const visas = data?.visas || [];
+    visaEntries = visas
+      .filter((visa) => visa?.slug)
+      .map((visa) => ({
+        url: `${SITE_URL}/visa/${visa.slug}`,
+        lastModified: visa.updatedAt || visa.createdAt || now,
+        changeFrequency: "weekly",
+        priority: 0.7,
+      }));
+  } catch {}
 
   let tagEntries = [];
   try {
@@ -118,9 +130,7 @@ export default async function sitemap() {
         changeFrequency: "weekly",
         priority: 0.5,
       }));
-  } catch {
+  } catch {}
 
-  }
-
-  return [...staticEntries, ...blogEntries, ...tagEntries];
+  return [...staticEntries, ...blogEntries, ...tagEntries, ...visaEntries];
 }

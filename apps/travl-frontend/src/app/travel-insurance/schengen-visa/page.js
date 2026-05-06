@@ -1,13 +1,12 @@
 import Link from 'next/link';
 import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineHotel } from 'react-icons/md';
-import AllForms from '@travel-suite/frontend-shared/components/v1/forms/AllForms';
-import Container from '@travel-suite/frontend-shared/components/v1/layout/Container';
-import FAQAccordion from '@travel-suite/frontend-shared/components/v1/ui/FAQAccordion';
-import PrimarySection from '@travel-suite/frontend-shared/components/v1/layout/PrimarySection';
-import SectionTitle from '@travel-suite/frontend-shared/components/v1/layout/SectionTitle';
-import About from '@travel-suite/frontend-shared/components/v1/sections/About';
-import Hero from '@travel-suite/frontend-shared/components/v1/sections/Hero';
-import Process from '@travel-suite/frontend-shared/components/v1/sections/Process';
+import Container from '@travel-suite/frontend-shared/components/shared/layout/Container';
+import FaqAccordion from '@travel-suite/frontend-shared/components/ui/v2/FaqAccordion';
+import PrimarySection from '@travel-suite/frontend-shared/components/shared/layout/PrimarySection';
+import SectionTitle from '@travel-suite/frontend-shared/components/shared/layout/SectionTitle';
+import About from '@travel-suite/frontend-shared/components/sections/v2/About';
+import Hero from '@travel-suite/frontend-shared/components/sections/v2/Hero';
+import HowItWorks from '@travel-suite/frontend-shared/components/sections/v2/HowItWorks';
 import { buildMetadata } from '@/lib/schema';
 import {
   buildFAQPage,
@@ -109,9 +108,8 @@ export const pageData = {
   sections: {
     hero: {
       title: 'Schengen Travel Insurance for UAE Residents from AED 30',
-      subtitle:
-        'Get an embassy-compliant Schengen visa travel insurance policy online instantly. EUR 30,000 medical coverage included, accepted by VFS and BLS centers across the UAE. Plans from AED 30.',
-      form: <AllForms defaultTab="insurance" />,
+      subtitle: 'From AED 30 · VFS & BLS Accepted',
+      text: 'Get an embassy-compliant Schengen visa travel insurance policy online instantly. EUR 30,000 medical coverage included, accepted by VFS and BLS centers across the UAE. Plans from AED 30.',
       pills: ['EUR 30,000 Coverage', 'VFS & BLS Accepted', 'Instant Delivery', 'From AED 30'],
     },
     process: {
@@ -183,15 +181,15 @@ export default function Page() {
       <Hero
         title={pageData.sections.hero.title}
         subtitle={pageData.sections.hero.subtitle}
+        text={pageData.sections.hero.text}
         pills={pageData.sections.hero.pills}
-        form={pageData.sections.hero.form}
         breadcrumbPaths={[
           { label: 'Home', path: '/' },
           { label: 'Travel Insurance', path: '/travel-insurance' },
           { label: 'Schengen Visa', path: '/travel-insurance/schengen-visa' },
         ]}
       />
-      <Process
+      <HowItWorks
         title={pageData.sections.process.title}
         subtitle={pageData.sections.process.subtitle}
         steps={pageData.sections.process.steps}
@@ -234,9 +232,9 @@ export default function Page() {
           <div className="rounded-2xl border border-white bg-white p-4 md:p-7 shadow-[0_14px_35px_rgba(16,24,40,0.08)]">
             <div className="flex flex-col gap-1">
               {faqs.map((faq, i) => (
-                <FAQAccordion key={i} question={faq.question}>
+                <FaqAccordion key={i} question={faq.question}>
                   {faq.answer}
-                </FAQAccordion>
+                </FaqAccordion>
               ))}
             </div>
           </div>

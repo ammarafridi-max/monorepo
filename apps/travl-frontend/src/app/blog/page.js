@@ -8,7 +8,7 @@ import {
   buildWebPage,
   buildWebsite,
 } from '@/lib/schema';
-import BlogPage from '@travel-suite/frontend-shared/pages/client/BlogPage';
+import BlogPage from '@travel-suite/frontend-shared/pages/client/v2/BlogPage';
 
 const meta = {
   title: 'Travel Insurance & Visa Travel Blog | Tips, Guides & Updates',

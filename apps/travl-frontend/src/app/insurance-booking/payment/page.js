@@ -1,4 +1,4 @@
-import InsurancePaymentPage from '@travel-suite/frontend-shared/pages/client/InsurancePaymentPage';
+import InsurancePaymentPage from '@travel-suite/frontend-shared/pages/client/shared/InsurancePaymentPage';
 
 export const metadata = {
   title: 'Booking Confirmed — TravelShield',

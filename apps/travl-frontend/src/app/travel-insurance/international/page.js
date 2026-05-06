@@ -1,13 +1,12 @@
 import Link from 'next/link';
 import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineHotel } from 'react-icons/md';
-import AllForms from '@travel-suite/frontend-shared/components/v1/forms/AllForms';
-import Container from '@travel-suite/frontend-shared/components/v1/layout/Container';
-import FAQAccordion from '@travel-suite/frontend-shared/components/v1/ui/FAQAccordion';
-import PrimarySection from '@travel-suite/frontend-shared/components/v1/layout/PrimarySection';
-import SectionTitle from '@travel-suite/frontend-shared/components/v1/layout/SectionTitle';
-import About from '@travel-suite/frontend-shared/components/v1/sections/About';
-import Hero from '@travel-suite/frontend-shared/components/v1/sections/Hero';
-import Process from '@travel-suite/frontend-shared/components/v1/sections/Process';
+import Container from '@travel-suite/frontend-shared/components/shared/layout/Container';
+import FaqAccordion from '@travel-suite/frontend-shared/components/ui/v2/FaqAccordion';
+import PrimarySection from '@travel-suite/frontend-shared/components/shared/layout/PrimarySection';
+import SectionTitle from '@travel-suite/frontend-shared/components/shared/layout/SectionTitle';
+import About from '@travel-suite/frontend-shared/components/sections/v2/About';
+import Hero from '@travel-suite/frontend-shared/components/sections/v2/Hero';
+import HowItWorks from '@travel-suite/frontend-shared/components/sections/v2/HowItWorks';
 import { buildMetadata } from '@/lib/schema';
 import {
   buildFAQPage,
@@ -104,9 +103,8 @@ export const pageData = {
   sections: {
     hero: {
       title: 'International Travel Insurance for UAE Residents',
-      subtitle:
-        'International travel insurance covers you for medical emergencies, hospitalisation, and repatriation anywhere in the world. Plans are issued by AXA, start from AED 70, and include medical coverage from EUR 80,000. Get your policy online and receive it in minutes.',
-      form: <AllForms defaultTab="insurance" />,
+      subtitle: 'Worldwide Coverage · From AED 70',
+      text: 'International travel insurance covers you for medical emergencies, hospitalisation, and repatriation anywhere in the world. Plans are issued by AXA, start from AED 70, and include medical coverage from EUR 80,000. Get your policy online and receive it in minutes.',
       pills: ['Worldwide Coverage', 'EUR 80,000 Medical', 'Repatriation Included', 'From AED 70'],
     },
     process: {
@@ -178,15 +176,15 @@ export default function Page() {
       <Hero
         title={pageData.sections.hero.title}
         subtitle={pageData.sections.hero.subtitle}
+        text={pageData.sections.hero.text}
         pills={pageData.sections.hero.pills}
-        form={pageData.sections.hero.form}
         breadcrumbPaths={[
           { label: 'Home', path: '/' },
           { label: 'Travel Insurance', path: '/travel-insurance' },
           { label: 'International', path: '/travel-insurance/international' },
         ]}
       />
-      <Process
+      <HowItWorks
         title={pageData.sections.process.title}
         subtitle={pageData.sections.process.subtitle}
         steps={pageData.sections.process.steps}
@@ -229,9 +227,9 @@ export default function Page() {
           <div className="rounded-2xl border border-white bg-white p-4 md:p-7 shadow-[0_14px_35px_rgba(16,24,40,0.08)]">
             <div className="flex flex-col gap-1">
               {faqs.map((faq, i) => (
-                <FAQAccordion key={i} question={faq.question}>
+                <FaqAccordion key={i} question={faq.question}>
                   {faq.answer}
-                </FAQAccordion>
+                </FaqAccordion>
               ))}
             </div>
           </div>
