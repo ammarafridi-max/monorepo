@@ -14,8 +14,8 @@ import {
   CalendarDays,
   DollarSign,
 } from 'lucide-react';
-import StatCard from '../../components/v1/admin/StatCard';
-import RecentTicketsTable from '../../components/v1/admin/RecentTicketsTable';
+import StatCard from '../../components/admin/v1/StatCard';
+import RecentTicketsTable from '../../components/admin/v1/RecentTicketsTable';
 import { getDummyTicketsApi } from '../../services/apiDummyTickets';
 import { getAffiliatesApi } from '../../services/apiAffiliates';
 import { getAllBlogsApi } from '../../services/apiBlog';

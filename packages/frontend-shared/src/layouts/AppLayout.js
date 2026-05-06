@@ -1,6 +1,6 @@
-import Navigation from '../components/v1/layout/Navigation';
-import Footer from '../components/v1/layout/Footer';
-import MobileNavigation from '../components/v1/layout/MobileNavigation';
+import Navigation from '../components/shared/layout/Navigation';
+import Footer from '../components/shared/layout/Footer';
+import MobileNavigation from '../components/shared/layout/MobileNavigation';
 
 export default function AppLayout({ children, pages = [], logoAlt = '', email = '' }) {
   return (

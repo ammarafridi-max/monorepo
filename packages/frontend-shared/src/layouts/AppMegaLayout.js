@@ -1,14 +1,12 @@
-import MegaNavigation from '../components/v1/layout/MegaNavigation';
-import MegaMobileNavigation from '../components/v1/layout/MegaMobileNavigation';
-import Footer from '../components/v1/layout/Footer';
+import Navbar from '../components/sections/v2/Navbar';
+import Footer from '../components/sections/v2/Footer';
 
-export default function AppMegaLayout({ children, pages = [], logoAlt = '', email = '' }) {
+export default function AppMegaLayout({ children, pages = [], logoAlt = 'Logo' }) {
   return (
     <>
-      <MegaNavigation pages={pages} logoAlt={logoAlt} />
-      <MegaMobileNavigation pages={pages} logoAlt={logoAlt} />
-      <main>{children}</main>
-      <Footer logoAlt={logoAlt} email={email} />
+      <Navbar pages={pages} logoAlt={logoAlt} />
+      {children}
+      <Footer />
     </>
   );
 }

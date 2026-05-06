@@ -1,0 +1,36 @@
+import { Check } from 'lucide-react';
+import Breadcrumb from '../../shared/layout/Breadcrumb';
+import Container from '../../shared/layout/Container';
+import PageTitle from '../../shared/layout/PageTitle';
+import PrimarySection from '../../shared/layout/PrimarySection';
+
+export default function PageHero({ paths = [], title = '', subtitle = '', points = [] }) {
+  return (
+    <PrimarySection className="relative overflow-hidden bg-[linear-gradient(160deg,#f5fbfb_0%,#eef4ff_52%,#fff9f4_100%)] pt-24 pb-12 md:pt-28 md:pb-14 lg:pt-28 lg:pb-16">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -left-24 top-0 h-72 w-72 rounded-full bg-primary-200/40 blur-3xl" />
+        <div className="absolute -right-24 bottom-0 h-72 w-72 rounded-full bg-accent-100/50 blur-3xl" />
+      </div>
+      <Container className="relative">
+        <div className="flex flex-col">
+          <Breadcrumb paths={paths} />
+          <PageTitle className="mt-4 mb-5">{title}</PageTitle>
+          <p className="text-[16px] text-gray-600 font-light leading-7">{subtitle}</p>
+          {points.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-5">
+              {points.map((point) => (
+                <span
+                  key={point}
+                  className="inline-flex items-center gap-1.5 bg-white border border-gray-200 rounded-full px-3.5 py-1.5 text-[13px] font-outfit font-medium text-gray-600 shadow-sm"
+                >
+                  <Check size={12} className="text-primary-500 shrink-0" />
+                  {point}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      </Container>
+    </PrimarySection>
+  );
+}

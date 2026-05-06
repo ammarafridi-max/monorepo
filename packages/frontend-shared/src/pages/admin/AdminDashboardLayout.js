@@ -1,7 +1,7 @@
 import { AdminAuthProvider } from '../../contexts/AdminAuthContext';
-import AdminShell from '../../components/v1/admin/AdminShell';
-import AdminSidebar from '../../components/v1/admin/AdminSidebar';
-import AdminHeader from '../../components/v1/admin/AdminHeader';
+import AdminShell from '../../components/admin/v1/AdminShell';
+import AdminSidebar from '../../components/admin/v1/AdminSidebar';
+import AdminHeader from '../../components/admin/v1/AdminHeader';
 
 export default function AdminDashboardLayout({ children }) {
   return (

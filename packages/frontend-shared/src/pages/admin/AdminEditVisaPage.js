@@ -3,7 +3,7 @@
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
-import VisaForm       from '../../components/v1/admin/VisaForm.js';
+import VisaForm       from '../../components/admin/v1/VisaForm.js';
 import { useGetVisa }      from '../../hooks/visa/useGetVisa.js';
 import { useUpdateVisa }   from '../../hooks/visa/useUpdateVisa.js';
 import { usePublishVisa }  from '../../hooks/visa/usePublishVisa.js';

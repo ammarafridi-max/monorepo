@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Loader2, Mail, Send, SkipForward, Inbox } from 'lucide-react';
-import Breadcrumb from '../../components/v1/layout/Breadcrumb.js';
-import PageHeading from '../../components/v1/layout/PageHeading.js';
-import PageLoader from '../../components/v1/ui/PageLoader.js';
+import Breadcrumb from '../../components/shared/layout/Breadcrumb.js';
+import PageHeading from '../../components/shared/layout/PageHeading.js';
+import PageLoader from '../../components/ui/v1/PageLoader.js';
 import { useAdminAuth } from '../../contexts/AdminAuthContext.js';
 import { useEmailSupport } from '../../hooks/email-support/useEmailSupport.js';
 import { useSendEmailReply } from '../../hooks/email-support/useSendEmailReply.js';

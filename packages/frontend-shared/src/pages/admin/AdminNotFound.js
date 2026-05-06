@@ -1,4 +1,4 @@
-import PageHeading from '../../components/v1/layout/PageHeading';
+import PageHeading from '../../components/shared/layout/PageHeading';
 
 export default function AdminNotFound() {
   return (

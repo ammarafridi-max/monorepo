@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 import { Copy, ExternalLink, Eye, Plus, Power, PowerOff, Trash2 } from 'lucide-react';
-import Breadcrumb from '../../components/v1/layout/Breadcrumb';
-import PageLoader from '../../components/v1/ui/PageLoader';
-import PageHeading from '../../components/v1/layout/PageHeading';
+import Breadcrumb from '../../components/shared/layout/Breadcrumb';
+import PageLoader from '../../components/ui/v1/PageLoader';
+import PageHeading from '../../components/shared/layout/PageHeading';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 import {
   usePaymentLinks,

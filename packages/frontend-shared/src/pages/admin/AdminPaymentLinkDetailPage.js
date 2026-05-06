@@ -21,8 +21,8 @@ import {
   Check,
   X,
 } from 'lucide-react';
-import Breadcrumb from '../../components/v1/layout/Breadcrumb';
-import PageLoader from '../../components/v1/ui/PageLoader';
+import Breadcrumb from '../../components/shared/layout/Breadcrumb';
+import PageLoader from '../../components/ui/v1/PageLoader';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 import {
   useDeletePaymentLink,

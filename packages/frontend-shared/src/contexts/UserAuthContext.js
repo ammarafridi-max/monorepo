@@ -1,10 +1,11 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { exchangeOAuthSessionApi, getUserMeApi } from '../services/apiAuth.js';
+import { UserAuthContext } from './AuthContextBase.js';
 
-const UserAuthContext = createContext(null);
+export { useAuth } from './AuthContextBase.js';
 
 export function UserAuthProvider({ children }) {
   const [user, setUser]               = useState(null);
@@ -70,8 +71,3 @@ export function UserAuthProvider({ children }) {
   );
 }
 
-export function useAuth() {
-  const ctx = useContext(UserAuthContext);
-  if (!ctx) throw new Error('useAuth must be used inside <UserAuthProvider>');
-  return ctx;
-}

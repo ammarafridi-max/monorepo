@@ -2,12 +2,12 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Breadcrumb from '../../components/v1/layout/Breadcrumb';
-import PageLoader from '../../components/v1/ui/PageLoader';
-import PageHeading from '../../components/v1/layout/PageHeading';
-import PrimaryButton from '../../components/v1/ui/PrimaryButton';
-import Input from '../../components/v1/form-elements/Input';
-import Label from '../../components/v1/form-elements/Label';
+import Breadcrumb from '../../components/shared/layout/Breadcrumb';
+import PageLoader from '../../components/ui/v1/PageLoader';
+import PageHeading from '../../components/shared/layout/PageHeading';
+import PrimaryButton from '../../components/ui/v1/PrimaryButton';
+import Input from '../../components/form-elements/v1/Input';
+import Label from '../../components/form-elements/v1/Label';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 import { useAdminDummyTicketPricing } from '../../hooks/pricing/useAdminDummyTicketPricing';
 import { useUpdateDummyTicketPricing } from '../../hooks/pricing/useUpdateDummyTicketPricing';

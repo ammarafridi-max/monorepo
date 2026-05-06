@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import VisaForm from '../../components/v1/admin/VisaForm.js';
+import VisaForm from '../../components/admin/v1/VisaForm.js';
 import { useCreateVisa } from '../../hooks/visa/useCreateVisa.js';
 
 export default function AdminNewVisaPage() {
