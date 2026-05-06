@@ -106,8 +106,8 @@ export default async function sitemap() {
 
   let visaEntries = [];
   try {
-    const data = await getPublicVisasApi({ page: 1, limit: 1000 });
-    const visas = data?.visas || [];
+    const data = await getPublicVisasApi();
+    const visas = data?.data || [];
     visaEntries = visas
       .filter((visa) => visa?.slug)
       .map((visa) => ({
