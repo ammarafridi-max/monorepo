@@ -5,9 +5,9 @@ import FlightCard from '../../../components/shared/flight/FlightCard';
 import FlightError from '../../../components/shared/flight/FlightError';
 import FlightSkeleton from '../../../components/shared/flight/FlightSkeleton';
 import PrimaryButton from '../../../components/ui/v1/PrimaryButton';
-import { TicketContext } from '../../contexts/TicketContext';
-import { useFlights } from '../../hooks/flights/useFlights';
-import { transformItinerary } from '../../utils/transformItinerary';
+import { TicketContext } from '../../../contexts/TicketContext';
+import { useFlights } from '../../../hooks/flights/useFlights';
+import { transformItinerary } from '../../../utils/transformItinerary';
 
 export default function TicketSelectFlightsPage({ supportEmail }) {
   const [maxFlights, setMaxFlights] = useState(5);

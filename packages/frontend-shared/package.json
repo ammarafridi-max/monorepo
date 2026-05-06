@@ -24,7 +24,6 @@
     "./components/admin/v1/*": "./src/components/admin/v1/*.js",
     "./components/admin/v2/*": "./src/components/admin/v2/*.js",
     "./components/admin/v2/dashboard/*": "./src/components/admin/v2/dashboard/*.js",
-    "./hooks/auth/*": "./src/hooks/auth/*.js",
     "./pages/client/shared/*": "./src/pages/client/shared/*.js",
     "./pages/client/v1/*": "./src/pages/client/v1/*.js",
     "./pages/client/v2/*": "./src/pages/client/v2/*.js",

@@ -1,7 +1,7 @@
 import { SITE_URL } from "@/lib/schema";
 import { getPublishedBlogsApi } from "@travel-suite/frontend-shared/services/apiBlog";
 import { getBlogTagsApi } from "@travel-suite/frontend-shared/services/apiBlogTags";
-import { getPublishedVisasApi } from "@travel-suite/frontend-shared/services/apiVisa";
+import { getPublicVisasApi } from "@travel-suite/frontend-shared/services/apiVisa";
 const staticPages = [
   { url: "/", changeFrequency: "weekly", priority: 1.0, lastmod: "2026-04-28" },
   {
@@ -106,7 +106,7 @@ export default async function sitemap() {
 
   let visaEntries = [];
   try {
-    const data = await getPublishedVisasApi({ page: 1, limit: 1000 });
+    const data = await getPublicVisasApi({ page: 1, limit: 1000 });
     const visas = data?.visas || [];
     visaEntries = visas
       .filter((visa) => visa?.slug)

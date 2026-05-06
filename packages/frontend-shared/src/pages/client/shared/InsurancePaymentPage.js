@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
-import InsuranceLayout from '../../layouts/InsuranceLayout';
+import InsuranceLayout from '../../../layouts/InsuranceLayout';
 import PaymentSuccess from '../../../components/ui/v1/PaymentSuccess';
 
 export default function InsurancePaymentPage() {

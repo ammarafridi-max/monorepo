@@ -8,7 +8,7 @@ import {
   ShieldCheck, CircleDollarSign, Zap,
 } from 'lucide-react';
 import Container from '../../../components/shared/layout/Container.js';
-import { useGetPublicVisas } from '../../hooks/visa/useGetPublicVisas.js';
+import { useGetPublicVisas } from '../../../hooks/visa/useGetPublicVisas.js';
 
 const VISA_META = {
   schengen:        { flag: '🇪🇺', tagline: 'Visit 27 European countries with a single visa application.' },

@@ -8,12 +8,12 @@ import {
   Loader2,
   AlertCircle,
 } from 'lucide-react';
-import { InsuranceContext } from '../../contexts/InsuranceContext';
-import { useGetInsuranceQuotes } from '../../hooks/insurance/useGetInsuranceQuotes';
+import { InsuranceContext } from '../../../contexts/InsuranceContext';
+import { useGetInsuranceQuotes } from '../../../hooks/insurance/useGetInsuranceQuotes';
 import QuoteCard from '../../../components/cards/v1/QuoteCard';
 import PlanComparison from '../../../components/sections/v1/PlanComparison';
-import InsuranceLayout from '../../layouts/InsuranceLayout';
-import { calcDays } from '../../utils/insuranceHelpers';
+import InsuranceLayout from '../../../layouts/InsuranceLayout';
+import { calcDays } from '../../../utils/insuranceHelpers';
 
 const sortOptions = ['Recommended', 'Price: Low to high', 'Price: High to low'];
 

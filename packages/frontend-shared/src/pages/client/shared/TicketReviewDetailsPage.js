@@ -13,15 +13,15 @@ import {
 } from 'lucide-react';
 import { FaPaypal, FaStripe } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
-import { TicketContext } from '../../contexts/TicketContext';
-import { useCurrency } from '../../contexts/CurrencyContext';
-import { useGetDummyTicket } from '../../hooks/dummy-tickets/useGetDummyTicket';
-import { useStripePaymentURL } from '../../hooks/dummy-tickets/useStripePaymentURL';
-import { usePayPalOrder } from '../../hooks/dummy-tickets/usePayPalOrder';
-import { useDummyTicketPricing } from '../../hooks/pricing/useDummyTicketPricing';
-import { formatAmount } from '../../utils/currency';
-import { formatDate } from '../../utils/dates';
-import { getTicketPriceByValidity } from '../../utils/dummyTicketPricing';
+import { TicketContext } from '../../../contexts/TicketContext';
+import { useCurrency } from '../../../contexts/CurrencyContext';
+import { useGetDummyTicket } from '../../../hooks/dummy-tickets/useGetDummyTicket';
+import { useStripePaymentURL } from '../../../hooks/dummy-tickets/useStripePaymentURL';
+import { usePayPalOrder } from '../../../hooks/dummy-tickets/usePayPalOrder';
+import { useDummyTicketPricing } from '../../../hooks/pricing/useDummyTicketPricing';
+import { formatAmount } from '../../../utils/currency';
+import { formatDate } from '../../../utils/dates';
+import { getTicketPriceByValidity } from '../../../utils/dummyTicketPricing';
 import PageLoader from '../../../components/ui/v1/PageLoader';
 
 function SectionCard({ title, editHref, children }) {

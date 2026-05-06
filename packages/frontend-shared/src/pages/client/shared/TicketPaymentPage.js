@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
-import { useCapturePayPalOrder } from "../../hooks/dummy-tickets/useCapturePayPalOrder.js";
+import { useCapturePayPalOrder } from "../../../hooks/dummy-tickets/useCapturePayPalOrder.js";
 import Link from "next/link";
 import {
   CheckCircle2,
@@ -15,12 +15,12 @@ import {
   CalendarDays,
 } from "lucide-react";
 import { LuShieldPlus } from "react-icons/lu";
-import { useCurrency } from "../../contexts/CurrencyContext";
-import { useGetDummyTicket } from "../../hooks/dummy-tickets/useGetDummyTicket";
-import { useDummyTicketPricing } from "../../hooks/pricing/useDummyTicketPricing";
-import { formatAmount } from "../../utils/currency";
-import { formatDate } from "../../utils/dates";
-import { getTicketPriceByValidity } from "../../utils/dummyTicketPricing";
+import { useCurrency } from "../../../contexts/CurrencyContext";
+import { useGetDummyTicket } from "../../../hooks/dummy-tickets/useGetDummyTicket";
+import { useDummyTicketPricing } from "../../../hooks/pricing/useDummyTicketPricing";
+import { formatAmount } from "../../../utils/currency";
+import { formatDate } from "../../../utils/dates";
+import { getTicketPriceByValidity } from "../../../utils/dummyTicketPricing";
 
 function DetailRow({ label, value }) {
   return (
