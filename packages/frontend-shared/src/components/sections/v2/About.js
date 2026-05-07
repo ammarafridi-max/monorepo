@@ -10,9 +10,9 @@ import {
 const defaultServices = [
   {
     icon: <MdOutlineAirplaneTicket />,
-    title: 'Dummy Tickets',
+    title: 'Flight Itineraries',
     description:
-      'Our dummy tickets are genuine flight reservations with a verifiable PNR. Issued in a format accepted by visa officers at VFS, BLS, and embassies worldwide.',
+      'Genuine flight reservations with a verifiable PNR, issued in a format accepted by visa officers at VFS, BLS, and embassies worldwide.',
   },
   {
     icon: <MdOutlineHotel />,

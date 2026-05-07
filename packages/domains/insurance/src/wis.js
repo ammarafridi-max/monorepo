@@ -7,6 +7,14 @@ const formatDateISO = (value) => {
   return date.toISOString().slice(0, 10);
 };
 
+const addDays = (dateStr, days) => {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return null;
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+};
+
 /**
  * Creates a WIS API client bound to specific credentials.
  * @param {{ url: string, agencyId: string, agencyCode: string, frontendUrl: string }} config
@@ -64,10 +72,15 @@ export function createWisClient({ url, agencyId, agencyCode, frontendUrl }) {
   };
 
   const buildWISQuotePayload = (body) => {
+    const computedEndDate =
+      body.journeyType === 'annual'   ? addDays(body.startDate, 365) :
+      body.journeyType === 'biennial' ? addDays(body.startDate, 730) :
+      body.endDate;
+
     const payload = {
       journey_id: body.journeyType,
       start_date: formatDateISO(body.startDate),
-      end_date:   formatDateISO(body.endDate),
+      end_date:   formatDateISO(computedEndDate),
       region:     body.region?.id || body.region,
       age_bands:  body.quantity,
       family: 0,

@@ -45,14 +45,3 @@ export function createTicketsRouter({ db, auth, stripe, paypal, notifications, f
   };
 }
 
-export async function sendDueDeliveryEmails(db, notifications) {
-  const Ticket = getOrRegisterModel(db, 'dummy-ticket', TicketSchema);
-  const TicketPricing = getOrRegisterModel(db, 'dummy-ticket-pricing', TicketPricingSchema);
-  const Currency = getOrRegisterModel(db, 'Currency', CurrencySchema);
-  const Affiliate = getOrRegisterModel(db, 'Affiliate', AffiliateSchema);
-  const pricingService = createPricingService({ TicketPricing });
-  const currencyService = createCurrencyService({ Currency });
-
-  const service = createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe: null, notifications, frontendUrl: null });
-  return service.sendDueDeliveryEmails();
-}

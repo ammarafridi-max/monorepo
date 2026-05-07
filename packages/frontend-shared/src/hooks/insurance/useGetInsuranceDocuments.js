@@ -7,6 +7,7 @@ export function useGetInsuranceDocuments(policyId) {
     queryKey: ['insurance-documents', policyId],
     queryFn: () => getInsuranceDocumentsApi(policyId),
     enabled: !!policyId,
+    retry: false,
   });
 
   return {

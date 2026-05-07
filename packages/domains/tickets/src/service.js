@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
-import { AppError, logger } from '@travel-suite/utils';
+import { AppError } from '@travel-suite/utils';
 
 const AFFILIATE_ATTRIBUTION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const AFFILIATE_CAPTURE_FUTURE_TOLERANCE_MS = 5 * 60 * 1000;
@@ -219,14 +219,6 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       { new: true },
     );
 
-    if (!ticket.ticketDelivery.immediate) {
-      await notifications.sendLaterDateDeliveryToCustomer({
-        to: ticket.email,
-        passenger: ticket.passengers?.[0]?.firstName || 'Customer',
-        deliveryDate: ticket.ticketDelivery.deliveryDate,
-      });
-    }
-
     await notifications.sendTicketPaymentToAdmin({
       createdAt: ticket.createdAt,
       type: ticket.type,
@@ -353,14 +345,6 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       { new: true },
     );
 
-    if (!ticket.ticketDelivery.immediate) {
-      await notifications.sendLaterDateDeliveryToCustomer({
-        to: ticket.email,
-        passenger: ticket.passengers?.[0]?.firstName || 'Customer',
-        deliveryDate: ticket.ticketDelivery.deliveryDate,
-      });
-    }
-
     await notifications.sendTicketPaymentToAdmin({
       createdAt: ticket.createdAt,
       type: ticket.type,
@@ -403,56 +387,5 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     return refund;
   };
 
-  // Called from a cron job in the brand backend — finds paid tickets whose
-  // delivery date is today (UAE time, UTC+4) and emails the admin once per ticket.
-  const sendDueDeliveryEmails = async () => {
-    const nowUAE = new Date(Date.now() + 4 * 60 * 60 * 1000);
-    const todayUAE = nowUAE.toISOString().split('T')[0];
-
-    const filter = {
-      paymentStatus: 'PAID',
-      orderStatus: { $in: ['PENDING', 'PROGRESS'] },
-      'ticketDelivery.immediate': false,
-      'ticketDelivery.deliveryDate': todayUAE,
-      adminDeliveryEmailSent: { $ne: true },
-    };
-
-    let ticket;
-    while (
-      (ticket = await Ticket.findOneAndUpdate(
-        filter,
-        { $set: { adminDeliveryEmailSent: true } },
-        { new: false },
-      )) !== null
-    ) {
-      try {
-        await notifications.sendTicketScheduledDeliveryToAdmin({
-          createdAt: ticket.createdAt,
-          type: ticket.type,
-          from: ticket.from,
-          to: ticket.to,
-          departureDate: ticket.departureDate,
-          returnDate: ticket.returnDate,
-          leadPassenger: ticket.leadPassenger,
-          email: ticket.email,
-          number: ticket.phoneNumber?.code && ticket.phoneNumber?.digits
-            ? `${ticket.phoneNumber.code}${ticket.phoneNumber.digits}`
-            : 'Not provided',
-          flightDetails: ticket.flightDetails,
-          ticketValidity: ticket.ticketValidity,
-          ticketDelivery: ticket.ticketDelivery,
-          passengers: ticket.passengers,
-          message: ticket.message,
-        });
-      } catch (err) {
-        logger.error('[tickets] Failed to send scheduled delivery email', {
-          ticketId: ticket._id,
-          sessionId: ticket.sessionId,
-          error: err.message,
-        });
-      }
-    }
-  };
-
-  return { getAllTickets, getTicketBySessionId, updateOrderStatus, deleteTicket, createTicketRequest, createStripePaymentUrl, handleStripeSuccess, createPayPalOrder, capturePayPalOrder, refundByTransactionId, sendDueDeliveryEmails };
+  return { getAllTickets, getTicketBySessionId, updateOrderStatus, deleteTicket, createTicketRequest, createStripePaymentUrl, handleStripeSuccess, createPayPalOrder, capturePayPalOrder, refundByTransactionId };
 }

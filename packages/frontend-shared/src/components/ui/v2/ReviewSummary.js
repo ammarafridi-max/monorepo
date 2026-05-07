@@ -351,7 +351,7 @@ export default function ReviewSummary() {
                 value={TRIP_TYPE_LABEL[journeyType] || journeyType}
               />
               <Row label="Region" value={region?.name} />
-              {journeyType === "annual" ? (
+              {journeyType === "annual" || journeyType === "biennial" ? (
                 <Row label="Start Date" value={formatDate(startDate)} />
               ) : (
                 <>

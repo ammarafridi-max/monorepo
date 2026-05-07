@@ -1,9 +1,8 @@
 import { renderInsurancePaymentTemplate } from './templates/insurance-payment.js';
 import { renderTicketPaymentTemplate } from './templates/ticket-payment.js';
-import { renderTicketScheduledDeliveryTemplate } from './templates/ticket-scheduled-delivery.js';
 import { renderPaymentLinkPaidTemplate } from './templates/payment-link-paid.js';
 import { renderVisaLeadTemplate } from './templates/visa-lead.js';
-import { formatDate, formatToDDMMM, extractIataCode } from './helpers.js';
+import { formatDate, formatToDDMMM, formatToDDMMMYYYYMixed, extractIataCode } from './helpers.js';
 
 /**
  * @param {{
@@ -69,10 +68,15 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
       const toCode   = extractIataCode(data.to)   || data.to   || '';
       const depDDMMM = formatToDDMMM(data.departureDate);
 
+      const isLaterDate = !data.ticketDelivery?.immediate;
+      const deliveryPrefix = isLaterDate
+        ? `${formatToDDMMMYYYYMixed(data.ticketDelivery?.deliveryDate)} Delivery Date - `
+        : '';
+
       await sendEmail({
         email: brand.adminEmail,
         name: brand.paymentsSenderName,
-        subject: `Payment received — ${data.leadPassenger} · ${fromCode} → ${toCode} · ${depDDMMM}`,
+        subject: `${deliveryPrefix}Payment received — ${data.leadPassenger} · ${fromCode} → ${toCode} · ${depDDMMM}`,
         htmlContent,
       });
     } catch (err) {
@@ -83,61 +87,7 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
     }
   }
 
-  // -- 4. Ticket scheduled delivery (admin) ----------------------------------
-
-  async function sendTicketScheduledDeliveryToAdmin(data) {
-    try {
-      const htmlContent = renderTicketScheduledDeliveryTemplate({ brand, ...data });
-      const fromCode = extractIataCode(data.from) || data.from || '';
-      const toCode   = extractIataCode(data.to)   || data.to   || '';
-      const depDDMMM = formatToDDMMM(data.departureDate);
-
-      await sendEmail({
-        email: brand.adminEmail,
-        name: brand.deliverySenderName,
-        subject: `ACTION REQUIRED — Deliver today · ${data.leadPassenger} · ${fromCode} → ${toCode} · ${depDDMMM}`,
-        htmlContent,
-      });
-    } catch (err) {
-      log('[notifications] sendTicketScheduledDeliveryToAdmin failed', {
-        leadPassenger: data.leadPassenger,
-        err: err.message,
-      });
-    }
-  }
-
-  // -- 5. Later-date delivery confirmation (customer) ------------------------
-
-  async function sendLaterDateDeliveryToCustomer({ to, passenger, deliveryDate }) {
-    try {
-      await sendEmail({
-        email: to,
-        name: brand.customerSenderName,
-        subject: `Your flight reservation will be delivered on ${formatDate(deliveryDate)}`,
-        textContent: [
-          `Hi ${passenger},`,
-          '',
-          `Thank you for booking your dummy ticket with ${brand.name}.`,
-          '',
-          `Your flight reservation will be sent to your email address as per your requested date on ${formatDate(deliveryDate)}.`,
-          '',
-          `If you accidentally selected the later date delivery option and want your dummy ticket to be issued now, please reply to this email and we'll issue and send your dummy ticket as soon as possible.`,
-          '',
-          `Best regards,`,
-          `${brand.name} team`,
-          brand.website,
-        ].join('\n'),
-      });
-    } catch (err) {
-      log('[notifications] sendLaterDateDeliveryToCustomer failed', {
-        to,
-        passenger,
-        err: err.message,
-      });
-    }
-  }
-
-  // -- 6. Custom payment link paid (admin) -----------------------------------
+  // -- 4. Custom payment link paid (admin) -----------------------------------
 
   async function sendPaymentLinkPaidToAdmin(data) {
     try {
@@ -171,7 +121,7 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
     }
   }
 
-  // -- 7. Visa lead (admin) ---------------------------------------------------
+  // -- 5. Visa lead (admin) ---------------------------------------------------
 
   async function sendVisaLeadToAdmin(data) {
     try {
@@ -195,8 +145,6 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
     sendInsuranceFormSubmission,
     sendInsurancePaymentToAdmin,
     sendTicketPaymentToAdmin,
-    sendTicketScheduledDeliveryToAdmin,
-    sendLaterDateDeliveryToCustomer,
     sendPaymentLinkPaidToAdmin,
     sendVisaLeadToAdmin,
   };

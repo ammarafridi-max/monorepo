@@ -5,19 +5,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import {
-  ChevronDown,
-  Menu,
-  X,
-  ChevronRight,
-  User,
-  LogOut,
-  ArrowRight,
-} from "lucide-react";
+import { ChevronDown, User, LogOut, ArrowRight } from "lucide-react";
 import { useAuth } from "../../../contexts/AuthContextBase.js";
-import { useCurrency } from "../../../contexts/CurrencyContext.js";
 import { logoutUserSessionApi } from "../../../services/apiAuth.js";
 import Container from "../../shared/layout/Container.js";
+import Currency from "../../ui/v2/Currency.js";
+import MobileNavigation from "./MobileNavigation.js";
 
 /**
  * pages: Array of nav items. Each item is one of:
@@ -37,18 +30,10 @@ import Container from "../../shared/layout/Container.js";
  */
 export default function Navbar({ pages = [], logoAlt = "Logo" }) {
   const { user, isAuthenticated } = useAuth();
-  const {
-    currencies = [],
-    selectedCurrency: currency,
-    setCurrency,
-  } = useCurrency();
   const pathname = usePathname();
 
   const [megaOpen, setMegaOpen] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(null);
-  const [currencyOpen, setCurrencyOpen] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [mobileOpenIndex, setMobileOpenIndex] = useState(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const megaTimer = useRef(null);
@@ -71,9 +56,8 @@ export default function Navbar({ pages = [], logoAlt = "Logo" }) {
 
   return (
     <header className="sticky top-0 bg-white border-b border-gray-100 shadow-sm z-50">
-      <Container className="h-16 flex items-center justify-between gap-6">
-        {/* Logo */}
-        <Link href="/" className="flex items-center shrink-0">
+      <Container className="py-3 flex items-center justify-between gap-10">
+        <Link href="/" className="h-5 lg:h-7 flex items-center shrink-0">
           <Image
             src="/logo.webp"
             alt={logoAlt}
@@ -81,12 +65,11 @@ export default function Navbar({ pages = [], logoAlt = "Logo" }) {
             width={90}
             height={30}
             priority
-            className="h-7 w-auto object-contain"
-            style={{ height: "auto" }}
+            className="w-auto object-contain"
+            style={{ height: "100%" }}
           />
         </Link>
 
-        {/* Desktop nav */}
         <nav className="hidden lg:flex items-center gap-1 text-sm font-medium text-gray-600 flex-1">
           {pages.map((page, i) => {
             const isActive = page.links?.some(
@@ -232,52 +215,9 @@ export default function Navbar({ pages = [], logoAlt = "Logo" }) {
           })}
         </nav>
 
-        {/* Right side: currency + auth + hamburger */}
+        {/* Right side: currency + auth + mobile nav */}
         <div className="flex items-center gap-2">
-          {/* Currency picker */}
-          <div className="relative hidden sm:block">
-            <button
-              onClick={() => setCurrencyOpen((p) => !p)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              <span>{currency?.code}</span>
-              <ChevronDown
-                size={13}
-                className={`text-gray-400 transition-transform ${currencyOpen ? "rotate-180" : ""}`}
-              />
-            </button>
-            {currencyOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setCurrencyOpen(false)}
-                />
-                <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden z-50">
-                  <div className="p-2 max-h-72 overflow-y-auto">
-                    {currencies.map((c) => (
-                      <button
-                        key={c.code}
-                        onClick={() => {
-                          setCurrency(c);
-                          setCurrencyOpen(false);
-                        }}
-                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${
-                          currency?.code === c.code
-                            ? "bg-primary-50 text-primary-700 font-semibold"
-                            : "text-gray-700 hover:bg-gray-50"
-                        }`}
-                      >
-                        <span className="font-medium">{c.code}</span>
-                        <span className="text-gray-400 text-xs ml-auto">
-                          {c.name}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
+          <Currency className="hidden lg:block" />
 
           {/* User menu / Login */}
           {isAuthenticated ? (
@@ -361,146 +301,9 @@ export default function Navbar({ pages = [], logoAlt = "Logo" }) {
             </Link>
           )}
 
-          {/* Hamburger */}
-          <button
-            onClick={() => setMobileOpen((p) => !p)}
-            className="lg:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
-          >
-            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
+          <MobileNavigation pages={pages} />
         </div>
       </Container>
-
-      {/* Mobile menu */}
-      {mobileOpen && (
-        <div className="lg:hidden fixed inset-x-0 top-0 bottom-0 z-40 bg-white overflow-y-auto py-6">
-          <Container className="flex flex-col gap-1 text-sm font-medium text-gray-700">
-          <div className="flex items-center justify-between py-3 mb-1 border-b border-gray-100">
-            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-              Menu
-            </span>
-            <button
-              onClick={() => setMobileOpen(false)}
-              className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
-              aria-label="Close menu"
-            >
-              <X size={20} />
-            </button>
-          </div>
-          {pages.map((page, i) => {
-            const allSubpages = page.mega
-              ? page.mega.columns.flatMap((col) =>
-                  col.items.map((item) => ({
-                    name: item.label,
-                    link: item.href,
-                  })),
-                )
-              : (page.subpages ?? null);
-
-            return (
-              <div key={i}>
-                {allSubpages ? (
-                  <>
-                    <button
-                      onClick={() =>
-                        setMobileOpenIndex((p) => (p === i ? null : i))
-                      }
-                      className="flex items-center justify-between w-full py-3 border-b border-gray-100"
-                    >
-                      <span className="font-semibold">{page.name}</span>
-                      <ChevronRight
-                        size={16}
-                        className={`text-gray-400 transition-transform ${mobileOpenIndex === i ? "rotate-90" : ""}`}
-                      />
-                    </button>
-                    {mobileOpenIndex === i && (
-                      <div className="pl-2 flex flex-col gap-1 py-2">
-                        {allSubpages.map((sub, j) => (
-                          <Link
-                            key={j}
-                            href={sub.link}
-                            onClick={() => setMobileOpen(false)}
-                            className="block py-2.5 text-gray-600 hover:text-primary-700 transition-colors"
-                          >
-                            {sub.name}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <Link
-                    href={page.links?.[0] ?? "#"}
-                    onClick={() => setMobileOpen(false)}
-                    className="block py-3 border-b border-gray-100 hover:text-primary-700 transition-colors"
-                  >
-                    {page.name}
-                  </Link>
-                )}
-              </div>
-            );
-          })}
-
-          {isAuthenticated ? (
-            <>
-              <Link
-                href="/account"
-                onClick={() => setMobileOpen(false)}
-                className="py-3 border-b border-gray-100 hover:text-primary-700 transition-colors flex items-center gap-2"
-              >
-                <User size={14} className="text-gray-400" /> My Account
-              </Link>
-              <button
-                onClick={async () => {
-                  setMobileOpen(false);
-                  try {
-                    await logoutUserSessionApi();
-                  } catch {
-                    void 0;
-                  }
-                  await signOut({ callbackUrl: "/" });
-                }}
-                className="py-3 text-left text-red-600 hover:text-red-700 transition-colors flex items-center gap-2"
-              >
-                <LogOut size={14} /> Sign out
-              </button>
-            </>
-          ) : (
-            <Link
-              href="/login"
-              onClick={() => setMobileOpen(false)}
-              className="py-3 border-b border-gray-100 hover:text-primary-700 transition-colors"
-            >
-              Log in
-            </Link>
-          )}
-
-          <div className="mt-3">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">
-              Currency
-            </p>
-            <div className="grid grid-cols-4 gap-2">
-              {currencies.slice(0, 8).map((c) => (
-                <button
-                  key={c.code}
-                  onClick={() => {
-                    setCurrency(c);
-                    setMobileOpen(false);
-                  }}
-                  className={`flex flex-col items-center py-2 rounded-xl border text-xs font-semibold transition-colors ${
-                    currency?.code === c.code
-                      ? "border-primary-400 bg-primary-50 text-primary-700"
-                      : "border-gray-200 text-gray-600 hover:border-primary-200"
-                  }`}
-                >
-                  <span>{c.code}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-          </Container>
-        </div>
-      )}
     </header>
   );
 }

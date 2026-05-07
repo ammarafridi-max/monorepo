@@ -1,6 +1,7 @@
 import { format } from 'date-fns';
 
-const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+const MONTHS     = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+const MONTHS_MMM = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 export function formatDate(d) {
   if (!d) return '—';
@@ -29,6 +30,13 @@ export function formatToDDMMMYYYY(dateStr) {
   if (!dateStr) return '';
   const [year, month, day] = String(dateStr).split('-');
   return `${Number(day)} ${MONTHS[Number(month) - 1]} ${year}`;
+}
+
+// Expects "YYYY-MM-DD" — produces "11 Apr 2026"
+export function formatToDDMMMYYYYMixed(dateStr) {
+  if (!dateStr) return '';
+  const [year, month, day] = String(dateStr).split('-');
+  return `${Number(day)} ${MONTHS_MMM[Number(month) - 1]} ${year}`;
 }
 
 // Extracts "DXB" from "Dubai International Airport (DXB)"

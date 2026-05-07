@@ -187,7 +187,7 @@ export default function AdminInsuranceApplicationDetailPage() {
 
   const { application, isLoadingApplication, isErrorApplication } = useGetInsuranceApplication(sessionId);
   const { updateInsuranceApplication, isUpdatingApplication }     = useUpdateInsuranceApplication();
-  const { documents, isLoadingDocuments }                          = useGetInsuranceDocuments(application?.policyId);
+  const { documents, isLoadingDocuments, isErrorDocuments }        = useGetInsuranceDocuments(application?.policyId);
 
   if (isLoadingApplication) {
     return (
@@ -338,28 +338,30 @@ export default function AdminInsuranceApplicationDetailPage() {
             </div>
           </Card>
 
-          {app.paymentStatus === 'PAID' && app.policyId && (
+          {app.issuanceStatus === 'ISSUED' && app.policyId && (
             <Card title="Documents" icon={Download}>
               <div className="flex flex-col gap-2">
                 {isLoadingDocuments ? (
                   <div className="flex items-center justify-center py-3">
                     <Loader2 size={16} className="animate-spin text-gray-400" />
                   </div>
+                ) : isErrorDocuments ? (
+                  <p className="text-xs text-red-500 py-2">
+                    Documents could not be retrieved from the insurance provider. Try refreshing the page.
+                  </p>
+                ) : documents.length > 0 ? (
+                  documents.map((doc, i) => (
+                    <button
+                      key={i}
+                      onClick={() => window.open(doc.url, '_blank')}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold text-gray-700 bg-gray-50 hover:bg-primary-50 hover:text-primary-700 border border-gray-200 hover:border-primary-200 rounded-xl transition"
+                    >
+                      <Download size={12} className="shrink-0" />
+                      {doc.name}
+                    </button>
+                  ))
                 ) : (
-                  documents.length > 0 ? (
-                    documents.map((doc, i) => (
-                      <button
-                        key={i}
-                        onClick={() => window.open(doc.url, '_blank')}
-                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold text-gray-700 bg-gray-50 hover:bg-primary-50 hover:text-primary-700 border border-gray-200 hover:border-primary-200 rounded-xl transition"
-                      >
-                        <Download size={12} className="shrink-0" />
-                        {doc.name}
-                      </button>
-                    ))
-                  ) : (
-                    <p className="text-xs text-gray-400 py-2">No policy documents are available yet.</p>
-                  )
+                  <p className="text-xs text-gray-400 py-2">No policy documents are available yet.</p>
                 )}
               </div>
             </Card>

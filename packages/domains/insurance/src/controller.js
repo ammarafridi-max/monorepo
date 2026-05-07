@@ -215,7 +215,14 @@ export function createInsuranceController({ service, wis, Nationality, Insurance
 
   const downloadInsurancePolicy = catchAsync(async (req, res, next) => {
     const { policyId, index } = req.params;
-    const policy_documents = await wis.downloadWISInsuranceDocuments(policyId);
+
+    let policy_documents;
+    try {
+      policy_documents = await wis.downloadWISInsuranceDocuments(policyId);
+    } catch (err) {
+      logger.warn('WIS document retrieval failed', { policyId, error: err?.message });
+      return next(new AppError('Policy documents are not yet available from the insurance provider.', 503));
+    }
 
     if (!policy_documents || !policy_documents[index]) {
       return next(new AppError('Policy document not found', 404));
@@ -229,7 +236,14 @@ export function createInsuranceController({ service, wis, Nationality, Insurance
 
   const getInsuranceDocuments = catchAsync(async (req, res, next) => {
     const { policyId } = req.params;
-    const policy_documents = await wis.downloadWISInsuranceDocuments(policyId);
+
+    let policy_documents;
+    try {
+      policy_documents = await wis.downloadWISInsuranceDocuments(policyId);
+    } catch (err) {
+      logger.warn('WIS document retrieval failed', { policyId, error: err?.message });
+      return next(new AppError('Policy documents are not yet available from the insurance provider.', 503));
+    }
 
     if (!policy_documents || policy_documents.length === 0) {
       return next(new AppError('Policy documents not found', 404));

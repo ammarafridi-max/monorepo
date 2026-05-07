@@ -87,8 +87,8 @@ function TripSummaryBar() {
               <div className="flex items-center gap-1.5">
                 <Calendar size={13} className="text-primary-500 shrink-0" />
                 <span>
-                  {journeyType === 'annual'
-                    ? `Annual from ${formatDate(startDate)}`
+                  {journeyType === 'annual' || journeyType === 'biennial'
+                    ? `${journeyType === 'annual' ? 'Annual' : 'Biennial'} from ${formatDate(startDate)}`
                     : `${formatDate(startDate)} — ${formatDate(endDate)}`}
                 </span>
               </div>
