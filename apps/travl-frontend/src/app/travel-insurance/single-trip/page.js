@@ -1,10 +1,13 @@
 import Link from 'next/link';
 import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineHotel } from 'react-icons/md';
+import { Plane, Calendar, FileCheck, ShieldCheck, BadgeCheck, Zap } from 'lucide-react';
 import Container from '@travel-suite/frontend-shared/components/shared/layout/Container';
-import FaqAccordion from '@travel-suite/frontend-shared/components/ui/v2/FaqAccordion';
 import PrimarySection from '@travel-suite/frontend-shared/components/shared/layout/PrimarySection';
 import SectionTitle from '@travel-suite/frontend-shared/components/shared/layout/SectionTitle';
 import About from '@travel-suite/frontend-shared/components/sections/v2/About';
+import Benefits from '@travel-suite/frontend-shared/components/sections/v2/Benefits';
+import Testimonials from '@travel-suite/frontend-shared/components/sections/v2/Testimonials';
+import Faqs from '@travel-suite/frontend-shared/components/sections/v2/Faqs';
 import Hero from '@travel-suite/frontend-shared/components/sections/v2/Hero';
 import HowItWorks from '@travel-suite/frontend-shared/components/sections/v2/HowItWorks';
 import { buildMetadata } from '@/lib/schema';
@@ -32,28 +35,58 @@ export const processSteps = [
   },
 ];
 
-const reasons = [
+const testimonials = [
   {
+    quote: 'Needed a one-time policy for my holiday to Spain. Ordered it in minutes and received it instantly. My Schengen visa was approved without any problems.',
+    name: 'Sandra T.',
+    location: 'Dubai, UAE',
+    stars: 5,
+    plan: 'Single Trip',
+  },
+  {
+    quote: 'The single trip policy was exactly what I needed for my UK visa application. It was accepted by the embassy and the whole process took less than 10 minutes.',
+    name: 'Hassan A.',
+    location: 'Abu Dhabi, UAE',
+    stars: 5,
+    plan: 'Single Trip',
+  },
+  {
+    quote: 'Simple, fast, and affordable. I only travel once or twice a year so a single trip policy makes perfect sense. Will definitely use Travl again.',
+    name: 'Nina W.',
+    location: 'Sharjah, UAE',
+    stars: 5,
+    plan: 'Single Trip',
+  },
+];
+
+const benefits = [
+  {
+    icon: Plane,
     title: 'Coverage for One Journey',
     text: 'A single trip policy covers you from the day you leave the UAE to the day you return. There is no annual commitment and no unused coverage after your trip ends.',
   },
   {
+    icon: Calendar,
     title: 'Pay Only for Your Trip Dates',
     text: 'You choose the exact start and end dates, so you only pay for the days you need. Shorter trips cost less than longer ones.',
   },
   {
+    icon: FileCheck,
     title: 'One-Time Travel Insurance for Visa Applications',
     text: 'Single trip policies are accepted for visa applications including Schengen, UK, Canada, and other destinations that require proof of travel insurance.',
   },
   {
+    icon: ShieldCheck,
     title: 'Schengen-Compliant Cover',
     text: 'Our single trip plans include the medical coverage required for Schengen visa applications and are accepted by European embassies, VFS, and BLS centers across the UAE.',
   },
   {
+    icon: BadgeCheck,
     title: 'Issued by AXA',
     text: 'Every policy is underwritten and issued by AXA. Your certificate is genuine and valid for embassy submissions and actual medical emergencies during your trip.',
   },
   {
+    icon: Zap,
     title: 'Instant Policy Delivery',
     text: 'Pay online and receive your single trip insurance certificate by email straight away. No waiting period and no office visit required.',
   },
@@ -118,7 +151,7 @@ export const pageData = {
         },
         {
           icon: <MdOutlineAirplaneTicket />,
-          title: 'Dummy Tickets',
+          title: 'Flight Itineraries',
           description:
             'Verifiable flight reservations with a real PNR code. Accepted by VFS, BLS, and embassies — the ideal companion to your single trip insurance for a visa application. From AED 49.',
         },
@@ -181,47 +214,20 @@ export default function Page() {
         text={pageData.sections.about.text}
         services={pageData.sections.about.services}
       />
-      <PrimarySection className="py-14 md:py-18 lg:py-24 bg-gray-50/70">
-        <Container>
-          <SectionTitle textAlign="center" className="mb-10 md:mb-12">
-            Why UAE Residents Choose Our Single Trip Insurance
-          </SectionTitle>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-6">
-            {reasons.map((reason, i) => (
-              <div
-                key={i}
-                className="rounded-2xl border border-gray-100 bg-white p-6 md:p-7 shadow-[0_12px_30px_rgba(16,24,40,0.07)]"
-              >
-                <h3 className="text-[20px] font-normal text-gray-900 font-outfit mb-2">
-                  {reason.title}
-                </h3>
-                <p className="text-[16px] text-gray-600 font-light leading-6.5">
-                  {reason.text}
-                </p>
-              </div>
-            ))}
-          </div>
-        </Container>
-      </PrimarySection>
-      <PrimarySection
-        id="faq"
-        className="py-14 md:py-18 lg:py-24 bg-gray-50/70"
-      >
-        <Container>
-          <SectionTitle textAlign="center" className="mb-10 md:mb-12">
-            Single Trip Insurance — Frequently Asked Questions
-          </SectionTitle>
-          <div className="rounded-2xl border border-white bg-white p-4 md:p-7 shadow-[0_14px_35px_rgba(16,24,40,0.08)]">
-            <div className="flex flex-col gap-1">
-              {faqs.map((faq, i) => (
-                <FaqAccordion key={i} question={faq.question}>
-                  {faq.answer}
-                </FaqAccordion>
-              ))}
-            </div>
-          </div>
-        </Container>
-      </PrimarySection>
+      <Benefits
+        title="Why UAE Residents Choose Our Single Trip Insurance"
+        benefits={benefits}
+      />
+      <Testimonials
+        title="What Our Customers Say"
+        subtitle="Real feedback from UAE residents who used Travl for single trip insurance"
+        testimonials={testimonials}
+      />
+      <Faqs
+        title="Single Trip Insurance — Frequently Asked Questions"
+        subtitle="Common questions about one-time travel coverage and how it works"
+        faqs={faqs}
+      />
       <PrimarySection className="py-10 lg:py-14">
         <Container>
           <SectionTitle textAlign="center" className="mb-6">

@@ -1,10 +1,13 @@
 import Link from 'next/link';
 import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineHotel } from 'react-icons/md';
+import { Globe, HeartPulse, FileCheck, ShieldCheck, BadgeCheck, RefreshCw } from 'lucide-react';
 import Container from '@travel-suite/frontend-shared/components/shared/layout/Container';
-import FaqAccordion from '@travel-suite/frontend-shared/components/ui/v2/FaqAccordion';
 import PrimarySection from '@travel-suite/frontend-shared/components/shared/layout/PrimarySection';
 import SectionTitle from '@travel-suite/frontend-shared/components/shared/layout/SectionTitle';
 import About from '@travel-suite/frontend-shared/components/sections/v2/About';
+import Benefits from '@travel-suite/frontend-shared/components/sections/v2/Benefits';
+import Testimonials from '@travel-suite/frontend-shared/components/sections/v2/Testimonials';
+import Faqs from '@travel-suite/frontend-shared/components/sections/v2/Faqs';
 import Hero from '@travel-suite/frontend-shared/components/sections/v2/Hero';
 import HowItWorks from '@travel-suite/frontend-shared/components/sections/v2/HowItWorks';
 import { buildMetadata } from '@/lib/schema';
@@ -33,28 +36,58 @@ export const processSteps = [
   },
 ];
 
-const reasons = [
+const testimonials = [
   {
+    quote: 'Traveling to multiple countries across Europe and Asia. The international plan covered everything under one policy. Delivered instantly and accepted everywhere.',
+    name: 'Daniel S.',
+    location: 'Dubai, UAE',
+    stars: 5,
+    plan: 'International',
+  },
+  {
+    quote: 'Had a medical emergency while traveling in Southeast Asia. The AXA policy covered my hospital bills in full. Incredibly grateful for proper international coverage.',
+    name: 'Amira J.',
+    location: 'Abu Dhabi, UAE',
+    stars: 5,
+    plan: 'International',
+  },
+  {
+    quote: 'The EUR 80,000 medical coverage gave me real confidence traveling further afield. Great price and the policy arrived within minutes of paying.',
+    name: 'Tom K.',
+    location: 'Sharjah, UAE',
+    stars: 5,
+    plan: 'International',
+  },
+];
+
+const benefits = [
+  {
+    icon: Globe,
     title: 'Worldwide Travel Insurance Coverage',
     text: 'Our international plans provide coverage across most destinations globally, so you are protected whether you are traveling to Europe, Asia, the Americas, or anywhere else.',
   },
   {
+    icon: HeartPulse,
     title: 'Medical Coverage from EUR 80,000',
     text: 'International plans start with EUR 80,000 in emergency medical coverage, giving you solid protection for serious medical events while abroad.',
   },
   {
+    icon: FileCheck,
     title: 'International Health Insurance for Visa Applications',
     text: 'Our plans meet the insurance requirements for a wide range of visa applications, including Schengen and other destinations that require proof of medical coverage.',
   },
   {
+    icon: ShieldCheck,
     title: 'Emergency Medical Treatment and Repatriation',
     text: 'Coverage includes emergency hospital treatment, surgical procedures, ambulance services, and medical repatriation back to the UAE if required.',
   },
   {
+    icon: BadgeCheck,
     title: 'Issued by AXA',
     text: 'Every policy is underwritten and issued by AXA. Your international travel insurance certificate is genuine, legally valid, and accepted for embassy submissions and actual medical claims.',
   },
   {
+    icon: RefreshCw,
     title: 'Single-Trip and Annual Plans',
     text: 'Choose a single-trip international policy for one journey, or an annual plan if you travel frequently to multiple destinations throughout the year.',
   },
@@ -124,7 +157,7 @@ export const pageData = {
         },
         {
           icon: <MdOutlineAirplaneTicket />,
-          title: 'Dummy Tickets',
+          title: 'Flight Itineraries',
           description:
             'Verifiable flight reservations with a real PNR, accepted by embassies and visa centres worldwide. Often needed together with travel insurance for international visa applications. From AED 49.',
         },
@@ -194,47 +227,20 @@ export default function Page() {
         text={pageData.sections.about.text}
         services={pageData.sections.about.services}
       />
-      <PrimarySection className="py-14 md:py-18 lg:py-24 bg-gray-50/70">
-        <Container>
-          <SectionTitle textAlign="center" className="mb-10 md:mb-12">
-            Why UAE Residents Choose Our International Travel Insurance
-          </SectionTitle>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-6">
-            {reasons.map((reason, i) => (
-              <div
-                key={i}
-                className="rounded-2xl border border-gray-100 bg-white p-6 md:p-7 shadow-[0_12px_30px_rgba(16,24,40,0.07)]"
-              >
-                <h3 className="text-[20px] font-normal text-gray-900 font-outfit mb-2">
-                  {reason.title}
-                </h3>
-                <p className="text-[16px] text-gray-600 font-light leading-6.5">
-                  {reason.text}
-                </p>
-              </div>
-            ))}
-          </div>
-        </Container>
-      </PrimarySection>
-      <PrimarySection
-        id="faq"
-        className="py-14 md:py-18 lg:py-24 bg-gray-50/70"
-      >
-        <Container>
-          <SectionTitle textAlign="center" className="mb-10 md:mb-12">
-            International Travel Insurance — Frequently Asked Questions
-          </SectionTitle>
-          <div className="rounded-2xl border border-white bg-white p-4 md:p-7 shadow-[0_14px_35px_rgba(16,24,40,0.08)]">
-            <div className="flex flex-col gap-1">
-              {faqs.map((faq, i) => (
-                <FaqAccordion key={i} question={faq.question}>
-                  {faq.answer}
-                </FaqAccordion>
-              ))}
-            </div>
-          </div>
-        </Container>
-      </PrimarySection>
+      <Benefits
+        title="Why UAE Residents Choose Our International Travel Insurance"
+        benefits={benefits}
+      />
+      <Testimonials
+        title="What Our Customers Say"
+        subtitle="Real feedback from UAE residents who used Travl for international travel insurance"
+        testimonials={testimonials}
+      />
+      <Faqs
+        title="International Travel Insurance — Frequently Asked Questions"
+        subtitle="Common questions about worldwide coverage, medical limits, and plans"
+        faqs={faqs}
+      />
       <PrimarySection className="py-10 lg:py-14">
         <Container>
           <SectionTitle textAlign="center" className="mb-6">

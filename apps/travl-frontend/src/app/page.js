@@ -16,8 +16,8 @@ import {
   buildWebsite,
 } from "@/lib/schema";
 import { homepageFaqs } from "@/data/faqs";
-import { ShieldCheck } from "lucide-react";
-import { MdOutlineHealthAndSafety } from "react-icons/md";
+import { ShieldCheck, Zap, FileCheck, Headphones, Banknote, Globe } from "lucide-react";
+import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineHotel } from "react-icons/md";
 
 const testimonials = [
   {
@@ -42,9 +42,34 @@ const testimonials = [
 
 const benefits = [
   {
-    title: "Travel Insurance from AED 30",
-    text: "Schengen-compliant travel insurance with the required medical coverage, valid across all 26 member states. Issued instantly and delivered straight to your inbox.",
     icon: ShieldCheck,
+    title: "Travel Insurance from AED 30",
+    text: "Schengen-compliant travel insurance with the required medical coverage, valid across all 26 Schengen states. Issued instantly and delivered straight to your inbox.",
+  },
+  {
+    icon: Zap,
+    title: "Instant Document Delivery",
+    text: "Every policy, flight itinerary, and hotel reservation is delivered to your inbox within minutes of payment. No office visit, no waiting.",
+  },
+  {
+    icon: FileCheck,
+    title: "Embassy-Accepted Formats",
+    text: "All documents are formatted to meet the requirements of embassies, VFS Global, and BLS International. Submit with confidence.",
+  },
+  {
+    icon: Headphones,
+    title: "24/7 Customer Support",
+    text: "Our team is available around the clock to answer questions, resend documents, or help with any issue before your visa appointment.",
+  },
+  {
+    icon: Globe,
+    title: "Covers 180+ Countries",
+    text: "From Schengen to worldwide plans, our travel insurance covers destinations across Europe, Asia, the Americas, and beyond.",
+  },
+  {
+    icon: Banknote,
+    title: "No Hidden Fees",
+    text: "The price you see is the price you pay. No admin charges, no processing fees — transparent pricing on every order.",
   },
 ];
 
@@ -79,6 +104,18 @@ const pageData = {
           title: "Travel Insurance",
           description:
             "Genuine AXA-backed travel insurance for UAE residents. Schengen-compliant plans from AED 30, worldwide coverage from AED 70, and annual multi-trip plans from AED 245. Every policy is delivered instantly after payment.",
+        },
+        {
+          icon: <MdOutlineAirplaneTicket />,
+          title: "Flight Itineraries",
+          description:
+            "Verifiable flight reservations with a real PNR code, accepted by VFS, BLS, and embassies. Required alongside insurance for most Schengen and international visa applications. From AED 49.",
+        },
+        {
+          icon: <MdOutlineHotel />,
+          title: "Hotel Reservations",
+          description:
+            "Proof of accommodation formatted to meet embassy and consulate standards. Ready to include in your visa application package alongside your insurance and flight itinerary.",
         },
       ],
     },

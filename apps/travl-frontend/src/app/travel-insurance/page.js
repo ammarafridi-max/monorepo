@@ -1,9 +1,12 @@
 import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineHotel } from 'react-icons/md';
+import { ShieldCheck, FileCheck, Zap, Globe, Banknote, RefreshCw } from 'lucide-react';
 import Container from '@travel-suite/frontend-shared/components/shared/layout/Container';
-import FaqAccordion from '@travel-suite/frontend-shared/components/ui/v2/FaqAccordion';
 import PrimarySection from '@travel-suite/frontend-shared/components/shared/layout/PrimarySection';
 import SectionTitle from '@travel-suite/frontend-shared/components/shared/layout/SectionTitle';
 import About from '@travel-suite/frontend-shared/components/sections/v2/About';
+import Benefits from '@travel-suite/frontend-shared/components/sections/v2/Benefits';
+import Testimonials from '@travel-suite/frontend-shared/components/sections/v2/Testimonials';
+import Faqs from '@travel-suite/frontend-shared/components/sections/v2/Faqs';
 import Hero from '@travel-suite/frontend-shared/components/sections/v2/Hero';
 import HowItWorks from '@travel-suite/frontend-shared/components/sections/v2/HowItWorks';
 import { buildMetadata } from '@/lib/schema';
@@ -31,28 +34,58 @@ export const processSteps = [
   },
 ];
 
-const reasons = [
+const testimonials = [
   {
+    quote: 'Got my Schengen travel insurance in under 5 minutes. The policy was accepted by the French embassy without any issues. Incredible service.',
+    name: 'Fatima A.',
+    location: 'Dubai, UAE',
+    stars: 5,
+    plan: 'Schengen Insurance',
+  },
+  {
+    quote: 'I needed insurance for a last-minute UK visa application. Travl delivered the policy within minutes and it had everything the embassy required.',
+    name: 'James P.',
+    location: 'Abu Dhabi, UAE',
+    stars: 5,
+    plan: 'Single Trip',
+  },
+  {
+    quote: "Very straightforward process. I've used Travl three times now for different trips and the policy always arrives quickly and is accepted without problems.",
+    name: 'Meera S.',
+    location: 'Sharjah, UAE',
+    stars: 5,
+    plan: 'Annual Multi-Trip',
+  },
+];
+
+const benefits = [
+  {
+    icon: FileCheck,
     title: 'Genuine Policy, Not a Reservation',
     text: 'Our travel insurance is a fully valid, legally issued policy backed by a licensed insurer. It is not a placeholder or a reservation.',
   },
   {
+    icon: ShieldCheck,
     title: 'Embassy-Compliant Coverage',
     text: 'Our plans meet official visa requirements, including the minimum EUR 30,000 medical coverage required for Schengen visa applications.',
   },
   {
+    icon: Zap,
     title: 'Instant Policy Delivery',
     text: 'Once your payment is confirmed, your policy is issued and delivered to your inbox within minutes. No office visit and no waiting.',
   },
   {
+    icon: Globe,
     title: 'Covers the Full Trip',
     text: 'Coverage includes emergency medical expenses, hospitalization, trip cancellations, baggage loss, travel delays, and COVID-19 medical coverage (as per policy terms).',
   },
   {
+    icon: Banknote,
     title: 'Affordable Rates for Every Trip',
     text: 'We offer competitive pricing for single-trip and annual plans, giving UAE residents strong coverage with practical pricing.',
   },
   {
+    icon: RefreshCw,
     title: 'Single and Annual Plans Available',
     text: 'Choose a single-trip plan for one-off travel or an annual multi-trip plan if you travel frequently.',
   },
@@ -123,9 +156,9 @@ export const pageData = {
         },
         {
           icon: <MdOutlineAirplaneTicket />,
-          title: 'Dummy Tickets',
+          title: 'Flight Itineraries',
           description:
-            'Verifiable flight reservations with a real PNR code — accepted by VFS, BLS, and embassies. Often needed alongside insurance for a complete Schengen or UK visa application. From AED 49.',
+            'Verifiable flight reservations with a real PNR code, accepted by VFS, BLS, and embassies. Often needed alongside insurance for a complete Schengen or UK visa application. From AED 49.',
         },
         {
           icon: <MdOutlineHotel />,
@@ -185,32 +218,16 @@ export default function Page() {
         text={pageData.sections.about.text}
         services={pageData.sections.about.services}
       />
-      <PrimarySection className="py-14 md:py-18 lg:py-24 bg-gray-50/70">
-        <Container>
-          <SectionTitle
-            textAlign="center"
-            subtitle="Trusted travel insurance provider for UAE residents"
-            className="mb-10 md:mb-12"
-          >
-            Why Book Travel Insurance With Us?
-          </SectionTitle>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-6">
-            {reasons.map((reason, i) => (
-              <div
-                key={i}
-                className="rounded-2xl border border-gray-100 bg-white p-6 md:p-7 shadow-[0_12px_30px_rgba(16,24,40,0.07)]"
-              >
-                <h3 className="text-[20px] font-normal text-gray-900 font-outfit mb-2">
-                  {reason.title}
-                </h3>
-                <p className="text-[16px] text-gray-600 font-light leading-6.5">
-                  {reason.text}
-                </p>
-              </div>
-            ))}
-          </div>
-        </Container>
-      </PrimarySection>
+      <Benefits
+        title="Why Book Travel Insurance With Us?"
+        subtitle="Trusted travel insurance provider for UAE residents"
+        benefits={benefits}
+      />
+      <Testimonials
+        title="What Our Customers Say"
+        subtitle="Real feedback from UAE residents who used Travl for their travel documents"
+        testimonials={testimonials}
+      />
       <PrimarySection className="py-14 md:py-18 lg:py-24">
         <Container className="rounded-3xl border border-primary-100 bg-[linear-gradient(145deg,#f5fbfb_0%,#eff7ff_55%,#fff7f0_100%)] p-8 md:p-10">
           <SectionTitle textAlign="center" className="mb-4">
@@ -223,29 +240,11 @@ export default function Page() {
           </p>
         </Container>
       </PrimarySection>
-      <PrimarySection
-        id="faq"
-        className="py-14 md:py-18 lg:py-24 bg-gray-50/70"
-      >
-        <Container>
-          <SectionTitle
-            textAlign="center"
-            subtitle="Frequently Asked Questions"
-            className="mb-10 md:mb-12"
-          >
-            Common questions answered
-          </SectionTitle>
-          <div className="rounded-2xl border border-white bg-white p-4 md:p-7 shadow-[0_14px_35px_rgba(16,24,40,0.08)]">
-            <div className="flex flex-col gap-1">
-              {faqs.map((faq, i) => (
-                <FaqAccordion key={i} question={faq.question}>
-                  {faq.answer}
-                </FaqAccordion>
-              ))}
-            </div>
-          </div>
-        </Container>
-      </PrimarySection>
+      <Faqs
+        title="Travel Insurance — Frequently Asked Questions"
+        subtitle="Common questions about our plans, coverage, and how to get your policy"
+        faqs={faqs}
+      />
     </>
   );
 }

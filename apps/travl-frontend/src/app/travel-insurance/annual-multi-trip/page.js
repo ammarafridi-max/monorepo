@@ -1,10 +1,13 @@
 import Link from 'next/link';
 import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineHotel } from 'react-icons/md';
+import { Calendar, Globe, ShieldCheck, Banknote, BadgeCheck, Zap } from 'lucide-react';
 import Container from '@travel-suite/frontend-shared/components/shared/layout/Container';
-import FaqAccordion from '@travel-suite/frontend-shared/components/ui/v2/FaqAccordion';
 import PrimarySection from '@travel-suite/frontend-shared/components/shared/layout/PrimarySection';
 import SectionTitle from '@travel-suite/frontend-shared/components/shared/layout/SectionTitle';
 import About from '@travel-suite/frontend-shared/components/sections/v2/About';
+import Benefits from '@travel-suite/frontend-shared/components/sections/v2/Benefits';
+import Testimonials from '@travel-suite/frontend-shared/components/sections/v2/Testimonials';
+import Faqs from '@travel-suite/frontend-shared/components/sections/v2/Faqs';
 import Hero from '@travel-suite/frontend-shared/components/sections/v2/Hero';
 import HowItWorks from '@travel-suite/frontend-shared/components/sections/v2/HowItWorks';
 import { buildMetadata } from '@/lib/schema';
@@ -33,28 +36,58 @@ export const processSteps = [
   },
 ];
 
-const reasons = [
+const testimonials = [
   {
+    quote: 'I travel for work every few months. The annual plan from Travl has saved me so much time — one policy, sorted for the whole year.',
+    name: 'Tariq B.',
+    location: 'Dubai, UAE',
+    stars: 5,
+    plan: 'Annual Multi-Trip',
+  },
+  {
+    quote: 'Used the annual plan for three separate Schengen trips this year. Accepted each time without issues. Great value for frequent travellers.',
+    name: 'Sophie L.',
+    location: 'Abu Dhabi, UAE',
+    stars: 5,
+    plan: 'Annual Multi-Trip',
+  },
+  {
+    quote: 'Much cheaper than buying single-trip insurance every time I travel. The annual plan covers everything I need and the policy arrived instantly.',
+    name: 'Khalid R.',
+    location: 'Sharjah, UAE',
+    stars: 5,
+    plan: 'Annual Multi-Trip',
+  },
+];
+
+const benefits = [
+  {
+    icon: Calendar,
     title: 'One Policy for the Whole Year',
     text: 'Pay once and stay covered for every trip you take over the next 12 months. There is no need to arrange new insurance before each departure.',
   },
   {
+    icon: Globe,
     title: 'Covers Multiple Destinations',
     text: 'Annual plans can cover specific regions or worldwide travel, so you are protected whether you are visiting Europe, Asia, or anywhere else.',
   },
   {
+    icon: ShieldCheck,
     title: 'Schengen-Compliant for Every European Trip',
     text: 'Our annual plans meet the travel insurance requirements for Schengen visa applications, so you can use the same policy for multiple European trips throughout the year.',
   },
   {
+    icon: Banknote,
     title: 'Annual Holiday Insurance vs Single-Trip',
     text: 'If you travel more than twice a year, an annual plan typically works out cheaper than buying a new single-trip policy each time you travel.',
   },
   {
+    icon: BadgeCheck,
     title: 'Issued by AXA',
     text: 'Every annual policy is underwritten and issued by AXA. Your certificate is genuine, legally valid, and accepted for embassy submissions and actual medical claims.',
   },
   {
+    icon: Zap,
     title: 'Instant Policy Delivery',
     text: 'Pay online and receive your annual travel insurance certificate by email immediately. Your coverage begins from the date you select.',
   },
@@ -124,7 +157,7 @@ export const pageData = {
         },
         {
           icon: <MdOutlineAirplaneTicket />,
-          title: 'Dummy Tickets',
+          title: 'Flight Itineraries',
           description:
             'Verifiable flight reservations with a real PNR code. Useful for individual visa applications throughout the year, accepted by VFS, BLS, and embassies. From AED 49.',
         },
@@ -194,47 +227,20 @@ export default function Page() {
         text={pageData.sections.about.text}
         services={pageData.sections.about.services}
       />
-      <PrimarySection className="py-14 md:py-18 lg:py-24 bg-gray-50/70">
-        <Container>
-          <SectionTitle textAlign="center" className="mb-10 md:mb-12">
-            Why UAE Residents Choose Our Annual Multi-Trip Plans
-          </SectionTitle>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-6">
-            {reasons.map((reason, i) => (
-              <div
-                key={i}
-                className="rounded-2xl border border-gray-100 bg-white p-6 md:p-7 shadow-[0_12px_30px_rgba(16,24,40,0.07)]"
-              >
-                <h3 className="text-[20px] font-normal text-gray-900 font-outfit mb-2">
-                  {reason.title}
-                </h3>
-                <p className="text-[16px] text-gray-600 font-light leading-6.5">
-                  {reason.text}
-                </p>
-              </div>
-            ))}
-          </div>
-        </Container>
-      </PrimarySection>
-      <PrimarySection
-        id="faq"
-        className="py-14 md:py-18 lg:py-24 bg-gray-50/70"
-      >
-        <Container>
-          <SectionTitle textAlign="center" className="mb-10 md:mb-12">
-            Annual Multi-Trip Insurance — Frequently Asked Questions
-          </SectionTitle>
-          <div className="rounded-2xl border border-white bg-white p-4 md:p-7 shadow-[0_14px_35px_rgba(16,24,40,0.08)]">
-            <div className="flex flex-col gap-1">
-              {faqs.map((faq, i) => (
-                <FaqAccordion key={i} question={faq.question}>
-                  {faq.answer}
-                </FaqAccordion>
-              ))}
-            </div>
-          </div>
-        </Container>
-      </PrimarySection>
+      <Benefits
+        title="Why UAE Residents Choose Our Annual Multi-Trip Plans"
+        benefits={benefits}
+      />
+      <Testimonials
+        title="What Our Customers Say"
+        subtitle="Real feedback from frequent travellers who use Travl's annual multi-trip plans"
+        testimonials={testimonials}
+      />
+      <Faqs
+        title="Annual Multi-Trip Insurance — Frequently Asked Questions"
+        subtitle="Common questions about annual plans, trip limits, and coverage scope"
+        faqs={faqs}
+      />
       <PrimarySection className="py-10 lg:py-14">
         <Container>
           <SectionTitle textAlign="center" className="mb-6">

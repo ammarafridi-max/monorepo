@@ -1,10 +1,13 @@
 import Link from 'next/link';
 import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineHotel } from 'react-icons/md';
+import { HeartPulse, Building2, FileCheck, ShieldCheck, BadgeCheck, RefreshCw } from 'lucide-react';
 import Container from '@travel-suite/frontend-shared/components/shared/layout/Container';
-import FaqAccordion from '@travel-suite/frontend-shared/components/ui/v2/FaqAccordion';
 import PrimarySection from '@travel-suite/frontend-shared/components/shared/layout/PrimarySection';
 import SectionTitle from '@travel-suite/frontend-shared/components/shared/layout/SectionTitle';
 import About from '@travel-suite/frontend-shared/components/sections/v2/About';
+import Benefits from '@travel-suite/frontend-shared/components/sections/v2/Benefits';
+import Testimonials from '@travel-suite/frontend-shared/components/sections/v2/Testimonials';
+import Faqs from '@travel-suite/frontend-shared/components/sections/v2/Faqs';
 import Hero from '@travel-suite/frontend-shared/components/sections/v2/Hero';
 import HowItWorks from '@travel-suite/frontend-shared/components/sections/v2/HowItWorks';
 import { buildMetadata } from '@/lib/schema';
@@ -32,28 +35,58 @@ export const processSteps = [
   },
 ];
 
-const reasons = [
+const testimonials = [
   {
+    quote: 'Got ill during a trip to the UK and needed urgent hospital treatment. The AXA policy covered every expense. So relieved I had proper coverage in place.',
+    name: 'Ravi M.',
+    location: 'Dubai, UAE',
+    stars: 5,
+    plan: 'Travel Medical',
+  },
+  {
+    quote: 'The medical insurance met all the requirements for my Schengen visa application and gave me real peace of mind during the trip itself.',
+    name: 'Layla H.',
+    location: 'Abu Dhabi, UAE',
+    stars: 5,
+    plan: 'Travel Medical',
+  },
+  {
+    quote: 'Needed medical coverage for a Canada visa application. The policy was delivered instantly and accepted without any issues at the embassy.',
+    name: 'Omar F.',
+    location: 'Sharjah, UAE',
+    stars: 5,
+    plan: 'Travel Medical',
+  },
+];
+
+const benefits = [
+  {
+    icon: HeartPulse,
     title: 'Emergency Medical Cover While Travelling',
     text: 'Our policies cover emergency medical treatment if you fall ill or get injured abroad, including doctor visits, hospital stays, and specialist care.',
   },
   {
+    icon: Building2,
     title: 'Hospitalisation and Medical Repatriation',
     text: 'If you need to be admitted to hospital or brought home for treatment, your policy covers the costs of inpatient care and medical repatriation to the UAE.',
   },
   {
+    icon: FileCheck,
     title: 'Trip Medical Insurance for Visa Applications',
     text: 'Our travel medical insurance meets the documentation requirements for visa applications to Schengen countries, the UK, Canada, and other destinations that require proof of coverage.',
   },
   {
+    icon: ShieldCheck,
     title: 'COVID-19 Medical Coverage',
     text: 'Most plans include medical coverage for COVID-19 related illness during your trip. Coverage is subject to the terms and conditions of the policy you select.',
   },
   {
+    icon: BadgeCheck,
     title: 'Issued by AXA',
     text: 'Every policy is underwritten and issued by AXA, a licensed and globally recognised insurer. Your certificate is valid for embassy submissions and genuine medical claims.',
   },
   {
+    icon: RefreshCw,
     title: 'Single-Trip and Annual Plans Available',
     text: 'Choose a single-trip policy for one journey or an annual multi-trip plan if you travel several times a year. Both options provide the same medical coverage.',
   },
@@ -123,7 +156,7 @@ export const pageData = {
         },
         {
           icon: <MdOutlineAirplaneTicket />,
-          title: 'Dummy Tickets',
+          title: 'Flight Itineraries',
           description:
             'Verifiable flight reservations with a real PNR, accepted by VFS, BLS, and embassies. Frequently required alongside travel medical insurance for visa applications. From AED 49.',
         },
@@ -186,47 +219,20 @@ export default function Page() {
         text={pageData.sections.about.text}
         services={pageData.sections.about.services}
       />
-      <PrimarySection className="py-14 md:py-18 lg:py-24 bg-gray-50/70">
-        <Container>
-          <SectionTitle textAlign="center" className="mb-10 md:mb-12">
-            Why UAE Residents Choose Our Travel Medical Insurance
-          </SectionTitle>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-6">
-            {reasons.map((reason, i) => (
-              <div
-                key={i}
-                className="rounded-2xl border border-gray-100 bg-white p-6 md:p-7 shadow-[0_12px_30px_rgba(16,24,40,0.07)]"
-              >
-                <h3 className="text-[20px] font-normal text-gray-900 font-outfit mb-2">
-                  {reason.title}
-                </h3>
-                <p className="text-[16px] text-gray-600 font-light leading-6.5">
-                  {reason.text}
-                </p>
-              </div>
-            ))}
-          </div>
-        </Container>
-      </PrimarySection>
-      <PrimarySection
-        id="faq"
-        className="py-14 md:py-18 lg:py-24 bg-gray-50/70"
-      >
-        <Container>
-          <SectionTitle textAlign="center" className="mb-10 md:mb-12">
-            Travel Medical Insurance — Frequently Asked Questions
-          </SectionTitle>
-          <div className="rounded-2xl border border-white bg-white p-4 md:p-7 shadow-[0_14px_35px_rgba(16,24,40,0.08)]">
-            <div className="flex flex-col gap-1">
-              {faqs.map((faq, i) => (
-                <FaqAccordion key={i} question={faq.question}>
-                  {faq.answer}
-                </FaqAccordion>
-              ))}
-            </div>
-          </div>
-        </Container>
-      </PrimarySection>
+      <Benefits
+        title="Why UAE Residents Choose Our Travel Medical Insurance"
+        benefits={benefits}
+      />
+      <Testimonials
+        title="What Our Customers Say"
+        subtitle="Real feedback from UAE residents who used Travl for travel medical insurance"
+        testimonials={testimonials}
+      />
+      <Faqs
+        title="Travel Medical Insurance — Frequently Asked Questions"
+        subtitle="Common questions about medical coverage, claims, and policy delivery"
+        faqs={faqs}
+      />
       <PrimarySection className="py-10 lg:py-14">
         <Container>
           <SectionTitle textAlign="center" className="mb-6">

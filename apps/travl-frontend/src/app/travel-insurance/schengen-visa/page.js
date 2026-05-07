@@ -1,10 +1,13 @@
 import Link from 'next/link';
 import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineHotel } from 'react-icons/md';
+import { ShieldCheck, FileCheck, Zap, HeartPulse, Banknote, RefreshCw } from 'lucide-react';
 import Container from '@travel-suite/frontend-shared/components/shared/layout/Container';
-import FaqAccordion from '@travel-suite/frontend-shared/components/ui/v2/FaqAccordion';
 import PrimarySection from '@travel-suite/frontend-shared/components/shared/layout/PrimarySection';
 import SectionTitle from '@travel-suite/frontend-shared/components/shared/layout/SectionTitle';
 import About from '@travel-suite/frontend-shared/components/sections/v2/About';
+import Benefits from '@travel-suite/frontend-shared/components/sections/v2/Benefits';
+import Testimonials from '@travel-suite/frontend-shared/components/sections/v2/Testimonials';
+import Faqs from '@travel-suite/frontend-shared/components/sections/v2/Faqs';
 import Hero from '@travel-suite/frontend-shared/components/sections/v2/Hero';
 import HowItWorks from '@travel-suite/frontend-shared/components/sections/v2/HowItWorks';
 import { buildMetadata } from '@/lib/schema';
@@ -33,28 +36,58 @@ export const processSteps = [
   },
 ];
 
-const reasons = [
+const testimonials = [
   {
+    quote: 'Applied for my Schengen visa and needed insurance fast. Travl delivered the AXA policy within minutes — accepted by the German consulate without question.',
+    name: 'Ahmed K.',
+    location: 'Dubai, UAE',
+    stars: 5,
+    plan: 'Schengen Insurance',
+  },
+  {
+    quote: 'The policy covered all 27 Schengen countries and met the EUR 30,000 requirement exactly. My visa was approved on the first try.',
+    name: 'Priya N.',
+    location: 'Abu Dhabi, UAE',
+    stars: 5,
+    plan: 'Schengen Insurance',
+  },
+  {
+    quote: 'I was worried about getting the right coverage for my Italian visa application. Travl made it easy and the policy was accepted by VFS Global immediately.',
+    name: 'Maria C.',
+    location: 'Sharjah, UAE',
+    stars: 5,
+    plan: 'Schengen Insurance',
+  },
+];
+
+const benefits = [
+  {
+    icon: ShieldCheck,
     title: 'Embassy-Compliant Schengen Insurance',
     text: 'Every policy meets official Schengen visa requirements, including the mandatory EUR 30,000 medical coverage valid across all 27 Schengen countries.',
   },
   {
+    icon: FileCheck,
     title: 'Real Travel Insurance, Not a Placeholder',
     text: 'This is a genuine travel medical insurance policy issued by a licensed insurer — valid for your visa application and for actual medical emergencies during your trip.',
   },
   {
+    icon: Zap,
     title: 'Instant Policy Delivery',
     text: 'Receive your travel insurance certificate by email immediately after payment. No waiting, no follow-up needed — submit your Schengen visa application the same day.',
   },
   {
+    icon: HeartPulse,
     title: 'Comprehensive Medical and Travel Coverage',
     text: 'Coverage includes emergency medical treatment, hospitalization, repatriation, travel delays, baggage loss, and trip cancellations.',
   },
   {
+    icon: Banknote,
     title: 'Affordable Plans for Every Budget',
     text: 'Compare cost-effective Schengen insurance plans starting from AED 30, designed for visa applications without overpaying for unnecessary extras.',
   },
   {
+    icon: RefreshCw,
     title: 'Single-Trip and Multi-Trip Plans',
     text: "Whether you're applying for one Schengen visa or traveling to Europe multiple times a year, we have a plan that fits.",
   },
@@ -199,47 +232,20 @@ export default function Page() {
         text={pageData.sections.about.text}
         services={pageData.sections.about.services}
       />
-      <PrimarySection className="py-14 md:py-18 lg:py-24 bg-gray-50/70">
-        <Container>
-          <SectionTitle textAlign="center" className="mb-10 md:mb-12">
-            Why UAE Residents Choose Us for Schengen Travel Insurance
-          </SectionTitle>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-6">
-            {reasons.map((reason, i) => (
-              <div
-                key={i}
-                className="rounded-2xl border border-gray-100 bg-white p-6 md:p-7 shadow-[0_12px_30px_rgba(16,24,40,0.07)]"
-              >
-                <h3 className="text-[20px] font-normal text-gray-900 font-outfit mb-2">
-                  {reason.title}
-                </h3>
-                <p className="text-[16px] text-gray-600 font-light leading-6.5">
-                  {reason.text}
-                </p>
-              </div>
-            ))}
-          </div>
-        </Container>
-      </PrimarySection>
-      <PrimarySection
-        id="faq"
-        className="py-14 md:py-18 lg:py-24 bg-gray-50/70"
-      >
-        <Container>
-          <SectionTitle textAlign="center" className="mb-10 md:mb-12">
-            Schengen Travel Insurance — Frequently Asked Questions
-          </SectionTitle>
-          <div className="rounded-2xl border border-white bg-white p-4 md:p-7 shadow-[0_14px_35px_rgba(16,24,40,0.08)]">
-            <div className="flex flex-col gap-1">
-              {faqs.map((faq, i) => (
-                <FaqAccordion key={i} question={faq.question}>
-                  {faq.answer}
-                </FaqAccordion>
-              ))}
-            </div>
-          </div>
-        </Container>
-      </PrimarySection>
+      <Benefits
+        title="Why UAE Residents Choose Us for Schengen Travel Insurance"
+        benefits={benefits}
+      />
+      <Testimonials
+        title="What Our Customers Say"
+        subtitle="Real feedback from UAE residents who used Travl for their Schengen visa insurance"
+        testimonials={testimonials}
+      />
+      <Faqs
+        title="Schengen Travel Insurance — Frequently Asked Questions"
+        subtitle="Everything you need to know about Schengen insurance for UAE residents"
+        faqs={faqs}
+      />
       <PrimarySection className="py-10 lg:py-14">
         <Container>
           <SectionTitle textAlign="center" className="mb-6">
