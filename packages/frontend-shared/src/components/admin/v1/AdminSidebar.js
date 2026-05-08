@@ -5,171 +5,24 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAdminAuth } from '../../../contexts/AdminAuthContext.js';
 import {
-  Plane,
-  LayoutDashboard,
-  Ticket,
-  Users,
-  Handshake,
-  BookOpen,
-  Tag,
-  CircleDollarSign,
-  UserCircle,
-  LogOut,
-  ChevronLeft,
-  ChevronRight,
-  Menu,
-  X,
-  ShieldCheck,
-  DollarSign,
-  TrendingUp,
-  Link2,
-  Package,
-  Mail,
-  Stamp,
-  Inbox,
+  LayoutDashboard, Ticket, ShieldCheck, Inbox, Mail, BookOpen, Tag, Stamp,
+  TrendingUp, Link2, Package, DollarSign, CircleDollarSign, Users, Handshake,
+  UserCircle, LogOut, ChevronLeft, ChevronRight, Menu, X, Plane, ClipboardList,
+  Shield, CalendarCheck,
 } from 'lucide-react';
 
-const NAV = [
-  {
-    section: 'Overview',
-    items: [
-      {
-        label: 'Dashboard',
-        href: '/admin',
-        icon: LayoutDashboard,
-        exact: true,
-        roles: ['admin', 'agent', 'blog-manager'],
-      },
-    ],
-  },
-  {
-    section: 'Orders',
-    items: [
-      {
-        label: 'Dummy Tickets',
-        href: '/admin/dummy-tickets',
-        icon: Ticket,
-        roles: ['admin', 'agent'],
-      },
-      {
-        label: 'Insurance',
-        href: '/admin/insurance-applications',
-        icon: ShieldCheck,
-        roles: ['admin'],
-      },
-      {
-        label: 'Visa Leads',
-        href: '/admin/visa-leads',
-        icon: Inbox,
-        roles: ['admin'],
-      },
-    ],
-  },
-  {
-    section: 'Emails',
-    items: [
-      {
-        label: 'Email Support',
-        href: '/admin/emails',
-        icon: Mail,
-        roles: ['admin', 'agent'],
-      },
-    ],
-  },
-  {
-    section: 'Content',
-    items: [
-      {
-        label: 'Blog',
-        href: '/admin/blog',
-        icon: BookOpen,
-        roles: ['admin', 'blog-manager'],
-      },
-      {
-        label: 'Blog Tags',
-        href: '/admin/blog-tags',
-        icon: Tag,
-        roles: ['admin', 'blog-manager'],
-      },
-      {
-        label: 'Visa Pages',
-        href: '/admin/visa',
-        icon: Stamp,
-        roles: ['admin'],
-      },
-    ],
-  },
-  {
-    section: 'Finance',
-    items: [
-      {
-        label: 'Revenue',
-        href: '/admin/revenue',
-        icon: TrendingUp,
-        roles: ['admin'],
-      },
-      {
-        label: 'Payment Links',
-        href: '/admin/payment-links',
-        icon: Link2,
-        roles: ['admin', 'agent'],
-      },
-      {
-        label: 'Products',
-        href: '/admin/products',
-        icon: Package,
-        roles: ['admin', 'agent'],
-      },
-      {
-        label: 'Pricing',
-        href: '/admin/pricing',
-        icon: DollarSign,
-        roles: ['admin'],
-      },
-      {
-        label: 'Currencies',
-        href: '/admin/currencies',
-        icon: CircleDollarSign,
-        roles: ['admin'],
-      },
-    ],
-  },
-  {
-    section: 'People',
-    items: [
-      {
-        label: 'Admin Users',
-        href: '/admin/users',
-        icon: Users,
-        roles: ['admin'],
-      },
-      {
-        label: 'Affiliates',
-        href: '/admin/affiliates',
-        icon: Handshake,
-        roles: ['admin'],
-      },
-    ],
-  },
-  {
-    section: 'Settings',
-    items: [
-      {
-        label: 'My Account',
-        href: '/admin/account',
-        icon: UserCircle,
-        roles: ['admin', 'agent', 'blog-manager'],
-      },
-    ],
-  },
-];
+const ICON_MAP = {
+  LayoutDashboard, Ticket, ShieldCheck, Inbox, Mail, BookOpen, Tag, Stamp,
+  TrendingUp, Link2, Package, DollarSign, CircleDollarSign, Users, Handshake,
+  UserCircle, Plane, ClipboardList, Shield, CalendarCheck,
+};
 
 function NavItem({ item, collapsed }) {
   const pathname = usePathname();
   const isActive = item.exact
     ? pathname === item.href
     : pathname.startsWith(item.href);
-  const Icon = item.icon;
+  const Icon = ICON_MAP[item.icon];
 
   return (
     <Link
@@ -187,20 +40,21 @@ function NavItem({ item, collapsed }) {
   );
 }
 
-export default function AdminSidebar() {
+export default function AdminSidebar({ nav = [], brand }) {
   const router = useRouter();
   const { adminUser, setAdminUser } = useAdminAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
 
-  const visibleNav = NAV.map((section) => ({
+  const visibleNav = nav.map((section) => ({
     ...section,
-    items: section.items.filter((item) => {
-      if (!item.roles) return true;
-      return item.roles.includes(adminUser?.role);
-    }),
+    items: section.items.filter((item) =>
+      !item.roles || item.roles.includes(adminUser?.role)
+    ),
   })).filter((section) => section.items.length > 0);
+
+  const BrandIcon = brand?.icon ? ICON_MAP[brand.icon] : null;
 
   async function handleLogout() {
     setLoggingOut(true);
@@ -225,12 +79,12 @@ export default function AdminSidebar() {
         className={`flex items-center gap-3 px-4 py-5 border-b border-white/10 ${collapsed ? 'justify-center' : ''}`}
       >
         <div className="w-8 h-8 rounded-lg bg-primary-700 flex items-center justify-center shrink-0">
-          <Plane size={15} className="text-white" />
+          {BrandIcon && <BrandIcon size={15} className="text-white" />}
         </div>
-        {!collapsed && (
+        {!collapsed && brand?.name && (
           <div className="min-w-0">
             <p className="text-white font-extrabold text-sm leading-none truncate">
-              Travl
+              {brand.name}
             </p>
             <p className="text-primary-400 text-[10px] font-semibold uppercase tracking-wider mt-0.5">
               Admin Panel

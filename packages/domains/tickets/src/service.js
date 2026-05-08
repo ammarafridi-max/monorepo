@@ -44,12 +44,28 @@ function applyCreatedAtFilter(queryObj, createdAt) {
   queryObj.createdAt = { $gte: new Date(Date.now() - hours[createdAt] * 3_600_000) };
 }
 
+function getDubaiDateString() {
+  const dubaiDate = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Dubai' }));
+  const y = dubaiDate.getFullYear();
+  const m = String(dubaiDate.getMonth() + 1).padStart(2, '0');
+  const d = String(dubaiDate.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function applyDeliveryDateFilter(queryObj, deliveryDate) {
+  if (!deliveryDate) return;
+  const dateStr = deliveryDate === 'today' ? getDubaiDateString() : deliveryDate;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return;
+  queryObj['ticketDelivery.deliveryDate'] = { $regex: new RegExp(`^${dateStr}`) };
+}
+
 export function createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, paypal, notifications, frontendUrl }) {
   const getAllTickets = async (query) => {
     const queryObj = { ...query };
-    ['page', 'limit', 'search', 'createdAt'].forEach((f) => delete queryObj[f]);
+    ['page', 'limit', 'search', 'createdAt', 'deliveryDate'].forEach((f) => delete queryObj[f]);
     Object.keys(queryObj).forEach((k) => queryObj[k] === 'all' && delete queryObj[k]);
     applyCreatedAtFilter(queryObj, query.createdAt);
+    applyDeliveryDateFilter(queryObj, query.deliveryDate);
     const finalQuery = { ...queryObj, ...buildSearchFilter(query.search) };
 
     let page = Math.max(1, parseInt(query.page, 10) || 1);
