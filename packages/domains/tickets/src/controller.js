@@ -2,8 +2,10 @@ export function createTicketController({ service }) {
   const getAllTickets = async (req, res, next) => {
     try {
       const isAgent = req.user?.role === 'agent';
-      // Agents may only see the last 4 hours — override any createdAt param they send
-      const query = isAgent ? { ...req.query, createdAt: '4_hours' } : req.query;
+      // Agents may only see the last 4 hours — unless they're filtering by delivery date
+      // (e.g. the "Today's Deliveries" page), in which case the time restriction doesn't apply.
+      const agentNeedsCreatedAtOverride = isAgent && !req.query.deliveryDate;
+      const query = agentNeedsCreatedAtOverride ? { ...req.query, createdAt: '4_hours' } : req.query;
       let result = await service.getAllTickets(query);
 
       // Strip payment amounts from agent responses
