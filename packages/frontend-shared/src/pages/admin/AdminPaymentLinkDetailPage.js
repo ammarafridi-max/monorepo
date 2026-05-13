@@ -21,7 +21,6 @@ import {
   Check,
   X,
 } from 'lucide-react';
-import Breadcrumb from '../../components/shared/layout/Breadcrumb';
 import PageLoader from '../../components/ui/v1/PageLoader';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 import {
@@ -146,13 +145,7 @@ export default function AdminPaymentLinkDetailPage() {
   if (isErrorPaymentLink || !paymentLink) {
     return (
       <>
-        <Breadcrumb
-          paths={[
-            { label: 'Dashboard', href: '/admin' },
-            { label: 'Payment Links', href: '/admin/payment-links' },
-            { label: 'Not found', href: '#' },
-          ]}
-        />
+        <h2 className="text-2xl font-extrabold text-gray-900">Payment Links</h2>
         <p className="mt-6 rounded-xl bg-white p-6 text-sm text-gray-700 shadow">
           {paymentLinkError?.message || 'Payment link not found.'}
         </p>
@@ -167,15 +160,7 @@ export default function AdminPaymentLinkDetailPage() {
 
   return (
     <>
-      <Breadcrumb
-        paths={[
-          { label: 'Dashboard', href: '/admin' },
-          { label: 'Payment Links', href: '/admin/payment-links' },
-          { label: link.productName || 'Detail', href: `/admin/payment-links/${link._id}` },
-        ]}
-      />
-
-      <div className="mt-1 flex flex-wrap items-start justify-between gap-3">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <button
             type="button"
@@ -184,9 +169,9 @@ export default function AdminPaymentLinkDetailPage() {
           >
             <ArrowLeft size={12} /> Back to payment links
           </button>
-          <h1 className="text-2xl font-semibold text-gray-900">
+          <h2 className="text-2xl font-extrabold text-gray-900">
             {link.productName || 'Custom payment'}
-          </h1>
+          </h2>
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <StatusBadge status={effectiveStatus} />
             <span className="text-sm text-gray-500">·</span>

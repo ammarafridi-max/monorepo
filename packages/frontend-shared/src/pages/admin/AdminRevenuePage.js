@@ -17,9 +17,7 @@ import {
   Wallet,
   ExternalLink,
 } from 'lucide-react';
-import Breadcrumb from '../../components/shared/layout/Breadcrumb';
 import PageLoader from '../../components/ui/v1/PageLoader';
-import PageHeading from '../../components/shared/layout/PageHeading';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 import { useRevenue } from '../../hooks/payments/useRevenue';
 import { useCharges } from '../../hooks/payments/useCharges';
@@ -86,14 +84,8 @@ export default function AdminRevenuePage() {
 
   return (
     <>
-      <Breadcrumb
-        paths={[
-          { label: 'Dashboard', href: '/admin' },
-          { label: 'Revenue', href: '/admin/revenue' },
-        ]}
-      />
-      <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
-        <PageHeading>Revenue</PageHeading>
+      <div className="flex items-start justify-between gap-4">
+        <h2 className="text-2xl font-extrabold text-gray-900">Revenue</h2>
         <RangeSelector value={rangeId} onChange={setRangeId} />
       </div>
 

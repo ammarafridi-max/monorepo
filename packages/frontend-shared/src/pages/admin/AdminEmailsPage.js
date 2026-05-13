@@ -2,8 +2,6 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Loader2, Mail, Send, SkipForward, Inbox } from 'lucide-react';
-import Breadcrumb from '../../components/shared/layout/Breadcrumb.js';
-import PageHeading from '../../components/shared/layout/PageHeading.js';
 import PageLoader from '../../components/ui/v1/PageLoader.js';
 import { useAdminAuth } from '../../contexts/AdminAuthContext.js';
 import { useEmailSupport } from '../../hooks/email-support/useEmailSupport.js';
@@ -124,16 +122,7 @@ export default function AdminEmailsPage() {
 
   return (
     <>
-      <Breadcrumb
-        paths={[
-          { label: 'Dashboard', href: '/admin' },
-          { label: 'Email Support', href: '/admin/emails' },
-        ]}
-      />
-
-      <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
-        <PageHeading>Email Support</PageHeading>
-      </div>
+      <h2 className="text-2xl font-extrabold text-gray-900">Email Support</h2>
 
       <div className="mt-5 flex items-center gap-2">
         {STATUS_TABS.map((tab) => (

@@ -227,39 +227,37 @@ export default function AdminUsersPage() {
           </button>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-2xl p-4">
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_180px_180px] gap-3">
-            <div className="relative">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by name, username, or email"
-                className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
-              />
-            </div>
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
-            >
-              <option value="">All roles</option>
-              {ROLES.map((item) => (
-                <option key={item} value={item}>{ROLE_CFG[item]?.label ?? item}</option>
-              ))}
-            </select>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
-            >
-              <option value="">All statuses</option>
-              {STATUSES.map((item) => (
-                <option key={item} value={item}>{item}</option>
-              ))}
-            </select>
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="relative w-full sm:max-w-sm">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by name, username, or email"
+              className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300"
+            />
           </div>
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+          >
+            <option value="">All roles</option>
+            {ROLES.map((item) => (
+              <option key={item} value={item}>{ROLE_CFG[item]?.label ?? item}</option>
+            ))}
+          </select>
+          <select
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+          >
+            <option value="">All statuses</option>
+            {STATUSES.map((item) => (
+              <option key={item} value={item}>{item}</option>
+            ))}
+          </select>
         </div>
 
         <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">

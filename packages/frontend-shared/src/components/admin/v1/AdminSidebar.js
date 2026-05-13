@@ -134,7 +134,7 @@ export default function AdminSidebar({ nav = [], brand }) {
 
       <button
         onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-40 w-9 h-9 bg-gray-900 border border-white/10 rounded-xl flex items-center justify-center text-white shadow-lg"
+        className="lg:hidden fixed top-[11px] left-4 z-40 w-9 h-9 flex items-center justify-center text-gray-600 hover:text-gray-900 transition"
       >
         <Menu size={16} />
       </button>

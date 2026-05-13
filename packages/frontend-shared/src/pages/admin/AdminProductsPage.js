@@ -3,9 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Pencil, Plus, Power, PowerOff, Trash2 } from 'lucide-react';
-import Breadcrumb from '../../components/shared/layout/Breadcrumb';
 import PageLoader from '../../components/ui/v1/PageLoader';
-import PageHeading from '../../components/shared/layout/PageHeading';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 import {
   useProducts,
@@ -61,15 +59,8 @@ export default function AdminProductsPage() {
 
   return (
     <>
-      <Breadcrumb
-        paths={[
-          { label: 'Dashboard', href: '/admin' },
-          { label: 'Products', href: '/admin/products' },
-        ]}
-      />
-
-      <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
-        <PageHeading>Products</PageHeading>
+      <div className="flex items-start justify-between gap-4">
+        <h2 className="text-2xl font-extrabold text-gray-900">Products</h2>
         <button
           type="button"
           onClick={() => setModalOpen(true)}

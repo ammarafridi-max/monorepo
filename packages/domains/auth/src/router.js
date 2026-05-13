@@ -14,8 +14,9 @@ function validate(schema) {
 }
 
 const loginLimiter = rateLimit({
-  max: 10,
+  max: 30,
   windowMs: 15 * 60 * 1000,
+  skipSuccessfulRequests: true,
   message: 'Too many login attempts. Please try again in 15 minutes.',
   standardHeaders: true,
   legacyHeaders: false,

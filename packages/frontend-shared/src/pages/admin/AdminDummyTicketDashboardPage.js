@@ -6,20 +6,20 @@ import { useQueries } from '@tanstack/react-query';
 import {
   Ticket,
   CircleDollarSign,
-  ShieldCheck,
   Handshake,
   BookOpen,
   Users,
   ArrowRight,
   CalendarDays,
   DollarSign,
+  CalendarCheck,
+  Tag,
 } from 'lucide-react';
 import StatCard from '../../components/admin/v1/StatCard';
 import RecentTicketsTable from '../../components/admin/v1/RecentTicketsTable';
 import { getDummyTicketsApi } from '../../services/apiDummyTickets';
 import { getAffiliatesApi } from '../../services/apiAffiliates';
 import { getAllBlogsApi } from '../../services/apiBlog';
-import { getInsuranceApplicationsApi } from '../../services/apiInsurance';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 
 function fmtRevenue(amount) {
@@ -79,6 +79,10 @@ function DashboardContent() {
         queryFn: () => getDummyTicketsApi({ limit: 1000, ...ticketTimeFilter }),
       },
       {
+        queryKey: ['dashboard', 'today-deliveries'],
+        queryFn: () => getDummyTicketsApi({ deliveryDate: 'today', limit: 1 }),
+      },
+      {
         queryKey: ['dashboard', 'affiliates'],
         queryFn: () => getAffiliatesApi({ limit: 500 }),
       },
@@ -94,58 +98,38 @@ function DashboardContent() {
         queryKey: ['dashboard', 'blogs', 'scheduled'],
         queryFn: () => getAllBlogsApi({ status: 'scheduled', limit: 1 }),
       },
-      {
-        queryKey: ['dashboard', 'insurance'],
-        queryFn: () => getInsuranceApplicationsApi({ limit: 1 }),
-      },
     ],
   });
 
   const [
     recentQ,
     allTicketsQ,
+    todayQ,
     affiliatesQ,
     publishedQ,
     draftQ,
     scheduledQ,
-    insuranceQ,
   ] = results;
 
   const recentTickets = recentQ.data?.data ?? [];
   const allTickets = allTicketsQ.data?.data ?? [];
   const totalTickets = allTicketsQ.data?.pagination?.total ?? 0;
 
-  const paidTickets = allTickets.filter(
-    (t) => t.paymentStatus === 'PAID',
-  ).length;
-  const unpaidTickets = allTickets.filter(
-    (t) => t.paymentStatus === 'UNPAID',
-  ).length;
-  const refundedTickets = allTickets.filter(
-    (t) => t.paymentStatus === 'REFUNDED',
-  ).length;
-  const pendingTickets = allTickets.filter(
-    (t) => t.orderStatus === 'PENDING',
-  ).length;
-  const deliveredTickets = allTickets.filter(
-    (t) => t.orderStatus === 'DELIVERED',
-  ).length;
-  const progressTickets = allTickets.filter(
-    (t) => t.orderStatus === 'PROGRESS',
-  ).length;
+  const paidTickets = allTickets.filter((t) => t.paymentStatus === 'PAID').length;
+  const unpaidTickets = allTickets.filter((t) => t.paymentStatus === 'UNPAID').length;
+  const refundedTickets = allTickets.filter((t) => t.paymentStatus === 'REFUNDED').length;
+  const pendingTickets = allTickets.filter((t) => t.orderStatus === 'PENDING').length;
+  const deliveredTickets = allTickets.filter((t) => t.orderStatus === 'DELIVERED').length;
+  const progressTickets = allTickets.filter((t) => t.orderStatus === 'PROGRESS').length;
 
   const totalRevenue = allTickets
     .filter((t) => t.paymentStatus === 'PAID')
     .reduce((sum, t) => sum + Number(t.amountPaid?.amount || 0), 0);
 
-  const activeAffiliates = (affiliatesQ.data?.affiliates ?? []).filter(
-    (a) => a.isActive,
-  ).length;
+  const todayDeliveries = todayQ.data?.pagination?.total ?? 0;
+  const activeAffiliates = (affiliatesQ.data?.affiliates ?? []).filter((a) => a.isActive).length;
 
-  const totalInsurance = insuranceQ.data?.pagination?.total ?? 0;
-
-  const paidRatio =
-    totalTickets > 0 ? Math.round((paidTickets / totalTickets) * 100) : 0;
+  const paidRatio = totalTickets > 0 ? Math.round((paidTickets / totalTickets) * 100) : 0;
 
   const blogStats = {
     published: publishedQ.data?.pagination?.total ?? 0,
@@ -195,16 +179,14 @@ function DashboardContent() {
                 sub="Paid tickets only"
               />
             )}
-            {!isAgent && (
-              <StatCard
-                icon={ShieldCheck}
-                iconBg="bg-accent-50"
-                iconColor="text-accent-600"
-                label="Insurance Orders"
-                value={totalInsurance.toLocaleString()}
-                sub="All time"
-              />
-            )}
+            <StatCard
+              icon={CalendarCheck}
+              iconBg="bg-blue-50"
+              iconColor="text-blue-600"
+              label="Today's Deliveries"
+              value={todayDeliveries.toLocaleString()}
+              sub="Scheduled for today"
+            />
             {!isAgent && (
               <StatCard
                 icon={Handshake}
@@ -248,9 +230,7 @@ function DashboardContent() {
                     <span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />
                     Unpaid
                   </span>
-                  <span className="font-bold text-gray-700">
-                    {unpaidTickets}
-                  </span>
+                  <span className="font-bold text-gray-700">{unpaidTickets}</span>
                 </div>
                 <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                   <div
@@ -263,28 +243,16 @@ function DashboardContent() {
               </div>
               <div className="grid grid-cols-3 gap-2 pt-2">
                 <div className="rounded-xl bg-gray-50 px-3 py-2">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">
-                    Pending
-                  </p>
-                  <p className="text-sm font-semibold text-blue-700">
-                    {pendingTickets}
-                  </p>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Pending</p>
+                  <p className="text-sm font-semibold text-blue-700">{pendingTickets}</p>
                 </div>
                 <div className="rounded-xl bg-gray-50 px-3 py-2">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">
-                    Progress
-                  </p>
-                  <p className="text-sm font-semibold text-amber-700">
-                    {progressTickets}
-                  </p>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Progress</p>
+                  <p className="text-sm font-semibold text-amber-700">{progressTickets}</p>
                 </div>
                 <div className="rounded-xl bg-gray-50 px-3 py-2">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">
-                    Refunded
-                  </p>
-                  <p className="text-sm font-semibold text-gray-700">
-                    {refundedTickets}
-                  </p>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Refunded</p>
+                  <p className="text-sm font-semibold text-gray-700">{refundedTickets}</p>
                 </div>
               </div>
             </div>
@@ -293,26 +261,11 @@ function DashboardContent() {
           <SectionCard title="Order Status" subtitle="By delivery state">
             <div className="space-y-2.5">
               {[
-                {
-                  label: 'Delivered',
-                  count: deliveredTickets,
-                  color: 'bg-green-500',
-                },
-                {
-                  label: 'In Progress',
-                  count: progressTickets,
-                  color: 'bg-amber-400',
-                },
-                {
-                  label: 'Pending',
-                  count: pendingTickets,
-                  color: 'bg-red-400',
-                },
+                { label: 'Delivered', count: deliveredTickets, color: 'bg-green-500' },
+                { label: 'In Progress', count: progressTickets, color: 'bg-amber-400' },
+                { label: 'Pending', count: pendingTickets, color: 'bg-red-400' },
               ].map(({ label, count, color }) => {
-                const pct =
-                  totalTickets > 0
-                    ? Math.round((count / totalTickets) * 100)
-                    : 0;
+                const pct = totalTickets > 0 ? Math.round((count / totalTickets) * 100) : 0;
                 return (
                   <div key={label}>
                     <div className="flex justify-between text-xs mb-1">
@@ -320,10 +273,7 @@ function DashboardContent() {
                       <span className="font-bold text-gray-700">{count}</span>
                     </div>
                     <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full ${color} rounded-full transition-all`}
-                        style={{ width: `${pct}%` }}
-                      />
+                      <div className={`h-full ${color} rounded-full transition-all`} style={{ width: `${pct}%` }} />
                     </div>
                   </div>
                 );
@@ -336,7 +286,7 @@ function DashboardContent() {
             subtitle="Post status overview"
             action={
               <Link
-                href="/admin/blogs"
+                href="/admin/blog"
                 className="flex items-center gap-1 text-xs font-semibold text-primary-700 hover:underline"
               >
                 Manage <ArrowRight size={11} />
@@ -345,35 +295,21 @@ function DashboardContent() {
           >
             <div className="space-y-2">
               {[
-                {
-                  label: 'Published',
-                  count: blogStats.published,
-                  dot: 'bg-green-500',
-                },
-                {
-                  label: 'Draft',
-                  count: blogStats.draft,
-                  dot: 'bg-gray-400',
-                },
-                {
-                  label: 'Scheduled',
-                  count: blogStats.scheduled,
-                  dot: 'bg-amber-400',
-                },
+                { label: 'Published', count: blogStats.published, dot: 'bg-green-500' },
+                { label: 'Draft',     count: blogStats.draft,      dot: 'bg-gray-400'  },
+                { label: 'Scheduled', count: blogStats.scheduled,  dot: 'bg-amber-400' },
               ].map(({ label, count, dot }) => (
                 <div key={label} className="flex items-center justify-between">
                   <span className="flex items-center gap-2 text-xs text-gray-500 font-medium">
                     <span className={`w-2 h-2 rounded-full ${dot}`} />
                     {label}
                   </span>
-                  <span className="text-xs font-bold text-gray-700">
-                    {count}
-                  </span>
+                  <span className="text-xs font-bold text-gray-700">{count}</span>
                 </div>
               ))}
             </div>
             <Link
-              href="/admin/blogs/create"
+              href="/admin/blog/create"
               className="mt-4 w-full flex items-center justify-center gap-1.5 border border-dashed border-gray-200 hover:border-primary-300 hover:text-primary-700 text-gray-400 text-xs font-semibold py-2 rounded-xl transition-colors"
             >
               <BookOpen size={13} />
@@ -384,24 +320,11 @@ function DashboardContent() {
           <SectionCard title="Quick Access" subtitle="Jump to a section">
             <div className="space-y-1">
               {[
-                {
-                  label: 'Users',
-                  href: '/admin/users',
-                  icon: Users,
-                  roles: ['admin'],
-                },
-                {
-                  label: 'Affiliates',
-                  href: '/admin/affiliates',
-                  icon: Handshake,
-                  roles: ['admin', 'agent'],
-                },
-                {
-                  label: 'Currencies',
-                  href: '/admin/currencies',
-                  icon: CircleDollarSign,
-                  roles: ['admin'],
-                },
+                { label: "Today's Deliveries", href: '/admin/dummy-tickets/today', icon: CalendarCheck, roles: ['admin', 'agent'] },
+                { label: 'Pricing',            href: '/admin/pricing',             icon: Tag,           roles: ['admin']          },
+                { label: 'Affiliates',         href: '/admin/affiliates',          icon: Handshake,     roles: ['admin', 'agent'] },
+                { label: 'Currencies',         href: '/admin/currencies',          icon: CircleDollarSign, roles: ['admin']       },
+                { label: 'Users',              href: '/admin/users',               icon: Users,         roles: ['admin']          },
               ]
                 .filter((item) => item.roles.includes(adminUser?.role))
                 .map(({ label, href, icon: Icon }) => (
@@ -414,21 +337,19 @@ function DashboardContent() {
                       <Icon size={14} className="text-gray-400" />
                       {label}
                     </span>
-                    <ArrowRight
-                      size={13}
-                      className="text-gray-300 group-hover:text-primary-600 group-hover:translate-x-0.5 transition-all"
-                    />
+                    <ArrowRight size={13} className="text-gray-300 group-hover:text-primary-600 group-hover:translate-x-0.5 transition-all" />
                   </Link>
                 ))}
             </div>
           </SectionCard>
+
         </div>
       </div>
     </div>
   );
 }
 
-export default function AdminDashboardPage() {
+export default function AdminDummyTicketDashboardPage() {
   return (
     <Suspense>
       <DashboardContent />

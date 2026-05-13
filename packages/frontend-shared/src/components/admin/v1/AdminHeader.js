@@ -194,7 +194,7 @@ function GlobalSearch() {
   }
 
   return (
-    <div ref={containerRef} className="relative flex-1 max-w-md">
+    <div ref={containerRef} className="relative flex-1 sm:max-w-md">
 
       <div className="relative">
         <Search
@@ -208,7 +208,7 @@ function GlobalSearch() {
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => { if (searched) setOpen(true); }}
           placeholder="Search tickets, insurance, leads, users, posts…"
-          className="w-full h-8 pl-8 pr-8 rounded-lg border border-gray-200 bg-gray-50 text-[13px] text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-300 focus:bg-white transition"
+          className="w-full h-9 pl-8 pr-8 rounded-lg border border-gray-200 bg-transparent text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-300 focus:bg-white transition"
         />
 
         <div className="absolute right-2.5 top-1/2 -translate-y-1/2">

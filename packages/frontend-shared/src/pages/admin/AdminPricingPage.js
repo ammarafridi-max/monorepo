@@ -2,9 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Breadcrumb from '../../components/shared/layout/Breadcrumb';
 import PageLoader from '../../components/ui/v1/PageLoader';
-import PageHeading from '../../components/shared/layout/PageHeading';
 import PrimaryButton from '../../components/ui/v1/PrimaryButton';
 import Input from '../../components/form-elements/v1/Input';
 import Label from '../../components/form-elements/v1/Label';
@@ -72,13 +70,7 @@ export default function AdminPricingPage() {
 
   return (
     <>
-      <Breadcrumb
-        paths={[
-          { label: 'Dashboard', href: '/admin' },
-          { label: 'Pricing', href: '/admin/pricing' },
-        ]}
-      />
-      <PageHeading>Dummy Ticket Pricing</PageHeading>
+      <h2 className="text-2xl font-extrabold text-gray-900">Dummy Ticket Pricing</h2>
 
       <form
         className="mt-6 max-w-2xl rounded-xl bg-white p-6 shadow"

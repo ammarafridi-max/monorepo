@@ -212,44 +212,43 @@ function AffiliatesContent() {
           </button>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-100 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div className="relative w-full max-w-sm">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => updateParams({ q: e.target.value })}
-                placeholder="Search affiliates..."
-                className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300"
-              />
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-2">
-              <select
-                value={activeFilter}
-                onChange={(e) => updateParams({ isActive: e.target.value })}
-                className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
-              >
-                <option value="all">All statuses</option>
-                <option value="true">Active only</option>
-                <option value="false">Inactive only</option>
-              </select>
-
-              <select
-                value={sort}
-                onChange={(e) => updateParams({ sort: e.target.value })}
-                className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
-              >
-                <option value="newest">Newest</option>
-                <option value="oldest">Oldest</option>
-                <option value="name_asc">Name A-Z</option>
-                <option value="name_desc">Name Z-A</option>
-                <option value="commission_desc">Highest commission</option>
-                <option value="commission_asc">Lowest commission</option>
-              </select>
-            </div>
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="relative w-full sm:max-w-sm">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => updateParams({ q: e.target.value })}
+              placeholder="Search affiliates..."
+              className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300"
+            />
           </div>
+
+          <select
+            value={activeFilter}
+            onChange={(e) => updateParams({ isActive: e.target.value })}
+            className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+          >
+            <option value="all">All statuses</option>
+            <option value="true">Active only</option>
+            <option value="false">Inactive only</option>
+          </select>
+
+          <select
+            value={sort}
+            onChange={(e) => updateParams({ sort: e.target.value })}
+            className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+          >
+            <option value="newest">Newest</option>
+            <option value="oldest">Oldest</option>
+            <option value="name_asc">Name A-Z</option>
+            <option value="name_desc">Name Z-A</option>
+            <option value="commission_desc">Highest commission</option>
+            <option value="commission_asc">Lowest commission</option>
+          </select>
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
 
           {isLoadingAffiliates ? (
             <div className="flex items-center justify-center py-20">

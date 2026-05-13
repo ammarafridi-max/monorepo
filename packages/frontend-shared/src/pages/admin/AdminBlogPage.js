@@ -112,53 +112,38 @@ export default function AdminBlogPage() {
         </Link>
       </div>
 
+      <div className="flex flex-wrap items-center gap-4">
+        <div className="relative w-full sm:max-w-sm">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Search posts…"
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            className="w-full pl-9 pr-8 py-2 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300"
+          />
+          {search && (
+            <button
+              onClick={() => { setSearch(''); setPage(1); }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              <X size={13} />
+            </button>
+          )}
+        </div>
+        <select
+          value={statusFilter}
+          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+          className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+        >
+          <option value="all">All statuses</option>
+          <option value="published">Published</option>
+          <option value="draft">Draft</option>
+          <option value="scheduled">Scheduled</option>
+        </select>
+      </div>
+
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-
-        <div className="flex items-center gap-0.5 px-4 pt-4 border-b border-gray-100">
-          {STATUS_TABS.map((key) => {
-            const label    = key === 'all' ? 'All' : STATUS_CFG[key]?.label ?? key;
-            const isActive = statusFilter === key;
-            return (
-              <button
-                key={key}
-                onClick={() => { setStatusFilter(key); setPage(1); }}
-                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-t-lg border-b-2 transition-colors -mb-px ${
-                  isActive
-                    ? 'border-primary-700 text-primary-700'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-200'
-                }`}
-              >
-                {label}
-                {isActive && (
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-primary-700 text-white">
-                    {totalDocs}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="px-4 py-3 border-b border-gray-100">
-          <div className="relative max-w-sm">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search posts…"
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="w-full pl-9 pr-8 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white placeholder:text-gray-300"
-            />
-            {search && (
-              <button
-                onClick={() => { setSearch(''); setPage(1); }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                <X size={13} />
-              </button>
-            )}
-          </div>
-        </div>
 
         {isLoadingBlogs ? (
           <div className="flex items-center justify-center py-20">

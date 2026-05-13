@@ -10,7 +10,6 @@ import {
   Loader2,
   RefreshCw,
   Search,
-  ArrowUpDown,
 } from 'lucide-react';
 import { useGetCurrencies } from '../../hooks/currencies/useGetCurrencies';
 import { useCreateCurrency } from '../../hooks/currencies/useCreateCurrency';
@@ -100,35 +99,30 @@ export default function AdminCurrenciesPage() {
           </button>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-2xl p-4">
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_220px] gap-3">
-            <div className="relative">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by code, name, or symbol"
-                className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
-              />
-            </div>
-            <div className="relative">
-              <ArrowUpDown size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-              <select
-                value={sort}
-                onChange={(e) => setSort(e.target.value)}
-                className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
-              >
-                <option value="base_first">Base First</option>
-                <option value="code_asc">Code A-Z</option>
-                <option value="code_desc">Code Z-A</option>
-                <option value="rate_asc">Rate Low-High</option>
-                <option value="rate_desc">Rate High-Low</option>
-                <option value="updated_desc">Recently Updated</option>
-                <option value="updated_asc">Oldest Updated</option>
-              </select>
-            </div>
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="relative w-full sm:max-w-sm">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by code, name, or symbol"
+              className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300"
+            />
           </div>
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value)}
+            className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+          >
+            <option value="base_first">Base First</option>
+            <option value="code_asc">Code A-Z</option>
+            <option value="code_desc">Code Z-A</option>
+            <option value="rate_asc">Rate Low-High</option>
+            <option value="rate_desc">Rate High-Low</option>
+            <option value="updated_desc">Recently Updated</option>
+            <option value="updated_asc">Oldest Updated</option>
+          </select>
         </div>
 
         <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">

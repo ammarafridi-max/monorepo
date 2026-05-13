@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Search, X, Loader2, Inbox, ChevronLeft, ChevronRight, Filter,
+  Search, X, Loader2, Inbox, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { useGetAdminVisaLeads } from '../../hooks/visa-leads/useGetAdminVisaLeads.js';
 import { useGetAdminVisas }     from '../../hooks/visa/useGetAdminVisas.js';
@@ -49,14 +49,13 @@ function timeAgo(iso) {
 const selectCls =
   'border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 w-full';
 
-function Filters({ filters, setFilters, onReset, visas = [], adminUsers = [] }) {
+function Filters({ filters, setFilters, visas = [], adminUsers = [] }) {
   function set(key, value) {
     setFilters((prev) => ({ ...prev, [key]: value, page: 1 }));
   }
 
   return (
-    <div className="px-4 py-3 border-b border-gray-100 flex flex-wrap gap-2 items-end">
-
+    <>
       <select
         value={filters.status || 'all'}
         onChange={(e) => set('status', e.target.value)}
@@ -106,15 +105,7 @@ function Filters({ filters, setFilters, onReset, visas = [], adminUsers = [] }) 
         className={`${selectCls} max-w-[150px]`}
         placeholder="To date"
       />
-
-      <button
-        type="button"
-        onClick={onReset}
-        className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-500 hover:text-gray-700 border border-gray-200 rounded-xl transition-colors bg-white"
-      >
-        <X size={12} /> Clear
-      </button>
-    </div>
+    </>
   );
 }
 
@@ -145,10 +136,6 @@ export default function AdminVisaLeadsPage() {
   const totalPages = pagination?.totalPages ?? 1;
   const total      = pagination?.total      ?? 0;
 
-  function handleReset() {
-    setFilters(DEFAULT_FILTERS);
-  }
-
   function handleRowClick(id) {
     router.push(`/admin/visa-leads/${id}`);
   }
@@ -167,40 +154,34 @@ export default function AdminVisaLeadsPage() {
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-
-        <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-3">
-          <div className="relative flex-1 max-w-sm">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search name, email, phone…"
-              value={filters.search}
-              onChange={(e) => setFilters((p) => ({ ...p, search: e.target.value, page: 1 }))}
-              className="w-full pl-9 pr-8 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white placeholder:text-gray-300"
-            />
-            {filters.search && (
-              <button
-                onClick={() => setFilters((p) => ({ ...p, search: '', page: 1 }))}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                <X size={13} />
-              </button>
-            )}
-          </div>
-          <div className="flex items-center gap-1.5 text-xs text-gray-400">
-            <Filter size={13} />
-            <span>Filters below</span>
-          </div>
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative w-full sm:max-w-sm">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Search name, email, phone…"
+            value={filters.search}
+            onChange={(e) => setFilters((p) => ({ ...p, search: e.target.value, page: 1 }))}
+            className="w-full pl-9 pr-8 py-2 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300"
+          />
+          {filters.search && (
+            <button
+              onClick={() => setFilters((p) => ({ ...p, search: '', page: 1 }))}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              <X size={13} />
+            </button>
+          )}
         </div>
-
         <Filters
           filters={filters}
           setFilters={setFilters}
-          onReset={handleReset}
           visas={Array.isArray(visas) ? visas : []}
           adminUsers={Array.isArray(adminUsers) ? adminUsers : []}
         />
+      </div>
+
+      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
 
         {isLoadingLeads ? (
           <div className="flex items-center justify-center py-20">

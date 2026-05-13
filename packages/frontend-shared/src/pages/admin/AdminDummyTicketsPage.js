@@ -70,20 +70,6 @@ function OrderBadge({ status }) {
   );
 }
 
-function FilterPill({ label, active, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`px-3 py-1.5 text-xs font-semibold rounded-full border transition-all ${
-        active
-          ? 'bg-primary-700 text-white border-primary-700'
-          : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-700'
-      }`}
-    >
-      {label}
-    </button>
-  );
-}
 
 function DummyTicketsContent() {
   const router       = useRouter();
@@ -131,53 +117,56 @@ function DummyTicketsContent() {
       </div>
 
       <div className="flex flex-wrap items-center gap-4">
-        <div className="relative w-full max-w-sm">
+        <div className="relative w-full sm:max-w-sm">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           <input
             type="text"
             value={search}
             onChange={(e) => setParam('search', e.target.value)}
             placeholder="Search by name, email, session..."
-            className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300"
+            className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300"
           />
         </div>
 
-        <div className="flex items-center gap-1.5">
-          <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mr-1">Payment</span>
-          {PAYMENT_TABS.map(({ value, label }) => (
-            <FilterPill key={value} label={label} active={paymentFilter === value} onClick={() => setParam('paymentStatus', value)} />
+        <select
+          value={paymentFilter}
+          onChange={(e) => setParam('paymentStatus', e.target.value)}
+          className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+        >
+          <option value="">All payments</option>
+          {PAYMENT_TABS.filter(({ value }) => value !== '').map(({ value, label }) => (
+            <option key={value} value={value}>{label}</option>
           ))}
-        </div>
+        </select>
 
         <div className="w-px h-5 bg-gray-200 hidden sm:block" />
 
-        <div className="flex items-center gap-1.5">
-          <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mr-1">Order</span>
-          {ORDER_TABS.map(({ value, label }) => (
-            <FilterPill key={value} label={label} active={orderFilter === value} onClick={() => setParam('orderStatus', value)} />
+        <select
+          value={orderFilter}
+          onChange={(e) => setParam('orderStatus', e.target.value)}
+          className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+        >
+          <option value="">All orders</option>
+          {ORDER_TABS.filter(({ value }) => value !== '').map(({ value, label }) => (
+            <option key={value} value={value}>{label}</option>
           ))}
-        </div>
+        </select>
 
         <div className="w-px h-5 bg-gray-200 hidden sm:block" />
 
         {isAgent ? (
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Created</span>
-            <span className="px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50 text-gray-500">Last 4 hours</span>
-          </div>
+          <span className="px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50 text-gray-500">Last 4 hours</span>
         ) : (
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Created</span>
-            <select
-              value={createdAt}
-              onChange={(e) => setParam('createdAt', e.target.value)}
-              className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
-            >
-              {TIME_OPTIONS.map(({ value, label }) => (
-                <option key={value} value={value}>{label}</option>
-              ))}
-            </select>
-          </div>
+          <select
+            value={createdAt}
+            onChange={(e) => setParam('createdAt', e.target.value)}
+            className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+          >
+            <option value="all_time">All time</option>
+            {TIME_OPTIONS.filter(({ value }) => value !== 'all_time').map(({ value, label }) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </select>
         )}
 
         <div className="w-px h-5 bg-gray-200 hidden sm:block" />
