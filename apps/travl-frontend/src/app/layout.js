@@ -17,6 +17,7 @@ export const metadata = {
   metadataBase: new URL('https://www.travl.ae'),
   title: 'Travl',
   description: 'Travl',
+  robots: { index: true, follow: true },
   icons: {
     icon: '/favicon.png',
   },
