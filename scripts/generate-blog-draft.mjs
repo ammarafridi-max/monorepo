@@ -188,7 +188,7 @@ ${relatedPostsText}
 - Practical, actionable content — readers want real information
 - Naturally weave in links to Travl's own pages (see Internal Linking Priority in the context)
 - Do NOT invent specific statistics, prices (unless they match what's in the site context), or policy names
-- Content must be substantive: 700–900 words of HTML body content
+- Content must be substantive: 800–1200 words of HTML body content
 - Use proper HTML: <h2>, <h3>, <p>, <ul>/<li>, <strong>, <a href="..."> tags
 - Internal links: use full URL (https://www.travl.ae/...) in <a href> attributes
 - External links: DO NOT add external links — internal only
@@ -280,27 +280,117 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
  */
 function topicToSearchQuery(title) {
   const stopWords = new Set([
-    'a', 'an', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
-    'of', 'with', 'by', 'from', 'is', 'are', 'was', 'were', 'be', 'been',
-    'do', 'does', 'did', 'have', 'has', 'had', 'will', 'would', 'can',
-    'could', 'should', 'may', 'might', 'shall', 'need', 'how', 'what',
-    'why', 'when', 'where', 'who', 'which', 'that', 'this', 'these',
-    'those', 'your', 'my', 'our', 'their', 'its', 'i', 'you', 'we',
-    'they', 'he', 'she', 'it', 'not', 'no', 'nor', 'so', 'yet', 'both',
-    'either', 'neither', 'whether', 'if', 'than', 'as', 'up', 'out',
-    'about', 'into', 'through', 'during', 'before', 'after', 'above',
-    'below', 'between', 'each', 'more', 'most', 'other', 'some', 'such',
-    'only', 'own', 'same', 'than', 'too', 'very', 'just', 'because',
-    'while', 'although', 'though', 'since', 'until', 'unless',
+    "a",
+    "an",
+    "the",
+    "and",
+    "or",
+    "but",
+    "in",
+    "on",
+    "at",
+    "to",
+    "for",
+    "of",
+    "with",
+    "by",
+    "from",
+    "is",
+    "are",
+    "was",
+    "were",
+    "be",
+    "been",
+    "do",
+    "does",
+    "did",
+    "have",
+    "has",
+    "had",
+    "will",
+    "would",
+    "can",
+    "could",
+    "should",
+    "may",
+    "might",
+    "shall",
+    "need",
+    "how",
+    "what",
+    "why",
+    "when",
+    "where",
+    "who",
+    "which",
+    "that",
+    "this",
+    "these",
+    "those",
+    "your",
+    "my",
+    "our",
+    "their",
+    "its",
+    "i",
+    "you",
+    "we",
+    "they",
+    "he",
+    "she",
+    "it",
+    "not",
+    "no",
+    "nor",
+    "so",
+    "yet",
+    "both",
+    "either",
+    "neither",
+    "whether",
+    "if",
+    "than",
+    "as",
+    "up",
+    "out",
+    "about",
+    "into",
+    "through",
+    "during",
+    "before",
+    "after",
+    "above",
+    "below",
+    "between",
+    "each",
+    "more",
+    "most",
+    "other",
+    "some",
+    "such",
+    "only",
+    "own",
+    "same",
+    "than",
+    "too",
+    "very",
+    "just",
+    "because",
+    "while",
+    "although",
+    "though",
+    "since",
+    "until",
+    "unless",
   ]);
 
   const words = title
-    .replace(/[^a-zA-Z0-9\s]/g, ' ')
+    .replace(/[^a-zA-Z0-9\s]/g, " ")
     .split(/\s+/)
     .filter((w) => w.length > 2 && !stopWords.has(w.toLowerCase()));
 
   // Take up to 4 most meaningful words
-  return words.slice(0, 4).join(' ') || 'travel';
+  return words.slice(0, 4).join(" ") || "travel";
 }
 
 /**
@@ -309,7 +399,7 @@ function topicToSearchQuery(title) {
  */
 async function fetchCoverImage(topicTitle) {
   if (!UNSPLASH_ACCESS_KEY) {
-    console.warn('⚠  UNSPLASH_ACCESS_KEY not set — using picsum placeholder');
+    console.warn("⚠  UNSPLASH_ACCESS_KEY not set — using picsum placeholder");
     return fetchPlaceholderCoverImage();
   }
 
@@ -322,7 +412,7 @@ async function fetchCoverImage(topicTitle) {
       {
         headers: {
           Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}`,
-          'Accept-Version': 'v1',
+          "Accept-Version": "v1",
         },
       },
     );
@@ -335,7 +425,9 @@ async function fetchCoverImage(topicTitle) {
     const photos = searchData?.results ?? [];
 
     if (photos.length === 0) {
-      console.warn(`⚠  No Unsplash results for "${query}" — using picsum placeholder`);
+      console.warn(
+        `⚠  No Unsplash results for "${query}" — using picsum placeholder`,
+      );
       return fetchPlaceholderCoverImage();
     }
 
@@ -344,7 +436,7 @@ async function fetchCoverImage(topicTitle) {
     const imageUrl = photo.urls?.regular;
 
     if (!imageUrl) {
-      throw new Error('Unsplash photo has no regular URL');
+      throw new Error("Unsplash photo has no regular URL");
     }
 
     // Trigger the required download ping (Unsplash API guidelines)
@@ -358,15 +450,17 @@ async function fetchCoverImage(topicTitle) {
     }
 
     const arrayBuffer = await imgRes.arrayBuffer();
-    const blob = new Blob([arrayBuffer], { type: 'image/jpeg' });
+    const blob = new Blob([arrayBuffer], { type: "image/jpeg" });
 
     const credit = photo.user?.name
       ? ` (Photo by ${photo.user.name} on Unsplash)`
-      : '';
+      : "";
     console.log(`✓ Fetched Unsplash image${credit} (${blob.size} bytes)`);
     return blob;
   } catch (err) {
-    console.warn(`⚠  Unsplash fetch failed (${err.message}) — falling back to picsum`);
+    console.warn(
+      `⚠  Unsplash fetch failed (${err.message}) — falling back to picsum`,
+    );
     return fetchPlaceholderCoverImage();
   }
 }
@@ -379,10 +473,12 @@ async function fetchPlaceholderCoverImage() {
   const url = `https://picsum.photos/seed/${seed}/1200/630.jpg`;
   const res = await fetch(url);
   if (!res.ok) {
-    throw new Error(`Failed to fetch placeholder cover image: ${res.status} ${res.statusText}`);
+    throw new Error(
+      `Failed to fetch placeholder cover image: ${res.status} ${res.statusText}`,
+    );
   }
   const arrayBuffer = await res.arrayBuffer();
-  return new Blob([arrayBuffer], { type: 'image/jpeg' });
+  return new Blob([arrayBuffer], { type: "image/jpeg" });
 }
 
 async function postDraft({ token, topic, content, availableTags }) {

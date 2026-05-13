@@ -13,7 +13,7 @@ Travl is a UAE-based travel services platform offering dummy flight tickets for 
 
 ### Flight Itinerary (Dummy Ticket)
 
-**URL:** https://www.travl.ae/flight-itinerary  
+**URL:** https://www.mydummyticket.ae  
 Order a dummy flight ticket with a valid PNR/GDS code. Starting from AED 49. Instant email delivery in airline booking format. Used for Schengen visa applications, UK/US/Canada visas, travel planning, and as proof of onward travel. The ticket is a flight reservation — not an actual booking — and cannot be used for boarding.
 
 ### Travel Insurance
@@ -108,7 +108,7 @@ Articles covering visa applications, travel insurance, flight reservations, and 
 ## Internal Linking Priority (for Blog Posts)
 
 1. **Highest priority:** https://www.travl.ae/travel-insurance and its child pages — link heavily and naturally throughout content
-2. **High priority:** https://www.travl.ae/flight-itinerary — link when covering dummy tickets, visa proof of onward travel, PNR codes
+2. **High priority:** https://www.mydummyticket.ae — link when covering dummy tickets, visa proof of onward travel, PNR codes
 3. **Medium priority:** https://www.travl.ae/faq — link when addressing common questions
 4. **Medium priority:** Related blog posts at https://www.travl.ae/blog/[slug] — cross-link relevant articles
 5. **Low priority:** Booking flow pages (/booking/_, /insurance-booking/_) — link only when contextually appropriate
