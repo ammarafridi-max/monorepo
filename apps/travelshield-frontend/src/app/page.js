@@ -1,14 +1,14 @@
-import Navbar from '@travel-suite/frontend-shared/components/v2/sections/Navbar';
-import Hero from '@travel-suite/frontend-shared/components/v2/sections/Hero';
-import TrustBadges from '@travel-suite/frontend-shared/components/v2/sections/TrustBadges';
-import Coverage from '@travel-suite/frontend-shared/components/v2/sections/Coverage';
-import About from '@travel-suite/frontend-shared/components/v2/sections/About';
-import HowItWorks from '@travel-suite/frontend-shared/components/v2/sections/HowItWorks';
-import Benefits from '@travel-suite/frontend-shared/components/v2/sections/Benefits';
-import Testimonials from '@travel-suite/frontend-shared/components/v2/sections/Testimonials';
-import Faqs from '@travel-suite/frontend-shared/components/v2/sections/Faqs';
-import CtaBanner from '@travel-suite/frontend-shared/components/v2/sections/CtaBanner';
-import Footer from '@travel-suite/frontend-shared/components/v2/sections/Footer';
+import Navbar from '@travel-suite/frontend-shared/components/sections/v2/Navbar';
+import Hero from '@travel-suite/frontend-shared/components/sections/v2/Hero';
+import TrustBadges from '@travel-suite/frontend-shared/components/sections/v2/TrustBadges';
+import Coverage from '@travel-suite/frontend-shared/components/sections/v2/Coverage';
+import About from '@travel-suite/frontend-shared/components/sections/v2/About';
+import HowItWorks from '@travel-suite/frontend-shared/components/sections/v2/HowItWorks';
+import Benefits from '@travel-suite/frontend-shared/components/sections/v2/Benefits';
+import Testimonials from '@travel-suite/frontend-shared/components/sections/v2/Testimonials';
+import Faqs from '@travel-suite/frontend-shared/components/sections/v2/Faqs';
+import CtaBanner from '@travel-suite/frontend-shared/components/sections/v2/CtaBanner';
+import Footer from '@travel-suite/frontend-shared/components/sections/v2/Footer';
 
 export const metadata = {
   title: 'TravelShield — Compare Travel Insurance in the UAE',

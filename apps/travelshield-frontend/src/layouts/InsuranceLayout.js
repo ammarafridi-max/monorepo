@@ -12,8 +12,8 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
-import Navbar from "@travel-suite/frontend-shared/components/v2/sections/Navbar";
-import Footer from "@travel-suite/frontend-shared/components/v2/sections/Footer";
+import Navbar from "@travel-suite/frontend-shared/components/sections/v2/Navbar";
+import Footer from "@travel-suite/frontend-shared/components/sections/v2/Footer";
 import { InsuranceContext } from "@travel-suite/frontend-shared/contexts/InsuranceContext";
 import { useCurrency } from "@travel-suite/frontend-shared/contexts/CurrencyContext";
 import { parsePlanName } from "@travel-suite/frontend-shared/utils/insurancePlans";

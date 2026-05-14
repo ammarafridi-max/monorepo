@@ -1,7 +1,7 @@
-import AllForms from '@travel-suite/frontend-shared/components/v1/forms/AllForms';
-import Hero from '@travel-suite/frontend-shared/components/v1/sections/Hero';
-import Process from '@travel-suite/frontend-shared/components/v1/sections/Process';
-import About from '@travel-suite/frontend-shared/components/v1/sections/About';
+import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
+import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
+import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
+import About from '@travel-suite/frontend-shared/components/sections/v1/About';
 import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineLuggage } from 'react-icons/md';
 import { buildMetadata } from '@/lib/schema';
 import {

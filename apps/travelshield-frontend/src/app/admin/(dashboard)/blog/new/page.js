@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import BlogForm from '@travel-suite/frontend-shared/components/v2/admin/BlogForm';
+import BlogForm from '@travel-suite/frontend-shared/components/admin/v2/BlogForm';
 import { useCreateBlog } from '@travel-suite/frontend-shared/hooks/blog/useCreateBlog';
 
 export default function NewBlogPage() {

@@ -1,7 +1,7 @@
 import Link from "next/link";
-import Navbar from "@travel-suite/frontend-shared/components/v2/sections/Navbar";
-import Footer from "@travel-suite/frontend-shared/components/v2/sections/Footer";
-import ContactForm from "@travel-suite/frontend-shared/components/v2/ui/ContactForm";
+import Navbar from "@travel-suite/frontend-shared/components/sections/v2/Navbar";
+import Footer from "@travel-suite/frontend-shared/components/sections/v2/Footer";
+import ContactForm from "@travel-suite/frontend-shared/components/ui/v2/ContactForm";
 import { Mail, MapPin, Clock, MessageCircle, AlertCircle } from "lucide-react";
 
 export const metadata = {

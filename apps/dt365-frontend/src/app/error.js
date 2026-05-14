@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect } from 'react';
-import PrimaryLink from '@travel-suite/frontend-shared/components/v1/ui/PrimaryLink';
-import Container from '@travel-suite/frontend-shared/components/v1/layout/Container';
-import PrimarySection from '@travel-suite/frontend-shared/components/v1/layout/PrimarySection';
+import PrimaryLink from '@travel-suite/frontend-shared/components/ui/v1/PrimaryLink';
+import Container from '@travel-suite/frontend-shared/components/shared/layout/Container';
+import PrimarySection from '@travel-suite/frontend-shared/components/shared/layout/PrimarySection';
 
 export default function GlobalError({ error, reset }) {
   useEffect(() => {

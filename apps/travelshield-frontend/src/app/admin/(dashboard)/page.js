@@ -13,8 +13,8 @@ import {
   ArrowRight,
   CalendarDays,
 } from 'lucide-react';
-import StatCard from '@travel-suite/frontend-shared/components/v2/admin/dashboard/StatCard';
-import RecentApplicationsTable from '@travel-suite/frontend-shared/components/v2/admin/dashboard/RecentApplicationsTable';
+import StatCard from '@travel-suite/frontend-shared/components/admin/v2/dashboard/StatCard';
+import RecentApplicationsTable from '@travel-suite/frontend-shared/components/admin/v2/dashboard/RecentApplicationsTable';
 import { getInsuranceApplicationsApi } from '@travel-suite/frontend-shared/services/apiInsurance';
 import { getInsuranceApplicationsSummaryApi } from '@travel-suite/frontend-shared/services/apiInsurance';
 import { getAffiliatesApi } from '@travel-suite/frontend-shared/services/apiAffiliates';

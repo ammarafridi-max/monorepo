@@ -1,1 +1,1 @@
-export { default } from '@travel-suite/frontend-shared/pages/client/InsuranceQuotePage';
+export { default } from '@travel-suite/frontend-shared/pages/client/shared/InsuranceQuotePage';

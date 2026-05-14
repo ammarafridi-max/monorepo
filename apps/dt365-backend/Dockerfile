@@ -7,18 +7,18 @@ WORKDIR /repo
 
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 
-COPY packages/auth/package.json            packages/auth/package.json
-COPY packages/admin-users/package.json     packages/admin-users/package.json
-COPY packages/affiliates/package.json      packages/affiliates/package.json
-COPY packages/blog/package.json            packages/blog/package.json
-COPY packages/cloudinary/package.json      packages/cloudinary/package.json
-COPY packages/currencies/package.json      packages/currencies/package.json
-COPY packages/flights/package.json         packages/flights/package.json
-COPY packages/notifications/package.json   packages/notifications/package.json
-COPY packages/payments/package.json        packages/payments/package.json
-COPY packages/tickets/package.json         packages/tickets/package.json
-COPY packages/users/package.json           packages/users/package.json
-COPY packages/utils/package.json           packages/utils/package.json
+COPY packages/domains/auth/package.json            packages/domains/auth/package.json
+COPY packages/domains/admin-users/package.json     packages/domains/admin-users/package.json
+COPY packages/domains/affiliates/package.json      packages/domains/affiliates/package.json
+COPY packages/domains/blog/package.json            packages/domains/blog/package.json
+COPY packages/integrations/cloudinary/package.json      packages/integrations/cloudinary/package.json
+COPY packages/domains/currencies/package.json      packages/domains/currencies/package.json
+COPY packages/domains/flights/package.json         packages/domains/flights/package.json
+COPY packages/shared/notifications/package.json   packages/shared/notifications/package.json
+COPY packages/domains/payments/package.json        packages/domains/payments/package.json
+COPY packages/domains/tickets/package.json         packages/domains/tickets/package.json
+COPY packages/domains/users/package.json           packages/domains/users/package.json
+COPY packages/shared/utils/package.json           packages/shared/utils/package.json
 COPY apps/dt365-backend/package.json       apps/dt365-backend/package.json
 
 RUN pnpm install --frozen-lockfile

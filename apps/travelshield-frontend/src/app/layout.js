@@ -1,7 +1,7 @@
 import { Geist, Geist_Mono } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
-import Providers from '@travel-suite/frontend-shared/components/v2/Providers';
+import Providers from '@travel-suite/frontend-shared/components/shared/Providers';
 import { Toaster } from 'react-hot-toast';
 
 const geistSans = Geist({

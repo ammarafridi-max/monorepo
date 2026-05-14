@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { ShieldOff, ArrowLeft, Home } from 'lucide-react';
-import Navbar from '@travel-suite/frontend-shared/components/v2/sections/Navbar';
-import Footer from '@travel-suite/frontend-shared/components/v2/sections/Footer';
+import Navbar from '@travel-suite/frontend-shared/components/sections/v2/Navbar';
+import Footer from '@travel-suite/frontend-shared/components/sections/v2/Footer';
 
 export const metadata = {
   title: '404 — Page Not Found | TravelShield',

@@ -12,40 +12,37 @@ import {
 } from '@/lib/schema';
 import { HiCheck, HiOutlineClock, HiOutlineCurrencyDollar } from 'react-icons/hi';
 import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineLuggage } from 'react-icons/md';
-import Hero from '@travel-suite/frontend-shared/components/v1/sections/Hero';
-import AllForms from '@travel-suite/frontend-shared/components/v1/forms/AllForms';
+import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
+import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 
-const Process = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/Process'));
-const About = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/About'));
-const Benefits = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/Benefits'));
-const Testimonials = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/Testimonials'));
-const FAQ = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/FAQ'));
-const Contact = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/Contact'));
-const BlogPosts = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/BlogPosts'));
+const Process = lazy(() => import('@travel-suite/frontend-shared/components/sections/v1/Process'));
+const About = lazy(() => import('@travel-suite/frontend-shared/components/sections/v1/About'));
+const Benefits = lazy(() => import('@travel-suite/frontend-shared/components/sections/v1/Benefits'));
+const Testimonials = lazy(() => import('@travel-suite/frontend-shared/components/sections/v1/Testimonials'));
+const FAQ = lazy(() => import('@travel-suite/frontend-shared/components/sections/v1/FAQ'));
+const Contact = lazy(() => import('@travel-suite/frontend-shared/components/sections/v1/Contact'));
+const BlogPosts = lazy(() => import('@travel-suite/frontend-shared/components/sections/v1/BlogPosts'));
 
 const keyword = 'onward ticket';
 
 const testimonials = [
   {
-    title: 'Stress-Free',
+    quote: 'DT365 made my visa process incredibly smooth and totally stress-free. The booking was fast, the ticket looked real, and I had no issues at the embassy. Great service for anyone needing quick and professional travel documents on short notice.',
     name: 'David S.',
-    img: '/david.webp',
-    text: 'DT365 made my visa process incredibly smooth and totally stress-free. The booking was fast, the ticket looked real, and I had no issues at the embassy. Great service for anyone needing quick and professional travel documents on short notice.',
-    purpose: 'Traveler from the United States',
+    location: 'Traveler from the United States',
+    stars: 5,
   },
   {
-    title: 'Dependable',
+    quote: 'I was in a rush and DT365 delivered exactly what I needed. The process was simple, the service was reliable, and I had my ticket ready in minutes. It saved me a lot of stress when applying for my visa. Definitely using this again in the future.',
     name: 'Maria K.',
-    img: '/maria.webp',
-    text: 'I was in a rush and DT365 delivered exactly what I needed. The process was simple, the service was reliable, and I had my ticket ready in minutes. It saved me a lot of stress when applying for my visa. Definitely using this again in the future.',
-    purpose: 'Tourist from the United Kingdom',
+    location: 'Tourist from the United Kingdom',
+    stars: 5,
   },
   {
-    title: 'Super Fast',
+    quote: 'The entire experience with DT365 was seamless from start to finish. I got my onward ticket within minutes, and it worked perfectly for my Schengen visa. Fast response, clear instructions, and great support — highly recommend to travelers in need.',
     name: 'Ahmed R.',
-    img: '/ahmed.webp',
-    text: 'The entire experience with DT365 was seamless from start to finish. I got my onward ticket within minutes, and it worked perfectly for my Schengen visa. Fast response, clear instructions, and great support — highly recommend to travelers in need.',
-    purpose: 'Frequent Flyer from India',
+    location: 'Frequent Flyer from India',
+    stars: 5,
   },
 ];
 

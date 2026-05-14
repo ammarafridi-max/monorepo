@@ -1,11 +1,11 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Clock, ArrowLeft, Calendar } from "lucide-react";
-import Navbar from "@travel-suite/frontend-shared/components/v2/sections/Navbar";
-import Footer from "@travel-suite/frontend-shared/components/v2/sections/Footer";
-import BlogCard from "@travel-suite/frontend-shared/components/v2/cards/BlogCard";
-import TableOfContents from "@travel-suite/frontend-shared/components/v2/ui/TableOfContents";
-import ShareButtons from "@travel-suite/frontend-shared/components/v2/ui/ShareButtons";
+import Navbar from "@travel-suite/frontend-shared/components/sections/v2/Navbar";
+import Footer from "@travel-suite/frontend-shared/components/sections/v2/Footer";
+import BlogCard from "@travel-suite/frontend-shared/components/cards/v2/BlogCard";
+import TableOfContents from "@travel-suite/frontend-shared/components/ui/v2/TableOfContents";
+import ShareButtons from "@travel-suite/frontend-shared/components/ui/v2/ShareButtons";
 import { getPublishedBlogPostBySlug, getPublishedBlogPosts } from "@/lib/blogs";
 
 export async function generateMetadata({ params }) {

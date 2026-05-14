@@ -14,12 +14,12 @@ import {
   HiOutlineClock,
   HiOutlineCurrencyDollar,
 } from 'react-icons/hi2';
-import Hero from '@travel-suite/frontend-shared/components/v1/sections/Hero';
-import AllForms from '@travel-suite/frontend-shared/components/v1/forms/AllForms';
+import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
+import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 
-const Process = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/Process'));
-const Benefits = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/Benefits'));
-const Contact = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/Contact'));
+const Process = lazy(() => import('@travel-suite/frontend-shared/components/sections/v1/Process'));
+const Benefits = lazy(() => import('@travel-suite/frontend-shared/components/sections/v1/Benefits'));
+const Contact = lazy(() => import('@travel-suite/frontend-shared/components/sections/v1/Contact'));
 
 const keyword = 'flight reservation';
 

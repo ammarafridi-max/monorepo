@@ -1,6 +1,6 @@
 'use client';
 
-import TicketPaymentPage from '@travel-suite/frontend-shared/pages/client/TicketPaymentPage';
+import TicketPaymentPage from '@travel-suite/frontend-shared/pages/client/shared/TicketPaymentPage';
 import { trackPurchaseEvent } from '@travel-suite/frontend-shared/utils/analytics';
 
 export default function Page() {

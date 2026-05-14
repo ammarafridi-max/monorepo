@@ -1,7 +1,7 @@
-import Navbar from "@travel-suite/frontend-shared/components/v2/sections/Navbar";
-import Footer from "@travel-suite/frontend-shared/components/v2/sections/Footer";
+import Navbar from "@travel-suite/frontend-shared/components/sections/v2/Navbar";
+import Footer from "@travel-suite/frontend-shared/components/sections/v2/Footer";
 import Link from "next/link";
-import BlogCard from "@travel-suite/frontend-shared/components/v2/cards/BlogCard";
+import BlogCard from "@travel-suite/frontend-shared/components/cards/v2/BlogCard";
 import { getPublishedBlogPosts } from "@/lib/blogs";
 
 export const metadata = {

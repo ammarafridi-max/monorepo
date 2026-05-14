@@ -18,14 +18,14 @@ import {
   HiOutlineCalendarDays,
 } from 'react-icons/hi2';
 import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineLuggage } from 'react-icons/md';
-import Hero from '@travel-suite/frontend-shared/components/v1/sections/Hero';
-import AllForms from '@travel-suite/frontend-shared/components/v1/forms/AllForms';
+import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
+import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 
-const Process = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/Process'));
-const About = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/About'));
-const Benefits = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/Benefits'));
-const FAQ = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/FAQ'));
-const Contact = lazy(() => import('@travel-suite/frontend-shared/components/v1/sections/Contact'));
+const Process = lazy(() => import('@travel-suite/frontend-shared/components/sections/v1/Process'));
+const About = lazy(() => import('@travel-suite/frontend-shared/components/sections/v1/About'));
+const Benefits = lazy(() => import('@travel-suite/frontend-shared/components/sections/v1/Benefits'));
+const FAQ = lazy(() => import('@travel-suite/frontend-shared/components/sections/v1/FAQ'));
+const Contact = lazy(() => import('@travel-suite/frontend-shared/components/sections/v1/Contact'));
 
 const benefits = [
   {

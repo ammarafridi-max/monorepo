@@ -4,8 +4,8 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@travel-suite/frontend-shared/contexts/UserAuthContext";
-import Navbar from "@travel-suite/frontend-shared/components/v2/sections/Navbar";
-import Footer from "@travel-suite/frontend-shared/components/v2/sections/Footer";
+import Navbar from "@travel-suite/frontend-shared/components/sections/v2/Navbar";
+import Footer from "@travel-suite/frontend-shared/components/sections/v2/Footer";
 
 export default function AccountLayout({ children }) {
   const { isAuthenticated, isLoadingAuth } = useAuth();

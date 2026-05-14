@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
 import InsuranceLayout from '@/layouts/InsuranceLayout';
-import PaymentSuccess from '@travel-suite/frontend-shared/components/v2/ui/PaymentSuccess';
+import PaymentSuccess from '@travel-suite/frontend-shared/components/ui/v2/PaymentSuccess';
 
 export const metadata = {
   title: 'Booking Confirmed — TravelShield',

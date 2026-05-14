@@ -1,1 +1,1 @@
-export { default } from '@travel-suite/frontend-shared/pages/client/BlogPostLoading';
+export { default } from '@travel-suite/frontend-shared/pages/client/shared/BlogPostLoading';

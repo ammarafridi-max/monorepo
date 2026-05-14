@@ -1,12 +1,12 @@
-import Hero from "@travel-suite/frontend-shared/components/v1/sections/Hero";
-import AllForms from "@travel-suite/frontend-shared/components/v1/forms/AllForms";
-import Process from "@travel-suite/frontend-shared/components/v1/sections/Process";
-import About from "@travel-suite/frontend-shared/components/v1/sections/About";
-import Benefits from "@travel-suite/frontend-shared/components/v1/sections/Benefits";
-import Testimonials from "@travel-suite/frontend-shared/components/v1/sections/Testimonials";
-import FAQ from "@travel-suite/frontend-shared/components/v1/sections/FAQ";
-import Contact from "@travel-suite/frontend-shared/components/v1/sections/Contact";
-import BlogPosts from "@travel-suite/frontend-shared/components/v1/sections/BlogPosts";
+import Hero from "@travel-suite/frontend-shared/components/sections/v1/Hero";
+import AllForms from "@travel-suite/frontend-shared/components/forms/v1/AllForms";
+import Process from "@travel-suite/frontend-shared/components/sections/v1/Process";
+import About from "@travel-suite/frontend-shared/components/sections/v1/About";
+import Benefits from "@travel-suite/frontend-shared/components/sections/v1/Benefits";
+import Testimonials from "@travel-suite/frontend-shared/components/sections/v1/Testimonials";
+import FAQ from "@travel-suite/frontend-shared/components/sections/v1/FAQ";
+import Contact from "@travel-suite/frontend-shared/components/sections/v1/Contact";
+import BlogPosts from "@travel-suite/frontend-shared/components/sections/v1/BlogPosts";
 import {
   SITE_URL,
   buildFAQPage,
@@ -63,25 +63,22 @@ const benefits = [
 
 const testimonials = [
   {
-    title: "Stress-Free",
+    quote: "The process was quick and straightforward. I received my dummy ticket within minutes, and the PNR was fully verifiable on the airline website. It worked exactly as expected for my onward travel requirement.",
     name: "David S.",
-    img: "/david.webp",
-    text: "The process was quick and straightforward. I received my dummy ticket within minutes, and the PNR was fully verifiable on the airline website. It worked exactly as expected for my onward travel requirement.",
-    purpose: "Traveler – Used dummy ticket for onward travel verification",
+    location: "Traveler – Used dummy ticket for onward travel verification",
+    stars: 5,
   },
   {
-    title: "Dependable",
+    quote: "I needed proof of onward travel on short notice and this service delivered instantly. The flight itinerary looked professional, the details were accurate, and everything checked out with the airline.",
     name: "Maria K.",
-    img: "/maria.webp",
-    text: "I needed proof of onward travel on short notice and this service delivered instantly. The flight itinerary looked professional, the details were accurate, and everything checked out with the airline.",
-    purpose: "Tourist – Used dummy flight itinerary for airline check-in",
+    location: "Tourist – Used dummy flight itinerary for airline check-in",
+    stars: 5,
   },
   {
-    title: "Super Fast",
+    quote: "Booking was simple and the dummy ticket arrived by email almost immediately. The PNR was valid and easy to verify, which made my travel process stress-free.",
     name: "Ahmed R.",
-    img: "/ahmed.webp",
-    text: "Booking was simple and the dummy ticket arrived by email almost immediately. The PNR was valid and easy to verify, which made my travel process stress-free.",
-    purpose: "International Traveler – Used dummy ticket for immigration check",
+    location: "International Traveler – Used dummy ticket for immigration check",
+    stars: 5,
   },
 ];
 

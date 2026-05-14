@@ -1,33 +1,27 @@
 export const testimonials = [
   {
-    title: 'Stress-Free',
+    quote: 'The process was quick and straightforward. I received my dummy ticket within minutes, and the PNR was fully verifiable on the airline website. It worked exactly as expected for my onward travel requirement.',
     name: 'David S.',
-    img: '/david.webp',
-    text: 'The process was quick and straightforward. I received my dummy ticket within minutes, and the PNR was fully verifiable on the airline website. It worked exactly as expected for my onward travel requirement.',
-    purpose: 'Traveler – Used dummy ticket for onward travel verification',
+    location: 'Traveler – Used dummy ticket for onward travel verification',
+    stars: 5,
   },
   {
-    title: 'Dependable',
+    quote: 'I needed proof of onward travel on short notice and this service delivered instantly. The flight itinerary looked professional, the details were accurate, and everything checked out with the airline.',
     name: 'Maria K.',
-    img: '/maria.webp',
-    text: 'I needed proof of onward travel on short notice and this service delivered instantly. The flight itinerary looked professional, the details were accurate, and everything checked out with the airline.',
-    purpose: 'Tourist – Used dummy flight itinerary for airline check-in',
+    location: 'Tourist – Used dummy flight itinerary for airline check-in',
+    stars: 5,
   },
   {
-    title: 'Super Fast',
+    quote: 'Booking was simple and the dummy ticket arrived by email almost immediately. The PNR was valid and easy to verify, which made my travel process stress-free.',
     name: 'Ahmed R.',
-    img: '/ahmed.webp',
-    text: 'Booking was simple and the dummy ticket arrived by email almost immediately. The PNR was valid and easy to verify, which made my travel process stress-free.',
-    purpose: 'International Traveler – Used dummy ticket for immigration check',
+    location: 'International Traveler – Used dummy ticket for immigration check',
+    stars: 5,
   },
 ];
 
 export function formatTestimonialsArray(arr, keyword = 'dummy ticket') {
-  const newTestimonials = arr.map(test => {
-    const text = test.text.replace('{keyword}', keyword);
-    const purpose = test.purpose.replace('{keyword}', keyword);
-    return { ...test, text, purpose };
-  });
-
-  return newTestimonials;
+  return arr.map((test) => ({
+    ...test,
+    quote: test.quote.replace('{keyword}', keyword),
+  }));
 }
