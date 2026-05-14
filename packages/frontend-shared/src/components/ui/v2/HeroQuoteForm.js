@@ -56,8 +56,6 @@ export default function HeroQuoteForm() {
     group,
     quantity,
     handleQuantityChange,
-    email,
-    handleEmailChange,
     setSchemeId,
     setQuoteId,
   } = useContext(InsuranceContext);
@@ -67,9 +65,6 @@ export default function HeroQuoteForm() {
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-
-  const [emailTouched, setEmailTouched] = useState(false);
-  const emailInvalid = emailTouched && email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const totalTravellers =
     quantity.adults + quantity.children + quantity.seniors;
@@ -85,10 +80,6 @@ export default function HeroQuoteForm() {
     }
     if (totalTravellers === 0) {
       toast.error('Please add at least one traveller');
-      return false;
-    }
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      toast.error('Please enter a valid email address');
       return false;
     }
     return true;
@@ -111,8 +102,6 @@ export default function HeroQuoteForm() {
       schemeId: null,
       quoteId: null,
     });
-
-    localStorage.setItem('email', email);
 
     trackQuoteStarted({
       journeyType,
@@ -190,7 +179,7 @@ export default function HeroQuoteForm() {
       </div>
 
       <div
-        className={`grid gap-3 ${mounted && journeyType === 'single' ? 'grid-cols-2' : 'grid-cols-1'}`}
+        className={`grid gap-3 ${mounted && journeyType === 'single' ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}
       >
         <div className="flex flex-col gap-1.5">
           <label className="text-xs text-gray-500 font-medium">
@@ -255,26 +244,6 @@ export default function HeroQuoteForm() {
           <p className="text-xs text-red-400 pl-1">
             Please add at least one traveller
           </p>
-        )}
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="hero-email" className="text-xs text-gray-500 font-medium">
-          Email address
-        </label>
-        <input
-          id="hero-email"
-          type="email"
-          placeholder="john.smith@example.com"
-          value={email}
-          onChange={handleEmailChange}
-          onBlur={() => setEmailTouched(true)}
-          className={`border rounded-xl px-4 py-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white ${
-            emailInvalid ? 'border-red-400' : 'border-gray-200'
-          }`}
-        />
-        {emailInvalid && (
-          <p className="text-xs text-red-400 pl-1">Please enter a valid email address</p>
         )}
       </div>
 

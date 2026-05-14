@@ -293,6 +293,7 @@ export default function PassengersForm() {
     city,
     country,
     setSessionId,
+    setIsSubmitting,
   } = useContext(InsuranceContext);
 
   const router = useRouter();
@@ -310,6 +311,7 @@ export default function PassengersForm() {
 
   function handleSubmit(e) {
     e.preventDefault();
+    setIsSubmitting(true);
     createInsuranceApplication(
       {
         quoteId,
@@ -334,6 +336,7 @@ export default function PassengersForm() {
           }
           router.push('/insurance-booking/review');
         },
+        onError: () => setIsSubmitting(false),
       },
     );
   }

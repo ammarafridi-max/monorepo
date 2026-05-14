@@ -6,10 +6,10 @@ import {
   Check,
   ArrowLeft,
   ArrowRight,
-  ShieldCheck,
   MapPin,
   Calendar,
   Users,
+  Loader2,
 } from 'lucide-react';
 import Link from 'next/link';
 import { InsuranceContext } from '../contexts/InsuranceContext';
@@ -24,7 +24,7 @@ export const INSURANCE_STEPS = [
 
 export default function InsuranceLayout({ children }) {
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 text-gray-900 font-sans mt-20">
+    <div className="flex flex-col min-h-screen bg-gray-50 text-gray-900 font-sans">
       <div className="bg-white border-b border-gray-200 shadow-sm">
         <StepperDesktop />
         <StepperMobile />
@@ -65,71 +65,61 @@ function TripSummaryBar() {
     .filter(Boolean)
     .join(', ');
 
-  const TRIP_TYPE_LABELS = {
-    single: 'Single Trip',
-    annual: 'Annual Multi-Trip',
-    biennial: 'Biennial Multi-Trip',
-  };
+  function computedEndDate() {
+    if (!startDate) return null;
+    const d = new Date(startDate);
+    if (journeyType === 'annual')   d.setDate(d.getDate() + 365);
+    if (journeyType === 'biennial') d.setDate(d.getDate() + 730);
+    return journeyType === 'single' ? endDate : d.toISOString().slice(0, 10);
+  }
+
+  const displayEndDate = computedEndDate();
+  const displayDays = journeyType === 'annual' ? 365 : journeyType === 'biennial' ? 730 : days;
 
   return (
     <div className="bg-white border-b border-gray-100">
-      <div className="max-w-5xl mx-auto px-6 py-3 flex flex-wrap items-center gap-x-4 gap-y-1 justify-between">
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600">
+      <div className="max-w-5xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-600">
           {region?.name && (
-            <div className="flex items-center gap-1.5">
-              <MapPin size={13} className="text-primary-500 shrink-0" />
+            <div className="flex items-center gap-1">
+              <MapPin size={12} className="text-primary-500 shrink-0" />
               <span className="font-medium">{region.name}</span>
             </div>
           )}
           {startDate && (
             <>
-              <div className="w-px h-3.5 bg-gray-200 hidden sm:block" />
-              <div className="flex items-center gap-1.5">
-                <Calendar size={13} className="text-primary-500 shrink-0" />
-                <span>
-                  {journeyType === 'annual' || journeyType === 'biennial'
-                    ? `${journeyType === 'annual' ? 'Annual' : 'Biennial'} from ${formatDate(startDate)}`
-                    : `${formatDate(startDate)} — ${formatDate(endDate)}`}
-                </span>
+              <span className="text-gray-300">·</span>
+              <div className="flex items-center gap-1">
+                <Calendar size={12} className="text-primary-500 shrink-0" />
+                <span>{formatDate(startDate)} — {formatDate(displayEndDate)}</span>
               </div>
             </>
           )}
           {travellersLabel && (
             <>
-              <div className="w-px h-3.5 bg-gray-200 hidden sm:block" />
-              <div className="flex items-center gap-1.5">
-                <Users size={13} className="text-primary-500 shrink-0" />
+              <span className="text-gray-300">·</span>
+              <div className="flex items-center gap-1">
+                <Users size={12} className="text-primary-500 shrink-0" />
                 <span>{travellersLabel}</span>
               </div>
             </>
           )}
           {startDate && (
             <>
-              <div className="w-px h-3.5 bg-gray-200 hidden sm:block" />
-              <span className="text-gray-400">
-                {journeyType === 'annual'
-                  ? 'Annual'
-                  : journeyType === 'biennial'
-                    ? 'Biennial'
-                    : `${days} days`}
-              </span>
-            </>
-          )}
-          {journeyType && (
-            <>
-              <div className="w-px h-3.5 bg-gray-200 hidden sm:block" />
-              <span className="bg-primary-50 text-primary-700 text-xs font-semibold px-2.5 py-0.5 rounded-full">
-                {TRIP_TYPE_LABELS[journeyType] || 'Single Trip'}
-              </span>
+              <span className="text-gray-300">·</span>
+              <span className="text-gray-400">{displayDays} days</span>
             </>
           )}
         </div>
+
         <Link
           href="/"
-          className="text-xs font-semibold text-primary-600 hover:text-primary-800 border border-primary-200 hover:bg-primary-50 px-3 py-1 rounded-full transition-colors"
+          className="text-xs font-semibold text-primary-600 hover:text-primary-800 border border-primary-200 hover:bg-primary-50 px-3 py-1 rounded-full transition-colors shrink-0"
         >
           Edit search
         </Link>
+
       </div>
     </div>
   );
@@ -147,7 +137,7 @@ function BookingFooterConditional() {
 
 function BookingFooter() {
   const pathname = usePathname();
-  const { passengers, selectedQuote } = useContext(InsuranceContext);
+  const { passengers, selectedQuote, isSubmitting } = useContext(InsuranceContext);
 
   const currentIndex = INSURANCE_STEPS.findIndex((s) => s.path === pathname);
   const nextStep = INSURANCE_STEPS[currentIndex + 1];
@@ -174,54 +164,39 @@ function BookingFooter() {
 
   return (
     <div className="fixed bottom-0 inset-x-0 z-50 bg-white border-t border-gray-200 shadow-2xl">
-      <div className="max-w-5xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div
-            className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${selectedQuote ? 'bg-primary-100' : 'bg-gray-100'}`}
-          >
-            <ShieldCheck
-              size={18}
-              className={selectedQuote ? 'text-primary-700' : 'text-gray-400'}
-            />
+      <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+        {selectedQuote ? (
+          <div className="min-w-0">
+            <p className="text-sm font-bold text-gray-900 truncate">{parsePlanName(selectedQuote.name)}</p>
+            <p className="text-sm font-extrabold text-primary-700">
+              {selectedQuote.currency} {formatPremium(selectedQuote.premium)}
+              <span className="ml-1 text-xs text-gray-400 font-normal">total</span>
+            </p>
           </div>
-          {selectedQuote ? (
-            <div>
-              <p className="text-xs text-gray-400 font-medium">Selected plan</p>
-              <p className="text-sm font-bold text-gray-900">
-                {parsePlanName(selectedQuote.name)}
-                <span className="ml-2 text-primary-700 font-extrabold">
-                  {selectedQuote.currency}{' '}
-                  {formatPremium(selectedQuote.premium)}
-                </span>
-                <span className="ml-1 text-xs text-gray-400 font-normal">
-                  total
-                </span>
-              </p>
-            </div>
+        ) : (
+          <p className="text-sm text-gray-400">Select a plan to continue</p>
+        )}
+        <Link
+          href={isDisabled || isPassengersPage || isSubmitting ? '#' : nextStep.path}
+          onClick={isSubmitting ? (e) => e.preventDefault() : handleContinue}
+          aria-disabled={isDisabled || isSubmitting}
+          className={`shrink-0 inline-flex items-center gap-2 text-sm font-bold px-6 py-2.5 rounded-xl transition-colors ${
+            isDisabled || isSubmitting
+              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              : 'bg-primary-700 hover:bg-primary-800 text-white'
+          }`}
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 size={15} className="animate-spin" />
+              Processing…
+            </>
           ) : (
-            <div>
-              <p className="text-xs text-gray-400 font-medium">No plan selected</p>
-              <p className="text-sm font-semibold text-gray-500">
-                Select a plan to continue
-              </p>
-            </div>
+            <>
+              Continue <ArrowRight size={15} />
+            </>
           )}
-        </div>
-
-        <div className="flex items-center gap-3 w-full sm:w-auto">
-          <Link
-            href={isDisabled || isPassengersPage ? '#' : nextStep.path}
-            onClick={handleContinue}
-            aria-disabled={isDisabled}
-            className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 text-sm font-bold px-8 py-3 rounded-xl transition-colors ${
-              isDisabled
-                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                : 'bg-primary-700 hover:bg-primary-800 text-white'
-            }`}
-          >
-            Continue <ArrowRight size={15} />
-          </Link>
-        </div>
+        </Link>
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ export default function AppMegaLayout({ children, pages = [], logoAlt = 'Logo' }
   return (
     <>
       <Navbar pages={pages} logoAlt={logoAlt} />
+      <div className="h-[45px] lg:h-[53px] shrink-0" aria-hidden="true" />
       {children}
       <Footer />
     </>

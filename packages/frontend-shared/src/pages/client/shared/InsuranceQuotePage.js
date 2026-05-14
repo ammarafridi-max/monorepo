@@ -74,7 +74,7 @@ function QuoteResults({ onViewItemList, onSelectItem }) {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-10">
+    <div className="max-w-5xl mx-auto px-2 py-5">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-xl font-bold text-gray-900">
@@ -100,38 +100,35 @@ function QuoteResults({ onViewItemList, onSelectItem }) {
               type="button"
               onClick={() => setView('cards')}
               title="Card view"
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+              className={`flex items-center px-2.5 py-1.5 rounded-lg transition-colors ${
                 view === 'cards'
                   ? 'bg-white text-gray-900 shadow-sm'
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              <LayoutList size={14} />
-              Cards
+              <LayoutList size={15} />
             </button>
             <button
               type="button"
               onClick={() => setView('compare')}
               title="Compare view"
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+              className={`flex items-center px-2.5 py-1.5 rounded-lg transition-colors ${
                 view === 'compare'
                   ? 'bg-white text-gray-900 shadow-sm'
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              <TableProperties size={14} />
-              Compare
+              <TableProperties size={15} />
             </button>
           </div>
 
           {view === 'cards' && (
-            <div className="flex items-center gap-2">
-              <SlidersHorizontal size={15} className="text-gray-400" />
-              <span className="text-sm text-gray-500">Sort:</span>
+            <div className="flex items-center gap-1.5">
+              <SlidersHorizontal size={14} className="text-gray-400 shrink-0" />
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="text-sm font-medium text-gray-700 border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="text-sm font-medium text-gray-700 border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 {sortOptions?.map((o) => (
                   <option key={o}>{o}</option>

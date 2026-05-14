@@ -95,6 +95,7 @@ export function InsuranceProvider({ children }) {
   const [schemeId, setSchemeId] = useState(null);
   const [quotes, setQuotes] = useState([]);
   const [sessionId, setSessionId] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [journeyType, setJourneyType] = useState('single');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -361,6 +362,9 @@ export function InsuranceProvider({ children }) {
         handleQuantityChange,
         handleUpdatePassenger,
         handleSelectQuote,
+
+        isSubmitting,
+        setIsSubmitting,
       }}
     >
       {children}
