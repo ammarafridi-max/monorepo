@@ -1,18 +1,17 @@
 export default function robots() {
   return {
     rules: {
-      userAgent: '*',
-      allow: '/',
+      userAgent: "*",
+      allow: "/",
       disallow: [
-        '/admin',
-        '/booking',
-        '/travel-insurance',
-        '/insurance-booking/quote',
-        '/insurance-booking/passengers',
-        '/insurance-booking/review',
-        '/insurance-booking/payment',
+        "/admin",
+        "/booking",
+        "/insurance-booking/quote",
+        "/insurance-booking/passengers",
+        "/insurance-booking/review",
+        "/insurance-booking/payment",
       ],
     },
-    sitemap: 'https://www.mydummyticket.ae/sitemap.xml',
+    sitemap: "https://www.mydummyticket.ae/sitemap.xml",
   };
 }
