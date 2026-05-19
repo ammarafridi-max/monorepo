@@ -9,6 +9,14 @@ const nextConfig = {
   // Trace from the monorepo root so workspace packages are included in standalone output
   outputFileTracingRoot: join(__dirname, '../../'),
   transpilePackages: ['@travel-suite/frontend-shared'],
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
+    ],
+  },
 };
 
 export default nextConfig;

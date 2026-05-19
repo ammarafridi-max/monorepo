@@ -8,6 +8,14 @@ const nextConfig = {
   output: 'standalone',
   outputFileTracingRoot: join(__dirname, '../../'),
   transpilePackages: ['@travel-suite/frontend-shared'],
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
+    ],
+  },
 };
 
 export default nextConfig;
