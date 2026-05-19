@@ -2,6 +2,10 @@ import { SITE_URL } from '@/lib/schema';
 import { getPublishedBlogsApi } from '@travel-suite/frontend-shared/services/apiBlog';
 import { getBlogTagsApi } from '@travel-suite/frontend-shared/services/apiBlogTags';
 
+// Regenerate hourly so blog/tag entries appear once the backend is reachable
+// at runtime (the build-time Docker container usually can't reach it).
+export const revalidate = 3600;
+
 const staticPages = [
   { url: '/', changeFrequency: 'weekly', priority: 1.0 },
   { url: '/dummy-ticket-schengen-visa', changeFrequency: 'monthly', priority: 0.9 },
@@ -41,8 +45,8 @@ export default async function sitemap() {
         changeFrequency: 'weekly',
         priority: 0.7,
       }));
-  } catch {
-    // Blog API unavailable at build time — blog posts excluded from sitemap
+  } catch (err) {
+    console.error('[sitemap] blog posts fetch failed:', err);
   }
 
   let tagEntries = [];
@@ -57,8 +61,8 @@ export default async function sitemap() {
         changeFrequency: 'weekly',
         priority: 0.5,
       }));
-  } catch {
-    // Tags API unavailable at build time — tag pages excluded from sitemap
+  } catch (err) {
+    console.error('[sitemap] blog tags fetch failed:', err);
   }
 
   return [...staticEntries, ...blogEntries, ...tagEntries];

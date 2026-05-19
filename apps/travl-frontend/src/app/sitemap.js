@@ -2,6 +2,10 @@ import { SITE_URL } from "@/lib/schema";
 import { getPublishedBlogsApi } from "@travel-suite/frontend-shared/services/apiBlog";
 import { getBlogTagsApi } from "@travel-suite/frontend-shared/services/apiBlogTags";
 import { getPublicVisasApi } from "@travel-suite/frontend-shared/services/apiVisa";
+
+// Regenerate hourly so blog/visa/tag entries appear once the backend is reachable
+// at runtime (the build-time Docker container usually can't reach it).
+export const revalidate = 3600;
 const staticPages = [
   { url: "/", changeFrequency: "weekly", priority: 1.0, lastmod: "2026-04-28" },
   {
@@ -102,7 +106,9 @@ export default async function sitemap() {
         changeFrequency: "weekly",
         priority: 0.7,
       }));
-  } catch {}
+  } catch (err) {
+    console.error('[sitemap] fetch failed:', err);
+  }
 
   let visaEntries = [];
   try {
@@ -115,7 +121,9 @@ export default async function sitemap() {
         changeFrequency: "weekly",
         priority: 0.7,
       }));
-  } catch {}
+  } catch (err) {
+    console.error('[sitemap] fetch failed:', err);
+  }
 
   let tagEntries = [];
   try {
@@ -129,7 +137,9 @@ export default async function sitemap() {
         changeFrequency: "weekly",
         priority: 0.5,
       }));
-  } catch {}
+  } catch (err) {
+    console.error('[sitemap] fetch failed:', err);
+  }
 
   return [...staticEntries, ...blogEntries, ...tagEntries, ...visaEntries];
 }
