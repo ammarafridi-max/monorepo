@@ -1,399 +1,502 @@
 [
   {
     "date": "2026-04-28",
-    "title": "How to Apply for a Schengen Visa from the UAE: Complete 2026 Guide"
+    "title": "How to Apply for a Schengen Visa from the UAE: Complete 2026 Guide",
+    "length": "long"
   },
   {
     "date": "2026-04-29",
-    "title": "Schengen Visa Travel Insurance Requirements: Minimum Coverage Explained"
+    "title": "Schengen Visa Travel Insurance Requirements: Minimum Coverage Explained",
+    "length": "medium"
   },
   {
     "date": "2026-04-30",
-    "title": "Schengen Visa Documents Checklist for UAE Residents"
+    "title": "Schengen Visa Documents Checklist for UAE Residents",
+    "length": "medium"
   },
   {
     "date": "2026-05-01",
-    "title": "Why You Need Travel Insurance for Your Schengen Visa Application"
+    "title": "Why You Need Travel Insurance for Your Schengen Visa Application",
+    "length": "medium"
   },
   {
     "date": "2026-05-02",
-    "title": "Schengen Visa Rejection: Top 10 Reasons and How to Avoid Them"
+    "title": "Schengen Visa Rejection: Top 10 Reasons and How to Avoid Them",
+    "length": "long"
   },
   {
     "date": "2026-05-03",
-    "title": "How Long Does a Schengen Visa Take to Process from Dubai?"
+    "title": "How Long Does a Schengen Visa Take to Process from Dubai?",
+    "length": "short"
   },
   {
     "date": "2026-05-04",
-    "title": "Schengen Visa Fees in 2026: Complete Cost Breakdown for UAE Applicants"
+    "title": "Schengen Visa Fees in 2026: Complete Cost Breakdown for UAE Applicants",
+    "length": "medium"
   },
   {
     "date": "2026-05-05",
-    "title": "Single Entry vs Multiple Entry Schengen Visa: Which One Should You Get?"
+    "title": "Single Entry vs Multiple Entry Schengen Visa: Which One Should You Get?",
+    "length": "medium"
   },
   {
     "date": "2026-05-06",
-    "title": "Schengen Visa Interview Questions: How to Prepare from the UAE"
+    "title": "Schengen Visa Interview Questions: How to Prepare from the UAE",
+    "length": "medium"
   },
   {
     "date": "2026-05-07",
-    "title": "VFS Global Dubai: Booking Appointments and What to Expect"
+    "title": "VFS Global Dubai: Booking Appointments and What to Expect",
+    "length": "medium"
   },
   {
     "date": "2026-05-08",
-    "title": "BLS International UAE: Schengen Visa Application Guide"
+    "title": "BLS International UAE: Schengen Visa Application Guide",
+    "length": "medium"
   },
   {
     "date": "2026-05-09",
-    "title": "Proof of Accommodation for Schengen Visa: What UAE Applicants Need"
+    "title": "Proof of Accommodation for Schengen Visa: What UAE Applicants Need",
+    "length": "medium"
   },
   {
     "date": "2026-05-10",
-    "title": "Proof of Onward Travel for Schengen Visa: Why Dummy Tickets Work"
+    "title": "Proof of Onward Travel for Schengen Visa: Why Dummy Tickets Work",
+    "length": "medium"
   },
   {
     "date": "2026-05-11",
-    "title": "Schengen Visa Bank Statement Requirements for UAE Residents"
+    "title": "Schengen Visa Bank Statement Requirements for UAE Residents",
+    "length": "medium"
   },
   {
     "date": "2026-05-12",
-    "title": "France Visa from UAE: Application Process, Documents, and Tips"
+    "title": "France Visa from UAE: Application Process, Documents, and Tips",
+    "length": "long"
   },
   {
     "date": "2026-05-13",
-    "title": "Germany Visa from UAE: Step-by-Step Application Guide"
+    "title": "Germany Visa from UAE: Step-by-Step Application Guide",
+    "length": "long"
   },
   {
     "date": "2026-05-14",
-    "title": "Italy Visa from UAE: Requirements and Application Process"
+    "title": "Italy Visa from UAE: Requirements and Application Process",
+    "length": "long"
   },
   {
     "date": "2026-05-15",
-    "title": "Spain Visa from UAE: Complete Application Guide"
+    "title": "Spain Visa from UAE: Complete Application Guide",
+    "length": "long"
   },
   {
     "date": "2026-05-16",
-    "title": "Netherlands Visa from UAE: Documents and Process Explained"
+    "title": "Netherlands Visa from UAE: Documents and Process Explained",
+    "length": "long"
   },
   {
     "date": "2026-05-17",
-    "title": "Greece Visa from UAE: How to Apply and What to Expect"
+    "title": "Greece Visa from UAE: How to Apply and What to Expect",
+    "length": "long"
   },
   {
     "date": "2026-05-18",
-    "title": "Switzerland Visa from UAE: Requirements for Schengen Applicants"
+    "title": "Switzerland Visa from UAE: Requirements for Schengen Applicants",
+    "length": "long"
   },
   {
     "date": "2026-05-19",
-    "title": "UK Visa from UAE: Standard Visitor Visa Application Guide"
+    "title": "UK Visa from UAE: Standard Visitor Visa Application Guide",
+    "length": "long"
   },
   {
     "date": "2026-05-20",
-    "title": "UK Visa Travel Insurance: Is It Required and What to Buy"
+    "title": "UK Visa Travel Insurance: Is It Required and What to Buy",
+    "length": "medium"
   },
   {
     "date": "2026-05-21",
-    "title": "USA B1/B2 Visa from UAE: Complete Application Guide"
+    "title": "USA B1/B2 Visa from UAE: Complete Application Guide",
+    "length": "long"
   },
   {
     "date": "2026-05-22",
-    "title": "USA Visa Interview at the Dubai Embassy: Questions and Tips"
+    "title": "USA Visa Interview at the Dubai Embassy: Questions and Tips",
+    "length": "medium"
   },
   {
     "date": "2026-05-23",
-    "title": "Canada Visitor Visa from UAE: Application Process and Documents"
+    "title": "Canada Visitor Visa from UAE: Application Process and Documents",
+    "length": "long"
   },
   {
     "date": "2026-05-24",
-    "title": "Canada Visa Refused? How to Reapply Successfully"
+    "title": "Canada Visa Refused? How to Reapply Successfully",
+    "length": "medium"
   },
   {
     "date": "2026-05-25",
-    "title": "Australia Visitor Visa from UAE: Subclass 600 Explained"
+    "title": "Australia Visitor Visa from UAE: Subclass 600 Explained",
+    "length": "long"
   },
   {
     "date": "2026-05-26",
-    "title": "Japan Visa from UAE: Application Guide for UAE Residents"
+    "title": "Japan Visa from UAE: Application Guide for UAE Residents",
+    "length": "long"
   },
   {
     "date": "2026-05-27",
-    "title": "China Visa from UAE: Tourist Visa Application Process"
+    "title": "China Visa from UAE: Tourist Visa Application Process",
+    "length": "long"
   },
   {
     "date": "2026-05-28",
-    "title": "Thailand Visa from UAE: Visa-Free, Visa on Arrival, or e-Visa?"
+    "title": "Thailand Visa from UAE: Visa-Free, Visa on Arrival, or e-Visa?",
+    "length": "long"
   },
   {
     "date": "2026-05-29",
-    "title": "South Korea Visa from UAE: Documents and Application Tips"
+    "title": "South Korea Visa from UAE: Documents and Application Tips",
+    "length": "long"
   },
   {
     "date": "2026-05-30",
-    "title": "India Visa from UAE: e-Visa vs Sticker Visa Explained"
+    "title": "India Visa from UAE: e-Visa vs Sticker Visa Explained",
+    "length": "medium"
   },
   {
     "date": "2026-05-31",
-    "title": "Malaysia Visa from UAE: Requirements for UAE Residents"
+    "title": "Malaysia Visa from UAE: Requirements for UAE Residents",
+    "length": "long"
   },
   {
     "date": "2026-06-01",
-    "title": "Vietnam Visa from UAE: e-Visa and Visa on Arrival Guide"
+    "title": "Vietnam Visa from UAE: e-Visa and Visa on Arrival Guide",
+    "length": "long"
   },
   {
     "date": "2026-06-02",
-    "title": "What Does Travel Insurance Cover? A Clear Guide for UAE Residents"
+    "title": "What Does Travel Insurance Cover? A Clear Guide for UAE Residents",
+    "length": "medium"
   },
   {
     "date": "2026-06-03",
-    "title": "How Much Does Travel Insurance Cost in the UAE?"
+    "title": "How Much Does Travel Insurance Cost in the UAE?",
+    "length": "short"
   },
   {
     "date": "2026-06-04",
-    "title": "Single Trip vs Annual Travel Insurance: Which One Should You Buy?"
+    "title": "Single Trip vs Annual Travel Insurance: Which One Should You Buy?",
+    "length": "medium"
   },
   {
     "date": "2026-06-05",
-    "title": "International Travel Insurance: When You Need Worldwide Coverage"
+    "title": "International Travel Insurance: When You Need Worldwide Coverage",
+    "length": "medium"
   },
   {
     "date": "2026-06-06",
-    "title": "Travel Medical Insurance Explained: What's Covered and What's Not"
+    "title": "Travel Medical Insurance Explained: What's Covered and What's Not",
+    "length": "medium"
   },
   {
     "date": "2026-06-07",
-    "title": "How to Buy Travel Insurance Online in the UAE in 2026"
+    "title": "How to Buy Travel Insurance Online in the UAE in 2026",
+    "length": "medium"
   },
   {
     "date": "2026-06-08",
-    "title": "Travel Insurance Claims: How to File and What to Expect"
+    "title": "Travel Insurance Claims: How to File and What to Expect",
+    "length": "medium"
   },
   {
     "date": "2026-06-09",
-    "title": "Pre-Existing Medical Conditions and Travel Insurance: What UAE Travellers Need to Know"
+    "title": "Pre-Existing Medical Conditions and Travel Insurance: What UAE Travellers Need to Know",
+    "length": "medium"
   },
   {
     "date": "2026-06-10",
-    "title": "Travel Insurance for Seniors from the UAE: Coverage Over 60, 65, and 70"
+    "title": "Travel Insurance for Seniors from the UAE: Coverage Over 60, 65, and 70",
+    "length": "medium"
   },
   {
     "date": "2026-06-11",
-    "title": "Family Travel Insurance: Covering Kids on Your Trip"
+    "title": "Family Travel Insurance: Covering Kids on Your Trip",
+    "length": "medium"
   },
   {
     "date": "2026-06-12",
-    "title": "Travel Insurance for Students Studying Abroad from the UAE"
+    "title": "Travel Insurance for Students Studying Abroad from the UAE",
+    "length": "medium"
   },
   {
     "date": "2026-06-13",
-    "title": "Travel Insurance for Pregnant Travellers: What to Look For"
+    "title": "Travel Insurance for Pregnant Travellers: What to Look For",
+    "length": "medium"
   },
   {
     "date": "2026-06-14",
-    "title": "Travel Insurance with COVID-19 Cover: Is It Still Worth It in 2026?"
+    "title": "Travel Insurance with COVID-19 Cover: Is It Still Worth It in 2026?",
+    "length": "short"
   },
   {
     "date": "2026-06-15",
-    "title": "Annual Multi-Trip Insurance: Is It Worth It for UAE Residents?"
+    "title": "Annual Multi-Trip Insurance: Is It Worth It for UAE Residents?",
+    "length": "medium"
   },
   {
     "date": "2026-06-16",
-    "title": "Trip Cancellation Insurance: When and Why You Need It"
+    "title": "Trip Cancellation Insurance: When and Why You Need It",
+    "length": "short"
   },
   {
     "date": "2026-06-17",
-    "title": "Lost Baggage Insurance: How Claims Work for UAE Travellers"
+    "title": "Lost Baggage Insurance: How Claims Work for UAE Travellers",
+    "length": "short"
   },
   {
     "date": "2026-06-18",
-    "title": "Flight Delay Insurance: What's Covered When Your Flight Is Delayed"
+    "title": "Flight Delay Insurance: What's Covered When Your Flight Is Delayed",
+    "length": "short"
   },
   {
     "date": "2026-06-19",
-    "title": "Medical Evacuation and Repatriation Cover: What It Means in Practice"
+    "title": "Medical Evacuation and Repatriation Cover: What It Means in Practice",
+    "length": "short"
   },
   {
     "date": "2026-06-20",
-    "title": "Adventure Sports Travel Insurance: Skiing, Diving, and Hiking Cover"
+    "title": "Adventure Sports Travel Insurance: Skiing, Diving, and Hiking Cover",
+    "length": "medium"
   },
   {
     "date": "2026-06-21",
-    "title": "Cruise Travel Insurance from the UAE: Why Standard Plans Aren't Enough"
+    "title": "Cruise Travel Insurance from the UAE: Why Standard Plans Aren't Enough",
+    "length": "medium"
   },
   {
     "date": "2026-06-22",
-    "title": "Business Travel Insurance: What UAE Professionals Should Know"
+    "title": "Business Travel Insurance: What UAE Professionals Should Know",
+    "length": "medium"
   },
   {
     "date": "2026-06-23",
-    "title": "What Is a Dummy Ticket and When Do You Need One?"
+    "title": "What Is a Dummy Ticket and When Do You Need One?",
+    "length": "short"
   },
   {
     "date": "2026-06-24",
-    "title": "Dummy Ticket vs Real Flight Booking: Which One Does Your Visa Need?"
+    "title": "Dummy Ticket vs Real Flight Booking: Which One Does Your Visa Need?",
+    "length": "medium"
   },
   {
     "date": "2026-06-25",
-    "title": "How to Get a Dummy Ticket in the UAE: Step-by-Step Guide"
+    "title": "Proof of Onward Travel: What Immigration Officers at Dubai Airport Actually Check",
+    "length": "medium"
   },
   {
     "date": "2026-06-26",
-    "title": "Are Dummy Tickets Legal? What UAE Visa Applicants Should Know"
+    "title": "Are Dummy Tickets Legal? What UAE Visa Applicants Should Know",
+    "length": "short"
   },
   {
     "date": "2026-06-27",
-    "title": "Dummy Hotel Bookings vs Real Reservations for Visa Applications"
+    "title": "Dummy Hotel Bookings vs Real Reservations for Visa Applications",
+    "length": "medium"
   },
   {
     "date": "2026-06-28",
-    "title": "PNR Codes Explained: How Embassies Verify Your Flight Reservation"
+    "title": "PNR Codes Explained: How Embassies Verify Your Flight Reservation",
+    "length": "short"
   },
   {
     "date": "2026-06-29",
-    "title": "Common Mistakes When Submitting Flight Reservations for Visa Applications"
+    "title": "Common Mistakes When Submitting Flight Reservations for Visa Applications",
+    "length": "medium"
   },
   {
     "date": "2026-06-30",
-    "title": "Travel Insurance for Europe Trips: Schengen and Beyond"
+    "title": "Travel Insurance for Europe Trips: Schengen and Beyond",
+    "length": "medium"
   },
   {
     "date": "2026-07-01",
-    "title": "Travel Insurance for the UK: What UAE Residents Need"
+    "title": "Travel Insurance for the UK: What UAE Residents Need",
+    "length": "medium"
   },
   {
     "date": "2026-07-02",
-    "title": "Travel Insurance for the USA: Why Coverage Limits Matter"
+    "title": "Travel Insurance for the USA: Why Coverage Limits Matter",
+    "length": "medium"
   },
   {
     "date": "2026-07-03",
-    "title": "Travel Insurance for Thailand from the UAE"
+    "title": "Travel Insurance for Thailand from the UAE",
+    "length": "medium"
   },
   {
     "date": "2026-07-04",
-    "title": "Travel Insurance for Bali and Indonesia: A UAE Traveller's Guide"
+    "title": "Travel Insurance for Bali and Indonesia: A UAE Traveller's Guide",
+    "length": "medium"
   },
   {
     "date": "2026-07-05",
-    "title": "Travel Insurance for Maldives: Honeymoons and Family Trips"
+    "title": "Travel Insurance for Maldives: Honeymoons and Family Trips",
+    "length": "medium"
   },
-  { "date": "2026-07-06", "title": "Travel Insurance for Turkey from the UAE" },
+  {
+    "date": "2026-07-06",
+    "title": "Travel Insurance for Turkey from the UAE",
+    "length": "medium"
+  },
   {
     "date": "2026-07-07",
-    "title": "Summer Travel from the UAE: Insurance and Visa Checklist for 2026"
+    "title": "Summer Travel from the UAE: Insurance and Visa Checklist for 2026",
+    "length": "medium"
   },
   {
     "date": "2026-07-08",
-    "title": "Eid Holiday Travel: Last-Minute Visa and Insurance Tips"
+    "title": "Eid Holiday Travel: Last-Minute Visa and Insurance Tips",
+    "length": "medium"
   },
   {
     "date": "2026-07-09",
-    "title": "Winter Travel Insurance: What to Look For Before a Ski Trip"
+    "title": "Winter Travel Insurance: What to Look For Before a Ski Trip",
+    "length": "medium"
   },
   {
     "date": "2026-07-10",
-    "title": "Hajj and Umrah Travel Insurance from the UAE"
+    "title": "Hajj and Umrah Travel Insurance from the UAE",
+    "length": "medium"
   },
   {
     "date": "2026-07-11",
-    "title": "Year-End Holiday Travel: Booking Insurance and Tickets in Advance"
+    "title": "Schengen Visa for First-Time Applicants: How to Prove Strong Ties to the UAE",
+    "length": "long"
   },
   {
     "date": "2026-07-12",
-    "title": "Travel Insurance for Long Summer Holidays from the UAE"
+    "title": "Travel Insurance for UAE Residents Over 70: Coverage Limits and Exclusions",
+    "length": "medium"
   },
   {
     "date": "2026-07-13",
-    "title": "Back-to-School Season: Student Travel Insurance for UAE Families"
+    "title": "Back-to-School Season: Student Travel Insurance for UAE Families",
+    "length": "medium"
   },
   {
     "date": "2026-07-14",
-    "title": "Travel Insurance for UAE Expats: What's Different About Your Cover"
+    "title": "Travel Insurance for UAE Expats: What's Different About Your Cover",
+    "length": "medium"
   },
   {
     "date": "2026-07-15",
-    "title": "Travel Insurance for Indian Passport Holders Living in the UAE"
+    "title": "Travel Insurance for Indian Passport Holders Living in the UAE",
+    "length": "medium"
   },
   {
     "date": "2026-07-16",
-    "title": "Travel Insurance for Pakistani Passport Holders in the UAE"
+    "title": "Travel Insurance for Pakistani Passport Holders in the UAE",
+    "length": "medium"
   },
   {
     "date": "2026-07-17",
-    "title": "Travel Insurance for Filipino Residents of the UAE"
+    "title": "Travel Insurance for Filipino Residents of the UAE",
+    "length": "medium"
   },
   {
     "date": "2026-07-18",
-    "title": "Travel Insurance for British Expats in the UAE"
+    "title": "Travel Insurance for British Expats in the UAE",
+    "length": "medium"
   },
   {
     "date": "2026-07-19",
-    "title": "GCC Residents Travelling Abroad: Insurance Considerations"
+    "title": "GCC Residents Travelling Abroad: Insurance Considerations",
+    "length": "medium"
   },
   {
     "date": "2026-07-20",
-    "title": "Travel Insurance for UAE Residents Travelling to Their Home Country"
+    "title": "What to Do If Your Schengen Visa Is Delayed Past Your Travel Date",
+    "length": "medium"
   },
   {
     "date": "2026-07-21",
-    "title": "Cheap vs Comprehensive Travel Insurance: What You Actually Get"
+    "title": "Dummy Ticket Providers Compared: What to Look For Before You Buy",
+    "length": "medium"
   },
   {
     "date": "2026-07-22",
-    "title": "Travel Insurance Through Your Credit Card: Is It Enough?"
+    "title": "Travel Insurance Through Your Credit Card: Is It Enough?",
+    "length": "medium"
   },
   {
     "date": "2026-07-23",
-    "title": "Bank Travel Insurance vs Standalone Policies: A Practical Comparison"
+    "title": "How to Cancel or Change Travel Insurance After You've Bought It",
+    "length": "short"
   },
   {
     "date": "2026-07-24",
-    "title": "Free Travel Insurance from Airlines: What It Actually Covers"
+    "title": "Free Travel Insurance from Airlines: What It Actually Covers",
+    "length": "short"
   },
   {
     "date": "2026-07-25",
-    "title": "Travel Insurance vs Health Insurance: Why You Often Need Both"
+    "title": "Travel Insurance vs Health Insurance: Why You Often Need Both",
+    "length": "medium"
   },
   {
     "date": "2026-07-26",
-    "title": "Travel Insurance for Last-Minute Trips from the UAE"
+    "title": "Travel Insurance for Last-Minute Trips from the UAE",
+    "length": "short"
   },
   {
     "date": "2026-07-27",
-    "title": "What Happens If You Travel Without Insurance? Real Scenarios"
+    "title": "What Happens If You Travel Without Insurance? Real Scenarios",
+    "length": "medium"
   },
   {
     "date": "2026-07-28",
-    "title": "Travel Insurance for One-Way Trips: What UAE Residents Need to Know"
+    "title": "Travel Insurance for One-Way Trips: What UAE Residents Need to Know",
+    "length": "short"
   },
   {
     "date": "2026-07-29",
-    "title": "Travel Insurance for Connecting Flights and Layovers"
+    "title": "Travel Insurance for Connecting Flights and Layovers",
+    "length": "short"
   },
   {
     "date": "2026-07-30",
-    "title": "Travel Insurance When You Already Have International Health Cover"
+    "title": "Travel Insurance for UAE Residents on Cruises in Europe",
+    "length": "medium"
   },
   {
     "date": "2026-07-31",
-    "title": "Travel Insurance for Working Holidays from the UAE"
+    "title": "Travel Insurance for Working Holidays from the UAE",
+    "length": "medium"
   },
   {
     "date": "2026-08-01",
-    "title": "Travel Insurance for Digital Nomads Based in the UAE"
+    "title": "Travel Insurance for Digital Nomads Based in the UAE",
+    "length": "medium"
   },
   {
     "date": "2026-08-02",
-    "title": "Travel Insurance for Religious Pilgrimages: Hajj, Umrah, and More"
+    "title": "Schengen Visa Cover Letter: Template and Examples for UAE Applicants",
+    "length": "medium"
   },
   {
     "date": "2026-08-03",
-    "title": "Travel Insurance for Medical Tourism from the UAE"
+    "title": "Travel Insurance for Medical Tourism from the UAE",
+    "length": "medium"
   },
   {
     "date": "2026-08-04",
-    "title": "How to Read a Travel Insurance Policy Document"
+    "title": "How to Read a Travel Insurance Policy Document",
+    "length": "medium"
   },
   {
     "date": "2026-08-05",
-    "title": "Travel Insurance Exclusions: The Fine Print That Matters"
+    "title": "Travel Insurance Exclusions: The Fine Print That Matters",
+    "length": "medium"
   }
 ]

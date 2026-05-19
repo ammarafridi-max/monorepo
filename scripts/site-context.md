@@ -1,4 +1,4 @@
-# Travl.ae — Site & Service Context
+# Travl.ae: Site and Service Context
 
 **Website:** https://www.travl.ae  
 **Contact:** info@travl.ae  
@@ -11,28 +11,16 @@ Travl is a UAE-based travel services platform offering dummy flight tickets for 
 
 ## Core Services
 
-### Flight Itinerary (Dummy Ticket)
+### Dummy Ticket 365 (Flight & Hotel Reservations)
 
-**URL:** https://www.mydummyticket.ae  
-Order a dummy flight ticket with a valid PNR/GDS code. Starting from AED 49. Instant email delivery in airline booking format. Used for Schengen visa applications, UK/US/Canada visas, travel planning, and as proof of onward travel. The ticket is a flight reservation — not an actual booking — and cannot be used for boarding.
+**URL:** https://www.dummyticket365.com  
+**Brand name:** Always refer to the service as "Dummy Ticket 365", never as "dummyticket365.com" in prose. The URL is only used inside <a href> attributes.  
+Dummy Ticket 365 issues verified flight reservations with valid PNR/GDS codes, plus verified hotel reservations by email. Starting from USD 13. Instant email delivery in airline booking format. Used for Schengen visa applications, UK/US/Canada visas, proof of onward travel, and immigration checks. The flight reservation is not a paid ticket and cannot be used for boarding. The hotel reservation is accepted as proof of accommodation for visa applications without requiring upfront payment for actual hotel stays.
 
 ### Travel Insurance
 
 **URL:** https://www.travl.ae/travel-insurance  
 Travel insurance issued by AXA. Plans cover UAE residents travelling abroad. Accepted by Schengen embassies, VFS Global, and BLS International for visa applications.
-
----
-
-## Dummy Ticket Booking Flow
-
-1. **Select Flights** — https://www.travl.ae/booking/select-flights  
-   Enter trip details (origin, destination, dates, passengers) and select a flight.
-
-2. **Review Details** — https://www.travl.ae/booking/review-details  
-   Confirm booking details, passenger names, and trip summary.
-
-3. **Payment** — https://www.travl.ae/booking/payment  
-   Secure online payment to complete the order. Ticket delivered via email.
 
 ---
 
@@ -107,11 +95,10 @@ Articles covering visa applications, travel insurance, flight reservations, and 
 
 ## Internal Linking Priority (for Blog Posts)
 
-1. **Highest priority:** https://www.travl.ae/travel-insurance and its child pages — link heavily and naturally throughout content
-2. **High priority:** https://www.mydummyticket.ae — link when covering dummy tickets, visa proof of onward travel, PNR codes
-3. **Medium priority:** https://www.travl.ae/faq — link when addressing common questions
-4. **Medium priority:** Related blog posts at https://www.travl.ae/blog/[slug] — cross-link relevant articles
-5. **Low priority:** Booking flow pages (/booking/_, /insurance-booking/_) — link only when contextually appropriate
+1. **Highest priority:** https://www.travl.ae/travel-insurance and its child pages: link heavily and naturally throughout content
+2. **High priority:** https://www.dummyticket365.com: link when covering dummy tickets, hotel reservations for visa applications, visa proof of onward travel, PNR codes. Always use the brand name "Dummy Ticket 365" in anchor text and prose, never the bare URL.
+3. **Medium priority:** https://www.travl.ae/faq: link when addressing common questions
+4. **Medium priority:** Related blog posts at https://www.travl.ae/blog/[slug]: cross-link relevant articles
 
 ---
 
@@ -119,18 +106,18 @@ Articles covering visa applications, travel insurance, flight reservations, and 
 
 - Write for UAE residents and expats (Indian, Pakistani, Filipino, British, other nationalities)
 - Use British English spelling (traveller, colour, recognise)
-- Be helpful and practical — readers want actionable information
-- Mention AED pricing when relevant (AED 30 for Schengen insurance, AED 49 for dummy tickets, AED 245 for annual multi-trip)
+- Be helpful and practical; readers want actionable information
+- Mention AED pricing for Travl insurance products (AED 30 for Schengen insurance, AED 245 for annual multi-trip). For Dummy Ticket 365 pricing, mention "from USD 13" only when directly relevant; do not over-quote prices.
 - Travl's insurance is issued by AXA and accepted by Schengen embassies
-- Do not make up specific facts — use accurate, general travel advice
-- Always link to the relevant Travl service pages naturally within the content
+- Do not make up specific facts; use accurate, general travel advice
+- Always link to relevant Travl service pages and to Dummy Ticket 365 where the topic involves flight reservations, hotel reservations, or proof of onward travel. Place links naturally within the content, never forced.
 
 ## Writing Style
 
-- Conversational and direct — write like a knowledgeable friend, not a corporate blog
+- Conversational and direct: write like a knowledgeable friend, not a corporate blog
 - Answer the question in the title early, within the first two paragraphs
 - No em dashes
 - Avoid these words: utilize, delve, leverage, furthermore, navigate, crucial, seamlessly, robust, streamline, unlock
-- No filler sentences — every sentence should add information
+- No filler sentences: every sentence should add information
 - Short paragraphs, max 3-4 lines
 - Use h2 for main sections, h3 for subsections only when needed

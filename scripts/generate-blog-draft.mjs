@@ -14,75 +14,31 @@ import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
+import {
+  BACKEND_URL,
+  LENGTH_TIERS,
+  apiFetch,
+  login,
+  fetchBlogTags,
+  getRequiredLinks,
+  formatRequiredLinksBlock,
+  validateRequiredLinks,
+  validateContentQuality,
+  fetchCoverImage,
+} from "./lib/blog-utils.mjs";
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// ── Config ────────────────────────────────────────────────────────────────────
-
-const BACKEND_URL = "https://api.travl.ae";
-const ADMIN_EMAIL = process.env.TRAVL_ADMIN_EMAIL;
-const ADMIN_PASSWORD = process.env.TRAVL_ADMIN_PASSWORD;
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 /** Returns today's date in YYYY-MM-DD format using UAE timezone (UTC+4). */
 function getTodayUAE() {
   const now = new Date();
-  // UTC+4
   const uaeOffset = 4 * 60 * 60 * 1000;
   const uaeNow = new Date(now.getTime() + uaeOffset);
   return uaeNow.toISOString().slice(0, 10);
-}
-
-/** Fetches with error handling. Returns parsed JSON or throws. */
-async function apiFetch(path, options = {}) {
-  const res = await fetch(`${BACKEND_URL}${path}`, {
-    headers: { "Content-Type": "application/json", ...options.headers },
-    ...options,
-  });
-  const body = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    throw new Error(
-      `API ${options.method || "GET"} ${path} → ${res.status}: ${JSON.stringify(body)}`,
-    );
-  }
-  return body;
-}
-
-/**
- * Like apiFetch but also returns the raw response (so callers can read headers).
- */
-async function apiFetchRaw(path, options = {}) {
-  const res = await fetch(`${BACKEND_URL}${path}`, {
-    headers: { "Content-Type": "application/json", ...options.headers },
-    ...options,
-  });
-  const body = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    throw new Error(
-      `API ${options.method || "GET"} ${path} → ${res.status}: ${JSON.stringify(body)}`,
-    );
-  }
-  return { res, body };
-}
-
-/** Extracts the `jwt=...` value from one or more Set-Cookie headers. */
-function extractJwtCookie(res) {
-  // Node's fetch exposes set-cookie via getSetCookie() (Node 22+) or as a single
-  // comma-joined header value.
-  let cookies = [];
-  if (typeof res.headers.getSetCookie === "function") {
-    cookies = res.headers.getSetCookie();
-  } else {
-    const raw = res.headers.get("set-cookie");
-    if (raw) cookies = [raw];
-  }
-  for (const c of cookies) {
-    const match = c.match(/(?:^|;\s*)jwt=([^;]+)/);
-    if (match && match[1] && match[1] !== "loggedout") return match[1];
-  }
-  return null;
 }
 
 // ── Step 1: Resolve today's topic ─────────────────────────────────────────────
@@ -99,47 +55,14 @@ function getTodaysTopic() {
   return entry;
 }
 
-// ── Step 2: Login ─────────────────────────────────────────────────────────────
-
-async function login() {
-  if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
-    throw new Error(
-      "TRAVL_ADMIN_EMAIL and TRAVL_ADMIN_PASSWORD env vars are required.",
-    );
-  }
-  const { res, body } = await apiFetchRaw("/api/auth/login", {
-    method: "POST",
-    body: JSON.stringify({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD }),
-  });
-  // Backend sets the JWT as an httpOnly cookie; the response body contains
-  // only user data. Extract the token from the Set-Cookie header.
-  const token =
-    extractJwtCookie(res) || body?.data?.token || body?.token || null;
-  if (!token)
-    throw new Error(
-      `Login succeeded but no token returned: ${JSON.stringify(body)}`,
-    );
-  console.log("✓ Logged in");
-  return token;
-}
-
 // ── Step 3: Fetch context data ────────────────────────────────────────────────
 
 async function fetchPublishedPosts(token) {
   const data = await apiFetch("/api/blogs?limit=50&page=1", {
     headers: { Cookie: `jwt=${token}` },
   });
-  // Return array of { title, slug } for internal linking suggestions
   const posts = data?.data?.blogs ?? [];
   return posts.map((p) => ({ title: p.title, slug: p.slug }));
-}
-
-async function fetchBlogTags(token) {
-  const data = await apiFetch("/api/blog-tags", {
-    headers: { Cookie: `jwt=${token}` },
-  });
-  const tags = data?.data ?? [];
-  return tags.map((t) => t.name);
 }
 
 // ── Step 3b: Check if title already exists ────────────────────────────────────
@@ -168,6 +91,24 @@ async function generateBlogContent({
 
   const client = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
 
+  // Resolve length tier with a safe default.
+  const lengthTier = LENGTH_TIERS[topic.length] ? topic.length : "medium";
+  const { wordRange, maxTokens } = LENGTH_TIERS[lengthTier];
+  if (!LENGTH_TIERS[topic.length]) {
+    console.warn(
+      `⚠  Topic "${topic.title}" has no/invalid length (${topic.length}) — defaulting to medium`,
+    );
+  }
+
+  // Required internal links for this topic.
+  const requiredLinks = getRequiredLinks(topic);
+  const requiredLinksBlock = formatRequiredLinksBlock(requiredLinks);
+
+  console.log(
+    `Length tier: ${lengthTier} (${wordRange}, max_tokens=${maxTokens})`,
+  );
+  console.log(`Required internal links: ${requiredLinks.length}`);
+
   const relatedPostsText =
     publishedPosts.length > 0
       ? publishedPosts
@@ -183,16 +124,35 @@ ${siteContext}
 ## Published Posts (for internal linking)
 ${relatedPostsText}
 
+${requiredLinksBlock}
+
 ## Writing Rules
 - British English spelling (traveller, colour, recognise, etc.)
 - Practical, actionable content — readers want real information
 - Naturally weave in links to Travl's own pages (see Internal Linking Priority in the context)
 - Do NOT invent specific statistics, prices (unless they match what's in the site context), or policy names
-- Content must be substantive: 800–1200 words of HTML body content
+- Content must be substantive: ${wordRange} of HTML body content
 - Use proper HTML: <h2>, <h3>, <p>, <ul>/<li>, <strong>, <a href="..."> tags
-- Internal links: use full URL (https://www.travl.ae/...) in <a href> attributes
+- Internal links: use full URL (https://www.travl.ae/... or https://www.dummyticket365.com) in <a href> attributes
 - External links: DO NOT add external links — internal only
-- The HTML content must NOT include <html>, <head>, <body>, or <title> tags — just body content starting with an introductory <p>`;
+- The HTML content must NOT include <html>, <head>, <body>, or <title> tags — just body content starting with an introductory <p>
+
+## CTA Block (REQUIRED OUTPUT FIELD: ctaBlock)
+You must also return a "ctaBlock" field — a self-contained HTML callout that will be appended to the bottom of the article. Rules:
+- Outer element must be <div class="travl-cta">
+- Must contain an <h3> headline and at least one <p> with a clear next-step link
+- Use plain HTML only — no inline styles, no <script>, no <style>
+- Match the article's primary intent:
+  * Visa-application topics → CTA leads with Dummy Ticket 365 (https://www.dummyticket365.com) for the required flight reservation, mentions the hotel reservation service if accommodation is relevant to the topic, and briefly mentions the matching Travl visa assistance page (Schengen / UK / USA / Canada)
+  * Insurance topics → CTA promotes the most relevant Travl travel insurance page
+  * Generic travel topics → CTA promotes Travl travel insurance (https://www.travl.ae/travel-insurance)
+
+Example shape (write your own copy, do not reuse this wording verbatim):
+
+<div class="travl-cta">
+  <h3>Need a flight reservation for your visa?</h3>
+  <p>Get an embassy-accepted reservation from <a href="https://www.dummyticket365.com">Dummy Ticket 365</a> starting at USD 13, delivered to your inbox in minutes. Dummy Ticket 365 also issues verified hotel reservations if you need proof of accommodation. Travl also offers full <a href="https://www.travl.ae/visa/schengen">Schengen visa assistance</a> for end-to-end support.</p>
+</div>`;
 
   const userPrompt = `Write a complete blog post for the following topic:
 
@@ -210,7 +170,8 @@ Respond with a single valid JSON object (no markdown code fences, no extra text)
   "metaDescription": "SEO meta description, 150–160 characters",
   "excerpt": "2–3 sentence plain-text summary for blog listing, no HTML",
   "quickAnswer": "1–2 sentence plain-text direct answer to the question in the title (shown as a featured snippet)",
-  "content": "Full HTML body content, 700–900 words, with proper headings, paragraphs, and internal links",
+  "content": "Full HTML body content, ${wordRange}, with proper headings, paragraphs, and internal links. Must include every link listed under 'Required Internal Links' in the system prompt.",
+  "ctaBlock": "Self-contained HTML callout starting with <div class=\\"travl-cta\\">, matching the CTA Block rules in the system prompt.",
   "faqs": [
     { "question": "...", "answer": "..." },
     { "question": "...", "answer": "..." },
@@ -221,13 +182,13 @@ Respond with a single valid JSON object (no markdown code fences, no extra text)
   "tags": ["tag name 1", "tag name 2", "tag name 3"]
 }
 
-All values must be strings or arrays of strings/objects as shown. The "content" field must be a single string of HTML. The "faqs" field must be an array of exactly 5 objects each with "question" and "answer" string fields.`;
+All values must be strings or arrays of strings/objects as shown. The "content" and "ctaBlock" fields must each be a single string of HTML. The "faqs" field must be an array of exactly 5 objects each with "question" and "answer" string fields.`;
 
   console.log(`Generating content for: ${topic.title}`);
 
   const stream = await client.messages.stream({
     model: "claude-sonnet-4-6",
-    max_tokens: 4000,
+    max_tokens: maxTokens,
 
     system: systemPrompt,
     messages: [{ role: "user", content: userPrompt }],
@@ -261,6 +222,7 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
     "excerpt",
     "quickAnswer",
     "content",
+    "ctaBlock",
     "faqs",
     "tags",
   ];
@@ -268,218 +230,18 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
     if (!parsed[key]) throw new Error(`Claude response missing field: ${key}`);
   }
 
+  // Required-links validator — fail loudly if Claude dropped a mandated link.
+  validateRequiredLinks(parsed, requiredLinks);
+
+  // Content-quality checks (word count floor, no external links, soft style
+  // warnings). Hard failures throw; soft failures only warn.
+  validateContentQuality(parsed, lengthTier);
+
   console.log("✓ Blog content generated");
   return parsed;
 }
 
 // ── Step 5: Post draft to backend ─────────────────────────────────────────────
-
-/**
- * Derives a concise Unsplash search query from the blog topic title.
- * Strips common question words and filler so we get a clean visual concept.
- */
-function topicToSearchQuery(title) {
-  const stopWords = new Set([
-    "a",
-    "an",
-    "the",
-    "and",
-    "or",
-    "but",
-    "in",
-    "on",
-    "at",
-    "to",
-    "for",
-    "of",
-    "with",
-    "by",
-    "from",
-    "is",
-    "are",
-    "was",
-    "were",
-    "be",
-    "been",
-    "do",
-    "does",
-    "did",
-    "have",
-    "has",
-    "had",
-    "will",
-    "would",
-    "can",
-    "could",
-    "should",
-    "may",
-    "might",
-    "shall",
-    "need",
-    "how",
-    "what",
-    "why",
-    "when",
-    "where",
-    "who",
-    "which",
-    "that",
-    "this",
-    "these",
-    "those",
-    "your",
-    "my",
-    "our",
-    "their",
-    "its",
-    "i",
-    "you",
-    "we",
-    "they",
-    "he",
-    "she",
-    "it",
-    "not",
-    "no",
-    "nor",
-    "so",
-    "yet",
-    "both",
-    "either",
-    "neither",
-    "whether",
-    "if",
-    "than",
-    "as",
-    "up",
-    "out",
-    "about",
-    "into",
-    "through",
-    "during",
-    "before",
-    "after",
-    "above",
-    "below",
-    "between",
-    "each",
-    "more",
-    "most",
-    "other",
-    "some",
-    "such",
-    "only",
-    "own",
-    "same",
-    "than",
-    "too",
-    "very",
-    "just",
-    "because",
-    "while",
-    "although",
-    "though",
-    "since",
-    "until",
-    "unless",
-  ]);
-
-  const words = title
-    .replace(/[^a-zA-Z0-9\s]/g, " ")
-    .split(/\s+/)
-    .filter((w) => w.length > 2 && !stopWords.has(w.toLowerCase()));
-
-  // Take up to 4 most meaningful words
-  return words.slice(0, 4).join(" ") || "travel";
-}
-
-/**
- * Fetches a relevant cover image from Unsplash based on the blog topic.
- * Falls back to a picsum placeholder if Unsplash is unconfigured or fails.
- */
-async function fetchCoverImage(topicTitle) {
-  if (!UNSPLASH_ACCESS_KEY) {
-    console.warn("⚠  UNSPLASH_ACCESS_KEY not set — using picsum placeholder");
-    return fetchPlaceholderCoverImage();
-  }
-
-  const query = topicToSearchQuery(topicTitle);
-  console.log(`Searching Unsplash for: "${query}"`);
-
-  try {
-    const searchRes = await fetch(
-      `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&orientation=landscape&per_page=5&order_by=relevant`,
-      {
-        headers: {
-          Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}`,
-          "Accept-Version": "v1",
-        },
-      },
-    );
-
-    if (!searchRes.ok) {
-      throw new Error(`Unsplash search failed: ${searchRes.status}`);
-    }
-
-    const searchData = await searchRes.json();
-    const photos = searchData?.results ?? [];
-
-    if (photos.length === 0) {
-      console.warn(
-        `⚠  No Unsplash results for "${query}" — using picsum placeholder`,
-      );
-      return fetchPlaceholderCoverImage();
-    }
-
-    // Pick the top result
-    const photo = photos[0];
-    const imageUrl = photo.urls?.regular;
-
-    if (!imageUrl) {
-      throw new Error("Unsplash photo has no regular URL");
-    }
-
-    // Trigger the required download ping (Unsplash API guidelines)
-    fetch(photo.links?.download_location, {
-      headers: { Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}` },
-    }).catch(() => {});
-
-    const imgRes = await fetch(imageUrl);
-    if (!imgRes.ok) {
-      throw new Error(`Failed to download Unsplash image: ${imgRes.status}`);
-    }
-
-    const arrayBuffer = await imgRes.arrayBuffer();
-    const blob = new Blob([arrayBuffer], { type: "image/jpeg" });
-
-    const credit = photo.user?.name
-      ? ` (Photo by ${photo.user.name} on Unsplash)`
-      : "";
-    console.log(`✓ Fetched Unsplash image${credit} (${blob.size} bytes)`);
-    return blob;
-  } catch (err) {
-    console.warn(
-      `⚠  Unsplash fetch failed (${err.message}) — falling back to picsum`,
-    );
-    return fetchPlaceholderCoverImage();
-  }
-}
-
-/**
- * Picsum fallback — random travel-ish landscape image.
- */
-async function fetchPlaceholderCoverImage() {
-  const seed = `travl-${Date.now()}`;
-  const url = `https://picsum.photos/seed/${seed}/1200/630.jpg`;
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(
-      `Failed to fetch placeholder cover image: ${res.status} ${res.statusText}`,
-    );
-  }
-  const arrayBuffer = await res.arrayBuffer();
-  return new Blob([arrayBuffer], { type: "image/jpeg" });
-}
 
 async function postDraft({ token, topic, content, availableTags }) {
   // Validate tags exist (case-insensitive match to be safe)
@@ -494,10 +256,15 @@ async function postDraft({ token, topic, content, availableTags }) {
   // Fetch a relevant cover image from Unsplash (falls back to picsum if unconfigured).
   const coverImageBlob = await fetchCoverImage(topic.title);
 
+  // Append the CTA block to the body so it appears at the bottom of every
+  // published article. The backend stores `content` as a single HTML string.
+  const finalContent = `${content.content}\n${content.ctaBlock}`;
+  console.log("✓ Appended ctaBlock to article body");
+
   // Build multipart/form-data manually using FormData (Node 22 built-in)
   const form = new FormData();
   form.append("title", topic.title);
-  form.append("content", content.content);
+  form.append("content", finalContent);
   form.append("excerpt", content.excerpt);
   form.append("quickAnswer", content.quickAnswer);
   form.append("metaTitle", content.metaTitle);
