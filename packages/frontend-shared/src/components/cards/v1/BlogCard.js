@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { format } from 'date-fns';
 import { DotIcon } from 'lucide-react';
 
-export default function BlogCard({ slug, category, title, excerpt, author, date, readTime, coverImageUrl }) {
+export default function BlogCard({ slug, category, title, excerpt, author, date, readTime, coverImageUrl, tags = [] }) {
   return (
     <Link
       href={`/blog/${slug}`}
@@ -25,7 +25,7 @@ export default function BlogCard({ slug, category, title, excerpt, author, date,
         <h3 className="font-outfit font-medium mt-1 mb-2 leading-6 text-md line-clamp-2 text-gray-900">
           {title}
         </h3>
-        <p className="font-outfit font-light text-sm text-gray-600 line-clamp-2">{excerpt}</p>
+        <p className="font-outfit font-light text-sm text-gray-600 line-clamp-3">{excerpt}</p>
       </div>
     </Link>
   );

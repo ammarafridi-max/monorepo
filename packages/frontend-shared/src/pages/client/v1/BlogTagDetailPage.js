@@ -55,9 +55,10 @@ export default function BlogTagDetailPage({
                     title={post.title}
                     excerpt={post.excerpt}
                     author={post.author}
-                    date={post.createdAt}
+                    date={post.publishedAt || post.createdAt}
                     readTime={post.readingTime}
                     coverImageUrl={post.coverImageUrl}
+                    tags={post.tags}
                   />
                 ))}
               </div>

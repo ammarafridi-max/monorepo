@@ -4,6 +4,9 @@ import { getBlogTagsApi } from '@travel-suite/frontend-shared/services/apiBlogTa
 
 const staticPages = [
   { url: '/', changeFrequency: 'weekly', priority: 1.0 },
+  { url: '/dummy-ticket-australia-visa', changeFrequency: 'monthly', priority: 0.9 },
+  { url: '/dummy-ticket-canada-visa', changeFrequency: 'monthly', priority: 0.9 },
+  { url: '/dummy-ticket-japan-visa', changeFrequency: 'monthly', priority: 0.9 },
   { url: '/dummy-ticket-schengen-visa', changeFrequency: 'monthly', priority: 0.9 },
   { url: '/dummy-ticket-uk-visa', changeFrequency: 'monthly', priority: 0.9 },
   { url: '/onward-ticket', changeFrequency: 'monthly', priority: 0.9 },

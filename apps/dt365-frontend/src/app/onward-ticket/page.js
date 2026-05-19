@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { faqArray, formatFaqArray } from '@/data/faqs';
 import { buildMetadata } from '@/lib/schema';
 import {
+  buildBreadcrumbList,
   buildFAQPage,
   buildGraph,
   buildOrganization,
@@ -129,6 +130,11 @@ const pageData = {
 export const metadata = buildMetadata(pageData.meta);
 
 export default function Page() {
+  const breadcrumbPaths = [
+    { label: 'Home', href: '/' },
+    { label: 'Onward Ticket' },
+  ];
+
   const graph = buildGraph([
     buildOrganization(),
     buildWebsite(),
@@ -152,6 +158,7 @@ export default function Page() {
       description: pageData.meta.description,
       faqs: pageData.sections.faqs.faqs,
     }),
+    buildBreadcrumbList({ paths: breadcrumbPaths }),
   ]);
 
   return (
@@ -170,6 +177,7 @@ export default function Page() {
           'Valid, verifiable PNR',
           'Delivered in minutes',
         ]}
+        breadcrumbPaths={breadcrumbPaths}
       />
       <Suspense fallback={null}>
         <Process

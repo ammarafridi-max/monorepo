@@ -20,6 +20,9 @@ const defaultPages = [
     links: ['/', '/booking/select-flights', '/booking/review-details'],
     icon: <Plane size={18} />,
     subpages: [
+      { name: 'Dummy Ticket For Australia Visa', link: '/dummy-ticket-australia-visa' },
+      { name: 'Dummy Ticket For Canada Visa', link: '/dummy-ticket-canada-visa' },
+      { name: 'Dummy Ticket For Japan Visa', link: '/dummy-ticket-japan-visa' },
       { name: 'Dummy Ticket For Schengen Visa', link: '/dummy-ticket-schengen-visa' },
       { name: 'Dummy Ticket For UK Visa', link: '/dummy-ticket-uk-visa' },
       { name: 'Onward Ticket', link: '/onward-ticket' },

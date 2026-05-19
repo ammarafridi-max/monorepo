@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { testimonials } from '@/data/testimonials';
 import { buildMetadata } from '@/lib/schema';
 import {
+  buildBreadcrumbList,
   buildGraph,
   buildOrganization,
   buildProduct,
@@ -80,6 +81,11 @@ export const pageData = {
 export const metadata = buildMetadata(pageData.meta);
 
 export default function Page() {
+  const breadcrumbPaths = [
+    { label: 'Home', href: '/' },
+    { label: 'Flight Itinerary' },
+  ];
+
   const graph = buildGraph([
     buildOrganization(),
     buildWebsite(),
@@ -97,6 +103,7 @@ export default function Page() {
       price: '13.00',
       currency: 'USD',
     }),
+    buildBreadcrumbList({ paths: breadcrumbPaths }),
   ]);
 
   return (
@@ -115,6 +122,7 @@ export default function Page() {
           'Standard booking format',
           'Delivered by email',
         ]}
+        breadcrumbPaths={breadcrumbPaths}
       />
       <Suspense fallback={null}>
         <Process

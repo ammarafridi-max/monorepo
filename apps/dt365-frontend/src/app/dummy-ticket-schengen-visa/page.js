@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { buildMetadata } from '@/lib/schema';
 import {
+  buildBreadcrumbList,
   buildFAQPage,
   buildGraph,
   buildOrganization,
@@ -149,6 +150,11 @@ const pageData = {
 export const metadata = buildMetadata(pageData.meta);
 
 export default function Page() {
+  const breadcrumbPaths = [
+    { label: 'Home', href: '/' },
+    { label: 'Dummy Ticket for Schengen Visa' },
+  ];
+
   const graph = buildGraph([
     buildOrganization(),
     buildWebsite(),
@@ -172,6 +178,7 @@ export default function Page() {
       description: pageData.meta.description,
       faqs: pageData.sections.faqs.faqs,
     }),
+    buildBreadcrumbList({ paths: breadcrumbPaths }),
   ]);
 
   return (
@@ -191,6 +198,7 @@ export default function Page() {
           'Accepted by VFS and BLS',
           'Delivered in minutes',
         ]}
+        breadcrumbPaths={breadcrumbPaths}
       />
 
       <Suspense fallback={null}>
