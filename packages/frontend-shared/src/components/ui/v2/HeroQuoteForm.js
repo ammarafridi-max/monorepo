@@ -121,18 +121,18 @@ export default function HeroQuoteForm() {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
-        <label className="text-xs text-gray-500 font-medium">Trip type</label>
+        <label className="sr-only">Trip type</label>
         <div className="flex gap-2">
           {[
             { value: 'single', label: 'Single' },
-            { value: 'annual', label: 'Annual' },
-            { value: 'biennial', label: 'Biennial' },
+            { value: 'annual', label: '1 Year' },
+            { value: 'biennial', label: '2 Years' },
           ].map(({ value, label }) => (
             <label
               key={value}
               className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl border text-sm font-semibold cursor-pointer transition-colors ${
                 mounted && journeyType === value
-                  ? 'bg-primary-700 text-white border-primary-700'
+                  ? 'bg-primary-50 text-primary-700 border-primary-300'
                   : 'bg-white text-gray-600 border-gray-200 hover:border-primary-300'
               }`}
             >
@@ -152,7 +152,7 @@ export default function HeroQuoteForm() {
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="region" className="text-xs text-gray-500 font-medium">
-          Region
+          Destination
         </label>
         <select
           id="region"
@@ -252,12 +252,8 @@ export default function HeroQuoteForm() {
         disabled={totalTravellers === 0}
         className="mt-1 w-full bg-primary-700 hover:bg-primary-800 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold py-3.5 rounded-xl text-center transition-colors"
       >
-        Get My Free Quote →
+        Get Quotes →
       </button>
-
-      <p className="text-center text-gray-400 text-xs">
-        No commitment • Cancel anytime
-      </p>
     </form>
   );
 }
