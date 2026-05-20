@@ -137,6 +137,14 @@ ${requiredLinksBlock}
 - External links: DO NOT add external links — internal only
 - The HTML content must NOT include <html>, <head>, <body>, or <title> tags — just body content starting with an introductory <p>
 
+## GEO / AI-Citation Rules (CRITICAL)
+- The article body MUST open with an <h2> that repeats the title question as closely as possible to how a user would phrase it, immediately followed by the quick-answer paragraph as the first <p> under that heading.
+- Lead every section's first sentence with the core claim or verdict, not setup. AI engines extract the opening sentence of a section, so it must stand on its own.
+- Each <h2> should match a real question a user would ask (question-style or clear topic phrasing), so it maps to search and AI queries.
+- Be specific and verifiable: include concrete details (a number, a named requirement, a specific term like PNR, EUR 30,000, AED 30) rather than vague phrasing. Specific claims get cited; vague ones do not.
+- Avoid hedging words ("most", "generally", "typically", "in most cases", "usually") unless the hedge is genuinely necessary for accuracy. Prefer a definitive statement with the exception named inline.
+- Every answer block and FAQ answer must be fully self-contained: it should make complete sense read in isolation, with no references to "as mentioned above" or "see below".
+
 ## CTA Block (REQUIRED OUTPUT FIELD: ctaBlock)
 You must also return a "ctaBlock" field — a self-contained HTML callout that will be appended to the bottom of the article. Rules:
 - Outer element must be <div class="travl-cta">
@@ -169,11 +177,11 @@ Respond with a single valid JSON object (no markdown code fences, no extra text)
   "metaTitle": "SEO meta title, 50–60 characters",
   "metaDescription": "SEO meta description, 150–160 characters",
   "excerpt": "2–3 sentence plain-text summary for blog listing, no HTML",
-  "quickAnswer": "1–2 sentence plain-text direct answer to the question in the title (shown as a featured snippet)",
-  "content": "Full HTML body content, ${wordRange}, with proper headings, paragraphs, and internal links. Must include every link listed under 'Required Internal Links' in the system prompt.",
+  "quickAnswer": "Plain-text direct answer to the title question, 40–80 words. MUST lead with a definitive verdict in the first sentence (e.g. 'Yes,', 'No,', 'You need...'). MUST include at least one concrete, verifiable detail (a number, named requirement, or specific term). MUST be fully self-contained. Avoid hedging words like 'most', 'generally', 'typically'. This is the single most-cited block by AI search engines, so make it specific and quotable.",
+  "content": "Full HTML body content, ${wordRange}, with proper headings, paragraphs, and internal links. MUST open with an <h2> repeating the title question, followed immediately by a self-contained answer paragraph. Each <h2> should match a question a user would actually ask. Lead each section with its core claim. Must include every link listed under 'Required Internal Links' in the system prompt.",
   "ctaBlock": "Self-contained HTML callout starting with <div class=\\"travl-cta\\">, matching the CTA Block rules in the system prompt.",
   "faqs": [
-    { "question": "...", "answer": "..." },
+    { "question": "Phrase exactly as a user would type/ask it", "answer": "Self-contained answer, 30–60 words, verdict-first, with a specific detail. No references to other parts of the article." },
     { "question": "...", "answer": "..." },
     { "question": "...", "answer": "..." },
     { "question": "...", "answer": "..." },
