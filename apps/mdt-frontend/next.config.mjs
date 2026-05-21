@@ -9,6 +9,7 @@ const nextConfig = {
   outputFileTracingRoot: join(__dirname, '../../'),
   transpilePackages: ['@travel-suite/frontend-shared'],
   images: {
+    formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       {
         protocol: 'https',
