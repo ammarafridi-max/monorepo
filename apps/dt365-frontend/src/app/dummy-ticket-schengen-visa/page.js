@@ -1,4 +1,3 @@
-import { lazy, Suspense } from 'react';
 import { buildMetadata } from '@/lib/schema';
 import {
   buildBreadcrumbList,
@@ -21,12 +20,11 @@ import {
 import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineLuggage } from 'react-icons/md';
 import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
-
-const Process = lazy(() => import('@travel-suite/frontend-shared/components/sections/v1/Process'));
-const About = lazy(() => import('@travel-suite/frontend-shared/components/sections/v1/About'));
-const Benefits = lazy(() => import('@travel-suite/frontend-shared/components/sections/v1/Benefits'));
-const FAQ = lazy(() => import('@travel-suite/frontend-shared/components/sections/v1/FAQ'));
-const Contact = lazy(() => import('@travel-suite/frontend-shared/components/sections/v1/Contact'));
+import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
+import About from '@travel-suite/frontend-shared/components/sections/v1/About';
+import Benefits from '@travel-suite/frontend-shared/components/sections/v1/Benefits';
+import FAQ from '@travel-suite/frontend-shared/components/sections/v1/FAQ';
+import Contact from '@travel-suite/frontend-shared/components/sections/v1/Contact';
 
 const benefits = [
   {
@@ -201,43 +199,33 @@ export default function Page() {
         breadcrumbPaths={breadcrumbPaths}
       />
 
-      <Suspense fallback={null}>
-        <Process
-          title={pageData.sections.process.title}
-          subtitle={pageData.sections.process.subtitle}
-        />
-      </Suspense>
+      <Process
+        title={pageData.sections.process.title}
+        subtitle={pageData.sections.process.subtitle}
+      />
 
-      <Suspense fallback={null}>
-        <About
-          title={pageData.sections.about.title}
-          text={pageData.sections.about.text}
-          services={pageData.sections.about.services}
-        />
-      </Suspense>
+      <About
+        title={pageData.sections.about.title}
+        text={pageData.sections.about.text}
+        services={pageData.sections.about.services}
+      />
 
-      <Suspense fallback={null}>
-        <Benefits
-          title={pageData.sections.benefits.title}
-          subtitle={pageData.sections.benefits.subtitle}
-          benefits={pageData.sections.benefits.benefits}
-        />
-      </Suspense>
+      <Benefits
+        title={pageData.sections.benefits.title}
+        subtitle={pageData.sections.benefits.subtitle}
+        benefits={pageData.sections.benefits.benefits}
+      />
 
-      <Suspense fallback={null}>
-        <FAQ
-          title={pageData.sections.faqs.title}
-          subtitle={pageData.sections.faqs.subtitle}
-          faqs={pageData.sections.faqs.faqs}
-        />
-      </Suspense>
+      <FAQ
+        title={pageData.sections.faqs.title}
+        subtitle={pageData.sections.faqs.subtitle}
+        faqs={pageData.sections.faqs.faqs}
+      />
 
-      <Suspense fallback={null}>
-        <Contact
-          title={pageData.sections.contact.title}
-          text={pageData.sections.contact.text}
-        />
-      </Suspense>
+      <Contact
+        title={pageData.sections.contact.title}
+        text={pageData.sections.contact.text}
+      />
     </>
   );
 }

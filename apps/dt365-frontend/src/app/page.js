@@ -180,8 +180,6 @@ const pageData = {
   },
 };
 
-export const dynamic = 'force-dynamic';
-
 export const metadata = {
   title: pageData.meta.title,
   description: pageData.meta.description,

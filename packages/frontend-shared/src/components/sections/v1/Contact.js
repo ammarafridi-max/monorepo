@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import PrimarySection from '../../shared/layout/PrimarySection';
 import Container from '../../shared/layout/Container';
 import SectionTitle from '../../shared/layout/SectionTitle';
@@ -34,10 +35,13 @@ export default function Contact({
           </div>
 
           <div className="relative w-full md:w-2/5">
-            <img
+            <Image
               src="/contact-img.webp"
               alt={imageAlt}
-              className="w-full h-full object-cover rounded-[16px_44px_16px_44px] shadow-lg"
+              width={1600}
+              height={1200}
+              sizes="(max-width: 768px) 100vw, 40vw"
+              className="w-full h-auto object-cover rounded-[16px_44px_16px_44px] shadow-lg"
             />
           </div>
         </div>
