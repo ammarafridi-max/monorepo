@@ -1,4 +1,3 @@
-import { lazy, Suspense } from 'react';
 import { testimonials } from '@/data/testimonials';
 import { buildMetadata } from '@/lib/schema';
 import {
@@ -16,10 +15,9 @@ import {
 } from 'react-icons/hi2';
 import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
-
-const Process = lazy(() => import('@travel-suite/frontend-shared/components/sections/v1/Process'));
-const Benefits = lazy(() => import('@travel-suite/frontend-shared/components/sections/v1/Benefits'));
-const Contact = lazy(() => import('@travel-suite/frontend-shared/components/sections/v1/Contact'));
+import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
+import Benefits from '@travel-suite/frontend-shared/components/sections/v1/Benefits';
+import Contact from '@travel-suite/frontend-shared/components/sections/v1/Contact';
 
 const keyword = 'flight reservation';
 
@@ -120,25 +118,19 @@ export default function Page() {
           { label: 'Flight Itinerary' },
         ]}
       />
-      <Suspense fallback={null}>
-        <Process
-          title={pageData.sections.process.title}
-          subtitle={pageData.sections.process.subtitle}
-        />
-      </Suspense>
-      <Suspense fallback={null}>
-        <Benefits
-          title={pageData.sections.benefits.title}
-          subtitle={pageData.sections.benefits.subtitle}
-          benefits={pageData.sections.benefits.benefits}
-        />
-      </Suspense>
-      <Suspense fallback={null}>
-        <Contact
-          title={pageData.sections.contact.title}
-          text={pageData.sections.contact.text}
-        />
-      </Suspense>
+      <Process
+        title={pageData.sections.process.title}
+        subtitle={pageData.sections.process.subtitle}
+      />
+      <Benefits
+        title={pageData.sections.benefits.title}
+        subtitle={pageData.sections.benefits.subtitle}
+        benefits={pageData.sections.benefits.benefits}
+      />
+      <Contact
+        title={pageData.sections.contact.title}
+        text={pageData.sections.contact.text}
+      />
     </>
   );
 }
