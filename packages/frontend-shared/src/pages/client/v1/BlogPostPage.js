@@ -164,12 +164,17 @@ function Sidebar({ recentPosts, blog, canonical }) {
             href={`/blog/${post.slug}`}
             className="flex items-start gap-3 overflow-hidden"
           >
-            <div className="h-16 w-16 shrink-0 overflow-hidden rounded-md bg-gray-200">
-              <img
-                src={post.coverImageUrl}
-                alt={post.title}
-                className="h-full w-full object-cover object-center"
-              />
+            <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md bg-gray-200">
+              {post.coverImageUrl && (
+                <Image
+                  src={post.coverImageUrl}
+                  alt={post.title}
+                  fill
+                  sizes="64px"
+                  loading="lazy"
+                  className="object-cover object-center"
+                />
+              )}
             </div>
             <div className="min-w-0">
               <h3 className="mb-1 text-sm font-normal leading-[1.4] line-clamp-3">
@@ -230,6 +235,8 @@ function CoverImage({ src, alt }) {
       src={src}
       alt={alt}
       fill
+      priority
+      fetchPriority="high"
       className="object-cover object-center"
       sizes="(max-width: 1024px) 100vw, 70vw"
     />

@@ -46,6 +46,18 @@ export function formatDate(dateString) {
   return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
+// Travelport-style date token, e.g. "28MAY". Uses the same parsing as formatDate
+// so the command matches the displayed date exactly.
+export function formatTravelportDate(dateString) {
+  if (!dateString) return '';
+  const date = isDateOnlyString(dateString)
+    ? dateOnlyToLocalDate(dateString)
+    : new Date(dateOnlyFromInput(dateString) || dateString);
+  if (!date || Number.isNaN(date.getTime())) return '';
+  const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  return `${String(date.getDate()).padStart(2, '0')}${months[date.getMonth()]}`;
+}
+
 export function formatDateShort(inputDate) {
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const [year, month, day] = inputDate.split('-');

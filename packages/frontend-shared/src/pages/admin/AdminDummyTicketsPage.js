@@ -7,7 +7,7 @@ import {
   Ticket, ChevronLeft, ChevronRight,
   Loader2, ArrowUpRight, Trash2, Search, CalendarDays,
 } from 'lucide-react';
-import { FaStripe, FaPaypal } from 'react-icons/fa';
+import { FaPaypal } from 'react-icons/fa';
 import { useDummyTickets } from '../../hooks/dummy-tickets/useDummyTickets';
 import { useDeleteDummyTicket } from '../../hooks/dummy-tickets/useDeleteDummyTicket';
 import { extractIataCode } from '../../utils/extractIataCode';
@@ -262,11 +262,10 @@ function DummyTicketsContent() {
                       <td className="px-4 py-3 whitespace-nowrap">
                         <div className="flex flex-col gap-1">
                           <PaymentBadge status={item?.paymentStatus} />
-                          {item?.paymentStatus === 'PAID' && (
-                            item?.paymentMethod === 'paypal'
-                              ? <FaPaypal size={12} className="text-[#009cde] ml-0.5" title="PayPal" />
-                              : <FaStripe size={20} className="text-[#635bff]" title="Stripe" />
-                          )}
+                          {item?.paymentStatus === 'PAID' &&
+                            item?.paymentMethod === 'paypal' && (
+                              <FaPaypal size={12} className="text-[#009cde] ml-0.5" title="PayPal" />
+                            )}
                         </div>
                       </td>
 

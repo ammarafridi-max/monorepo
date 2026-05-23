@@ -397,9 +397,13 @@ function ApplicationsContent() {
                             onClick={() =>
                               deleteInsuranceApplication(app.sessionId)
                             }
-                            disabled={isDeleting}
-                            className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition disabled:opacity-50"
-                            title="Delete"
+                            disabled={isDeleting || app.paymentStatus === "PAID"}
+                            className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition disabled:opacity-30 disabled:cursor-not-allowed"
+                            title={
+                              app.paymentStatus === "PAID"
+                                ? "Cannot delete paid applications"
+                                : "Delete"
+                            }
                           >
                             <Trash2 size={14} />
                           </button>

@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import {
   ArrowLeft, Loader2, AlertCircle, Trash2, Check, Pencil, Undo,
   Mail, Phone, MapPin, CreditCard, Hash, Plane, Users, Calendar,
-  MessageSquare, ExternalLink,
+  MessageSquare, ExternalLink, Copy, ArrowRight,
 } from 'lucide-react';
 import { MdWhatsapp } from 'react-icons/md';
 import { FaStripe, FaPaypal } from 'react-icons/fa';
@@ -14,7 +14,7 @@ import { useGetDummyTicket } from '../../hooks/dummy-tickets/useGetDummyTicket';
 import { useDeleteDummyTicket } from '../../hooks/dummy-tickets/useDeleteDummyTicket';
 import { useRefundDummyTicket } from '../../hooks/dummy-tickets/useRefundDummyTicket';
 import { useUpdateDummyTicket } from '../../hooks/dummy-tickets/useUpdateDummyTicket';
-import { convertToDubaiTime, convertToDubaiDate, formatDate } from '../../utils/dates';
+import { convertToDubaiTime, convertToDubaiDate, formatDate, formatTravelportDate } from '../../utils/dates';
 import { extractIataCode } from '../../utils/extractIataCode';
 import { formatAmount } from '../../utils/currency';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
@@ -74,6 +74,65 @@ function InfoRow({ label, value, mono }) {
   );
 }
 
+function CopyButton({ text }) {
+  const [copied, setCopied] = useState(false);
+  if (!text) return <span className="text-sm text-gray-300">—</span>;
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      void 0;
+    }
+  }
+
+  return (
+    <button
+      onClick={handleCopy}
+      title="Copy Travelport command"
+      className="self-start inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-200 bg-gray-50 hover:bg-gray-100 transition text-xs font-mono font-semibold text-gray-700"
+    >
+      {copied ? <Check size={12} className="text-green-600 shrink-0" /> : <Copy size={12} className="text-gray-400 shrink-0" />}
+      {text}
+    </button>
+  );
+}
+
+// Travelport availability command, e.g. "A28MAYDXBCDG"
+function buildAvailabilityCommand(dateString, fromIata, toIata) {
+  const date = formatTravelportDate(dateString);
+  if (!date || !fromIata || !toIata) return '';
+  return `A${date}${fromIata}${toIata}`;
+}
+
+// Travelport name command, e.g. "N.SMITH/JOHN MR"
+function buildPassengerCommand(p) {
+  const last = (p?.lastName || '').trim().toUpperCase();
+  const first = (p?.firstName || '').trim().toUpperCase();
+  const title = (p?.title || '').trim().toUpperCase();
+  if (!last && !first) return '';
+  return `N.${last}/${first}${title ? ` ${title}` : ''}`;
+}
+
+function FlightCard({ dateString, fromIata, toIata, flightNumber, command }) {
+  return (
+    <div className="rounded-xl border border-gray-200 p-4 flex flex-col gap-3">
+      <span className="text-sm font-bold text-gray-900">{dateString || '—'}</span>
+      <div className="flex items-center gap-2.5">
+        <span className="text-xl font-extrabold text-gray-900">{fromIata || '—'}</span>
+        <ArrowRight size={16} className="text-gray-300 shrink-0" />
+        <span className="text-xl font-extrabold text-gray-900">{toIata || '—'}</span>
+        {flightNumber && (
+          <span className="ml-auto text-sm font-semibold text-gray-500">{flightNumber}</span>
+        )}
+      </div>
+      <CopyButton text={command} />
+    </div>
+  );
+}
+
 function PassengersTable({ passengers }) {
   if (!passengers?.length) {
     return <p className="text-xs text-gray-400 text-center py-4">No passenger data.</p>;
@@ -83,7 +142,7 @@ function PassengersTable({ passengers }) {
       <table className="w-full text-sm min-w-[400px]">
         <thead>
           <tr className="bg-gray-50/60">
-            {['#', 'Name', 'DOB', 'Passport'].map((h, i) => (
+            {['#', 'Name', 'Travelport'].map((h, i) => (
               <th key={i} className="text-left text-xs font-bold text-gray-400 uppercase tracking-wide px-5 py-2.5 whitespace-nowrap">
                 {h}
               </th>
@@ -93,12 +152,13 @@ function PassengersTable({ passengers }) {
         <tbody className="divide-y divide-gray-50">
           {passengers.map((p, i) => (
             <tr key={i} className="hover:bg-gray-50/40">
-              <td className="px-5 py-2.5 text-gray-400 font-medium">{i + 1}</td>
-              <td className="px-5 py-2.5 font-semibold text-gray-800 capitalize">
-                {[p.title, [p.firstName, p.lastName].filter(Boolean).join(' - ')].filter(Boolean).join(' ') || '—'}
+              <td className="px-5 py-2.5 text-gray-400 font-medium align-middle">{i + 1}</td>
+              <td className="px-5 py-2.5 font-semibold text-gray-800 capitalize align-middle">
+                {[p.title, p.firstName, p.lastName].filter(Boolean).join(' ') || '—'}
               </td>
-              <td className="px-5 py-2.5 text-gray-600">{p.dob ?? '—'}</td>
-              <td className="px-5 py-2.5 font-mono text-gray-500">{p.passport ?? '—'}</td>
+              <td className="px-5 py-2.5 align-middle">
+                <CopyButton text={buildPassengerCommand(p)} />
+              </td>
             </tr>
           ))}
         </tbody>
@@ -303,6 +363,46 @@ export default function AdminDummyTicketDetailPage() {
 
         <div className="space-y-5">
 
+          <Card title="Trip Details" icon={Plane}>
+            <div className={`grid gap-4 ${isReturn ? 'sm:grid-cols-2' : 'grid-cols-1'}`}>
+              <FlightCard
+                dateString={ticket?.departureDate ? formatDate(ticket.departureDate) : ''}
+                fromIata={extractIataCode(ticket?.from)}
+                toIata={extractIataCode(ticket?.to)}
+                flightNumber={depFlight ? `${depFlight.carrierCode ?? ''} ${depFlight.flightNumber ?? ''}`.trim() : ''}
+                command={buildAvailabilityCommand(
+                  ticket?.departureDate,
+                  extractIataCode(ticket?.from),
+                  extractIataCode(ticket?.to),
+                )}
+              />
+              {isReturn && (
+                <FlightCard
+                  dateString={ticket?.returnDate ? formatDate(ticket.returnDate) : ''}
+                  fromIata={extractIataCode(ticket?.to)}
+                  toIata={extractIataCode(ticket?.from)}
+                  flightNumber={retFlight ? `${retFlight.carrierCode ?? ''} ${retFlight.flightNumber ?? ''}`.trim() : ''}
+                  command={buildAvailabilityCommand(
+                    ticket?.returnDate,
+                    extractIataCode(ticket?.to),
+                    extractIataCode(ticket?.from),
+                  )}
+                />
+              )}
+            </div>
+
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <InfoRow label="Type"     value={ticket?.type} />
+              <InfoRow label="Validity" value={ticket?.ticketValidity} />
+              <InfoRow label="Delivery"
+                value={ticket?.ticketDelivery?.immediate
+                  ? 'Immediate'
+                  : ticket?.ticketDelivery?.deliveryDate
+                    ? convertToDubaiDate(ticket.ticketDelivery.deliveryDate)
+                    : '—'} />
+            </div>
+          </Card>
+
           <Card title="Passengers" icon={Users}>
             <PassengersTable passengers={ticket?.passengers} />
           </Card>
@@ -323,7 +423,7 @@ export default function AdminDummyTicketDetailPage() {
                 </div>
                 <p className="text-sm font-semibold text-gray-800">
                   {ticket?.phoneNumber?.code && ticket?.phoneNumber?.digits
-                    ? `+${ticket.phoneNumber.code} ${ticket.phoneNumber.digits}`
+                    ? `${ticket.phoneNumber.code} ${ticket.phoneNumber.digits}`
                     : '—'}
                 </p>
               </div>
@@ -337,29 +437,6 @@ export default function AdminDummyTicketDetailPage() {
                 <p className="text-sm text-gray-700 leading-relaxed">{ticket.message}</p>
               </div>
             )}
-          </Card>
-
-          <Card title="Trip Details" icon={Plane}>
-            <InfoRow label="From"       value={ticket?.from} />
-            <InfoRow label="To"         value={ticket?.to} />
-            <InfoRow label="Type"       value={ticket?.type} />
-            <InfoRow label="Departure"  value={ticket?.departureDate ? formatDate(ticket.departureDate) : '—'} />
-            {isReturn && (
-              <InfoRow label="Return" value={ticket?.returnDate ? formatDate(ticket.returnDate) : '—'} />
-            )}
-            <InfoRow label="Dep. Flight"
-              value={depFlight ? `${depFlight.carrierCode ?? ''} ${depFlight.flightNumber ?? ''}`.trim() : '—'} />
-            {isReturn && (
-              <InfoRow label="Ret. Flight"
-                value={retFlight ? `${retFlight.carrierCode ?? ''} ${retFlight.flightNumber ?? ''}`.trim() : '—'} />
-            )}
-            <InfoRow label="Validity"  value={ticket?.ticketValidity} />
-            <InfoRow label="Delivery"
-              value={ticket?.ticketDelivery?.immediate
-                ? 'Immediate'
-                : ticket?.ticketDelivery?.deliveryDate
-                  ? convertToDubaiDate(ticket.ticketDelivery.deliveryDate)
-                  : '—'} />
           </Card>
 
           {(ticket?.affiliate || ticket?.affiliateId) && (
