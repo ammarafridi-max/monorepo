@@ -84,6 +84,7 @@ router.use(
     brevo,
     auth,
     notifications: { insurancePaymentCompletionEmail },
+    reviewListId: config.brevoInsuranceListId,
   }),
 );
 
@@ -123,6 +124,8 @@ const {
   notifications,
   frontendUrl: config.frontendUrl,
   AffiliateModel,
+  brevo,
+  reviewListId: config.brevoTicketListId,
 });
 router.use("/tickets", ticketsRouter);
 router.use("/pricing", pricingRouter);

@@ -59,6 +59,44 @@ export const createContact = async ({ firstName, lastName, email }) => {
   return true;
 };
 
+// Create-or-update a contact (Brevo dedupes by email) and add them to the
+// review-collection list in a single call. Best-effort: skips silently when
+// config is missing. Throws on a hard API failure so callers can log/swallow.
+export const addContactToReviewList = async ({ email, firstName, listId }) => {
+  if (!hasBrevoConfig()) {
+    logger.warn(
+      "Brevo addContactToReviewList skipped because BREVO_API_KEY is missing",
+      { email },
+    );
+    return false;
+  }
+
+  if (!listId) {
+    logger.warn(
+      "Brevo addContactToReviewList skipped because listId is missing",
+      { email },
+    );
+    return false;
+  }
+
+  const res = await fetch(`${BREVO_URL}/contacts`, {
+    method: "POST",
+    headers: getHeaders(),
+    body: JSON.stringify({
+      email: email.toLowerCase(),
+      ...(firstName ? { attributes: { FIRSTNAME: firstName } } : {}),
+      listIds: [Number(listId)],
+      updateEnabled: true,
+    }),
+  });
+
+  if (!res.ok) {
+    await logBrevoFailure("addContactToReviewList", res);
+    throw new Error("Brevo addContactToReviewList failed");
+  }
+  return true;
+};
+
 export const updateContactAttribute = async ({ email, attribute, value }) => {
   if (!hasBrevoConfig()) {
     logger.warn(

@@ -28,7 +28,7 @@ function getOrRegisterModel(conn, name, schema) {
  *   logger?: object,
  * }} deps
  */
-export function createInsuranceRouter({ db, wis, brevo, auth, notifications, logger: injectedLogger }) {
+export function createInsuranceRouter({ db, wis, brevo, auth, notifications, logger: injectedLogger, reviewListId }) {
   const log = injectedLogger ?? logger;
 
   const InsuranceApplication = getOrRegisterModel(db, 'insurance-application', InsuranceApplicationSchema);
@@ -42,6 +42,7 @@ export function createInsuranceRouter({ db, wis, brevo, auth, notifications, log
     brevo,
     logger: log,
     notifications,
+    reviewListId,
   });
 
   const controller = createInsuranceController({

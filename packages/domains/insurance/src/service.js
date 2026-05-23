@@ -20,6 +20,7 @@ export function createInsuranceService({
   brevo,
   logger,
   notifications,
+  reviewListId,
 }) {
   const validateForm = (body) => {
     const { adults = 0, children = 0, seniors = 0 } = body.quantity || {};
@@ -330,6 +331,21 @@ export function createInsuranceService({
       });
     } catch (err) {
       logger.warn("Brevo updateContactAttribute failed", {
+        email: updated.email,
+        error: err,
+      });
+    }
+
+    // Review collection (MDT only): no-op where brevo lacks this method.
+    // Best-effort — must never break a confirmed payment.
+    try {
+      await brevo.addContactToReviewList?.({
+        email: updated.email,
+        firstName: updated.passengers?.[0]?.firstName ?? undefined,
+        listId: reviewListId,
+      });
+    } catch (err) {
+      logger.warn("Brevo addContactToReviewList failed", {
         email: updated.email,
         error: err,
       });

@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
-import { AppError } from '@travel-suite/utils';
+import { AppError, logger } from '@travel-suite/utils';
 
 const AFFILIATE_ATTRIBUTION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const AFFILIATE_CAPTURE_FUTURE_TOLERANCE_MS = 5 * 60 * 1000;
@@ -57,9 +57,11 @@ function applyDeliveryDateFilter(queryObj, deliveryDate) {
   const dateStr = deliveryDate === 'today' ? getDubaiDateString() : deliveryDate;
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return;
   queryObj['ticketDelivery.deliveryDate'] = { $regex: new RegExp(`^${dateStr}`) };
+  // Delivery views only concern paid tickets — never show unpaid ones.
+  queryObj.paymentStatus = 'PAID';
 }
 
-export function createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, paypal, notifications, frontendUrl }) {
+export function createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, paypal, notifications, frontendUrl, brevo, reviewListId }) {
   const getAllTickets = async (query) => {
     const queryObj = { ...query };
     ['page', 'limit', 'search', 'createdAt', 'deliveryDate'].forEach((f) => delete queryObj[f]);
@@ -253,6 +255,21 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       passengers: ticket.passengers,
       message: ticket.message,
     });
+
+    // Review collection (MDT only): no-op where brevo is not injected
+    // (e.g. dt365). Best-effort — must never break a confirmed payment.
+    try {
+      await brevo?.addContactToReviewList?.({
+        email: ticket.email,
+        firstName: ticket.passengers?.[0]?.firstName ?? undefined,
+        listId: reviewListId,
+      });
+    } catch (err) {
+      logger.warn('Brevo addContactToReviewList failed', {
+        email: ticket.email,
+        error: err,
+      });
+    }
   };
 
   // -- PayPal ---------------------------------------------------------------
