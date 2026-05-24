@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { usePathname } from 'next/navigation';
@@ -107,13 +107,11 @@ export default function Providers({ children }) {
       <QueryClientProvider client={queryClient}>
         <GuestAuthProvider>
           <CurrencyProvider>
-            <Suspense>
-              <InsuranceProvider>
-                <AppMegaLayout pages={defaultPages} logoAlt={LOGO_ALT}>
-                  <main>{children}</main>
-                </AppMegaLayout>
-              </InsuranceProvider>
-            </Suspense>
+            <InsuranceProvider>
+              <AppMegaLayout pages={defaultPages} logoAlt={LOGO_ALT}>
+                <main>{children}</main>
+              </AppMegaLayout>
+            </InsuranceProvider>
           </CurrencyProvider>
         </GuestAuthProvider>
       </QueryClientProvider>
