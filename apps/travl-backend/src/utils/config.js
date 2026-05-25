@@ -41,6 +41,9 @@ export default {
     apiKey: process.env.AMADEUS_API_KEY,
     apiSecret: process.env.AMADEUS_SECRET_KEY,
   },
+  airlabs: {
+    apiKey: process.env.AIRLABS_API_KEY,
+  },
 
   stripe: {
     secretKey: process.env.STRIPE_SECRET_KEY,

@@ -5,7 +5,7 @@ import { createAffiliatesRouter, AffiliateSchema } from "@travel-suite/affiliate
 import { createBlogRouter, createBlogTagRouter } from "@travel-suite/blog";
 import { createCloudinaryStorage } from "@travel-suite/cloudinary";
 import { createCurrenciesRouter } from "@travel-suite/currencies";
-import { createFlightRouter, createAirportsRouter, createAmadeusClient } from "@travel-suite/flights";
+import { createFlightRouter, createAirportsRouter, createAmadeusClient, createAirLabsClient } from "@travel-suite/flights";
 import { createInsuranceRouter } from "@travel-suite/insurance";
 import { createTicketsRouter } from "@travel-suite/tickets";
 import { createUsersRouter } from "@travel-suite/users";
@@ -72,8 +72,9 @@ const amadeus = createAmadeusClient({
   apiKey:    config.amadeus.apiKey,
   apiSecret: config.amadeus.apiSecret,
 });
+const airlabs = createAirLabsClient({ apiKey: config.airlabs.apiKey });
 router.use("/flights", createFlightRouter({ db, amadeus, auth }));
-router.use("/airports", createAirportsRouter({ amadeus }));
+router.use("/airports", createAirportsRouter({ airlabs }));
 
 // -- Insurance -----------------------------------------------------------------
 router.use(

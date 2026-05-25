@@ -39,6 +39,9 @@ export default {
     apiKey:    process.env.AMADEUS_API_KEY,
     apiSecret: process.env.AMADEUS_SECRET_KEY,
   },
+  airlabs: {
+    apiKey: process.env.AIRLABS_API_KEY,
+  },
 
   cloudinary: {
     cloudName: process.env.CLOUDINARY_CLOUD_NAME,
