@@ -1,7 +1,6 @@
 'use client';
 
 import { createContext, useCallback, useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { useLocalStorage } from '../hooks/general/useLocalStorage.js';
 import { compareDateOnly, todayDateOnly } from '../utils/dates.js';
 import { createPassenger, getSelectedQuote } from '../utils/insuranceHelpers.js';
@@ -88,7 +87,6 @@ const ageCategories = [
 export const InsuranceContext = createContext();
 
 export function InsuranceProvider({ children }) {
-  const searchParams = useSearchParams();
   const { updateLocalStorage } = useLocalStorage();
 
   const [quoteId, setQuoteId] = useState(null);

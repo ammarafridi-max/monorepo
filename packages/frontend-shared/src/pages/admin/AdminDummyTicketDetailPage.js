@@ -111,7 +111,7 @@ function buildAvailabilityCommand(dateString, fromIata, toIata) {
 function buildPassengerCommand(p) {
   const last = (p?.lastName || '').trim().toUpperCase();
   const first = (p?.firstName || '').trim().toUpperCase();
-  const title = (p?.title || '').trim().toUpperCase();
+  const title = (p?.title || '').trim().replace(/\.+$/, '').toUpperCase();
   if (!last && !first) return '';
   return `N.${last}/${first}${title ? ` ${title}` : ''}`;
 }
@@ -314,32 +314,36 @@ export default function AdminDummyTicketDetailPage() {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          {ticket?.orderStatus !== 'DELIVERED' && (
-            <button
-              onClick={() => updateDummyTicket({ sessionId, orderStatus: 'DELIVERED' })}
-              disabled={isActionLoading}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold border border-green-200 text-green-700 bg-green-50 hover:bg-green-100 rounded-xl transition disabled:opacity-50"
-            >
-              <Check size={13} /> Mark Delivered
-            </button>
-          )}
-          {ticket?.orderStatus !== 'PROGRESS' && (
-            <button
-              onClick={() => updateDummyTicket({ sessionId, orderStatus: 'PROGRESS' })}
-              disabled={isActionLoading}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold border border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-xl transition disabled:opacity-50"
-            >
-              <Pencil size={13} /> Mark Progress
-            </button>
-          )}
-          {ticket?.orderStatus !== 'PENDING' && (
-            <button
-              onClick={() => updateDummyTicket({ sessionId, orderStatus: 'PENDING' })}
-              disabled={isActionLoading}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold border border-amber-200 text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-xl transition disabled:opacity-50"
-            >
-              <Pencil size={13} /> Mark Pending
-            </button>
+          {ticket?.paymentStatus === 'PAID' && (
+            <>
+              {ticket?.orderStatus !== 'DELIVERED' && (
+                <button
+                  onClick={() => updateDummyTicket({ sessionId, orderStatus: 'DELIVERED' })}
+                  disabled={isActionLoading}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold border border-green-200 text-green-700 bg-green-50 hover:bg-green-100 rounded-xl transition disabled:opacity-50"
+                >
+                  <Check size={13} /> Mark Delivered
+                </button>
+              )}
+              {ticket?.orderStatus !== 'PROGRESS' && (
+                <button
+                  onClick={() => updateDummyTicket({ sessionId, orderStatus: 'PROGRESS' })}
+                  disabled={isActionLoading}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold border border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-xl transition disabled:opacity-50"
+                >
+                  <Pencil size={13} /> Mark Progress
+                </button>
+              )}
+              {ticket?.orderStatus !== 'PENDING' && (
+                <button
+                  onClick={() => updateDummyTicket({ sessionId, orderStatus: 'PENDING' })}
+                  disabled={isActionLoading}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold border border-amber-200 text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-xl transition disabled:opacity-50"
+                >
+                  <Pencil size={13} /> Mark Pending
+                </button>
+              )}
+            </>
           )}
           <button
             onClick={handleShareWhatsApp}
@@ -502,24 +506,26 @@ export default function AdminDummyTicketDetailPage() {
             </div>
           </Card>
 
-          <Card title="Order Status" icon={MapPin}>
-            <div className="flex flex-col gap-2">
-              {['PENDING', 'PROGRESS', 'DELIVERED'].map((status) => (
-                <button
-                  key={status}
-                  onClick={() => updateDummyTicket({ sessionId, orderStatus: status })}
-                  disabled={isUpdating || ticket?.orderStatus === status}
-                  className={`w-full py-2 text-xs font-semibold rounded-xl border transition ${
-                    ticket?.orderStatus === status
-                      ? 'bg-gray-900 text-white border-gray-900 cursor-default'
-                      : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50 disabled:opacity-50'
-                  }`}
-                >
-                  {status}
-                </button>
-              ))}
-            </div>
-          </Card>
+          {ticket?.paymentStatus === 'PAID' && (
+            <Card title="Order Status" icon={MapPin}>
+              <div className="flex flex-col gap-2">
+                {['PENDING', 'PROGRESS', 'DELIVERED'].map((status) => (
+                  <button
+                    key={status}
+                    onClick={() => updateDummyTicket({ sessionId, orderStatus: status })}
+                    disabled={isUpdating || ticket?.orderStatus === status}
+                    className={`w-full py-2 text-xs font-semibold rounded-xl border transition ${
+                      ticket?.orderStatus === status
+                        ? 'bg-gray-900 text-white border-gray-900 cursor-default'
+                        : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50 disabled:opacity-50'
+                    }`}
+                  >
+                    {status}
+                  </button>
+                ))}
+              </div>
+            </Card>
+          )}
 
           <Card title="Record" icon={Hash}>
             <InfoRow label="Handled By"  value={ticket?.handledBy?.name} />

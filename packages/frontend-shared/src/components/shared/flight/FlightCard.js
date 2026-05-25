@@ -4,10 +4,10 @@ import React, { useContext } from "react";
 import FlightForm from "../../forms/v1/FlightForm.js";
 import FlightItinerary from "./FlightItinerary.js";
 import PrimaryButtonOutline from "../../ui/v1/PrimaryButtonOutline.js";
-import { useDummyTicketPricing } from '../../../hooks/pricing/useDummyTicketPricing.js';
-import { getTicketPriceByValidity } from '../../../utils/dummyTicketPricing.js';
-import { useCurrency } from '../../../contexts/CurrencyContext.js';
-import { TicketContext } from '../../../contexts/TicketContext.js';
+import { useDummyTicketPricing } from "../../../hooks/pricing/useDummyTicketPricing.js";
+import { getTicketPriceByValidity } from "../../../utils/dummyTicketPricing.js";
+import { useCurrency } from "../../../contexts/CurrencyContext.js";
+import { TicketContext } from "../../../contexts/TicketContext.js";
 
 export default function FlightCard({ flight, isExpanded, onSelectFlight }) {
   const { pricing } = useDummyTicketPricing();
@@ -38,14 +38,13 @@ export default function FlightCard({ flight, isExpanded, onSelectFlight }) {
             </p>
             <p className="text-sm font-light text-gray-400">/ person</p>
           </div>
-          <PrimaryButtonOutline
-            size="small"
-            className="w-[50%] lg:w-full"
-            onClick={onSelectFlight}
+          <button
+            className={`w-[30%] lg:w-full rounded-full py-2 text-sm cursor-pointer duration-300 ${isExpanded ? "bg-black text-white" : "bg-gray-200 text-black hover:bg-gray-300"}`}
             disabled={isExpanded}
+            onClick={onSelectFlight}
           >
             {isExpanded ? "Selected" : "Select Flight"}
-          </PrimaryButtonOutline>
+          </button>
         </div>
       </div>
       {isExpanded && <FlightForm flight={flight} />}

@@ -7,7 +7,10 @@ import { useOutsideClick } from '../../../hooks/general/useOutsideClick';
 export default function SelectAirport({ value, onChange, id, icon }) {
   const [query, setQuery] = useState(value || '');
   const [isOpen, setIsOpen] = useState(false);
-  const { airports, isLoadingAirports } = useAirports(query);
+  // Only search while the dropdown is open (i.e. actively typing). Once an
+  // airport is selected the dropdown closes and the input holds a display
+  // string like "Dubai (DXB)" — searching that would hit AirLabs and 502.
+  const { airports, isLoadingAirports } = useAirports(isOpen ? query : '');
   const containerRef = useRef();
 
   useOutsideClick(containerRef, () => setIsOpen(false));
@@ -19,7 +22,7 @@ export default function SelectAirport({ value, onChange, id, icon }) {
   }
 
   function handleSelect(airport) {
-    const display = `${airport.address.cityName} (${airport.iataCode})`;
+    const display = `${(airport.address.cityName || '').toUpperCase()} (${airport.iataCode})`;
     setQuery(display);
     setIsOpen(false);
     onChange(display);
@@ -65,7 +68,7 @@ export default function SelectAirport({ value, onChange, id, icon }) {
             {!isLoadingAirports &&
               airports.map((airport) => (
                 <ListItem key={airport.iataCode} onClick={() => handleSelect(airport)}>
-                  {airport.address.cityName}{' '}
+                  <span className="uppercase">{airport.address.cityName}</span>{' '}
                   <span className="text-gray-400">({airport.iataCode})</span>
                 </ListItem>
               ))}

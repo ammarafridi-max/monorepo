@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import { Minus, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
@@ -62,9 +62,6 @@ export default function HeroQuoteForm() {
 
   const router = useRouter();
   const { updateLocalStorage } = useLocalStorage();
-
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
 
   const totalTravellers =
     quantity.adults + quantity.children + quantity.seniors;
@@ -131,7 +128,7 @@ export default function HeroQuoteForm() {
             <label
               key={value}
               className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl border text-sm font-semibold cursor-pointer transition-colors ${
-                mounted && journeyType === value
+                journeyType === value
                   ? 'bg-primary-50 text-primary-700 border-primary-300'
                   : 'bg-white text-gray-600 border-gray-200 hover:border-primary-300'
               }`}
@@ -140,7 +137,7 @@ export default function HeroQuoteForm() {
                 type="radio"
                 name="journeyType"
                 value={value}
-                checked={mounted && journeyType === value}
+                checked={journeyType === value}
                 onChange={() => setJourneyType(value)}
                 className="sr-only"
               />
@@ -173,17 +170,17 @@ export default function HeroQuoteForm() {
             </option>
           ))}
         </select>
-        {mounted && region?.id && (
+        {region?.id && (
           <p className="text-xs text-gray-400 pl-1">{region.description}</p>
         )}
       </div>
 
       <div
-        className={`grid gap-3 ${mounted && journeyType === 'single' ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}
+        className={`grid gap-3 ${journeyType === 'single' ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}
       >
         <div className="flex flex-col gap-1.5">
           <label className="text-xs text-gray-500 font-medium">
-            {mounted && journeyType === 'single' ? 'Departure date' : 'Start date'}
+            {journeyType === 'single' ? 'Departure date' : 'Start date'}
           </label>
           <DatePicker
             value={startDate}
@@ -193,7 +190,7 @@ export default function HeroQuoteForm() {
             required
           />
         </div>
-        {mounted && journeyType === 'single' && (
+        {journeyType === 'single' && (
           <div className="flex flex-col gap-1.5">
             <label className="text-xs text-gray-500 font-medium">
               Return date

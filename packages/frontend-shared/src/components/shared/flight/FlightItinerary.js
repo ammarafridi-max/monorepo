@@ -1,7 +1,7 @@
-import React from 'react';
-import { format } from 'date-fns';
-import { FaArrowRightLong } from 'react-icons/fa6';
-import { formatISODuration } from '../../../utils/dates.js';
+import React from "react";
+import { format } from "date-fns";
+import { FaArrowRightLong } from "react-icons/fa6";
+import { formatISODuration } from "../../../utils/dates.js";
 
 export default function FlightItinerary({ itinerary, airlineInfo }) {
   const imgSrc = `${process.env.NEXT_PUBLIC_BACKEND_URL}${airlineInfo.logo}`;
@@ -10,12 +10,12 @@ export default function FlightItinerary({ itinerary, airlineInfo }) {
     <div className="w-full bg-white py-4 flex items-center justify-between lg:justify-center gap-9 lg:gap-10 nth-of-type-[2]:border-t nth-of-type-[2]:border-t-gray-300">
       <div className="w-[50px] h-[50px] flex flex-col justify-center align-middle">
         <img
-          src={imgSrc || ''}
+          src={imgSrc || ""}
           alt={`${airlineInfo.commonName}`}
           className="object-contain text-[10px] "
         />
       </div>
-      <div className="flex items-center justify-between lg:justify-center gap-3 lg:gap-8 font-nunito">
+      <div className="flex items-center justify-between lg:justify-center gap-2 lg:gap-8 font-nunito">
         <DepartureData itinerary={itinerary} />
         <Duration itinerary={itinerary} />
         <ReturnData itinerary={itinerary} />
@@ -31,11 +31,11 @@ function DepartureData({ itinerary }) {
         {itinerary?.segments[0].departure.iataCode}
       </p>
       <span className="text-[13px] lg:text-[14px] font-light">
-        {format(new Date(itinerary?.segments[0].departure.at), 'dd MMM')}
+        {format(new Date(itinerary?.segments[0].departure.at), "dd MMM")}
       </span>
       <br />
       <span className="text-[13px] lg:text-[14px] font-light">
-        {format(new Date(itinerary?.segments[0].departure.at), 'HH:mm')}
+        {format(new Date(itinerary?.segments[0].departure.at), "HH:mm")}
       </span>
     </div>
   );
@@ -50,14 +50,14 @@ function ReturnData({ itinerary }) {
       </p>
       <span className="text-[13px] lg:text-[14px] font-light">
         {lastSegment?.arrival?.at
-          ? format(new Date(lastSegment.arrival.at), 'dd MMM')
-          : '—'}
+          ? format(new Date(lastSegment.arrival.at), "dd MMM")
+          : "—"}
       </span>
       <br />
       <span className="text-[13px] lg:text-[14px] font-light">
         {lastSegment?.arrival?.at
-          ? format(new Date(lastSegment.arrival.at), 'HH:mm')
-          : '—'}
+          ? format(new Date(lastSegment.arrival.at), "HH:mm")
+          : "—"}
       </span>
     </div>
   );
@@ -71,10 +71,10 @@ function Duration({ itinerary }) {
         <FaArrowRightLong />
       </p>
       <span>
-        {itinerary.segments.length === 1 && 'Non-Stop'}
+        {itinerary.segments.length === 1 && "Non-Stop"}
         {itinerary.segments.length === 2 &&
           `Stops in ${itinerary.segments.at(0).arrival.iataCode}`}
-        {itinerary.segments.length >= 3 && 'Multiple Stops'}
+        {itinerary.segments.length >= 3 && "Multiple Stops"}
       </span>
     </div>
   );

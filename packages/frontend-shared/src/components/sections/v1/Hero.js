@@ -21,7 +21,7 @@ export default function Hero({
         <div className="absolute -right-20 bottom-0 h-72 w-72 rounded-full bg-accent-100/60 blur-3xl" />
       </div>
 
-      <Container className="relative flex flex-col lg:flex-row items-start lg:items-center justify-between gap-9 lg:gap-14">
+      <Container className="relative flex flex-col lg:flex-row items-start justify-between gap-9 lg:gap-14">
         <div className="w-full lg:w-1/2 text-left">
 
           {breadcrumbPaths.length > 0 && (
