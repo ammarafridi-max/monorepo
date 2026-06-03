@@ -1,6 +1,6 @@
-import { Router } from 'express';
-import { AppError } from '@travel-suite/utils';
-import { createAdminUserSchema, updateAdminUserSchema } from './validators.js';
+import { Router } from "express";
+import { AppError } from "@travel-suite/utils";
+import { createAdminUserSchema, updateAdminUserSchema } from "./validators.js";
 
 function validate(schemaFn) {
   return (req, res, next) => {
@@ -18,19 +18,19 @@ export function createAdminUsersRouterFromParts({ controller, auth }) {
   const { protect, restrictTo } = auth;
 
   // Any authenticated admin (any role) can manage their own profile
-  router.get('/me',              protect, controller.getMe);
-  router.patch('/me',            protect, controller.updateMe);
-  router.patch('/me/password',   protect, controller.updateMyPassword);
+  router.get("/me", protect, controller.getMe);
+  router.patch("/me", protect, controller.updateMe);
+  router.patch("/me/password", protect, controller.updateMyPassword);
 
-  router.use(protect, restrictTo('admin'));
+  router.use(protect, restrictTo("admin"));
 
   router
-    .route('/')
+    .route("/")
     .get(controller.getAdminUsers)
     .post(validate(createAdminUserSchema), controller.createAdminUser);
 
   router
-    .route('/:username')
+    .route("/:username")
     .get(controller.getAdminUser)
     .patch(validate(updateAdminUserSchema), controller.updateAdminUser)
     .delete(controller.deleteAdminUser);

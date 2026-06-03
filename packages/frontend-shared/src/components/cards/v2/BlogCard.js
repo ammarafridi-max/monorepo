@@ -12,7 +12,7 @@ function getAuthorName(author) {
   ) {
     return author.name.trim();
   }
-  return "TravelShield Team";
+  return "Editorial Team";
 }
 
 function formatDate(date) {

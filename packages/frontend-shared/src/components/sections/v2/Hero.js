@@ -10,6 +10,7 @@ export default function Hero({
   form,
   pills = [],
   breadcrumbPaths = [],
+  trustBar,
 }) {
   return (
     <PrimarySection className="relative bg-gray-50 text-gray-900 overflow-hidden">
@@ -64,6 +65,8 @@ export default function Hero({
               ))}
             </div>
           )}
+
+          {trustBar && <div className="mt-6">{trustBar}</div>}
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 md:p-8">

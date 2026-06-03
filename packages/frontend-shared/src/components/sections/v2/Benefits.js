@@ -44,7 +44,7 @@ const defaultBenefits = [
 
 export default function Benefits({
   title = 'Built around you, not the small print',
-  subtitle = 'We designed every part of TravelShield to remove the friction that makes insurance frustrating.',
+  subtitle = 'We designed every part of this to remove the friction that makes insurance frustrating.',
   benefits = defaultBenefits,
 }) {
   return (

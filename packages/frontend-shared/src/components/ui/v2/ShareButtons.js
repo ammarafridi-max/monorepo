@@ -6,7 +6,9 @@ import { Link2, Check } from "lucide-react";
 const FB_BASE       = "https://www.facebook.com/sharer/sharer.php?u=";
 const LI_BASE       = "https://www.linkedin.com/sharing/share-offsite/?url=";
 const WA_BASE       = "https://wa.me/?text=";
-const SITE_ORIGIN   = "https://travelshield.com";
+// SSR fallback only; client uses window.location.origin. Each app should set
+// NEXT_PUBLIC_SITE_URL so the SSR'd share URL points at the right origin.
+const SITE_ORIGIN   = process.env.NEXT_PUBLIC_SITE_URL || "";
 
 const platforms = [
   {

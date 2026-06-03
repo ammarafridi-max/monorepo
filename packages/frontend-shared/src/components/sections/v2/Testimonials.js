@@ -5,7 +5,7 @@ import Container from '../../shared/layout/Container.js';
 const defaultTestimonials = [
   {
     quote:
-      'My flight got cancelled in Tokyo — TravelShield covered my hotel and rebooked flight within hours. Absolute lifesaver.',
+      'My flight got cancelled in Tokyo and the team covered my hotel and rebooked flight within hours. Absolute lifesaver.',
     name: 'Sarah M.',
     location: 'London, UK',
     stars: 5,
@@ -21,7 +21,7 @@ const defaultTestimonials = [
   },
   {
     quote:
-      'As a digital nomad I needed annual multi-trip cover. TravelShield is the only one that made sense price-wise and the app is great.',
+      'As a digital nomad I needed annual multi-trip cover. This was the only plan that made sense price-wise and the app is great.',
     name: 'Priya K.',
     location: 'Singapore',
     stars: 5,
