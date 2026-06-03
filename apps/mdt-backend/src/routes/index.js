@@ -85,7 +85,6 @@ router.use(
     brevo,
     auth,
     notifications: { insurancePaymentCompletionEmail },
-    reviewListId: config.brevoInsuranceListId,
   }),
 );
 

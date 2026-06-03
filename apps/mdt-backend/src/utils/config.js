@@ -22,7 +22,6 @@ export default {
 
   brevoApiKey: process.env.BREVO_API_KEY,
   brevoTicketListId: process.env.BREVO_TICKET_LIST_ID,
-  brevoInsuranceListId: process.env.BREVO_INSURANCE_LIST_ID,
   adminEmail: process.env.ADMIN_EMAIL ?? "info@mydummyticket.ae",
 
   corsOrigins: parseList(process.env.CORS_ORIGINS, ["http://localhost:3000"]),
