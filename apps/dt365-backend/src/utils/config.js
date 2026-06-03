@@ -21,6 +21,7 @@ export default {
   jwtCookieExpiresInDays: parseNumber(process.env.JWT_COOKIE_EXPIRES_IN, 7),
 
   brevoApiKey: process.env.BREVO_API_KEY,
+  brevoTicketListId: process.env.BREVO_TICKET_LIST_ID,
   adminEmail: process.env.ADMIN_EMAIL ?? "info@dummyticket365.com",
 
   corsOrigins: parseList(process.env.CORS_ORIGINS, ["http://localhost:3000"]),
@@ -30,6 +31,9 @@ export default {
   amadeus: {
     apiKey: process.env.AMADEUS_API_KEY,
     apiSecret: process.env.AMADEUS_SECRET_KEY,
+  },
+  airlabs: {
+    apiKey: process.env.AIRLABS_API_KEY,
   },
 
   cloudinary: {
