@@ -12,10 +12,57 @@ import { UserAuthContext } from '@travel-suite/frontend-shared/contexts/AuthCont
 import { CurrencyProvider } from '@travel-suite/frontend-shared/contexts/CurrencyContext';
 import { InsuranceProvider } from '@travel-suite/frontend-shared/contexts/InsuranceContext';
 import AppMegaLayout from '@travel-suite/frontend-shared/layouts/AppMegaLayout';
+import Footer from '@travel-suite/frontend-shared/components/sections/v2/Footer';
+import StickyWhatsApp from '@travel-suite/frontend-shared/components/ui/v2/StickyWhatsApp';
 import AnalyticsInit from '@travel-suite/frontend-shared/components/shared/AnalyticsInit';
 
 const LOGO_ALT = 'Travl';
 const EMAIL = 'info@travl.ae';
+const WHATSAPP_NUMBER = '+971569964924';
+
+const travlFooter = (
+  <Footer
+    brand="Travl"
+    logoSrc="/logo.webp"
+    logoAlt="Travl"
+    description="Travel documentation and insurance services for UAE residents since 2018."
+    copyright={`© ${new Date().getFullYear()} Travl Technologies LLC. All rights reserved.`}
+    columns={[
+      {
+        heading: 'Travel Insurance',
+        links: [
+          { label: 'All Plans', href: '/travel-insurance' },
+          { label: 'Schengen Visa', href: '/travel-insurance/schengen-visa' },
+          { label: 'Annual Multi-Trip', href: '/travel-insurance/annual-multi-trip' },
+          { label: 'Single Trip', href: '/travel-insurance/single-trip' },
+          { label: 'Travel Medical', href: '/travel-insurance/medical' },
+          { label: 'International', href: '/travel-insurance/international' },
+        ],
+      },
+      {
+        heading: 'Visa Services',
+        links: [
+          { label: 'All Destinations', href: '/visa' },
+          { label: 'Schengen Visa', href: '/visa/schengen' },
+          { label: 'United Kingdom', href: '/visa/united-kingdom' },
+          { label: 'United States', href: '/visa/usa' },
+          { label: 'Canada', href: '/visa/canada' },
+        ],
+      },
+      {
+        heading: 'Company',
+        links: [
+          { label: 'About Us', href: '/about' },
+          { label: 'Blog', href: '/blog' },
+          { label: 'Make a Claim', href: '/claims' },
+          { label: 'Contact Us', href: '/contact' },
+          { label: 'Privacy Policy', href: '/privacy-policy' },
+          { label: 'Terms & Conditions', href: '/terms-and-conditions' },
+        ],
+      },
+    ]}
+  />
+);
 
 const defaultPages = [
   {
@@ -108,9 +155,13 @@ export default function Providers({ children }) {
         <GuestAuthProvider>
           <CurrencyProvider>
             <InsuranceProvider>
-              <AppMegaLayout pages={defaultPages} logoAlt={LOGO_ALT}>
+              <AppMegaLayout pages={defaultPages} logoAlt={LOGO_ALT} footer={travlFooter}>
                 <main>{children}</main>
               </AppMegaLayout>
+              <StickyWhatsApp
+                phoneNumber={WHATSAPP_NUMBER}
+                hidePathPrefixes={['/insurance-booking']}
+              />
             </InsuranceProvider>
           </CurrencyProvider>
         </GuestAuthProvider>

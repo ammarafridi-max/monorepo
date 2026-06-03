@@ -4,7 +4,7 @@ import Navbar from '@travel-suite/frontend-shared/components/sections/v2/Navbar'
 import Footer from '@travel-suite/frontend-shared/components/sections/v2/Footer';
 
 export const metadata = {
-  title: '404 — Page Not Found | TravelShield',
+  title: '404 — Page Not Found | Travl',
   description: 'The page you were looking for could not be found.',
 };
 
@@ -83,7 +83,47 @@ export default function NotFound() {
         </div>
       </main>
 
-      <Footer />
+      <Footer
+        brand="Travl"
+        logoSrc="/logo.webp"
+        logoAlt="Travl"
+        description="Travel documentation and insurance services for UAE residents since 2018."
+        copyright={`© ${new Date().getFullYear()} Travl Technologies LLC. All rights reserved.`}
+        columns={[
+          {
+            heading: 'Travel Insurance',
+            links: [
+              { label: 'All Plans', href: '/travel-insurance' },
+              { label: 'Schengen Visa', href: '/travel-insurance/schengen-visa' },
+              { label: 'Annual Multi-Trip', href: '/travel-insurance/annual-multi-trip' },
+              { label: 'Single Trip', href: '/travel-insurance/single-trip' },
+              { label: 'Travel Medical', href: '/travel-insurance/medical' },
+              { label: 'International', href: '/travel-insurance/international' },
+            ],
+          },
+          {
+            heading: 'Visa Services',
+            links: [
+              { label: 'All Destinations', href: '/visa' },
+              { label: 'Schengen Visa', href: '/visa/schengen' },
+              { label: 'United Kingdom', href: '/visa/united-kingdom' },
+              { label: 'United States', href: '/visa/usa' },
+              { label: 'Canada', href: '/visa/canada' },
+            ],
+          },
+          {
+            heading: 'Company',
+            links: [
+              { label: 'About Us', href: '/about' },
+              { label: 'Blog', href: '/blog' },
+              { label: 'Make a Claim', href: '/claims' },
+              { label: 'Contact Us', href: '/contact' },
+              { label: 'Privacy Policy', href: '/privacy-policy' },
+              { label: 'Terms & Conditions', href: '/terms-and-conditions' },
+            ],
+          },
+        ]}
+      />
     </div>
   );
 }

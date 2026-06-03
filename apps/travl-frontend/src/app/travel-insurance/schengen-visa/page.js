@@ -50,7 +50,7 @@ export const processSteps = [
 const testimonials = [
   {
     quote:
-      "Applied for my Schengen visa and needed insurance fast. Travl delivered the AXA policy within minutes — accepted by the German consulate without question.",
+      "Booked my Schengen appointment with a week to spare and panicked about insurance. Got the AXA policy by email in about ten minutes and the German consulate took it without asking a thing.",
     name: "Ahmed K.",
     location: "Dubai, UAE",
     stars: 5,
@@ -58,7 +58,7 @@ const testimonials = [
   },
   {
     quote:
-      "The policy covered all 27 Schengen countries and met the EUR 30,000 requirement exactly. My visa was approved on the first try.",
+      "I'd read horror stories about people getting rejected over insurance that didn't hit the EUR 30,000 cover. This one did, all 27 countries listed, and my French visa came back approved first try.",
     name: "Priya N.",
     location: "Abu Dhabi, UAE",
     stars: 5,
@@ -66,7 +66,7 @@ const testimonials = [
   },
   {
     quote:
-      "I was worried about getting the right coverage for my Italian visa application. Travl made it easy and the policy was accepted by VFS Global immediately.",
+      "VFS for Italy can be picky. I printed the AXA certificate Travl emailed me, the counter staff stamped it and moved on. Honestly relieved.",
     name: "Maria C.",
     location: "Sharjah, UAE",
     stars: 5,
@@ -240,6 +240,17 @@ export default function Page() {
           { label: "Travel Insurance", path: "/travel-insurance" },
           { label: "Schengen Visa", path: "/travel-insurance/schengen-visa" },
         ]}
+        trustBar={
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-primary-200 bg-primary-50/60 px-4 py-3 text-xs sm:text-sm text-gray-700">
+            <span className="font-bold tracking-wide text-primary-800">
+              Underwritten by AXA
+            </span>
+            <span aria-hidden="true" className="text-gray-300">·</span>
+            <span>EUR 30,000 Medical Coverage</span>
+            <span aria-hidden="true" className="text-gray-300">·</span>
+            <span>Accepted by VFS Global &amp; BLS International</span>
+          </div>
+        }
       />
       <HowItWorks
         title={pageData.sections.process.title}
