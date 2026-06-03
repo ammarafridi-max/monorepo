@@ -4,19 +4,13 @@ import { useState, Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { usePathname } from 'next/navigation';
-import { Plane } from 'lucide-react';
 import { CurrencyProvider } from '@travel-suite/frontend-shared/contexts/CurrencyContext';
 import { TicketProvider } from '@travel-suite/frontend-shared/contexts/TicketContext';
 import { InsuranceProvider } from '@travel-suite/frontend-shared/contexts/InsuranceContext';
-import AppLayout from '@travel-suite/frontend-shared/layouts/AppLayout';
+import { TransferBookingProvider } from '@travel-suite/frontend-shared/contexts/TransferBookingContext';
 import AnalyticsInit from '@travel-suite/frontend-shared/components/shared/AnalyticsInit';
-
-const LOGO_ALT = 'AirportRides Logo';
-const EMAIL = 'info@airportrides.com';
-
-const defaultPages = [
-  { name: 'Home', links: ['/'], icon: <Plane size={18} /> },
-];
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 
 export default function Providers({ children }) {
   const pathname = usePathname();
@@ -52,9 +46,11 @@ export default function Providers({ children }) {
           <TicketProvider>
             <Suspense>
               <InsuranceProvider>
-                <AppLayout pages={defaultPages} logoAlt={LOGO_ALT} email={EMAIL}>
+                <TransferBookingProvider>
+                  <Navbar />
                   <main>{children}</main>
-                </AppLayout>
+                  <Footer />
+                </TransferBookingProvider>
               </InsuranceProvider>
             </Suspense>
           </TicketProvider>
