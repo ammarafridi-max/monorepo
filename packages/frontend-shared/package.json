@@ -31,8 +31,10 @@
     "./layouts/*": "./src/layouts/*.js"
   },
   "dependencies": {
+    "@mapbox/mapbox-gl-draw": "^1.5.1",
     "@tinymce/tinymce-react": "^6.3.0",
     "date-fns": "^4.1.0",
+    "mapbox-gl": "^3.20.0",
     "lucide-react": "^1.6.0",
     "next-auth": "^4.24.0",
     "react-hook-form": "^7.72.0",

@@ -39,7 +39,13 @@ function parseName(name) {
   return parts?.length >= 2 ? parts.slice(1).join(' - ') : name;
 }
 
-export default function QuoteCard({ quote, isSelected, onSelect }) {
+export default function QuoteCard({
+  quote,
+  isSelected,
+  onSelect,
+  supplierLogo,
+  supplierName,
+}) {
   const [expanded, setExpanded] = useState(false);
 
   const baseBenefits = getBaseBenefits(quote.benefits);
@@ -64,9 +70,18 @@ export default function QuoteCard({ quote, isSelected, onSelect }) {
 
       <div className="p-6 grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6 items-start">
         <div className="flex flex-col gap-5">
-          <p className="text-lg font-bold text-gray-900">
-            {parseName(quote.name)}
-          </p>
+          <div className="flex items-center gap-2.5">
+            {supplierLogo && (
+              <img
+                src={supplierLogo}
+                alt={supplierName ? `${supplierName} logo` : ''}
+                className="h-6 w-auto max-w-[60px] object-contain shrink-0"
+              />
+            )}
+            <p className="text-lg font-bold text-gray-900">
+              {parseName(quote.name)}
+            </p>
+          </div>
 
           {preview.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">

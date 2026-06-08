@@ -292,6 +292,7 @@ export default function PassengersForm() {
     addressLine2,
     city,
     country,
+    selectedQuote,
     setSessionId,
     setIsSubmitting,
   } = useContext(InsuranceContext);
@@ -316,6 +317,7 @@ export default function PassengersForm() {
       {
         quoteId,
         schemeId,
+        supplier: selectedQuote?.supplier,
         journeyType,
         startDate,
         endDate,

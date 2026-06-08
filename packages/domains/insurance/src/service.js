@@ -118,6 +118,7 @@ export function createInsuranceService({
       affiliateId: affiliate?.affiliateId || null,
       quoteId: body.quoteId != null ? String(body.quoteId) : undefined,
       schemeId: body.schemeId != null ? String(body.schemeId) : undefined,
+      supplier: body.supplier || undefined,
       journeyType: body.journeyType,
       startDate: body.startDate,
       endDate:

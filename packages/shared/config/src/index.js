@@ -3,8 +3,9 @@ import mdt from './brands/mdt.js';
 import dt365 from './brands/dt365.js';
 import travelshield from './brands/travelshield.js';
 import travl from './brands/travl.js';
+import emirateslimo from './brands/emirateslimo.js';
 
-const brands = { mdt, dt365, travelshield, travl };
+const brands = { mdt, dt365, travelshield, travl, emirateslimo };
 
 // Validate every brand at module load time — misconfigured brands fail at startup, not at runtime
 for (const config of Object.values(brands)) {

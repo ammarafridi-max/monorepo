@@ -153,6 +153,8 @@ function QuoteResults({ onViewItemList, onSelectItem }) {
               key={quote.scheme_id}
               quote={quote}
               isSelected={quote.scheme_id == schemeId}
+              supplierLogo={quote.supplier === 'AXA' ? '/axa-logo.png' : undefined}
+              supplierName={quote.supplier}
               onSelect={() => {
                 onSelectItem?.({ plan: quote, journeyType, region, days, totalTravellers, index });
                 handleSelectQuote(quote.scheme_id, quoteId);

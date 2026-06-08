@@ -120,27 +120,40 @@ export default function Navbar({ pages = [], logoAlt = "Logo" }) {
                     className="absolute left-0 right-0 top-full bg-white border-b border-gray-200 shadow-2xl"
                   >
                     <Container className="py-6 flex gap-6">
-                      {page.mega.columns.map((col, ci) => (
-                        <div key={ci} className="flex-1">
+                      {page.mega.columns.map((col, ci) => {
+                        // Columns can opt into a wider footprint via `span: 2`,
+                        // which doubles the column width and lays its items
+                        // out in a 2-per-row grid.
+                        const isWide = (col.span ?? 1) === 2;
+                        return (
+                        <div key={ci} className={isWide ? 'flex-[2]' : 'flex-1'}>
                           <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
                             {col.heading}
                           </p>
-                          <ul className="flex flex-col gap-1">
-                            {col.items.map(({ Icon, label, desc, href }) => (
+                          <ul className={isWide ? 'grid grid-cols-2 gap-x-2 gap-y-1' : 'flex flex-col gap-1'}>
+                            {col.items.map(({ Icon, flag, label, desc, href }) => (
                               <li key={label}>
                                 <Link
                                   href={href}
                                   onClick={() => setMegaOpen(null)}
                                   className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-primary-50 group transition-colors"
                                 >
-                                  {Icon && (
+                                  {flag ? (
+                                    <img
+                                      src={`https://cdn.jsdelivr.net/gh/HatScripts/circle-flags@latest/flags/${flag}.svg`}
+                                      alt=""
+                                      aria-hidden="true"
+                                      loading="lazy"
+                                      className="w-8 h-8 rounded-full shrink-0 object-cover"
+                                    />
+                                  ) : Icon ? (
                                     <div className="w-8 h-8 rounded-lg bg-primary-100 flex items-center justify-center shrink-0 group-hover:bg-primary-200 transition-colors">
                                       <Icon
                                         size={15}
                                         className="text-primary-700"
                                       />
                                     </div>
-                                  )}
+                                  ) : null}
                                   <div>
                                     <p className="font-semibold text-gray-900 text-sm leading-none mb-0.5">
                                       {label}
@@ -156,7 +169,8 @@ export default function Navbar({ pages = [], logoAlt = "Logo" }) {
                             ))}
                           </ul>
                         </div>
-                      ))}
+                        );
+                      })}
 
                       {page.mega.cta && (
                         <div className="w-56 shrink-0 flex flex-col">

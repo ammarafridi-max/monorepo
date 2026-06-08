@@ -43,7 +43,15 @@ export function createWisClient({ url, agencyId, agencyCode, frontendUrl }) {
 
   const fetchWISInsuranceQuotes = async (data) => {
     const { quotes, quote_id } = await fetchWIS('quote/outbound/premium', data);
-    return { quotes, quote_id };
+    // Tag every quote with its supplier. WIS issues AXA-underwritten policies
+    // exclusively today; tagging at the client boundary means downstream code
+    // (frontend display, persisted application record) never has to assume.
+    const taggedQuotes = quotes && typeof quotes === 'object'
+      ? Object.fromEntries(
+          Object.entries(quotes).map(([key, q]) => [key, { ...q, supplier: 'AXA' }]),
+        )
+      : quotes;
+    return { quotes: taggedQuotes, quote_id };
   };
 
   const finalizeWISInsurance = async (data) => {
