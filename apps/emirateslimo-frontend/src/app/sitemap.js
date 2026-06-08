@@ -1,11 +1,13 @@
-export const dynamic = 'force-static';
+// Regenerate hourly so blog posts appear once the backend is reachable
+// at runtime (the build-time Docker container usually can't reach it).
+export const revalidate = 3600;
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND;
 
 async function fetchAllPosts() {
   if (!BACKEND) return [];
   const res = await fetch(`${BACKEND}/api/blogs?status=published&limit=1000&page=1`, {
-    cache: 'force-cache',
+    next: { revalidate: 3600 },
   });
   if (!res.ok) throw new Error(`API ${res.status}`);
   const json = await res.json();
@@ -35,6 +37,7 @@ export default async function sitemap() {
     { url: `${baseUrl}/contact-us`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
     { url: `${baseUrl}/frequently-asked-questions`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
     { url: `${baseUrl}/blog`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.7 },
+    { url: `${baseUrl}/blog/tags`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.5 },
 
     { url: `${baseUrl}/terms-and-conditions`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
     { url: `${baseUrl}/privacy-policy`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
