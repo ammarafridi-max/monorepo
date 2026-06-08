@@ -18,7 +18,37 @@ const staticPages = [
     url: "/travel-insurance/schengen-visa",
     changeFrequency: "monthly",
     priority: 0.8,
-    lastmod: "2026-04-28",
+    lastmod: "2026-06-08",
+  },
+  {
+    url: "/travel-insurance/france-visa",
+    changeFrequency: "monthly",
+    priority: 0.8,
+    lastmod: "2026-06-08",
+  },
+  {
+    url: "/travel-insurance/spain-visa",
+    changeFrequency: "monthly",
+    priority: 0.8,
+    lastmod: "2026-06-08",
+  },
+  {
+    url: "/travel-insurance/italy-visa",
+    changeFrequency: "monthly",
+    priority: 0.8,
+    lastmod: "2026-06-08",
+  },
+  {
+    url: "/travel-insurance/germany-visa",
+    changeFrequency: "monthly",
+    priority: 0.8,
+    lastmod: "2026-06-08",
+  },
+  {
+    url: "/travel-insurance/greece-visa",
+    changeFrequency: "monthly",
+    priority: 0.8,
+    lastmod: "2026-06-08",
   },
   {
     url: "/travel-insurance/medical",
@@ -67,6 +97,24 @@ const staticPages = [
     changeFrequency: "monthly",
     priority: 0.7,
     lastmod: "2026-04-28",
+  },
+  {
+    url: "/about",
+    changeFrequency: "monthly",
+    priority: 0.5,
+    lastmod: "2026-06-08",
+  },
+  {
+    url: "/contact",
+    changeFrequency: "monthly",
+    priority: 0.5,
+    lastmod: "2026-06-08",
+  },
+  {
+    url: "/claims",
+    changeFrequency: "monthly",
+    priority: 0.6,
+    lastmod: "2026-06-08",
   },
   {
     url: "/terms-and-conditions",
