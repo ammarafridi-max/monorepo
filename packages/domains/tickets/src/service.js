@@ -256,6 +256,20 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       message: ticket.message,
     });
 
+    // Customer confirmation — plain-text "we have your order" email.
+    // Plays the immediate-vs-scheduled variant inside the notification.
+    await notifications.sendTicketPaymentToCustomer?.({
+      email: ticket.email,
+      leadPassenger: ticket.leadPassenger,
+      passengers: ticket.passengers,
+      type: ticket.type,
+      from: ticket.from,
+      to: ticket.to,
+      departureDate: ticket.departureDate,
+      ticketValidity: ticket.ticketValidity,
+      ticketDelivery: ticket.ticketDelivery,
+    });
+
     // Review collection (MDT only): no-op where brevo is not injected
     // (e.g. dt365). Best-effort — must never break a confirmed payment.
     try {
@@ -396,6 +410,20 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       ticketDelivery: ticket.ticketDelivery,
       passengers: ticket.passengers,
       message: ticket.message,
+    });
+
+    // Customer confirmation — plain-text "we have your order" email.
+    // Plays the immediate-vs-scheduled variant inside the notification.
+    await notifications.sendTicketPaymentToCustomer?.({
+      email: ticket.email,
+      leadPassenger: ticket.leadPassenger,
+      passengers: ticket.passengers,
+      type: ticket.type,
+      from: ticket.from,
+      to: ticket.to,
+      departureDate: ticket.departureDate,
+      ticketValidity: ticket.ticketValidity,
+      ticketDelivery: ticket.ticketDelivery,
     });
 
     return ticket;

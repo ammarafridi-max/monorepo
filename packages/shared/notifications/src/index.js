@@ -87,6 +87,82 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
     }
   }
 
+  // -- 3b. Ticket payment (customer) ----------------------------------------
+  //
+  // Sent to the customer right after the admin notification on PAID. Plain
+  // text only (renders identically across every mail client, looks personal,
+  // no broken templates). Two copy variants:
+  //   - immediate delivery: "we're preparing your ticket"
+  //   - scheduled delivery: "your ticket is scheduled for <date>"
+  // Best-effort — wrapped in try/catch so a send failure never breaks payment.
+
+  async function sendTicketPaymentToCustomer(data) {
+    try {
+      if (!data?.email) return;
+
+      const firstName = data.passengers?.[0]?.firstName?.trim() || 'there';
+      const fromCode = extractIataCode(data.from) || data.from || '';
+      const toCode = extractIataCode(data.to) || data.to || '';
+      const depFull = formatToDDMMMYYYYMixed(data.departureDate);
+      const isScheduled = !data.ticketDelivery?.immediate;
+      const deliveryDate = formatToDDMMMYYYYMixed(data.ticketDelivery?.deliveryDate);
+      const paxCount = (data.passengers || []).length;
+      const paxLine = paxCount > 1
+        ? `${data.leadPassenger} + ${paxCount - 1}`
+        : data.leadPassenger || '—';
+
+      const subject = isScheduled
+        ? `Order confirmed — your dummy ticket is scheduled for ${deliveryDate}`
+        : `Order confirmed — we're preparing your dummy ticket`;
+
+      const whatHappensNext = isScheduled
+        ? `What happens next\nWe'll email your dummy ticket to this address on the morning of your chosen delivery date. You don't need to do anything until then.`
+        : `What happens next\nYou'll receive your dummy ticket by email shortly. Most orders are delivered within 15 minutes during working hours.`;
+
+      const orderLines = [
+        `- Route: ${fromCode} → ${toCode} (Departure ${depFull})`,
+        `- Passengers: ${paxLine}`,
+        `- Type: ${data.type || '—'}`,
+        `- Validity: ${data.ticketValidity || '—'}`,
+        isScheduled ? `- Delivery scheduled: ${deliveryDate}` : null,
+      ].filter(Boolean).join('\n');
+
+      const closingHelp = isScheduled
+        ? `If your plans change before then, reply to this email and we'll bring the delivery forward (or adjust the dates).`
+        : `If you need to make any changes or have a question, just reply to this email.`;
+
+      const textContent = [
+        `Hi ${firstName},`,
+        ``,
+        isScheduled
+          ? `Thanks for your order. We've received your payment and your dummy ticket is scheduled for delivery on ${deliveryDate}.`
+          : `Thanks for your order. We've received your payment and our team is preparing your dummy ticket now.`,
+        ``,
+        whatHappensNext,
+        ``,
+        `Your order`,
+        orderLines,
+        ``,
+        closingHelp,
+        ``,
+        `Talk soon,`,
+        `The ${brand.name} team`,
+      ].join('\n');
+
+      await sendEmail({
+        email: data.email,
+        name: data.leadPassenger,
+        subject,
+        textContent,
+      });
+    } catch (err) {
+      log('[notifications] sendTicketPaymentToCustomer failed', {
+        email: data?.email,
+        err: err.message,
+      });
+    }
+  }
+
   // -- 4. Custom payment link paid (admin) -----------------------------------
 
   async function sendPaymentLinkPaidToAdmin(data) {
@@ -145,6 +221,7 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
     sendInsuranceFormSubmission,
     sendInsurancePaymentToAdmin,
     sendTicketPaymentToAdmin,
+    sendTicketPaymentToCustomer,
     sendPaymentLinkPaidToAdmin,
     sendVisaLeadToAdmin,
   };
