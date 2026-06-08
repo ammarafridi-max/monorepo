@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /book/
+Disallow: /payment
+
+Sitemap: https://www.emirateslimo.com/sitemap.xml
