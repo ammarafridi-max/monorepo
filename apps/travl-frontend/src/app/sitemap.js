@@ -155,12 +155,12 @@ export default async function sitemap() {
         priority: 0.7,
       }));
   } catch (err) {
-    console.error('[sitemap] fetch failed:', err);
+    console.error("[sitemap] fetch failed:", err);
   }
 
   let visaEntries = [];
   try {
-    const visas = await getPublicVisasApi() || [];
+    const visas = (await getPublicVisasApi()) || [];
     visaEntries = visas
       .filter((visa) => visa?.slug)
       .map((visa) => ({
@@ -170,7 +170,7 @@ export default async function sitemap() {
         priority: 0.7,
       }));
   } catch (err) {
-    console.error('[sitemap] fetch failed:', err);
+    console.error("[sitemap] fetch failed:", err);
   }
 
   let tagEntries = [];
@@ -186,7 +186,7 @@ export default async function sitemap() {
         priority: 0.5,
       }));
   } catch (err) {
-    console.error('[sitemap] fetch failed:', err);
+    console.error("[sitemap] fetch failed:", err);
   }
 
   return [...staticEntries, ...blogEntries, ...tagEntries, ...visaEntries];
