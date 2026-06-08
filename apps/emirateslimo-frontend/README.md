@@ -24,9 +24,7 @@ Defaults to http://localhost:3000.
 |---|---|---|
 | `NEXT_PUBLIC_BACKEND_URL` | yes | emirateslimo-backend base URL (`https://api.emirateslimo.com`) |
 | `NEXT_PUBLIC_BRAND` | yes | brand key for `@travel-suite/config` (`emirateslimo`) |
-| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | yes | location autocomplete / distance |
 | `NEXT_PUBLIC_MAPBOX_TOKEN` | yes | admin zone-drawing map |
-| `NEXT_PUBLIC_GOOGLE_TAG_MANAGER_ID` | no | GTM |
 | `NEXT_PUBLIC_GA4_MEASUREMENT_ID` | no | GA4 |
 | `NEXT_PUBLIC_TINYMCE_API_KEY` | no | blog editor |
 
