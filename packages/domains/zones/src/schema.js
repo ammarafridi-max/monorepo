@@ -11,8 +11,11 @@ const ZoneSchema = new mongoose.Schema(
         enum: ['Polygon', 'MultiPolygon'],
         required: true,
       },
+      // Array (not [[[Number]]]) so both Polygon (3-deep) and MultiPolygon
+      // (4-deep) coordinates fit. MongoDB's 2dsphere index validates GeoJSON
+      // correctness on write.
       coordinates: {
-        type: [[[Number]]],
+        type: Array,
         required: true,
       },
     },
