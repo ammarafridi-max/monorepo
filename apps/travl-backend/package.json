@@ -18,6 +18,7 @@
     "@travel-suite/blog": "workspace:*",
     "@travel-suite/flights": "workspace:*",
     "@travel-suite/insurance": "workspace:*",
+    "@travel-suite/itineraries": "workspace:*",
     "@travel-suite/cloudinary": "workspace:*",
     "@travel-suite/currencies": "workspace:*",
     "@travel-suite/notifications": "workspace:*",

@@ -1,4 +1,5 @@
 import { Router } from "express";
+import rateLimit from "express-rate-limit";
 import { createAuthRouter } from "@travel-suite/auth";
 import { createEmailSupportFeature } from "@travel-suite/email-support";
 import { createInsuranceRouter } from "@travel-suite/insurance";
@@ -10,6 +11,7 @@ import { createCurrenciesRouter } from "@travel-suite/currencies";
 import { createFlightRouter, createAirportsRouter, createAmadeusClient, createAirLabsClient } from "@travel-suite/flights";
 import { createAffiliatesRouter, AffiliateSchema } from "@travel-suite/affiliates";
 import { createTicketsRouter } from "@travel-suite/tickets";
+import { createItinerariesRouter } from "@travel-suite/itineraries";
 import { createUsersRouter } from "@travel-suite/users";
 import { createNotificationsService } from "@travel-suite/notifications";
 import {
@@ -116,6 +118,35 @@ router.use("/pricing", pricingRouter);
 
 router.use("/affiliates", createAffiliatesRouter({ db, auth, TicketModel }));
 
+// -- Travel itinerary generator ------------------------------------------------
+// AI writes content only -> code validates -> watermarked preview -> pay to unlock.
+// Per-IP limiter on generation routes (each generation is a paid AI call);
+// per-session regeneration caps live inside the domain service.
+const itineraryGenerateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { status: "fail", message: "Too many itinerary generations from this network. Please try again later." },
+});
+
+const { router: itinerariesRouter, handleStripeSuccess: handleItinerarySuccess } = createItinerariesRouter({
+  db,
+  stripe,
+  anthropicApiKey: config.anthropicApiKey,
+  frontendUrl: config.frontendUrl,
+  frontendPathBase: "/itinerary-booking",
+  brand: {
+    name: "Travl",
+    companyName: "TRAVL Technologies",
+    domain: "travl.ae",
+    primaryColor: "#0d6a66",
+    accentColor: "#ff603a",
+  },
+  generateLimiter: itineraryGenerateLimiter,
+});
+router.use("/itineraries", itinerariesRouter);
+
 const paymentService = createPaymentService({ stripe, db, PaymentLinkSchema, ProductSchema });
 const paymentsController = createPaymentsController({ service: paymentService });
 router.use("/payments", createPaymentsAdminRouter({ controller: paymentsController, auth }));
@@ -161,6 +192,7 @@ export const stripeWebhookHandler = createStripeWebhookHandler({
   db,
   handlers: {
     ticket: handleStripeSuccess,
+    itinerary: handleItinerarySuccess,
     "payment-link": handlePaymentLinkSuccess,
   },
 });

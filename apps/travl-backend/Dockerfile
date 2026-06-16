@@ -1,6 +1,18 @@
 FROM node:22-alpine AS base
 RUN npm install -g pnpm@9.15.0
 
+# Chromium + fonts for Puppeteer (itinerary PDF/preview rendering).
+# We use the system browser, not a bundled download.
+RUN apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont
+ENV PUPPETEER_SKIP_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
 # ── Install dependencies (cached separately from source) ─────────────────────
 FROM base AS deps
 WORKDIR /repo
@@ -20,6 +32,7 @@ COPY packages/domains/insurance/package.json       packages/domains/insurance/pa
 COPY packages/shared/notifications/package.json   packages/shared/notifications/package.json
 COPY packages/domains/payments/package.json        packages/domains/payments/package.json
 COPY packages/domains/tickets/package.json         packages/domains/tickets/package.json
+COPY packages/domains/itineraries/package.json     packages/domains/itineraries/package.json
 COPY packages/domains/users/package.json           packages/domains/users/package.json
 COPY packages/shared/utils/package.json           packages/shared/utils/package.json
 COPY packages/domains/email-support/package.json   packages/domains/email-support/package.json

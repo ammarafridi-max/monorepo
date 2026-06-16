@@ -10,6 +10,7 @@ export default function robots() {
         "/insurance-booking/passengers",
         "/insurance-booking/review",
         "/insurance-booking/payment",
+        "/itinerary-booking/*",
       ],
     },
     sitemap: "https://www.travl.ae/sitemap.xml",

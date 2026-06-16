@@ -42,6 +42,7 @@ const travlFooter = (
       {
         heading: 'Visa Services',
         links: [
+          { label: 'Travel Itinerary', href: '/travel-itinerary' },
           { label: 'All Destinations', href: '/visa' },
           { label: 'Schengen Visa', href: '/visa/schengen' },
           { label: 'United Kingdom', href: '/visa/united-kingdom' },
@@ -100,6 +101,10 @@ const defaultPages = [
         },
       ],
     },
+  },
+  {
+    name: 'Travel Itinerary',
+    links: ['/travel-itinerary'],
   },
   {
     name: 'Visa',
