@@ -307,3 +307,57 @@ export function trackPurchase({
 
   markPurchaseTracked(transactionId, dedupeKey);
 }
+
+// -- Travel itinerary funnel -------------------------------------------------
+
+function itineraryItem({ value = 49, currency = 'AED' } = {}) {
+  return {
+    item_id: 'travel_itinerary',
+    item_name: 'Travel Itinerary',
+    item_category: 'Visa Document',
+    price: parseFloat(value),
+    quantity: 1,
+    currency,
+  };
+}
+
+export function trackItineraryGenerate({ purpose, visaCountry, fromCountry, travellers, segmentCount } = {}) {
+  if (!shouldTrackAnalytics()) return;
+  ReactGA.event('itinerary_generate', {
+    purpose,
+    visa_country: visaCountry,
+    from_country: fromCountry,
+    travellers,
+    segment_count: segmentCount,
+  });
+}
+
+export function trackItineraryViewItem({ value = 49, currency = 'AED' } = {}) {
+  if (!shouldTrackAnalytics()) return;
+  ReactGA.event('view_item', {
+    currency,
+    value: parseFloat(value),
+    items: [itineraryItem({ value, currency })],
+  });
+}
+
+export function trackItineraryBeginCheckout({ value = 49, currency = 'AED' } = {}) {
+  if (!shouldTrackAnalytics()) return;
+  ReactGA.event('begin_checkout', {
+    currency,
+    value: parseFloat(value),
+    items: [itineraryItem({ value, currency })],
+  });
+}
+
+// Fires once per session (deduped via localStorage) — the success page polls.
+export function trackItineraryPurchase({ sessionId, value = 49, currency = 'AED' } = {}) {
+  if (!shouldTrackAnalytics() || !sessionId || hasTrackedPurchase(sessionId)) return;
+  ReactGA.event('purchase', {
+    transaction_id: sessionId,
+    value: parseFloat(value),
+    currency,
+    items: [itineraryItem({ value, currency })],
+  });
+  markPurchaseTracked(sessionId);
+}

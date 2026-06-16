@@ -32,3 +32,24 @@ export async function refundBookingApi(transactionId) {
     method: 'POST',
   });
 }
+
+// -- Public (client booking flow) --------------------------------------------
+
+export async function getAvailableVehiclesApi(params) {
+  const query = new URLSearchParams(
+    Object.entries(params || {}).filter(([, v]) => v != null && v !== ''),
+  ).toString();
+  return await apiFetch(`${URL}/available-vehicles${query ? `?${query}` : ''}`);
+}
+
+export async function createBookingApi(bookingData) {
+  return await apiFetch(URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(bookingData),
+  });
+}
+
+export async function getPaymentLinkApi(id) {
+  return await apiFetch(`${URL}/${id}/payment-link`, { method: 'POST' });
+}

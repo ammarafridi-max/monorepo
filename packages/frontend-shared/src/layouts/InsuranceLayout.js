@@ -35,7 +35,7 @@ export default function InsuranceLayout({ children }) {
       </div>
       <TripSummaryBar />
       <main className="flex-1 pb-24">
-        <div className="w-[95%] lg:w-[70%] mx-auto py-6">{children}</div>
+        <div className="w-[90%] md:w-[85%] lg:w-[70%] mx-auto py-6">{children}</div>
       </main>
       <BookingFooterConditional />
     </div>

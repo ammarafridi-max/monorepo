@@ -1,0 +1,26 @@
+{
+  "name": "@travel-suite/itineraries",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {},
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.55.0",
+    "@travel-suite/utils": "workspace:*",
+    "multer": "^1.4.5-lts.1",
+    "puppeteer": "^24.10.0",
+    "uuid": "^11.0.0"
+  },
+  "peerDependencies": {
+    "express": "^5.0.0",
+    "mongoose": "^9.0.0"
+  },
+  "devDependencies": {
+    "express": "^5.2.1",
+    "mongoose": "^9.0.2"
+  }
+}
