@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { pages } from './Navigation';
 import { HiOutlineXMark, HiOutlineBars3 } from 'react-icons/hi2';
 import { ChevronDown, ChevronRight } from 'lucide-react';
-import { useOutsideClick } from '../hooks/general/useOutsideClick';
+import { useOutsideClick } from '@travel-suite/frontend-shared/hooks/general/useOutsideClick';
 import Container from './Container';
 
 export default function MobileNavigation() {

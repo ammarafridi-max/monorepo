@@ -2,8 +2,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { ToastContainer } from 'react-toastify';
-import CurrencyProvider from '../context/CurrencyContext';
-import BookingProvider from '../context/BookingContext';
+import { CurrencyProvider } from '@travel-suite/frontend-shared/contexts/CurrencyContext';
+import { LimoBookingProvider } from '@travel-suite/frontend-shared/contexts/LimoBookingContext';
 import ScrollToTop from './ScrollToTop';
 
 const queryClient = new QueryClient({
@@ -20,10 +20,10 @@ export default function Providers({ children }) {
       <Toaster />
       <ToastContainer position="top-right" autoClose={3000} />
       <CurrencyProvider>
-        <BookingProvider>
+        <LimoBookingProvider>
           <ScrollToTop />
           {children}
-        </BookingProvider>
+        </LimoBookingProvider>
       </CurrencyProvider>
     </QueryClientProvider>
   );

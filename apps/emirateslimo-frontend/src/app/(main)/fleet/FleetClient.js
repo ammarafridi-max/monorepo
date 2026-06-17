@@ -1,14 +1,14 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useVehicles } from '@/hooks/vehicles/useVehicles';
+import { useGetVehicles } from '@travel-suite/frontend-shared/hooks/vehicles/useGetVehicles';
 import Container from '@/components/Container';
 import FleetCard from '@/components/FleetCard';
 import PrimarySection from '@/components/PrimarySection';
 import PrimaryLink from '@/components/PrimaryLink';
 
 export default function FleetClient() {
-  const { vehicles, isLoadingVehicles } = useVehicles();
+  const { vehicles = [], isLoadingVehicles } = useGetVehicles();
 
   return (
     <PrimarySection className="py-15 lg:py-20">

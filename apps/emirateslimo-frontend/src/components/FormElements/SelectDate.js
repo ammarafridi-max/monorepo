@@ -1,6 +1,6 @@
 'use client';
 import { useMemo, useRef, useState } from 'react';
-import { useOutsideClick } from '../../hooks/general/useOutsideClick';
+import { useOutsideClick } from '@travel-suite/frontend-shared/hooks/general/useOutsideClick';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HiCalendarDays } from 'react-icons/hi2';

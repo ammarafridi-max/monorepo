@@ -1,18 +1,18 @@
 'use client';
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { MdOutlineLuggage, MdOutlineMan2 } from 'react-icons/md';
 import { FaCircleCheck, FaImage } from 'react-icons/fa6';
 import { HiOutlineStar } from 'react-icons/hi2';
-import { BookingContext } from '../context/BookingContext';
+import { useLimoBooking } from '@travel-suite/frontend-shared/contexts/LimoBookingContext';
 import { Tooltip } from 'react-tooltip';
-import { CurrencyContext } from '../context/CurrencyContext';
+import { useCurrency } from '@travel-suite/frontend-shared/contexts/CurrencyContext';
 import { trackVehicleSelection } from '../lib/analytics';
 import { trackVehicleSelectionMeta } from '../lib/meta';
 import VehicleGallery from './VehicleGallery';
 
 export default function VehicleCard({ vehicle }) {
-  const { currency } = useContext(CurrencyContext);
-  const { bookingData, handleSelectVehicle } = useContext(BookingContext);
+  const { formatMoney } = useCurrency();
+  const { bookingData, handleSelectVehicle } = useLimoBooking();
   const { tripType, hoursBooked } = bookingData;
   const [showGallery, setShowGallery] = useState(false);
 
@@ -42,7 +42,7 @@ export default function VehicleCard({ vehicle }) {
 
         <div className="flex flex-col justify-between h-full">
           <VehicleTitlePrice
-            currency={currency}
+            formatMoney={formatMoney}
             tripType={tripType}
             vehicle={vehicle}
             vehiclePrice={vehicle?.totalPrice}
@@ -65,7 +65,8 @@ export default function VehicleCard({ vehicle }) {
   );
 }
 
-function VehicleTitlePrice({ currency, vehicle, vehiclePrice, tripType, hoursBooked }) {
+function VehicleTitlePrice({ formatMoney, vehicle, vehiclePrice, tripType, hoursBooked }) {
+  const money = formatMoney(vehiclePrice, 'AED');
   return (
     <div className="grid grid-cols-[9fr_3fr] items-center gap-3 lg:block">
       <div>
@@ -75,7 +76,7 @@ function VehicleTitlePrice({ currency, vehicle, vehiclePrice, tripType, hoursBoo
           </span>
         </h3>
         <p className="text-[15px] font-medium text-accent-600">
-          {currency?.sign} {(vehiclePrice * currency?.conversionRate).toFixed(2)}
+          {money.symbol} {money.value}
           <span className="text-[13px] text-primary-400 font-light ml-1">
             / {tripType === 'distance' ? 'trip' : `${hoursBooked} hours`}
           </span>

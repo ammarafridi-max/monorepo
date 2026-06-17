@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { useOutsideClick } from '@/hooks/general/useOutsideClick';
+import { useOutsideClick } from '@travel-suite/frontend-shared/hooks/general/useOutsideClick';
 import { ChevronDown } from 'lucide-react';
 import Button from '@/components/Button';
 

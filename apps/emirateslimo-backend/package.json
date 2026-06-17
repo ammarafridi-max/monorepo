@@ -29,10 +29,10 @@
     "cors": "^2.8.5",
     "express": "^5.2.1",
     "express-rate-limit": "^8.2.1",
+    "googleapis": "^144.0.0",
     "helmet": "8.1",
     "mongoose": "^9.0.2"
   },
-  "devDependencies": {},
   "engines": {
     "node": "22.x"
   }

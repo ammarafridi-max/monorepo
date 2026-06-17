@@ -2,9 +2,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { HiMapPin } from 'react-icons/hi2';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useGetLocations } from '@/hooks/locations/useGetLocations';
-import { useOutsideClick } from '@/hooks/general/useOutsideClick';
-import { useGetLatLng } from '@/hooks/locations/useGetLatLng';
+import { useLocationSuggestions } from '@travel-suite/frontend-shared/hooks/locations/useLocationSuggestions';
+import { useOutsideClick } from '@travel-suite/frontend-shared/hooks/general/useOutsideClick';
+import { useCoordinates } from '@travel-suite/frontend-shared/hooks/locations/useCoordinates';
 import {
   RiFlightTakeoffFill,
   RiMapPin2Line,
@@ -30,9 +30,9 @@ export default function SearchLocations({
   const inputRef = useRef(null);
   const mobileInputRef = useRef(null);
 
-  const { getCoordinates } = useGetLatLng();
-  const { locations, isLoadingLocations, isErrorLocations } =
-    useGetLocations(query);
+  const { getCoordinates } = useCoordinates();
+  const { suggestions, isLoadingSuggestions, isErrorSuggestions } =
+    useLocationSuggestions(query);
 
   useOutsideClick(wrapperRef, () => setShow(false));
 
@@ -45,7 +45,7 @@ export default function SearchLocations({
       );
     }
 
-    if (isLoadingLocations && query.length >= 3) {
+    if (isLoadingSuggestions && query.length >= 3) {
       return (
         <div className="py-2">
           <LoadingLocation />
@@ -55,7 +55,7 @@ export default function SearchLocations({
       );
     }
 
-    if (isErrorLocations) {
+    if (isErrorSuggestions) {
       return (
         <p className="py-3 px-4 text-[15px] font-light">
           Error fetching locations.
@@ -63,8 +63,8 @@ export default function SearchLocations({
       );
     }
 
-    if (locations) {
-      return locations?.map((loc) => (
+    if (suggestions) {
+      return suggestions?.map((loc) => (
         <div
           key={loc.id}
           onClick={async () => {

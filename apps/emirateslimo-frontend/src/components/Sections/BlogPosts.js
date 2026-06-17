@@ -1,5 +1,5 @@
 'use client';
-import { useBlogs } from '../../hooks/blog/useBlogs';
+import { useGetPublishedBlogs } from '@travel-suite/frontend-shared/hooks/blog/useGetPublishedBlogs';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import BlogCard from '../BlogCard';
@@ -8,7 +8,7 @@ import PrimarySection from '../PrimarySection';
 import SectionTitle from '../SectionTitle';
 
 export default function BlogPosts({ title = 'Blog Posts', subtitle = 'Recently published blog posts' }) {
-  const { blogs, isLoadingBlogs, isErrorBlogs } = useBlogs({ limit: 3 });
+  const { blogs, isLoadingBlogs, isErrorBlogs } = useGetPublishedBlogs({ limit: 3 });
 
   return (
     <PrimarySection className="pb-15 lg:pb-30">

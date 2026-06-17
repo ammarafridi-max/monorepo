@@ -1,5 +1,5 @@
 'use client';
-import { useVehicles } from '../../hooks/vehicles/useVehicles';
+import { useGetVehicles } from '@travel-suite/frontend-shared/hooks/vehicles/useGetVehicles';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination } from 'swiper/modules';
 import PrimarySection from '../PrimarySection';
@@ -9,7 +9,7 @@ import FleetCard from '../FleetCard';
 import PrimaryLink from '../PrimaryLink';
 
 export default function Fleet({ title = 'Luxury Vehicles To Choose From', subtitle = 'Our Fleet' }) {
-  const { vehicles } = useVehicles();
+  const { vehicles = [] } = useGetVehicles();
 
   return (
     <PrimarySection className="py-15 lg:py-30">

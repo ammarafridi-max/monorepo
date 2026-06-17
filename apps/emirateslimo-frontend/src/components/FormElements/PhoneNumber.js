@@ -1,14 +1,14 @@
 'use client';
-import { useContext, useEffect, useRef, useState } from 'react';
-import { useOutsideClick } from '../../hooks/general/useOutsideClick';
+import { useEffect, useRef, useState } from 'react';
+import { useOutsideClick } from '@travel-suite/frontend-shared/hooks/general/useOutsideClick';
 import { countryCodes } from '../../data/countryCodes';
-import { BookingContext } from '../../context/BookingContext';
+import { useLimoBooking } from '@travel-suite/frontend-shared/contexts/LimoBookingContext';
 import Label from './Label';
 
 export default function PhoneNumber({ required, optional, tooltip }) {
   const [query, setQuery] = useState('');
   const [showCodes, setShowCodes] = useState(false);
-  const { bookingData, handleNumberChange } = useContext(BookingContext);
+  const { bookingData, handleNumberChange } = useLimoBooking();
   const { bookingDetails } = bookingData;
   const { phoneNumber } = bookingDetails;
   const wrapperRef = useRef(null);

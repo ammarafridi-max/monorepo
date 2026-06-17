@@ -1,7 +1,7 @@
 'use client';
 import { useForm } from 'react-hook-form';
-import { useContext, useEffect } from 'react';
-import { BookingContext } from '../context/BookingContext';
+import { useEffect } from 'react';
+import { useLimoBooking } from '@travel-suite/frontend-shared/contexts/LimoBookingContext';
 import { trackLimoFormSubmission } from '../lib/analytics';
 import { trackLimoFormSubmissionMeta } from '../lib/meta';
 import toast from 'react-hot-toast';
@@ -12,7 +12,7 @@ import Button from './Button';
 import SelectHours from './FormElements/SelectHours';
 
 export default function LimoForm() {
-  const { bookingData, setBookingData, submitLimoForm, isLoadingLimoForm } = useContext(BookingContext);
+  const { bookingData, setBookingData, submitLimoForm, isLoadingLimoForm } = useLimoBooking();
   const { tripType } = bookingData;
   const { register, handleSubmit, setValue, watch, reset } = useForm();
 

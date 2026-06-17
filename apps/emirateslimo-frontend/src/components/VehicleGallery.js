@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { useOutsideClick } from '../hooks/general/useOutsideClick';
+import { useOutsideClick } from '@travel-suite/frontend-shared/hooks/general/useOutsideClick';
 import { FaXmark } from 'react-icons/fa6';
 
 export default function VehicleGallery({ vehicle, images, setShowGallery }) {

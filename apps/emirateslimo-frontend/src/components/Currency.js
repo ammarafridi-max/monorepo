@@ -1,11 +1,11 @@
 'use client';
-import { useContext, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { HiChevronDown } from 'react-icons/hi2';
-import { CurrencyContext } from '../context/CurrencyContext';
-import { useOutsideClick } from '../hooks/general/useOutsideClick';
+import { useCurrency } from '@travel-suite/frontend-shared/contexts/CurrencyContext';
+import { useOutsideClick } from '@travel-suite/frontend-shared/hooks/general/useOutsideClick';
 
 export default function Currency() {
-  const { currency, currencies, handleSetCurrency } = useContext(CurrencyContext);
+  const { selectedCurrency, currencies, setCurrency } = useCurrency();
   const [showCurrencies, setShowCurrencies] = useState(false);
   const wrapperRef = useRef(null);
 
@@ -21,7 +21,7 @@ export default function Currency() {
           onClick={() => setShowCurrencies((val) => !val)}
           disabled={!currencies?.length}
         >
-          <span>{currency?.code || '...'}</span>
+          <span>{selectedCurrency?.code || '...'}</span>
           <span className="hidden lg:block">
             <HiChevronDown />
           </span>
@@ -33,10 +33,10 @@ export default function Currency() {
                 key={cur.code}
                 onClick={() => {
                   setShowCurrencies(false);
-                  handleSetCurrency(cur?.code, cur?.sign, cur?.conversionRate);
+                  setCurrency(cur?.code);
                 }}
                 type="button"
-                className={`h-fit rounded-sm text-center text-[12px] py-1.5 duration-300 cursor-pointer ${currency?.code === cur?.code ? 'bg-primary-900 text-white' : 'bg-transparent hover:bg-primary-100'}`}
+                className={`h-fit rounded-sm text-center text-[12px] py-1.5 duration-300 cursor-pointer ${selectedCurrency?.code === cur?.code ? 'bg-primary-900 text-white' : 'bg-transparent hover:bg-primary-100'}`}
               >
                 {cur.code}
               </button>

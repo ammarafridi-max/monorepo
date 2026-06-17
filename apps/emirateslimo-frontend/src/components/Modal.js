@@ -5,7 +5,7 @@ import { useContext } from 'react';
 import { createContext } from 'react';
 import { createPortal } from 'react-dom';
 import { HiXMark } from 'react-icons/hi2';
-import { useOutsideClick } from '@/hooks/general/useOutsideClick';
+import { useOutsideClick } from '@travel-suite/frontend-shared/hooks/general/useOutsideClick';
 import styled from 'styled-components';
 
 const StyledOverlay = styled.div`

@@ -1,9 +1,9 @@
 'use client';
 
-import { useContext, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useCreateBooking } from '@/hooks/bookings/useCreateBooking';
-import { BookingContext } from '@/context/BookingContext';
+import { useCreateBooking } from '@travel-suite/frontend-shared/hooks/limo-bookings/useCreateBooking';
+import { useLimoBooking } from '@travel-suite/frontend-shared/contexts/LimoBookingContext';
 import { FaStripe } from 'react-icons/fa6';
 import { FaCheckCircle } from 'react-icons/fa';
 import { trackBeginCheckout, trackBookingDetailsEntered } from '@/lib/analytics';
@@ -26,7 +26,7 @@ const paymentMethods = [
 export default function BookingDetails() {
   const router = useRouter();
   const { createBooking, isCreatingBooking } = useCreateBooking();
-  const { bookingData, isAirportTransfer, handleChange, handleSelectPaymentMethod } = useContext(BookingContext);
+  const { bookingData, isAirportTransfer, handleChange, handleSelectPaymentMethod } = useLimoBooking();
   const {
     tripType,
     pickup,

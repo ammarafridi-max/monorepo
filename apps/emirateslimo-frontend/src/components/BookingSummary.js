@@ -1,23 +1,23 @@
 'use client';
-import { useContext, useState } from 'react';
-import { BookingContext } from '../context/BookingContext';
-import { useVehicle } from '../hooks/vehicles/useVehicle';
+import { useState } from 'react';
+import { useLimoBooking } from '@travel-suite/frontend-shared/contexts/LimoBookingContext';
+import { useGetVehicle } from '@travel-suite/frontend-shared/hooks/vehicles/useGetVehicle';
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 import { HiChevronDown, HiChevronRight } from 'react-icons/hi2';
 import { FaCheck, FaChevronRight } from 'react-icons/fa6';
-import { CurrencyContext } from '../context/CurrencyContext';
+import { useCurrency } from '@travel-suite/frontend-shared/contexts/CurrencyContext';
 import Button from './Button';
 import Container from './Container';
 
 void motion;
 
 export default function BookingSummary({ btnText, btnOnClick, btnDisabled }) {
-  const { currency } = useContext(CurrencyContext);
+  const { selectedCurrency } = useCurrency();
   const {
     bookingData: { tripType, hoursBooked, pickup, dropoff, pickupDate, pickupTime, orderSummary, vehicle },
-  } = useContext(BookingContext);
-  const { vehicle: vehicleData } = useVehicle(vehicle);
+  } = useLimoBooking();
+  const { vehicle: vehicleData } = useGetVehicle(vehicle);
 
   return (
     <div>
@@ -32,7 +32,7 @@ export default function BookingSummary({ btnText, btnOnClick, btnDisabled }) {
         vehicleData={vehicleData}
       />
 
-      <OrderSummary currency={currency} orderSummary={orderSummary} />
+      <OrderSummary currency={selectedCurrency} orderSummary={orderSummary} />
 
       <div className="hidden lg:block">
         <Button className="w-full" disabled={btnDisabled} onClick={btnOnClick}>
@@ -45,7 +45,7 @@ export default function BookingSummary({ btnText, btnOnClick, btnDisabled }) {
           <div>
             <p className="text-sm font-extralight">Total:</p>
             <p className="text-lg font-medium">
-              {currency?.sign} {orderSummary?.total?.toFixed(2)}
+              {selectedCurrency?.symbol} {orderSummary?.total?.toFixed(2)}
             </p>
           </div>
           <div>
@@ -120,7 +120,7 @@ function TripSummary({ tripType, hoursBooked, pickup, dropoff, pickupDate, picku
 }
 
 function OrderSummary({ currency, orderSummary }) {
-  const formatPrice = (amount) => `${currency?.sign} ${(amount || 0).toFixed(2)}`;
+  const formatPrice = (amount) => `${currency?.symbol} ${(amount || 0).toFixed(2)}`;
 
   return (
     <div className="h-fit mt-5 mb-5 px-4 lg:mt-0 lg:mb-3 bg-white rounded-xl border border-primary-100 shadow-[0px_0px_5px_rgba(0,0,0,0.04)] overflow-hidden">

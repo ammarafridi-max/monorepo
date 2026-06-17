@@ -2,8 +2,8 @@
 
 import { useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useBooking } from '@/hooks/bookings/useBooking';
-import { useLocalStorage } from '@/hooks/general/useLocalStorage';
+import { useGetBooking } from '@travel-suite/frontend-shared/hooks/limo-bookings/useGetBooking';
+import { useLocalStorage } from '@travel-suite/frontend-shared/hooks/general/useLocalStorage';
 import { FaCheck, FaX } from 'react-icons/fa6';
 import { format } from 'date-fns';
 import { trackPurchaseEvent } from '@/lib/analytics';
@@ -16,7 +16,7 @@ import { trackPurchaseEventMeta } from '@/lib/meta';
 export default function PaymentClient() {
   const searchParams = useSearchParams();
   const id = searchParams.get('id');
-  const { booking, isLoadingBooking } = useBooking(id);
+  const { booking, isLoadingBooking } = useGetBooking(id);
 
   if (isLoadingBooking) return <Loading />;
   if (!booking) return <Failure />;

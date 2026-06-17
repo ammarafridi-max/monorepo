@@ -1,9 +1,9 @@
 'use client';
 
-import { useContext, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useAvailableVehicles } from '@/hooks/bookings/useAvailableVehicles';
-import { BookingContext } from '@/context/BookingContext';
+import { useGetAvailableVehicles } from '@travel-suite/frontend-shared/hooks/limo-bookings/useGetAvailableVehicles';
+import { useLimoBooking } from '@travel-suite/frontend-shared/contexts/LimoBookingContext';
 import VehicleCard from '@/components/VehicleCard';
 import VehicleLoadingCard from '@/components/VehicleLoadingCard';
 import BookingSummary from '@/components/BookingSummary';
@@ -11,9 +11,9 @@ import BookingSummary from '@/components/BookingSummary';
 export default function SelectLimoClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { bookingData } = useContext(BookingContext);
+  const { bookingData } = useLimoBooking();
   const { tripType, pickup, dropoff, pickupDate, pickupTime, hoursBooked } = bookingData;
-  const { vehicles, isLoadingVehicles, isErrorVehicles, errorVehicles } = useAvailableVehicles(bookingData);
+  const { vehicles, isLoadingVehicles, isErrorVehicles, errorVehicles } = useGetAvailableVehicles(bookingData);
 
   useEffect(() => {
     if (tripType === 'distance' && (!pickup?.name || !dropoff?.name || !pickupDate || !pickupTime)) router.push('/');

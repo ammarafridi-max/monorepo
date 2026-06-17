@@ -1,7 +1,7 @@
 'use client';
 import { useRef, useState } from 'react';
 import { FaClock } from 'react-icons/fa6';
-import { useOutsideClick } from '../../hooks/general/useOutsideClick';
+import { useOutsideClick } from '@travel-suite/frontend-shared/hooks/general/useOutsideClick';
 import { motion, AnimatePresence } from 'framer-motion';
 
 void motion;
