@@ -1,0 +1,32 @@
+# .github/workflows/emirateslimo-pricing-sync.yml
+name: Emirates Limo Pricing Sync
+
+on:
+  schedule:
+    # Twice a week — Monday & Thursday, 05:00 UTC (09:00 Gulf time).
+    # For once a week, use: '0 5 * * 1'
+    - cron: "0 5 * * 1,4"
+  workflow_dispatch: {} # lets you run it manually from the Actions tab
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Run pricing sync
+        run: node apps/emirateslimo-backend/scripts/sync-pricing.js
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          PRICING_SHEET_ID: ${{ secrets.PRICING_SHEET_ID }}
+          PRICING_SHEET_TAB: ${{ secrets.PRICING_SHEET_TAB }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
