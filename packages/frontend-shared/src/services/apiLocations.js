@@ -6,6 +6,11 @@ export async function getLocationSuggestionsApi(query) {
   return await apiFetchPublic(`${BASE}?query=${encodeURIComponent(query)}`);
 }
 
+// City autocomplete (AirLabs-backed). Returns [{ name, countryCode }].
+export async function searchCitiesApi(query) {
+  return await apiFetchPublic(`${BASE}/cities?query=${encodeURIComponent(query)}`);
+}
+
 export async function getCoordinatesApi(query, id) {
   const params = new URLSearchParams({ query });
   if (id) params.set('id', id);

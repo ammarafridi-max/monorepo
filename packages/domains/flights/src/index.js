@@ -4,7 +4,6 @@ import { createFlightController } from './controller.js';
 import { createFlightRouterFromParts, createAirportRouterFromParts } from './router.js';
 
 export { createAmadeusClient } from './amadeus.js';
-export { createAirLabsClient } from './airlabs.js';
 
 function getOrRegisterModel(conn, name, schema) {
   try {

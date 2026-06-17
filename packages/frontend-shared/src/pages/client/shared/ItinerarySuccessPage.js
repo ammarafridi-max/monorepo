@@ -72,7 +72,7 @@ export default function ItinerarySuccessPage({ sessionId }) {
 
       {order?.canEditFree && (
         <Link
-          href={`/travel-itinerary/${sessionId}`}
+          href={`/itinerary-booking/${sessionId}`}
           className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary-700 hover:underline mt-1"
         >
           <Pencil size={13} /> Need a change? You have free edits for {order.postPaymentEditLimit} revisions.

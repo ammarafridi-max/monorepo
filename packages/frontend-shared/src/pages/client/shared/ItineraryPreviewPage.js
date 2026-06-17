@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   Lock,
   AlertCircle,
+  AlertTriangle,
   Download,
   Send,
   Sparkles,
@@ -26,13 +27,22 @@ const EXAMPLE_PROMPTS = [
   'Add an extra day to the trip',
 ];
 
-function ChatPanel({ sessionId, chatsRemaining }) {
+function ChatPanel({ sessionId, chatsRemaining, mismatch }) {
   const { messages, sendMessage, isSending } = useItineraryChat(sessionId);
   const [draft, setDraft] = useState('');
   const [pending, setPending] = useState(null);
   const endRef = useRef(null);
 
   const exhausted = chatsRemaining <= 0;
+
+  // When the main destination doesn't match the embassy, lead with two one-click
+  // fixes — both run through the normal AI edit (and therefore re-validate).
+  const mismatchSuggestions = mismatch?.hasMismatch
+    ? [
+        `Rebalance my trip so ${mismatch.applyingTo} is my main destination`,
+        `Switch my application to ${mismatch.mainDestination} instead`,
+      ]
+    : [];
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -68,6 +78,22 @@ function ChatPanel({ sessionId, chatsRemaining }) {
       </div>
 
       <div className="flex-1 min-h-[280px] max-h-[460px] overflow-y-auto px-5 py-4">
+        {mismatchSuggestions.length > 0 && (
+          <div className="flex flex-col gap-2 mb-3 pb-3 border-b border-gray-100">
+            <p className="text-xs font-semibold text-amber-700">Fix the destination balance:</p>
+            {mismatchSuggestions.map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => submit(p)}
+                disabled={exhausted}
+                className="text-left text-sm text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 disabled:opacity-50 rounded-xl px-3 py-2 transition-colors"
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+        )}
         {isEmpty ? (
           <div className="flex flex-col gap-2">
             <p className="text-xs text-gray-400 mb-1">Try one of these:</p>
@@ -177,7 +203,7 @@ export default function ItineraryPreviewPage({ sessionId }) {
       <div className="max-w-3xl mx-auto px-6 py-24 flex flex-col items-center gap-3 text-center">
         <AlertCircle size={28} className="text-gray-300" />
         <p className="text-sm text-gray-500">We couldn&apos;t find this itinerary.</p>
-        <Link href="/travel-itinerary/form" className="text-sm font-semibold text-primary-700 hover:underline">
+        <Link href="/itinerary-booking/form" className="text-sm font-semibold text-primary-700 hover:underline">
           Start a new itinerary
         </Link>
       </div>
@@ -192,7 +218,7 @@ export default function ItineraryPreviewPage({ sessionId }) {
         <p className="text-sm text-gray-500 max-w-md">
           Please review your trip dates and cities and try again.
         </p>
-        <Link href="/travel-itinerary/form" className="mt-2 text-sm font-semibold text-primary-700 hover:underline">
+        <Link href="/itinerary-booking/form" className="mt-2 text-sm font-semibold text-primary-700 hover:underline">
           Back to the form
         </Link>
       </div>
@@ -200,6 +226,7 @@ export default function ItineraryPreviewPage({ sessionId }) {
   }
 
   const isPaid = order.paymentStatus === 'PAID';
+  const mismatch = order.mainDestinationCheck;
   const previewImg = (
     <div className="rounded-xl border border-gray-200 overflow-hidden bg-gray-50">
       <img
@@ -241,11 +268,21 @@ export default function ItineraryPreviewPage({ sessionId }) {
       <div className="flex flex-col lg:flex-row gap-6 items-start">
         {/* Chat (left on desktop, below preview on mobile) */}
         <div className="w-full lg:w-[380px] shrink-0 order-2 lg:order-1">
-          <ChatPanel sessionId={sessionId} chatsRemaining={order.chatsRemaining} />
+          <ChatPanel sessionId={sessionId} chatsRemaining={order.chatsRemaining} mismatch={mismatch} />
         </div>
 
         {/* Preview (main, takes the freed width) */}
         <div className="flex-1 min-w-0 order-1 lg:order-2">
+          {mismatch?.hasMismatch && (
+            <div className="mb-3 flex items-start gap-2.5 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl px-4 py-3">
+              <AlertTriangle size={18} className="text-amber-600 shrink-0 mt-0.5" />
+              <p className="text-sm leading-snug">
+                You&apos;re applying to <strong>{mismatch.applyingTo}</strong>, but this trip spends the most nights in{' '}
+                <strong>{mismatch.mainDestination}</strong>. Embassies usually expect you to apply to your main
+                destination, and a mismatch can mean rejection. You can fix the balance below or proceed anyway.
+              </p>
+            </div>
+          )}
           <div className="flex items-center justify-between mb-3">
             <h1 className="text-lg font-bold text-gray-900">Preview</h1>
             <span className="inline-flex items-center gap-1.5 text-xs text-gray-400">

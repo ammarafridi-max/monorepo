@@ -10,13 +10,13 @@ export const ITINERARY_STEPS = [
   { id: 3, label: 'Download' },
 ];
 
-// The flow uses dynamic, session-scoped URLs (/travel-itinerary/<sessionId>),
+// The flow uses dynamic, session-scoped URLs (/itinerary-booking/<sessionId>),
 // so we derive the active step from the path shape rather than an exact match.
 function getStepIndex(pathname) {
   if (!pathname) return 0;
   if (pathname.endsWith('/form')) return 0;
   if (pathname.endsWith('/success')) return 2;
-  if (pathname.startsWith('/travel-itinerary/')) return 1; // /travel-itinerary/<sessionId>
+  if (pathname.startsWith('/itinerary-booking/')) return 1; // /itinerary-booking/<sessionId>
   return 0;
 }
 

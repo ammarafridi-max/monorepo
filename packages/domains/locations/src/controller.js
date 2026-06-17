@@ -48,5 +48,16 @@ export function createLocationController({ service }) {
     res.json({ status: 'success', data: countryCode });
   });
 
-  return { getAutocomplete, getCoordinates, getDistance, getUserLocation };
+  const getCities = catchAsync(async (req, res) => {
+    const { query } = req.query;
+
+    if (!query || query.length < 2) {
+      return res.json({ status: 'success', data: [] });
+    }
+
+    const data = await service.searchCities(query);
+    res.json({ status: 'success', data });
+  });
+
+  return { getAutocomplete, getCoordinates, getDistance, getUserLocation, getCities };
 }

@@ -1,5 +1,5 @@
 import { AppError, logger } from '@travel-suite/utils';
-import { validateItinerary } from './validation.js';
+import { validateItinerary, computeMainDestination } from './validation.js';
 import { isValidDateString, inclusiveDayCount } from './dates.js';
 
 const norm = (s) => String(s ?? '').trim().toLowerCase();
@@ -171,6 +171,9 @@ export function createItineraryService({
       currency: order.currency,
       hasPreview: order.status === 'GENERATED',
       previewVersion: order.previewVersion || 0,
+      // Advisory main-destination (Schengen) check — recomputed from the current
+      // itinerary on every meta build, so it always reflects the latest change.
+      mainDestinationCheck: computeMainDestination(order.itineraryData, order.input),
       traveller: {
         firstName: order.input.traveller.firstName || order.input.traveller.fullName,
         fullName: order.input.traveller.fullName || order.input.traveller.firstName,
@@ -179,7 +182,23 @@ export function createItineraryService({
       paidAt: order.paidAt,
     };
   }
-  // -- Core: generate -> validate -> regenerate once -> render preview -------
+  // Centralised post-change finalisation. Every path that changes the itinerary
+  // JSON (generate, regenerate, chat, post-payment edit) ends here AFTER the
+  // content has passed validateItinerary. Re-renders the watermarked preview,
+  // invalidates the cached clean PDF, bumps previewVersion (cache-busts the
+  // preview image), marks GENERATED, and persists. The main-destination result
+  // is derived in buildMeta, so it is refreshed on the next meta build.
+  async function finalizeItinerary(order) {
+    order.previewImage = await pdfRenderer.renderPreviewImage(order);
+    order.cleanPdf = null;
+    order.previewVersion = (order.previewVersion || 0) + 1;
+    order.status = 'GENERATED';
+    order.lastError = null;
+    await order.save();
+    return order;
+  }
+
+  // -- Core: generate -> validate -> regenerate once -> finalize -------------
   // Code owns validation. On failure we auto-regenerate exactly once, then
   // surface an error rather than ship a contradictory document.
   async function generateAndStore(order) {
@@ -216,13 +235,7 @@ export function createItineraryService({
     }
 
     order.itineraryData = itineraryData;
-    order.previewImage = await pdfRenderer.renderPreviewImage(order);
-    order.cleanPdf = null; // content changed — invalidate any cached clean PDF
-    order.previewVersion = (order.previewVersion || 0) + 1; // cache-bust the preview
-    order.status = 'GENERATED';
-    order.lastError = null;
-    await order.save();
-    return order;
+    return finalizeItinerary(order);
   }
 
   async function ensureCleanPdf(order) {
@@ -334,12 +347,9 @@ export function createItineraryService({
 
     order.input = applied.normalizedInput;
     order.itineraryData = applied.itinerary;
-    order.previewImage = await pdfRenderer.renderPreviewImage(order);
-    order.cleanPdf = null;
-    order.previewVersion = (order.previewVersion || 0) + 1;
     order.chatCount = (order.chatCount || 0) + 1;
     order.chatMessages.push({ role: 'user', text }, { role: 'assistant', text: applied.reply });
-    await order.save();
+    await finalizeItinerary(order); // validated above; re-render, bump version, persist
 
     return { reply: applied.reply, messages: order.chatMessages, meta: buildMeta(order), applied: true };
   }

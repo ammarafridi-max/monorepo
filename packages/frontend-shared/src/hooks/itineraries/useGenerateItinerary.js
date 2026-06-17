@@ -13,7 +13,7 @@ export function useGenerateItinerary({ onAnalytics } = {}) {
     mutationFn: (input) => createItineraryApi(input),
     onSuccess: (data, variables) => {
       if (typeof onAnalytics === 'function') onAnalytics({ ...variables, sessionId: data?.sessionId });
-      if (data?.sessionId) router.push(`/travel-itinerary/${data.sessionId}`);
+      if (data?.sessionId) router.push(`/itinerary-booking/${data.sessionId}`);
     },
     onError: (err) => toast.error(err.message),
   });

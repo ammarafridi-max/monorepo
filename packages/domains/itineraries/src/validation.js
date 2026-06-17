@@ -115,3 +115,68 @@ export function validateItinerary(itineraryData, input) {
 
   return { valid: errors.length === 0, errors };
 }
+
+// Schengen Area members (29 as of 2025), normalized + common aliases. Includes
+// Croatia (2023) and the now-full members Bulgaria and Romania (2024-2025).
+// EU members NOT in Schengen (Ireland, Cyprus) are intentionally excluded.
+const SCHENGEN_COUNTRIES = new Set([
+  'austria', 'belgium', 'bulgaria', 'croatia', 'czechia', 'czech republic',
+  'denmark', 'estonia', 'finland', 'france', 'germany', 'greece', 'hungary',
+  'iceland', 'italy', 'latvia', 'liechtenstein', 'lithuania', 'luxembourg',
+  'malta', 'netherlands', 'the netherlands', 'norway', 'poland', 'portugal',
+  'romania', 'slovakia', 'slovenia', 'spain', 'sweden', 'switzerland',
+]);
+
+export const isSchengen = (country) => SCHENGEN_COUNTRIES.has(norm(country));
+
+/**
+ * Advisory main-destination check (NOT a hard block). Counts overnight nights
+ * per country from the generated day-by-day — the final departure day has no
+ * overnight, so it is excluded — and picks the country with the most nights
+ * (tie-break: the first-entry / arrival country). A mismatch is flagged only
+ * when the applying-to country is Schengen AND the trip spans 2+ Schengen
+ * countries; single-country trips and non-Schengen embassies are skipped. The
+ * Schengen "purpose" exception (a conference/medical/family visit can be the
+ * main destination regardless of nights) can't be detected here, so this only
+ * advises — the customer can always proceed.
+ *
+ * @returns {{ hasMismatch: boolean, applyingTo: string, mainDestination: string|null, nightsByCountry: Record<string, number> }}
+ */
+export function computeMainDestination(itineraryData, input) {
+  const applyingTo = input?.visaCountry || '';
+  const days = Array.isArray(itineraryData?.days) ? itineraryData.days : [];
+  const result = { hasMismatch: false, applyingTo, mainDestination: null, nightsByCountry: {} };
+  if (days.length < 2) return result;
+
+  // Overnight nights per country — every day except the final (departure) day.
+  const order = []; // first-entry order of countries (normalized keys)
+  const byKey = new Map(); // key -> { name, nights }
+  for (let i = 0; i < days.length - 1; i += 1) {
+    const country = days[i]?.country;
+    const key = norm(country);
+    if (!key) continue;
+    if (!byKey.has(key)) {
+      byKey.set(key, { name: country, nights: 0 });
+      order.push(key);
+    }
+    byKey.get(key).nights += 1;
+  }
+  if (byKey.size === 0) return result;
+
+  // Main destination: most nights; on a tie, the earliest first-entry country.
+  let mainKey = order[0];
+  for (const key of order) {
+    if (byKey.get(key).nights > byKey.get(mainKey).nights) mainKey = key;
+  }
+  result.mainDestination = byKey.get(mainKey).name;
+  for (const { name, nights } of byKey.values()) result.nightsByCountry[name] = nights;
+
+  // Scope: only advise for Schengen embassies on multi-Schengen-country trips.
+  const distinctSchengen = new Set(
+    days.map((d) => norm(d?.country)).filter((c) => c && SCHENGEN_COUNTRIES.has(c)),
+  );
+  const inScope = SCHENGEN_COUNTRIES.has(norm(applyingTo)) && distinctSchengen.size >= 2;
+
+  result.hasMismatch = inScope && mainKey !== norm(applyingTo);
+  return result;
+}

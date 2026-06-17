@@ -16,21 +16,6 @@ function airlineLogo(iataCode) {
   return ext ? `/airlines/${iataCode}.${ext}` : null;
 }
 
-// Names of non-commercial / minor facilities to exclude when AirLabs doesn't
-// provide the major/international flags (e.g. on the /suggest endpoint).
-const NON_COMMERCIAL_AIRPORT = /sea\s?plane|heliport|helipad|balloonport|airstrip|airfield|water\s?aerodrome|seabase|sea\s?base|bus\s?station|coach\s?station|railway|railroad|train\s?station|rail\s?station|ferry/i;
-
-// Best-effort city name from an airport name when AirLabs omits the `city`
-// field, e.g. "Dubai International Airport" -> "Dubai".
-function cityFromAirportName(name = '') {
-  if (!name) return '';
-  return name
-    .replace(/\b(international|intl\.?|int'l|regional|municipal|domestic)\b/gi, '')
-    .replace(/\bairport\b/gi, '')
-    .replace(/\s{2,}/g, ' ')
-    .trim();
-}
-
 function extractIataCode(locationString = '') {
   const start = locationString.indexOf('(') + 1;
   const end = locationString.indexOf(')');
@@ -157,51 +142,57 @@ export function createFlightService({ Airline, amadeus, airlabs }) {
     return enrichFlightsWithAirlines(flights);
   };
 
-  // Live airport search via AirLabs. The /airports endpoint matches exact codes
-  // only, so a 3-letter IATA code goes there; freeform text (e.g. "dubai") uses
-  // the /suggest autocomplete endpoint instead. Results are mapped to the legacy
-  // Amadeus-compatible shape ({ iataCode, address: { cityName } }) so existing
-  // callers and the frontend dropdown keep working unchanged.
-  const fetchAirports = async (keyword) => {
-    requireAirLabs();
+  // Live airport search via AirLabs /suggest. One endpoint handles both
+  // IATA codes ("DXB") and freeform text ("dubai"). We keep only entries
+  // whose `type === 'airport'` (drops airbases, heliports, seaplane bases),
+  // sort by popularity, and map to the legacy Amadeus-compatible shape
+  // ({ iataCode, address: { cityName } }) so existing callers and the
+  // frontend dropdown work unchanged.
+  function validateKeyword(keyword, label) {
     const kw = (keyword || '').trim();
     if (!kw || kw.length < 3) {
-      throw new AppError('Airport keyword must be at least 3 characters', 400);
+      throw new AppError(`${label} keyword must be at least 3 characters`, 400);
     }
+    return kw;
+  }
 
-    const isIataCode = /^[A-Za-z]{3}$/.test(kw);
-    const raw = isIataCode
-      ? await airlabs.getAirportByIata(kw)
-      : await airlabs.suggestAirports(kw);
+  const fetchAirports = async (keyword) => {
+    requireAirLabs();
+    const kw = validateKeyword(keyword, 'Airport');
 
-    let list = (raw || []).filter((a) => a?.iata_code);
+    const raw = await airlabs.suggestAirports(kw);
 
-    // Keep only major commercial airports. When AirLabs returns the major/
-    // international flags (/airports endpoint) filter on those; the /suggest
-    // endpoint omits them, so fall back to dropping non-commercial facilities
-    // (seaplane bases, heliports, etc.) by name.
-    const hasMajorFlag = list.some((a) => a.is_major != null);
-    if (hasMajorFlag) {
-      list = list.filter((a) => a.is_major);
-    } else {
-      list = list.filter((a) => !NON_COMMERCIAL_AIRPORT.test(a.name || ''));
-    }
-
-    // Most relevant first when AirLabs provides a popularity score (/suggest).
-    list.sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0));
-
-    return list
+    return (raw || [])
+      .filter((a) => a?.iata_code && a?.type === 'airport')
+      .sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0))
       .map((a) => ({
         iataCode: a.iata_code,
         icaoCode: a.icao_code ?? null,
         name: a.name ?? null,
         countryCode: a.country_code ?? null,
-        // Prefer AirLabs' city name; if the plan/endpoint omits it, derive a
-        // city from the airport name (strip "… Airport") rather than show the
-        // full airport name. Fall back to codes only as a last resort.
-        address: { cityName: a.city || cityFromAirportName(a.name) || a.city_code || a.iata_code },
+        address: { cityName: a.city || a.city_code || a.iata_code },
       }));
   };
 
-  return { addAirlineByCode, searchFlights, fetchAirports };
+  // Same /suggest endpoint, different bucket. Returned shape mirrors the
+  // airport contract so callers can render either in the same dropdown.
+  const fetchCities = async (keyword) => {
+    requireAirLabs();
+    const kw = validateKeyword(keyword, 'City');
+
+    const raw = await airlabs.suggestCities(kw);
+
+    return (raw || [])
+      .filter((c) => c?.city_code)
+      .sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0))
+      .map((c) => ({
+        cityCode: c.city_code,
+        name: c.name ?? null,
+        countryCode: c.country_code ?? null,
+        slug: c.slug ?? null,
+        timezone: c.timezone ?? null,
+      }));
+  };
+
+  return { addAirlineByCode, searchFlights, fetchAirports, fetchCities };
 }

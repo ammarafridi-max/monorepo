@@ -6,8 +6,6 @@ import { createInsuranceController } from './controller.js';
 import { createInsuranceRouterFromController } from './router.js';
 import { logger } from '@travel-suite/utils';
 
-export { createWisClient } from './wis.js';
-
 function getOrRegisterModel(conn, name, schema) {
   try {
     return conn.model(name);
@@ -21,7 +19,7 @@ function getOrRegisterModel(conn, name, schema) {
  *
  * @param {{
  *   db: import('mongoose').Connection,
- *   wis: ReturnType<import('./wis.js').createWisClient>,
+ *   wis: ReturnType<import('@travel-suite/wis').createWisClient>,
  *   brevo: { createContact: Function, updateContactAttribute: Function },
  *   auth: { protect: Function, restrictTo: Function },
  *   notifications: { insurancePaymentCompletionEmail: Function },

@@ -15,7 +15,18 @@ const AIRPORT_NAMES = [
   'Abu Dhabi International Airport',
 ];
 
-export function createLocationService({ googleMapsApiKey, ipInfoApiKey }) {
+export function createLocationService({ googleMapsApiKey, ipInfoApiKey, airlabs }) {
+  // City search backed by the AirLabs integration (injected client).
+  async function searchCities(query) {
+    if (!airlabs) {
+      throw new AppError('City search is not configured on this server', 503);
+    }
+    const cities = await airlabs.suggestCities(query);
+    return (cities ?? [])
+      .map((c) => ({ name: c.name ?? c.city ?? '', countryCode: c.country_code ?? '' }))
+      .filter((c) => c.name);
+  }
+
   async function getLocationsAutocomplete(input) {
     const res = await fetch('https://places.googleapis.com/v1/places:autocomplete', {
       method: 'POST',
@@ -114,5 +125,6 @@ export function createLocationService({ googleMapsApiKey, ipInfoApiKey }) {
     formatLocation,
     calculateDistance,
     getUserCountry,
+    searchCities,
   };
 }
