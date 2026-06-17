@@ -238,6 +238,33 @@ export function createItineraryService({
     return finalizeItinerary(order);
   }
 
+  // Fire-and-forget wrapper for background generation. We don't hold the HTTP
+  // request open for the full Claude + render cycle (it can exceed the client's
+  // timeout) — the caller returns immediately with status GENERATING and the
+  // client polls until GENERATED/FAILED. generateAndStore marks FAILED on
+  // validation failure; this guarantees FAILED on any other error (Claude,
+  // network, render) too, so a poller never hangs on GENERATING forever.
+  function runGeneration(order) {
+    return generateAndStore(order).catch(async (err) => {
+      logger.error('[itineraries] Background generation error', {
+        sessionId: order.sessionId,
+        error: err.message,
+      });
+      if (order.status !== 'FAILED') {
+        try {
+          order.status = 'FAILED';
+          order.lastError = err.message;
+          await order.save();
+        } catch (saveErr) {
+          logger.error('[itineraries] Could not persist FAILED status', {
+            sessionId: order.sessionId,
+            error: saveErr.message,
+          });
+        }
+      }
+    });
+  }
+
   async function ensureCleanPdf(order) {
     if (order.cleanPdf) return order.cleanPdf;
     const pdf = await pdfRenderer.renderCleanPdf(order);
@@ -250,8 +277,10 @@ export function createItineraryService({
 
   async function createOrder(payload, ipAddress) {
     const input = normalizeInput(payload);
-    const order = await Order.create({ input, ipAddress, price, currency });
-    await generateAndStore(order);
+    const order = await Order.create({ input, ipAddress, price, currency, status: 'GENERATING' });
+    // Generate in the background; respond immediately so the client can redirect
+    // and poll. (Synchronous generation here used to exceed the client timeout.)
+    runGeneration(order);
     return order;
   }
 
@@ -272,7 +301,10 @@ export function createItineraryService({
     // Count the attempt regardless of outcome — each generation is a paid AI call.
     order.regenCount += 1;
     if (ipAddress) order.ipAddress = ipAddress;
-    await generateAndStore(order);
+    order.status = 'GENERATING';
+    await order.save();
+    // Same background pattern as createOrder — the client polls for completion.
+    runGeneration(order);
     return order;
   }
 

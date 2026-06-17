@@ -14,8 +14,7 @@ import {
   Loader2,
   CalendarDays,
 } from "lucide-react";
-import { LuShieldPlus } from "react-icons/lu";
-import { useCurrency } from "../../../contexts/CurrencyContext";
+import UpsellCard from "../../../components/shared/UpsellCard.js";
 import { useGetDummyTicket } from "../../../hooks/dummy-tickets/useGetDummyTicket";
 import { useDummyTicketPricing } from "../../../hooks/pricing/useDummyTicketPricing";
 import { formatAmount } from "../../../utils/currency";
@@ -75,9 +74,8 @@ function ErrorState({ supportEmail }) {
   );
 }
 
-function SuccessContent({ sessionId, dummyTicket, onPurchaseEvent, supportEmail }) {
+function SuccessContent({ sessionId, dummyTicket, onPurchaseEvent, supportEmail, upsells }) {
   const { pricing } = useDummyTicketPricing();
-  const { formatMoney } = useCurrency();
 
   const type = dummyTicket?.type;
   const ticketValidity = dummyTicket?.ticketValidity;
@@ -111,9 +109,6 @@ function SuccessContent({ sessionId, dummyTicket, onPurchaseEvent, supportEmail 
     totalPassengers > 0 && Number.isFinite(amount)
       ? amount / totalPassengers
       : fallbackPrice;
-
-  const baseAmount = getTicketPriceByValidity(pricing, "2 Days");
-  const displayAmount = formatMoney(baseAmount, "AED");
 
   useEffect(() => {
     if (!currency || !Number.isFinite(amount) || amount <= 0) return;
@@ -297,34 +292,9 @@ function SuccessContent({ sessionId, dummyTicket, onPurchaseEvent, supportEmail 
             </div>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm p-5">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-8 h-8 flex items-center justify-center bg-primary-50 text-primary-700 rounded-full">
-                <LuShieldPlus size={15} />
-              </div>
-              <p className="text-sm font-bold text-gray-700">
-                Add Travel Insurance?
-              </p>
-            </div>
-            <p className="text-xs text-gray-400 leading-relaxed mb-4">
-              Get a genuine travel insurance policy accepted by embassies for
-              visa applications. Exclusively for UAE residents.
-            </p>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[10px] text-gray-400">from</p>
-                <p className="text-sm font-bold text-gray-800">
-                  {displayAmount.code} {displayAmount.value}
-                </p>
-              </div>
-              <Link
-                href="/travel-insurance"
-                className="text-xs font-bold px-3 py-1.5 bg-primary-700 hover:bg-primary-800 text-white rounded-lg transition-colors"
-              >
-                Book Now
-              </Link>
-            </div>
-          </div>
+          {upsells.map((u, i) => (
+            <UpsellCard key={i} {...u} />
+          ))}
 
           {supportEmail && (
             <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 text-center">
@@ -345,7 +315,7 @@ function SuccessContent({ sessionId, dummyTicket, onPurchaseEvent, supportEmail 
   );
 }
 
-function PaymentSuccessContent({ onPurchaseEvent, supportEmail }) {
+function PaymentSuccessContent({ onPurchaseEvent, supportEmail, upsells }) {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("sessionId") || "";
   const paymentMethod = searchParams.get("paymentMethod") || "card";
@@ -384,11 +354,12 @@ function PaymentSuccessContent({ onPurchaseEvent, supportEmail }) {
       dummyTicket={dummyTicket}
       onPurchaseEvent={onPurchaseEvent}
       supportEmail={supportEmail}
+      upsells={upsells}
     />
   );
 }
 
-export default function TicketPaymentPage({ onPurchaseEvent, supportEmail }) {
+export default function TicketPaymentPage({ onPurchaseEvent, supportEmail, upsells = [] }) {
   return (
     <Suspense
       fallback={
@@ -400,6 +371,7 @@ export default function TicketPaymentPage({ onPurchaseEvent, supportEmail }) {
       <PaymentSuccessContent
         onPurchaseEvent={onPurchaseEvent}
         supportEmail={supportEmail}
+        upsells={upsells}
       />
     </Suspense>
   );

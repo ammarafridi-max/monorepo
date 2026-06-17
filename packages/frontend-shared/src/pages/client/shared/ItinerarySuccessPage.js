@@ -6,8 +6,9 @@ import { Loader2, CheckCircle, Download, Pencil } from 'lucide-react';
 import { useItineraryOrder } from '../../../hooks/itineraries/useItineraryOrder';
 import { itineraryDocumentUrl } from '../../../services/apiItineraries';
 import { trackItineraryPurchase } from '../../../utils/analytics';
+import UpsellCard from '../../../components/shared/UpsellCard.js';
 
-export default function ItinerarySuccessPage({ sessionId }) {
+export default function ItinerarySuccessPage({ sessionId, upsells = [] }) {
   const [slow, setSlow] = useState(false);
 
   // Poll while the Stripe webhook settles; stop once paid.
@@ -82,6 +83,17 @@ export default function ItinerarySuccessPage({ sessionId }) {
       <p className="text-xs text-gray-400 mt-4">
         A copy of your document is linked to this page. Keep it bookmarked to download again.
       </p>
+
+      {upsells.length > 0 && (
+        <div className="w-full max-w-md mt-8 pt-6 border-t border-gray-100 space-y-3 text-left">
+          <p className="text-xs font-bold text-gray-500 uppercase tracking-wide text-center mb-1">
+            Complete your visa application
+          </p>
+          {upsells.map((u, i) => (
+            <UpsellCard key={i} {...u} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

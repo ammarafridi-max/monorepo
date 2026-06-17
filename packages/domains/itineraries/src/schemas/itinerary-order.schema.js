@@ -107,7 +107,7 @@ const ItineraryOrderSchema = new mongoose.Schema(
     // -- Lifecycle -------------------------------------------------------------
     status: {
       type: String,
-      enum: ['DRAFT', 'GENERATED', 'FAILED'],
+      enum: ['DRAFT', 'GENERATING', 'GENERATED', 'FAILED'],
       default: 'DRAFT',
     },
     paymentStatus: { type: String, enum: ['UNPAID', 'PAID', 'REFUNDED'], default: 'UNPAID' },

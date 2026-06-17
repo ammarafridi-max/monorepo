@@ -176,7 +176,13 @@ function Bubble({ role, text }) {
 }
 
 export default function ItineraryPreviewPage({ sessionId }) {
-  const { order, isLoadingOrder, isErrorOrder } = useItineraryOrder(sessionId);
+  // Generation runs in the background server-side; poll until it settles.
+  const { order, isLoadingOrder, isErrorOrder } = useItineraryOrder(sessionId, {
+    refetchInterval: (query) => {
+      const s = query.state.data?.status;
+      return s === 'GENERATING' || s === 'DRAFT' ? 2500 : false;
+    },
+  });
   const { regenerateItinerary, isRegeneratingItinerary } = useRegenerateItinerary(sessionId);
   const { startItineraryCheckout, isStartingCheckout } = useItineraryCheckout();
 
@@ -225,15 +231,39 @@ export default function ItineraryPreviewPage({ sessionId }) {
     );
   }
 
+  const isGenerating = order.status === 'GENERATING' || order.status === 'DRAFT';
+  const hasPreview = order.previewVersion > 0;
+
+  // First generation — no preview rendered yet. Show a building state; the poll
+  // above flips this to the real preview (or FAILED) when the server finishes.
+  if (isGenerating && !hasPreview) {
+    return (
+      <div className="max-w-3xl mx-auto px-6 py-24 flex flex-col items-center gap-4 text-center">
+        <Loader2 size={32} className="animate-spin text-primary-500" />
+        <h1 className="text-lg font-bold text-gray-900">Building your itinerary…</h1>
+        <p className="text-sm text-gray-500 max-w-sm">
+          Our AI is drafting your day-by-day plan and rendering the preview. This usually takes about 20–40 seconds.
+        </p>
+      </div>
+    );
+  }
+
   const isPaid = order.paymentStatus === 'PAID';
+  const busy = isGenerating || isRegeneratingItinerary;
   const mismatch = order.mainDestinationCheck;
   const previewImg = (
-    <div className="rounded-xl border border-gray-200 overflow-hidden bg-gray-50">
+    <div className="relative rounded-xl border border-gray-200 overflow-hidden bg-gray-50">
       <img
         src={`${itineraryPreviewUrl(sessionId)}?v=${order.previewVersion}`}
         alt="Itinerary preview (watermarked)"
         className="w-full block"
       />
+      {isGenerating && hasPreview && (
+        <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] flex flex-col items-center justify-center gap-2">
+          <Loader2 size={28} className="animate-spin text-primary-500" />
+          <p className="text-sm font-semibold text-gray-700">Updating your itinerary…</p>
+        </div>
+      )}
     </div>
   );
 
@@ -306,7 +336,7 @@ export default function ItineraryPreviewPage({ sessionId }) {
           <div className="flex items-center gap-2.5 shrink-0">
             <button
               onClick={() => regenerateItinerary()}
-              disabled={isRegeneratingItinerary || order.regensRemaining <= 0}
+              disabled={busy || order.regensRemaining <= 0}
               title={
                 order.regensRemaining > 0
                   ? `${order.regensRemaining} free regeneration${order.regensRemaining > 1 ? 's' : ''} left`
@@ -314,7 +344,7 @@ export default function ItineraryPreviewPage({ sessionId }) {
               }
               className="inline-flex items-center justify-center gap-2 text-sm font-semibold text-primary-700 border border-primary-200 hover:bg-primary-50 disabled:opacity-50 px-4 py-2.5 rounded-xl transition-colors"
             >
-              {isRegeneratingItinerary ? <Loader2 size={15} className="animate-spin" /> : <RefreshCw size={14} />}
+              {busy ? <Loader2 size={15} className="animate-spin" /> : <RefreshCw size={14} />}
               <span className="hidden sm:inline">Regenerate</span>
             </button>
             <button
@@ -322,7 +352,7 @@ export default function ItineraryPreviewPage({ sessionId }) {
                 trackItineraryBeginCheckout({ value: order.price, currency: order.currency });
                 startItineraryCheckout(sessionId);
               }}
-              disabled={isStartingCheckout}
+              disabled={isStartingCheckout || busy}
               className="inline-flex items-center justify-center gap-2 bg-primary-700 hover:bg-primary-800 disabled:opacity-70 text-white font-bold text-sm px-6 py-2.5 rounded-xl transition-colors"
             >
               {isStartingCheckout ? <Loader2 size={16} className="animate-spin" /> : null}

@@ -30,7 +30,7 @@ const defaultServices = [
 
 export default function About({
   title = 'About Us',
-  text = 'Travl Technologies LLC is a licensed travel agency based in Dubai, UAE. We help residents across the UAE and GCC get the travel documents they need for visa applications, quickly and without hassle.',
+  text = 'We are a licensed travel agency based in Dubai, UAE. We help residents across the UAE and GCC get the travel documents they need for visa applications, quickly and without hassle.',
   services = defaultServices,
 }) {
   return (

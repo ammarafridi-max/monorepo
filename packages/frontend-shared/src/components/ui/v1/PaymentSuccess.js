@@ -14,13 +14,13 @@ import {
   Hash,
   Copy,
   Check,
-  ArrowRight,
   Phone,
   AlertCircle,
   Loader2,
   FileText,
 } from 'lucide-react';
 import { InsuranceContext } from '../../../contexts/InsuranceContext.js';
+import UpsellCard from '../../shared/UpsellCard.js';
 import { confirmInsurancePaymentApi } from '../../../services/apiInsurance.js';
 import { useGetInsuranceDocuments } from '../../../hooks/insurance/useGetInsuranceDocuments.js';
 import { trackPurchaseEvent } from '../../../utils/analytics';
@@ -236,7 +236,7 @@ function ErrorState({ onRetry }) {
   );
 }
 
-export default function PaymentSuccess() {
+export default function PaymentSuccess({ upsells = [] }) {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get('sessionId');
   const paymentStatus = searchParams.get('paymentStatus');
@@ -607,18 +607,9 @@ export default function PaymentSuccess() {
         </div>
 
         <div className="space-y-4 lg:sticky lg:top-6">
-          <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm p-5 flex flex-col gap-3">
-            <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
-              Actions
-            </p>
-            <Link
-              href="/travel-insurance"
-              className="w-full inline-flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-bold py-3 rounded-xl transition-colors"
-            >
-              Return to Home
-              <ArrowRight size={14} />
-            </Link>
-          </div>
+          {upsells.map((u, i) => (
+            <UpsellCard key={i} {...u} />
+          ))}
 
           <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm p-5">
             <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-4">

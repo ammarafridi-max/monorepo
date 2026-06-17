@@ -3,7 +3,7 @@ import { Loader2 } from 'lucide-react';
 import InsuranceLayout from '../../../layouts/InsuranceLayout';
 import PaymentSuccess from '../../../components/ui/v1/PaymentSuccess';
 
-export default function InsurancePaymentPage() {
+export default function InsurancePaymentPage({ upsells = [] }) {
   return (
     <InsuranceLayout>
       <Suspense
@@ -13,7 +13,7 @@ export default function InsurancePaymentPage() {
           </div>
         }
       >
-        <PaymentSuccess />
+        <PaymentSuccess upsells={upsells} />
       </Suspense>
     </InsuranceLayout>
   );

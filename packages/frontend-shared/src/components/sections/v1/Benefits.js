@@ -3,7 +3,7 @@ import PrimarySection from '../../shared/layout/PrimarySection';
 import SectionTitle from '../../shared/layout/SectionTitle';
 
 export default function Benefits({
-  title = 'Why Choose Travl?',
+  title = 'Why Choose Us?',
   subtitle = 'Trusted supplier based in Dubai',
   benefits,
 }) {
