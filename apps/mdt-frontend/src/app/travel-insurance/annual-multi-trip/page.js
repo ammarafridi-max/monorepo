@@ -100,10 +100,10 @@ export const faqs = [
 
 export const pageData = {
   meta: {
-    title: 'Annual Multi-Trip Travel Insurance in UAE | AED 245 | Travl',
+    title: 'Annual Multi-Trip Travel Insurance in UAE | AED 245 | My Dummy Ticket',
     description:
       'Annual multi-trip travel insurance for UAE residents, issued by AXA. One policy covers all your trips for a year. From AED 245. Instant policy delivery.',
-    canonical: 'https://www.travl.ae/travel-insurance/annual-multi-trip',
+    canonical: 'https://www.mydummyticket.ae/travel-insurance/annual-multi-trip',
   },
   sections: {
     hero: {

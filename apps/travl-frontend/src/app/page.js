@@ -210,6 +210,7 @@ export default function HomePage() {
       />
       <About
         title={pageData.sections.about.title}
+        text="Travl Technologies LLC is a licensed travel agency based in Dubai, UAE. We help residents across the UAE and GCC get the travel documents they need for visa applications, quickly and without hassle."
         services={pageData.sections.about.services}
       />
       <Benefits

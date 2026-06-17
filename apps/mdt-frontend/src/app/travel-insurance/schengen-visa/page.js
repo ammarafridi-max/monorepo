@@ -105,10 +105,10 @@ export const faqs = [
 
 export const pageData = {
   meta: {
-    title: 'Schengen Travel Insurance UAE | From AED 30 | Travl',
+    title: 'Schengen Travel Insurance UAE | From AED 30 | My Dummy Ticket',
     description:
       'Get embassy-compliant Schengen travel insurance online. EUR 30,000 medical coverage, accepted by VFS & BLS. Instant policy for UAE residents from AED 30.',
-    canonical: 'https://www.travl.ae/travel-insurance/schengen-visa',
+    canonical: 'https://www.mydummyticket.ae/travel-insurance/schengen-visa',
   },
   sections: {
     hero: {

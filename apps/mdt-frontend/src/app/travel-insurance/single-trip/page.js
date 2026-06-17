@@ -94,10 +94,10 @@ export const faqs = [
 
 export const pageData = {
   meta: {
-    title: 'Single Trip Travel Insurance for UAE Residents | Travl',
+    title: 'Single Trip Travel Insurance for UAE Residents | My Dummy Ticket',
     description:
-      'Buy single trip travel insurance online in UAE. One-time coverage for your journey, Schengen compliant, issued by AXA. Get your policy instantly at Travl.',
-    canonical: 'https://www.travl.ae/travel-insurance/single-trip',
+      'Buy single trip travel insurance online in UAE. One-time coverage for your journey, Schengen compliant, issued by AXA. Get your policy instantly at My Dummy Ticket.',
+    canonical: 'https://www.mydummyticket.ae/travel-insurance/single-trip',
   },
   sections: {
     hero: {

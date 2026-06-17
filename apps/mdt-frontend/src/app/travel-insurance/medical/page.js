@@ -99,10 +99,10 @@ export const faqs = [
 
 export const pageData = {
   meta: {
-    title: 'Travel Medical Insurance for UAE Residents | Travl',
+    title: 'Travel Medical Insurance for UAE Residents | My Dummy Ticket',
     description:
       'Travel medical insurance for UAE residents, issued by AXA. Emergency medical cover, hospitalisation, and repatriation. Get your policy online instantly.',
-    canonical: 'https://www.travl.ae/travel-insurance/medical',
+    canonical: 'https://www.mydummyticket.ae/travel-insurance/medical',
   },
   sections: {
     hero: {

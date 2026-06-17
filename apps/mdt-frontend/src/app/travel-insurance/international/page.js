@@ -100,10 +100,10 @@ export const faqs = [
 
 export const pageData = {
   meta: {
-    title: 'International Travel Insurance for UAE Residents | Travl',
+    title: 'International Travel Insurance for UAE Residents | My Dummy Ticket',
     description:
       'Worldwide travel insurance for UAE residents, issued by AXA. International health insurance from AED 70 with medical cover from EUR 80,000. Instant delivery.',
-    canonical: 'https://www.travl.ae/travel-insurance/international',
+    canonical: 'https://www.mydummyticket.ae/travel-insurance/international',
   },
   sections: {
     hero: {
