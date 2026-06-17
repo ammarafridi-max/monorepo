@@ -12,8 +12,8 @@ import {
   createFlightRouter,
   createAirportsRouter,
   createAmadeusClient,
-  createAirLabsClient,
 } from "@travel-suite/flights";
+import { createAirLabsClient } from "@travel-suite/airlabs";
 import { createTicketsRouter } from "@travel-suite/tickets";
 import { createUsersRouter } from "@travel-suite/users";
 import { createNotificationsService } from "@travel-suite/notifications";

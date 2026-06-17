@@ -13,6 +13,7 @@
   "dependencies": {
     "@travel-suite/admin-users": "workspace:*",
     "@travel-suite/affiliates": "workspace:*",
+    "@travel-suite/airlabs": "workspace:*",
     "@travel-suite/auth": "workspace:*",
     "@travel-suite/blog": "workspace:*",
     "@travel-suite/cloudinary": "workspace:*",

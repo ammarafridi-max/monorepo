@@ -13,6 +13,7 @@
   "dependencies": {
     "@travel-suite/admin-users": "workspace:*",
     "@travel-suite/affiliates": "workspace:*",
+    "@travel-suite/airlabs": "workspace:*",
     "@travel-suite/auth": "workspace:*",
     "@travel-suite/blog": "workspace:*",
     "@travel-suite/cloudinary": "workspace:*",
@@ -24,6 +25,7 @@
     "@travel-suite/tickets": "workspace:*",
     "@travel-suite/users": "workspace:*",
     "@travel-suite/utils": "workspace:*",
+    "@travel-suite/wis": "workspace:*",
     "compression": "^1.8.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",

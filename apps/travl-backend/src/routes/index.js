@@ -8,7 +8,9 @@ import { createBlogRouter, createBlogTagRouter } from "@travel-suite/blog";
 import { createVisaRouter } from "@travel-suite/visa";
 import { createVisaLeadRouter } from "@travel-suite/visa-leads";
 import { createCurrenciesRouter } from "@travel-suite/currencies";
-import { createFlightRouter, createAirportsRouter, createAmadeusClient, createAirLabsClient } from "@travel-suite/flights";
+import { createFlightRouter, createAirportsRouter, createAmadeusClient } from "@travel-suite/flights";
+import { createAirLabsClient } from "@travel-suite/airlabs";
+import { createLocationsRouter } from "@travel-suite/locations";
 import { createAffiliatesRouter, AffiliateSchema } from "@travel-suite/affiliates";
 import { createTicketsRouter } from "@travel-suite/tickets";
 import { createItinerariesRouter } from "@travel-suite/itineraries";
@@ -90,6 +92,7 @@ const amadeus = createAmadeusClient({
 const airlabs = createAirLabsClient({ apiKey: config.airlabs.apiKey });
 router.use("/flights", createFlightRouter({ db, amadeus, auth }));
 router.use("/airports", createAirportsRouter({ airlabs }));
+router.use("/locations", createLocationsRouter({ airlabs }));
 
 const notifications = createNotificationsService({
   sendEmail,

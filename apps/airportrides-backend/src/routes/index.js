@@ -8,10 +8,8 @@ import {
 import { createBlogRouter, createBlogTagRouter } from "@travel-suite/blog";
 import { createCloudinaryStorage } from "@travel-suite/cloudinary";
 import { createCurrenciesRouter } from "@travel-suite/currencies";
-import {
-  createAirportsRouter,
-  createAirLabsClient,
-} from "@travel-suite/flights";
+import { createAirportsRouter } from "@travel-suite/flights";
+import { createAirLabsClient } from "@travel-suite/airlabs";
 import { createBookingsRouter } from "@travel-suite/bookings";
 import { createLocationsRouter } from "@travel-suite/locations";
 import { createUsersRouter } from "@travel-suite/users";

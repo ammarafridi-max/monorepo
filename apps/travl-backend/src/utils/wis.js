@@ -1,4 +1,4 @@
-import { createWisClient } from '@travel-suite/insurance';
+import { createWisClient } from '@travel-suite/wis';
 import config from './config.js';
 
 export const wis = createWisClient({
