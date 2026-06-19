@@ -27,7 +27,7 @@ const EXAMPLE_PROMPTS = [
   'Add an extra day to the trip',
 ];
 
-function ChatPanel({ sessionId, chatsRemaining, mismatch }) {
+function ChatPanel({ sessionId, chatsRemaining, mismatch, returnCheck }) {
   const { messages, sendMessage, isSending } = useItineraryChat(sessionId);
   const [draft, setDraft] = useState('');
   const [pending, setPending] = useState(null);
@@ -35,14 +35,17 @@ function ChatPanel({ sessionId, chatsRemaining, mismatch }) {
 
   const exhausted = chatsRemaining <= 0;
 
-  // When the main destination doesn't match the embassy, lead with two one-click
-  // fixes — both run through the normal AI edit (and therefore re-validate).
-  const mismatchSuggestions = mismatch?.hasMismatch
-    ? [
-        `Rebalance my trip so ${mismatch.applyingTo} is my main destination`,
-        `Switch my application to ${mismatch.mainDestination} instead`,
-      ]
-    : [];
+  // Advisory one-click fixes — each runs through the normal AI edit (and therefore
+  // re-validates and re-renders): a main-destination rebalance and a return flight.
+  const fixSuggestions = [
+    ...(mismatch?.hasMismatch
+      ? [
+          `Rebalance my trip so ${mismatch.applyingTo} is my main destination`,
+          `Switch my application to ${mismatch.mainDestination} instead`,
+        ]
+      : []),
+    ...(returnCheck?.hasMismatch ? [`Add a return flight to ${returnCheck.fromCountry}`] : []),
+  ];
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -78,10 +81,10 @@ function ChatPanel({ sessionId, chatsRemaining, mismatch }) {
       </div>
 
       <div className="flex-1 min-h-[280px] max-h-[460px] overflow-y-auto px-5 py-4">
-        {mismatchSuggestions.length > 0 && (
+        {fixSuggestions.length > 0 && (
           <div className="flex flex-col gap-2 mb-3 pb-3 border-b border-gray-100">
-            <p className="text-xs font-semibold text-amber-700">Fix the destination balance:</p>
-            {mismatchSuggestions.map((p) => (
+            <p className="text-xs font-semibold text-amber-700">Suggested fixes:</p>
+            {fixSuggestions.map((p) => (
               <button
                 key={p}
                 type="button"
@@ -251,6 +254,7 @@ export default function ItineraryPreviewPage({ sessionId }) {
   const isPaid = order.paymentStatus === 'PAID';
   const busy = isGenerating || isRegeneratingItinerary;
   const mismatch = order.mainDestinationCheck;
+  const returnCheck = order.returnTripCheck;
   const previewImg = (
     <div className="relative rounded-xl border border-gray-200 overflow-hidden bg-gray-50">
       <img
@@ -298,7 +302,12 @@ export default function ItineraryPreviewPage({ sessionId }) {
       <div className="flex flex-col lg:flex-row gap-6 items-start">
         {/* Chat (left on desktop, below preview on mobile) */}
         <div className="w-full lg:w-[380px] shrink-0 order-2 lg:order-1">
-          <ChatPanel sessionId={sessionId} chatsRemaining={order.chatsRemaining} mismatch={mismatch} />
+          <ChatPanel
+            sessionId={sessionId}
+            chatsRemaining={order.chatsRemaining}
+            mismatch={mismatch}
+            returnCheck={returnCheck}
+          />
         </div>
 
         {/* Preview (main, takes the freed width) */}
@@ -310,6 +319,15 @@ export default function ItineraryPreviewPage({ sessionId }) {
                 You&apos;re applying to <strong>{mismatch.applyingTo}</strong>, but this trip spends the most nights in{' '}
                 <strong>{mismatch.mainDestination}</strong>. Embassies usually expect you to apply to your main
                 destination, and a mismatch can mean rejection. You can fix the balance below or proceed anyway.
+              </p>
+            </div>
+          )}
+          {returnCheck?.hasMismatch && (
+            <div className="mb-3 flex items-start gap-2.5 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl px-4 py-3">
+              <AlertTriangle size={18} className="text-amber-600 shrink-0 mt-0.5" />
+              <p className="text-sm leading-snug">
+                This trip doesn&apos;t end with a flight back to <strong>{returnCheck.fromCountry}</strong>. Embassies
+                usually expect a return journey home. You can add a return flight below or proceed anyway.
               </p>
             </div>
           )}

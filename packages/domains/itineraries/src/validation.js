@@ -180,3 +180,26 @@ export function computeMainDestination(itineraryData, input) {
   result.hasMismatch = inScope && mainKey !== norm(applyingTo);
   return result;
 }
+
+/**
+ * Advisory return-trip check (NOT a hard block). Flags when the trip does not
+ * end back in the customer's home country — i.e. the last segment's destination
+ * country differs from input.fromCountry, so no flight home is booked, which
+ * embassies usually expect to see. Mirrors computeMainDestination's plumbing:
+ * recomputed on every mutation, surfaced in buildMeta, non-blocking. Skipped when
+ * there are no segments or no home country, and never flagged when the last
+ * segment already returns to fromCountry.
+ *
+ * @returns {{ hasMismatch: boolean, fromCountry: string, lastCountry: string|null }}
+ */
+export function computeReturnHome(itineraryData, input) {
+  const fromCountry = input?.fromCountry || '';
+  const segments = Array.isArray(input?.segments) ? input.segments : [];
+  const result = { hasMismatch: false, fromCountry, lastCountry: null };
+  if (!fromCountry || segments.length === 0) return result;
+
+  const lastCountry = segments[segments.length - 1]?.to?.country || '';
+  result.lastCountry = lastCountry || null;
+  result.hasMismatch = norm(lastCountry) !== norm(fromCountry);
+  return result;
+}

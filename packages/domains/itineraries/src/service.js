@@ -1,5 +1,5 @@
 import { AppError, logger } from '@travel-suite/utils';
-import { validateItinerary, computeMainDestination } from './validation.js';
+import { validateItinerary, computeMainDestination, computeReturnHome } from './validation.js';
 import { isValidDateString, inclusiveDayCount } from './dates.js';
 
 const norm = (s) => String(s ?? '').trim().toLowerCase();
@@ -174,6 +174,9 @@ export function createItineraryService({
       // Advisory main-destination (Schengen) check — recomputed from the current
       // itinerary on every meta build, so it always reflects the latest change.
       mainDestinationCheck: computeMainDestination(order.itineraryData, order.input),
+      // Advisory return-trip check — same plumbing; flags a trip that doesn't end
+      // back in the home country (no return flight booked).
+      returnTripCheck: computeReturnHome(order.itineraryData, order.input),
       traveller: {
         firstName: order.input.traveller.firstName || order.input.traveller.fullName,
         fullName: order.input.traveller.fullName || order.input.traveller.firstName,
@@ -319,10 +322,94 @@ export function createItineraryService({
     return order.chatMessages || [];
   }
 
+  // Background worker for a conversational edit. Asks the model to apply the
+  // change, then validates against the (possibly updated) trip parameters; one
+  // retry with validation feedback. On a validated edit it consumes one unit of
+  // chat budget, appends the assistant reply, and re-renders (finalizeItinerary,
+  // status GENERATED). On an unparseable/invalid edit it appends a graceful reply,
+  // consumes NO budget, leaves the itinerary untouched, and returns to GENERATED.
+  // `history` is the conversation snapshot BEFORE the new user message was added.
+  async function applyChatEdit(order, text, history) {
+    let applied = null;
+    let feedback = null;
+    for (let attempt = 0; attempt < 2 && !applied; attempt += 1) {
+      try {
+        const result = await generator.chat({
+          input: order.input,
+          itineraryData: order.itineraryData,
+          history,
+          message: text,
+          validationFeedback: feedback,
+        });
+        const normalizedInput = mergeTripEdit(order.input, result.updatedInput);
+        const validation = validateItinerary(result.itinerary, normalizedInput);
+        if (validation.valid) {
+          applied = { normalizedInput, itinerary: result.itinerary, reply: result.reply };
+        } else {
+          feedback = validation.errors.join('\n');
+        }
+      } catch (err) {
+        feedback = err instanceof AppError ? err.message : 'Could not apply that change.';
+        logger.warn('[itineraries] Chat edit attempt failed', { sessionId: order.sessionId, error: err.message });
+      }
+    }
+
+    if (!applied) {
+      // Graceful no-op: reply, no budget consumed, itinerary unchanged, back to
+      // GENERATED (no re-render — previewVersion stays the same).
+      order.status = 'GENERATED';
+      order.chatMessages.push({
+        role: 'assistant',
+        text: "Sorry, I couldn't apply that change. Could you rephrase or be more specific?",
+      });
+      await order.save();
+      return;
+    }
+
+    order.input = applied.normalizedInput;
+    order.itineraryData = applied.itinerary;
+    order.chatCount = (order.chatCount || 0) + 1;
+    order.chatMessages.push({ role: 'assistant', text: applied.reply });
+    await finalizeItinerary(order); // validated above; re-render, bump version, status GENERATED, persist
+  }
+
+  // Fire-and-forget wrapper for a background chat edit (same shape as
+  // runGeneration). Guarantees the order settles back to GENERATED with an
+  // assistant reply even on a hard error — a chat failure must never leave the
+  // order stuck on GENERATING or brick the existing (valid) itinerary, so on
+  // error we re-fetch a clean copy (discarding any half-applied in-memory edit),
+  // mark GENERATED, and append a graceful reply. The client polls until settled.
+  function runChatEdit(order, text, history) {
+    return applyChatEdit(order, text, history).catch(async (err) => {
+      logger.error('[itineraries] Background chat edit error', {
+        sessionId: order.sessionId,
+        error: err.message,
+      });
+      try {
+        const fresh = await Order.findOne({ sessionId: order.sessionId });
+        if (fresh && fresh.status !== 'GENERATED') {
+          fresh.status = 'GENERATED';
+          fresh.chatMessages.push({
+            role: 'assistant',
+            text: "Sorry, I couldn't apply that change. Could you rephrase or be more specific?",
+          });
+          await fresh.save();
+        }
+      } catch (saveErr) {
+        logger.error('[itineraries] Could not settle chat order', {
+          sessionId: order.sessionId,
+          error: saveErr.message,
+        });
+      }
+    });
+  }
+
   // Conversational edit: apply a natural-language change to the itinerary.
   // Pre-payment only; bounded by a per-session chat budget (margin protection).
-  // Each call is a paid AI request — the budget is consumed only on a successful,
-  // validated edit; failed/unparseable attempts return a reply but cost no budget.
+  // The Claude call + validation + re-render can exceed the client timeout, so it
+  // runs in the BACKGROUND (same async+poll pattern as generate/regenerate): we
+  // record the user message, flip to GENERATING, and return immediately; the
+  // client polls GET /:id (status) and GET /:id/chat (reply) until settled.
   async function chatEdit({ sessionId, message }, ipAddress) {
     const text = typeof message === 'string' ? message.trim() : '';
     if (!text) throw new AppError('Message is required', 400);
@@ -339,51 +426,16 @@ export function createItineraryService({
     }
     if (ipAddress) order.ipAddress = ipAddress;
 
-    const history = order.chatMessages || [];
+    // Snapshot the conversation BEFORE adding the new message (history for the
+    // model), then record the user message and flip to GENERATING so the client
+    // can poll. The status guard above also blocks a second concurrent edit.
+    const history = (order.chatMessages || []).map((m) => ({ role: m.role, text: m.text }));
+    order.chatMessages.push({ role: 'user', text });
+    order.status = 'GENERATING';
+    await order.save();
 
-    // Ask the model to apply the change, then validate against the (possibly
-    // updated) trip parameters. One retry with validation feedback.
-    let applied = null;
-    let feedback = null;
-    for (let attempt = 0; attempt < 2 && !applied; attempt += 1) {
-      let result;
-      try {
-        result = await generator.chat({
-          input: order.input,
-          itineraryData: order.itineraryData,
-          history,
-          message: text,
-          validationFeedback: feedback,
-        });
-        const normalizedInput = mergeTripEdit(order.input, result.updatedInput);
-        const validation = validateItinerary(result.itinerary, normalizedInput);
-        if (validation.valid) {
-          applied = { normalizedInput, itinerary: result.itinerary, reply: result.reply };
-        } else {
-          feedback = validation.errors.join('\n');
-        }
-      } catch (err) {
-        feedback = err instanceof AppError ? err.message : 'Could not apply that change.';
-        logger.warn('[itineraries] Chat edit attempt failed', { sessionId, error: err.message });
-      }
-    }
-
-    if (!applied) {
-      // Record the exchange with a graceful fallback reply; do NOT consume budget
-      // and do NOT alter the itinerary.
-      const reply = "Sorry, I couldn't apply that change. Could you rephrase or be more specific?";
-      order.chatMessages.push({ role: 'user', text }, { role: 'assistant', text: reply });
-      await order.save();
-      return { reply, messages: order.chatMessages, meta: buildMeta(order), applied: false };
-    }
-
-    order.input = applied.normalizedInput;
-    order.itineraryData = applied.itinerary;
-    order.chatCount = (order.chatCount || 0) + 1;
-    order.chatMessages.push({ role: 'user', text }, { role: 'assistant', text: applied.reply });
-    await finalizeItinerary(order); // validated above; re-render, bump version, persist
-
-    return { reply: applied.reply, messages: order.chatMessages, meta: buildMeta(order), applied: true };
+    runChatEdit(order, text, history);
+    return { messages: order.chatMessages, meta: buildMeta(order) };
   }
 
   async function getPreviewImage(sessionId) {
@@ -486,10 +538,40 @@ export function createItineraryService({
     order.input = merged;
     order.editCount += 1;
     if (ipAddress) order.ipAddress = ipAddress;
+    order.status = 'GENERATING';
+    await order.save();
 
-    await generateAndStore(order); // re-validates + re-renders watermarked preview
-    await ensureCleanPdf(order); // refresh the clean PDF (already paid)
+    // Background regenerate + clean-PDF refresh (same async+poll pattern); the
+    // client polls until the order settles. (No frontend caller wires this yet.)
+    runPaidEdit(order);
     return order;
+  }
+
+  // Fire-and-forget wrapper for a post-payment edit: regenerate (re-validate +
+  // re-render watermarked preview) then refresh the already-paid clean PDF.
+  // generateAndStore settles FAILED on validation failure; this guarantees FAILED
+  // on any other error too, so a poller never hangs on GENERATING.
+  function runPaidEdit(order) {
+    return generateAndStore(order)
+      .then(() => ensureCleanPdf(order))
+      .catch(async (err) => {
+        logger.error('[itineraries] Background post-payment edit error', {
+          sessionId: order.sessionId,
+          error: err.message,
+        });
+        if (order.status !== 'FAILED') {
+          try {
+            order.status = 'FAILED';
+            order.lastError = err.message;
+            await order.save();
+          } catch (saveErr) {
+            logger.error('[itineraries] Could not persist FAILED status', {
+              sessionId: order.sessionId,
+              error: saveErr.message,
+            });
+          }
+        }
+      });
   }
 
   // Reads uploaded documents and returns segments + reservation flags to prefill

@@ -78,8 +78,9 @@ export function createItineraryController({ service }) {
     }
   };
 
-  // Conversational AI edit. Returns { reply, messages, meta, applied } — never
-  // the clean itinerary content (the reply is a short summary).
+  // Conversational AI edit (async). Records the user message, kicks off the edit
+  // in the background, and returns { messages, meta } immediately with status
+  // GENERATING — the client polls until the reply + re-render settle.
   const chat = async (req, res, next) => {
     try {
       const result = await service.chatEdit(
