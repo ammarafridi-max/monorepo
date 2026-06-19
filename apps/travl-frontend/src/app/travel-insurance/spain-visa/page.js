@@ -188,7 +188,7 @@ export const pageData = {
           icon: <MdOutlineAirplaneTicket />,
           title: "Flight Itinerary for Spain Visa",
           description:
-            "A verifiable flight itinerary with a real PNR code — the proof of onward travel BLS Spain expects alongside your insurance. From AED 49.",
+            "A verified flight reservation with a real PNR code, the proof of onward travel BLS Spain expects alongside your insurance. From USD 13 via Dummy Ticket 365.",
         },
         {
           icon: <MdOutlineHotel />,

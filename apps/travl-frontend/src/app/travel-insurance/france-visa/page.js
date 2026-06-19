@@ -188,7 +188,7 @@ export const pageData = {
           icon: <MdOutlineAirplaneTicket />,
           title: "Flight Itinerary for France Visa",
           description:
-            "A verifiable flight itinerary with a real PNR code — the proof of onward travel France visa applicants need alongside insurance. From AED 49.",
+            "A verified flight reservation with a real PNR code, the proof of onward travel France visa applicants need alongside insurance. From USD 13 via Dummy Ticket 365.",
         },
         {
           icon: <MdOutlineHotel />,
