@@ -7,39 +7,98 @@ import { buildItineraryHtml } from './templates.js';
 // run with the sandbox flags below.
 let browserPromise = null;
 
+// Cap how long any single CDP command may hang. A wedged/OOM'd Chromium otherwise
+// makes EVERY render fail with "Network.enable timed out" (the command sent when
+// opening a page) until the process restarts — so we fail fast and recover by
+// relaunching instead of poisoning the one shared browser forever.
+const PROTOCOL_TIMEOUT_MS = 120_000;
+const PAGE_TIMEOUT_MS = 60_000;
+
 function launchArgs() {
-  return ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--font-render-hinting=none'];
+  return [
+    '--no-sandbox',
+    '--disable-setuid-sandbox',
+    '--disable-dev-shm-usage',
+    '--disable-gpu',
+    '--font-render-hinting=none',
+  ];
+}
+
+function launch() {
+  const p = puppeteer.launch({
+    headless: true,
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+    args: launchArgs(),
+    protocolTimeout: PROTOCOL_TIMEOUT_MS,
+  });
+  // If this browser dies, clear the cached promise so the next call relaunches —
+  // but only if it is still the current one (don't clobber a newer launch).
+  p.then((browser) => {
+    browser.on('disconnected', () => {
+      if (browserPromise === p) browserPromise = null;
+    });
+  }).catch(() => {
+    if (browserPromise === p) browserPromise = null;
+  });
+  return p;
 }
 
 async function getBrowser() {
-  if (!browserPromise) {
-    browserPromise = puppeteer.launch({
-      headless: true,
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
-      args: launchArgs(),
-    });
-    // If the browser dies, clear the cached promise so the next call relaunches.
-    browserPromise
-      .then((browser) => {
-        browser.on('disconnected', () => {
-          browserPromise = null;
-        });
-      })
-      .catch(() => {
-        browserPromise = null;
-      });
+  if (browserPromise) {
+    try {
+      const browser = await browserPromise;
+      if (browser.connected) return browser; // healthy → reuse
+    } catch {
+      // launch failed earlier; fall through and relaunch
+    }
+    browserPromise = null; // stale/unhealthy → drop it
   }
+  browserPromise = launch();
   return browserPromise;
 }
 
-async function withPage(fn) {
-  const browser = await getBrowser();
-  const page = await browser.newPage();
+// Force the shared browser to be torn down so the next render starts fresh.
+async function discardBrowser() {
+  const p = browserPromise;
+  browserPromise = null;
+  if (!p) return;
   try {
-    return await fn(page);
-  } finally {
-    await page.close().catch(() => {});
+    const browser = await p;
+    await browser.close();
+  } catch {
+    // already gone / never resolved — nothing to clean up
   }
+}
+
+// Run `fn` against a fresh page. If the shared browser has wedged (protocol
+// timeout / closed connection), discard it and retry exactly once with a newly
+// launched browser, so a single bad render can't take down the whole feature.
+const RECOVERABLE = /timed out|Target closed|Session closed|Connection closed|Protocol error|socket hang up|disconnected|Navigation timeout/i;
+
+async function withPage(fn) {
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const browser = await getBrowser();
+      const page = await browser.newPage();
+      try {
+        page.setDefaultTimeout(PAGE_TIMEOUT_MS);
+        return await fn(page);
+      } finally {
+        await page.close().catch(() => {});
+      }
+    } catch (err) {
+      const willRetry = attempt === 0 && RECOVERABLE.test(err?.message || '');
+      logger.warn('[itineraries] Render attempt failed', {
+        attempt,
+        error: err?.message,
+        willRetry,
+      });
+      await discardBrowser(); // never reuse a possibly-wedged browser
+      if (!willRetry) throw err;
+    }
+  }
+  // Loop always returns or throws above; this satisfies the control-flow analysis.
+  throw new Error('[itineraries] Render failed after retry');
 }
 
 export function createPdfRenderer({ brand } = {}) {
