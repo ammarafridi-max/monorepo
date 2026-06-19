@@ -11,14 +11,16 @@ COPY packages/domains/auth/package.json            packages/domains/auth/package
 COPY packages/domains/admin-users/package.json     packages/domains/admin-users/package.json
 COPY packages/domains/affiliates/package.json      packages/domains/affiliates/package.json
 COPY packages/domains/blog/package.json            packages/domains/blog/package.json
-COPY packages/integrations/cloudinary/package.json      packages/integrations/cloudinary/package.json
+COPY packages/domains/bookings/package.json        packages/domains/bookings/package.json
 COPY packages/domains/currencies/package.json      packages/domains/currencies/package.json
 COPY packages/domains/flights/package.json         packages/domains/flights/package.json
-COPY packages/integrations/airlabs/package.json    packages/integrations/airlabs/package.json
-COPY packages/shared/notifications/package.json   packages/shared/notifications/package.json
+COPY packages/domains/locations/package.json       packages/domains/locations/package.json
 COPY packages/domains/payments/package.json        packages/domains/payments/package.json
 COPY packages/domains/tickets/package.json         packages/domains/tickets/package.json
 COPY packages/domains/users/package.json           packages/domains/users/package.json
+COPY packages/integrations/airlabs/package.json   packages/integrations/airlabs/package.json
+COPY packages/integrations/cloudinary/package.json packages/integrations/cloudinary/package.json
+COPY packages/shared/notifications/package.json   packages/shared/notifications/package.json
 COPY packages/shared/utils/package.json           packages/shared/utils/package.json
 COPY apps/airportrides-backend/package.json       apps/airportrides-backend/package.json
 
