@@ -23,7 +23,6 @@ import {
   PaymentLinkSchema,
   ProductSchema,
 } from "@travel-suite/payments";
-import { createPayPalClient } from "@travel-suite/paypal";
 import { db } from "../utils/db.js";
 import { sendEmail } from "../utils/email.js";
 import { logger } from "@travel-suite/utils";
@@ -111,19 +110,6 @@ const notifications = createNotificationsService({
 
 // -- Stripe --------------------------------------------------------------------
 const stripe = createStripeClient({ secretKey: config.stripe.secretKey });
-
-// -- PayPal --------------------------------------------------------------------
-let paypal = null;
-if (config.paypal.clientId && config.paypal.clientSecret) {
-  paypal = createPayPalClient({
-    clientId: config.paypal.clientId,
-    clientSecret: config.paypal.clientSecret,
-    mode: config.paypal.mode,
-  });
-  logger.info(`[paypal] Client initialised (mode: ${config.paypal.mode})`);
-} else {
-  logger.warn("[paypal] Credentials not configured — PayPal checkout disabled");
-}
 
 // -- Affiliates ----------------------------------------------------------------
 // router.use("/affiliates", createAffiliatesRouter({ db, auth, TicketModel })); // TODO: Replace ticket model with ride model

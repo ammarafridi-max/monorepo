@@ -65,7 +65,7 @@ export default function DestinationsSection({
       <Container>
         <SectionHeading eyebrow={eyebrow} title={title} subtitle={subtitle} />
 
-        <div className="mt-14 grid grid-cols-2 gap-4 [grid-auto-rows:150px] lg:grid-cols-4 lg:[grid-auto-rows:180px]">
+        <div className="mt-14 grid grid-cols-2 gap-4 auto-rows-[150px] lg:grid-cols-4 lg:auto-rows-[180px]">
           {destinations.map(({ city, code, span, grad, big }) => (
             <a
               key={code}
