@@ -155,7 +155,7 @@ async function buildCoverBlob(post) {
 
   if (!coverUrl) {
     console.warn(
-      "⚠  Existing post has no cover image URL — using fresh Unsplash image",
+      "⚠  Existing post has no cover image URL — generating fresh Recraft image",
     );
     return fetchCoverImage(post.title);
   }

@@ -261,7 +261,7 @@ async function postDraft({ token, topic, content, availableTags }) {
     return isValid;
   });
 
-  // Fetch a relevant cover image from Unsplash (falls back to picsum if unconfigured).
+  // Generate a cover image with Recraft AI (falls back to picsum if unconfigured).
   const coverImageBlob = await fetchCoverImage(topic.title);
 
   // Append the CTA block to the body so it appears at the bottom of every

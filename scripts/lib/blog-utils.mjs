@@ -13,7 +13,7 @@
 
 export const BACKEND_URL = "https://api.travl.ae";
 
-const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY;
+const RECRAFT_API_KEY = process.env.RECRAFT_API_KEY;
 
 // ── Length tiers ──────────────────────────────────────────────────────────────
 
@@ -445,99 +445,83 @@ export function validateContentQuality(parsed, lengthTier) {
 // ── Cover image helpers ──────────────────────────────────────────────────────
 
 /**
- * Derives a concise Unsplash search query from a blog topic title. Strips
- * common question words and filler so we get a clean visual concept.
+ * Builds a Recraft AI image prompt from a blog topic title.
+ * Strips stop words, years, and blog-meta words so the prompt describes
+ * a visual subject rather than an article structure.
  */
-export function topicToSearchQuery(title) {
-  const stopWords = new Set([
-    "a", "an", "the", "and", "or", "but", "in", "on", "at", "to", "for", "of",
-    "with", "by", "from", "is", "are", "was", "were", "be", "been", "do",
-    "does", "did", "have", "has", "had", "will", "would", "can", "could",
-    "should", "may", "might", "shall", "need", "how", "what", "why", "when",
-    "where", "who", "which", "that", "this", "these", "those", "your", "my",
-    "our", "their", "its", "i", "you", "we", "they", "he", "she", "it", "not",
-    "no", "nor", "so", "yet", "both", "either", "neither", "whether", "if",
-    "than", "as", "up", "out", "about", "into", "through", "during", "before",
-    "after", "above", "below", "between", "each", "more", "most", "other",
-    "some", "such", "only", "own", "same", "too", "very", "just", "because",
-    "while", "although", "though", "since", "until", "unless",
+function buildImagePrompt(title) {
+  const skip = new Set([
+    "a", "an", "the", "and", "or", "but", "in", "on", "at", "to", "for",
+    "of", "with", "by", "from", "is", "are", "was", "were", "be", "been",
+    "do", "does", "did", "have", "has", "had", "will", "would", "can",
+    "could", "should", "may", "might", "need", "how", "what", "why",
+    "when", "where", "who", "which", "that", "this", "these", "those",
+    "your", "my", "our", "their", "its", "not", "no", "nor", "so", "yet",
+    "if", "than", "as", "up", "out", "about", "into", "before", "after",
+    "between", "each", "more", "most", "other", "some", "such", "only",
+    "too", "very", "just",
+    // blog meta words that describe article structure, not visuals
+    "guide", "complete", "explained", "tips", "checklist", "step", "steps",
+    "vs", "comparison", "best", "top", "get", "know", "actually",
+    "practical", "residents", "expats", "applicants",
   ]);
 
   const words = title
-    .replace(/[^a-zA-Z0-9\s]/g, " ")
+    .replace(/[?:!,]/g, "")
+    .replace(/\b\d{4}\b/g, "")
     .split(/\s+/)
-    .filter((w) => w.length > 2 && !stopWords.has(w.toLowerCase()));
+    .filter((w) => w.length > 2 && !skip.has(w.toLowerCase()));
 
-  return words.slice(0, 4).join(" ") || "travel";
+  const subject = words.slice(0, 6).join(" ") || "travel";
+  return `Professional travel photography, ${subject}, editorial style, soft natural light, wide shot`;
 }
 
 /**
- * Fetches a relevant cover image from Unsplash based on the blog topic.
- * Falls back to a picsum placeholder if Unsplash is unconfigured or fails.
+ * Generates a cover image for the blog topic using Recraft AI.
+ * Falls back to a picsum placeholder if the API key is missing or the call fails.
  */
 export async function fetchCoverImage(topicTitle) {
-  if (!UNSPLASH_ACCESS_KEY) {
-    console.warn("⚠  UNSPLASH_ACCESS_KEY not set — using picsum placeholder");
+  if (!RECRAFT_API_KEY) {
+    console.warn("⚠  RECRAFT_API_KEY not set — using picsum placeholder");
     return fetchPlaceholderCoverImage();
   }
 
-  const query = topicToSearchQuery(topicTitle);
-  console.log(`Searching Unsplash for: "${query}"`);
+  const prompt = buildImagePrompt(topicTitle);
+  console.log(`Generating Recraft image: "${prompt}"`);
 
   try {
-    const searchRes = await fetch(
-      `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&orientation=landscape&per_page=5&order_by=relevant`,
-      {
-        headers: {
-          Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}`,
-          "Accept-Version": "v1",
-        },
+    const res = await fetch("https://external.api.recraft.ai/v1/images/generations", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${RECRAFT_API_KEY}`,
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({
+        prompt,
+        model: "recraftv3",
+        style: "realistic_image",
+        size: "1820x1024",
+      }),
+    });
 
-    if (!searchRes.ok) {
-      throw new Error(`Unsplash search failed: ${searchRes.status}`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(`Recraft API error: ${res.status} ${JSON.stringify(err)}`);
     }
 
-    const searchData = await searchRes.json();
-    const photos = searchData?.results ?? [];
-
-    if (photos.length === 0) {
-      console.warn(
-        `⚠  No Unsplash results for "${query}" — using picsum placeholder`,
-      );
-      return fetchPlaceholderCoverImage();
-    }
-
-    const photo = photos[0];
-    const imageUrl = photo.urls?.regular;
-
-    if (!imageUrl) {
-      throw new Error("Unsplash photo has no regular URL");
-    }
-
-    // Trigger the required download ping (Unsplash API guidelines)
-    fetch(photo.links?.download_location, {
-      headers: { Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}` },
-    }).catch(() => {});
+    const data = await res.json();
+    const imageUrl = data?.data?.[0]?.url;
+    if (!imageUrl) throw new Error("Recraft response missing image URL");
 
     const imgRes = await fetch(imageUrl);
-    if (!imgRes.ok) {
-      throw new Error(`Failed to download Unsplash image: ${imgRes.status}`);
-    }
+    if (!imgRes.ok) throw new Error(`Failed to download Recraft image: ${imgRes.status}`);
 
     const arrayBuffer = await imgRes.arrayBuffer();
-    const blob = new Blob([arrayBuffer], { type: "image/jpeg" });
-
-    const credit = photo.user?.name
-      ? ` (Photo by ${photo.user.name} on Unsplash)`
-      : "";
-    console.log(`✓ Fetched Unsplash image${credit} (${blob.size} bytes)`);
+    const blob = new Blob([arrayBuffer], { type: "image/webp" });
+    console.log(`✓ Generated Recraft image (${blob.size} bytes)`);
     return blob;
   } catch (err) {
-    console.warn(
-      `⚠  Unsplash fetch failed (${err.message}) — falling back to picsum`,
-    );
+    console.warn(`⚠  Recraft generation failed (${err.message}) — falling back to picsum`);
     return fetchPlaceholderCoverImage();
   }
 }

@@ -5,7 +5,7 @@
 **Market:** UAE residents and expats  
 **Currency:** AED
 
-Travl is a UAE-based travel services platform offering dummy flight tickets for visa applications and travel insurance. All content targets UAE residents, expats, and travellers from the UAE.
+Travl is a UAE-based travel services platform offering travel insurance, visa assistance, travel itinerary documents, and cross-promoting Dummy Ticket 365 for flight and hotel reservations. All content targets UAE residents, expats, and travellers from the UAE.
 
 ---
 
@@ -21,6 +21,11 @@ Dummy Ticket 365 issues verified flight reservations with valid PNR/GDS codes, p
 
 **URL:** https://www.travl.ae/travel-insurance  
 Travel insurance issued by AXA. Plans cover UAE residents travelling abroad. Accepted by Schengen embassies, VFS Global, and BLS International for visa applications.
+
+### Travel Itinerary Generator
+
+**URL:** https://www.travl.ae/travel-itinerary  
+Generates an embassy-ready, day-by-day travel itinerary PDF for visa applications. AED 49 one-time fee. The applicant enters trip details (dates, cities, visa country, purpose of travel) and receives a professionally formatted itinerary tailored to the destination. Preview is free before payment; the clean PDF unlocks on payment. Multi-country trips supported. **This is not a flight reservation and does not contain PNR codes** — it is a written itinerary document. Used alongside insurance and a flight reservation to complete a visa application file.
 
 ---
 
@@ -56,11 +61,35 @@ Worldwide coverage with EUR 80,000+ medical. From AED 70. Includes trip cancella
 **URL:** https://www.travl.ae/travel-insurance/annual-multi-trip  
 12-month policy covering unlimited trips. From AED 245. Ideal for frequent travellers who make multiple trips per year.
 
+### Country-Specific Insurance Pages
+
+These pages target Schengen visa applicants for individual countries. All are from AED 30, EUR 30,000 medical coverage, issued by AXA. Use these as link targets in country-specific blog posts instead of the generic /travel-insurance/schengen-visa page.
+
+**URL:** https://www.travl.ae/travel-insurance/france-visa — France visa insurance, VFS Global France accepted.  
+**URL:** https://www.travl.ae/travel-insurance/germany-visa — Germany visa insurance, VFS Global Germany accepted.  
+**URL:** https://www.travl.ae/travel-insurance/spain-visa — Spain visa insurance, BLS Spain accepted.  
+**URL:** https://www.travl.ae/travel-insurance/italy-visa — Italy visa insurance, VFS Global Italy accepted.  
+**URL:** https://www.travl.ae/travel-insurance/greece-visa — Greece visa insurance, VFS Global Greece accepted.
+
 ---
 
 ## Insurance Booking Flow
 
 https://www.travl.ae/insurance-booking/quote → /passengers → /review → /payment
+
+---
+
+## Visa Assistance Pages
+
+### Visa Hub
+
+**URL:** https://www.travl.ae/visa  
+Overview of all countries Travl offers visa assistance for. Entry point for UAE residents looking for help with a specific country visa.
+
+### Visa Detail Pages
+
+**URL:** https://www.travl.ae/visa/[slug]  
+Individual country visa assistance pages. Each page covers document requirements, appointment booking, and end-to-end support for that country's visa. Slugs are country-based (e.g. `/visa/schengen`, `/visa/france`, `/visa/germany`, `/visa/united-kingdom`, `/visa/usa`, `/visa/canada`). Content is CMS-driven and may vary by country.
 
 ---
 
@@ -70,6 +99,21 @@ https://www.travl.ae/insurance-booking/quote → /passengers → /review → /pa
 
 **URL:** https://www.travl.ae/faq  
 Common questions on dummy tickets, travel insurance, Schengen visa requirements, and travel documentation.
+
+### About
+
+**URL:** https://www.travl.ae/about  
+Travl Technologies LLC, a Dubai-based travel agency helping UAE residents with embassy-compliant insurance and visa documentation since 2018. Travel insurance policies underwritten by AXA.
+
+### Contact
+
+**URL:** https://www.travl.ae/contact  
+Email: info@travl.ae. WhatsApp: +971569964924. Fastest way to reach the team for policy or application questions.
+
+### Claims
+
+**URL:** https://www.travl.ae/claims  
+Human-assisted AXA claims process. UAE residents email or WhatsApp to start a claim; Travl submits to AXA and handles follow-up. Covers medical, trip cancellation/delay, and baggage claims.
 
 ### Privacy Policy
 
@@ -95,10 +139,12 @@ Articles covering visa applications, travel insurance, flight reservations, and 
 
 ## Internal Linking Priority (for Blog Posts)
 
-1. **Highest priority:** https://www.travl.ae/travel-insurance and its child pages: link heavily and naturally throughout content
+1. **Highest priority:** https://www.travl.ae/travel-insurance and its child pages: link heavily and naturally throughout content. For country-specific posts (France, Germany, Spain, Italy, Greece), prefer the country-specific insurance page over the generic /schengen-visa page.
 2. **High priority:** https://www.dummyticket365.com: link when covering dummy tickets, hotel reservations for visa applications, visa proof of onward travel, PNR codes. Always use the brand name "Dummy Ticket 365" in anchor text and prose, never the bare URL.
-3. **Medium priority:** https://www.travl.ae/faq: link when addressing common questions
-4. **Medium priority:** Related blog posts at https://www.travl.ae/blog/[slug]: cross-link relevant articles
+3. **Medium-high priority:** https://www.travl.ae/travel-itinerary: link in visa-related posts where a day-by-day itinerary document is relevant (Schengen, UK, US, Canada visa guides).
+4. **Medium priority:** https://www.travl.ae/visa and https://www.travl.ae/visa/[slug]: link in posts covering visa application processes for specific countries.
+5. **Medium priority:** https://www.travl.ae/faq: link when addressing common questions
+6. **Medium priority:** Related blog posts at https://www.travl.ae/blog/[slug]: cross-link relevant articles
 
 ---
 
