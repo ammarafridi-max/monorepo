@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react';
 import { useOutsideClick } from '../../../hooks/general/useOutsideClick';
 
-export default function SelectTitle({ value, onChange, className = '' }) {
+export default function SelectTitle({ value, onChange, className = '', placeholder = 'Title' }) {
   const componentRef = useRef(null);
   const [showTitles, setShowTitles] = useState(false);
 
@@ -16,13 +16,17 @@ export default function SelectTitle({ value, onChange, className = '' }) {
 
   useOutsideClick(componentRef, () => setShowTitles(false));
 
+  const isEmpty = !value;
+
   return (
     <div className={`relative bg-white rounded-xl cursor-pointer ${className}`}>
       <div
-        className="flex items-center text-sm text-gray-900 text-left px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+        className="flex items-center text-sm text-left px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
         onClick={() => setShowTitles(!showTitles)}
       >
-        <span>{value}</span>
+        <span className={isEmpty ? 'text-gray-400' : 'text-gray-900'}>
+          {isEmpty ? placeholder : value}
+        </span>
       </div>
 
       {showTitles && (
