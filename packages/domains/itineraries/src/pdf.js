@@ -1,146 +1,56 @@
-import puppeteer from 'puppeteer';
-import { logger } from '@travel-suite/utils';
-import { buildItineraryHtml } from './templates.js';
+import { renderToBuffer } from '@react-pdf/renderer';
+import { pdf as pdfToImages } from 'pdf-to-img';
+import { createCanvas, loadImage } from '@napi-rs/canvas';
+import { buildItineraryDocument } from './itinerary-document.js';
 
-// One shared browser per process, launched lazily and reused across renders.
-// In containers, point PUPPETEER_EXECUTABLE_PATH at the system Chromium and
-// run with the sandbox flags below.
-let browserPromise = null;
+// Pure-Node rendering — NO headless browser. @react-pdf generates the PDF; the
+// watermarked preview is the same PDF rasterised to a flat PNG (so its text can't
+// be copied pre-payment). This removes Chromium/Puppeteer and the whole class of
+// container/version failures ("Network.enable timed out"), and runs in-process.
 
-// Cap how long any single CDP command may hang. A wedged/OOM'd Chromium otherwise
-// makes EVERY render fail with "Network.enable timed out" (the command sent when
-// opening a page) until the process restarts — so we fail fast and recover by
-// relaunching instead of poisoning the one shared browser forever.
-const PROTOCOL_TIMEOUT_MS = 120_000;
-const PAGE_TIMEOUT_MS = 60_000;
-
-function launchArgs() {
-  return ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--font-render-hinting=none'];
-}
-
-function launch() {
-  const p = puppeteer.launch({
-    headless: true,
-    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
-    args: launchArgs(),
-    protocolTimeout: PROTOCOL_TIMEOUT_MS,
-  });
-  // If this browser dies, clear the cached promise so the next call relaunches —
-  // but only if it is still the current one (don't clobber a newer launch).
-  p.then((browser) => {
-    browser.on('disconnected', () => {
-      if (browserPromise === p) browserPromise = null;
-    });
-  }).catch(() => {
-    if (browserPromise === p) browserPromise = null;
-  });
-  return p;
-}
-
-async function getBrowser() {
-  if (browserPromise) {
-    try {
-      const browser = await browserPromise;
-      if (browser.connected) return browser; // healthy → reuse
-    } catch {
-      // launch failed earlier; fall through and relaunch
-    }
-    browserPromise = null; // stale/unhealthy → drop it
+// Stack page PNGs into one tall image (preserves the old full-document preview
+// for itineraries that span more than one page).
+async function stitchVertically(pngBuffers) {
+  if (pngBuffers.length === 1) return pngBuffers[0];
+  const images = await Promise.all(pngBuffers.map((buf) => loadImage(buf)));
+  const width = Math.max(...images.map((img) => img.width));
+  const height = images.reduce((sum, img) => sum + img.height, 0);
+  const canvas = createCanvas(width, height);
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, width, height);
+  let y = 0;
+  for (const img of images) {
+    ctx.drawImage(img, 0, y);
+    y += img.height;
   }
-  browserPromise = launch();
-  return browserPromise;
-}
-
-// Force the shared browser to be torn down so the next render starts fresh.
-async function discardBrowser() {
-  const p = browserPromise;
-  browserPromise = null;
-  if (!p) return;
-  try {
-    const browser = await p;
-    await browser.close();
-  } catch {
-    // already gone / never resolved — nothing to clean up
-  }
-}
-
-// Run `fn` against a fresh page. If the shared browser has wedged (protocol
-// timeout / closed connection), discard it and retry exactly once with a newly
-// launched browser, so a single bad render can't take down the whole feature.
-const RECOVERABLE = /timed out|Target closed|Session closed|Connection closed|Protocol error|socket hang up|disconnected|Navigation timeout/i;
-
-async function withPage(fn) {
-  for (let attempt = 0; attempt < 2; attempt += 1) {
-    try {
-      const browser = await getBrowser();
-      const page = await browser.newPage();
-      try {
-        page.setDefaultTimeout(PAGE_TIMEOUT_MS);
-        return await fn(page);
-      } finally {
-        await page.close().catch(() => {});
-      }
-    } catch (err) {
-      const willRetry = attempt === 0 && RECOVERABLE.test(err?.message || '');
-      logger.warn('[itineraries] Render attempt failed', {
-        attempt,
-        error: err?.message,
-        willRetry,
-      });
-      await discardBrowser(); // never reuse a possibly-wedged browser
-      if (!willRetry) throw err;
-    }
-  }
-  // Loop always returns or throws above; this satisfies the control-flow analysis.
-  throw new Error('[itineraries] Render failed after retry');
+  return canvas.toBuffer('image/png');
 }
 
 export function createPdfRenderer({ brand } = {}) {
   /**
-   * Renders the WATERMARKED preview as a flat PNG. Because it is rasterised,
-   * the itinerary text never exists in any client-readable form pre-payment.
+   * Watermarked preview as a flat PNG. Rasterised, so the itinerary text never
+   * exists in client-readable form pre-payment.
    * @returns {Promise<Buffer>}
    */
   async function renderPreviewImage(order) {
-    const html = buildItineraryHtml({ order, watermark: true, brand });
-    return withPage(async (page) => {
-      await page.setViewport({ width: 900, height: 1273, deviceScaleFactor: 2 });
-      // 'load' (not 'networkidle0'): the HTML is fully self-contained (inline
-      // data-URI assets, no external fonts/images), and setContent + networkidle*
-      // can hang forever because the idle counter never transitions from zero.
-      await page.setContent(html, { waitUntil: 'load' });
-      const png = await page.screenshot({ type: 'png', fullPage: true });
-      return Buffer.from(png);
-    });
+    const pdfBuffer = await renderToBuffer(buildItineraryDocument({ order, watermark: true, brand }));
+    const document = await pdfToImages(pdfBuffer, { scale: 2 });
+    const pages = [];
+    for await (const page of document) pages.push(page);
+    return stitchVertically(pages);
   }
 
   /**
-   * Renders the clean, watermark-free, print-ready A4 PDF. Only ever called
-   * after a successful payment.
+   * Clean, watermark-free, print-ready A4 PDF. Only ever served after payment.
    * @returns {Promise<Buffer>}
    */
   async function renderCleanPdf(order) {
-    const html = buildItineraryHtml({ order, watermark: false, brand });
-    return withPage(async (page) => {
-      // See renderPreviewImage: 'load' avoids the setContent + networkidle hang.
-      await page.setContent(html, { waitUntil: 'load' });
-      const pdf = await page.pdf({ format: 'A4', printBackground: true });
-      return Buffer.from(pdf);
-    });
+    return renderToBuffer(buildItineraryDocument({ order, watermark: false, brand }));
   }
 
-  async function close() {
-    if (browserPromise) {
-      try {
-        const browser = await browserPromise;
-        await browser.close();
-      } catch (err) {
-        logger.warn('[itineraries] Error closing puppeteer browser', { error: err.message });
-      } finally {
-        browserPromise = null;
-      }
-    }
-  }
+  // Kept for interface compatibility with the previous (browser-backed) renderer.
+  async function close() {}
 
   return { renderPreviewImage, renderCleanPdf, close };
 }

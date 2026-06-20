@@ -10,9 +10,12 @@
   "scripts": {},
   "dependencies": {
     "@anthropic-ai/sdk": "^0.55.0",
+    "@napi-rs/canvas": "^1.0.0",
+    "@react-pdf/renderer": "^4.5.1",
     "@travel-suite/utils": "workspace:*",
     "multer": "^1.4.5-lts.1",
-    "puppeteer": "^24.10.0",
+    "pdf-to-img": "^6.2.0",
+    "react": "19.2.5",
     "uuid": "^11.0.0"
   },
   "peerDependencies": {
