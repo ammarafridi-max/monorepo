@@ -98,11 +98,18 @@ const ItineraryOrderSchema = new mongoose.Schema(
     // -- AI output (server-only; never sent to the client before payment) ------
     itineraryData: { type: ItineraryDataSchema, default: null },
 
-    // -- Generated artefacts ---------------------------------------------------
-    // Watermarked preview is the only thing a pre-payment client can read.
-    previewImage: { type: Buffer, default: null, select: false },
-    // Clean, print-ready PDF is rendered/cached only after payment.
-    cleanPdf: { type: Buffer, default: null, select: false },
+    // -- Generated artefacts (stored in Cloudinary; Mongo keeps only the source) -
+    // Cloudinary folder: travl/travel-itineraries/{sessionId}/{preview|finalPdf}.
+    // Watermarked preview is the only artefact a pre-payment client can read.
+    previewUrl: { type: String, default: null },
+    // Clean, print-ready PDF — served through the payment-gated document endpoint.
+    cleanPdfUrl: { type: String, default: null },
+    // Customer-uploaded supporting documents, archived in Cloudinary under
+    // travl/travel-itineraries/{sessionId}/supportingDocuments. Source only.
+    supportingDocuments: {
+      type: [{ name: String, url: String }],
+      default: [],
+    },
 
     // -- Lifecycle -------------------------------------------------------------
     status: {

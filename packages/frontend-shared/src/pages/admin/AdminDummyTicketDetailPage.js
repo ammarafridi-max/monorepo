@@ -14,6 +14,7 @@ import { useGetDummyTicket } from '../../hooks/dummy-tickets/useGetDummyTicket';
 import { useDeleteDummyTicket } from '../../hooks/dummy-tickets/useDeleteDummyTicket';
 import { useRefundDummyTicket } from '../../hooks/dummy-tickets/useRefundDummyTicket';
 import { useUpdateDummyTicket } from '../../hooks/dummy-tickets/useUpdateDummyTicket';
+import OrderPiPButton from '../../components/admin/v1/FloatingOrderPanel';
 import { convertToDubaiTime, convertToDubaiDate, formatDate, formatTravelportDate } from '../../utils/dates';
 import { extractIataCode } from '../../utils/extractIataCode';
 import { formatAmount } from '../../utils/currency';
@@ -288,6 +289,63 @@ export default function AdminDummyTicketDetailPage() {
   const retFlight = ticket?.flightDetails?.returnFlight?.segments?.[0];
   const isReturn  = ticket?.type?.toLowerCase() === 'return';
 
+  // Shape the ticket into the order contract the floating PiP panel expects.
+  // Read-only — the panel renders whatever is here whenever `ticket` updates.
+  const segmentToPanel = (s) => ({
+    date: s?.departure?.date ? formatDate(s.departure.date) : '',
+    from: s?.departure?.iataCode,
+    to:   s?.arrival?.iataCode,
+    flight: `${s?.carrierCode || ''} ${s?.flightNumber || ''}`.trim() || '—',
+  });
+
+  // Travelport availability commands: A{DD}{MMM}{FROM}{TO} for departure,
+  // AR{DD}{MMM} for the return (AR inherits the previous availability's pair).
+  const fromIata = extractIataCode(ticket?.from);
+  const toIata   = extractIataCode(ticket?.to);
+  const depAvail = buildAvailabilityCommand(ticket?.departureDate, fromIata, toIata);
+  const retAvail = isReturn && ticket?.returnDate
+    ? `AR${formatTravelportDate(ticket.returnDate)}`
+    : '';
+
+  // QEB queue placement command varies by ticket validity.
+  const QEB_BY_VALIDITY = { '2 Days': '76', '7 Days': '77', '14 Days': '78' };
+  const qebCode = QEB_BY_VALIDITY[ticket?.ticketValidity];
+
+  // Agent reference for the P.T*REF field — pulled from the logged-in admin.
+  const agentRef = (adminUser?.name || '').trim().split(/\s+/)[0].toUpperCase() || 'AGENT';
+
+  const orderForPanel = ticket && {
+    customerName: ticket.leadPassenger || '—',
+    status: [ticket.paymentStatus, ticket.orderStatus].filter(Boolean),
+    paymentMethod: ticket.paymentMethod === 'paypal' ? 'PayPal' : 'Stripe',
+    recordLocator: ticket.pnr || '',
+    type: ticket.type,
+    validity: ticket.ticketValidity,
+    delivery: ticket.ticketDelivery?.immediate
+      ? 'Immediate'
+      : ticket.ticketDelivery?.deliveryDate
+        ? convertToDubaiDate(ticket.ticketDelivery.deliveryDate)
+        : '—',
+    segments: [
+      ...(ticket.flightDetails?.departureFlight?.segments || []).map(segmentToPanel),
+      ...(ticket.flightDetails?.returnFlight?.segments || []).map(segmentToPanel),
+    ],
+    availabilityCommands: [
+      { label: isReturn ? 'AVAILABILITY · DEP' : 'AVAILABILITY', value: depAvail },
+      { label: 'AVAILABILITY · RET',                              value: retAvail },
+    ],
+    passengers: (ticket.passengers || []).map((p) => ({
+      name: [p.title, p.firstName, p.lastName].filter(Boolean).join(' '),
+      travelport: buildPassengerCommand(p),
+    })),
+    bookingCommands: [
+      { label: 'PHONE / AGENT REF', value: `P.T*REF ${agentRef}` },
+      { label: 'TICKETING',         value: 'T.T*' },
+      { label: 'RECEIVED FROM',     value: 'R.P' },
+      { label: `QUEUE · ${ticket?.ticketValidity || ''}`.trim(), value: qebCode ? `QEB/${qebCode}` : '' },
+    ],
+  };
+
   return (
     <div className="max-w-7xl mx-auto space-y-5">
 
@@ -314,6 +372,11 @@ export default function AdminDummyTicketDetailPage() {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
+          <OrderPiPButton
+            order={orderForPanel}
+            label="Pop out overview"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold border border-gray-200 text-gray-600 bg-white hover:bg-gray-50 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
+          />
           {ticket?.paymentStatus === 'PAID' && (
             <>
               {ticket?.orderStatus !== 'DELIVERED' && (

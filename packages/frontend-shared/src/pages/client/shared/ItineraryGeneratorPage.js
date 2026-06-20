@@ -238,21 +238,25 @@ export default function ItineraryGeneratorPage({
       segmentCount: values.segments.length,
     });
     generateItinerary({
-      traveller: {
-        firstName: values.traveller.firstName.trim(),
-        email: values.traveller.email.trim(),
-        phone: values.traveller.phone,
+      input: {
+        traveller: {
+          firstName: values.traveller.firstName.trim(),
+          email: values.traveller.email.trim(),
+          phone: values.traveller.phone,
+        },
+        travellers: Number(values.travellers) || 1,
+        purpose: values.purpose,
+        visaCountry: values.visaCountry,
+        fromCountry: values.fromCountry,
+        reservations: values.reservations,
+        segments: values.segments.map((s) => ({
+          from: { city: s.from.city.trim(), country: s.from.country },
+          to: { city: s.to.city.trim(), country: s.to.country },
+          date: s.date,
+        })),
       },
-      travellers: Number(values.travellers) || 1,
-      purpose: values.purpose,
-      visaCountry: values.visaCountry,
-      fromCountry: values.fromCountry,
-      reservations: values.reservations,
-      segments: values.segments.map((s) => ({
-        from: { city: s.from.city.trim(), country: s.from.country },
-        to: { city: s.to.city.trim(), country: s.to.country },
-        date: s.date,
-      })),
+      // Optional supporting documents — archived with the order in Cloudinary.
+      files: docs,
     });
   }
 

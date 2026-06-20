@@ -44,6 +44,7 @@ export function createItinerariesRouter({
   postPaymentEditLimit,
   editWindowDays,
   chatLimit,
+  storage,
   generateLimiter,
 }) {
   const Order = getOrRegisterModel(db, 'itinerary-order', ItineraryOrderSchema);
@@ -55,6 +56,7 @@ export function createItinerariesRouter({
     Order,
     generator,
     pdfRenderer,
+    storage,
     stripe,
     frontendUrl,
     frontendPathBase,

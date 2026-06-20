@@ -10,16 +10,35 @@ export function createCloudinaryStorage({ cloudName, apiKey, apiSecret, logger, 
 
   cloudinary.config({ cloud_name: cloudName, api_key: apiKey, api_secret: apiSecret });
 
-  const saveImage = async (buffer, blogId) => {
-    if (!isConfigured) throw new AppError('Image upload service is not configured', 500);
-
-    return new Promise((resolve, reject) => {
+  // Low-level stream upload; resolves to the delivered secure_url.
+  const uploadBuffer = (buffer, options) =>
+    new Promise((resolve, reject) => {
       cloudinary.uploader
-        .upload_stream({ folder: `${folder}/${blogId}` }, (err, result) => {
+        .upload_stream(options, (err, result) => {
           if (err) return reject(err);
           resolve(result.secure_url);
         })
         .end(buffer);
+    });
+
+  const saveImage = async (buffer, blogId) => {
+    if (!isConfigured) throw new AppError('Image upload service is not configured', 500);
+    // Auto-named image under `${folder}/${blogId}`.
+    return uploadBuffer(buffer, { folder: `${folder}/${blogId}` });
+  };
+
+  // Upload to a DETERMINISTIC path (`${folder}/${subPath}`) and overwrite in place,
+  // so repeated saves of the same logical asset don't accumulate orphans. invalidate
+  // purges the CDN; the returned secure_url carries a fresh version so consumers
+  // always get the latest bytes. resourceType: 'image' for previews/photos, 'raw'
+  // for PDFs and other documents that must be served back byte-for-byte.
+  const saveFile = async (buffer, subPath, { resourceType = 'image' } = {}) => {
+    if (!isConfigured) throw new AppError('File upload service is not configured', 500);
+    return uploadBuffer(buffer, {
+      public_id: `${folder}/${subPath}`,
+      resource_type: resourceType,
+      overwrite: true,
+      invalidate: true,
     });
   };
 
@@ -49,5 +68,5 @@ export function createCloudinaryStorage({ cloudName, apiKey, apiSecret, logger, 
     }
   };
 
-  return { saveImage, deleteImage, deleteFolder };
+  return { saveImage, saveFile, deleteImage, deleteFolder };
 }

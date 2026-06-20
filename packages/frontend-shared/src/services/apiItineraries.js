@@ -9,8 +9,21 @@ const URL = '/api/itineraries';
 const GENERATE_TIMEOUT_MS = 60_000;
 
 // Create an order and generate the first (validated, watermarked) itinerary.
-// Returns metadata only — never the clean itinerary content.
-export async function createItineraryApi(input) {
+// Returns metadata only — never the clean itinerary content. When supporting
+// documents are provided, sends multipart (input as a `data` JSON field + the
+// files) so the backend can archive them under the new order; otherwise JSON.
+export async function createItineraryApi(input, files) {
+  if (files && files.length) {
+    const form = new FormData();
+    form.append('data', JSON.stringify(input));
+    for (const f of files) form.append('documents', f);
+    // No Content-Type header — the browser sets the multipart boundary.
+    return apiFetchPublic(URL, {
+      method: 'POST',
+      body: form,
+      signal: AbortSignal.timeout(GENERATE_TIMEOUT_MS),
+    });
+  }
   return apiFetchPublic(URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

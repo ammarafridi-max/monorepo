@@ -137,6 +137,7 @@ export function createItineraryService({
   Order,
   generator,
   pdfRenderer,
+  storage, // Cloudinary storage (saveFile) — preview + clean PDF live here, not in Mongo
   stripe,
   frontendUrl,
   // Base path of the itinerary pages in the host frontend (e.g. '/travel-itinerary').
@@ -192,8 +193,10 @@ export function createItineraryService({
   // preview image), marks GENERATED, and persists. The main-destination result
   // is derived in buildMeta, so it is refreshed on the next meta build.
   async function finalizeItinerary(order) {
-    order.previewImage = await pdfRenderer.renderPreviewImage(order);
-    order.cleanPdf = null;
+    // Render the watermarked preview and store it in Cloudinary; Mongo keeps the URL.
+    const png = await pdfRenderer.renderPreviewImage(order);
+    order.previewUrl = await storage.saveFile(png, `${order.sessionId}/preview`, { resourceType: 'image' });
+    order.cleanPdfUrl = null; // any prior clean PDF is now stale; re-rendered post-payment
     order.previewVersion = (order.previewVersion || 0) + 1;
     order.status = 'GENERATED';
     order.lastError = null;
@@ -269,22 +272,42 @@ export function createItineraryService({
   }
 
   async function ensureCleanPdf(order) {
-    if (order.cleanPdf) return order.cleanPdf;
+    if (order.cleanPdfUrl) return order.cleanPdfUrl;
     const pdf = await pdfRenderer.renderCleanPdf(order);
-    order.cleanPdf = pdf;
+    order.cleanPdfUrl = await storage.saveFile(pdf, `${order.sessionId}/finalPdf`, { resourceType: 'raw' });
     await order.save();
-    return pdf;
+    return order.cleanPdfUrl;
   }
 
   // -- Public API ------------------------------------------------------------
 
-  async function createOrder(payload, ipAddress) {
+  async function createOrder(payload, ipAddress, files) {
     const input = normalizeInput(payload);
     const order = await Order.create({ input, ipAddress, price, currency, status: 'GENERATING' });
     // Generate in the background; respond immediately so the client can redirect
     // and poll. (Synchronous generation here used to exceed the client timeout.)
     runGeneration(order);
+    // Archive any supporting documents in Cloudinary, also in the background.
+    if (files?.length) runSupportingDocsUpload(order.sessionId, files);
     return order;
+  }
+
+  // Fire-and-forget: upload customer documents to Cloudinary and record their
+  // URLs. Best-effort (a failed archive must not fail the order). Uses an atomic
+  // $set so it can't clobber the fields the concurrent generation is writing.
+  function runSupportingDocsUpload(sessionId, files) {
+    return (async () => {
+      const docs = [];
+      for (let i = 0; i < files.length; i += 1) {
+        const file = files[i];
+        const resourceType = file.mimetype === 'application/pdf' ? 'raw' : file.mimetype?.startsWith('image/') ? 'image' : 'raw';
+        const url = await storage.saveFile(file.buffer, `${sessionId}/supportingDocuments/doc-${i + 1}`, { resourceType });
+        docs.push({ name: file.originalname, url });
+      }
+      await Order.updateOne({ sessionId }, { $set: { supportingDocuments: docs } });
+    })().catch((err) => {
+      logger.warn('[itineraries] Supporting documents upload failed', { sessionId, error: err.message });
+    });
   }
 
   async function regenerate(sessionId, ipAddress) {
@@ -438,10 +461,10 @@ export function createItineraryService({
     return { messages: order.chatMessages, meta: buildMeta(order) };
   }
 
-  async function getPreviewImage(sessionId) {
-    const order = await Order.findOne({ sessionId }).select('+previewImage');
-    if (!order || !order.previewImage) throw new AppError('Preview not found', 404);
-    return order.previewImage;
+  async function getPreviewUrl(sessionId) {
+    const order = await Order.findOne({ sessionId }).select('previewUrl');
+    if (!order || !order.previewUrl) throw new AppError('Preview not found', 404);
+    return order.previewUrl;
   }
 
   async function createStripeCheckout(sessionId) {
@@ -512,8 +535,10 @@ export function createItineraryService({
   }
 
   // Clean, watermark-free PDF — only ever served after payment.
-  async function getCleanPdf(sessionId) {
-    const order = await Order.findOne({ sessionId }).select('+cleanPdf');
+  // Returns the Cloudinary URL of the clean PDF — only ever after payment. Renders
+  // + uploads on first request if it isn't cached yet.
+  async function getCleanPdfUrl(sessionId) {
+    const order = await Order.findOne({ sessionId });
     if (!order) throw new AppError('Itinerary not found', 404);
     if (order.paymentStatus !== 'PAID') throw new AppError('Payment required', 402);
     return ensureCleanPdf(order);
@@ -600,10 +625,10 @@ export function createItineraryService({
     parseDocuments,
     regenerate,
     getOrderMeta,
-    getPreviewImage,
+    getPreviewUrl,
     createStripeCheckout,
     handleStripeSuccess,
-    getCleanPdf,
+    getCleanPdfUrl,
     editAfterPayment,
     chatEdit,
     getChatMessages,

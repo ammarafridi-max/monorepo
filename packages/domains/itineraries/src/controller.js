@@ -1,7 +1,12 @@
+import { AppError } from '@travel-suite/utils';
+
 export function createItineraryController({ service }) {
   const createOrder = async (req, res, next) => {
     try {
-      const order = await service.createOrder(req.body, req.ip);
+      // Multipart (with supporting docs) carries the input JSON in a `data` field;
+      // plain JSON requests have it as the body directly.
+      const payload = typeof req.body?.data === 'string' ? JSON.parse(req.body.data) : req.body;
+      const order = await service.createOrder(payload, req.ip, req.files);
       const meta = await service.getOrderMeta(order.sessionId);
       res.status(201).json({ status: 'success', data: meta });
     } catch (err) {
@@ -31,15 +36,13 @@ export function createItineraryController({ service }) {
 
   // Watermarked flat image — the only itinerary content a client can read
   // before payment. Never returns the JSON or clean text.
+  // Watermarked preview lives in Cloudinary — redirect to it. Safe to expose
+  // publicly (it is watermarked); the frontend <img> follows the redirect.
   const getPreview = async (req, res, next) => {
     try {
-      const image = await service.getPreviewImage(req.params.sessionId);
-      res.setHeader('Content-Type', 'image/png');
+      const url = await service.getPreviewUrl(req.params.sessionId);
       res.setHeader('Cache-Control', 'no-store, max-age=0');
-      // helmet defaults CORP to same-origin; the preview <img> is embedded from
-      // the frontend origin, so allow cross-origin embedding (same as /airlines).
-      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-      res.send(image);
+      res.redirect(302, url);
     } catch (err) {
       next(err);
     }
@@ -55,9 +58,15 @@ export function createItineraryController({ service }) {
   };
 
   // Clean, watermark-free, print-ready PDF — gated behind payment in the service.
+  // The bytes live in Cloudinary; we proxy them (rather than redirect) so the
+  // payment gate can't be bypassed by sharing a public URL, and so we control the
+  // download filename/content-type.
   const getDocument = async (req, res, next) => {
     try {
-      const pdf = await service.getCleanPdf(req.params.sessionId);
+      const url = await service.getCleanPdfUrl(req.params.sessionId);
+      const upstream = await fetch(url);
+      if (!upstream.ok) throw new AppError('Could not retrieve the document', 502);
+      const pdf = Buffer.from(await upstream.arrayBuffer());
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="itinerary-${req.params.sessionId}.pdf"`);
       res.setHeader('Cache-Control', 'no-store, max-age=0');

@@ -15,13 +15,7 @@ const PROTOCOL_TIMEOUT_MS = 120_000;
 const PAGE_TIMEOUT_MS = 60_000;
 
 function launchArgs() {
-  return [
-    '--no-sandbox',
-    '--disable-setuid-sandbox',
-    '--disable-dev-shm-usage',
-    '--disable-gpu',
-    '--font-render-hinting=none',
-  ];
+  return ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--font-render-hinting=none'];
 }
 
 function launch() {
@@ -111,7 +105,10 @@ export function createPdfRenderer({ brand } = {}) {
     const html = buildItineraryHtml({ order, watermark: true, brand });
     return withPage(async (page) => {
       await page.setViewport({ width: 900, height: 1273, deviceScaleFactor: 2 });
-      await page.setContent(html, { waitUntil: 'networkidle0' });
+      // 'load' (not 'networkidle0'): the HTML is fully self-contained (inline
+      // data-URI assets, no external fonts/images), and setContent + networkidle*
+      // can hang forever because the idle counter never transitions from zero.
+      await page.setContent(html, { waitUntil: 'load' });
       const png = await page.screenshot({ type: 'png', fullPage: true });
       return Buffer.from(png);
     });
@@ -125,7 +122,8 @@ export function createPdfRenderer({ brand } = {}) {
   async function renderCleanPdf(order) {
     const html = buildItineraryHtml({ order, watermark: false, brand });
     return withPage(async (page) => {
-      await page.setContent(html, { waitUntil: 'networkidle0' });
+      // See renderPreviewImage: 'load' avoids the setContent + networkidle hang.
+      await page.setContent(html, { waitUntil: 'load' });
       const pdf = await page.pdf({ format: 'A4', printBackground: true });
       return Buffer.from(pdf);
     });

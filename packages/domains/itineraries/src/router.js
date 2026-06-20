@@ -14,7 +14,9 @@ export function createItineraryRouter({ controller, generateLimiter }) {
   const limit = generateLimiter || ((_req, _res, next) => next());
 
   // Generation routes — rate-limited per IP (per-session caps live in the service).
-  router.post('/', limit, controller.createOrder);
+  // Create accepts optional supporting documents (multipart) to archive with the
+  // order; plain-JSON requests (no files) pass straight through multer.
+  router.post('/', limit, upload.array('documents', 5), controller.createOrder);
   router.post('/:sessionId/regenerate', limit, controller.regenerate);
   router.post('/:sessionId/edit', limit, controller.edit);
   router.post('/:sessionId/chat', limit, controller.chat); // conversational AI edit
