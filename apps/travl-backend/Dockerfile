@@ -1,17 +1,26 @@
-FROM node:22-alpine AS base
+FROM node:22-slim AS base
 RUN npm install -g pnpm@9.15.0
 
-# Chromium + fonts for Puppeteer (itinerary PDF/preview rendering).
-# We use the system browser, not a bundled download.
-RUN apk add --no-cache \
-    chromium \
-    nss \
-    freetype \
-    harfbuzz \
-    ca-certificates \
-    ttf-freefont
-ENV PUPPETEER_SKIP_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+# Chrome runtime libraries + fonts for Puppeteer (itinerary PDF/preview rendering).
+# IMPORTANT: we run Puppeteer's OWN version-matched Chrome (downloaded in the deps
+# stage), NOT a distro chromium. A mismatched/musl Chromium (e.g. Alpine's apk
+# chromium) launches but never completes the CDP handshake — that surfaced as
+# "Network.enable timed out". Debian + Puppeteer's pinned glibc Chrome is the
+# officially supported, version-matched combination.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates fonts-liberation \
+    libasound2 libatk-bridge2.0-0 libatk1.0-0 libcairo2 libcups2 libdbus-1-3 \
+    libexpat1 libfontconfig1 libgbm1 libglib2.0-0 libgtk-3-0 libnspr4 libnss3 \
+    libpango-1.0-0 libpangocairo-1.0-0 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 \
+    libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxkbcommon0 libxrandr2 \
+    libxrender1 libxss1 libxtst6 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Puppeteer downloads its pinned Chrome into this dir. It must be identical at build
+# (install) and runtime, and it lives inside the image so the runner stage (which
+# extends deps) inherits the browser. pdf.js leaves executablePath undefined, so
+# Puppeteer auto-resolves the matched Chrome from here.
+ENV PUPPETEER_CACHE_DIR=/repo/.cache/puppeteer
 
 # ── Install dependencies (cached separately from source) ─────────────────────
 FROM base AS deps
@@ -44,6 +53,10 @@ COPY packages/domains/visa-leads/package.json      packages/domains/visa-leads/p
 COPY apps/travl-backend/package.json       apps/travl-backend/package.json
 
 RUN pnpm install --frozen-lockfile
+
+# Download the Chrome build pinned by puppeteer (pnpm doesn't run puppeteer's
+# postinstall browser download). Installs into PUPPETEER_CACHE_DIR; inherited by runner.
+RUN pnpm --filter @travel-suite/itineraries exec puppeteer browsers install chrome
 
 # ── Runtime image ────────────────────────────────────────────────────────────
 FROM deps AS runner
