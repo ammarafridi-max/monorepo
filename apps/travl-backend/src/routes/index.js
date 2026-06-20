@@ -32,6 +32,7 @@ import { wis } from "../utils/wis.js";
 import * as brevo from "../utils/brevo.js";
 import { sendEmail } from "../utils/email.js";
 import { insurancePaymentCompletionEmail } from "../notifications/insurance.js";
+import { itineraryPaymentCustomerEmail } from "../notifications/itinerary.js";
 import config from "../utils/config.js";
 
 function getOrRegisterModel(conn, name, schema) {
@@ -133,6 +134,14 @@ const itineraryGenerateLimiter = rateLimit({
   message: { status: "fail", message: "Too many itinerary generations from this network. Please try again later." },
 });
 
+const itineraryStorage = createCloudinaryStorage({
+  cloudName: config.cloudinary.cloudName,
+  apiKey: config.cloudinary.apiKey,
+  apiSecret: config.cloudinary.apiSecret,
+  logger,
+  folder: "travl/travel-itineraries",
+});
+
 const { router: itinerariesRouter, handleStripeSuccess: handleItinerarySuccess } = createItinerariesRouter({
   db,
   stripe,
@@ -146,6 +155,8 @@ const { router: itinerariesRouter, handleStripeSuccess: handleItinerarySuccess }
     primaryColor: "#0d6a66",
     accentColor: "#ff603a",
   },
+  storage: itineraryStorage,
+  sendItineraryEmail: itineraryPaymentCustomerEmail,
   generateLimiter: itineraryGenerateLimiter,
 });
 router.use("/itineraries", itinerariesRouter);

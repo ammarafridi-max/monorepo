@@ -15,6 +15,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 
+// Behind Fly's edge proxy (one hop). Trust it so req.ip is the real client IP —
+// required for express-rate-limit to key on the client (not the proxy) and to
+// silence ERR_ERL_UNEXPECTED_X_FORWARDED_FOR. Use 1, not true, so the hop count
+// is fixed and the forwarded chain can't be spoofed.
+app.set('trust proxy', 1);
+
 app.use((req, res, next) => {
   req.id = req.headers['x-request-id'] || randomUUID();
   res.setHeader('x-request-id', req.id);

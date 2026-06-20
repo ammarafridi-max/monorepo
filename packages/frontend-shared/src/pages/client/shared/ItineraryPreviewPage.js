@@ -17,7 +17,7 @@ import { useItineraryOrder } from '../../../hooks/itineraries/useItineraryOrder'
 import { useRegenerateItinerary } from '../../../hooks/itineraries/useRegenerateItinerary';
 import { useItineraryCheckout } from '../../../hooks/itineraries/useItineraryCheckout';
 import { useItineraryChat } from '../../../hooks/itineraries/useItineraryChat';
-import { itineraryPreviewUrl, itineraryDocumentUrl } from '../../../services/apiItineraries';
+import { itineraryDocumentUrl } from '../../../services/apiItineraries';
 import { trackItineraryViewItem, trackItineraryBeginCheckout } from '../../../utils/analytics';
 
 const EXAMPLE_PROMPTS = [
@@ -27,11 +27,11 @@ const EXAMPLE_PROMPTS = [
   'Add an extra day to the trip',
 ];
 
-function ChatPanel({ sessionId, chatsRemaining, mismatch, returnCheck }) {
+function ChatPanel({ sessionId, chatsRemaining, mismatch, returnCheck, onApplyFix }) {
   const { messages, sendMessage, isSending } = useItineraryChat(sessionId);
   const [draft, setDraft] = useState('');
   const [pending, setPending] = useState(null);
-  const endRef = useRef(null);
+  const scrollRef = useRef(null);
 
   const exhausted = chatsRemaining <= 0;
 
@@ -40,15 +40,21 @@ function ChatPanel({ sessionId, chatsRemaining, mismatch, returnCheck }) {
   const fixSuggestions = [
     ...(mismatch?.hasMismatch
       ? [
-          `Rebalance my trip so ${mismatch.applyingTo} is my main destination`,
-          `Switch my application to ${mismatch.mainDestination} instead`,
+          { key: 'mainDestination', text: `Rebalance my trip so ${mismatch.applyingTo} is my main destination` },
+          { key: 'mainDestination', text: `Switch my application to ${mismatch.mainDestination} instead` },
         ]
       : []),
-    ...(returnCheck?.hasMismatch ? [`Add a return flight to ${returnCheck.fromCountry}`] : []),
+    ...(returnCheck?.hasMismatch
+      ? [{ key: 'return', text: `Add a return flight to ${returnCheck.fromCountry}` }]
+      : []),
   ];
 
+  // Pin the chat to its latest message WITHOUT scrolling the page — scroll only the
+  // messages container. (scrollIntoView scrolls every ancestor incl. the window, so
+  // the page jumped down each time the itinerary preview refreshed after an edit.)
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const el = scrollRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }, [messages, pending, isSending]);
 
   function submit(text) {
@@ -80,19 +86,22 @@ function ChatPanel({ sessionId, chatsRemaining, mismatch, returnCheck }) {
         </p>
       </div>
 
-      <div className="flex-1 min-h-[280px] max-h-[460px] overflow-y-auto px-5 py-4">
+      <div ref={scrollRef} className="flex-1 min-h-[280px] max-h-[460px] overflow-y-auto px-5 py-4">
         {fixSuggestions.length > 0 && (
           <div className="flex flex-col gap-2 mb-3 pb-3 border-b border-gray-100">
             <p className="text-xs font-semibold text-amber-700">Suggested fixes:</p>
-            {fixSuggestions.map((p) => (
+            {fixSuggestions.map((s) => (
               <button
-                key={p}
+                key={s.text}
                 type="button"
-                onClick={() => submit(p)}
+                onClick={() => {
+                  onApplyFix?.(s.key); // hide this advisory + suggestion immediately
+                  submit(s.text);
+                }}
                 disabled={exhausted}
                 className="text-left text-sm text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 disabled:opacity-50 rounded-xl px-3 py-2 transition-colors"
               >
-                {p}
+                {s.text}
               </button>
             ))}
           </div>
@@ -123,7 +132,6 @@ function ChatPanel({ sessionId, chatsRemaining, mismatch, returnCheck }) {
                 <Loader2 size={14} className="animate-spin" /> Updating your itinerary…
               </div>
             )}
-            <div ref={endRef} />
           </div>
         )}
       </div>
@@ -198,6 +206,22 @@ export default function ItineraryPreviewPage({ sessionId }) {
     }
   }, [order]);
 
+  // Advisories the user has applied a fix for — hide the banner + suggestion at once,
+  // without waiting for the (slow, background) re-validation. Main-destination is
+  // recomputed server-side, so we drop it from the applied set when it genuinely
+  // clears, letting a real recurrence re-surface. The return-trip check is
+  // segment-based (chat doesn't edit segments), so once applied it stays cleared.
+  const [appliedFixes, setAppliedFixes] = useState(() => new Set());
+  useEffect(() => {
+    setAppliedFixes((prev) => {
+      if (prev.size === 0) return prev;
+      const next = new Set(prev);
+      if (!order?.mainDestinationCheck?.hasMismatch) next.delete('mainDestination');
+      if (!order?.returnTripCheck?.hasMismatch) next.delete('return');
+      return next.size === prev.size ? prev : next;
+    });
+  }, [order]);
+
   if (isLoadingOrder) {
     return (
       <div className="max-w-3xl mx-auto px-6 py-24 flex flex-col items-center gap-4">
@@ -255,10 +279,13 @@ export default function ItineraryPreviewPage({ sessionId }) {
   const busy = isGenerating || isRegeneratingItinerary;
   const mismatch = order.mainDestinationCheck;
   const returnCheck = order.returnTripCheck;
+  const showMismatch = !!mismatch?.hasMismatch && !appliedFixes.has('mainDestination');
+  const showReturn = !!returnCheck?.hasMismatch && !appliedFixes.has('return');
+  const applyFix = (key) => setAppliedFixes((prev) => new Set(prev).add(key));
   const previewImg = (
     <div className="relative rounded-xl border border-gray-200 overflow-hidden bg-gray-50">
       <img
-        src={`${itineraryPreviewUrl(sessionId)}?v=${order.previewVersion}`}
+        src={order.previewUrl}
         alt="Itinerary preview (watermarked)"
         className="w-full block"
       />
@@ -305,14 +332,15 @@ export default function ItineraryPreviewPage({ sessionId }) {
           <ChatPanel
             sessionId={sessionId}
             chatsRemaining={order.chatsRemaining}
-            mismatch={mismatch}
-            returnCheck={returnCheck}
+            mismatch={showMismatch ? mismatch : null}
+            returnCheck={showReturn ? returnCheck : null}
+            onApplyFix={applyFix}
           />
         </div>
 
         {/* Preview (main, takes the freed width) */}
         <div className="flex-1 min-w-0 order-1 lg:order-2">
-          {mismatch?.hasMismatch && (
+          {showMismatch && (
             <div className="mb-3 flex items-start gap-2.5 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl px-4 py-3">
               <AlertTriangle size={18} className="text-amber-600 shrink-0 mt-0.5" />
               <p className="text-sm leading-snug">
@@ -322,7 +350,7 @@ export default function ItineraryPreviewPage({ sessionId }) {
               </p>
             </div>
           )}
-          {returnCheck?.hasMismatch && (
+          {showReturn && (
             <div className="mb-3 flex items-start gap-2.5 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl px-4 py-3">
               <AlertTriangle size={18} className="text-amber-600 shrink-0 mt-0.5" />
               <p className="text-sm leading-snug">

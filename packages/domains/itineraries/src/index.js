@@ -45,6 +45,7 @@ export function createItinerariesRouter({
   editWindowDays,
   chatLimit,
   storage,
+  sendItineraryEmail,
   generateLimiter,
 }) {
   const Order = getOrRegisterModel(db, 'itinerary-order', ItineraryOrderSchema);
@@ -57,6 +58,7 @@ export function createItinerariesRouter({
     generator,
     pdfRenderer,
     storage,
+    sendItineraryEmail,
     stripe,
     frontendUrl,
     frontendPathBase,

@@ -138,6 +138,7 @@ export function createItineraryService({
   generator,
   pdfRenderer,
   storage, // Cloudinary storage (saveFile) — preview + clean PDF live here, not in Mongo
+  sendItineraryEmail, // async ({ email, name, sessionId, ... , pdfUrl }) => void — emails the customer on payment
   stripe,
   frontendUrl,
   // Base path of the itinerary pages in the host frontend (e.g. '/travel-itinerary').
@@ -172,6 +173,9 @@ export function createItineraryService({
       currency: order.currency,
       hasPreview: order.status === 'GENERATED',
       previewVersion: order.previewVersion || 0,
+      // Cloudinary URL of the latest watermarked preview — loaded directly by the
+      // client (public/watermarked, CDN-served).
+      previewUrl: order.previewUrl || null,
       // Advisory main-destination (Schengen) check — recomputed from the current
       // itinerary on every meta build, so it always reflects the latest change.
       mainDestinationCheck: computeMainDestination(order.itineraryData, order.input),
@@ -194,10 +198,17 @@ export function createItineraryService({
   // is derived in buildMeta, so it is refreshed on the next meta build.
   async function finalizeItinerary(order) {
     // Render the watermarked preview and store it in Cloudinary; Mongo keeps the URL.
+    // Each edit keeps its own versioned image under the preview/ folder (history);
+    // previewUrl always points at the latest.
     const png = await pdfRenderer.renderPreviewImage(order);
-    order.previewUrl = await storage.saveFile(png, `${order.sessionId}/preview`, { resourceType: 'image' });
+    const nextVersion = (order.previewVersion || 0) + 1;
+    order.previewUrl = await storage.saveFile(
+      png,
+      `${order.sessionId}/preview/previewImage-v${nextVersion}`,
+      { resourceType: 'image' },
+    );
     order.cleanPdfUrl = null; // any prior clean PDF is now stale; re-rendered post-payment
-    order.previewVersion = (order.previewVersion || 0) + 1;
+    order.previewVersion = nextVersion;
     order.status = 'GENERATED';
     order.lastError = null;
     await order.save();
@@ -274,7 +285,7 @@ export function createItineraryService({
   async function ensureCleanPdf(order) {
     if (order.cleanPdfUrl) return order.cleanPdfUrl;
     const pdf = await pdfRenderer.renderCleanPdf(order);
-    order.cleanPdfUrl = await storage.saveFile(pdf, `${order.sessionId}/finalPdf`, { resourceType: 'raw' });
+    order.cleanPdfUrl = await storage.saveFile(pdf, `${order.sessionId}/finalPdf/finalPdf`, { resourceType: 'raw' });
     await order.save();
     return order.cleanPdfUrl;
   }
@@ -531,6 +542,26 @@ export function createItineraryService({
         sessionId,
         error: err.message,
       });
+    }
+
+    // Email the finished itinerary (PDF attached) to the customer. Best-effort —
+    // a mail hiccup must never fail a confirmed payment.
+    if (typeof sendItineraryEmail === 'function') {
+      try {
+        await sendItineraryEmail({
+          email: order.input.traveller.email,
+          name: order.input.traveller.fullName || order.input.traveller.firstName,
+          sessionId,
+          visaCountry: order.input.visaCountry,
+          startDate: order.input.startDate,
+          endDate: order.input.endDate,
+          fromCity: order.input.arrival?.city,
+          toCity: order.input.departure?.city,
+          pdfUrl: order.cleanPdfUrl,
+        });
+      } catch (err) {
+        logger.warn('[itineraries] Itinerary email failed', { sessionId, error: err.message });
+      }
     }
   }
 

@@ -36,12 +36,15 @@ export function createItineraryController({ service }) {
 
   // Watermarked flat image — the only itinerary content a client can read
   // before payment. Never returns the JSON or clean text.
-  // Watermarked preview lives in Cloudinary — redirect to it. Safe to expose
-  // publicly (it is watermarked); the frontend <img> follows the redirect.
+  // Watermarked preview lives in Cloudinary. The client loads previewUrl (from
+  // the order meta) directly; this endpoint stays as a convenience redirect.
   const getPreview = async (req, res, next) => {
     try {
       const url = await service.getPreviewUrl(req.params.sessionId);
       res.setHeader('Cache-Control', 'no-store, max-age=0');
+      // helmet defaults CORP to same-origin; allow cross-origin embedding in case
+      // this redirect is used by an <img> directly.
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
       res.redirect(302, url);
     } catch (err) {
       next(err);
