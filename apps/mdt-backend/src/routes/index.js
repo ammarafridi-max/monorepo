@@ -1,11 +1,18 @@
 import { Router } from "express";
 import { createAuthRouter } from "@travel-suite/auth";
 import { createAdminUsersRouter } from "@travel-suite/admin-users";
-import { createAffiliatesRouter, AffiliateSchema } from "@travel-suite/affiliates";
+import {
+  createAffiliatesRouter,
+  AffiliateSchema,
+} from "@travel-suite/affiliates";
 import { createBlogRouter, createBlogTagRouter } from "@travel-suite/blog";
 import { createCloudinaryStorage } from "@travel-suite/cloudinary";
 import { createCurrenciesRouter } from "@travel-suite/currencies";
-import { createFlightRouter, createAirportsRouter, createAmadeusClient } from "@travel-suite/flights";
+import {
+  createFlightRouter,
+  createAirportsRouter,
+  createAmadeusClient,
+} from "@travel-suite/flights";
 import { createAirLabsClient } from "@travel-suite/airlabs";
 import { createInsuranceRouter } from "@travel-suite/insurance";
 import { createTicketsRouter } from "@travel-suite/tickets";
@@ -30,9 +37,13 @@ import { logger } from "@travel-suite/utils";
 
 // -- Model pre-registration (ORDER CRITICAL) -----------------------------------
 function getOrRegisterModel(conn, name, schema) {
-  try { return conn.model(name); } catch { return conn.model(name, schema); }
+  try {
+    return conn.model(name);
+  } catch {
+    return conn.model(name, schema);
+  }
 }
-const AffiliateModel = getOrRegisterModel(db, 'Affiliate', AffiliateSchema);
+const AffiliateModel = getOrRegisterModel(db, "Affiliate", AffiliateSchema);
 
 const router = Router();
 
@@ -57,7 +68,7 @@ router.use("/admin-users", createAdminUsersRouter({ AdminUser, auth }));
 // -- Blog ----------------------------------------------------------------------
 const imageStorage = createCloudinaryStorage({
   cloudName: config.cloudinary.cloudName,
-  apiKey:    config.cloudinary.apiKey,
+  apiKey: config.cloudinary.apiKey,
   apiSecret: config.cloudinary.apiSecret,
   logger,
   folder: "mdt/blog",
@@ -70,7 +81,7 @@ router.use("/currencies", createCurrenciesRouter({ db, auth }));
 
 // -- Flights -------------------------------------------------------------------
 const amadeus = createAmadeusClient({
-  apiKey:    config.amadeus.apiKey,
+  apiKey: config.amadeus.apiKey,
   apiSecret: config.amadeus.apiSecret,
 });
 const airlabs = createAirLabsClient({ apiKey: config.airlabs.apiKey });
@@ -109,6 +120,11 @@ const notifications = createNotificationsService({
   },
 });
 
+// Disabled per request: we no longer want an internal email every time a
+// customer pays. Customer-facing emails still fire. Re-enable by deleting
+// this override.
+notifications.sendTicketPaymentToAdmin = async () => {};
+
 // -- Stripe --------------------------------------------------------------------
 const stripe = createStripeClient({ secretKey: config.stripe.secretKey });
 
@@ -135,9 +151,19 @@ router.use("/pricing", pricingRouter);
 router.use("/affiliates", createAffiliatesRouter({ db, auth, TicketModel }));
 
 // -- Payments (admin: revenue dashboard + custom payment links) ---------------
-const paymentService = createPaymentService({ stripe, db, PaymentLinkSchema, ProductSchema });
-const paymentsController = createPaymentsController({ service: paymentService });
-router.use("/payments", createPaymentsAdminRouter({ controller: paymentsController, auth }));
+const paymentService = createPaymentService({
+  stripe,
+  db,
+  PaymentLinkSchema,
+  ProductSchema,
+});
+const paymentsController = createPaymentsController({
+  service: paymentService,
+});
+router.use(
+  "/payments",
+  createPaymentsAdminRouter({ controller: paymentsController, auth }),
+);
 
 async function handlePaymentLinkSuccess(session) {
   const updated = await paymentService.markPaymentLinkPaid({ session });
