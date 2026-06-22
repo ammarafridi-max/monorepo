@@ -61,7 +61,7 @@ function applyDeliveryDateFilter(queryObj, deliveryDate) {
   queryObj.paymentStatus = 'PAID';
 }
 
-export function createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, paypal, notifications, frontendUrl, brevo, reviewListId }) {
+export function createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, paypal, notifications, frontendUrl, brevo, reviewListId, paidOrderBus }) {
   const getAllTickets = async (query) => {
     const queryObj = { ...query };
     ['page', 'limit', 'search', 'createdAt', 'deliveryDate'].forEach((f) => delete queryObj[f]);
@@ -89,6 +89,14 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     Ticket.findOne({ sessionId })
       .populate('handledBy')
       .populate('affiliate', 'name email affiliateId commissionPercent isActive');
+
+  // Lightweight "is there a new paid order?" probe for admin ping polling.
+  // Returns only the fields the client needs to dedupe — no payload bloat.
+  const getLatestPaidTicket = () =>
+    Ticket.findOne({ paymentStatus: 'PAID' })
+      .sort({ updatedAt: -1 })
+      .select('sessionId updatedAt')
+      .lean();
 
   const updateOrderStatus = async (sessionId, userId, orderStatus) => {
     if (!orderStatus) throw new AppError('Order status is required', 400);
@@ -236,6 +244,9 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       },
       { new: true },
     );
+
+    // Push real-time ping to any connected admin SSE clients on this instance.
+    paidOrderBus?.publish({ sessionId: ticket.sessionId, paidAt: ticket.updatedAt });
 
     await notifications.sendTicketPaymentToAdmin({
       createdAt: ticket.createdAt,
@@ -392,6 +403,9 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       { new: true },
     );
 
+    // Push real-time ping to any connected admin SSE clients on this instance.
+    paidOrderBus?.publish({ sessionId: ticket.sessionId, paidAt: ticket.updatedAt });
+
     await notifications.sendTicketPaymentToAdmin({
       createdAt: ticket.createdAt,
       type: ticket.type,
@@ -448,5 +462,5 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     return refund;
   };
 
-  return { getAllTickets, getTicketBySessionId, updateOrderStatus, deleteTicket, createTicketRequest, createStripePaymentUrl, handleStripeSuccess, createPayPalOrder, capturePayPalOrder, refundByTransactionId };
+  return { getAllTickets, getLatestPaidTicket, getTicketBySessionId, updateOrderStatus, deleteTicket, createTicketRequest, createStripePaymentUrl, handleStripeSuccess, createPayPalOrder, capturePayPalOrder, refundByTransactionId };
 }

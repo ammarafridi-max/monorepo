@@ -29,6 +29,10 @@ export async function getDummyTicketApi(sessionId) {
   return result;
 }
 
+export async function getLatestPaidTicketApi() {
+  return await apiFetch(`${URL}/latest-paid`);
+}
+
 export async function updateDummyTicketApi({ sessionId, orderStatus }) {
   const result = await apiFetch(`${URL}/${sessionId}/order-status`, {
     method: 'PATCH',

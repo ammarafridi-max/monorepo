@@ -15,6 +15,10 @@ export function useDummyTickets() {
     queryKey: ['dummytickets', params],
     queryFn: () => getDummyTicketsApi(params),
     placeholderData: (prev) => prev,
+    // Belt-and-suspenders: even without a ping-triggered invalidation,
+    // returning to the tab should refetch so the admin never sees stale rows.
+    refetchOnWindowFocus: true,
+    staleTime: 0,
   });
 
   return {

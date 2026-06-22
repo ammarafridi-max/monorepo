@@ -1,4 +1,4 @@
-export function createTicketController({ service }) {
+export function createTicketController({ service, paidOrderBus }) {
   const getAllTickets = async (req, res, next) => {
     try {
       const isAgent = req.user?.role === 'agent';
@@ -22,6 +22,46 @@ export function createTicketController({ service }) {
       }
 
       res.json({ status: 'success', ...result });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  // SSE stream: holds the connection open and pushes a `paid-order` event
+  // whenever a payment is confirmed on this instance. Sends a comment line
+  // every 25s to keep proxies (Fly.io edge) from idling out the connection.
+  const streamEvents = async (req, res) => {
+    res.set({
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache, no-transform',
+      Connection: 'keep-alive',
+      'X-Accel-Buffering': 'no',
+    });
+    res.flushHeaders?.();
+    res.write('retry: 5000\n\n');
+    res.write(': connected\n\n');
+
+    const heartbeat = setInterval(() => {
+      try { res.write(': ping\n\n'); } catch { void 0; }
+    }, 25_000);
+
+    const unsubscribe = paidOrderBus.subscribe(res);
+
+    req.on('close', () => {
+      clearInterval(heartbeat);
+      unsubscribe();
+    });
+  };
+
+  const getLatestPaidTicket = async (_req, res, next) => {
+    try {
+      const ticket = await service.getLatestPaidTicket();
+      res.json({
+        status: 'success',
+        data: ticket
+          ? { sessionId: ticket.sessionId, paidAt: ticket.paidAt || ticket.updatedAt }
+          : null,
+      });
     } catch (err) {
       next(err);
     }
@@ -100,5 +140,5 @@ export function createTicketController({ service }) {
     }
   };
 
-  return { getAllTickets, getTicketBySessionId, createTicketRequest, createStripePaymentUrl, createPayPalOrder, capturePayPalOrder, updateOrderStatus, deleteTicket, refundByTransactionId };
+  return { getAllTickets, getLatestPaidTicket, streamEvents, getTicketBySessionId, createTicketRequest, createStripePaymentUrl, createPayPalOrder, capturePayPalOrder, updateOrderStatus, deleteTicket, refundByTransactionId };
 }

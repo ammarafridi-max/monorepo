@@ -9,6 +9,12 @@ export function createTicketRouter({ controller, auth }) {
   router.post('/checkout', controller.createStripePaymentUrl);
   router.post('/paypal/checkout', controller.createPayPalOrder);
   router.post('/paypal/capture', controller.capturePayPalOrder);
+
+  // Admin + Agent — must come BEFORE the public /:sessionId route below,
+  // otherwise Express matches the literal path as a sessionId.
+  router.get('/latest-paid', protect, restrictTo('admin', 'agent'), controller.getLatestPaidTicket);
+  router.get('/events', protect, restrictTo('admin', 'agent'), controller.streamEvents);
+
   router.get('/:sessionId', controller.getTicketBySessionId);
 
   // Admin + Agent

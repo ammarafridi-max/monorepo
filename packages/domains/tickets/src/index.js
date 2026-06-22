@@ -9,6 +9,7 @@ import { createCurrencyService } from './currency.service.js';
 import { createTicketController } from './controller.js';
 import { createTicketRouter } from './router.js';
 import { createPricingRouter } from './pricing.router.js';
+import { createPaidOrderBus } from './paidOrderBus.js';
 
 function getOrRegisterModel(conn, name, schema) {
   try {
@@ -31,8 +32,10 @@ export function createTicketsRouter({ db, auth, stripe, paypal, notifications, f
   const pricingService = createPricingService({ TicketPricing });
   const currencyService = createCurrencyService({ Currency });
 
-  const service = createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, paypal, notifications, frontendUrl, brevo, reviewListId });
-  const controller = createTicketController({ service });
+  const paidOrderBus = createPaidOrderBus();
+
+  const service = createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, paypal, notifications, frontendUrl, brevo, reviewListId, paidOrderBus });
+  const controller = createTicketController({ service, paidOrderBus });
   const router = createTicketRouter({ controller, auth });
 
   const pricingRouter = createPricingRouter({ service: pricingService, auth });

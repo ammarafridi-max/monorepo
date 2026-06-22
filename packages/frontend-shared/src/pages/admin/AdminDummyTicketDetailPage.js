@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import {
   ArrowLeft, Loader2, AlertCircle, Trash2, Check, Pencil, Undo,
   Mail, Phone, MapPin, CreditCard, Hash, Plane, Users, Calendar,
-  MessageSquare, ExternalLink, Copy, ArrowRight,
+  MessageSquare, ExternalLink, ArrowRight,
 } from 'lucide-react';
 import { MdWhatsapp } from 'react-icons/md';
 import { FaStripe, FaPaypal } from 'react-icons/fa';
@@ -75,32 +75,6 @@ function InfoRow({ label, value, mono }) {
   );
 }
 
-function CopyButton({ text }) {
-  const [copied, setCopied] = useState(false);
-  if (!text) return <span className="text-sm text-gray-300">—</span>;
-
-  async function handleCopy() {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } catch {
-      void 0;
-    }
-  }
-
-  return (
-    <button
-      onClick={handleCopy}
-      title="Copy Travelport command"
-      className="self-start inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-200 bg-gray-50 hover:bg-gray-100 transition text-xs font-mono font-semibold text-gray-700"
-    >
-      {copied ? <Check size={12} className="text-green-600 shrink-0" /> : <Copy size={12} className="text-gray-400 shrink-0" />}
-      {text}
-    </button>
-  );
-}
-
 // Travelport availability command, e.g. "A28MAYDXBCDG"
 function buildAvailabilityCommand(dateString, fromIata, toIata) {
   const date = formatTravelportDate(dateString);
@@ -117,7 +91,7 @@ function buildPassengerCommand(p) {
   return `N.${last}/${first}${title ? ` ${title}` : ''}`;
 }
 
-function FlightCard({ dateString, fromIata, toIata, flightNumber, command }) {
+function FlightCard({ dateString, fromIata, toIata, flightNumber }) {
   return (
     <div className="rounded-xl border border-gray-200 p-4 flex flex-col gap-3">
       <span className="text-sm font-bold text-gray-900">{dateString || '—'}</span>
@@ -129,7 +103,6 @@ function FlightCard({ dateString, fromIata, toIata, flightNumber, command }) {
           <span className="ml-auto text-sm font-semibold text-gray-500">{flightNumber}</span>
         )}
       </div>
-      <CopyButton text={command} />
     </div>
   );
 }
@@ -140,10 +113,10 @@ function PassengersTable({ passengers }) {
   }
   return (
     <div className="overflow-x-auto -mx-5">
-      <table className="w-full text-sm min-w-[400px]">
+      <table className="w-full text-sm min-w-[300px]">
         <thead>
           <tr className="bg-gray-50/60">
-            {['#', 'Name', 'Travelport'].map((h, i) => (
+            {['#', 'Name'].map((h, i) => (
               <th key={i} className="text-left text-xs font-bold text-gray-400 uppercase tracking-wide px-5 py-2.5 whitespace-nowrap">
                 {h}
               </th>
@@ -157,9 +130,6 @@ function PassengersTable({ passengers }) {
               <td className="px-5 py-2.5 font-semibold text-gray-800 capitalize align-middle">
                 {[p.title, p.firstName, p.lastName].filter(Boolean).join(' ') || '—'}
               </td>
-              <td className="px-5 py-2.5 align-middle">
-                <CopyButton text={buildPassengerCommand(p)} />
-              </td>
             </tr>
           ))}
         </tbody>
@@ -168,13 +138,13 @@ function PassengersTable({ passengers }) {
   );
 }
 
-function DeleteSection({ sessionId, disabled }) {
+function DeleteSection({ sessionId, disabled, disabledReason }) {
   const [confirm, setConfirm] = useState(false);
   const { deleteDummyTicket, isDeleting } = useDeleteDummyTicket();
 
   if (disabled) {
     return (
-      <p className="text-xs text-gray-400 text-center py-1">Paid tickets cannot be deleted.</p>
+      <p className="text-xs text-gray-400 text-center py-1">{disabledReason}</p>
     );
   }
 
@@ -220,6 +190,15 @@ export default function AdminDummyTicketDetailPage() {
   const isAgent = adminUser?.role === 'agent';
 
   const { dummyTicket: ticket, isLoadingDummyTicket } = useGetDummyTicket(sessionId);
+  // Scheduled (non-immediate) deliveries shouldn't be markable as Progress
+  // or Delivered until the scheduled day arrives. Delivery dates are stored
+  // as YYYY-MM-DD-prefixed strings; today is formatted the same way in
+  // Dubai time so lexical comparison works regardless of browser locale.
+  const todayDubai = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Dubai' }).format(new Date());
+  const scheduledDate = ticket?.ticketDelivery?.immediate
+    ? null
+    : ticket?.ticketDelivery?.deliveryDate?.slice(0, 10) || null;
+  const deliveryDayReached = !scheduledDate || todayDubai >= scheduledDate;
   const { updateDummyTicket, isUpdating }              = useUpdateDummyTicket();
   const { refundDummyTicket, isRefunding }             = useRefundDummyTicket();
 
@@ -379,7 +358,7 @@ export default function AdminDummyTicketDetailPage() {
           />
           {ticket?.paymentStatus === 'PAID' && (
             <>
-              {ticket?.orderStatus !== 'DELIVERED' && (
+              {deliveryDayReached && ticket?.orderStatus !== 'DELIVERED' && (
                 <button
                   onClick={() => updateDummyTicket({ sessionId, orderStatus: 'DELIVERED' })}
                   disabled={isActionLoading}
@@ -388,7 +367,7 @@ export default function AdminDummyTicketDetailPage() {
                   <Check size={13} /> Mark Delivered
                 </button>
               )}
-              {ticket?.orderStatus !== 'PROGRESS' && (
+              {deliveryDayReached && ticket?.orderStatus !== 'PROGRESS' && (
                 <button
                   onClick={() => updateDummyTicket({ sessionId, orderStatus: 'PROGRESS' })}
                   disabled={isActionLoading}
@@ -414,7 +393,7 @@ export default function AdminDummyTicketDetailPage() {
           >
             <MdWhatsapp size={14} className="text-green-500" /> WhatsApp
           </button>
-          {ticket?.paymentStatus === 'PAID' && ticket?.transactionId && (
+          {!isAgent && ticket?.paymentStatus === 'PAID' && ticket?.transactionId && (
             <button
               onClick={() => refundDummyTicket(ticket?.transactionId)}
               disabled={isActionLoading}
@@ -437,11 +416,6 @@ export default function AdminDummyTicketDetailPage() {
                 fromIata={extractIataCode(ticket?.from)}
                 toIata={extractIataCode(ticket?.to)}
                 flightNumber={depFlight ? `${depFlight.carrierCode ?? ''} ${depFlight.flightNumber ?? ''}`.trim() : ''}
-                command={buildAvailabilityCommand(
-                  ticket?.departureDate,
-                  extractIataCode(ticket?.from),
-                  extractIataCode(ticket?.to),
-                )}
               />
               {isReturn && (
                 <FlightCard
@@ -449,11 +423,6 @@ export default function AdminDummyTicketDetailPage() {
                   fromIata={extractIataCode(ticket?.to)}
                   toIata={extractIataCode(ticket?.from)}
                   flightNumber={retFlight ? `${retFlight.carrierCode ?? ''} ${retFlight.flightNumber ?? ''}`.trim() : ''}
-                  command={buildAvailabilityCommand(
-                    ticket?.returnDate,
-                    extractIataCode(ticket?.to),
-                    extractIataCode(ticket?.from),
-                  )}
                 />
               )}
             </div>
@@ -604,7 +573,12 @@ export default function AdminDummyTicketDetailPage() {
             <div className="p-5">
               <DeleteSection
                 sessionId={ticket?.sessionId}
-                disabled={ticket?.paymentStatus === 'PAID'}
+                disabled={isAgent || ticket?.paymentStatus === 'PAID'}
+                disabledReason={
+                  isAgent
+                    ? 'Only admins can delete tickets.'
+                    : 'Paid tickets cannot be deleted.'
+                }
               />
             </div>
           </div>

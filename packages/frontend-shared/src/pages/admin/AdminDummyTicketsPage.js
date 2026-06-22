@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -78,11 +78,14 @@ function DummyTicketsContent() {
 
   const isAgent = adminUser?.role === 'agent';
 
-  const { dummyTickets = [], pagination, isLoadingDummyTickets } = useDummyTickets();
+  const { dummyTickets = [], pagination, isLoadingDummyTickets, isErrorDummyTickets } = useDummyTickets();
   const { deleteDummyTicket, isDeleting }                        = useDeleteDummyTicket();
 
   const page           = Number(searchParams.get('page')          || 1);
-  const paymentFilter  = searchParams.get('paymentStatus')        || '';
+  // Default to PAID — unpaid/abandoned carts dominate the table and aren't
+  // actionable. Users opt into "All payments" (URL value 'all', which the
+  // backend treats as no filter).
+  const paymentFilter  = searchParams.get('paymentStatus')        || 'PAID';
   const orderFilter    = searchParams.get('orderStatus')          || '';
   const search         = searchParams.get('search')               ?? '';
   const deliveryDate   = searchParams.get('deliveryDate')         ?? '';
@@ -90,6 +93,17 @@ function DummyTicketsContent() {
   const createdAt      = isAgent ? '4_hours' : (searchParams.get('createdAt') ?? 'all_time');
   const totalPages     = pagination?.totalPages                   ?? 1;
   const total          = pagination?.total                        ?? 0;
+
+  // The select's fallback to 'PAID' only affects display — the data hook
+  // reads searchParams directly. Without this effect the table would show
+  // all tickets while the select claimed "Paid". Picking "All payments"
+  // sets paymentStatus=all (a present value), so this effect won't fight it.
+  useEffect(() => {
+    if (searchParams.get('paymentStatus')) return;
+    const p = new URLSearchParams(searchParams.toString());
+    p.set('paymentStatus', 'PAID');
+    router.replace(`?${p.toString()}`);
+  }, [searchParams, router]);
 
   function setParam(key, value) {
     const p = new URLSearchParams(searchParams.toString());
@@ -133,7 +147,7 @@ function DummyTicketsContent() {
           onChange={(e) => setParam('paymentStatus', e.target.value)}
           className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
         >
-          <option value="">All payments</option>
+          <option value="all">All payments</option>
           {PAYMENT_TABS.filter(({ value }) => value !== '').map(({ value, label }) => (
             <option key={value} value={value}>{label}</option>
           ))}
@@ -198,6 +212,13 @@ function DummyTicketsContent() {
         {isLoadingDummyTickets ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 size={22} className="animate-spin text-gray-300" />
+          </div>
+        ) : isErrorDummyTickets ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
+            <p className="text-sm font-bold text-red-600">Couldn't load tickets</p>
+            <p className="text-xs text-gray-400 max-w-xs">
+              The request failed — likely a rate limit or backend error. Refresh in a moment.
+            </p>
           </div>
         ) : dummyTickets.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center gap-4">
@@ -288,9 +309,15 @@ function DummyTicketsContent() {
                           </Link>
                           <button
                             onClick={() => deleteDummyTicket(item?.sessionId)}
-                            disabled={isDeleting || item?.paymentStatus === 'PAID'}
+                            disabled={isAgent || isDeleting || item?.paymentStatus === 'PAID'}
                             className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition disabled:opacity-30 disabled:cursor-not-allowed"
-                            title={item?.paymentStatus === 'PAID' ? 'Cannot delete paid tickets' : 'Delete'}
+                            title={
+                              isAgent
+                                ? 'Only admins can delete tickets'
+                                : item?.paymentStatus === 'PAID'
+                                  ? 'Cannot delete paid tickets'
+                                  : 'Delete'
+                            }
                           >
                             <Trash2 size={14} />
                           </button>
