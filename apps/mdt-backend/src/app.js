@@ -15,6 +15,12 @@ import indexRouter, { stripeWebhookHandler } from "./routes/index.js";
 
 const app = express();
 
+// Trust Fly.io's edge proxy so req.ip is the real client IP (from
+// X-Forwarded-For), not Fly's upstream. Without this, express-rate-limit
+// keys every request to the same proxy IP and one user's traffic 429s
+// everyone else.
+app.set("trust proxy", 1);
+
 // -- Request context -----------------------------------------------------------
 app.use((req, res, next) => {
   req.id = req.headers["x-request-id"] || randomUUID();

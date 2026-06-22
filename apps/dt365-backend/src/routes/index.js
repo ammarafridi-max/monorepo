@@ -106,6 +106,11 @@ const notifications = createNotificationsService({
   },
 });
 
+// Disabled per request: we no longer want an internal email every time a
+// customer pays. Customer-facing emails still fire. Re-enable by deleting
+// this override.
+notifications.sendTicketPaymentToAdmin = async () => {};
+
 // -- Stripe --------------------------------------------------------------------
 const stripe = createStripeClient({ secretKey: config.stripe.secretKey });
 
