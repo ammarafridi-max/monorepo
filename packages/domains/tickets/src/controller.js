@@ -53,6 +53,22 @@ export function createTicketController({ service, paidOrderBus }) {
     });
   };
 
+  const sendReservation = async (req, res, next) => {
+    try {
+      const updated = await service.sendReservation({
+        sessionId: req.params.sessionId,
+        agentId: req.user?._id,
+        subject: req.body?.subject,
+        body: req.body?.body,
+        bodyHtml: req.body?.bodyHtml,
+        file: req.file,
+      });
+      res.json({ status: 'success', data: updated });
+    } catch (err) {
+      next(err);
+    }
+  };
+
   const getLatestPaidTicket = async (_req, res, next) => {
     try {
       const ticket = await service.getLatestPaidTicket();
@@ -140,5 +156,5 @@ export function createTicketController({ service, paidOrderBus }) {
     }
   };
 
-  return { getAllTickets, getLatestPaidTicket, streamEvents, getTicketBySessionId, createTicketRequest, createStripePaymentUrl, createPayPalOrder, capturePayPalOrder, updateOrderStatus, deleteTicket, refundByTransactionId };
+  return { getAllTickets, getLatestPaidTicket, streamEvents, getTicketBySessionId, createTicketRequest, createStripePaymentUrl, createPayPalOrder, capturePayPalOrder, updateOrderStatus, sendReservation, deleteTicket, refundByTransactionId };
 }

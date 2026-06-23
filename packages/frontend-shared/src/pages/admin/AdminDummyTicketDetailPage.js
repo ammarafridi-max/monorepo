@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import {
-  ArrowLeft, Loader2, AlertCircle, Trash2, Check, Pencil, Undo,
+  ArrowLeft, Loader2, AlertCircle, Trash2, Check, Pencil, Undo, Send,
   Mail, Phone, MapPin, CreditCard, Hash, Plane, Users, Calendar,
   MessageSquare, ExternalLink, ArrowRight,
 } from 'lucide-react';
@@ -14,6 +14,7 @@ import { useGetDummyTicket } from '../../hooks/dummy-tickets/useGetDummyTicket';
 import { useDeleteDummyTicket } from '../../hooks/dummy-tickets/useDeleteDummyTicket';
 import { useRefundDummyTicket } from '../../hooks/dummy-tickets/useRefundDummyTicket';
 import { useUpdateDummyTicket } from '../../hooks/dummy-tickets/useUpdateDummyTicket';
+import SendReservationModal from '../../components/admin/v1/SendReservationModal';
 import OrderPiPButton from '../../components/admin/v1/FloatingOrderPanel';
 import { convertToDubaiTime, convertToDubaiDate, formatDate, formatTravelportDate } from '../../utils/dates';
 import { extractIataCode } from '../../utils/extractIataCode';
@@ -128,7 +129,10 @@ function PassengersTable({ passengers }) {
             <tr key={i} className="hover:bg-gray-50/40">
               <td className="px-5 py-2.5 text-gray-400 font-medium align-middle">{i + 1}</td>
               <td className="px-5 py-2.5 font-semibold text-gray-800 capitalize align-middle">
-                {[p.title, p.firstName, p.lastName].filter(Boolean).join(' ') || '—'}
+                {(() => {
+                  const namePart = [p.firstName, p.lastName].filter(Boolean).join(' / ');
+                  return [p.title, namePart].filter(Boolean).join(' ') || '—';
+                })()}
               </td>
             </tr>
           ))}
@@ -188,6 +192,7 @@ export default function AdminDummyTicketDetailPage() {
   const { sessionId } = useParams();
   const { adminUser } = useAdminAuth();
   const isAgent = adminUser?.role === 'agent';
+  const [reservationOpen, setReservationOpen] = useState(false);
 
   const { dummyTicket: ticket, isLoadingDummyTicket } = useGetDummyTicket(sessionId);
   // Scheduled (non-immediate) deliveries shouldn't be markable as Progress
@@ -367,6 +372,22 @@ export default function AdminDummyTicketDetailPage() {
                   <Check size={13} /> Mark Delivered
                 </button>
               )}
+              {/* Send Reservation flow temporarily disabled — wired end-to-end
+                  (modal + Cloudinary upload + Brevo attachment + DELIVERED flip)
+                  but reverted to plain Mark Delivered for now. Re-enable by
+                  swapping this comment block for the button below. */}
+              {/*
+              {deliveryDayReached && ticket?.orderStatus !== 'DELIVERED' && (
+                <button
+                  onClick={() => setReservationOpen(true)}
+                  disabled={isActionLoading || !ticket?.email}
+                  title={!ticket?.email ? 'No customer email on file' : 'Compose and send the reservation email'}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold border border-green-200 text-green-700 bg-green-50 hover:bg-green-100 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Send size={13} /> Send Reservation
+                </button>
+              )}
+              */}
               {deliveryDayReached && ticket?.orderStatus !== 'PROGRESS' && (
                 <button
                   onClick={() => updateDummyTicket({ sessionId, orderStatus: 'PROGRESS' })}
@@ -538,27 +559,6 @@ export default function AdminDummyTicketDetailPage() {
             </div>
           </Card>
 
-          {ticket?.paymentStatus === 'PAID' && (
-            <Card title="Order Status" icon={MapPin}>
-              <div className="flex flex-col gap-2">
-                {['PENDING', 'PROGRESS', 'DELIVERED'].map((status) => (
-                  <button
-                    key={status}
-                    onClick={() => updateDummyTicket({ sessionId, orderStatus: status })}
-                    disabled={isUpdating || ticket?.orderStatus === status}
-                    className={`w-full py-2 text-xs font-semibold rounded-xl border transition ${
-                      ticket?.orderStatus === status
-                        ? 'bg-gray-900 text-white border-gray-900 cursor-default'
-                        : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50 disabled:opacity-50'
-                    }`}
-                  >
-                    {status}
-                  </button>
-                ))}
-              </div>
-            </Card>
-          )}
-
           <Card title="Record" icon={Hash}>
             <InfoRow label="Handled By"  value={ticket?.handledBy?.name} />
             <InfoRow label="Submitted"   value={`${convertToDubaiDate(ticket?.createdAt)} ${convertToDubaiTime(ticket?.createdAt)}`} />
@@ -585,6 +585,13 @@ export default function AdminDummyTicketDetailPage() {
 
         </div>
       </div>
+
+      <SendReservationModal
+        open={reservationOpen}
+        onClose={() => setReservationOpen(false)}
+        ticket={ticket}
+        agentName={adminUser?.name}
+      />
     </div>
   );
 }

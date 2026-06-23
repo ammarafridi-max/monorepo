@@ -24,6 +24,37 @@ export function createItineraryController({ service }) {
     }
   };
 
+  // Admin: list all itineraries (paginated, searchable, filterable).
+  const listOrders = async (req, res, next) => {
+    try {
+      const { data, pagination } = await service.listOrders(req.query);
+      res.json({ status: 'success', data, pagination });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  // Admin: full order detail incl. Cloudinary document URLs.
+  const getOrderDetail = async (req, res, next) => {
+    try {
+      const order = await service.getOrderDetail(req.params.sessionId);
+      if (!order) return res.status(404).json({ status: 'fail', message: 'Itinerary not found' });
+      res.json({ status: 'success', data: order });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  // Admin: delete an itinerary (+ its Cloudinary assets).
+  const deleteOrder = async (req, res, next) => {
+    try {
+      await service.deleteOrder(req.params.sessionId);
+      res.json({ status: 'success' });
+    } catch (err) {
+      next(err);
+    }
+  };
+
   const getOrder = async (req, res, next) => {
     try {
       const meta = await service.getOrderMeta(req.params.sessionId);
@@ -125,5 +156,5 @@ export function createItineraryController({ service }) {
     }
   };
 
-  return { createOrder, regenerate, getOrder, getPreview, createCheckout, getDocument, edit, chat, getChat, parseDocuments };
+  return { createOrder, regenerate, listOrders, getOrderDetail, deleteOrder, getOrder, getPreview, createCheckout, getDocument, edit, chat, getChat, parseDocuments };
 }

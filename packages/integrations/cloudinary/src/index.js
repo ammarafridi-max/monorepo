@@ -58,9 +58,20 @@ export function createCloudinaryStorage({ cloudName, apiKey, apiSecret, logger, 
   const deleteFolder = async (folderPath) => {
     try {
       if (!isConfigured || !folderPath) return false;
-      const { resources } = await cloudinary.api.resources({ type: 'upload', prefix: folderPath, max_results: 100 });
-      for (const file of resources) await cloudinary.uploader.destroy(file.public_id);
-      await cloudinary.api.delete_folder(folderPath);
+      // Delete both image and raw resources under the prefix (PDFs/docs are 'raw').
+      for (const resourceType of ['image', 'raw']) {
+        const { resources } = await cloudinary.api.resources({
+          resource_type: resourceType,
+          type: 'upload',
+          prefix: folderPath,
+          max_results: 500,
+        });
+        for (const file of resources) {
+          await cloudinary.uploader.destroy(file.public_id, { resource_type: resourceType });
+        }
+      }
+      // Best-effort: remove the (now empty) folder tree; harmless if it can't.
+      await cloudinary.api.delete_folder(folderPath).catch(() => {});
       return true;
     } catch (err) {
       logger?.warn('Cloudinary folder cleanup failed', { folderPath, error: err.message });
@@ -68,5 +79,9 @@ export function createCloudinaryStorage({ cloudName, apiKey, apiSecret, logger, 
     }
   };
 
-  return { saveImage, saveFile, deleteImage, deleteFolder };
+  // Delete everything under `${folder}/${subPath}` (relative to this storage's
+  // configured base folder).
+  const deleteSubfolder = (subPath) => deleteFolder(`${folder}/${subPath}`);
+
+  return { saveImage, saveFile, deleteImage, deleteFolder, deleteSubfolder };
 }

@@ -9,9 +9,14 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 
  *   generateLimiter is an optional per-IP rate limiter applied to the generation
  *   routes (each generation is a paid AI call — the app injects this).
  */
-export function createItineraryRouter({ controller, generateLimiter }) {
+export function createItineraryRouter({ controller, auth, generateLimiter }) {
   const router = Router();
   const limit = generateLimiter || ((_req, _res, next) => next());
+  const { protect, restrictTo } = auth;
+
+  // Admin: list all itineraries (paginated/searchable/filterable). Above the
+  // generation routes; matches only the bare collection path.
+  router.get('/', protect, restrictTo('admin', 'agent'), controller.listOrders);
 
   // Generation routes — rate-limited per IP (per-session caps live in the service).
   // Create accepts optional supporting documents (multipart) to archive with the
@@ -24,6 +29,12 @@ export function createItineraryRouter({ controller, generateLimiter }) {
 
   // Parse uploaded documents -> segments + reservations (prefills the form).
   router.post('/parse-documents', limit, upload.array('documents', 5), controller.parseDocuments);
+
+  // Admin: full order detail (incl. Cloudinary document URLs).
+  router.get('/:sessionId/detail', protect, restrictTo('admin', 'agent'), controller.getOrderDetail);
+
+  // Admin: delete an itinerary (+ its Cloudinary assets).
+  router.delete('/:sessionId', protect, restrictTo('admin'), controller.deleteOrder);
 
   // Reads + payment.
   router.get('/:sessionId', controller.getOrder);

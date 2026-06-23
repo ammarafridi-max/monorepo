@@ -33,6 +33,22 @@ export async function getLatestPaidTicketApi() {
   return await apiFetch(`${URL}/latest-paid`);
 }
 
+// Multipart upload: PDF + subject + body. Backend uploads to Cloudinary,
+// emails the customer with the attached file, and flips the ticket to
+// DELIVERED. Don't set Content-Type — the browser must set the multipart
+// boundary header itself.
+export async function sendReservationApi({ sessionId, subject, body, bodyHtml, file }) {
+  const fd = new FormData();
+  fd.append('subject', subject);
+  fd.append('body', body);
+  if (bodyHtml) fd.append('bodyHtml', bodyHtml);
+  fd.append('file', file);
+  return await apiFetch(`${URL}/${sessionId}/send-reservation`, {
+    method: 'POST',
+    body: fd,
+  });
+}
+
 export async function updateDummyTicketApi({ sessionId, orderStatus }) {
   const result = await apiFetch(`${URL}/${sessionId}/order-status`, {
     method: 'PATCH',

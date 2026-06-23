@@ -133,6 +133,30 @@ function mergeTripEdit(baseInput, edit) {
   return out;
 }
 
+// -- Admin list helpers ------------------------------------------------------
+function itinerarySearchFilter(search) {
+  const term = String(search ?? '').trim();
+  if (!term) return {};
+  const regex = new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+  return {
+    $or: [
+      { 'input.traveller.fullName': regex },
+      { 'input.traveller.firstName': regex },
+      { 'input.traveller.email': regex },
+      { 'input.visaCountry': regex },
+      { 'input.fromCountry': regex },
+      { sessionId: regex },
+    ],
+  };
+}
+
+function applyItineraryCreatedAtFilter(queryObj, createdAt) {
+  if (!createdAt || createdAt === 'all_time') return;
+  const hours = { '6_hours': 6, '12_hours': 12, '24_hours': 24, '7_days': 168, '14_days': 336, '30_days': 720, '90_days': 2160 };
+  if (!hours[createdAt]) return;
+  queryObj.createdAt = { $gte: new Date(Date.now() - hours[createdAt] * 3_600_000) };
+}
+
 export function createItineraryService({
   Order,
   generator,
@@ -348,6 +372,53 @@ export function createItineraryService({
   async function getOrderMeta(sessionId) {
     const order = await Order.findOne({ sessionId });
     return order ? buildMeta(order) : null;
+  }
+
+  // Admin: full order detail (incl. Cloudinary asset URLs + supporting documents).
+  async function getOrderDetail(sessionId) {
+    return Order.findOne({ sessionId }).lean();
+  }
+
+  // Admin: delete an order and its Cloudinary assets (preview versions, clean PDF,
+  // supporting documents). Cloudinary cleanup is best-effort — never block the
+  // delete on it.
+  async function deleteOrder(sessionId) {
+    const deleted = await Order.findOneAndDelete({ sessionId });
+    if (!deleted) throw new AppError('Itinerary not found', 404);
+    try {
+      await storage?.deleteSubfolder?.(sessionId);
+    } catch (err) {
+      logger.warn('[itineraries] Cloudinary cleanup after delete failed', { sessionId, error: err.message });
+    }
+    return deleted;
+  }
+
+  // Admin: paginated/searchable/filterable list of all itinerary orders. Excludes
+  // the heavy fields (generated content, chat, asset URLs) — the table only needs
+  // the order summary.
+  async function listOrders(query = {}) {
+    const queryObj = {};
+    if (query.paymentStatus && query.paymentStatus !== 'all') queryObj.paymentStatus = query.paymentStatus;
+    if (query.status && query.status !== 'all') queryObj.status = query.status;
+    applyItineraryCreatedAtFilter(queryObj, query.createdAt);
+    const finalQuery = { ...queryObj, ...itinerarySearchFilter(query.search) };
+
+    let page = Math.max(1, parseInt(query.page, 10) || 1);
+    const limit = Math.max(1, Math.min(100, parseInt(query.limit, 10) || 20));
+    const total = await Order.countDocuments(finalQuery);
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    if (page > totalPages) page = totalPages;
+
+    const data = await Order.find(finalQuery)
+      .select('-itineraryData -chatMessages -supportingDocuments -previewUrl -cleanPdfUrl')
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    return {
+      data,
+      pagination: { total, page, limit, totalPages, hasNextPage: page < totalPages, hasPrevPage: page > 1 },
+    };
   }
 
   async function getChatMessages(sessionId) {
@@ -656,6 +727,9 @@ export function createItineraryService({
     parseDocuments,
     regenerate,
     getOrderMeta,
+    listOrders,
+    getOrderDetail,
+    deleteOrder,
     getPreviewUrl,
     createStripeCheckout,
     handleStripeSuccess,

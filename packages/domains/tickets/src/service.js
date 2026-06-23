@@ -61,7 +61,7 @@ function applyDeliveryDateFilter(queryObj, deliveryDate) {
   queryObj.paymentStatus = 'PAID';
 }
 
-export function createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, paypal, notifications, frontendUrl, brevo, reviewListId, paidOrderBus }) {
+export function createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, paypal, notifications, frontendUrl, brevo, reviewListId, paidOrderBus, reservationStorage, sendEmail }) {
   const getAllTickets = async (query) => {
     const queryObj = { ...query };
     ['page', 'limit', 'search', 'createdAt', 'deliveryDate'].forEach((f) => delete queryObj[f]);
@@ -97,6 +97,71 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       .sort({ updatedAt: -1 })
       .select('sessionId updatedAt')
       .lean();
+
+  // Upload the reservation PDF to Cloudinary at a deterministic path
+  // (overwrites prior versions if the agent re-sends), email the customer
+  // with the PDF as an attachment, and flip the ticket to DELIVERED.
+  // The agent's user id is stored on `handledBy` so attribution sticks.
+  const sendReservation = async ({ sessionId, agentId, subject, body, bodyHtml, file }) => {
+    if (!reservationStorage || !sendEmail) {
+      throw new AppError('Reservation sending is not configured on this server', 500);
+    }
+    if (!file?.buffer) throw new AppError('Reservation PDF is required', 400);
+    if (!subject?.trim() || !body?.trim()) throw new AppError('Subject and body are required', 400);
+
+    const ticket = await Ticket.findOne({ sessionId });
+    if (!ticket) throw new AppError('Ticket not found', 404);
+    if (!ticket.email) throw new AppError('Ticket has no customer email on file', 400);
+
+    // 'image' (not 'raw') so Cloudinary treats the PDF as a renderable
+    // multi-page asset — gives us console previews, page thumbnails, and
+    // delivery transformations. 'raw' uploads succeed but show as
+    // "show_original_unsupported_file_format" in the Cloudinary dashboard.
+    // Requires "PDF and ZIP files delivery" to be enabled in Cloudinary's
+    // security settings; until then the saved URL won't be publicly
+    // fetchable (which is fine — we attach the bytes inline to the email).
+    const url = await reservationStorage.saveFile(
+      file.buffer,
+      `${sessionId}/reservation-file.pdf`,
+      { resourceType: 'image' },
+    );
+
+    // Inline attachment via base64. We previously passed the Cloudinary
+    // URL to Brevo, but Cloudinary blocks PDF delivery by default for new
+    // accounts ("Customer is marked as untrusted"), causing Brevo to fail
+    // to fetch and bounce the email with a misleading 20MB-size error.
+    // Sending the bytes inline removes the dependency on Cloudinary being
+    // reachable. Cloudinary upload still happens for archival.
+    const ok = await sendEmail({
+      email: ticket.email,
+      name: ticket.leadPassenger || '',
+      subject: subject.trim(),
+      textContent: body,
+      // Frontend builds the HTML with proper anchor tags (brand-aware
+      // links to Trustpilot + website). Fall back to a plain
+      // line-break conversion if the client didn't send one.
+      htmlContent: bodyHtml || body.split('\n').map((l) => l || '&nbsp;').join('<br>'),
+      attachment: [{
+        name: 'reservation-file.pdf',
+        content: file.buffer.toString('base64'),
+      }],
+    });
+    if (!ok) throw new AppError('Could not send reservation email', 502);
+
+    const updated = await Ticket.findOneAndUpdate(
+      { sessionId },
+      {
+        $set: {
+          orderStatus: 'DELIVERED',
+          handledBy: agentId ? new mongoose.Types.ObjectId(agentId) : ticket.handledBy,
+          reservationUrl: url,
+          reservationSentAt: new Date(),
+        },
+      },
+      { new: true },
+    ).populate('handledBy');
+    return updated;
+  };
 
   const updateOrderStatus = async (sessionId, userId, orderStatus) => {
     if (!orderStatus) throw new AppError('Order status is required', 400);
@@ -462,5 +527,5 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     return refund;
   };
 
-  return { getAllTickets, getLatestPaidTicket, getTicketBySessionId, updateOrderStatus, deleteTicket, createTicketRequest, createStripePaymentUrl, handleStripeSuccess, createPayPalOrder, capturePayPalOrder, refundByTransactionId };
+  return { getAllTickets, getLatestPaidTicket, getTicketBySessionId, updateOrderStatus, deleteTicket, sendReservation, createTicketRequest, createStripePaymentUrl, handleStripeSuccess, createPayPalOrder, capturePayPalOrder, refundByTransactionId };
 }

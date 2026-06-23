@@ -37,6 +37,52 @@ export async function getItineraryOrderApi(sessionId) {
   return apiFetchPublic(`${URL}/${sessionId}`);
 }
 
+// Admin: delete an itinerary (+ its Cloudinary assets). Admin-only, cookie-authed.
+export async function deleteItineraryOrderApi(sessionId) {
+  const res = await fetch(`${BACKEND}${URL}/${sessionId}`, { method: 'DELETE', credentials: 'include' });
+  if (!res.ok) {
+    let message = 'Failed to delete itinerary';
+    try {
+      const json = await res.json();
+      message = json.message || json.error || message;
+    } catch { /* non-JSON error body */ }
+    throw new Error(message);
+  }
+  return true;
+}
+
+// Admin: full order detail incl. Cloudinary document URLs (cookie-authed).
+export async function getItineraryOrderDetailApi(sessionId) {
+  const res = await fetch(`${BACKEND}${URL}/${sessionId}/detail`, { credentials: 'include' });
+  if (!res.ok) {
+    let message = 'Failed to fetch itinerary';
+    try {
+      const json = await res.json();
+      message = json.message || json.error || message;
+    } catch { /* non-JSON error body */ }
+    throw new Error(message);
+  }
+  const json = await res.json();
+  return json.data;
+}
+
+// Admin: paginated/searchable/filterable list of all itineraries (cookie-authed).
+// Returns { data, pagination }.
+export async function getItineraryOrdersApi(params = {}) {
+  const qs = new URLSearchParams(params).toString();
+  const res = await fetch(`${BACKEND}${URL}?${qs}`, { credentials: 'include' });
+  if (!res.ok) {
+    let message = 'Failed to fetch itineraries';
+    try {
+      const json = await res.json();
+      message = json.message || json.error || message;
+    } catch { /* non-JSON error body */ }
+    throw new Error(message);
+  }
+  const json = await res.json();
+  return { data: json.data ?? [], pagination: json.pagination };
+}
+
 // Regenerate (pre-payment). Subject to the free-regeneration cap server-side.
 export async function regenerateItineraryApi(sessionId) {
   return apiFetchPublic(`${URL}/${sessionId}/regenerate`, {

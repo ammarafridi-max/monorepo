@@ -46,6 +46,7 @@ export function createItinerariesRouter({
   chatLimit,
   storage,
   sendItineraryEmail,
+  auth,
   generateLimiter,
 }) {
   const Order = getOrRegisterModel(db, 'itinerary-order', ItineraryOrderSchema);
@@ -72,7 +73,7 @@ export function createItinerariesRouter({
   });
 
   const controller = createItineraryController({ service });
-  const router = createItineraryRouter({ controller, generateLimiter });
+  const router = createItineraryRouter({ controller, auth, generateLimiter });
 
   return {
     router,

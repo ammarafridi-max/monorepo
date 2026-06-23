@@ -53,6 +53,8 @@ const TicketSchema = new mongoose.Schema(
     transactionId: { type: String },
     paymentMethod: { type: String, enum: ['stripe', 'paypal'], default: 'stripe' },
     handledBy: { type: mongoose.Schema.ObjectId, ref: 'admin-user', default: null },
+    reservationUrl: { type: String, default: null },
+    reservationSentAt: { type: Date, default: null },
     affiliateId: { type: String, trim: true, default: null, match: [/^\d{9}$/, 'Affiliate ID must be exactly 9 digits'] },
     affiliateCapturedAt: { type: Date, default: null },
     affiliate: { type: mongoose.Schema.ObjectId, ref: 'Affiliate', default: null },
