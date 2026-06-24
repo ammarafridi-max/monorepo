@@ -133,7 +133,7 @@ function SuccessContent({ sessionId, dummyTicket, onPurchaseEvent, supportEmail,
   }, []);
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-10">
+    <div className="max-w-6xl mx-auto px-6 py-10">
       <div className="flex flex-col items-center text-center mb-10">
         <div className="relative mb-5">
           <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
@@ -163,9 +163,9 @@ function SuccessContent({ sessionId, dummyTicket, onPurchaseEvent, supportEmail,
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6 items-start">
-        <div className="space-y-5">
-          <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-6 items-start">
+        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm divide-y divide-gray-100">
+          <section>
             <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-gray-100">
               <Ticket size={14} className="text-gray-400" />
               <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
@@ -209,10 +209,10 @@ function SuccessContent({ sessionId, dummyTicket, onPurchaseEvent, supportEmail,
                 <DetailRow label="Message" value={dummyTicket.message} />
               )}
             </div>
-          </div>
+          </section>
 
           {dummyTicket?.passengers?.length > 0 && (
-            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+            <section>
               <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-gray-100">
                 <Users size={14} className="text-gray-400" />
                 <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
@@ -234,10 +234,10 @@ function SuccessContent({ sessionId, dummyTicket, onPurchaseEvent, supportEmail,
                   </div>
                 ))}
               </div>
-            </div>
+            </section>
           )}
 
-          <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+          <section>
             <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-gray-100">
               <CreditCard size={14} className="text-gray-400" />
               <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
@@ -251,7 +251,7 @@ function SuccessContent({ sessionId, dummyTicket, onPurchaseEvent, supportEmail,
                 value={amount > 0 ? `${currency} ${formatAmount(amount)}` : "—"}
               />
             </div>
-          </div>
+          </section>
         </div>
 
         <div className="space-y-4 lg:sticky lg:top-6">
@@ -265,10 +265,10 @@ function SuccessContent({ sessionId, dummyTicket, onPurchaseEvent, supportEmail,
                   <Mail size={13} className="text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-gray-700">
+                  <p className="text-sm font-bold text-gray-700">
                     Check your inbox
                   </p>
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  <p className="text-sm text-gray-500 mt-0.5 leading-relaxed">
                     {isImmediate
                       ? "A receipt and your dummy ticket will arrive in two separate emails shortly."
                       : `Your dummy ticket will be emailed to you on ${deliveryDate ? formatDate(deliveryDate) : "the scheduled date"}.`}
@@ -280,10 +280,10 @@ function SuccessContent({ sessionId, dummyTicket, onPurchaseEvent, supportEmail,
                   <CalendarDays size={13} className="text-amber-600" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-gray-700">
+                  <p className="text-sm font-bold text-gray-700">
                     Check your spam folder
                   </p>
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  <p className="text-sm text-gray-500 mt-0.5 leading-relaxed">
                     If you don&apos;t see the email, check your spam or junk
                     folder just in case.
                   </p>
@@ -297,15 +297,23 @@ function SuccessContent({ sessionId, dummyTicket, onPurchaseEvent, supportEmail,
           ))}
 
           {supportEmail && (
-            <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 text-center">
-              <p className="text-xs text-gray-500 mb-2">
+            <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+              <p className="text-base font-semibold text-gray-900 leading-tight mb-3">
                 Need help with your booking?
+              </p>
+              <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                Reach our support team at{" "}
+                <span className="font-semibold text-gray-800 break-all">
+                  {supportEmail}
+                </span>
+                . We usually reply within a few hours.
               </p>
               <a
                 href={`mailto:${supportEmail}`}
-                className="text-xs font-bold text-primary-700 hover:text-primary-900 transition-colors"
+                className="inline-flex items-center gap-1 text-xs font-bold px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-colors shadow-sm"
               >
-                Contact our support team →
+                <Mail size={12} />
+                Send us an email
               </a>
             </div>
           )}

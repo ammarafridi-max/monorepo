@@ -10,7 +10,7 @@ const getHeaders = () => ({
   'api-key': config.brevoApiKey,
 });
 
-export async function sendEmail({ email, name, subject, htmlContent, textContent }) {
+export async function sendEmail({ email, name, subject, htmlContent, textContent, attachment }) {
   try {
     if (!config.brevoApiKey) {
       logger.warn('Email skipped because BREVO_API_KEY is missing', { email, subject });
@@ -20,7 +20,7 @@ export async function sendEmail({ email, name, subject, htmlContent, textContent
     const res = await fetch(BREVO_URL, {
       method: 'POST',
       headers: getHeaders(),
-      body: JSON.stringify({ sender: BREVO_SENDER, to: [{ email, name }], subject, textContent, htmlContent }),
+      body: JSON.stringify({ sender: BREVO_SENDER, to: [{ email, name }], subject, textContent, htmlContent, ...(attachment ? { attachment } : {}) }),
     });
 
     if (!res.ok) {

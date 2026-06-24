@@ -365,20 +365,6 @@ export default function AdminDummyTicketDetailPage() {
             <>
               {deliveryDayReached && ticket?.orderStatus !== 'DELIVERED' && (
                 <button
-                  onClick={() => updateDummyTicket({ sessionId, orderStatus: 'DELIVERED' })}
-                  disabled={isActionLoading}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold border border-green-200 text-green-700 bg-green-50 hover:bg-green-100 rounded-xl transition disabled:opacity-50"
-                >
-                  <Check size={13} /> Mark Delivered
-                </button>
-              )}
-              {/* Send Reservation flow temporarily disabled — wired end-to-end
-                  (modal + Cloudinary upload + Brevo attachment + DELIVERED flip)
-                  but reverted to plain Mark Delivered for now. Re-enable by
-                  swapping this comment block for the button below. */}
-              {/*
-              {deliveryDayReached && ticket?.orderStatus !== 'DELIVERED' && (
-                <button
                   onClick={() => setReservationOpen(true)}
                   disabled={isActionLoading || !ticket?.email}
                   title={!ticket?.email ? 'No customer email on file' : 'Compose and send the reservation email'}
@@ -387,7 +373,6 @@ export default function AdminDummyTicketDetailPage() {
                   <Send size={13} /> Send Reservation
                 </button>
               )}
-              */}
               {deliveryDayReached && ticket?.orderStatus !== 'PROGRESS' && (
                 <button
                   onClick={() => updateDummyTicket({ sessionId, orderStatus: 'PROGRESS' })}

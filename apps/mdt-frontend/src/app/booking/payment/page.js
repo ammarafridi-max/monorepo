@@ -12,6 +12,9 @@ const upsells = [
     description:
       'Get a genuine travel insurance policy accepted by embassies for visa applications. Exclusively for UAE residents.',
     href: '/travel-insurance',
+    badge: 'Recommended',
+    price: 'AED 30',
+    priceCaption: 'from',
   },
 ];
 

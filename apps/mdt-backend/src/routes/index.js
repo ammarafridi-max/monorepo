@@ -129,6 +129,15 @@ notifications.sendTicketPaymentToAdmin = async () => {};
 const stripe = createStripeClient({ secretKey: config.stripe.secretKey });
 
 // -- Tickets -------------------------------------------------------------------
+// Reservation PDFs are uploaded to mdt/dummy-tickets/<sessionId>/reservation-file.pdf
+// on Cloudinary, then attached to the customer email by URL.
+const reservationStorage = createCloudinaryStorage({
+  cloudName: config.cloudinary.cloudName,
+  apiKey: config.cloudinary.apiKey,
+  apiSecret: config.cloudinary.apiSecret,
+  logger,
+  folder: "mdt/dummy-tickets",
+});
 const {
   router: ticketsRouter,
   pricingRouter,
@@ -143,6 +152,8 @@ const {
   AffiliateModel,
   brevo,
   reviewListId: config.brevoTicketListId,
+  reservationStorage,
+  sendEmail,
 });
 router.use("/tickets", ticketsRouter);
 router.use("/pricing", pricingRouter);

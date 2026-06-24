@@ -16,6 +16,7 @@ export async function sendEmail({
   subject,
   htmlContent,
   textContent,
+  attachment,
 }) {
   try {
     if (!config.brevoApiKey) {
@@ -35,6 +36,7 @@ export async function sendEmail({
         subject,
         textContent,
         htmlContent,
+        ...(attachment ? { attachment } : {}),
       }),
     });
 
