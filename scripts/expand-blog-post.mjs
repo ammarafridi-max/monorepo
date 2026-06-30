@@ -274,12 +274,23 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
   console.log(`Expanding content for: ${post.title}`);
 
   const client = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
-  const message = await client.messages.create({
-    model: "claude-sonnet-4-6",
-    max_tokens: maxTokens,
-    system: systemPrompt,
-    messages: [{ role: "user", content: userPrompt }],
-  });
+
+  let message;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      message = await client.messages.create({
+        model: "claude-sonnet-4-6",
+        max_tokens: maxTokens,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userPrompt }],
+      });
+      break;
+    } catch (err) {
+      if (attempt === 3) throw err;
+      console.warn(`⚠  Attempt ${attempt} failed (${err.message}) — retrying in ${attempt * 10}s...`);
+      await new Promise((r) => setTimeout(r, attempt * 10_000));
+    }
+  }
 
   const rawText = message.content
     .filter((b) => b.type === "text")
