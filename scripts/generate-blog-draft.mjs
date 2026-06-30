@@ -194,15 +194,13 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
 
   console.log(`Generating content for: ${topic.title}`);
 
-  const stream = await client.messages.stream({
+  const message = await client.messages.create({
     model: "claude-sonnet-4-6",
     max_tokens: maxTokens,
-
     system: systemPrompt,
     messages: [{ role: "user", content: userPrompt }],
   });
 
-  const message = await stream.finalMessage();
   const rawText = message.content
     .filter((b) => b.type === "text")
     .map((b) => b.text)

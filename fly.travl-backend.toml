@@ -1,0 +1,28 @@
+# Fly.io config for travl-backend
+# Deploy from monorepo root with: flyctl deploy -c fly.travl-backend.toml
+
+app = "travl-backend"
+primary_region = "fra"
+
+[build]
+  dockerfile = "apps/travl-backend/Dockerfile"
+
+[http_service]
+  internal_port = 3001
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 1
+
+[[vm]]
+  size = "shared-cpu-1x"
+  # Itinerary rendering is now pure-Node (no Chromium), so this could safely drop
+  # back to 512mb; kept at 1024mb for headroom.
+  memory = "1024mb"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "3001"
+  # No PUPPETEER_* overrides: the image ships Puppeteer's own version-matched Chrome
+  # (see Dockerfile). Setting PUPPETEER_EXECUTABLE_PATH here would force a mismatched
+  # binary again and re-trigger "Network.enable timed out".

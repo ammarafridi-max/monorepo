@@ -157,6 +157,7 @@ const { router: itinerariesRouter, handleStripeSuccess: handleItinerarySuccess }
   },
   storage: itineraryStorage,
   sendItineraryEmail: itineraryPaymentCustomerEmail,
+  auth,
   generateLimiter: itineraryGenerateLimiter,
 });
 router.use("/itineraries", itinerariesRouter);

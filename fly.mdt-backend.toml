@@ -1,0 +1,23 @@
+# Fly.io config for mdt-backend
+# Deploy from monorepo root with: flyctl deploy -c fly.mdt-backend.toml
+
+app = "mdt-backend"
+primary_region = "fra"
+
+[build]
+  dockerfile = "apps/mdt-backend/Dockerfile"
+
+[http_service]
+  internal_port = 3001
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 1
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "3001"

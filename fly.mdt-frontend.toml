@@ -1,0 +1,24 @@
+# Fly.io config for mdt-frontend
+# Deploy from monorepo root with: flyctl deploy -c fly.mdt-frontend.toml
+
+app = "mdt-frontend"
+primary_region = "fra"  # Frankfurt — closest to UAE. Change if you prefer another region.
+
+[build]
+  dockerfile = "apps/mdt-frontend/Dockerfile"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 1
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
+
+[env]
+  NODE_ENV = "production"
+  HOSTNAME = "0.0.0.0"
+  PORT = "3000"

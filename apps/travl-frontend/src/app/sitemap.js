@@ -51,6 +51,30 @@ const staticPages = [
     lastmod: "2026-06-08",
   },
   {
+    url: "/travel-insurance/uk-visa",
+    changeFrequency: "monthly",
+    priority: 0.8,
+    lastmod: "2026-06-23",
+  },
+  {
+    url: "/travel-insurance/us-visa",
+    changeFrequency: "monthly",
+    priority: 0.8,
+    lastmod: "2026-06-23",
+  },
+  {
+    url: "/travel-insurance/canada-visa",
+    changeFrequency: "monthly",
+    priority: 0.8,
+    lastmod: "2026-06-23",
+  },
+  {
+    url: "/travel-insurance/australia-visa",
+    changeFrequency: "monthly",
+    priority: 0.8,
+    lastmod: "2026-06-23",
+  },
+  {
     url: "/travel-insurance/medical",
     changeFrequency: "monthly",
     priority: 0.8,

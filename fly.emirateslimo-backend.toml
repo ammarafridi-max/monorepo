@@ -1,0 +1,23 @@
+# Fly.io config for emirateslimo-backend
+# Deploy from monorepo root with: flyctl deploy -c fly.emirateslimo-backend.toml
+
+app = "emirateslimo-backend"
+primary_region = "fra"
+
+[build]
+  dockerfile = "apps/emirateslimo-backend/Dockerfile"
+
+[http_service]
+  internal_port = 3001
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 1
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "3001"
