@@ -1,26 +1,30 @@
 import { faqArray, formatFaqArray } from '@/data/faqs';
-import { buildMetadata } from '@/lib/schema';
+import { buildMetadata, SITE_URL } from '@/lib/schema';
 import {
   buildBreadcrumbList,
   buildFAQPage,
   buildGraph,
   buildOrganization,
-  buildProduct,
   buildService,
   buildWebPage,
   buildWebsite,
 } from '@/lib/schema';
 import { HiCheck, HiOutlineClock, HiOutlineCurrencyDollar } from 'react-icons/hi';
-import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineLuggage } from 'react-icons/md';
+import { MdOutlineHealthAndSafety, MdOutlineHotel, MdOutlineLuggage } from 'react-icons/md';
 import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
 import About from '@travel-suite/frontend-shared/components/sections/v1/About';
 import Benefits from '@travel-suite/frontend-shared/components/sections/v1/Benefits';
 import Testimonials from '@travel-suite/frontend-shared/components/sections/v1/Testimonials';
-import FAQ from '@travel-suite/frontend-shared/components/sections/v1/FAQ';
 import Contact from '@travel-suite/frontend-shared/components/sections/v1/Contact';
 import BlogPosts from '@travel-suite/frontend-shared/components/sections/v1/BlogPosts';
+import PrimarySection from '@travel-suite/frontend-shared/components/shared/layout/PrimarySection';
+import Container from '@travel-suite/frontend-shared/components/shared/layout/Container';
+import SectionTitle from '@travel-suite/frontend-shared/components/shared/layout/SectionTitle';
+import FaqAccordion from '@travel-suite/frontend-shared/components/ui/v1/FaqAccordion';
+import QuickAnswer from '@/components/QuickAnswer';
+import RelatedPages from '@/components/RelatedPages';
 
 const keyword = 'onward ticket';
 
@@ -47,8 +51,8 @@ const testimonials = [
 
 const benefits = [
   {
-    title: 'Accepted by VFS',
-    text: 'We issue onward tickets through official airline systems, ensuring they are 100% genuine, verifiable, and widely accepted by embassies and consulates.',
+    title: 'Accepted at Airline Check-In and Borders',
+    text: 'Each onward ticket carries a verifiable PNR on global GDS platforms (Amadeus, Sabre, Travelport). Used for airline check-in, immigration officers, and border control where proof of onward travel is required.',
     icon: HiCheck,
   },
   {
@@ -57,24 +61,24 @@ const benefits = [
     icon: HiOutlineClock,
   },
   {
-    title: 'Great Value',
-    text: 'Starting from just USD 49, we offer high-quality, embassy-compliant onward tickets at an affordable price, so you save money without sacrificing reliability.',
+    title: 'Three Validity Tiers From $13',
+    text: 'Pick the validity that fits how long you need proof of onward travel: 2 days for $13, 7 days for $20, or 14 days for $23. All tiers include the same verifiable PNR and instant email delivery.',
     icon: HiOutlineCurrencyDollar,
   },
 ];
 
 const pageData = {
   meta: {
-    title: 'Onward Ticket From USD 49 | Instant, Genuine, & Affordable',
+    title: 'Onward Ticket From USD 13 | Instant, Genuine, & Affordable',
     description:
-      'Travelers use onward tickets for travel purposes, such as to show as proof of onward travel at airports. Book yours with us now. Starting from USD 13.',
+      'Book a verifiable onward ticket for airline check-in or immigration from USD 13. Three validity tiers — 2 days ($13), 7 days ($20), 14 days ($23). Delivered in minutes.',
     canonical: 'https://www.dummyticket365.com/onward-ticket',
   },
   sections: {
     hero: {
-      title: 'Book a Your Onward Ticket from USD 49.',
+      title: 'Book Your Onward Ticket From USD 13',
       subtitle:
-        'Get onward tickets issued through official airline systems with a valid, verifiable PNR. Our flight reservations are legitimate bookings created for travel documentation purposes, not fake or falsified tickets.',
+        'Get onward tickets issued through global GDS platforms (Amadeus, Sabre, Travelport) with a valid, verifiable PNR. Legitimate bookings created for travel documentation purposes, not fake or falsified tickets.',
       form: <AllForms forms={['ticket']} />,
     },
     process: {
@@ -92,9 +96,9 @@ const pageData = {
           description: "Verifiable flight reservations accepted by airlines and immigration officers worldwide. Includes a valid PNR, follows accepted airline formats, and is delivered instantly — without financial risk.",
         },
         {
-          icon: <MdOutlineAirplaneTicket />,
-          title: "Dummy Tickets",
-          description: "Verifiable dummy flight tickets for visa applications. Accepted by Schengen, UK, US, and Canadian embassies and visa centres. From USD 13.",
+          icon: <MdOutlineHotel />,
+          title: "Hotel Reservations",
+          description: "Temporary hotel reservations formatted to embassy and consulate standards. Like onward tickets, these are real reservations — not paid bookings — so your visa file is complete without locking in non-refundable nights before approval.",
         },
         {
           icon: <MdOutlineHealthAndSafety />,
@@ -143,13 +147,28 @@ export default function Page() {
       description: pageData.meta.description,
       areaServed: 'AE',
     }),
-    buildProduct({
-      canonical: pageData.meta.canonical,
+    // Inline Product node with AggregateOffer — onward tickets are priced
+    // in three validity tiers ($13 / $20 / $23) and the shared buildProduct
+    // helper only supports a single Offer. Mirrors buildProduct's shape
+    // (Organization @id refs) so it integrates cleanly with the graph.
+    {
+      '@type': 'Product',
+      '@id': `${pageData.meta.canonical}#product`,
       name: pageData.meta.title,
       description: pageData.meta.description,
-      price: '13.00',
-      currency: 'USD',
-    }),
+      url: pageData.meta.canonical,
+      brand: { '@id': `${SITE_URL}/#organization` },
+      offers: {
+        '@type': 'AggregateOffer',
+        priceCurrency: 'USD',
+        lowPrice: '13.00',
+        highPrice: '23.00',
+        offerCount: 3,
+        availability: 'https://schema.org/InStock',
+        url: pageData.meta.canonical,
+        seller: { '@id': `${SITE_URL}/#organization` },
+      },
+    },
     buildFAQPage({
       canonical: pageData.meta.canonical,
       title: pageData.sections.faqs.title,
@@ -171,11 +190,15 @@ export default function Page() {
         form={pageData.sections.hero.form}
         pills={[
           'Onward tickets from $13',
-          'Issued via official airline systems',
+          'Issued via global GDS platforms',
           'Valid, verifiable PNR',
           'Delivered in minutes',
         ]}
         breadcrumbPaths={breadcrumbPaths}
+      />
+      <QuickAnswer
+        question="What counts as proof of onward travel?"
+        answer="Proof of onward travel is a flight reservation showing you will leave the destination country within the permitted stay. Airlines and immigration officers accept a real reservation with a verifiable PNR. They do not require a paid ticket. Our onward ticket gives you exactly that, on global GDS platforms (Amadeus, Sabre, Travelport), in three validity tiers from $13."
       />
       <Process
         title={pageData.sections.process.title}
@@ -196,14 +219,43 @@ export default function Page() {
         subtitle={pageData.sections.testimonials.subtitle}
         testimonials={pageData.sections.testimonials.testimonials}
       />
-      <FAQ
-        title={pageData.sections.faqs.title}
-        subtitle={pageData.sections.faqs.subtitle}
-        faqs={pageData.sections.faqs.faqs}
-      />
+      {/* Inline FAQ render — we pass 13 FAQs to schema, but the shared <FAQ>
+          component caps the visible list to 6. Google's FAQPage rich result
+          guidelines require the schema content to be visible on the page,
+          so this section renders the full list to match the schema. */}
+      <PrimarySection id="faq" className="py-14 md:py-18 lg:py-24 bg-gray-50/70">
+        <Container>
+          <SectionTitle
+            textAlign="center"
+            subtitle={pageData.sections.faqs.subtitle}
+            className="mb-10 md:mb-12"
+          >
+            {pageData.sections.faqs.title}
+          </SectionTitle>
+          <div className="rounded-2xl border border-white bg-white p-4 md:p-7 shadow-[0_14px_35px_rgba(16,24,40,0.08)]">
+            <div className="flex flex-col gap-1">
+              {pageData.sections.faqs.faqs.map((faq, i) => (
+                <FaqAccordion key={i} question={faq.question}>
+                  {faq.answer}
+                </FaqAccordion>
+              ))}
+            </div>
+          </div>
+        </Container>
+      </PrimarySection>
       <BlogPosts
         title={pageData.sections.blogs.title}
         subtitle={pageData.sections.blogs.subtitle}
+      />
+      <RelatedPages
+        title="Related Dummy Ticket Pages"
+        subtitle="Country-specific options for visa applications"
+        links={[
+          { anchor: 'Dummy ticket for a Schengen visa', href: '/dummy-ticket-schengen-visa', blurb: 'EU Visa Code Article 14 compliant, accepted at VFS, BLS, and TLScontact.' },
+          { anchor: 'Dummy ticket for a UK visa', href: '/dummy-ticket-uk-visa', blurb: 'Standard Visitor visa file ready, no paid ticket needed before approval.' },
+          { anchor: 'Dummy ticket for a Canada visa', href: '/dummy-ticket-canada-visa', blurb: 'Aligned with IRCC guidance on flight bookings before approval.' },
+          { anchor: 'Dummy ticket for an Australia visa', href: '/dummy-ticket-australia-visa', blurb: 'Formatted for the Subclass 600 ImmiAccount upload.' },
+        ]}
       />
       <Contact email="info@dummyticket365.com" />
     </>

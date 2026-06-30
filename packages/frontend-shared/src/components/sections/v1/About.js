@@ -35,7 +35,7 @@ export default function About({
   services = defaultServices,
 }) {
   return (
-    <PrimarySection className="py-14 md:py-10 lg:py-10" id="about">
+    <PrimarySection className="py-14 md:py-18 lg:py-24" id="about">
       <Container className="flex flex-col lg:grid lg:grid-cols-[7fr_5fr] lg:items-center gap-8 lg:gap-12">
         <div className="w-full">
           <SectionTitle className="mb-7">{title}</SectionTitle>

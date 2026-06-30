@@ -17,7 +17,7 @@ import {
   HiOutlineClock,
   HiOutlineCalendarDays,
 } from 'react-icons/hi2';
-import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineLuggage } from 'react-icons/md';
+import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineHotel } from 'react-icons/md';
 import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
@@ -25,6 +25,8 @@ import About from '@travel-suite/frontend-shared/components/sections/v1/About';
 import Benefits from '@travel-suite/frontend-shared/components/sections/v1/Benefits';
 import FAQ from '@travel-suite/frontend-shared/components/sections/v1/FAQ';
 import Contact from '@travel-suite/frontend-shared/components/sections/v1/Contact';
+import QuickAnswer from '@/components/QuickAnswer';
+import RelatedPages from '@/components/RelatedPages';
 
 const benefits = [
   {
@@ -115,9 +117,9 @@ const pageData = {
           description: "Verifiable flight reservation with a real PNR, formatted to meet UK visa requirements. Accepted by UKVI and visa centres. Instant delivery from USD 13.",
         },
         {
-          icon: <MdOutlineLuggage />,
-          title: "Onward Tickets",
-          description: "Proof of onward travel for immigration officers or airline check-in. Verifiable PNR, accepted airline format, and instant delivery — without a real booking commitment.",
+          icon: <MdOutlineHotel />,
+          title: "Hotel Reservations",
+          description: "Temporary hotel reservations formatted to UK visa standards. Like dummy tickets, these are real reservations — not paid bookings — so your UKVI file is complete without locking in non-refundable nights before approval.",
         },
         {
           icon: <MdOutlineHealthAndSafety />,
@@ -197,6 +199,11 @@ export default function Page() {
         breadcrumbPaths={breadcrumbPaths}
       />
 
+      <QuickAnswer
+        question="Do you need a flight reservation for a UK visa?"
+        answer="Not strictly. UKVI does not list a flight booking as a required document for the Standard Visitor visa. It is strongly recommended though, because a flight itinerary helps caseworkers see your intended dates and route. A dummy ticket with a verifiable PNR meets that bar without you paying for a non-refundable ticket months before approval."
+      />
+
       <Process
         title={pageData.sections.process.title}
         subtitle={pageData.sections.process.subtitle}
@@ -218,6 +225,17 @@ export default function Page() {
         title={pageData.sections.faqs.title}
         subtitle={pageData.sections.faqs.subtitle}
         faqs={pageData.sections.faqs.faqs}
+      />
+
+      <RelatedPages
+        title="Related Dummy Ticket Pages"
+        subtitle="Other visa applications we support"
+        links={[
+          { anchor: 'Dummy ticket for a Schengen visa', href: '/dummy-ticket-schengen-visa', blurb: 'EU Visa Code Article 14 compliant, accepted at VFS, BLS, and TLScontact.' },
+          { anchor: 'Dummy ticket for a Canada visa', href: '/dummy-ticket-canada-visa', blurb: 'Aligned with IRCC guidance on flight bookings before approval.' },
+          { anchor: 'Dummy ticket for an Australia visa', href: '/dummy-ticket-australia-visa', blurb: 'Formatted for the Subclass 600 ImmiAccount upload.' },
+          { anchor: 'Dummy ticket for a Japan visa', href: '/dummy-ticket-japan-visa', blurb: 'Round-trip format for embassy and JAPAN eVISA portal submissions.' },
+        ]}
       />
 
       <Contact

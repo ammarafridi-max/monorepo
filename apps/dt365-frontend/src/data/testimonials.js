@@ -1,6 +1,6 @@
 export const testimonials = [
   {
-    quote: 'The process was quick and straightforward. I received my dummy ticket within minutes, and the PNR was fully verifiable on the airline website. It worked exactly as expected for my onward travel requirement.',
+    quote: 'The process was quick and straightforward. I received my dummy ticket within minutes, and the PNR was fully verifiable. It worked exactly as expected for my onward travel requirement.',
     name: 'David S.',
     location: 'Traveler – Used dummy ticket for onward travel verification',
     stars: 5,
@@ -22,6 +22,6 @@ export const testimonials = [
 export function formatTestimonialsArray(arr, keyword = 'dummy ticket') {
   return arr.map((test) => ({
     ...test,
-    quote: test.quote.replace('{keyword}', keyword),
+    quote: test.quote.replaceAll('{keyword}', keyword),
   }));
 }

@@ -37,7 +37,7 @@ export default function Process({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 md:gap-7">
           {steps.map((step, i) => (
             <div
-              className="relative min-w-0 rounded-2xl border border-gray-100 bg-white p-7 md:p-8 shadow-[0_12px_30px_rgba(16,24,40,0.07)]"
+              className="relative min-w-0 rounded-2xl border border-gray-100 bg-white p-7 md:p-8 shadow-[0_14px_35px_rgba(16,24,40,0.08)]"
               key={i}
             >
               <div className="absolute inset-x-0 top-10 hidden lg:block">

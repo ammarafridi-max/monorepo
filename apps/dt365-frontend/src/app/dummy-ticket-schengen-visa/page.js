@@ -17,73 +17,93 @@ import {
   HiOutlineClock,
   HiOutlineCalendarDays,
 } from 'react-icons/hi2';
-import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineLuggage } from 'react-icons/md';
+import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineHotel } from 'react-icons/md';
 import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
 import About from '@travel-suite/frontend-shared/components/sections/v1/About';
 import Benefits from '@travel-suite/frontend-shared/components/sections/v1/Benefits';
-import FAQ from '@travel-suite/frontend-shared/components/sections/v1/FAQ';
 import Contact from '@travel-suite/frontend-shared/components/sections/v1/Contact';
+import PrimarySection from '@travel-suite/frontend-shared/components/shared/layout/PrimarySection';
+import Container from '@travel-suite/frontend-shared/components/shared/layout/Container';
+import SectionTitle from '@travel-suite/frontend-shared/components/shared/layout/SectionTitle';
+import FaqAccordion from '@travel-suite/frontend-shared/components/ui/v1/FaqAccordion';
+// import QuickAnswer from '@/components/QuickAnswer';
+import RelatedPages from '@/components/RelatedPages';
 
 const benefits = [
   {
-    title: 'Authentic Reservation Structure',
-    text: 'Each flight reservation includes a real, checkable booking reference (PNR) generated through recognized reservation systems. During validity, embassies or visa centers can perform routine checks using this PNR.',
+    title: 'Aligned With EU Visa Code Article 14',
+    text: 'Article 14 of the EU Visa Code lists a flight reservation among the supporting documents for a short-stay Schengen visa, not a paid ticket. Our dummy ticket gives you that document in the exact form consulates expect, without forcing you to buy airfare before approval.',
     icon: HiOutlineCheckBadge,
   },
   {
-    title: 'Cost-Effective Starting at Just $13',
-    text: 'Our dummy tickets start from $13, allowing applicants to meet embassy requirements without purchasing a full-priced, non-refundable airline ticket.',
-    icon: HiOutlineBanknotes,
-  },
-  {
-    title: 'Wide Acceptance',
-    text: 'You can apply through France, Germany, Italy, or any Schengen country, as our ticket format is suitable across all Schengen consulates worldwide.',
+    title: 'Verifiable PNR on Global GDS Platforms',
+    text: 'Every reservation carries a six-character PNR on Amadeus, Sabre, and Travelport. The same systems VFS, BLS, TLScontact, and consulate staff use to confirm bookings. Verification is direct, not via an airline website.',
     icon: HiOutlineGlobeAlt,
   },
   {
-    title: 'Flexible Support',
-    text: 'Visa processing times vary and travel plans change. Our service lets you submit a compliant itinerary now and finalize your actual booking later.',
+    title: 'Accepted at VFS, BLS, and TLScontact',
+    text: 'Our format matches what Schengen visa centres in the UAE, India, the Philippines, Nigeria, and elsewhere expect to see on file. Used on French, German, Italian, Spanish, Dutch, Greek, and other Schengen applications.',
     icon: HiOutlineArrowsRightLeft,
   },
   {
-    title: 'Timely Delivery',
-    text: 'Visa appointments may be scheduled early but require updated documents closer to submission. We deliver your Schengen itinerary promptly to meet deadlines.',
-    icon: HiOutlineClock,
+    title: 'Three Validity Tiers From $13',
+    text: 'Pick the tier that matches your appointment and review window: 2 days for $13, 7 days for $20, 14 days for $23. All tiers include the same verifiable PNR and the same accepted format. Reissue available if processing runs longer.',
+    icon: HiOutlineBanknotes,
   },
   {
-    title: 'Selectable Validity',
-    text: 'Choose a dummy ticket validity that fits your needs, such as 48 hours, 7 days, or 14 days, keeping your reservation relevant during review.',
+    title: 'Round-Trip Itineraries the Way Consulates Want Them',
+    text: 'Schengen applications need a return leg covering the full intended stay. We issue round-trip reservations with real airline codes, valid IATA airports, and realistic fare classes. The dates match what you enter at the application stage.',
     icon: HiOutlineCalendarDays,
+  },
+  {
+    title: 'Bundled With Hotel Reservations and Travel Insurance',
+    text: 'Schengen files need three things: flight reservation, accommodation proof, and EUR 30,000 medical insurance. Order all three together and ship them to the appointment as one clean file.',
+    icon: HiOutlineClock,
   },
 ];
 
 const faqs = [
   {
-    question: 'Is a dummy ticket acceptable for Schengen visa applications?',
+    question: 'Is a dummy ticket accepted for a Schengen visa?',
     answer:
-      'Many Schengen embassies and visa centers request a flight reservation rather than a paid ticket at the application stage. Our dummy tickets are created in a visa-friendly format commonly used for Schengen visa submissions. Final acceptance always depends on the embassy or consulate.',
+      'Yes. EU Visa Code Article 14 lists a flight reservation among the supporting documents for a short-stay Schengen visa, not a paid ticket. Embassies, VFS, BLS, and TLScontact centres accept flight reservations with a verifiable PNR. Final acceptance depends on the specific consulate handling your file.',
   },
   {
-    question: 'Does the flight reservation include a verifiable PNR?',
+    question: 'What flight reservation do the 2026 Schengen requirements ask for?',
     answer:
-      'Yes. Each flight reservation for a Schengen visa issued by DummyTicket365 includes a booking reference (PNR) that can be checked online for its selected validity period.',
+      'A round-trip flight reservation with verifiable PNR, real airline codes and flight numbers, valid IATA airport codes, and dates that cover your full intended stay. The reservation must be checkable during the appointment window. We issue exactly that, on Amadeus, Sabre, and Travelport.',
   },
   {
-    question: 'How long is the dummy ticket valid?',
+    question: 'Can I use a dummy ticket for the Schengen visa application?',
     answer:
-      'You can choose from 48 hours, 7 days, or 14 days of validity at the time of booking. This allows you to match the reservation validity with your visa appointment or document submission timeline.',
+      'Yes. The dummy ticket is built for the application stage. You submit it at the visa centre alongside your passport, photos, financials, insurance, and accommodation proof. Once the visa is granted you buy the real flight.',
   },
   {
-    question: 'How much does a dummy ticket cost?',
+    question: 'How do I book a dummy ticket for a Schengen visa?',
     answer:
-      'The cost starts from $13, depending on the selected validity period and itinerary type. This makes it a cost-effective alternative to purchasing a full airline ticket before visa approval.',
+      'Three steps. Enter your route, travel dates, and passenger details. Pick a validity tier (2 days for $13, 7 days for $20, 14 days for $23). Pay online. The PDF arrives by email within minutes with the PNR ready to submit.',
   },
   {
-    question: 'Can I use this reservation as an onward or return ticket?',
+    question: 'Is the reservation verifiable?',
     answer:
-      'Yes, you can use our dummy ticket for an onward ticket for a Schengen visa or as a return flight reservation, depending on your travel route and visa application requirements.',
+      "Yes, on global GDS platforms. The PNR is live on Amadeus, Sabre, and Travelport during the validity window. Any IATA-accredited travel agent and most consulate staff use those systems daily. Verification is direct and does not depend on an airline's public website.",
+  },
+  {
+    question: 'Do I also need proof of accommodation for a Schengen visa?',
+    answer:
+      'Yes. Consulates require hotel reservations or a host invitation for the full duration of the stay. We issue temporary hotel reservations in the same way as dummy tickets, real reservations not paid bookings, ready to submit alongside the flight reservation.',
+  },
+  {
+    question: 'How long should the reservation stay valid for my appointment?',
+    answer:
+      'Long enough to cover the period from submission to decision. Schengen visas typically take 15 working days, sometimes 30 to 45 days in busy periods. Most applicants pick the 7-day or 14-day tier. If processing runs longer, we reissue with the same details and a fresh PNR.',
+  },
+  {
+    question: 'What happens if my visa is approved with different dates?',
+    answer:
+      'Buy the real ticket for the dates you actually want to travel. The dummy ticket was for the application file, not the trip itself. Consulates expect the final purchased ticket to match approved visa dates, not the original reservation.',
   },
 ];
 
@@ -121,9 +141,9 @@ const pageData = {
           description: "Schengen visa applications require EUR 30,000 minimum medical coverage. We issue AXA-backed, embassy-compliant insurance instantly — bundle it with your dummy ticket.",
         },
         {
-          icon: <MdOutlineLuggage />,
-          title: "Onward Tickets",
-          description: "Need proof of onward travel for immigration or airline check-in? Our onward tickets include a verifiable PNR and are accepted worldwide.",
+          icon: <MdOutlineHotel />,
+          title: "Hotel Reservations",
+          description: "Temporary hotel reservations formatted to meet Schengen embassy and consulate requirements. Like dummy tickets, these are real reservations — not paid bookings — delivered by email so your visa file is complete without the upfront commitment.",
         },
       ],
     },
@@ -199,6 +219,11 @@ export default function Page() {
         breadcrumbPaths={breadcrumbPaths}
       />
 
+      {/* <QuickAnswer
+        question="Is a dummy ticket accepted for a Schengen visa?"
+        answer="Yes. Schengen embassies and visa centres routinely accept a flight reservation in place of a paid ticket at the application stage. EU Visa Code Article 14 lists flight reservation among the supporting documents, not a purchased ticket. Our dummy ticket carries a verifiable PNR on Amadeus, Sabre, and Travelport, so consulates and VFS or BLS staff can confirm it directly."
+      /> */}
+
       <Process
         title={pageData.sections.process.title}
         subtitle={pageData.sections.process.subtitle}
@@ -216,10 +241,41 @@ export default function Page() {
         benefits={pageData.sections.benefits.benefits}
       />
 
-      <FAQ
-        title={pageData.sections.faqs.title}
-        subtitle={pageData.sections.faqs.subtitle}
-        faqs={pageData.sections.faqs.faqs}
+      {/* Inline FAQ render: this page ships 8 FAQs in the FAQPage schema,
+          but the shared <FAQ> component caps the visible list to 6.
+          Google's rich-result guidelines require schema content to be
+          visible on-page, so we render the full set with the same
+          primitives instead. */}
+      <PrimarySection id="faq" className="py-14 md:py-18 lg:py-24 bg-gray-50/70">
+        <Container>
+          <SectionTitle
+            textAlign="center"
+            subtitle={pageData.sections.faqs.subtitle}
+            className="mb-10 md:mb-12"
+          >
+            {pageData.sections.faqs.title}
+          </SectionTitle>
+          <div className="rounded-2xl border border-white bg-white p-4 md:p-7 shadow-[0_14px_35px_rgba(16,24,40,0.08)]">
+            <div className="flex flex-col gap-1">
+              {pageData.sections.faqs.faqs.map((faq, i) => (
+                <FaqAccordion key={i} question={faq.question}>
+                  {faq.answer}
+                </FaqAccordion>
+              ))}
+            </div>
+          </div>
+        </Container>
+      </PrimarySection>
+
+      <RelatedPages
+        title="Related Dummy Ticket Pages"
+        subtitle="Other airlines and visa types for Schengen and beyond"
+        links={[
+          { anchor: 'Dummy ticket on Lufthansa (Schengen routes)', href: '/lufthansa-dummy-ticket', blurb: 'Frankfurt or Munich routing, the most common Schengen pairing.' },
+          { anchor: 'Dummy ticket on Air France (Schengen routes)', href: '/air-france-dummy-ticket', blurb: 'CDG routing via SkyTeam, naturally suited to French consulate applications.' },
+          { anchor: 'Dummy ticket on Turkish Airlines (Schengen routes)', href: '/turkish-airlines-dummy-ticket', blurb: 'Istanbul connection, competitive fares and wide Schengen network.' },
+          { anchor: 'Dummy ticket for a UK visa', href: '/dummy-ticket-uk-visa', blurb: 'Standard Visitor visa file ready, no paid ticket needed before approval.' },
+        ]}
       />
 
       <Contact

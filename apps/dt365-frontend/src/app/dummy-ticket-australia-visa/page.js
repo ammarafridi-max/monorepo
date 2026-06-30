@@ -20,7 +20,7 @@ import {
 import {
   MdOutlineAirplaneTicket,
   MdOutlineHotel,
-  MdOutlineLuggage,
+  MdOutlineHealthAndSafety,
 } from "react-icons/md";
 import Hero from "@travel-suite/frontend-shared/components/sections/v1/Hero";
 import AllForms from "@travel-suite/frontend-shared/components/forms/v1/AllForms";
@@ -29,6 +29,8 @@ import About from "@travel-suite/frontend-shared/components/sections/v1/About";
 import Benefits from "@travel-suite/frontend-shared/components/sections/v1/Benefits";
 import FAQ from "@travel-suite/frontend-shared/components/sections/v1/FAQ";
 import Contact from "@travel-suite/frontend-shared/components/sections/v1/Contact";
+import QuickAnswer from "@/components/QuickAnswer";
+import RelatedPages from "@/components/RelatedPages";
 
 const benefits = [
   {
@@ -38,7 +40,7 @@ const benefits = [
   },
   {
     title: "Verifiable PNR Through Real Systems",
-    text: "Each reservation includes a genuine booking reference generated through recognized GDS platforms. Your PNR can be checked through airline systems during the validity window if the Department or Border Force decides to verify it.",
+    text: "Each reservation carries a verifiable PNR on global GDS platforms (Amadeus, Sabre, Travelport). The Department or Border Force, like any IATA-accredited travel agent, can look it up on the same systems during the validity window.",
     icon: HiOutlineCheckBadge,
   },
   {
@@ -136,10 +138,10 @@ const pageData = {
             "Verified hotel bookings by email, accepted as proof of accommodation for Australia visa applications. No upfront payment to hotels, delivered instantly alongside your dummy ticket.",
         },
         {
-          icon: <MdOutlineLuggage />,
-          title: "Onward Tickets",
+          icon: <MdOutlineHealthAndSafety />,
+          title: "Travel Insurance",
           description:
-            "If your journey involves a transit stop in Singapore, Malaysia, or Thailand requiring proof of onward travel, our onward tickets include a verifiable PNR and are delivered instantly.",
+            "Genuine travel insurance for your Australia trip. Medicare doesn't cover non-residents, so a real medical policy matters once you arrive — and a clean certificate strengthens the visa file too. Delivered instantly.",
         },
       ],
     },
@@ -215,6 +217,11 @@ export default function Page() {
         breadcrumbPaths={breadcrumbPaths}
       />
 
+      <QuickAnswer
+        question="Does the Subclass 600 visa require a flight booking?"
+        answer="The Department of Home Affairs asks for travel dates and a flight itinerary on the Subclass 600 application, but it also tells applicants not to finalise travel until the visa is granted. A dummy ticket squares that circle: a real reservation with a verifiable PNR for the ImmiAccount file, no $1,500 ticket purchased before a decision."
+      />
+
       <Process
         title={pageData.sections.process.title}
         subtitle={pageData.sections.process.subtitle}
@@ -236,6 +243,17 @@ export default function Page() {
         title={pageData.sections.faqs.title}
         subtitle={pageData.sections.faqs.subtitle}
         faqs={pageData.sections.faqs.faqs}
+      />
+
+      <RelatedPages
+        title="Related Dummy Ticket Pages"
+        subtitle="Other visa applications we support"
+        links={[
+          { anchor: 'Dummy ticket for a Canada visa', href: '/dummy-ticket-canada-visa', blurb: 'Aligned with IRCC guidance on flight bookings before approval.' },
+          { anchor: 'Dummy ticket for a Japan visa', href: '/dummy-ticket-japan-visa', blurb: 'Round-trip format for embassy and JAPAN eVISA portal submissions.' },
+          { anchor: 'Dummy ticket for a UK visa', href: '/dummy-ticket-uk-visa', blurb: 'Standard Visitor visa file ready, no paid ticket needed before approval.' },
+          { anchor: 'Dummy ticket for a Schengen visa', href: '/dummy-ticket-schengen-visa', blurb: 'EU Visa Code Article 14 compliant, accepted at VFS, BLS, and TLScontact.' },
+        ]}
       />
 
       <Contact

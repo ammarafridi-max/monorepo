@@ -55,7 +55,7 @@ export default function Hero({
 
 function ValuePill({ text }) {
   return (
-    <div className="flex items-center gap-2.5 rounded-xl border border-primary-100 bg-white/70 px-3.5 py-2.5 shadow-sm backdrop-blur-sm">
+    <div className="flex items-center gap-2.5 rounded-full border border-primary-100 bg-white/70 px-3.5 py-2.5 shadow-sm backdrop-blur-sm">
       <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary-600">
         <HiCheck className="text-white text-[13px]" />
       </span>

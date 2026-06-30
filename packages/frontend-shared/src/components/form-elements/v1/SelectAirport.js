@@ -4,7 +4,7 @@ import { useState, useRef } from 'react';
 import { useAirports } from '../../../hooks/airports/useAirports';
 import { useOutsideClick } from '../../../hooks/general/useOutsideClick';
 
-export default function SelectAirport({ value, onChange, id, icon }) {
+export default function SelectAirport({ value, onChange, id, icon, error, inputRef }) {
   const [query, setQuery] = useState(value || '');
   const [isOpen, setIsOpen] = useState(false);
   // Only search while the dropdown is open (i.e. actively typing). Once an
@@ -38,12 +38,14 @@ export default function SelectAirport({ value, onChange, id, icon }) {
       <div className="relative">
         <input
           id={id}
+          ref={inputRef}
           type="text"
           value={query}
           onChange={handleChange}
           onClick={handleClick}
           placeholder="Search airport or city..."
-          className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 w-full placeholder:text-gray-400 pr-10"
+          aria-invalid={error ? 'true' : undefined}
+          className={`${error ? 'border border-red-600' : 'border border-gray-200'} rounded-xl px-4 py-2.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 w-full placeholder:text-gray-400 pr-10`}
         />
         {icon && (
           <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400">

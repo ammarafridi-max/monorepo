@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
-import { useContext, useTransition, Fragment } from 'react';
+import { useContext, useState, useRef, useTransition, Fragment } from 'react';
 import { FaCircle } from 'react-icons/fa';
 import { PlaneLandingIcon, PlaneTakeoff } from 'lucide-react';
 import { trackFlightSearch } from '../../../utils/analytics';
@@ -18,6 +18,13 @@ import { todayDateOnly } from '../../../utils/dates';
 export default function TicketForm() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [errors, setErrors] = useState({});
+  // Field refs used to focus the first invalid input on submit.
+  const fromRef = useRef(null);
+  const toRef = useRef(null);
+  const departureRef = useRef(null);
+  const returnRef = useRef(null);
+
   const {
     type,
     from,
@@ -33,29 +40,34 @@ export default function TicketForm() {
     setQuantity,
   } = useContext(TicketContext);
 
-  const isFormValid = () => {
-    if (!from) {
-      toast.error('From field is required');
-      return false;
+  // Build the errors map without firing toasts or side-effects. The set of
+  // required fields here matches what the old `disabled` prop was checking:
+  // from, to, departureDate, and returnDate (when Return). Passenger-count
+  // bounds are enforced separately inside handleQuantityChange.
+  function buildErrors() {
+    const next = {};
+    if (!from) next.from = 'Select a departure airport';
+    if (!to) next.to = 'Select a destination airport';
+    if (!departureDate) next.departureDate = 'Select a departure date';
+    if (type === 'Return' && !returnDate) next.returnDate = 'Select a return date';
+    return next;
+  }
+
+  function focusFirstError(next) {
+    const order = [
+      ['from', fromRef],
+      ['to', toRef],
+      ['departureDate', departureRef],
+      ['returnDate', returnRef],
+    ];
+    for (const [key, ref] of order) {
+      if (next[key] && ref.current) {
+        ref.current.focus();
+        ref.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
     }
-    if (!to) {
-      toast.error('To field is required');
-      return false;
-    }
-    if (!departureDate) {
-      toast.error('Departure date is required');
-      return false;
-    }
-    if (type === 'Return' && !returnDate) {
-      toast.error('Return date is required');
-      return false;
-    }
-    if (quantity.adults < 1 || quantity.adults + quantity.children + quantity.infants > 9) {
-      toast.error('Total passengers must be between 1 and 9');
-      return false;
-    }
-    return true;
-  };
+  }
 
   function handleFieldChange(field, value) {
     if (field === 'type') setType(value);
@@ -63,6 +75,14 @@ export default function TicketForm() {
     if (field === 'to') setTo(value);
     if (field === 'departureDate') setDepartureDate(value);
     if (field === 'returnDate') setReturnDate(value);
+    // Clear that field's error the moment the user fills it.
+    if (value && errors[field]) {
+      setErrors((prev) => {
+        const { [field]: _removed, ...rest } = prev;
+        void _removed;
+        return rest;
+      });
+    }
   }
 
   function handleQuantityChange(field, value) {
@@ -84,19 +104,24 @@ export default function TicketForm() {
 
   const handleFormSubmit = e => {
     e.preventDefault();
-    if (isFormValid()) {
-      trackFlightSearch({
-        type,
-        from,
-        to,
-        departureDate,
-        returnDate,
-        quantity,
-      });
-      startTransition(() => {
-        router.push('/booking/select-flights');
-      });
+    const next = buildErrors();
+    if (Object.keys(next).length > 0) {
+      setErrors(next);
+      focusFirstError(next);
+      return;
     }
+    setErrors({});
+    trackFlightSearch({
+      type,
+      from,
+      to,
+      departureDate,
+      returnDate,
+      quantity,
+    });
+    startTransition(() => {
+      router.push('/booking/select-flights');
+    });
   };
 
   return (
@@ -128,7 +153,10 @@ export default function TicketForm() {
             value={from || ''}
             onChange={airport => handleFieldChange('from', airport)}
             icon={<PlaneTakeoff size={19} className="text-gray-500" />}
+            error={errors.from}
+            inputRef={fromRef}
           />
+          {errors.from && <FieldError>{errors.from}</FieldError>}
         </div>
         <div className="w-full md:w-[50%] flex flex-col gap-1 mb-3 md:mb-3">
           <Label htmlFor="to">To</Label>
@@ -136,7 +164,10 @@ export default function TicketForm() {
             value={to || ''}
             onChange={airport => handleFieldChange('to', airport)}
             icon={<PlaneLandingIcon size={19} className="text-gray-500" />}
+            error={errors.to}
+            inputRef={toRef}
           />
+          {errors.to && <FieldError>{errors.to}</FieldError>}
         </div>
       </div>
 
@@ -152,7 +183,10 @@ export default function TicketForm() {
             onChange={date => handleFieldChange('departureDate', date)}
             minDate={todayDateOnly()}
             placeholder="Select departure date"
+            error={errors.departureDate}
+            inputRef={departureRef}
           />
+          {errors.departureDate && <FieldError>{errors.departureDate}</FieldError>}
         </div>
 
         {type === 'Return' && (
@@ -163,7 +197,10 @@ export default function TicketForm() {
               onChange={date => handleFieldChange('returnDate', date)}
               minDate={departureDate || todayDateOnly()}
               placeholder="Select return date"
+              error={errors.returnDate}
+              inputRef={returnRef}
             />
+            {errors.returnDate && <FieldError>{errors.returnDate}</FieldError>}
           </div>
         )}
       </div>
@@ -174,7 +211,7 @@ export default function TicketForm() {
         <PrimaryButton
           className="w-full"
           type="submit"
-          disabled={isPending || !from || !to || !departureDate || (type === 'Return' && !returnDate)}
+          disabled={isPending}
         >
           {isPending ? 'Searching...' : 'Search Flights'}
         </PrimaryButton>

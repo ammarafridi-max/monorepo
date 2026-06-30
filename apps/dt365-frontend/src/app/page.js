@@ -7,6 +7,8 @@ import Testimonials from "@travel-suite/frontend-shared/components/sections/v1/T
 import FAQ from "@travel-suite/frontend-shared/components/sections/v1/FAQ";
 import Contact from "@travel-suite/frontend-shared/components/sections/v1/Contact";
 import BlogPosts from "@travel-suite/frontend-shared/components/sections/v1/BlogPosts";
+// import QuickAnswer from "@/components/QuickAnswer";
+import RelatedPages from "@/components/RelatedPages";
 import {
   SITE_URL,
   buildFAQPage,
@@ -24,7 +26,7 @@ import {
   HiOutlineCurrencyDollar,
   HiShieldCheck,
 } from "react-icons/hi2";
-import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineLuggage } from 'react-icons/md';
+import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineHotel } from 'react-icons/md';
 
 const keyword = "dummy ticket";
 
@@ -36,7 +38,7 @@ const benefits = [
   },
   {
     title: "Verifiable PNR & Embassy-Friendly",
-    text: "Every reservation includes a valid PNR that can be checked directly on airline systems. This makes your itinerary suitable for embassy review, airline checks, and immigration verification.",
+    text: "Every reservation includes a verifiable PNR on global GDS platforms (Amadeus, Sabre, Travelport) — the same systems embassies, visa officers, and travel agents use to confirm bookings. Suitable for embassy review and immigration verification.",
     icon: HiShieldCheck,
   },
   {
@@ -63,7 +65,7 @@ const benefits = [
 
 const testimonials = [
   {
-    quote: "The process was quick and straightforward. I received my dummy ticket within minutes, and the PNR was fully verifiable on the airline website. It worked exactly as expected for my onward travel requirement.",
+    quote: "The process was quick and straightforward. I received my dummy ticket within minutes, and the PNR was fully verifiable. It worked exactly as expected for my onward travel requirement.",
     name: "David S.",
     location: "Traveler – Used dummy ticket for onward travel verification",
     stars: 5,
@@ -145,9 +147,9 @@ const pageData = {
           description: "Verifiable flight reservations with a real PNR code, accepted by embassies and visa centres worldwide. Used by thousands of travellers each year for Schengen, UK, US, Canadian, and other visa applications.",
         },
         {
-          icon: <MdOutlineLuggage />,
-          title: "Onward Tickets",
-          description: "Proof of onward travel for immigration officers and airline check-in. Verifiable PNR, accepted airline format, and instant delivery — without committing to a real booking.",
+          icon: <MdOutlineHotel />,
+          title: "Hotel Reservations",
+          description: "Temporary hotel reservations for visa applications, formatted to meet embassy and consulate requirements. Like dummy tickets, these are real reservations — not paid bookings — delivered by email so you can submit your file without committing the funds upfront.",
         },
         {
           icon: <MdOutlineHealthAndSafety />,
@@ -245,6 +247,10 @@ export default function HomePage() {
           'Delivered in minutes',
         ]}
       />
+      {/* <QuickAnswer
+        question="What is a dummy ticket?"
+        answer="A dummy ticket is a real flight reservation with a verifiable PNR, generated through global GDS platforms (Amadeus, Sabre, Travelport). It is used to show proof of onward travel for visa applications, airline check-in, and immigration. You are not paying for the ticket itself, only for the reservation document, which starts at $13."
+      /> */}
       <Process
         title={pageData.sections.process.title}
         subtitle={pageData.sections.process.subtitle}
@@ -272,6 +278,16 @@ export default function HomePage() {
       <BlogPosts
         title={pageData.sections.blogs.title}
         subtitle={pageData.sections.blogs.subtitle}
+      />
+      <RelatedPages
+        title="Popular Dummy Ticket Pages"
+        subtitle="Country-specific and product-specific options"
+        links={[
+          { anchor: 'Dummy ticket for a Schengen visa', href: '/dummy-ticket-schengen-visa', blurb: 'Schengen-ready reservation with verifiable PNR, accepted at VFS, BLS, and TLScontact.' },
+          { anchor: 'Dummy ticket for a UK visa', href: '/dummy-ticket-uk-visa', blurb: 'Standard Visitor visa file ready, no paid ticket needed before approval.' },
+          { anchor: 'Dummy ticket for an Australia visa', href: '/dummy-ticket-australia-visa', blurb: 'Formatted for the Subclass 600 ImmiAccount upload.' },
+          { anchor: 'Onward ticket for airline check-in', href: '/onward-ticket', blurb: 'Proof of onward travel in three validity tiers from $13.' },
+        ]}
       />
       <Contact email="info@dummyticket365.com" />
     </>

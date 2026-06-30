@@ -46,6 +46,8 @@ export default function DatePicker({
   markedLabel,
   required,
   inputClassName,
+  error,
+  inputRef,
 }) {
   const [open, setOpen]       = useState(false);
   const [viewYear, setViewYear]   = useState(null);
@@ -146,15 +148,18 @@ export default function DatePicker({
 
   const cells = getDaysInGrid();
 
+  const borderCls = error ? 'border border-red-600' : 'border border-gray-200';
   const inputCls = inputClassName ||
-    'border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 w-full';
+    `${borderCls} rounded-xl px-4 py-2.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 w-full`;
 
   return (
     <div className="relative" ref={containerRef}>
 
       <button
+        ref={inputRef}
         type="button"
         onClick={openPicker}
+        aria-invalid={error ? 'true' : undefined}
         className={`flex items-center justify-between gap-2 text-left ${inputCls}`}
         suppressHydrationWarning
       >

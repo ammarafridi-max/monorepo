@@ -35,7 +35,7 @@ export default function FaqAccordion({ question, children }) {
           showAnswer ? 'max-h-[500px] opacity-100 mt-1' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="px-2 sm:px-4 pb-4 text-gray-600 text-[15px] sm:text-[16px] leading-relaxed font-light font-nunito">
+        <div className="px-2 sm:px-4 pb-4 text-gray-600 text-[15px] sm:text-[16px] leading-relaxed font-light">
           {children}
         </div>
       </div>

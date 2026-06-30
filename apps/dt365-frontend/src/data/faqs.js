@@ -12,12 +12,12 @@ export const faqArray = [
   {
     question: 'Does a {keyword} include a verifiable PNR?',
     answer:
-      'Yes, every {keyword} comes with a valid PNR (Passenger Name Record) that can usually be verified on the airline’s official website or reservation system, depending on the airline’s verification method.',
+      'Yes, every {keyword} comes with a valid PNR (Passenger Name Record) on global GDS platforms (Amadeus, Sabre, Travelport) — the same systems travel agents and visa officers use to confirm flight reservations.',
   },
   {
     question: 'How can I verify my {keyword}?',
     answer:
-      'You can verify your {keyword} by entering the PNR code along with the passenger’s last name on the airline’s website. In some cases, verification may only be possible through the airline’s customer support.',
+      'Your {keyword} carries a six-character PNR on global GDS platforms (Amadeus, Sabre, Travelport). Any IATA-accredited travel agent can look it up there, and visa officers routinely use the same systems to confirm reservations during the validity period.',
   },
   {
     question: 'How much does a {keyword} cost?',

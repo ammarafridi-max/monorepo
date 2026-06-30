@@ -20,7 +20,7 @@
   --color-primary-700: #123a6a;
   --color-primary-800: #0e2c51;
   --color-primary-900: #0a1f39;
-  --color-accent-50: #e2f7fb;
+  --color-accent-50: #fff5f2;
   --color-accent-100: #ffece8;
   --color-accent-200: #ffd0c5;
   --color-accent-300: #ffb3a1;
@@ -31,18 +31,85 @@
   --color-accent-800: #a12000;
   --color-accent-900: #701700;
   --font-nunito: 'Nunito Variable';
-  --font-merriweather: 'Merriweather';
   --font-outfit: 'Outfit';
-  --rounded-input-sm: 5px;
-  --rounded-input-md: 8px;
-  --rounded-input-lg: 10px;
-  --input-box-shadow: 0px 0px 5px -1px var(--grey-color-600);
-  --input-box-shadow-sm: 0px 0px 5px -1px var(--grey-color-600);
-  --input-box-shadow-focus: 0px 0px 8px 0px var(--grey-color-600);
-  --input-box-shadow-sm-focus: 0px 0px 8px 0px var(--grey-color-600);
   --form-shadow: 0px 0px 20px 1px rgba(219, 219, 219, 1);
   --flight-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
   --flight-shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.08);
+}
+
+/* Type scale — named tokens. Each one encodes the complete typographic
+   role (size + responsive shifts + line-height where it's part of the
+   role). Components should use these instead of arbitrary text-[XYpx]
+   and matching leading-* classes. Mirrors must stay in sync with
+   apps/mdt-frontend/src/app/globals.css.
+   See apps/dt365-frontend/BRANDING.md §2 for the full mapping. */
+@utility text-h1-landing {
+  font-size: 30px;
+  line-height: 1.3;
+  @media (min-width: 768px) {
+    font-size: 46px;
+  }
+}
+
+@utility text-h1-page {
+  font-size: 26px;
+  line-height: 2rem;
+  @media (min-width: 768px) {
+    font-size: 36px;
+    line-height: 3rem;
+  }
+}
+
+@utility text-h2 {
+  font-size: 26px;
+  line-height: 1.2;
+  @media (min-width: 768px) {
+    font-size: 31px;
+  }
+  @media (min-width: 1024px) {
+    font-size: 34px;
+  }
+}
+
+@utility text-h2-compact {
+  font-size: 22px;
+  line-height: 1.25;
+  @media (min-width: 768px) {
+    font-size: 26px;
+  }
+}
+
+@utility text-h3-card {
+  font-size: 20px;
+}
+
+@utility text-h3-faq {
+  font-size: 16px;
+  line-height: 1.375;
+  @media (min-width: 640px) {
+    font-size: 18px;
+  }
+}
+
+@utility text-body-lg {
+  font-size: 16px;
+  line-height: 1.75rem;
+  @media (min-width: 768px) {
+    font-size: 18px;
+  }
+}
+
+@utility text-body {
+  font-size: 16px;
+  line-height: 1.75rem;
+}
+
+@utility text-small {
+  font-size: 14px;
+}
+
+@utility text-pill {
+  font-size: 13px;
 }
 
 body {

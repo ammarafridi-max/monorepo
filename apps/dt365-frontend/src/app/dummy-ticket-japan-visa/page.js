@@ -20,7 +20,7 @@ import {
 import {
   MdOutlineAirplaneTicket,
   MdOutlineHotel,
-  MdOutlineLuggage,
+  MdOutlineHealthAndSafety,
 } from "react-icons/md";
 import Hero from "@travel-suite/frontend-shared/components/sections/v1/Hero";
 import AllForms from "@travel-suite/frontend-shared/components/forms/v1/AllForms";
@@ -29,6 +29,8 @@ import About from "@travel-suite/frontend-shared/components/sections/v1/About";
 import Benefits from "@travel-suite/frontend-shared/components/sections/v1/Benefits";
 import FAQ from "@travel-suite/frontend-shared/components/sections/v1/FAQ";
 import Contact from "@travel-suite/frontend-shared/components/sections/v1/Contact";
+import QuickAnswer from "@/components/QuickAnswer";
+import RelatedPages from "@/components/RelatedPages";
 
 const benefits = [
   {
@@ -38,7 +40,7 @@ const benefits = [
   },
   {
     title: "Verifiable PNR Through Real Systems",
-    text: "Each reservation includes a genuine booking reference generated through recognized GDS platforms. Your PNR can be checked through airline systems during the validity window, giving your application the verification layer Japanese consulates expect.",
+    text: "Each reservation carries a verifiable PNR on global GDS platforms (Amadeus, Sabre, Travelport). Japanese consulates, like any IATA-accredited travel agent, can look it up on the same systems during the validity window.",
     icon: HiOutlineCheckBadge,
   },
   {
@@ -134,10 +136,10 @@ const pageData = {
             "Verified hotel bookings by email, accepted as proof of accommodation for Japan visa applications. Dates aligned with your flight reservation, delivered instantly.",
         },
         {
-          icon: <MdOutlineLuggage />,
-          title: "Onward Tickets",
+          icon: <MdOutlineHealthAndSafety />,
+          title: "Travel Insurance",
           description:
-            "If you are transiting through a country that requires proof of onward travel before reaching Japan, our onward tickets include a verifiable PNR and are delivered instantly.",
+            "Genuine travel insurance for your Japan trip. Visitors to Japan need their own medical cover — and a clean certificate alongside your dummy ticket and hotel reservation rounds out the visa file. Delivered instantly.",
         },
       ],
     },
@@ -213,6 +215,11 @@ export default function Page() {
         breadcrumbPaths={breadcrumbPaths}
       />
 
+      <QuickAnswer
+        question="Do you need a flight reservation for a Japan visa?"
+        answer="Yes. The Ministry of Foreign Affairs and Japanese embassies list a round-trip flight reservation among the required documents for a tourist or business visa, including applications through the JAPAN eVISA portal. You do not need a paid ticket. A dummy ticket with a verifiable PNR on Amadeus, Sabre, and Travelport meets that requirement and ships in minutes."
+      />
+
       <Process
         title={pageData.sections.process.title}
         subtitle={pageData.sections.process.subtitle}
@@ -234,6 +241,17 @@ export default function Page() {
         title={pageData.sections.faqs.title}
         subtitle={pageData.sections.faqs.subtitle}
         faqs={pageData.sections.faqs.faqs}
+      />
+
+      <RelatedPages
+        title="Related Dummy Ticket Pages"
+        subtitle="Other visa applications we support"
+        links={[
+          { anchor: 'Dummy ticket for an Australia visa', href: '/dummy-ticket-australia-visa', blurb: 'Formatted for the Subclass 600 ImmiAccount upload.' },
+          { anchor: 'Dummy ticket for a Canada visa', href: '/dummy-ticket-canada-visa', blurb: 'Aligned with IRCC guidance on flight bookings before approval.' },
+          { anchor: 'Dummy ticket for a UK visa', href: '/dummy-ticket-uk-visa', blurb: 'Standard Visitor visa file ready, no paid ticket needed before approval.' },
+          { anchor: 'Dummy ticket for a Schengen visa', href: '/dummy-ticket-schengen-visa', blurb: 'EU Visa Code Article 14 compliant, accepted at VFS, BLS, and TLScontact.' },
+        ]}
       />
 
       <Contact
