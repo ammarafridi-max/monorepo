@@ -323,12 +323,12 @@ export function createBlogController({ service, Blog, anthropicApiKey }) {
       .split(/\s+/)
       .filter((w) => w.length > 2 && !skip.has(w.toLowerCase()));
     const subject = words.slice(0, 6).join(" ") || "travel";
-    const prompt = `Professional travel photography, ${subject}, editorial style, soft natural light, wide shot`;
+    const prompt = `Professional travel photography, ${subject}, editorial style, soft natural light, wide shot, no text, no words, no letters, no watermarks, no labels`;
 
     const recraftRes = await fetch("https://external.api.recraft.ai/v1/images/generations", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt, model: "recraftv3", style: "realistic_image", size: "1820x1024" }),
+      body: JSON.stringify({ prompt, negative_prompt: "text, words, letters, watermark, label, caption, title, heading, typography, font, signage", model: "recraftv3", style: "realistic_image", size: "1820x1024" }),
     });
     if (!recraftRes.ok) {
       const err = await recraftRes.json().catch(() => ({}));

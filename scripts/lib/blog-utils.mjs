@@ -473,7 +473,7 @@ function buildImagePrompt(title) {
     .filter((w) => w.length > 2 && !skip.has(w.toLowerCase()));
 
   const subject = words.slice(0, 6).join(" ") || "travel";
-  return `Professional travel photography, ${subject}, editorial style, soft natural light, wide shot`;
+  return `Professional travel photography, ${subject}, editorial style, soft natural light, wide shot, no text, no words, no letters, no watermarks, no labels`;
 }
 
 /**
@@ -498,6 +498,7 @@ export async function fetchCoverImage(topicTitle) {
       },
       body: JSON.stringify({
         prompt,
+        negative_prompt: "text, words, letters, watermark, label, caption, title, heading, typography, font, signage",
         model: "recraftv3",
         style: "realistic_image",
         size: "1820x1024",
