@@ -10,6 +10,7 @@ import { TicketProvider } from '@travel-suite/frontend-shared/contexts/TicketCon
 import { InsuranceProvider } from '@travel-suite/frontend-shared/contexts/InsuranceContext';
 import AppLayout from '@travel-suite/frontend-shared/layouts/AppLayout';
 import AnalyticsInit from '@travel-suite/frontend-shared/components/shared/AnalyticsInit';
+import HotjarInit from '@travel-suite/frontend-shared/components/shared/HotjarInit';
 
 const LOGO_ALT = 'DT365 Logo';
 const EMAIL = 'info@dummyticket365.com';
@@ -72,6 +73,7 @@ export default function Providers({ children }) {
     return (
       <>
         <AnalyticsInit />
+        <HotjarInit />
         <Toaster />
         <QueryClientProvider client={queryClient}>
           <CurrencyProvider>
@@ -91,6 +93,7 @@ export default function Providers({ children }) {
   return (
     <>
       <AnalyticsInit />
+      <HotjarInit />
       <Toaster />
       <QueryClientProvider client={queryClient}>
         <CurrencyProvider>

@@ -25,7 +25,7 @@ import About from '@travel-suite/frontend-shared/components/sections/v1/About';
 import Benefits from '@travel-suite/frontend-shared/components/sections/v1/Benefits';
 import FAQ from '@travel-suite/frontend-shared/components/sections/v1/FAQ';
 import Contact from '@travel-suite/frontend-shared/components/sections/v1/Contact';
-import QuickAnswer from '@/components/QuickAnswer';
+// import QuickAnswer from '@/components/QuickAnswer';
 import RelatedPages from '@/components/RelatedPages';
 
 const processSteps = [
@@ -224,10 +224,10 @@ export default function Page() {
         breadcrumbPaths={breadcrumbPaths}
       />
 
-      <QuickAnswer
+      {/* <QuickAnswer
         question="Can you get a verifiable Turkish Airlines reservation without buying a ticket?"
         answer="Yes. We issue Turkish Airlines flight reservations through global GDS platforms (Amadeus, Sabre, Travelport) with a six-character PNR your consulate or any travel agent can look up during validity. Real TK flight numbers, Istanbul routing, no paid ticket required. From $13, delivered in minutes. Accepted on Schengen, UK, US, Canadian, and many other visa files."
-      />
+      /> */}
 
       <Process
         title={pageData.sections.process.title}

@@ -23,7 +23,7 @@ import PrimarySection from '@travel-suite/frontend-shared/components/shared/layo
 import Container from '@travel-suite/frontend-shared/components/shared/layout/Container';
 import SectionTitle from '@travel-suite/frontend-shared/components/shared/layout/SectionTitle';
 import FaqAccordion from '@travel-suite/frontend-shared/components/ui/v1/FaqAccordion';
-import QuickAnswer from '@/components/QuickAnswer';
+// import QuickAnswer from '@/components/QuickAnswer';
 import RelatedPages from '@/components/RelatedPages';
 
 const keyword = 'onward ticket';
@@ -196,10 +196,10 @@ export default function Page() {
         ]}
         breadcrumbPaths={breadcrumbPaths}
       />
-      <QuickAnswer
+      {/* <QuickAnswer
         question="What counts as proof of onward travel?"
         answer="Proof of onward travel is a flight reservation showing you will leave the destination country within the permitted stay. Airlines and immigration officers accept a real reservation with a verifiable PNR. They do not require a paid ticket. Our onward ticket gives you exactly that, on global GDS platforms (Amadeus, Sabre, Travelport), in three validity tiers from $13."
-      />
+      /> */}
       <Process
         title={pageData.sections.process.title}
         subtitle={pageData.sections.process.subtitle}

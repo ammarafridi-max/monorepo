@@ -15,6 +15,7 @@ import AppMegaLayout from '@travel-suite/frontend-shared/layouts/AppMegaLayout';
 import Footer from '@travel-suite/frontend-shared/components/sections/v2/Footer';
 import StickyWhatsApp from '@travel-suite/frontend-shared/components/ui/v2/StickyWhatsApp';
 import AnalyticsInit from '@travel-suite/frontend-shared/components/shared/AnalyticsInit';
+import HotjarInit from '@travel-suite/frontend-shared/components/shared/HotjarInit';
 
 const LOGO_ALT = 'Travl';
 const EMAIL = 'info@travl.ae';
@@ -161,6 +162,7 @@ export default function Providers({ children }) {
   return (
     <>
       <AnalyticsInit />
+      <HotjarInit />
       <Toaster />
       <QueryClientProvider client={queryClient}>
         <GuestAuthProvider>

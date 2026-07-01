@@ -29,7 +29,7 @@ import About from "@travel-suite/frontend-shared/components/sections/v1/About";
 import Benefits from "@travel-suite/frontend-shared/components/sections/v1/Benefits";
 import FAQ from "@travel-suite/frontend-shared/components/sections/v1/FAQ";
 import Contact from "@travel-suite/frontend-shared/components/sections/v1/Contact";
-import QuickAnswer from "@/components/QuickAnswer";
+// import QuickAnswer from "@/components/QuickAnswer";
 import RelatedPages from "@/components/RelatedPages";
 
 const benefits = [
@@ -215,10 +215,10 @@ export default function Page() {
         breadcrumbPaths={breadcrumbPaths}
       />
 
-      <QuickAnswer
+      {/* <QuickAnswer
         question="Do you need a flight itinerary for a Canada visa?"
         answer="Yes. IRCC asks for travel dates and a flight itinerary in the visitor visa application, and at the same time advises against booking flights before the visa is approved. A dummy ticket fits that guidance exactly. You get a verifiable PNR on global GDS platforms for the file, without locking in a paid ticket while IRCC reviews."
-      />
+      /> */}
 
       <Process
         title={pageData.sections.process.title}

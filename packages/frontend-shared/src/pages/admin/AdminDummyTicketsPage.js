@@ -90,7 +90,12 @@ function DummyTicketsContent() {
   const search         = searchParams.get('search')               ?? '';
   const deliveryDate   = searchParams.get('deliveryDate')         ?? '';
 
-  const createdAt      = isAgent ? '4_hours' : (searchParams.get('createdAt') ?? 'all_time');
+  // Agents are locked to the last 4 hours by default, but not when they are
+  // actively searching — searches may need to pull up an older ticket a
+  // customer just called about. Backend enforces the same rule.
+  const hasSearch      = search.trim().length > 0;
+  const agentTimeLocked = isAgent && !hasSearch;
+  const createdAt      = agentTimeLocked ? '4_hours' : (searchParams.get('createdAt') ?? 'all_time');
   const totalPages     = pagination?.totalPages                   ?? 1;
   const total          = pagination?.total                        ?? 0;
 
@@ -168,8 +173,13 @@ function DummyTicketsContent() {
 
         <div className="w-px h-5 bg-gray-200 hidden sm:block" />
 
-        {isAgent ? (
-          <span className="px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50 text-gray-500">Last 4 hours</span>
+        {agentTimeLocked ? (
+          <span
+            className="px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50 text-gray-500"
+            title="Agents see the last 4 hours by default. Type in the search box to look up older tickets."
+          >
+            Last 4 hours
+          </span>
         ) : (
           <select
             value={createdAt}

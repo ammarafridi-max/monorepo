@@ -2,9 +2,14 @@ export function createTicketController({ service, paidOrderBus }) {
   const getAllTickets = async (req, res, next) => {
     try {
       const isAgent = req.user?.role === 'agent';
-      // Agents may only see the last 4 hours — unless they're filtering by delivery date
-      // (e.g. the "Today's Deliveries" page), in which case the time restriction doesn't apply.
-      const agentNeedsCreatedAtOverride = isAgent && !req.query.deliveryDate;
+      // Agents may only see the last 4 hours — unless they are:
+      //   (a) filtering by delivery date (the "Today's Deliveries" page), or
+      //   (b) running a text search (they may need to pull up an older ticket
+      //       a customer just called about).
+      // Both cases opt out of the 4-hour window while still stripping payment
+      // amounts from the response (see below).
+      const hasSearch = typeof req.query.search === 'string' && req.query.search.trim().length > 0;
+      const agentNeedsCreatedAtOverride = isAgent && !req.query.deliveryDate && !hasSearch;
       const query = agentNeedsCreatedAtOverride ? { ...req.query, createdAt: '4_hours' } : req.query;
       let result = await service.getAllTickets(query);
 

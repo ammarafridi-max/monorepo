@@ -25,7 +25,7 @@ import About from '@travel-suite/frontend-shared/components/sections/v1/About';
 import Benefits from '@travel-suite/frontend-shared/components/sections/v1/Benefits';
 import FAQ from '@travel-suite/frontend-shared/components/sections/v1/FAQ';
 import Contact from '@travel-suite/frontend-shared/components/sections/v1/Contact';
-import QuickAnswer from '@/components/QuickAnswer';
+// import QuickAnswer from '@/components/QuickAnswer';
 import RelatedPages from '@/components/RelatedPages';
 
 const processSteps = [
@@ -224,10 +224,10 @@ export default function Page() {
         breadcrumbPaths={breadcrumbPaths}
       />
 
-      <QuickAnswer
+      {/* <QuickAnswer
         question="Can you get a verifiable Lufthansa reservation without buying a ticket?"
         answer="Yes. We issue Lufthansa flight reservations through global GDS platforms (Amadeus, Sabre, Travelport) with a six-character PNR that German consulates and travel agents can confirm during validity. Real LH flight numbers, Frankfurt or Munich routing, no paid ticket required. From $13, in your inbox in minutes. Schengen-ready and accepted at VFS and TLScontact German visa centres."
-      />
+      /> */}
 
       <Process
         title={pageData.sections.process.title}

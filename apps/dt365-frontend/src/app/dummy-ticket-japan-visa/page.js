@@ -29,7 +29,7 @@ import About from "@travel-suite/frontend-shared/components/sections/v1/About";
 import Benefits from "@travel-suite/frontend-shared/components/sections/v1/Benefits";
 import FAQ from "@travel-suite/frontend-shared/components/sections/v1/FAQ";
 import Contact from "@travel-suite/frontend-shared/components/sections/v1/Contact";
-import QuickAnswer from "@/components/QuickAnswer";
+// import QuickAnswer from "@/components/QuickAnswer";
 import RelatedPages from "@/components/RelatedPages";
 
 const benefits = [
@@ -215,10 +215,10 @@ export default function Page() {
         breadcrumbPaths={breadcrumbPaths}
       />
 
-      <QuickAnswer
+      {/* <QuickAnswer
         question="Do you need a flight reservation for a Japan visa?"
         answer="Yes. The Ministry of Foreign Affairs and Japanese embassies list a round-trip flight reservation among the required documents for a tourist or business visa, including applications through the JAPAN eVISA portal. You do not need a paid ticket. A dummy ticket with a verifiable PNR on Amadeus, Sabre, and Travelport meets that requirement and ships in minutes."
-      />
+      /> */}
 
       <Process
         title={pageData.sections.process.title}

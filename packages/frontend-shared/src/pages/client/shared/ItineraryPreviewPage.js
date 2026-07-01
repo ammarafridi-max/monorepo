@@ -186,10 +186,22 @@ function Bubble({ role, text }) {
   );
 }
 
+// Cap how long we spin on a GENERATING/DRAFT order. If the background job was lost
+// (e.g. a server restart mid-generation) the order never settles, so instead of an
+// endless spinner we stop polling after this and show a retryable error.
+// TODO(server): pair this with a server-side watchdog that fails stale GENERATING
+// orders (TTL/cron sweeper) — this client-side cap is only half the fix.
+const POLL_TIMEOUT_MS = 3 * 60 * 1000;
+
 export default function ItineraryPreviewPage({ sessionId }) {
-  // Generation runs in the background server-side; poll until it settles.
-  const { order, isLoadingOrder, isErrorOrder } = useItineraryOrder(sessionId, {
+  const [pollTimedOut, setPollTimedOut] = useState(false);
+  const generatingSinceRef = useRef(null);
+
+  // Generation runs in the background server-side; poll until it settles (or we
+  // reach the elapsed-time cap, after which the watchdog effect stops us).
+  const { order, isLoadingOrder, isErrorOrder, refetchOrder } = useItineraryOrder(sessionId, {
     refetchInterval: (query) => {
+      if (pollTimedOut) return false;
       const s = query.state.data?.status;
       return s === 'GENERATING' || s === 'DRAFT' ? 2500 : false;
     },
@@ -221,6 +233,35 @@ export default function ItineraryPreviewPage({ sessionId }) {
       return next.size === prev.size ? prev : next;
     });
   }, [order]);
+
+  // Watchdog for the poll: once the order has been GENERATING/DRAFT for
+  // POLL_TIMEOUT_MS, flip pollTimedOut so the refetchInterval stops and we show a
+  // retryable error. Resets whenever the status settles or a fresh generation starts.
+  useEffect(() => {
+    const s = order?.status;
+    const generating = s === 'GENERATING' || s === 'DRAFT';
+    if (!generating) {
+      generatingSinceRef.current = null;
+      setPollTimedOut(false);
+      return undefined;
+    }
+    if (generatingSinceRef.current === null) generatingSinceRef.current = Date.now();
+    const remaining = POLL_TIMEOUT_MS - (Date.now() - generatingSinceRef.current);
+    if (remaining <= 0) {
+      setPollTimedOut(true);
+      return undefined;
+    }
+    const timer = setTimeout(() => setPollTimedOut(true), remaining);
+    return () => clearTimeout(timer);
+  }, [order?.status, pollTimedOut]);
+
+  // Retry after a poll timeout: restart the clock and resume polling in case the
+  // order still settles.
+  function retryGeneration() {
+    generatingSinceRef.current = null;
+    setPollTimedOut(false);
+    refetchOrder();
+  }
 
   if (isLoadingOrder) {
     return (
@@ -254,6 +295,26 @@ export default function ItineraryPreviewPage({ sessionId }) {
         <Link href="/itinerary-booking/form" className="mt-2 text-sm font-semibold text-primary-700 hover:underline">
           Back to the form
         </Link>
+      </div>
+    );
+  }
+
+  if (pollTimedOut && (order.status === 'GENERATING' || order.status === 'DRAFT')) {
+    return (
+      <div className="max-w-3xl mx-auto px-6 py-24 flex flex-col items-center gap-3 text-center">
+        <AlertCircle size={28} className="text-accent-500" />
+        <h1 className="text-lg font-bold text-gray-900">This is taking longer than expected</h1>
+        <p className="text-sm text-gray-500 max-w-md">
+          We couldn&apos;t finish building your itinerary — the server may have been interrupted. Try again, or start over.
+        </p>
+        <div className="mt-2 flex items-center gap-4">
+          <button onClick={retryGeneration} className="text-sm font-semibold text-primary-700 hover:underline">
+            Try again
+          </button>
+          <Link href="/itinerary-booking/form" className="text-sm font-semibold text-primary-700 hover:underline">
+            Back to the form
+          </Link>
+        </div>
       </div>
     );
   }

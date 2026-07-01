@@ -29,7 +29,7 @@ import About from "@travel-suite/frontend-shared/components/sections/v1/About";
 import Benefits from "@travel-suite/frontend-shared/components/sections/v1/Benefits";
 import FAQ from "@travel-suite/frontend-shared/components/sections/v1/FAQ";
 import Contact from "@travel-suite/frontend-shared/components/sections/v1/Contact";
-import QuickAnswer from "@/components/QuickAnswer";
+// import QuickAnswer from "@/components/QuickAnswer";
 import RelatedPages from "@/components/RelatedPages";
 
 const benefits = [
@@ -217,10 +217,10 @@ export default function Page() {
         breadcrumbPaths={breadcrumbPaths}
       />
 
-      <QuickAnswer
+      {/* <QuickAnswer
         question="Does the Subclass 600 visa require a flight booking?"
         answer="The Department of Home Affairs asks for travel dates and a flight itinerary on the Subclass 600 application, but it also tells applicants not to finalise travel until the visa is granted. A dummy ticket squares that circle: a real reservation with a verifiable PNR for the ImmiAccount file, no $1,500 ticket purchased before a decision."
-      />
+      /> */}
 
       <Process
         title={pageData.sections.process.title}

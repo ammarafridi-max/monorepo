@@ -67,6 +67,27 @@ export default function Page() {
             </li>
           </ul>
 
+          <SectionTitle className="mt-10">Cookies, Analytics &amp; Session Recording</SectionTitle>
+
+          <ul className="text-md font-extralight flex flex-col gap-3 list-decimal pl-5">
+            <li className="pl-2">
+              We use cookies and third-party analytics tools, such as Google Analytics, to understand
+              how visitors use our website and to improve our services.
+            </li>
+            <li className="pl-2">
+              We also use Hotjar to understand how visitors interact with our pages. Hotjar may record
+              anonymised session data — such as pages visited, clicks, taps, scrolling, and mouse
+              movement — and produce aggregated heatmaps. By default, Hotjar suppresses the text you
+              type into form fields (for example contact, passport, or payment details); we use this
+              data only in aggregate to improve usability, never to identify you personally.
+            </li>
+            <li className="pl-2">
+              You can opt out of Hotjar at any time via its opt-out page
+              (https://www.hotjar.com/legal/compliance/opt-out) or by enabling &quot;Do Not Track&quot;
+              in your browser.
+            </li>
+          </ul>
+
           <SectionTitle className="mt-10">Sharing Your Information</SectionTitle>
 
           <ul className="text-md font-extralight flex flex-col gap-3 list-decimal pl-5">

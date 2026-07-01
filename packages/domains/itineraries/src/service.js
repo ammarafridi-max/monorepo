@@ -383,14 +383,20 @@ export function createItineraryService({
   // supporting documents). Cloudinary cleanup is best-effort — never block the
   // delete on it.
   async function deleteOrder(sessionId) {
-    const deleted = await Order.findOneAndDelete({ sessionId });
-    if (!deleted) throw new AppError('Itinerary not found', 404);
+    const order = await Order.findOne({ sessionId });
+    if (!order) throw new AppError('Itinerary not found', 404);
+    // Never destroy a paid order (and its paid PDF) — the UI hides the button, but
+    // that is not real protection. Enforce server-side.
+    if (order.paymentStatus === 'PAID') {
+      throw new AppError('Paid orders cannot be deleted.', 400);
+    }
+    await Order.deleteOne({ sessionId });
     try {
       await storage?.deleteSubfolder?.(sessionId);
     } catch (err) {
       logger.warn('[itineraries] Cloudinary cleanup after delete failed', { sessionId, error: err.message });
     }
-    return deleted;
+    return order;
   }
 
   // Admin: paginated/searchable/filterable list of all itinerary orders. Excludes

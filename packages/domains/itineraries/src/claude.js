@@ -7,6 +7,9 @@ import { inclusiveDayCount, buildExpectedDates } from './dates.js';
 // never invents flights, hotels, prices, or booking references — it only
 // references the cities and dates it is given.
 const MODEL = 'claude-sonnet-4-6';
+// Headroom for long trips: a full 60-day plan is ~4-5k output tokens of JSON, so
+// 4096 truncated it mid-object (→ parse failure → FAILED). 8192 covers the max.
+const MAX_TOKENS = 8192;
 
 function buildSystemPrompt({ visaCountry, purpose }) {
   return [
@@ -87,7 +90,7 @@ export function createItineraryGenerator({ anthropicApiKey }) {
   async function callModel({ input, validationFeedback }) {
     const message = await client.messages.create({
       model: MODEL,
-      max_tokens: 4096,
+      max_tokens: MAX_TOKENS,
       system: buildSystemPrompt(input),
       messages: [{ role: 'user', content: buildUserMessage({ input, validationFeedback }) }],
     });
@@ -168,7 +171,7 @@ export function createItineraryGenerator({ anthropicApiKey }) {
   async function callChat(args) {
     const msg = await client.messages.create({
       model: MODEL,
-      max_tokens: 4096,
+      max_tokens: MAX_TOKENS,
       system: buildChatSystemPrompt(),
       messages: [{ role: 'user', content: buildChatUserMessage(args) }],
     });

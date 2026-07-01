@@ -25,7 +25,7 @@ import About from '@travel-suite/frontend-shared/components/sections/v1/About';
 import Benefits from '@travel-suite/frontend-shared/components/sections/v1/Benefits';
 import FAQ from '@travel-suite/frontend-shared/components/sections/v1/FAQ';
 import Contact from '@travel-suite/frontend-shared/components/sections/v1/Contact';
-import QuickAnswer from '@/components/QuickAnswer';
+// import QuickAnswer from '@/components/QuickAnswer';
 import RelatedPages from '@/components/RelatedPages';
 
 const benefits = [
@@ -199,10 +199,10 @@ export default function Page() {
         breadcrumbPaths={breadcrumbPaths}
       />
 
-      <QuickAnswer
+      {/* <QuickAnswer
         question="Do you need a flight reservation for a UK visa?"
         answer="Not strictly. UKVI does not list a flight booking as a required document for the Standard Visitor visa. It is strongly recommended though, because a flight itinerary helps caseworkers see your intended dates and route. A dummy ticket with a verifiable PNR meets that bar without you paying for a non-refundable ticket months before approval."
-      />
+      /> */}
 
       <Process
         title={pageData.sections.process.title}

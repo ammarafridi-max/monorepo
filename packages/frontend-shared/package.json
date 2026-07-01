@@ -31,6 +31,7 @@
     "./layouts/*": "./src/layouts/*.js"
   },
   "dependencies": {
+    "@hotjar/browser": "^1.0.9",
     "@mapbox/mapbox-gl-draw": "^1.5.1",
     "@tinymce/tinymce-react": "^6.3.0",
     "@turf/area": "^7.2.0",
@@ -39,23 +40,23 @@
     "@turf/rewind": "^7.2.0",
     "@turf/union": "^7.2.0",
     "date-fns": "^4.1.0",
-    "mapbox-gl": "^3.20.0",
     "lucide-react": "^1.6.0",
+    "mapbox-gl": "^3.20.0",
     "next-auth": "^4.24.0",
+    "react-ga4": "^3.0.1",
     "react-hook-form": "^7.72.0",
     "react-icons": "^5.6.0",
     "react-spinners": "^0.17.0",
     "react-tooltip": "^5.30.1",
     "recharts": "^2.13.0",
     "swiper": "^12.1.3",
-    "validator": "^13.15.35",
-    "react-ga4": "^3.0.1"
+    "validator": "^13.15.35"
   },
   "peerDependencies": {
+    "@tanstack/react-query": ">=5.0.0",
     "next": ">=14.0.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0",
-    "@tanstack/react-query": ">=5.0.0",
     "react-hot-toast": ">=2.0.0"
   }
 }

@@ -194,11 +194,17 @@ export function computeMainDestination(itineraryData, input) {
  */
 export function computeReturnHome(itineraryData, input) {
   const fromCountry = input?.fromCountry || '';
-  const segments = Array.isArray(input?.segments) ? input.segments : [];
+  // Derive from the CURRENT generated itinerary, not input.segments: chat/paid
+  // edits update itineraryData (finalizeItinerary re-renders it) but never touch
+  // segments (mergeTripEdit preserves them), so a segment-based check goes stale
+  // after an edit and its one-click fix could never clear. Reading the last day's
+  // country means the "Add a return flight" fix — which makes the AI end the
+  // day-by-day back home — recomputes to hasMismatch:false and clears the banner.
+  const days = Array.isArray(itineraryData?.days) ? itineraryData.days : [];
   const result = { hasMismatch: false, fromCountry, lastCountry: null };
-  if (!fromCountry || segments.length === 0) return result;
+  if (!fromCountry || days.length === 0) return result;
 
-  const lastCountry = segments[segments.length - 1]?.to?.country || '';
+  const lastCountry = days[days.length - 1]?.country || '';
   result.lastCountry = lastCountry || null;
   result.hasMismatch = norm(lastCountry) !== norm(fromCountry);
   return result;
