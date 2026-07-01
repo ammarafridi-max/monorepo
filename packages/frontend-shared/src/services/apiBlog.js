@@ -111,3 +111,21 @@ export function duplicateBlogApi(id) {
     headers: { 'Content-Type': 'application/json' },
   });
 }
+
+export async function generateCoverImageApi({ title, excerpt }) {
+  const res = await fetch(`${BACKEND}${URL}/generate-cover`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ title, excerpt }),
+  });
+  if (!res.ok) {
+    let message = 'Image generation failed';
+    try {
+      const err = await res.json();
+      message = err.message || message;
+    } catch (_) {}
+    throw new Error(message);
+  }
+  return res.blob();
+}

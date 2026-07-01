@@ -12,6 +12,7 @@ export function createBlogRouterFromParts({ controller, auth }) {
 
   router.use(protect, restrictTo('admin', 'blog-manager'));
 
+  router.post('/generate-cover', controller.generateCoverImage);
   router.get('/admin/list', controller.getAdminBlogPosts);
   router.post('/', upload.single('coverImage'), controller.createBlogPost);
   router.get('/:id', controller.getBlogPostById);

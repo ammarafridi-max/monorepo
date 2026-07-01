@@ -298,6 +298,55 @@ export function createBlogController({ service, Blog }) {
     });
   });
 
+  const generateCoverImage = catchAsync(async (req, res) => {
+    const { title = "", excerpt = "" } = req.body;
+    if (!title.trim()) throw new AppError("title is required", 400);
+
+    const apiKey = process.env.RECRAFT_API_KEY;
+    if (!apiKey) throw new AppError("RECRAFT_API_KEY is not configured on the server", 503);
+
+    const skip = new Set([
+      "a","an","the","and","or","but","in","on","at","to","for","of","with",
+      "by","from","is","are","was","were","be","been","do","does","did",
+      "have","has","had","will","would","can","could","should","may","might",
+      "need","how","what","why","when","where","who","which","that","this",
+      "these","those","your","my","our","their","its","not","no","nor","so",
+      "yet","if","than","as","up","out","about","into","before","after",
+      "between","each","more","most","other","some","such","only","too",
+      "very","just","guide","complete","explained","tips","checklist","step",
+      "steps","vs","comparison","best","top","get","know","actually",
+      "practical","residents","expats","applicants",
+    ]);
+    const words = `${title} ${excerpt}`
+      .replace(/[?:!,]/g, "")
+      .replace(/\b\d{4}\b/g, "")
+      .split(/\s+/)
+      .filter((w) => w.length > 2 && !skip.has(w.toLowerCase()));
+    const subject = words.slice(0, 6).join(" ") || "travel";
+    const prompt = `Professional travel photography, ${subject}, editorial style, soft natural light, wide shot`;
+
+    const recraftRes = await fetch("https://external.api.recraft.ai/v1/images/generations", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt, model: "recraftv3", style: "realistic_image", size: "1820x1024" }),
+    });
+    if (!recraftRes.ok) {
+      const err = await recraftRes.json().catch(() => ({}));
+      throw new AppError(`Recraft error ${recraftRes.status}: ${JSON.stringify(err)}`, 502);
+    }
+    const data = await recraftRes.json();
+    const imageUrl = data?.data?.[0]?.url;
+    if (!imageUrl) throw new AppError("Recraft returned no image URL", 502);
+
+    const imgRes = await fetch(imageUrl);
+    if (!imgRes.ok) throw new AppError("Failed to download generated image", 502);
+
+    const buffer = Buffer.from(await imgRes.arrayBuffer());
+    res.set("Content-Type", "image/webp");
+    res.set("Content-Disposition", 'inline; filename="cover.webp"');
+    res.send(buffer);
+  });
+
   return {
     getBlogPosts,
     getAdminBlogPosts,
@@ -308,5 +357,6 @@ export function createBlogController({ service, Blog }) {
     deleteBlogPost,
     duplicateBlogPost,
     publishBlog,
+    generateCoverImage,
   };
 }

@@ -11,10 +11,13 @@ import {
   ChevronUp,
   Plus,
   Trash2,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
+import toast from "react-hot-toast";
 import { useGetBlogTags } from "../../../hooks/blog-tags/useGetBlogTags.js";
 import TinyEditor from "../../forms/v1/TinyEditor.js";
+import { generateCoverImageApi } from "../../../services/apiBlog.js";
 
 function slugify(str) {
   return str
@@ -102,11 +105,14 @@ function TextareaInput({ rows = 3, ...props }) {
 
 export default function BlogForm({ initialData, onSubmit, isPending }) {
   const editorRef = useRef(null);
+  const coverImageInputRef = useRef(null);
   const [slugLocked, setSlugLocked] = useState(!!initialData);
   const [seoOpen, setSeoOpen] = useState(false);
   const [faqMode, setFaqMode] = useState("plain");
   const [jsonText, setJsonText] = useState("");
   const [jsonError, setJsonError] = useState("");
+  const [generatedPreviewUrl, setGeneratedPreviewUrl] = useState(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const { tags: allTags = [] } = useGetBlogTags();
 
@@ -138,6 +144,26 @@ export default function BlogForm({ initialData, onSubmit, isPending }) {
   const metaDesc = watch("metaDescription") || "";
   const tags = watch("tags") || [];
   const faqs = watch("faqs") || [];
+  const titleVal = watch("title") || "";
+  const excerptVal = watch("excerpt") || "";
+
+  async function generateImage() {
+    setIsGenerating(true);
+    try {
+      const blob = await generateCoverImageApi({ title: titleVal, excerpt: excerptVal });
+      if (generatedPreviewUrl) URL.revokeObjectURL(generatedPreviewUrl);
+      setGeneratedPreviewUrl(URL.createObjectURL(blob));
+      const file = new File([blob], "cover.webp", { type: "image/webp" });
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      if (coverImageInputRef.current) coverImageInputRef.current.files = dt.files;
+      setValue("coverImage", dt.files);
+    } catch (err) {
+      toast.error(`Could not generate image: ${err.message}`);
+    } finally {
+      setIsGenerating(false);
+    }
+  }
 
   function handleTitleChange(e) {
     const val = e.target.value;
@@ -477,15 +503,15 @@ export default function BlogForm({ initialData, onSubmit, isPending }) {
           )}
 
           <Card title="Cover Image">
-            {initialData?.coverImageUrl && (
+            {(generatedPreviewUrl || initialData?.coverImageUrl) && (
               <div className="mb-3">
                 <img
-                  src={initialData.coverImageUrl}
+                  src={generatedPreviewUrl || initialData.coverImageUrl}
                   alt="Cover"
                   className="w-full h-32 object-cover rounded-xl border border-gray-100"
                 />
                 <p className="text-[11px] text-gray-400 mt-1.5">
-                  Upload a new image to replace it.
+                  {generatedPreviewUrl ? "AI generated — will upload on save." : "Upload a new image to replace it."}
                 </p>
               </div>
             )}
@@ -493,8 +519,28 @@ export default function BlogForm({ initialData, onSubmit, isPending }) {
               type="file"
               accept="image/*"
               {...register("coverImage")}
+              ref={(el) => {
+                register("coverImage").ref(el);
+                coverImageInputRef.current = el;
+              }}
+              onChange={(e) => {
+                register("coverImage").onChange(e);
+                if (e.target.files?.[0]) {
+                  if (generatedPreviewUrl) URL.revokeObjectURL(generatedPreviewUrl);
+                  setGeneratedPreviewUrl(null);
+                }
+              }}
               className="w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-600 hover:file:bg-gray-200 transition"
             />
+            <button
+              type="button"
+              onClick={generateImage}
+              disabled={!titleVal.trim() || !excerptVal.trim() || isGenerating}
+              className="mt-2 w-full flex items-center justify-center gap-1.5 text-xs font-bold px-3 py-2 rounded-xl border border-primary-200 text-primary-700 hover:bg-primary-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              <Sparkles size={12} />
+              {isGenerating ? "Generating…" : "Generate with AI"}
+            </button>
           </Card>
 
           <Card title="Publish">
