@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { catchAsync, AppError } from "@travel-suite/utils";
 
-export function createBlogController({ service, Blog }) {
+export function createBlogController({ service, Blog, anthropicApiKey }) {
   const getBlogPosts = catchAsync(async (req, res) => {
     await service.publishDueScheduledBlogs();
     const { page = 1, limit = 10, tag, search, author } = req.query;
@@ -347,6 +347,58 @@ export function createBlogController({ service, Blog }) {
     res.send(buffer);
   });
 
+  const improveContent = catchAsync(async (req, res) => {
+    const { content, title = "" } = req.body;
+    if (!content?.trim()) throw new AppError("content is required", 400);
+    if (!anthropicApiKey) throw new AppError("ANTHROPIC_API_KEY is not configured on the server", 503);
+
+    const systemPrompt = `You are a professional editor for a UAE-based travel blog. Your job is to rewrite the HTML content you receive so it reads like it was written by an experienced, confident travel writer — not by AI.
+
+Rules you MUST follow:
+1. Return ONLY the improved HTML. No explanation, no code fences, no commentary.
+2. Keep every <a href="..."> link exactly as-is. Do not change URLs or anchor text.
+3. Keep all other HTML tags (<h2>, <h3>, <p>, <ul>, <li>, <strong>) and their attributes intact.
+4. Do NOT add or remove sections. Improve the text within the existing structure.
+5. No em dashes (—). Replace each one with a comma, a colon, or split into a new sentence.
+6. Maximum 2–3 sentences per <p> tag. If a paragraph is longer, split it into two <p> tags.
+7. Never use these words: utilize, delve, leverage, furthermore, navigate, crucial, seamlessly, robust, streamline, unlock, moreover, therefore, additionally, notably, importantly, comprehensive, transformative, pivotal, paramount, multifaceted, nuanced, groundbreaking, cutting-edge, game-changing, in today's world, when it comes to, rest assured, certainly, absolutely, of course, it is worth noting, it is important to note, in conclusion, in summary.
+8. No hedging: replace "most", "generally", "typically", "in most cases", "usually" with direct statements (name the exception inline if needed).
+9. British English spelling (traveller, colour, recognise).
+10. Vary sentence length. Mix short punchy sentences with longer ones. Start sentences with the subject or a concrete detail, not a transition word.
+11. Be specific. Replace vague phrases with concrete details, numbers, or named examples where the meaning allows.
+12. Do not start the content with an <h2>. The first element must be a <p>.`;
+
+    const userPrompt = `Title: ${title}
+
+Improve the following blog post content:\n\n${content}`;
+
+    const apiRes = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "x-api-key": anthropicApiKey,
+        "anthropic-version": "2023-06-01",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 8096,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userPrompt }],
+      }),
+    });
+
+    if (!apiRes.ok) {
+      const err = await apiRes.json().catch(() => ({}));
+      throw new AppError(`Anthropic error ${apiRes.status}: ${JSON.stringify(err)}`, 502);
+    }
+
+    const data = await apiRes.json();
+    const improved = data?.content?.filter((b) => b.type === "text").map((b) => b.text).join("").trim();
+    if (!improved) throw new AppError("No content returned from Anthropic", 502);
+
+    res.status(200).json({ status: "success", data: { content: improved } });
+  });
+
   return {
     getBlogPosts,
     getAdminBlogPosts,
@@ -358,5 +410,6 @@ export function createBlogController({ service, Blog }) {
     duplicateBlogPost,
     publishBlog,
     generateCoverImage,
+    improveContent,
   };
 }

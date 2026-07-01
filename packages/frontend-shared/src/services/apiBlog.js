@@ -112,6 +112,25 @@ export function duplicateBlogApi(id) {
   });
 }
 
+export async function improveContentApi({ content, title }) {
+  const res = await fetch(`${BACKEND}${URL}/improve-content`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ content, title }),
+  });
+  if (!res.ok) {
+    let message = 'Content improvement failed';
+    try {
+      const err = await res.json();
+      message = err.message || message;
+    } catch (_) {}
+    throw new Error(message);
+  }
+  const data = await res.json();
+  return data?.data?.content ?? '';
+}
+
 export async function generateCoverImageApi({ title, excerpt }) {
   const res = await fetch(`${BACKEND}${URL}/generate-cover`, {
     method: 'POST',

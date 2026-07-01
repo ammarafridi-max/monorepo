@@ -72,7 +72,7 @@ const imageStorage = createCloudinaryStorage({
   logger,
   folder: "travl/blog",
 });
-router.use("/blogs", createBlogRouter({ db, auth, imageStorage }));
+router.use("/blogs", createBlogRouter({ db, auth, imageStorage, anthropicApiKey: config.anthropicApiKey }));
 router.use("/blog-tags", createBlogTagRouter({ db, auth }));
 
 const visaImageStorage = createCloudinaryStorage({

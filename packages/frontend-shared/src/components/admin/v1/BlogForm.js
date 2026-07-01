@@ -12,12 +12,13 @@ import {
   Plus,
   Trash2,
   Sparkles,
+  Wand2,
 } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { useGetBlogTags } from "../../../hooks/blog-tags/useGetBlogTags.js";
 import TinyEditor from "../../forms/v1/TinyEditor.js";
-import { generateCoverImageApi } from "../../../services/apiBlog.js";
+import { generateCoverImageApi, improveContentApi } from "../../../services/apiBlog.js";
 
 function slugify(str) {
   return str
@@ -52,7 +53,7 @@ function buildFormData(data, editorRef, isEdit, generatedFile) {
   return fd;
 }
 
-function Card({ title, children, collapsible = false }) {
+function Card({ title, children, collapsible = false, headerAction }) {
   const [open, setOpen] = useState(true);
   return (
     <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
@@ -61,12 +62,15 @@ function Card({ title, children, collapsible = false }) {
         onClick={collapsible ? () => setOpen((o) => !o) : undefined}
       >
         <h3 className="text-sm font-bold text-gray-700">{title}</h3>
-        {collapsible &&
-          (open ? (
-            <ChevronUp size={15} className="text-gray-400" />
-          ) : (
-            <ChevronDown size={15} className="text-gray-400" />
-          ))}
+        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+          {headerAction}
+          {collapsible &&
+            (open ? (
+              <ChevronUp size={15} className="text-gray-400" />
+            ) : (
+              <ChevronDown size={15} className="text-gray-400" />
+            ))}
+        </div>
       </div>
       {open && <div className="p-5">{children}</div>}
     </div>
@@ -114,6 +118,7 @@ export default function BlogForm({ initialData, onSubmit, isPending }) {
   const [jsonError, setJsonError] = useState("");
   const [generatedPreviewUrl, setGeneratedPreviewUrl] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isImproving, setIsImproving] = useState(false);
 
   const { tags: allTags = [] } = useGetBlogTags();
 
@@ -159,6 +164,24 @@ export default function BlogForm({ initialData, onSubmit, isPending }) {
       toast.error(`Could not generate image: ${err.message}`);
     } finally {
       setIsGenerating(false);
+    }
+  }
+
+  async function improveContent() {
+    const current = editorRef.current?.getContent();
+    if (!current?.trim()) {
+      toast.error("No content to improve.");
+      return;
+    }
+    setIsImproving(true);
+    try {
+      const improved = await improveContentApi({ content: current, title: titleVal });
+      editorRef.current.setContent(improved);
+      toast.success("Content improved.");
+    } catch (err) {
+      toast.error(`Could not improve content: ${err.message}`);
+    } finally {
+      setIsImproving(false);
     }
   }
 
@@ -325,7 +348,20 @@ export default function BlogForm({ initialData, onSubmit, isPending }) {
             </div>
           </Card>
 
-          <Card title="Content">
+          <Card
+            title="Content"
+            headerAction={
+              <button
+                type="button"
+                onClick={improveContent}
+                disabled={isImproving}
+                className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg border border-violet-200 text-violet-700 hover:bg-violet-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                <Wand2 size={12} />
+                {isImproving ? "Improving…" : "Improve"}
+              </button>
+            }
+          >
             <TinyEditor
               editorRef={editorRef}
               initialValue={initialData?.content}

@@ -19,15 +19,16 @@ function getOrRegisterModel(conn, name, schema) {
  * @param {{
  *   db: import('mongoose').Connection,
  *   auth: { protect: Function, restrictTo: Function },
- *   imageStorage?: { saveImage(buffer: Buffer, blogId: string): Promise<string>, deleteImage(url: string): Promise<void> }
+ *   imageStorage?: { saveImage(buffer: Buffer, blogId: string): Promise<string>, deleteImage(url: string): Promise<void> },
+ *   anthropicApiKey?: string
  * }} deps
  * @returns {import('express').Router}
  */
-export function createBlogRouter({ db, auth, imageStorage }) {
+export function createBlogRouter({ db, auth, imageStorage, anthropicApiKey }) {
   const Blog = getOrRegisterModel(db, 'Blog', BlogSchema);
   const BlogTag = getOrRegisterModel(db, 'blog-tag', BlogTagSchema);
   const service = createBlogService({ Blog, BlogTag, imageStorage });
-  const controller = createBlogController({ service, Blog });
+  const controller = createBlogController({ service, Blog, anthropicApiKey });
   return createBlogRouterFromParts({ controller, auth });
 }
 
