@@ -28,7 +28,7 @@ function slugify(str) {
     .replace(/-+/g, "-");
 }
 
-function buildFormData(data, editorRef, isEdit) {
+function buildFormData(data, editorRef, isEdit, generatedFile) {
   const fd = new FormData();
   fd.append("title", data.title || "");
   fd.append("slug", data.slug || "");
@@ -45,8 +45,9 @@ function buildFormData(data, editorRef, isEdit) {
     fd.append("content", editorRef.current.getContent());
   }
   (data.tags || []).forEach((t) => fd.append("tags", t));
-  if (data.coverImage?.[0]) {
-    fd.append(isEdit ? "newCoverImage" : "coverImage", data.coverImage[0]);
+  const imageFile = data.coverImage?.[0] || generatedFile;
+  if (imageFile) {
+    fd.append(isEdit ? "newCoverImage" : "coverImage", imageFile);
   }
   return fd;
 }
@@ -105,7 +106,7 @@ function TextareaInput({ rows = 3, ...props }) {
 
 export default function BlogForm({ initialData, onSubmit, isPending }) {
   const editorRef = useRef(null);
-  const coverImageInputRef = useRef(null);
+  const generatedFileRef = useRef(null);
   const [slugLocked, setSlugLocked] = useState(!!initialData);
   const [seoOpen, setSeoOpen] = useState(false);
   const [faqMode, setFaqMode] = useState("plain");
@@ -153,11 +154,7 @@ export default function BlogForm({ initialData, onSubmit, isPending }) {
       const blob = await generateCoverImageApi({ title: titleVal, excerpt: excerptVal });
       if (generatedPreviewUrl) URL.revokeObjectURL(generatedPreviewUrl);
       setGeneratedPreviewUrl(URL.createObjectURL(blob));
-      const file = new File([blob], "cover.webp", { type: "image/webp" });
-      const dt = new DataTransfer();
-      dt.items.add(file);
-      if (coverImageInputRef.current) coverImageInputRef.current.files = dt.files;
-      setValue("coverImage", dt.files);
+      generatedFileRef.current = new File([blob], "cover.webp", { type: "image/webp" });
     } catch (err) {
       toast.error(`Could not generate image: ${err.message}`);
     } finally {
@@ -244,7 +241,7 @@ export default function BlogForm({ initialData, onSubmit, isPending }) {
         return;
       }
     }
-    onSubmit(buildFormData(data, editorRef, isEdit));
+    onSubmit(buildFormData(data, editorRef, isEdit, generatedFileRef.current));
   }
 
   const isEdit = !!initialData;
@@ -519,15 +516,12 @@ export default function BlogForm({ initialData, onSubmit, isPending }) {
               type="file"
               accept="image/*"
               {...register("coverImage")}
-              ref={(el) => {
-                register("coverImage").ref(el);
-                coverImageInputRef.current = el;
-              }}
               onChange={(e) => {
                 register("coverImage").onChange(e);
                 if (e.target.files?.[0]) {
                   if (generatedPreviewUrl) URL.revokeObjectURL(generatedPreviewUrl);
                   setGeneratedPreviewUrl(null);
+                  generatedFileRef.current = null;
                 }
               }}
               className="w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-600 hover:file:bg-gray-200 transition"
