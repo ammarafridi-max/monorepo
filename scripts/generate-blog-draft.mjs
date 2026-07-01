@@ -136,9 +136,12 @@ ${requiredLinksBlock}
 - Internal links: use full URL (https://www.travl.ae/... or https://www.dummyticket365.com) in <a href> attributes
 - External links: DO NOT add external links — internal only
 - The HTML content must NOT include <html>, <head>, <body>, or <title> tags — just body content starting with an introductory <p>
+- NO em dashes (—) anywhere in the content. Replace with a comma, a colon, or split into a separate sentence.
+- Paragraph length: MAXIMUM 2–3 sentences per <p> tag. If a thought runs longer, break it into two <p> tags. Never write a wall-of-text paragraph.
+- Forbidden words — never use any of these: utilize, delve, leverage, furthermore, navigate, crucial, seamlessly, robust, streamline, unlock, moreover, therefore, additionally, notably, importantly, comprehensive, transformative, pivotal, paramount, multifaceted, nuanced, groundbreaking, cutting-edge, game-changing, in today's world, when it comes to, rest assured, certainly, absolutely, of course, it is worth noting, it is important to note, in conclusion, in summary
 
 ## GEO / AI-Citation Rules (CRITICAL)
-- The article body MUST open with an <h2> that repeats the title question as closely as possible to how a user would phrase it, immediately followed by the quick-answer paragraph as the first <p> under that heading.
+- The article body MUST open with a short introductory <p> (2–3 sentences) that directly answers the title question. The first <h2> comes AFTER this opening paragraph. Do NOT start the content with an <h2>.
 - Lead every section's first sentence with the core claim or verdict, not setup. AI engines extract the opening sentence of a section, so it must stand on its own.
 - Each <h2> should match a real question a user would ask (question-style or clear topic phrasing), so it maps to search and AI queries.
 - Be specific and verifiable: include concrete details (a number, a named requirement, a specific term like PNR, EUR 30,000, AED 30) rather than vague phrasing. Specific claims get cited; vague ones do not.
@@ -178,7 +181,7 @@ Respond with a single valid JSON object (no markdown code fences, no extra text)
   "metaDescription": "SEO meta description, 150–160 characters",
   "excerpt": "2–3 sentence plain-text summary for blog listing, no HTML",
   "quickAnswer": "Plain-text direct answer to the title question, 40–80 words. MUST lead with a definitive verdict in the first sentence (e.g. 'Yes,', 'No,', 'You need...'). MUST include at least one concrete, verifiable detail (a number, named requirement, or specific term). MUST be fully self-contained. Avoid hedging words like 'most', 'generally', 'typically'. This is the single most-cited block by AI search engines, so make it specific and quotable.",
-  "content": "Full HTML body content, ${wordRange}, with proper headings, paragraphs, and internal links. MUST open with an <h2> repeating the title question, followed immediately by a self-contained answer paragraph. Each <h2> should match a question a user would actually ask. Lead each section with its core claim. Must include every link listed under 'Required Internal Links' in the system prompt.",
+  "content": "Full HTML body content, ${wordRange}, with proper headings, paragraphs, and internal links. MUST open with a short introductory <p> (2–3 sentences) that directly answers the title question — do NOT start with an <h2>. The first <h2> comes after the opening paragraph. Each <h2> should match a question a user would actually ask. Lead each section with its core claim. Keep every <p> to 2–3 sentences maximum. Must include every link listed under 'Required Internal Links' in the system prompt.",
   "ctaBlock": "Self-contained HTML callout starting with <div class=\\"travl-cta\\">, matching the CTA Block rules in the system prompt.",
   "faqs": [
     { "question": "Phrase exactly as a user would type/ask it", "answer": "Self-contained answer, 30–60 words, verdict-first, with a specific detail. No references to other parts of the article." },

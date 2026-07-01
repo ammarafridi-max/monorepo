@@ -215,6 +215,9 @@ ${requiredLinksBlock}
 - Internal links: use full URL (https://www.travl.ae/... or https://www.dummyticket365.com) in <a href> attributes
 - External links: DO NOT add external links — internal only
 - The HTML content must NOT include <html>, <head>, <body>, or <title> tags — just body content starting with an introductory <p>
+- NO em dashes (—) anywhere in the content. Replace with a comma, a colon, or split into a separate sentence.
+- Paragraph length: MAXIMUM 2–3 sentences per <p> tag. If a thought runs longer, break it into two <p> tags. Never write a wall-of-text paragraph. If the existing content has long paragraphs, split them as you expand.
+- Forbidden words — never use any of these: utilize, delve, leverage, furthermore, navigate, crucial, seamlessly, robust, streamline, unlock, moreover, therefore, additionally, notably, importantly, comprehensive, transformative, pivotal, paramount, multifaceted, nuanced, groundbreaking, cutting-edge, game-changing, in today's world, when it comes to, rest assured, certainly, absolutely, of course, it is worth noting, it is important to note, in conclusion, in summary
 
 ## CTA Block (REQUIRED OUTPUT FIELD: ctaBlock)
 You must also return a "ctaBlock" field — a self-contained HTML callout that will be appended to the bottom of the article. Rules:
@@ -257,7 +260,7 @@ Respond with a single valid JSON object (no markdown code fences, no extra text)
   "metaDescription": "SEO meta description, 150–160 characters",
   "excerpt": "2–3 sentence plain-text summary for blog listing, no HTML",
   "quickAnswer": "1–2 sentence plain-text direct answer to the question in the title",
-  "content": "Expanded HTML body content, ${wordRange}, with proper headings, paragraphs, and internal links. Must include every link listed under 'Required Internal Links' in the system prompt AND every <a href> that was in the existing content.",
+  "content": "Expanded HTML body content, ${wordRange}, with proper headings, paragraphs, and internal links. Must open with an introductory <p>, not an <h2>. Keep every <p> to 2–3 sentences maximum — split any longer paragraphs from the original. Must include every link listed under 'Required Internal Links' in the system prompt AND every <a href> that was in the existing content.",
   "ctaBlock": "Self-contained HTML callout starting with <div class=\\"travl-cta\\">, matching the CTA Block rules in the system prompt.",
   "faqs": [
     { "question": "...", "answer": "..." },

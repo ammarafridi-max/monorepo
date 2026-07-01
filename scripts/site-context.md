@@ -162,8 +162,9 @@ Articles covering visa applications, travel insurance, flight reservations, and 
 
 - Conversational and direct: write like a knowledgeable friend, not a corporate blog
 - Answer the question in the title early, within the first two paragraphs
-- No em dashes
-- Avoid these words: utilize, delve, leverage, furthermore, navigate, crucial, seamlessly, robust, streamline, unlock
+- No em dashes (—). Use a comma, a colon, or a new sentence instead.
+- Avoid these words: utilize, delve, leverage, furthermore, navigate, crucial, seamlessly, robust, streamline, unlock, moreover, therefore, additionally, notably, importantly, comprehensive, transformative, pivotal, paramount, multifaceted, nuanced, groundbreaking, cutting-edge, game-changing, in today's world, when it comes to, rest assured, certainly, absolutely, of course, it is worth noting, it is important to note, in conclusion, in summary
+- Short paragraphs: maximum 2–3 sentences per paragraph. Break longer thoughts into separate paragraphs.
 - No filler sentences: every sentence should add information
 - Short paragraphs, max 3-4 lines
 - Use h2 for main sections, h3 for subsections only when needed
