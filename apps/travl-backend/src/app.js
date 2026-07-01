@@ -37,7 +37,7 @@ app.use(helmet());
 app.use(cors({ origin: config.corsOrigins, credentials: true }));
 app.use(compression());
 app.use(cookieParser());
-app.use(express.json({ limit: '10kb' }));
+app.use(express.json({ limit: '2mb' }));
 
 app.use('/api', rateLimit({ windowMs: 60 * 60 * 1000, max: 500, standardHeaders: true, legacyHeaders: false }));
 
