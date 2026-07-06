@@ -183,7 +183,7 @@ export default function DatePicker({
             {mode === 'calendar' ? (
               <button
                 type="button"
-                onClick={() => setMode('month')}
+                onClick={() => setMode('year')}
                 className="flex items-center gap-1 text-sm font-bold text-gray-900 hover:text-primary-700 transition-colors"
               >
                 {MONTHS[viewMonth]} {viewYear}
@@ -218,7 +218,7 @@ export default function DatePicker({
                     <button
                       key={name}
                       type="button"
-                      onClick={() => { setViewMonth(idx); setMode('year'); }}
+                      onClick={() => { setViewMonth(idx); setMode('calendar'); }}
                       className={`py-1.5 rounded-lg text-xs font-semibold transition-colors ${isActive ? 'bg-primary-700 text-white' : 'hover:bg-gray-100 text-gray-700'}`}
                     >
                       {name.slice(0, 3)}
@@ -238,7 +238,7 @@ export default function DatePicker({
                     <button
                       key={yr}
                       type="button"
-                      onClick={() => { setViewYear(yr); setMode('calendar'); }}
+                      onClick={() => { setViewYear(yr); setMode('month'); }}
                       className={`py-1.5 rounded-lg text-xs font-semibold transition-colors ${isActive ? 'bg-primary-700 text-white' : 'hover:bg-gray-100 text-gray-700'}`}
                     >
                       {yr}

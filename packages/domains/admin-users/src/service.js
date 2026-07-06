@@ -154,5 +154,25 @@ export function createAdminUsersService({ AdminUser }) {
     return user;
   };
 
-  return { getAdminUsers, getAdminUserByUsername, createAdminUser, updateAdminUserByUsername, deleteAdminUserByUsername, updateMyPassword };
+  const adminSetUserPassword = async (username, { password, passwordConfirm }, currentUser) => {
+    if (!username) throw new AppError("Please provide an admin user's username", 400);
+    if (!password || !passwordConfirm) throw new AppError('Please provide password and passwordConfirm.', 400);
+    if (password !== passwordConfirm) throw new AppError('Passwords do not match.', 400);
+    if (password.length < 8) throw new AppError('New password must be at least 8 characters.', 400);
+
+    const user = await AdminUser.findOne({ username: String(username).trim().toLowerCase() });
+    if (!user) throw new AppError('Admin user not found.', 404);
+
+    if (currentUser && String(user._id) === String(currentUser._id)) {
+      throw new AppError('Use the change-my-password flow to update your own password.', 400);
+    }
+
+    // Assigning + save() triggers the schema pre-save hook: hashes the password
+    // and stamps passwordChangedAt, which invalidates the target user's existing sessions.
+    user.password = password;
+    await user.save();
+    return user;
+  };
+
+  return { getAdminUsers, getAdminUserByUsername, createAdminUser, updateAdminUserByUsername, deleteAdminUserByUsername, updateMyPassword, adminSetUserPassword };
 }

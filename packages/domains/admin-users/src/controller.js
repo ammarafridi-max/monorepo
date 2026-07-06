@@ -46,5 +46,11 @@ export function createAdminUsersController({ service }) {
     res.status(200).json({ status: 'success', message: 'Password updated successfully.' });
   });
 
-  return { getMe, updateMe, updateMyPassword, getAdminUsers, getAdminUser, createAdminUser, updateAdminUser, deleteAdminUser };
+  const adminSetUserPassword = catchAsync(async (req, res) => {
+    const { password, passwordConfirm } = req.body;
+    await service.adminSetUserPassword(req.params.username, { password, passwordConfirm }, req.user);
+    res.status(200).json({ status: 'success', message: 'Password updated successfully.' });
+  });
+
+  return { getMe, updateMe, updateMyPassword, getAdminUsers, getAdminUser, createAdminUser, updateAdminUser, deleteAdminUser, adminSetUserPassword };
 }

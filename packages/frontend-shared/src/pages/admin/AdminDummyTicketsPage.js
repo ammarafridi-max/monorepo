@@ -1,8 +1,8 @@
 'use client';
 
-import { Suspense, useEffect } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   Ticket, ChevronLeft, ChevronRight,
   Loader2, ArrowUpRight, Trash2, Search, CalendarDays,
@@ -73,6 +73,7 @@ function OrderBadge({ status }) {
 
 function DummyTicketsContent() {
   const router       = useRouter();
+  const pathname     = usePathname();
   const searchParams = useSearchParams();
   const { adminUser } = useAdminAuth();
 
@@ -82,45 +83,98 @@ function DummyTicketsContent() {
   const { deleteDummyTicket, isDeleting }                        = useDeleteDummyTicket();
 
   const page           = Number(searchParams.get('page')          || 1);
+
+  // URL-derived values (source of truth for the data hook).
   // Default to PAID — unpaid/abandoned carts dominate the table and aren't
   // actionable. Users opt into "All payments" (URL value 'all', which the
   // backend treats as no filter).
-  const paymentFilter  = searchParams.get('paymentStatus')        || 'PAID';
-  const orderFilter    = searchParams.get('orderStatus')          || '';
-  const search         = searchParams.get('search')               ?? '';
-  const deliveryDate   = searchParams.get('deliveryDate')         ?? '';
+  const urlPayment      = searchParams.get('paymentStatus')        || 'PAID';
+  const urlOrder        = searchParams.get('orderStatus')          || '';
+  const urlSearch       = searchParams.get('search')               ?? '';
+  const urlDeliveryDate = searchParams.get('deliveryDate')         ?? '';
+  const urlCreatedAt    = searchParams.get('createdAt')            ?? 'all_time';
+
+  // Local UI state — mirrors the URL but updates eagerly on user input so
+  // the inputs never snap back while router.push is in flight. Without
+  // this layer, controlled inputs bound directly to searchParams re-render
+  // with the stale URL value between the keystroke and the URL landing,
+  // which is what made the search bar and dropdowns feel frozen.
+  const [localSearch,       setLocalSearch]       = useState(urlSearch);
+  const [localPayment,      setLocalPayment]      = useState(urlPayment);
+  const [localOrder,        setLocalOrder]        = useState(urlOrder);
+  const [localCreatedAt,    setLocalCreatedAt]    = useState(urlCreatedAt);
+  const [localDeliveryDate, setLocalDeliveryDate] = useState(urlDeliveryDate);
+
+  // Reconcile local state whenever the URL changes externally (back/forward
+  // buttons, external navigation). If the URL matches local already, these
+  // setters are no-ops (React bails out of same-value setState).
+  useEffect(() => { setLocalSearch(urlSearch);             }, [urlSearch]);
+  useEffect(() => { setLocalPayment(urlPayment);           }, [urlPayment]);
+  useEffect(() => { setLocalOrder(urlOrder);               }, [urlOrder]);
+  useEffect(() => { setLocalCreatedAt(urlCreatedAt);       }, [urlCreatedAt]);
+  useEffect(() => { setLocalDeliveryDate(urlDeliveryDate); }, [urlDeliveryDate]);
 
   // Agents are locked to the last 4 hours by default, but not when they are
   // actively searching — searches may need to pull up an older ticket a
   // customer just called about. Backend enforces the same rule.
-  const hasSearch      = search.trim().length > 0;
+  const hasSearch       = localSearch.trim().length > 0;
   const agentTimeLocked = isAgent && !hasSearch;
-  const createdAt      = agentTimeLocked ? '4_hours' : (searchParams.get('createdAt') ?? 'all_time');
-  const totalPages     = pagination?.totalPages                   ?? 1;
-  const total          = pagination?.total                        ?? 0;
+  const createdAt       = agentTimeLocked ? '4_hours' : localCreatedAt;
+  const totalPages      = pagination?.totalPages                   ?? 1;
+  const total           = pagination?.total                        ?? 0;
 
-  // The select's fallback to 'PAID' only affects display — the data hook
-  // reads searchParams directly. Without this effect the table would show
-  // all tickets while the select claimed "Paid". Picking "All payments"
-  // sets paymentStatus=all (a present value), so this effect won't fight it.
+  // Default paymentStatus to PAID once, on mount, if the URL didn't provide
+  // one. Empty-deps intentional: running on every searchParams change added
+  // round-trips and could race with typing. Once set (or once the user picks
+  // a value), we leave it alone.
+  const didDefaultRef = useRef(false);
   useEffect(() => {
+    if (didDefaultRef.current) return;
+    didDefaultRef.current = true;
     if (searchParams.get('paymentStatus')) return;
     const p = new URLSearchParams(searchParams.toString());
     p.set('paymentStatus', 'PAID');
-    router.replace(`?${p.toString()}`);
-  }, [searchParams, router]);
+    router.replace(`${pathname}?${p.toString()}`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
+  // Push a URL change. Explicit pathname avoids the fragile `?...` form
+  // that Next 16 App Router can resolve unexpectedly during transitions.
+  function pushParams(nextParams) {
+    const p = new URLSearchParams(nextParams);
+    p.delete('page');
+    router.push(`${pathname}?${p.toString()}`);
+  }
+
+  // Update a single URL param. Optimistically updates local state so the
+  // input reflects the change immediately, then syncs to URL.
   function setParam(key, value) {
     const p = new URLSearchParams(searchParams.toString());
     if (value) p.set(key, value); else p.delete(key);
-    p.delete('page');
-    router.push(`?${p.toString()}`);
+    pushParams(p);
   }
+
+  // Debounced sync: local search → URL. 300ms feels responsive while
+  // preventing a router.push on every keystroke. Local state drives the
+  // input; the URL only catches up after the user pauses.
+  useEffect(() => {
+    if (localSearch === urlSearch) return;
+    const t = setTimeout(() => {
+      const p = new URLSearchParams(searchParams.toString());
+      if (localSearch) p.set('search', localSearch); else p.delete('search');
+      pushParams(p);
+    }, 300);
+    return () => clearTimeout(t);
+    // pushParams is stable enough for this pattern; searchParams is used
+    // to build the diff. Intentionally not including pushParams to avoid
+    // re-scheduling on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [localSearch, urlSearch]);
 
   function goToPage(p) {
     const params = new URLSearchParams(searchParams.toString());
     params.set('page', String(p));
-    router.push(`?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`);
   }
 
   return (
@@ -140,16 +194,16 @@ function DummyTicketsContent() {
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           <input
             type="text"
-            value={search}
-            onChange={(e) => setParam('search', e.target.value)}
+            value={localSearch}
+            onChange={(e) => setLocalSearch(e.target.value)}
             placeholder="Search by name, email, session..."
             className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300"
           />
         </div>
 
         <select
-          value={paymentFilter}
-          onChange={(e) => setParam('paymentStatus', e.target.value)}
+          value={localPayment}
+          onChange={(e) => { setLocalPayment(e.target.value); setParam('paymentStatus', e.target.value); }}
           className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
         >
           <option value="all">All payments</option>
@@ -161,8 +215,8 @@ function DummyTicketsContent() {
         <div className="w-px h-5 bg-gray-200 hidden sm:block" />
 
         <select
-          value={orderFilter}
-          onChange={(e) => setParam('orderStatus', e.target.value)}
+          value={localOrder}
+          onChange={(e) => { setLocalOrder(e.target.value); setParam('orderStatus', e.target.value); }}
           className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
         >
           <option value="">All orders</option>
@@ -183,7 +237,7 @@ function DummyTicketsContent() {
         ) : (
           <select
             value={createdAt}
-            onChange={(e) => setParam('createdAt', e.target.value)}
+            onChange={(e) => { setLocalCreatedAt(e.target.value); setParam('createdAt', e.target.value); }}
             className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
           >
             <option value="all_time">All time</option>
@@ -201,13 +255,13 @@ function DummyTicketsContent() {
           <div className="relative">
             <input
               type="date"
-              value={deliveryDate}
-              onChange={(e) => setParam('deliveryDate', e.target.value)}
+              value={localDeliveryDate}
+              onChange={(e) => { setLocalDeliveryDate(e.target.value); setParam('deliveryDate', e.target.value); }}
               className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
             />
-            {deliveryDate && (
+            {localDeliveryDate && (
               <button
-                onClick={() => setParam('deliveryDate', '')}
+                onClick={() => { setLocalDeliveryDate(''); setParam('deliveryDate', ''); }}
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
                 title="Clear delivery date filter"
               >

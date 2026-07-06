@@ -16,7 +16,7 @@ import { InsuranceContext } from '../../../contexts/InsuranceContext.js';
 import { useCreateInsuranceApplication } from '../../../hooks/insurance/useCreateInsuranceApplication.js';
 import { useGetNationalities } from '../../../hooks/insurance/useGetNationalities.js';
 import PhoneInput from '../../form-elements/v2/PhoneInput.js';
-import DatePicker from '../../form-elements/v2/DatePicker.js';
+import DatePicker from '../../form-elements/v1/DatePicker.js';
 import NationalitySelect from '../../form-elements/v2/NationalitySelect.js';
 import { todayDateOnly } from '../../../utils/dates';
 

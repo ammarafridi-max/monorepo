@@ -63,6 +63,13 @@ export const createAdminUserSchema = (body = {}) => ({
   status: normalizeStatus(body.status),
 });
 
+export const adminSetPasswordSchema = (body = {}) => {
+  const password = normalizePassword(body.password);
+  const passwordConfirm = String(body.passwordConfirm || '');
+  if (password !== passwordConfirm) throw new AppError('Passwords do not match', 400);
+  return { password, passwordConfirm };
+};
+
 export const updateAdminUserSchema = (body = {}) => {
   const payload = {};
 

@@ -19,8 +19,7 @@ import { TransferBookingContext } from '@travel-suite/frontend-shared/contexts/T
 export const TRANSFER_STEPS = [
   { id: 1, label: 'Select vehicle', path: '/transfer-booking/select-vehicle' },
   { id: 2, label: 'Details',        path: '/transfer-booking/details' },
-  { id: 3, label: 'Review',         path: '/transfer-booking/review' },
-  { id: 4, label: 'Payment',        path: '/transfer-booking/payment' },
+  { id: 3, label: 'Review',         path: '/transfer-booking/review', actionLabel: 'Pay now' },
 ];
 
 function formatDate(str) {
@@ -214,10 +213,11 @@ export default function TransferBookingLayout({ children }) {
     useContext(TransferBookingContext);
 
   const currentIndex = TRANSFER_STEPS.findIndex((s) => s.path === pathname);
-  const nextStep = TRANSFER_STEPS[currentIndex + 1];
+  const currentStep  = TRANSFER_STEPS[currentIndex];
+  const nextStep     = TRANSFER_STEPS[currentIndex + 1];
   const continueLabel = nextStep
     ? `Continue to ${nextStep.label.toLowerCase()}`
-    : 'Continue';
+    : (currentStep?.actionLabel ?? 'Continue');
 
   async function handleContinue() {
     const ok = await callPageAction();
@@ -257,7 +257,7 @@ export default function TransferBookingLayout({ children }) {
       <MobileBar
         vehicle={selectedVehicle}
         onContinue={handleContinue}
-        continueLabel="Continue"
+        continueLabel={continueLabel}
         isLoading={isPageActionRunning}
       />
     </div>

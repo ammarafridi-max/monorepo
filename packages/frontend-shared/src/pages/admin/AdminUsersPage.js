@@ -3,10 +3,11 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { Users, Plus, Pencil, Trash2, X, Loader2, Search, Eye, EyeOff } from 'lucide-react';
+import { Users, Plus, Pencil, Trash2, X, Loader2, Search, Eye, EyeOff, KeyRound } from 'lucide-react';
 import { useGetAdminUsers } from '../../hooks/admin-users/useGetAdminUsers';
 import { useCreateAdminUser } from '../../hooks/admin-users/useCreateAdminUser';
 import { useUpdateAdminUser } from '../../hooks/admin-users/useUpdateAdminUser';
+import { useSetAdminUserPassword } from '../../hooks/admin-users/useSetAdminUserPassword';
 import { deleteAdminUserApi } from '../../services/apiAdminUsers';
 
 const ROLES = ['admin', 'agent', 'blog-manager'];
@@ -159,11 +160,86 @@ function UserModal({ initial, onClose, onSave, saving }) {
   );
 }
 
+function SetPasswordModal({ user, onClose, onSave, saving }) {
+  const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [showPw, setShowPw] = useState(false);
+
+  const mismatch = passwordConfirm.length > 0 && password !== passwordConfirm;
+  const canSave = password.length >= 8 && password === passwordConfirm;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
+
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <div>
+            <p className="text-sm font-bold text-gray-900">Set Password</p>
+            <p className="text-[11px] text-gray-400 font-mono mt-0.5">@{user.username}</p>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition">
+            <X size={15} />
+          </button>
+        </div>
+
+        <div className="px-6 py-5 space-y-4">
+          <p className="text-xs text-gray-500">
+            Setting a new password signs this user out of all their existing sessions.
+          </p>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">New Password <span className="text-red-500">*</span></label>
+            <div className="relative">
+              <input
+                type={showPw ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Min. 8 characters"
+                minLength={8}
+                className={`${inputCls} pr-10`}
+              />
+              <button type="button" onClick={() => setShowPw((s) => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                {showPw ? <EyeOff size={14} /> : <Eye size={14} />}
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Confirm Password <span className="text-red-500">*</span></label>
+            <input
+              type={showPw ? 'text' : 'password'}
+              value={passwordConfirm}
+              onChange={(e) => setPasswordConfirm(e.target.value)}
+              placeholder="Re-enter the new password"
+              className={inputCls}
+            />
+            {mismatch && <p className="text-[11px] text-red-500 mt-1">Passwords do not match.</p>}
+          </div>
+        </div>
+
+        <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-gray-100 bg-gray-50/60">
+          <button onClick={onClose} className="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-xl transition">Cancel</button>
+          <button
+            onClick={() => onSave({ password, passwordConfirm })}
+            disabled={!canSave || saving}
+            className="flex items-center gap-2 px-4 py-2 text-xs font-bold bg-primary-700 hover:bg-primary-800 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl transition"
+          >
+            {saving && <Loader2 size={12} className="animate-spin" />}
+            Set Password
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminUsersPage() {
   const [search, setSearch]  = useState('');
   const [role, setRole]      = useState('');
   const [status, setStatus]  = useState('');
   const [modal,    setModal]    = useState(null);
+  const [pwUser,   setPwUser]   = useState(null);
   const [deleteId, setDeleteId] = useState(null);
 
   const { users = [], isLoadingUsers } = useGetAdminUsers({
@@ -173,6 +249,7 @@ export default function AdminUsersPage() {
   });
   const { createUser, isCreating }     = useCreateAdminUser();
   const { updateUser, isUpdating }     = useUpdateAdminUser();
+  const { setPassword, isSettingPassword } = useSetAdminUserPassword();
 
   const queryClient = useQueryClient();
   const { mutate: deleteUser, isPending: isDeletingUser } = useMutation({
@@ -201,6 +278,13 @@ export default function AdminUsersPage() {
     deleteUser(username, { onSettled: () => setDeleteId(null) });
   }
 
+  function handleSetPassword(passwordData) {
+    setPassword(
+      { username: pwUser.username, passwordData },
+      { onSuccess: () => setPwUser(null) },
+    );
+  }
+
   return (
     <>
       {modal && (
@@ -209,6 +293,15 @@ export default function AdminUsersPage() {
           onClose={() => setModal(null)}
           onSave={handleSave}
           saving={saving}
+        />
+      )}
+
+      {pwUser && (
+        <SetPasswordModal
+          user={pwUser}
+          onClose={() => setPwUser(null)}
+          onSave={handleSetPassword}
+          saving={isSettingPassword}
         />
       )}
 
@@ -325,6 +418,9 @@ export default function AdminUsersPage() {
                           <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button onClick={() => setModal(user)} className="p-1.5 rounded-lg text-gray-400 hover:text-primary-700 hover:bg-primary-50 transition" title="Edit">
                               <Pencil size={14} />
+                            </button>
+                            <button onClick={() => setPwUser(user)} className="p-1.5 rounded-lg text-gray-400 hover:text-amber-600 hover:bg-amber-50 transition" title="Set password">
+                              <KeyRound size={14} />
                             </button>
                             <button onClick={() => setDeleteId(user.username)} className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition" title="Delete">
                               <Trash2 size={14} />

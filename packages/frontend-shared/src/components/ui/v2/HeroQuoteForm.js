@@ -8,7 +8,7 @@ import { InsuranceContext } from '../../../contexts/InsuranceContext.js';
 import { useLocalStorage } from '../../../hooks/general/useLocalStorage.js';
 import { pixelLead } from '../../../utils/pixel';
 import { trackQuoteStarted } from '../../../utils/analytics';
-import DatePicker from '../../form-elements/v2/DatePicker.js';
+import DatePicker from '../../form-elements/v1/DatePicker.js';
 import { todayDateOnly } from '../../../utils/dates';
 
 function Counter({ label, ageRange, value, onDecrement, onIncrement }) {

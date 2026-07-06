@@ -37,6 +37,16 @@ export async function updateAdminUserApi(username, userData) {
   });
 }
 
+export async function setAdminUserPasswordApi(username, passwordData) {
+  return await apiFetch(`${URL}/${username}/password`, {
+    method: 'PATCH',
+    body: JSON.stringify(passwordData),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+}
+
 export async function deleteAdminUserApi(username) {
   return await apiFetch(`${URL}/${username}`, {
     method: 'DELETE',

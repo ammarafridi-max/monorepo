@@ -1,6 +1,10 @@
 import { Router } from "express";
 import { AppError } from "@travel-suite/utils";
-import { createAdminUserSchema, updateAdminUserSchema } from "./validators.js";
+import {
+  createAdminUserSchema,
+  updateAdminUserSchema,
+  adminSetPasswordSchema,
+} from "./validators.js";
 
 function validate(schemaFn) {
   return (req, res, next) => {
@@ -34,6 +38,15 @@ export function createAdminUsersRouterFromParts({ controller, auth }) {
     .get(controller.getAdminUser)
     .patch(validate(updateAdminUserSchema), controller.updateAdminUser)
     .delete(controller.deleteAdminUser);
+
+  // Admin-only: reset any user's password (does not require the target's current password)
+  router.patch(
+    "/:username/password",
+    protect,
+    restrictTo("admin"),
+    validate(adminSetPasswordSchema),
+    controller.adminSetUserPassword,
+  );
 
   return router;
 }
