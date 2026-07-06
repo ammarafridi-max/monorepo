@@ -1,5 +1,7 @@
 import { renderInsurancePaymentTemplate } from './templates/insurance-payment.js';
 import { renderTicketPaymentTemplate } from './templates/ticket-payment.js';
+import { renderBookingPaymentTemplate } from './templates/booking-payment.js';
+import { renderBookingPaymentAdminTemplate } from './templates/booking-payment-admin.js';
 import { renderPaymentLinkPaidTemplate } from './templates/payment-link-paid.js';
 import { renderVisaLeadTemplate } from './templates/visa-lead.js';
 import { formatDate, formatToDDMMM, formatToDDMMMYYYYMixed, extractIataCode } from './helpers.js';
@@ -197,7 +199,76 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
     }
   }
 
-  // -- 5. Visa lead (admin) ---------------------------------------------------
+  // -- 5. Booking payment (admin) --------------------------------------------
+
+  async function sendBookingPaymentToAdmin(data) {
+    try {
+      const htmlContent = renderBookingPaymentAdminTemplate({ brand, ...data });
+      const fullName = `${data.firstName || ''} ${data.lastName || ''}`.trim() || 'Customer';
+      const sent = await sendEmail({
+        email: brand.adminEmail,
+        name: brand.paymentsSenderName,
+        subject: `New booking paid — ${fullName} · ${data.bookingRef || ''}`,
+        htmlContent,
+      });
+      return sent;
+    } catch (err) {
+      log('[notifications] sendBookingPaymentToAdmin failed', {
+        bookingRef: data?.bookingRef,
+        err: err.message,
+      });
+      return false;
+    }
+  }
+
+  // -- 6. Booking payment (customer) -----------------------------------------
+
+  async function sendBookingConfirmationToCustomer(data) {
+    try {
+      if (!data?.email) return false;
+      const htmlContent = renderBookingPaymentTemplate({ brand, ...data });
+      const sent = await sendEmail({
+        email: data.email,
+        name: `${data.firstName || ''} ${data.lastName || ''}`.trim() || data.email,
+        subject: `Booking confirmed — Airport Transfer on ${data.date ? new Date(data.date + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}`,
+        htmlContent,
+      });
+      return sent;
+    } catch (err) {
+      log('[notifications] sendBookingConfirmationToCustomer failed', {
+        email: data?.email,
+        err: err.message,
+      });
+      return false;
+    }
+  }
+
+  // -- 7. Contact form (admin) -----------------------------------------------
+
+  async function sendContactFormToAdmin({ name, email, subject, message }) {
+    try {
+      const textContent = [
+        `Name: ${name}`,
+        `Email: ${email}`,
+        ``,
+        `Subject: ${subject}`,
+        ``,
+        message,
+      ].join('\n');
+      const sent = await sendEmail({
+        email: brand.adminEmail,
+        name: brand.teamName,
+        subject: `Contact form: ${subject} — ${name}`,
+        textContent,
+      });
+      return sent;
+    } catch (err) {
+      log('[notifications] sendContactFormToAdmin failed', { name, err: err.message });
+      return false;
+    }
+  }
+
+  // -- 8. Visa lead (admin) ---------------------------------------------------
 
   async function sendVisaLeadToAdmin(data) {
     try {
@@ -222,7 +293,10 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
     sendInsurancePaymentToAdmin,
     sendTicketPaymentToAdmin,
     sendTicketPaymentToCustomer,
+    sendBookingPaymentToAdmin,
+    sendBookingConfirmationToCustomer,
     sendPaymentLinkPaidToAdmin,
+    sendContactFormToAdmin,
     sendVisaLeadToAdmin,
   };
 }
