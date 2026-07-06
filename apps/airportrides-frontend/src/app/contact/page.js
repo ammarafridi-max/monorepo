@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Container from '@travel-suite/frontend-shared/components/shared/layout/Container';
 import PageHero from '@/sections/PageHero';
 import { Mail, MessageSquare, MapPin, Clock } from 'lucide-react';
+import { apiFetchPublic } from '@travel-suite/frontend-shared/services/apiClient';
 
 const paths = [
   { label: 'Home', path: '/' },
@@ -56,16 +57,29 @@ const inputCls =
 export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
   const [sent, setSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
 
   function handleChange(e) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    // TODO: wire to Brevo / backend contact endpoint
-    console.log('Contact form submission:', form);
-    setSent(true);
+    setError(null);
+    setSubmitting(true);
+    try {
+      await apiFetchPublic('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      setSent(true);
+    } catch {
+      setError('Something went wrong. Please try again or email us directly.');
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -181,11 +195,18 @@ export default function ContactPage() {
                     />
                   </Field>
 
+                  {error && (
+                    <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                      {error}
+                    </p>
+                  )}
+
                   <button
                     type="submit"
-                    className="self-start rounded-pill bg-clay-600 px-8 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-clay-700"
+                    disabled={submitting}
+                    className="self-start rounded-pill bg-clay-600 px-8 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-clay-700 disabled:cursor-wait disabled:opacity-70"
                   >
-                    Send message
+                    {submitting ? 'Sending…' : 'Send message'}
                   </button>
                 </form>
               )}

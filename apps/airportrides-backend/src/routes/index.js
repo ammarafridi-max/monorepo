@@ -76,15 +76,12 @@ router.use("/currencies", createCurrenciesRouter({ db, auth }));
 const airlabs = createAirLabsClient({ apiKey: config.airlabs.apiKey });
 router.use("/airports", createAirportsRouter({ airlabs }));
 
-// -- Bookings ------------------------------------------------------------------
-router.use("/bookings", createBookingsRouter({ db }));
-
 // -- Locations (Google Maps autocomplete, coordinates, distance, IP geo) -------
 router.use(
   "/locations",
   createLocationsRouter({
     googleMapsApiKey: config.googleMaps.apiKey,
-    ipInfoApiKey:     config.ipInfo.apiKey,
+    ipInfoApiKey: config.ipInfo.apiKey,
   }),
 );
 
@@ -111,6 +108,30 @@ const notifications = createNotificationsService({
 // -- Stripe --------------------------------------------------------------------
 const stripe = createStripeClient({ secretKey: config.stripe.secretKey });
 
+// -- Bookings ------------------------------------------------------------------
+const {
+  router: bookingsRouter,
+  service: bookingService,
+  controller: bookingController,
+} = createBookingsRouter({ db, stripe });
+router.use("/bookings", bookingsRouter);
+router.get("/bookings", bookingController.list);
+router.patch("/bookings/:id/status", bookingController.updateStatus);
+
+// -- Contact form --------------------------------------------------------------
+router.post('/contact', async (req, res, next) => {
+  try {
+    const { name, email, subject, message } = req.body;
+    if (!name || !email || !subject || !message) {
+      return res.status(400).json({ error: 'All fields are required' });
+    }
+    await notifications.sendContactFormToAdmin({ name, email, subject, message });
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // -- Affiliates ----------------------------------------------------------------
 // router.use("/affiliates", createAffiliatesRouter({ db, auth, TicketModel })); // TODO: Replace ticket model with ride model
 
@@ -128,6 +149,71 @@ router.use(
   "/payments",
   createPaymentsAdminRouter({ controller: paymentsController, auth }),
 );
+
+async function handleBookingPaymentSuccess(session) {
+  const bookingId = session.metadata?.bookingId;
+  if (!bookingId) {
+    logger.warn("[booking] No bookingId in webhook metadata", {
+      sessionId: session.id,
+    });
+    return;
+  }
+  const booking = await bookingService.getBookingById(bookingId);
+  if (!booking) {
+    logger.warn("[booking] Booking not found for webhook", { bookingId });
+    return;
+  }
+  await bookingService.updateBookingStatus(bookingId, "paid");
+
+  const bookingRef = booking.bookingRef
+    ? `AR-${booking.bookingRef}`
+    : `AR-${String(bookingId).slice(-6).toUpperCase()}`;
+
+  const emailData = {
+    email: booking.passenger.email,
+    firstName: booking.passenger.firstName,
+    lastName: booking.passenger.lastName,
+    countryCode: booking.passenger.countryCode || null,
+    phone: booking.passenger.phone || null,
+    flightNumber: booking.passenger.flightNumber || null,
+    specialRequests: booking.passenger.specialRequests || null,
+    bookingRef,
+    bookingId,
+    pickup: booking.trip.pickup?.label,
+    dropoff: booking.trip.dropoff?.label,
+    date: booking.trip.date,
+    time: booking.trip.time,
+    passengers: booking.trip.passengers,
+    luggage: booking.trip.luggage,
+    vehicleName: booking.vehicle.name,
+    vehicleClass: booking.vehicle.class,
+    price: booking.vehicle.price,
+  };
+
+  const [adminSent, customerSent] = await Promise.all([
+    notifications.sendBookingPaymentToAdmin(emailData),
+    notifications.sendBookingConfirmationToCustomer(emailData),
+  ]);
+
+  if (!adminSent) {
+    logger.warn(
+      "[booking] Admin notification email not sent — check BREVO_API_KEY and sender verification",
+      {
+        bookingRef,
+        bookingId,
+      },
+    );
+  }
+  if (!customerSent) {
+    logger.warn(
+      "[booking] Customer confirmation email not sent — check BREVO_API_KEY and sender verification",
+      {
+        bookingRef,
+        email: emailData.email,
+      },
+    );
+  }
+}
 
 async function handlePaymentLinkSuccess(session) {
   const updated = await paymentService.markPaymentLinkPaid({ session });
@@ -157,7 +243,7 @@ export const stripeWebhookHandler = createStripeWebhookHandler({
   webhookSecret: config.stripe.webhookSecret,
   db,
   handlers: {
-    // ticket: handleStripeSuccess, // TODO: Set up handleStripeSuccess for rides
+    booking: handleBookingPaymentSuccess,
     "payment-link": handlePaymentLinkSuccess,
   },
 });

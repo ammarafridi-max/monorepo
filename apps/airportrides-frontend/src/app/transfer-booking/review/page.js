@@ -1,11 +1,9 @@
 'use client';
 
-import { useContext } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import {
   ArrowLeft,
-  ArrowRight,
   Car,
   Check,
   MapPin,
@@ -19,15 +17,13 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { TransferBookingContext } from '@travel-suite/frontend-shared/contexts/TransferBookingContext';
+import { createBookingCheckoutApi } from '@travel-suite/frontend-shared/services/apiBookings';
 
 function formatDate(str) {
   if (!str) return '—';
   const [y, m, d] = str.split('-').map(Number);
   return new Date(y, m - 1, d).toLocaleDateString('en-GB', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   });
 }
 
@@ -44,10 +40,7 @@ function SectionHeader({ title, editHref }) {
     <div className="mb-3 mt-8 flex items-center justify-between first:mt-0">
       <h2 className="text-base font-semibold text-ink">{title}</h2>
       {editHref && (
-        <Link
-          href={editHref}
-          className="text-xs font-semibold text-clay-600 hover:text-clay-700"
-        >
+        <Link href={editHref} className="text-xs font-semibold text-clay-600 hover:text-clay-700">
           Edit
         </Link>
       )}
@@ -83,14 +76,42 @@ function Row({ icon: Icon, label, value, subtle }) {
 }
 
 export default function ReviewPage() {
-  const router = useRouter();
   const {
     pickup, dropoff, date, time, passengers, luggage,
-    selectedVehicle,
-    passengerDetails,
+    selectedVehicle, passengerDetails, bookingId,
+    registerPageAction, unregisterPageAction,
   } = useContext(TransferBookingContext);
 
-  // ── Incomplete state ─────────────────────────────────────────────────────────
+  const [error, setError] = useState(null);
+
+  const actionRef = useRef(null);
+  actionRef.current = async () => {
+    setError(null);
+    const origin = window.location.origin;
+    const bid = bookingId || '';
+    const successUrl = `${origin}/transfer-booking/payment?status=success&bookingId=${bid}&sessionId={CHECKOUT_SESSION_ID}`;
+    const cancelUrl  = `${origin}/transfer-booking/review`;
+    try {
+      const result = await createBookingCheckoutApi({
+        vehicle:   selectedVehicle,
+        passenger: passengerDetails,
+        bookingId: bid || undefined,
+        successUrl,
+        cancelUrl,
+      });
+      window.location.href = result.url;
+      return false;
+    } catch {
+      setError('Unable to start checkout. Please try again.');
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    registerPageAction(() => actionRef.current());
+    return () => unregisterPageAction();
+  }, [registerPageAction, unregisterPageAction]);
+
   if (!selectedVehicle) {
     return (
       <div className="py-20 text-center">
@@ -105,8 +126,7 @@ export default function ReviewPage() {
           href="/transfer-booking/select-vehicle"
           className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-clay-600 hover:text-clay-700"
         >
-          <ArrowLeft size={14} />
-          Select a vehicle
+          <ArrowLeft size={14} /> Select a vehicle
         </Link>
       </div>
     );
@@ -126,29 +146,21 @@ export default function ReviewPage() {
           href="/transfer-booking/details"
           className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-clay-600 hover:text-clay-700"
         >
-          <ArrowLeft size={14} />
-          Enter passenger details
+          <ArrowLeft size={14} /> Enter passenger details
         </Link>
       </div>
     );
   }
 
-  // ── Full review ──────────────────────────────────────────────────────────────
-  const { firstName, lastName, email, countryCode, phone, flightNumber, specialRequests } =
-    passengerDetails;
-
-  function handleConfirm() {
-    router.push('/transfer-booking/payment');
-  }
+  const { firstName, lastName, email, countryCode, phone, flightNumber, specialRequests } = passengerDetails;
 
   return (
     <>
       <h1 className="text-2xl font-semibold text-ink">Review your booking</h1>
       <p className="mt-1 text-sm font-light text-ink-soft">
-        Check everything below before proceeding to payment.
+        Everything look good? Click "Pay now" to complete your booking.
       </p>
 
-      {/* ── Trip details ────────────────────────────────────────────────── */}
       <SectionHeader title="Your trip" editHref="/transfer-booking/select-vehicle" />
       <ReviewCard>
         <Row icon={MapPin}    label="Pick up"    value={pickup?.label} />
@@ -159,7 +171,6 @@ export default function ReviewPage() {
         <Row icon={Briefcase} label="Luggage"    value={`${luggage} ${luggage === 1 ? 'bag' : 'bags'}`} />
       </ReviewCard>
 
-      {/* ── Vehicle ─────────────────────────────────────────────────────── */}
       <SectionHeader title="Your vehicle" editHref="/transfer-booking/select-vehicle" />
       <ReviewCard>
         <div className="border-b border-sand-100 px-5 py-4">
@@ -181,40 +192,29 @@ export default function ReviewPage() {
           <ul className="flex flex-col gap-1.5">
             {selectedVehicle.features.map((f) => (
               <li key={f} className="flex items-center gap-2 text-xs text-ink-soft">
-                <Check size={11} className="shrink-0 text-clay-500" />
-                {f}
+                <Check size={11} className="shrink-0 text-clay-500" /> {f}
               </li>
             ))}
           </ul>
         </div>
       </ReviewCard>
 
-      {/* ── Passenger details ────────────────────────────────────────────── */}
       <SectionHeader title="Passenger details" editHref="/transfer-booking/details" />
       <ReviewCard>
-        <Row icon={Users}  label="Name"          value={`${firstName} ${lastName}`} />
-        <Row icon={Mail}   label="Email"         value={email} />
-        <Row icon={Phone}  label="Phone"         value={`${countryCode} ${phone}`} />
-        <Row icon={Plane}  label="Flight number" value={flightNumber} />
+        <Row icon={Users}         label="Name"             value={`${firstName} ${lastName}`} />
+        <Row icon={Mail}          label="Email"            value={email} />
+        <Row icon={Phone}         label="Phone"            value={`${countryCode} ${phone}`} />
+        <Row icon={Plane}         label="Flight number"    value={flightNumber} />
         {specialRequests && (
           <Row icon={MessageSquare} label="Special requests" value={specialRequests} subtle />
         )}
       </ReviewCard>
 
-      {/* ── Confirm ─────────────────────────────────────────────────────── */}
-      <div className="mt-8 border-t border-sand-200 pt-6">
-        <button
-          type="button"
-          onClick={handleConfirm}
-          className="inline-flex items-center gap-2 rounded-xl bg-clay-600 px-7 py-3.5 text-sm font-semibold text-white shadow-warm-sm transition-colors hover:bg-clay-700"
-        >
-          Confirm &amp; proceed to payment
-          <ArrowRight size={15} />
-        </button>
-        <p className="mt-3 text-xs text-ink-mute">
-          No payment is taken until the next step. You can still go back and edit.
-        </p>
-      </div>
+      {error && (
+        <div className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
     </>
   );
 }

@@ -19,6 +19,12 @@ const nav = [
         exact: true,
         roles: ["admin", "agent"],
       },
+      {
+        label: "Bookings",
+        href: "/admin/bookings",
+        icon: "Car",
+        roles: ["admin", "agent"],
+      },
     ],
   },
   {
