@@ -26,7 +26,11 @@ import {
   HiOutlineCurrencyDollar,
   HiShieldCheck,
 } from "react-icons/hi2";
-import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineHotel } from 'react-icons/md';
+import {
+  MdOutlineAirplaneTicket,
+  MdOutlineHealthAndSafety,
+  MdOutlineHotel,
+} from "react-icons/md";
 
 const keyword = "dummy ticket";
 
@@ -65,21 +69,25 @@ const benefits = [
 
 const testimonials = [
   {
-    quote: "The process was quick and straightforward. I received my dummy ticket within minutes, and the PNR was fully verifiable. It worked exactly as expected for my onward travel requirement.",
+    quote:
+      "The process was quick and straightforward. I received my dummy ticket within minutes, and the PNR was fully verifiable. It worked exactly as expected for my onward travel requirement.",
     name: "David S.",
     location: "Traveler – Used dummy ticket for onward travel verification",
     stars: 5,
   },
   {
-    quote: "I needed proof of onward travel on short notice and this service delivered instantly. The flight itinerary looked professional, the details were accurate, and everything checked out with the airline.",
+    quote:
+      "I needed proof of onward travel on short notice and this service delivered instantly. The flight itinerary looked professional, the details were accurate, and everything checked out with the airline.",
     name: "Maria K.",
     location: "Tourist – Used dummy flight itinerary for airline check-in",
     stars: 5,
   },
   {
-    quote: "Booking was simple and the dummy ticket arrived by email almost immediately. The PNR was valid and easy to verify, which made my travel process stress-free.",
+    quote:
+      "Booking was simple and the dummy ticket arrived by email almost immediately. The PNR was valid and easy to verify, which made my travel process stress-free.",
     name: "Ahmed R.",
-    location: "International Traveler – Used dummy ticket for immigration check",
+    location:
+      "International Traveler – Used dummy ticket for immigration check",
     stars: 5,
   },
 ];
@@ -119,7 +127,7 @@ const faqs = [
 
 const pageData = {
   meta: {
-    title: "Dummy Ticket for Onward Travel from USD 13 | Instant & Verifiable",
+    title: "Dummy Ticket from USD 13 | Verifiable PNR for Visas & Travel",
     description:
       "Book a dummy ticket for onward travel with a verifiable PNR. Ideal for airline check-in and immigration checks. Instant email delivery. Starting from USD 13.",
     canonical: "https://www.dummyticket365.com",
@@ -128,7 +136,7 @@ const pageData = {
     hero: {
       title: "Dummy Tickets for Visa, Onward Travel From $13",
       subtitle:
-        "Reserve your dummy flight ticket in minutes with us. Get a verifiable ticket with a valid PNR that works for visa applications, onward travel, and immigration checks. Whether you’re applying for a visa, or need proof of onward travel, we make the process fast, simple, and cost-effective.",
+        "A dummy ticket is a real flight reservation with a valid PNR you can verify on GDS platforms, not a purchased ticket. Use it for visa applications, airline check-in, and immigration checks. We deliver yours by email in minutes, from $13, so you get fast, verifiable proof without paying for a flight you don't need.",
       form: <AllForms />,
     },
     process: {
@@ -144,17 +152,20 @@ const pageData = {
         {
           icon: <MdOutlineAirplaneTicket />,
           title: "Dummy Tickets",
-          description: "Verifiable flight reservations with a real PNR code, accepted by embassies and visa centres worldwide. Used by thousands of travellers each year for Schengen, UK, US, Canadian, and other visa applications.",
+          description:
+            "Verifiable flight reservations with a real PNR code, accepted by embassies and visa centres worldwide. Used by thousands of travellers each year for Schengen, UK, US, Canadian, and other visa applications.",
         },
         {
           icon: <MdOutlineHotel />,
           title: "Hotel Reservations",
-          description: "Temporary hotel reservations for visa applications, formatted to meet embassy and consulate requirements. Like dummy tickets, these are real reservations — not paid bookings — delivered by email so you can submit your file without committing the funds upfront.",
+          description:
+            "Temporary hotel reservations for visa applications, formatted to meet embassy and consulate requirements. Like dummy tickets, these are real reservations — not paid bookings — delivered by email so you can submit your file without committing the funds upfront.",
         },
         {
           icon: <MdOutlineHealthAndSafety />,
           title: "Travel Insurance",
-          description: "Schengen-compliant travel insurance meeting the mandatory EUR 30,000 medical coverage requirement. Genuine AXA-backed policies issued instantly and accepted by embassies.",
+          description:
+            "Schengen-compliant travel insurance meeting the mandatory EUR 30,000 medical coverage requirement. Genuine AXA-backed policies issued instantly and accepted by embassies.",
         },
       ],
     },
@@ -239,12 +250,12 @@ export default function HomePage() {
       <Hero
         title={pageData.sections.hero.title}
         subtitle={pageData.sections.hero.subtitle}
-        form={<AllForms forms={['ticket']} />}
+        form={<AllForms forms={["ticket"]} />}
         pills={[
-          'Dummy tickets from $13',
-          'Valid PNR included',
-          'Accepted worldwide',
-          'Delivered in minutes',
+          "Dummy tickets from $13",
+          "Valid 6-digit PNR included",
+          "Accepted worldwide",
+          "Delivered in minutes",
         ]}
       />
       {/* <QuickAnswer
@@ -283,10 +294,28 @@ export default function HomePage() {
         title="Popular Dummy Ticket Pages"
         subtitle="Country-specific and product-specific options"
         links={[
-          { anchor: 'Dummy ticket for a Schengen visa', href: '/dummy-ticket-schengen-visa', blurb: 'Schengen-ready reservation with verifiable PNR, accepted at VFS, BLS, and TLScontact.' },
-          { anchor: 'Dummy ticket for a UK visa', href: '/dummy-ticket-uk-visa', blurb: 'Standard Visitor visa file ready, no paid ticket needed before approval.' },
-          { anchor: 'Dummy ticket for an Australia visa', href: '/dummy-ticket-australia-visa', blurb: 'Formatted for the Subclass 600 ImmiAccount upload.' },
-          { anchor: 'Onward ticket for airline check-in', href: '/onward-ticket', blurb: 'Proof of onward travel in three validity tiers from $13.' },
+          {
+            anchor: "Dummy ticket for a Schengen visa",
+            href: "/dummy-ticket-schengen-visa",
+            blurb:
+              "Schengen-ready reservation with verifiable PNR, accepted at VFS, BLS, and TLScontact.",
+          },
+          {
+            anchor: "Dummy ticket for a UK visa",
+            href: "/dummy-ticket-uk-visa",
+            blurb:
+              "Standard Visitor visa file ready, no paid ticket needed before approval.",
+          },
+          {
+            anchor: "Dummy ticket for an Australia visa",
+            href: "/dummy-ticket-australia-visa",
+            blurb: "Formatted for the Subclass 600 ImmiAccount upload.",
+          },
+          {
+            anchor: "Onward ticket for airline check-in",
+            href: "/onward-ticket",
+            blurb: "Proof of onward travel in three validity tiers from $13.",
+          },
         ]}
       />
       <Contact email="info@dummyticket365.com" />
