@@ -35,7 +35,12 @@ export const DEFAULT_GENERATION_MAX_WAIT_MS = 6 * 60 * 1000; // 6 min per image
  * @param {Object} opts
  * @param {ReplicateClient} opts.client
  * @param {readonly string[]} opts.prompts - one prompt per output image
- * @param {string} opts.imageZipUrl - training images (Phase 4 replaces this)
+ * @param {(order: any) => Promise<string>} [opts.resolveTrainingZip] - returns the
+ *        zip URL to train this order on (built from its real uploaded images)
+ * @param {string} [opts.imageZipUrl] - static fallback zip URL when no resolver
+ *        is provided (used by tests and by the TEST_IMAGE_ZIP_URL dev override)
+ * @param {(orderId: string) => Promise<void>} [opts.onDelivered] - idempotent
+ *        side effect to run when an order is DELIVERED (e.g. send the email)
  * @param {number} [opts.pollIntervalMs]
  * @param {number} [opts.trainingMaxWaitMs]
  * @param {number} [opts.generationMaxWaitMs]
@@ -43,7 +48,9 @@ export const DEFAULT_GENERATION_MAX_WAIT_MS = 6 * 60 * 1000; // 6 min per image
 export function createPipeline({
   client,
   prompts,
+  resolveTrainingZip,
   imageZipUrl,
+  onDelivered,
   pollIntervalMs = DEFAULT_POLL_INTERVAL_MS,
   trainingMaxWaitMs = DEFAULT_TRAINING_MAX_WAIT_MS,
   generationMaxWaitMs = DEFAULT_GENERATION_MAX_WAIT_MS,
@@ -84,9 +91,13 @@ export function createPipeline({
     let trainingId = order.replicate?.trainingId;
 
     if (!trainingId) {
-      // TODO (Phase 4): use the order's real uploaded images instead of the
-      // shared test zip.
-      const started = await client.startTraining(imageZipUrl);
+      // Build (or resolve) the zip of THIS order's real uploaded selfies. The
+      // static imageZipUrl is only a fallback for tests / the dev override.
+      const zipUrl = resolveTrainingZip ? await resolveTrainingZip(order) : imageZipUrl;
+      if (!zipUrl) {
+        throw new Error(`[worker] order ${orderId} has no training images to train on`);
+      }
+      const started = await client.startTraining(zipUrl);
       trainingId = started.trainingId;
       // Persist BEFORE polling so a crash here reattaches instead of retraining.
       await Order.updateOne({ _id: orderId }, { $set: { 'replicate.trainingId': trainingId } });
@@ -214,8 +225,12 @@ export function createPipeline({
           break;
 
         case ORDER_STATES.DELIVERED:
-          // Already done. Re-running the job is a safe no-op.
-          console.log(`[worker] order ${orderId} already DELIVERED, nothing to do`);
+          // Reached delivery. Run the idempotent delivery side effect (email)
+          // here, NOT only on the fresh transition: entering this case after a
+          // restart must still guarantee the email goes out exactly once. The
+          // hook's own deliveredEmailSentAt guard makes repeat entry a no-op.
+          if (onDelivered) await onDelivered(orderId);
+          console.log(`[worker] order ${orderId} DELIVERED`);
           return;
 
         default:

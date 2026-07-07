@@ -1,7 +1,9 @@
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
+import { randomUUID } from 'node:crypto';
 import dotenv from 'dotenv';
 import express from 'express';
+import cors from 'cors';
 
 // Load the monorepo-root .env regardless of the cwd this service is started from
 // (pnpm --filter runs scripts with the package dir as cwd).
@@ -12,6 +14,7 @@ import { Queue } from 'bullmq';
 import {
   connectMongo,
   createRedisConnection,
+  createStorage,
   Order,
   ORDER_STATES,
   OrderTransitionConflictError,
@@ -20,20 +23,31 @@ import {
 } from '@headliner/shared';
 
 /**
- * Headliner API (Phase 2: real money in).
+ * Headliner API (Phase 4: uploads + delivery).
  *
- * POST /checkout creates an order and a real Stripe Checkout Session. The
- * customer pays on Stripe, then Stripe calls POST /webhooks/stripe, which is the
- * idempotency boundary: it makes ONE atomic write (AWAITING_PAYMENT -> PAID) and
- * enqueues the pipeline exactly once. Replicate is still stubbed (Phase 3) and
- * there is no UI yet (Phase 4).
+ * - POST /uploads/presign returns presigned PUT URLs so the browser uploads
+ *   selfies DIRECTLY to R2. Bytes never pass through this service.
+ * - POST /checkout creates an order with the customer's real uploaded image URLs
+ *   and a Stripe Checkout Session. The server owns the price.
+ * - POST /webhooks/stripe is the idempotency boundary: one atomic write
+ *   (AWAITING_PAYMENT -> PAID) and one enqueue.
+ * - GET /orders/:id returns a PUBLIC view (no cost, no Stripe/Replicate internals)
+ *   for the success page to poll.
  */
 
 // The server owns the price. Never trust the client for money.
 const PRICE_CENTS = 3500;
+// Reject absurd upload batches. A face fine-tune wants ~10-15 photos.
+const MAX_UPLOAD_FILES = 20;
 
-const { MONGODB_URI, REDIS_URL, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, PORT = 3001 } =
-  process.env;
+const {
+  MONGODB_URI,
+  REDIS_URL,
+  STRIPE_SECRET_KEY,
+  STRIPE_WEBHOOK_SECRET,
+  WEB_BASE_URL = 'http://localhost:3000',
+  PORT = 3001,
+} = process.env;
 if (!MONGODB_URI) throw new Error('[api] MONGODB_URI is required');
 if (!REDIS_URL) throw new Error('[api] REDIS_URL is required');
 if (!STRIPE_SECRET_KEY) throw new Error('[api] STRIPE_SECRET_KEY is required');
@@ -58,7 +72,29 @@ function pipelineJobOpts(orderId) {
   };
 }
 
+/**
+ * The PUBLIC projection of an order. Everything the success page needs, and
+ * nothing it should not see: no computeCostCents (our margin), no Stripe ids, no
+ * Replicate training internals.
+ */
+function toPublicOrder(order) {
+  return {
+    orderId: order._id.toString(),
+    status: order.status,
+    customerEmail: order.customerEmail,
+    resultImageUrls: order.resultImageUrls ?? [],
+    createdAt: order.createdAt,
+    deliveredAt: order.deliveredAt ?? null,
+    // A calm, non-technical hint for a failed order (Phase 5 owns refunds).
+    failed: order.status === ORDER_STATES.FAILED,
+  };
+}
+
 const app = express();
+
+// The web app is a separate origin (localhost:3000 in dev). Allow it to call
+// the JSON endpoints. The webhook is server-to-server and needs no CORS.
+app.use(cors({ origin: WEB_BASE_URL }));
 
 /**
  * POST /webhooks/stripe  --  THE critical surface. Verify, one atomic write,
@@ -137,11 +173,52 @@ app.get('/health', (req, res) => {
 });
 
 /**
+ * POST /uploads/presign  --  hand the browser presigned PUT URLs so it uploads
+ * selfies DIRECTLY to R2. We never see the bytes.
+ *
+ * Body: { files: [{ filename, contentType }] }
+ * Returns: { uploads: [{ uploadUrl, publicUrl, key, contentType }] }
+ */
+app.post('/uploads/presign', async (req, res) => {
+  try {
+    const { files } = req.body ?? {};
+    if (!Array.isArray(files) || files.length === 0) {
+      return res.status(400).json({ error: 'files must be a non-empty array' });
+    }
+    if (files.length > MAX_UPLOAD_FILES) {
+      return res.status(400).json({ error: `at most ${MAX_UPLOAD_FILES} files` });
+    }
+    for (const f of files) {
+      if (!f || typeof f.contentType !== 'string' || !f.contentType.startsWith('image/')) {
+        return res.status(400).json({ error: 'each file needs an image/* contentType' });
+      }
+    }
+
+    const storage = createStorage();
+    const uploads = await Promise.all(
+      files.map(async (f) => {
+        // A fresh uuid folder per file keeps names unique and un-guessable.
+        const safeName = String(f.filename || 'photo').replace(/[^a-zA-Z0-9._-]/g, '_');
+        const key = `uploads/${randomUUID()}/${safeName}`;
+        const uploadUrl = await storage.presignPut(key, f.contentType);
+        return { uploadUrl, publicUrl: storage.publicUrl(key), key, contentType: f.contentType };
+      })
+    );
+
+    return res.json({ uploads });
+  } catch (err) {
+    console.error('[api] POST /uploads/presign failed:', err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+/**
  * POST /checkout  --  create an order and a real Stripe Checkout Session.
  *
  * The server owns the price. The client cannot influence what is charged.
  *
- * Body: { customerEmail, uploadedImageUrls? }
+ * Body: { customerEmail, uploadedImageUrls: string[] }  (real R2 URLs from the
+ * direct upload above)
  */
 app.post('/checkout', async (req, res) => {
   try {
@@ -149,20 +226,16 @@ app.post('/checkout', async (req, res) => {
     if (!customerEmail) {
       return res.status(400).json({ error: 'customerEmail is required' });
     }
-
-    // TODO (Phase 4): real uploaded URLs from storage. No file storage yet, so
-    // fall back to a placeholder if the client did not supply any.
-    const images =
-      Array.isArray(uploadedImageUrls) && uploadedImageUrls.length > 0
-        ? uploadedImageUrls
-        : ['https://placehold.co/512x512?text=selfie'];
+    if (!Array.isArray(uploadedImageUrls) || uploadedImageUrls.length === 0) {
+      return res.status(400).json({ error: 'uploadedImageUrls must be a non-empty array' });
+    }
 
     // Create the order first so we have an id to put in the session metadata.
     // amountPaidCents is intentionally NOT set yet: it is written from Stripe in
     // the webhook once payment is confirmed.
     const order = await Order.create({
       customerEmail,
-      uploadedImageUrls: images,
+      uploadedImageUrls,
     });
     const orderId = order._id.toString();
 
@@ -180,9 +253,8 @@ app.post('/checkout', async (req, res) => {
         },
       ],
       metadata: { orderId },
-      // TODO (Phase 4): real success/cancel URLs on the web app.
-      success_url: `http://localhost:3000/success?orderId=${orderId}`,
-      cancel_url: `http://localhost:3000/cancel?orderId=${orderId}`,
+      success_url: `${WEB_BASE_URL}/success?orderId=${orderId}`,
+      cancel_url: `${WEB_BASE_URL}/cancel?orderId=${orderId}`,
     });
 
     // The session id is our idempotency anchor: the webhook finds the order by it.
@@ -196,12 +268,12 @@ app.post('/checkout', async (req, res) => {
   }
 });
 
-// GET /orders/:id  --  watch an order's status change over time.
+// GET /orders/:id  --  the success page polls this. Returns the PUBLIC view only.
 app.get('/orders/:id', async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ error: 'order not found' });
-    return res.json(order);
+    return res.json(toPublicOrder(order));
   } catch (err) {
     return res.status(400).json({ error: err.message });
   }

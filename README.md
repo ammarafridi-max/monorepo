@@ -9,7 +9,7 @@ design and build plan.
 
 ## Layout
 
-- `apps/web` - Next.js frontend (Phase 4, placeholder for now).
+- `apps/web` - Next.js frontend: upload, checkout kickoff, live status + results (Phase 4).
 - `apps/api` - Express service: real Stripe Checkout + webhook that drive the pipeline (Phase 2).
 - `apps/worker` - BullMQ worker: drives orders through real Replicate training + generation (Phase 3).
 - `packages/shared` - shared order contracts, the atomic transition helper, and the Redis connection helper.
@@ -123,6 +123,35 @@ Then run a real end-to-end order:
    ```sh
    curl -s localhost:3001/orders/<orderId>
    ```
+
+## Phase 4: uploads, frontend, and delivery
+
+Phase 4 adds the customer-facing flow. Photos upload straight from the browser to
+R2 (presigned PUT, never through the api); the worker trains on the order's real
+images and emails the results when the order is delivered.
+
+New env (see `.env.example`): R2 storage (`R2_*`), email (`RESEND_API_KEY`,
+`EMAIL_FROM`), `WEB_BASE_URL`, and `NEXT_PUBLIC_API_BASE_URL` for the web app.
+
+Enable public read on the R2 bucket (r2.dev or a custom domain set as
+`R2_PUBLIC_BASE_URL`) and add a bucket CORS rule allowing `PUT` from
+`WEB_BASE_URL`, so the browser can upload directly.
+
+Run the full stack:
+
+```sh
+pnpm dev                                   # api + worker (needs Mongo + Redis)
+pnpm web                                   # the Next.js app on :3000
+stripe listen --forward-to localhost:3001/webhooks/stripe
+```
+
+Open http://localhost:3000, add ~10-15 selfies of one person, enter an email, and
+pay with test card `4242 4242 4242 4242`. Stripe returns to `/success`, which
+polls the order and walks paid -> training -> generating -> delivered, then shows
+the downloadable results grid. When it hits delivered, the worker emails the
+results link exactly once (guarded by `deliveredEmailSentAt`).
+
+Failure/refund hardening and exact cost reconciliation are Phase 5.
 
 ## Conventions
 

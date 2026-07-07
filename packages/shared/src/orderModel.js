@@ -54,6 +54,12 @@ const orderSchema = new Schema(
 
     resultImageUrls: [String],
 
+    // Set the moment the delivery email is successfully sent. The idempotency
+    // anchor for delivery: a worker restart after DELIVERED must not email
+    // twice, so we only send when this is unset and stamp it on success. Closes
+    // the "DELIVERED assumes email sent" gap without adding a new state.
+    deliveredEmailSentAt: Date,
+
     // Margin tracking: what this order cost us in external compute.
     // Integer cents, never a float. Divide by 100 only at display time.
     computeCostCents: { type: Number, default: 0 },
