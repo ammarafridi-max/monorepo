@@ -11,7 +11,7 @@ design and build plan.
 
 - `apps/web` - Next.js frontend (Phase 4, placeholder for now).
 - `apps/api` - Express service: real Stripe Checkout + webhook that drive the pipeline (Phase 2).
-- `apps/worker` - BullMQ worker: drives orders through the pipeline (Phase 1). Real Replicate in Phase 3.
+- `apps/worker` - BullMQ worker: drives orders through real Replicate training + generation (Phase 3).
 - `packages/shared` - shared order contracts, the atomic transition helper, and the Redis connection helper.
 
 ## Getting started
@@ -36,8 +36,9 @@ pnpm dev
 ```
 
 The worker drives an order through the pipeline (`PAID -> TRAINING ->
-GENERATING -> DELIVERED`, about 5 seconds). Replicate is still stubbed with a
-sleep until Phase 3. Poll an order to watch it advance:
+GENERATING -> DELIVERED`). As of Phase 3 the training and generation stages make
+real Replicate calls, so a real run takes several minutes (see below). Poll an
+order to watch it advance:
 
 ```sh
 curl -s localhost:3001/orders/<orderId>
@@ -77,6 +78,47 @@ once. You also need `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` in `.env`.
    Pay with test card `4242 4242 4242 4242`, any future expiry, any CVC.
 
 4. Watch the webhook fire and the order walk from paid to delivered:
+
+   ```sh
+   curl -s localhost:3001/orders/<orderId>
+   ```
+
+## Phase 3: real Replicate compute
+
+Phase 3 replaces the worker's stubs with real Replicate work: it fine-tunes a
+Flux LoRA on the customer's photos (`ostris/flux-dev-lora-trainer`), then
+generates one headshot per prompt from the trained model. Each stage is
+resumable and idempotent: a crash mid-training reattaches to the same training,
+and a crash mid-generation only re-drives the images that had not finished. Real
+Replicate cost accumulates into `computeCostCents` as margin telemetry.
+
+**A real training takes several minutes** (roughly 20-30 min for the trainer,
+then a few seconds per generated image), so a full `PAID -> DELIVERED` run is
+minutes, not seconds.
+
+Set these in `.env` (on top of the Phase 2 values):
+
+- `REPLICATE_API_TOKEN` - from https://replicate.com/account/api-tokens
+- `REPLICATE_DESTINATION_MODEL` - `your-username/headliner-headshots`; the worker
+  creates it automatically on first run if it does not exist.
+- `TEST_IMAGE_ZIP_URL` - a publicly reachable zip of ~10-15 selfies of one person
+  to train on. Phase 4 replaces this with the order's real uploaded images.
+
+Then run a real end-to-end order:
+
+1. Start the services and forward Stripe events (as in Phase 2):
+
+   ```sh
+   pnpm dev
+   stripe listen --forward-to localhost:3001/webhooks/stripe
+   ```
+
+2. Do a real checkout (`POST /checkout`, open `checkoutUrl`, pay with test card
+   `4242 4242 4242 4242`).
+
+3. Watch the order walk `PAID -> TRAINING -> GENERATING -> DELIVERED` over a few
+   minutes. When delivered, `resultImageUrls` holds the real generated headshots
+   and `computeCostCents` holds what the run cost:
 
    ```sh
    curl -s localhost:3001/orders/<orderId>
