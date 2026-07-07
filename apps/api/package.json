@@ -4,9 +4,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "echo \"TODO (Phase 1): Express service not built yet\" && exit 1"
+    "dev": "node --watch server.js",
+    "start": "node server.js"
   },
   "dependencies": {
-    "@headliner/shared": "workspace:*"
+    "@headliner/shared": "workspace:*",
+    "bullmq": "^5.12.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2"
   }
 }

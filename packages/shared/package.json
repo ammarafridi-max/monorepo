@@ -8,6 +8,7 @@
     ".": "./src/index.js"
   },
   "dependencies": {
+    "ioredis": "^5.4.1",
     "mongoose": "^8.5.0"
   }
 }

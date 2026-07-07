@@ -10,9 +10,9 @@ design and build plan.
 ## Layout
 
 - `apps/web` - Next.js frontend (Phase 4, placeholder for now).
-- `apps/api` - Express service for Stripe (Phase 1-2, placeholder for now).
-- `apps/worker` - BullMQ worker for Replicate (Phase 1-3, placeholder for now).
-- `packages/shared` - shared order contracts. The Phase 0 deliverable.
+- `apps/api` - Express service: produces pipeline jobs (Phase 1). Real Stripe in Phase 2.
+- `apps/worker` - BullMQ worker: drives orders through the pipeline (Phase 1). Real Replicate in Phase 3.
+- `packages/shared` - shared order contracts, the atomic transition helper, and the Redis connection helper.
 
 ## Getting started
 
@@ -21,8 +21,37 @@ pnpm install
 cp .env.example .env   # then fill in values
 ```
 
-Nothing is runnable yet beyond the shared contracts. This is **Phase 0**
-(contracts only).
+## Running Phase 1 (walking skeleton)
+
+Phase 1 moves one **fake** order through the full pipeline (api -> queue ->
+worker -> Mongo) with every external call stubbed. There is no Stripe, no
+Replicate, and no UI yet.
+
+**Requires a running MongoDB and Redis.** Set both in `.env`:
+
+- `MONGODB_URI` - e.g. `mongodb://127.0.0.1:27017/headliner`
+- `REDIS_URL` - e.g. `redis://127.0.0.1:6379`
+
+Start the api and worker together:
+
+```sh
+pnpm dev
+```
+
+Then push a fake order through the pipeline and watch its status advance
+(`PAID -> TRAINING -> GENERATING -> DELIVERED`, about 5 seconds):
+
+```sh
+curl -s -X POST localhost:3001/test/orders \
+  -H 'content-type: application/json' \
+  -d '{"customerEmail":"test@example.com"}'
+# -> { "orderId": "..." }
+
+curl -s localhost:3001/orders/<orderId>   # poll to watch status change
+```
+
+`POST /test/orders` fakes Stripe and is removed in Phase 2. You can also run the
+services separately with `pnpm api` and `pnpm worker`.
 
 ## Conventions
 

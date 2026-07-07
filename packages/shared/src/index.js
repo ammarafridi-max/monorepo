@@ -12,3 +12,5 @@ export { ORDER_STATES, ORDER_TRANSITIONS, canTransition } from './orderStates.js
 export { Order } from './orderModel.js';
 export { QUEUE_NAMES } from './queue.js';
 export { connectMongo } from './db.js';
+export { transitionOrder, OrderTransitionConflictError } from './transitions.js';
+export { createRedisConnection } from './redis.js';
