@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
-import { randomUUID } from 'node:crypto';
+import { randomUUID, timingSafeEqual } from 'node:crypto';
 import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
@@ -39,12 +39,16 @@ import {
 const PRICE_CENTS = 3500;
 // Reject absurd upload batches. A face fine-tune wants ~10-15 photos.
 const MAX_UPLOAD_FILES = 20;
+// A non-terminal order sitting longer than this is flagged as stuck by the admin
+// view, so a stall is visible without a customer emailing us. Env-overridable.
+const STUCK_AFTER_MS = (Number(process.env.ADMIN_STUCK_MINUTES) || 30) * 60 * 1000;
 
 const {
   MONGODB_URI,
   REDIS_URL,
   STRIPE_SECRET_KEY,
   STRIPE_WEBHOOK_SECRET,
+  ADMIN_TOKEN,
   WEB_BASE_URL = 'http://localhost:3000',
   PORT = 3001,
 } = process.env;
@@ -85,9 +89,75 @@ function toPublicOrder(order) {
     resultImageUrls: order.resultImageUrls ?? [],
     createdAt: order.createdAt,
     deliveredAt: order.deliveredAt ?? null,
-    // A calm, non-technical hint for a failed order (Phase 5 owns refunds).
+    // A calm, non-technical hint for a failed order, so the success page can say
+    // whether the payment has been refunded.
     failed: order.status === ORDER_STATES.FAILED,
+    refunded: Boolean(order.refundedAt),
   };
+}
+
+// When did the order ENTER its current state? Used to measure how long it has
+// been sitting there (only meaningful for non-terminal states).
+function enteredCurrentStateAt(order) {
+  switch (order.status) {
+    case ORDER_STATES.AWAITING_PAYMENT:
+      return order.createdAt;
+    case ORDER_STATES.PAID:
+      return order.paidAt || order.createdAt;
+    case ORDER_STATES.TRAINING:
+      return order.trainingStartedAt || order.paidAt || order.createdAt;
+    case ORDER_STATES.GENERATING:
+      return order.generatingStartedAt || order.createdAt;
+    default:
+      return null; // terminal: DELIVERED / FAILED
+  }
+}
+
+/**
+ * The ADMIN projection. The payoff of stamping a timestamp on every transition:
+ * a stall becomes visible (stuckFor + stuck) and per-order profit becomes visible
+ * (marginCents) without any extra machinery.
+ */
+function toAdminOrder(order) {
+  const enteredAt = enteredCurrentStateAt(order);
+  const stuckForMs = enteredAt ? Date.now() - new Date(enteredAt).getTime() : null;
+  const marginCents =
+    order.status === ORDER_STATES.DELIVERED && typeof order.amountPaidCents === 'number'
+      ? order.amountPaidCents - (order.computeCostCents || 0)
+      : null;
+
+  return {
+    orderId: order._id.toString(),
+    status: order.status,
+    customerEmail: order.customerEmail,
+    amountPaidCents: order.amountPaidCents ?? null,
+    computeCostCents: order.computeCostCents ?? 0,
+    marginCents,
+    stuckForMs,
+    stuckForMinutes: stuckForMs == null ? null : Math.round(stuckForMs / 60000),
+    stuck: stuckForMs != null && stuckForMs > STUCK_AFTER_MS,
+    createdAt: order.createdAt,
+    paidAt: order.paidAt ?? null,
+    trainingStartedAt: order.trainingStartedAt ?? null,
+    generatingStartedAt: order.generatingStartedAt ?? null,
+    deliveredAt: order.deliveredAt ?? null,
+    failedAt: order.failedAt ?? null,
+    deliveredEmailSentAt: order.deliveredEmailSentAt ?? null,
+    refundedAt: order.refundedAt ?? null,
+    error: order.error ?? null,
+  };
+}
+
+// Constant-time bearer-token check for the admin route.
+function adminAuthorized(req) {
+  if (!ADMIN_TOKEN) return false;
+  const provided =
+    (req.headers.authorization || '').replace(/^Bearer\s+/i, '') ||
+    req.headers['x-admin-token'] ||
+    '';
+  const a = Buffer.from(String(provided));
+  const b = Buffer.from(ADMIN_TOKEN);
+  return a.length === b.length && timingSafeEqual(a, b);
 }
 
 const app = express();
@@ -276,6 +346,42 @@ app.get('/orders/:id', async (req, res) => {
     return res.json(toPublicOrder(order));
   } catch (err) {
     return res.status(400).json({ error: err.message });
+  }
+});
+
+/**
+ * GET /admin/orders  --  token-guarded operational view. Surfaces every order's
+ * transition timestamps, flags any non-terminal order stuck too long, and shows
+ * per-delivered-order margin. Optional ?status=TRAINING filter.
+ *
+ * Auth: Authorization: Bearer <ADMIN_TOKEN>  (or x-admin-token header).
+ */
+app.get('/admin/orders', async (req, res) => {
+  if (!ADMIN_TOKEN) {
+    return res.status(503).json({ error: 'admin disabled: set ADMIN_TOKEN' });
+  }
+  if (!adminAuthorized(req)) {
+    return res.status(401).json({ error: 'unauthorized' });
+  }
+
+  try {
+    const { status } = req.query;
+    if (status && !Object.values(ORDER_STATES).includes(status)) {
+      return res.status(400).json({ error: `unknown status ${status}` });
+    }
+    const filter = status ? { status } : {};
+    const orders = await Order.find(filter).sort({ createdAt: -1 }).limit(200);
+    const items = orders.map(toAdminOrder);
+
+    return res.json({
+      count: items.length,
+      stuckCount: items.filter((o) => o.stuck).length,
+      stuckAfterMinutes: STUCK_AFTER_MS / 60000,
+      orders: items,
+    });
+  } catch (err) {
+    console.error('[api] GET /admin/orders failed:', err);
+    return res.status(500).json({ error: err.message });
   }
 });
 

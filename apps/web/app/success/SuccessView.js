@@ -18,7 +18,7 @@ const HEADLINE = {
   TRAINING: 'We are training a model on your face.',
   GENERATING: 'We are making your headshots.',
   DELIVERED: 'Your headshots are ready.',
-  FAILED: 'This order ran into a problem.',
+  FAILED: 'This run did not work out.',
 };
 
 const SUBCOPY = {
@@ -26,8 +26,14 @@ const SUBCOPY = {
   TRAINING: 'This is the slow part, usually a few minutes. Leave this open.',
   GENERATING: 'Almost there. We are rendering each shot now.',
   DELIVERED: 'They came out well. View and download them below.',
-  FAILED: 'You have not lost your order. We will be in touch about a refund.',
 };
+
+// FAILED copy is calm and depends on whether the refund has gone through.
+function failedSubcopy(order) {
+  return order.refunded
+    ? 'We could not make headshots you would be happy with, so we refunded your payment in full. You can try again whenever you like.'
+    : 'We could not make headshots you would be happy with. Your refund is on its way, no action needed.';
+}
 
 function currentIndex(status) {
   if (status === 'AWAITING_PAYMENT') return -1;
@@ -101,13 +107,28 @@ export default function SuccessView() {
   return (
     <main className={`wrap${wide ? ' wrap--wide' : ''}`}>
       <span className={`pill${isDelivered ? ' pill--ok' : isFailed ? ' pill--warn' : ''}`}>
-        {isDelivered ? 'Delivered' : isFailed ? 'Needs attention' : 'In progress'}
+        {isDelivered
+          ? 'Delivered'
+          : isFailed
+            ? order.refunded
+              ? 'Refunded'
+              : 'Refund on the way'
+            : 'In progress'}
       </span>
 
       <h1 className="display" style={{ marginTop: 18 }}>
         {HEADLINE[status] || 'Working on your order.'}
       </h1>
-      {SUBCOPY[status] && <p className="lede muted">{SUBCOPY[status]}</p>}
+      {isFailed ? (
+        <p className="lede muted">{failedSubcopy(order)}</p>
+      ) : (
+        SUBCOPY[status] && <p className="lede muted">{SUBCOPY[status]}</p>
+      )}
+      {isFailed && (
+        <p style={{ marginTop: 8 }}>
+          <a href="/">Start a new order</a>
+        </p>
+      )}
 
       {isDelivered ? (
         <section className="results">

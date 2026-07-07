@@ -3,6 +3,7 @@ import { dirname, resolve } from 'node:path';
 import dotenv from 'dotenv';
 import { Worker } from 'bullmq';
 import JSZip from 'jszip';
+import Stripe from 'stripe';
 
 // Load the monorepo-root .env regardless of the cwd this service is started from
 // (pnpm --filter runs scripts with the package dir as cwd).
@@ -22,13 +23,14 @@ import { createPipeline } from './pipeline.js';
 import { sendDeliveryEmail } from './emailClient.js';
 
 /**
- * Headliner worker (Phase 4: real images + delivery).
+ * Headliner worker (Phase 5: failure hardening).
  *
  * Consumes order-pipeline jobs and drives an order PAID -> TRAINING ->
  * GENERATING -> DELIVERED. The resumable, per-stage-idempotent logic lives in
- * pipeline.js; the Replicate client, the training-zip builder, and the delivery
- * email are injected. Set USE_FAKE_REPLICATE=1 to drive the worker with the
- * in-memory fake (no real training/generation, no cost) -- real is the default.
+ * pipeline.js; the Replicate client, training-zip builder, delivery email, and
+ * refund are injected. On failure the order moves to FAILED and, if the customer
+ * paid, is refunded exactly once (receipt-before-acting via refundedAt + a Stripe
+ * idempotency key). Set USE_FAKE_REPLICATE=1 to drive the fake client.
  */
 
 const USE_FAKE_REPLICATE = process.env.USE_FAKE_REPLICATE === '1';
@@ -37,6 +39,7 @@ const {
   MONGODB_URI,
   REDIS_URL,
   TEST_IMAGE_ZIP_URL,
+  STRIPE_SECRET_KEY,
   WEB_BASE_URL = 'http://localhost:3000',
   EMAIL_FROM = 'Headliner <onboarding@resend.dev>',
 } = process.env;
@@ -47,7 +50,12 @@ if (!USE_FAKE_REPLICATE) {
   if (!process.env.REPLICATE_API_TOKEN) throw new Error('[worker] REPLICATE_API_TOKEN is required');
   if (!process.env.REPLICATE_DESTINATION_MODEL)
     throw new Error('[worker] REPLICATE_DESTINATION_MODEL is required (owner/name)');
+  // Refunds are money-critical: the real worker must be able to issue them.
+  if (!STRIPE_SECRET_KEY) throw new Error('[worker] STRIPE_SECRET_KEY is required (refunds)');
 }
+
+// Stripe client for refunds. null only in the fake path (no real money).
+const stripe = STRIPE_SECRET_KEY ? new Stripe(STRIPE_SECRET_KEY) : null;
 
 // Pick the real Replicate client or the in-memory fake. The fake exposes the
 // same startTraining/pollTraining/startGeneration/pollGeneration interface.
@@ -88,10 +96,13 @@ async function resolveTrainingZip(order) {
 }
 
 /**
- * Idempotent delivery. Send the results email exactly once. Sending is
- * best-effort: the order is already DELIVERED, so a mail failure is logged and
- * left for a later run rather than crashing the job. deliveredEmailSentAt is the
- * dedupe guard -- once set, this is a no-op.
+ * Idempotent delivery. Send the results email exactly once, guarded by
+ * deliveredEmailSentAt (set only on success). If sending FAILS we throw so
+ * BullMQ retries the job, which re-enters the DELIVERED case and tries again;
+ * this closes the Phase 4 best-effort gap. The throw never affects order state:
+ * the order is already DELIVERED (terminal), and the failed handler skips
+ * terminal orders. A missing RESEND_API_KEY is treated as "email disabled" (dev)
+ * and does NOT retry.
  */
 async function onDelivered(orderId) {
   const order = await Order.findById(orderId);
@@ -105,10 +116,42 @@ async function onDelivered(orderId) {
   const resultsUrl = `${WEB_BASE_URL}/success?orderId=${orderId}`;
   try {
     await sendDeliveryEmail({ to: order.customerEmail, from: EMAIL_FROM, resultsUrl });
-    await Order.updateOne({ _id: orderId }, { $set: { deliveredEmailSentAt: new Date() } });
-    console.log(`[worker] order ${orderId} delivery email sent to ${order.customerEmail}`);
   } catch (err) {
-    console.error(`[worker] order ${orderId} delivery email failed: ${err.message}`);
+    // Leave deliveredEmailSentAt unset and let the retry re-attempt.
+    console.error(`[worker] order ${orderId} delivery email failed, will retry: ${err.message}`);
+    throw err;
+  }
+  await Order.updateOne({ _id: orderId }, { $set: { deliveredEmailSentAt: new Date() } });
+  console.log(`[worker] order ${orderId} delivery email sent to ${order.customerEmail}`);
+}
+
+/**
+ * Idempotent refund for a FAILED order the customer actually paid for. Same
+ * receipt-before-acting shape as the email: refund only when refundedAt is unset,
+ * stamp it on success. A Stripe idempotency key collapses any double-fire at
+ * Stripe's side to one refund. Best-effort: a refund API failure is logged and
+ * surfaced via /admin/orders (refundedAt stays null); it never throws.
+ */
+async function ensureRefund(orderId) {
+  const order = await Order.findById(orderId);
+  if (!order) return;
+  if (order.status !== ORDER_STATES.FAILED) return; // only refund failed orders
+  if (order.refundedAt) return; // already refunded
+  if (!order.stripePaymentIntentId) return; // never paid, nothing to refund
+  if (!stripe) {
+    console.warn(`[worker] order ${orderId} FAILED but no Stripe client; refund skipped`);
+    return;
+  }
+
+  try {
+    await stripe.refunds.create(
+      { payment_intent: order.stripePaymentIntentId },
+      { idempotencyKey: `refund:${orderId}` }
+    );
+    await Order.updateOne({ _id: orderId }, { $set: { refundedAt: new Date() } });
+    console.log(`[worker] order ${orderId} refunded (${order.stripePaymentIntentId})`);
+  } catch (err) {
+    console.error(`[worker] order ${orderId} refund failed: ${err.message}`);
   }
 }
 
@@ -117,6 +160,7 @@ const pipeline = createPipeline({
   prompts: PROMPTS,
   resolveTrainingZip,
   onDelivered,
+  onFailed: ensureRefund,
 });
 
 const connection = createRedisConnection(REDIS_URL);
@@ -147,19 +191,30 @@ worker.on('failed', async (job, err) => {
   // queue back off and try again.
   if (job.attemptsMade < attempts) return;
 
-  // TODO (Phase 5): auto-refund on FAILED. For now just reach the FAILED state.
   try {
-    const order = await Order.findById(job.data.orderId);
+    const orderId = job.data.orderId;
+    const order = await Order.findById(orderId);
     if (!order) return;
-    // Terminal states never move again.
-    if (order.status === ORDER_STATES.DELIVERED || order.status === ORDER_STATES.FAILED) {
+
+    // DELIVERED is terminal and never a failure to refund. A job can land here
+    // after delivering if the delivery email exhausted its retries; the order
+    // stays DELIVERED and no refund is due.
+    if (order.status === ORDER_STATES.DELIVERED) return;
+
+    // Already FAILED (e.g. a prior run recorded it): do not re-transition, but
+    // still ensure the refund went out. ensureRefund is idempotent.
+    if (order.status === ORDER_STATES.FAILED) {
+      await ensureRefund(orderId);
       return;
     }
-    await transitionOrder(order._id.toString(), order.status, ORDER_STATES.FAILED, {
+
+    // Move to FAILED, always recording where and why it failed, then refund.
+    await transitionOrder(orderId, order.status, ORDER_STATES.FAILED, {
       error: { stage: order.status, message: err.message, at: new Date() },
     });
+    await ensureRefund(orderId);
   } catch (e) {
-    console.error(`[worker] could not move order to FAILED: ${e.message}`);
+    console.error(`[worker] failure handling error for ${job.data.orderId}: ${e.message}`);
   }
 });
 

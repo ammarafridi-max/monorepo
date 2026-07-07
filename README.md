@@ -151,7 +151,31 @@ polls the order and walks paid -> training -> generating -> delivered, then show
 the downloadable results grid. When it hits delivered, the worker emails the
 results link exactly once (guarded by `deliveredEmailSentAt`).
 
-Failure/refund hardening and exact cost reconciliation are Phase 5.
+## Phase 5: failure hardening
+
+Phase 5 makes the system safe to point real customers at. No new product features.
+
+- **Auto-refund on failure.** When an order moves to FAILED and the customer paid,
+  the worker issues a Stripe refund exactly once, guarded by `refundedAt` and a
+  Stripe idempotency key (`refund:<orderId>`). A restart that re-enters FAILED
+  sees `refundedAt` set and does not refund again.
+- **Email retry.** A DELIVERED order whose email has not sent (`deliveredEmailSentAt`
+  unset) retries via the queue; the guard keeps it exactly once. Email never
+  affects order state.
+- **Observability.** `GET /admin/orders` (set `ADMIN_TOKEN`, send it as
+  `Authorization: Bearer <token>`) lists orders with their transition timestamps,
+  flags any non-terminal order stuck past `ADMIN_STUCK_MINUTES`, and shows
+  `marginCents` (amount paid minus compute cost) per delivered order.
+
+  ```sh
+  curl -s -H "Authorization: Bearer $ADMIN_TOKEN" \
+    'localhost:3001/admin/orders?status=TRAINING' | jq
+  ```
+
+- **Failure UX.** A FAILED order's success page shows a calm message and whether
+  the payment was refunded, with no scary language.
+
+The worker now also needs `STRIPE_SECRET_KEY` (for refunds).
 
 ## Conventions
 

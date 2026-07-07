@@ -41,6 +41,8 @@ export const DEFAULT_GENERATION_MAX_WAIT_MS = 6 * 60 * 1000; // 6 min per image
  *        is provided (used by tests and by the TEST_IMAGE_ZIP_URL dev override)
  * @param {(orderId: string) => Promise<void>} [opts.onDelivered] - idempotent
  *        side effect to run when an order is DELIVERED (e.g. send the email)
+ * @param {(orderId: string) => Promise<void>} [opts.onFailed] - idempotent side
+ *        effect to run when a FAILED order is (re)entered (e.g. issue a refund)
  * @param {number} [opts.pollIntervalMs]
  * @param {number} [opts.trainingMaxWaitMs]
  * @param {number} [opts.generationMaxWaitMs]
@@ -51,6 +53,7 @@ export function createPipeline({
   resolveTrainingZip,
   imageZipUrl,
   onDelivered,
+  onFailed,
   pollIntervalMs = DEFAULT_POLL_INTERVAL_MS,
   trainingMaxWaitMs = DEFAULT_TRAINING_MAX_WAIT_MS,
   generationMaxWaitMs = DEFAULT_GENERATION_MAX_WAIT_MS,
@@ -231,6 +234,14 @@ export function createPipeline({
           // hook's own deliveredEmailSentAt guard makes repeat entry a no-op.
           if (onDelivered) await onDelivered(orderId);
           console.log(`[worker] order ${orderId} DELIVERED`);
+          return;
+
+        case ORDER_STATES.FAILED:
+          // Re-entering a failed order (e.g. a manual requeue). Run the
+          // idempotent failure side effect (refund) and stop. Its refundedAt
+          // guard makes repeat entry a no-op; never throw here.
+          if (onFailed) await onFailed(orderId);
+          console.log(`[worker] order ${orderId} FAILED (terminal)`);
           return;
 
         default:

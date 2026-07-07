@@ -60,6 +60,12 @@ const orderSchema = new Schema(
     // the "DELIVERED assumes email sent" gap without adding a new state.
     deliveredEmailSentAt: Date,
 
+    // Set the moment a refund is successfully issued for a FAILED order. The
+    // idempotency anchor for refunds (same receipt-before-acting pattern as the
+    // email): only refund when this is unset, stamp it on success. Closes the
+    // "FAILED can't tell if refund happened" gap.
+    refundedAt: Date,
+
     // Margin tracking: what this order cost us in external compute.
     // Integer cents, never a float. Divide by 100 only at display time.
     computeCostCents: { type: Number, default: 0 },
