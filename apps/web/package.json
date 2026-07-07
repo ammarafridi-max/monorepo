@@ -1,0 +1,12 @@
+{
+  "name": "@headliner/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "echo \"TODO (Phase 4): Next.js app not built yet\" && exit 1"
+  },
+  "dependencies": {
+    "@headliner/shared": "workspace:*"
+  }
+}

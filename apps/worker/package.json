@@ -1,0 +1,12 @@
+{
+  "name": "@headliner/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "echo \"TODO (Phase 1): BullMQ worker not built yet\" && exit 1"
+  },
+  "dependencies": {
+    "@headliner/shared": "workspace:*"
+  }
+}
