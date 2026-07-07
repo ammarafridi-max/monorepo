@@ -5,11 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "node --watch index.js",
-    "start": "node index.js"
+    "start": "node index.js",
+    "test": "node --test 'test/**/*.test.js'"
   },
   "dependencies": {
     "@headliner/shared": "workspace:*",
     "bullmq": "^5.12.0",
     "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^10.1.2",
+    "mongoose": "^8.5.0"
   }
 }
