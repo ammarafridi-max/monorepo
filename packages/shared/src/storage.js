@@ -49,6 +49,11 @@ export function createStorage(env = process.env) {
       accessKeyId: env.R2_ACCESS_KEY_ID,
       secretAccessKey: env.R2_SECRET_ACCESS_KEY,
     },
+    // Recent AWS SDK versions add a default CRC32 checksum to every request. For
+    // a presigned PUT that bakes the checksum of an EMPTY body into the URL, so
+    // when the browser uploads the real bytes R2 rejects the mismatch. R2 does
+    // not need it; only add checksums when an operation actually requires one.
+    requestChecksumCalculation: 'WHEN_REQUIRED',
   });
 
   const publicUrl = (key) => `${publicBase}/${key.replace(/^\/+/, '')}`;
