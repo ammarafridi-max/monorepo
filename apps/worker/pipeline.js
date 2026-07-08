@@ -163,10 +163,12 @@ export function createPipeline({
       if (generationIds[i]) continue;
       const { predictionId } = await client.startGeneration(modelVersion, prompts[i]);
       generationIds[i] = predictionId;
-      await Order.updateOne(
-        { _id: orderId },
-        { $set: { [`replicate.generationIds.${i}`]: predictionId } }
-      );
+      // Persist the WHOLE array, not a positional `generationIds.i` path: a
+      // dotted numeric $set on a not-yet-existing field creates an OBJECT
+      // ({"0": id}) on real MongoDB, which then reads back so the reattach guard
+      // cannot see it and the slot gets started again (a double-run). Writing the
+      // array outright keeps it an array. Still persisted BEFORE polling.
+      await Order.updateOne({ _id: orderId }, { $set: { 'replicate.generationIds': generationIds } });
       console.log(`[worker] order ${orderId} generation ${i} started: ${predictionId}`);
     }
 
@@ -188,10 +190,12 @@ export function createPipeline({
         throw new Error(`[worker] generation ${predictionId} failed for order ${orderId}`);
       }
       resultImageUrls[i] = result.imageUrl;
+      // Whole array, not a positional path, for the same reason as generationIds:
+      // avoid a dotted numeric $set turning the field into an object.
       await Order.updateOne(
         { _id: orderId },
         {
-          $set: { [`resultImageUrls.${i}`]: result.imageUrl },
+          $set: { resultImageUrls },
           $inc: { computeCostCents: usdToCents(result.costUsd) },
         }
       );

@@ -165,6 +165,13 @@ test('scenario 3: crash mid-generation with 3/7 slots done -> only missing 4 rea
     'same 7 predictionIds reused (reattached, not regenerated)'
   );
   assert.equal(nonNull(done.resultImageUrls).length, 7, 'all 7 images collected');
+
+  // Regression guard: these MUST persist as real arrays. A positional dotted
+  // $set (replicate.generationIds.i) creates an object {"0": ...} on real
+  // MongoDB, which breaks the reattach guard and re-creates predictions.
+  const raw = await Order.findById(id).lean();
+  assert.ok(Array.isArray(raw.replicate.generationIds), 'generationIds is an array, not an object');
+  assert.ok(Array.isArray(raw.resultImageUrls), 'resultImageUrls is an array, not an object');
 });
 
 test('scenario 4: training fails -> FAILED with error recorded, refund issued exactly once, and re-entering FAILED never refunds again', async () => {
