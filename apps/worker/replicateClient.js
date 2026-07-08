@@ -225,8 +225,15 @@ export async function startTraining(imageZipUrl) {
  * @returns {Promise<{ status: 'processing'|'succeeded'|'failed', trainedModelVersion?: string, costUsd?: number }>}
  */
 export async function pollTraining(trainingId) {
-  const t = await withRetry('pollTraining', (signal) =>
-    replicateFetch(`/v1/trainings/${trainingId}`, { signal })
+  // A status GET normally answers in ~1s, so a stall means a hung/stale socket,
+  // not real slowness. Use a short per-attempt timeout (drop and reopen fast) and
+  // MANY attempts: a genuinely-running training must not be discarded because
+  // polling had a rough patch. Only after all of these fail does the outer poll
+  // loop / job retry kick in.
+  const t = await withRetry(
+    'pollTraining',
+    (signal) => replicateFetch(`/v1/trainings/${trainingId}`, { signal }),
+    { attempts: 8, timeoutMs: 15000 }
   );
   const status = mapStatus(t.status);
   // On success the trainer returns output.version as "owner/name:hash" -- the
@@ -277,8 +284,12 @@ export async function startGeneration(modelVersion, prompt) {
  * @returns {Promise<{ status: 'processing'|'succeeded'|'failed', imageUrl?: string, costUsd?: number }>}
  */
 export async function pollGeneration(predictionId) {
-  const p = await withRetry('pollGeneration', (signal) =>
-    replicateFetch(`/v1/predictions/${predictionId}`, { signal })
+  // Same reasoning as pollTraining: short per-attempt timeout, many attempts, so
+  // a transient socket stall does not throw away a generation that is running.
+  const p = await withRetry(
+    'pollGeneration',
+    (signal) => replicateFetch(`/v1/predictions/${predictionId}`, { signal }),
+    { attempts: 8, timeoutMs: 15000 }
   );
   const status = mapStatus(p.status);
   // Flux returns an array of output URLs; we asked for a single image.

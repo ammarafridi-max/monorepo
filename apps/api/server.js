@@ -70,8 +70,12 @@ const orderPipeline = new Queue(QUEUE_NAMES.ORDER_PIPELINE, { connection });
 function pipelineJobOpts(orderId) {
   return {
     jobId: orderId,
-    attempts: 3,
-    backoff: { type: 'exponential', delay: 1000 },
+    // A run spans a multi-minute Replicate training we don't control, so give it
+    // several reattach attempts before we give up and refund. Reattach is
+    // idempotent (never retrains, never regenerates a started slot), so extra
+    // attempts are safe.
+    attempts: 5,
+    backoff: { type: 'exponential', delay: 5000 },
     removeOnComplete: true,
   };
 }
