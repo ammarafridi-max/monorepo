@@ -14,13 +14,12 @@ import {
   createRedisConnection,
   createStorage,
   Order,
-  ORDER_STATES,
   QUEUE_NAMES,
-  transitionOrder,
 } from '@headliner/shared';
 import { PROMPTS } from './replicateClient.js';
 import { createPipeline } from './pipeline.js';
 import { sendDeliveryEmail } from './emailClient.js';
+import { createEnsureRefund } from './refund.js';
 
 /**
  * Headliner worker (Phase 5: failure hardening).
@@ -125,35 +124,9 @@ async function onDelivered(orderId) {
   console.log(`[worker] order ${orderId} delivery email sent to ${order.customerEmail}`);
 }
 
-/**
- * Idempotent refund for a FAILED order the customer actually paid for. Same
- * receipt-before-acting shape as the email: refund only when refundedAt is unset,
- * stamp it on success. A Stripe idempotency key collapses any double-fire at
- * Stripe's side to one refund. Best-effort: a refund API failure is logged and
- * surfaced via /admin/orders (refundedAt stays null); it never throws.
- */
-async function ensureRefund(orderId) {
-  const order = await Order.findById(orderId);
-  if (!order) return;
-  if (order.status !== ORDER_STATES.FAILED) return; // only refund failed orders
-  if (order.refundedAt) return; // already refunded
-  if (!order.stripePaymentIntentId) return; // never paid, nothing to refund
-  if (!stripe) {
-    console.warn(`[worker] order ${orderId} FAILED but no Stripe client; refund skipped`);
-    return;
-  }
-
-  try {
-    await stripe.refunds.create(
-      { payment_intent: order.stripePaymentIntentId },
-      { idempotencyKey: `refund:${orderId}` }
-    );
-    await Order.updateOne({ _id: orderId }, { $set: { refundedAt: new Date() } });
-    console.log(`[worker] order ${orderId} refunded (${order.stripePaymentIntentId})`);
-  } catch (err) {
-    console.error(`[worker] order ${orderId} refund failed: ${err.message}`);
-  }
-}
+// Idempotent auto-refund for a FAILED order (logic in refund.js so the Stripe
+// client can be injected; a counting stub replaces it in tests).
+const ensureRefund = createEnsureRefund({ stripe });
 
 const pipeline = createPipeline({
   client,
@@ -191,28 +164,10 @@ worker.on('failed', async (job, err) => {
   // queue back off and try again.
   if (job.attemptsMade < attempts) return;
 
+  // Move the order to FAILED (recording the error) and issue the idempotent
+  // refund. All of that lives in pipeline.failOrder so it is one testable unit.
   try {
-    const orderId = job.data.orderId;
-    const order = await Order.findById(orderId);
-    if (!order) return;
-
-    // DELIVERED is terminal and never a failure to refund. A job can land here
-    // after delivering if the delivery email exhausted its retries; the order
-    // stays DELIVERED and no refund is due.
-    if (order.status === ORDER_STATES.DELIVERED) return;
-
-    // Already FAILED (e.g. a prior run recorded it): do not re-transition, but
-    // still ensure the refund went out. ensureRefund is idempotent.
-    if (order.status === ORDER_STATES.FAILED) {
-      await ensureRefund(orderId);
-      return;
-    }
-
-    // Move to FAILED, always recording where and why it failed, then refund.
-    await transitionOrder(orderId, order.status, ORDER_STATES.FAILED, {
-      error: { stage: order.status, message: err.message, at: new Date() },
-    });
-    await ensureRefund(orderId);
+    await pipeline.failOrder(job.data.orderId, err);
   } catch (e) {
     console.error(`[worker] failure handling error for ${job.data.orderId}: ${e.message}`);
   }

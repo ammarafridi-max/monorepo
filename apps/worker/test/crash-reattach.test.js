@@ -5,6 +5,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 
 import { Order, ORDER_STATES } from '@headliner/shared';
 import { createPipeline } from '../pipeline.js';
+import { createEnsureRefund } from '../refund.js';
 import * as fake from '../replicateClient.fake.js';
 
 /**
@@ -32,7 +33,7 @@ beforeEach(async () => {
 });
 
 // Fast poll timings so scripted 'processing' statuses don't slow the tests.
-function buildPipeline(prompts) {
+function buildPipeline(prompts, extra = {}) {
   return createPipeline({
     client: fake,
     prompts,
@@ -40,10 +41,29 @@ function buildPipeline(prompts) {
     pollIntervalMs: 1,
     trainingMaxWaitMs: 60_000,
     generationMaxWaitMs: 60_000,
+    ...extra,
   });
 }
 
 const nonNull = (arr) => (arr ?? []).filter((v) => v != null);
+
+// A counting stub of the Stripe refund API, shaped like the real client
+// (stripe.refunds.create(params, { idempotencyKey })). It records call count and
+// the idempotency keys it saw, the same way the fake Replicate client counts
+// startGeneration. No network, no money.
+function makeFakeStripe() {
+  const idempotencyKeys = [];
+  return {
+    idempotencyKeys,
+    refundCount: () => idempotencyKeys.length,
+    refunds: {
+      create: async (_params, opts) => {
+        idempotencyKeys.push(opts?.idempotencyKey);
+        return { id: `re_${idempotencyKeys.length}` };
+      },
+    },
+  };
+}
 
 test('scenario 1: crash after trainingId persisted, before success -> reattaches, startTraining called exactly once', async () => {
   // Training reports 'processing' then 'succeeded', but the FIRST poll crashes.
@@ -145,4 +165,57 @@ test('scenario 3: crash mid-generation with 3/7 slots done -> only missing 4 rea
     'same 7 predictionIds reused (reattached, not regenerated)'
   );
   assert.equal(nonNull(done.resultImageUrls).length, 7, 'all 7 images collected');
+});
+
+test('scenario 4: training fails -> FAILED with error recorded, refund issued exactly once, and re-entering FAILED never refunds again', async () => {
+  // Training reports 'failed' on its first (and only) poll.
+  fake.resetFake({ trainingStatusSeq: ['failed'] });
+
+  const stripe = makeFakeStripe();
+  const ensureRefund = createEnsureRefund({ stripe });
+
+  const order = await Order.create({
+    customerEmail: 'a@b.com',
+    status: ORDER_STATES.PAID,
+    uploadedImageUrls: ['selfie.jpg'],
+    // The customer actually paid: a payment intent exists, so a refund is due.
+    stripePaymentIntentId: 'pi_test_123',
+  });
+  const id = order._id.toString();
+  const pipeline = buildPipeline(['one prompt'], { onFailed: ensureRefund });
+
+  // Phase 1: PAID -> TRAINING, startTraining, then the training poll returns
+  // 'failed' so processOrder rejects (this is what BullMQ sees as a job failure).
+  let thrown;
+  await assert.rejects(
+    () => pipeline.processOrder(id),
+    (err) => ((thrown = err), /training .* failed/.test(err.message))
+  );
+
+  const midStatus = await Order.findById(id);
+  assert.equal(midStatus.status, ORDER_STATES.TRAINING, 'still TRAINING at the point of failure');
+
+  // The worker's failure handler runs once retries are exhausted: it moves the
+  // order to FAILED (recording the error) and issues the refund.
+  await pipeline.failOrder(id, thrown);
+
+  const failed = await Order.findById(id);
+  assert.equal(failed.status, ORDER_STATES.FAILED, 'order reached FAILED');
+  assert.ok(failed.error, 'error was recorded');
+  assert.equal(failed.error.stage, ORDER_STATES.TRAINING, 'error.stage is where it failed');
+  assert.match(failed.error.message, /failed/, 'error.message recorded');
+  assert.ok(failed.error.at instanceof Date, 'error.at timestamp recorded');
+  assert.ok(failed.refundedAt, 'refundedAt stamped on successful refund');
+  assert.equal(stripe.refundCount(), 1, 'refund issued exactly once');
+  assert.equal(stripe.idempotencyKeys[0], `refund:${id}`, 'refund used the per-order idempotency key');
+
+  // Phase 2: a restart re-enters FAILED, both via re-processing the job and via a
+  // re-fire of the failure handler. refundedAt is already set, so the guard must
+  // stop a second Stripe refund.
+  await pipeline.processOrder(id); // FAILED case -> onFailed -> refundedAt set -> no-op
+  await pipeline.failOrder(id, thrown); // already FAILED -> ensureRefund -> no-op
+
+  const afterRestart = await Order.findById(id);
+  assert.equal(afterRestart.status, ORDER_STATES.FAILED, 'still FAILED after restart');
+  assert.equal(stripe.refundCount(), 1, 'refund count is STILL exactly 1, never refunded twice');
 });

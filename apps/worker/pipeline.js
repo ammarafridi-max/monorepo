@@ -252,5 +252,37 @@ export function createPipeline({
     }
   }
 
-  return { processOrder, runTrainingStage, runGenerationStage, pollUntilSettled };
+  /**
+   * Drive an order into FAILED and run the idempotent failure side effect
+   * (refund). Called when processOrder has exhausted its retries. Kept here (not
+   * in the queue's failure handler) so the FAILED transition, its recorded
+   * error, and the refund are one testable unit:
+   *   - DELIVERED: terminal and never a failure to refund (e.g. a job that
+   *     landed here only because the delivery email exhausted its retries).
+   *   - already FAILED: do not re-transition, but still ensure the refund went
+   *     out (onFailed is idempotent).
+   *   - otherwise: transition to FAILED, ALWAYS recording where and why, then
+   *     refund.
+   *
+   * @param {string} orderId
+   * @param {Error} err
+   */
+  async function failOrder(orderId, err) {
+    const order = await Order.findById(orderId);
+    if (!order) return;
+
+    if (order.status === ORDER_STATES.DELIVERED) return;
+
+    if (order.status === ORDER_STATES.FAILED) {
+      if (onFailed) await onFailed(orderId);
+      return;
+    }
+
+    await transitionOrder(orderId, order.status, ORDER_STATES.FAILED, {
+      error: { stage: order.status, message: err.message, at: new Date() },
+    });
+    if (onFailed) await onFailed(orderId);
+  }
+
+  return { processOrder, failOrder, runTrainingStage, runGenerationStage, pollUntilSettled };
 }
