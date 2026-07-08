@@ -21,6 +21,8 @@ import {
   QUEUE_NAMES,
   transitionOrder,
 } from '@headliner/shared';
+import { detectFaces } from './faceDetector.js';
+import { QUALITY, evaluateImages, countError } from './uploadGate.js';
 
 /**
  * Headliner API (Phase 4: uploads + delivery).
@@ -56,6 +58,14 @@ if (!MONGODB_URI) throw new Error('[api] MONGODB_URI is required');
 if (!REDIS_URL) throw new Error('[api] REDIS_URL is required');
 if (!STRIPE_SECRET_KEY) throw new Error('[api] STRIPE_SECRET_KEY is required');
 if (!STRIPE_WEBHOOK_SECRET) throw new Error('[api] STRIPE_WEBHOOK_SECRET is required');
+
+// The upload quality gate is on by default and fails closed. Set
+// UPLOAD_QUALITY_GATE=off ONLY for local dev without a vision provider; doing so
+// re-opens the "pay for garbage input" hole the gate exists to close.
+const UPLOAD_QUALITY_GATE = (process.env.UPLOAD_QUALITY_GATE ?? 'on') !== 'off';
+if (!UPLOAD_QUALITY_GATE) {
+  console.warn('[api] UPLOAD_QUALITY_GATE=off: accepting all uploads without face validation (dev only)');
+}
 
 await connectMongo(MONGODB_URI);
 console.log('[api] connected to MongoDB');
@@ -302,6 +312,36 @@ app.post('/checkout', async (req, res) => {
     }
     if (!Array.isArray(uploadedImageUrls) || uploadedImageUrls.length === 0) {
       return res.status(400).json({ error: 'uploadedImageUrls must be a non-empty array' });
+    }
+
+    // THIS IS THE REAL GATE. The web client runs the same face checks for fast
+    // feedback, but that is UX only and can be bypassed by calling /checkout
+    // directly, so we re-validate every image here and REFUSE to create the
+    // Stripe session on failure. No session = no payment for input that would
+    // train a bad model and then "succeed" into a DELIVERED order that never
+    // triggers the FAILED auto-refund. Same lesson as server-owned pricing:
+    // never trust the client's "it passed" claim.
+    if (UPLOAD_QUALITY_GATE) {
+      const nErr = countError(uploadedImageUrls.length);
+      if (nErr) {
+        return res.status(422).json({ error: 'quality_gate', countError: nErr, failures: [], rules: QUALITY });
+      }
+      const detected = await Promise.all(
+        uploadedImageUrls.map(async (url, index) => {
+          try {
+            return { index, url, ...(await detectFaces(url)) };
+          } catch (err) {
+            // Fail closed on a per-image detection error: an image we cannot read
+            // is not allowed to buy its way through.
+            console.error(`[api] face detection failed for ${url}: ${err.message}`);
+            return { index, url, faceCount: 0, maxFaceBoxRatio: 0, error: true };
+          }
+        })
+      );
+      const failures = evaluateImages(detected);
+      if (failures.length) {
+        return res.status(422).json({ error: 'quality_gate', failures, rules: QUALITY });
+      }
     }
 
     // Create the order first so we have an id to put in the session metadata.

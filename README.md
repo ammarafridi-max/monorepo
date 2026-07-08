@@ -177,6 +177,36 @@ Phase 5 makes the system safe to point real customers at. No new product feature
 
 The worker now also needs `STRIPE_SECRET_KEY` (for refunds).
 
+## Upload quality gate
+
+Bad photos are worse than a failed order: they train a model and then "succeed"
+into a DELIVERED order, so the FAILED auto-refund never fires and the customer
+paid for garbage. So we reject bad input BEFORE the Stripe session is created,
+not after training.
+
+Two layers, and the server one is the real gate (same lesson as server-owned
+pricing: client validation can be bypassed by calling `/checkout` directly):
+
+- **Client (apps/web):** on file drop, the browser's `FaceDetector` runs per photo
+  and disables the CTA with a short reason on any bad thumbnail ("No clear face",
+  "More than one person", "Face too small, get closer"). Fast feedback only. If a
+  browser has no `FaceDetector`, the client defers and the server still checks.
+- **Server (apps/api, `POST /checkout`):** re-runs face detection on every
+  uploaded image (AWS Rekognition `DetectFaces`, after a `sharp` downscale) and
+  returns `422` with per-image reasons instead of creating the Stripe session if
+  any fail. No session means no payment. The client shows those reasons and
+  re-disables the CTA.
+
+Rules per image: exactly one clear face (zero = not a face photo, two+ = multiple
+people), and the face must span at least `UPLOAD_MIN_FACE_RATIO` of the frame.
+Plus the promised `UPLOAD_MIN_PHOTOS`..`UPLOAD_MAX_PHOTOS` count.
+
+Tuning (all env, see `.env.example`): `UPLOAD_MIN_PHOTOS`, `UPLOAD_MAX_PHOTOS`,
+`UPLOAD_MIN_FACE_RATIO`, mirrored to the client as `NEXT_PUBLIC_UPLOAD_*`. The
+gate is on by default and fails closed; it needs AWS creds for Rekognition. For
+local dev without AWS, set `UPLOAD_QUALITY_GATE=off` (this re-opens the
+pay-for-garbage hole, so dev only).
+
 ## Tuning generation (dev)
 
 Output quality is a GENERATING-stage concern (prompt + `lora_scale`), which is

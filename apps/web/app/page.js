@@ -2,37 +2,56 @@
 
 import { useCallback, useRef, useState } from 'react';
 import { presignUploads, putToStorage, createCheckout } from '../lib/api';
-
-const MIN_PHOTOS = 5;
-const MAX_PHOTOS = 20;
+import { QUALITY, detectImage, reasonFor } from '../lib/quality';
 
 export default function UploadPage() {
-  const [items, setItems] = useState([]); // { file, url }
+  const [items, setItems] = useState([]); // { id, file, url, status: 'checking'|'ok'|'bad', reason }
   const [email, setEmail] = useState('');
   const [dragging, setDragging] = useState(false);
   const [phase, setPhase] = useState('idle'); // idle | uploading | redirecting
   const [error, setError] = useState('');
   const inputRef = useRef(null);
 
-  const addFiles = useCallback((fileList) => {
-    const picked = Array.from(fileList).filter((f) => f.type.startsWith('image/'));
-    setItems((prev) => {
-      const next = [...prev];
-      for (const file of picked) {
-        if (next.length >= MAX_PHOTOS) break;
-        next.push({ file, url: URL.createObjectURL(file) });
-      }
-      return next;
-    });
-    setError('');
+  const updateItem = useCallback((id, patch) => {
+    setItems((prev) => prev.map((it) => (it.id === id ? { ...it, ...patch } : it)));
   }, []);
 
-  const removeAt = useCallback((i) => {
+  const addFiles = useCallback(
+    (fileList) => {
+      const picked = Array.from(fileList).filter((f) => f.type.startsWith('image/'));
+      const added = [];
+      setItems((prev) => {
+        const next = [...prev];
+        for (const file of picked) {
+          if (next.length >= QUALITY.maxPhotos) break;
+          const url = URL.createObjectURL(file);
+          const item = { id: url, file, url, status: 'checking', reason: null };
+          next.push(item);
+          added.push(item);
+        }
+        return next;
+      });
+      setError('');
+      // Fast, in-browser face check per new photo. UX only: the server re-checks
+      // every image in /checkout and is the real gate. If the browser has no
+      // FaceDetector, detectImage returns null -> no complaint, defer to server.
+      for (const item of added) {
+        detectImage(item.file)
+          .then((d) => {
+            const reason = reasonFor(d);
+            updateItem(item.id, { status: reason ? 'bad' : 'ok', reason });
+          })
+          .catch(() => updateItem(item.id, { status: 'ok', reason: null }));
+      }
+    },
+    [updateItem]
+  );
+
+  const removeAt = useCallback((id) => {
     setItems((prev) => {
-      const copy = [...prev];
-      const [gone] = copy.splice(i, 1);
+      const gone = prev.find((it) => it.id === id);
       if (gone) URL.revokeObjectURL(gone.url);
-      return copy;
+      return prev.filter((it) => it.id !== id);
     });
   }, []);
 
@@ -46,7 +65,11 @@ export default function UploadPage() {
   );
 
   const busy = phase !== 'idle';
-  const canSubmit = items.length >= MIN_PHOTOS && /.+@.+\..+/.test(email) && !busy;
+  const checking = items.some((it) => it.status === 'checking');
+  const badCount = items.filter((it) => it.status === 'bad').length;
+  const countOk = items.length >= QUALITY.minPhotos && items.length <= QUALITY.maxPhotos;
+  const emailOk = /.+@.+\..+/.test(email);
+  const canSubmit = countOk && badCount === 0 && !checking && emailOk && !busy;
 
   async function onSubmit(e) {
     e.preventDefault();
@@ -54,7 +77,7 @@ export default function UploadPage() {
     setError('');
     try {
       setPhase('uploading');
-      const files = items.map((it) => it.file);
+      const files = items.map((it) => it.file); // upload in item order == server index order
       const { uploads } = await presignUploads(files);
       await Promise.all(uploads.map((u, i) => putToStorage(u.uploadUrl, files[i])));
 
@@ -65,6 +88,25 @@ export default function UploadPage() {
       );
       window.location.href = checkoutUrl;
     } catch (err) {
+      // The server gate can reject with 422 even if the client passed (e.g. no
+      // FaceDetector here, or the two detectors disagree). Show the per-image
+      // reasons and re-disable the CTA instead of going to Stripe.
+      if (err.status === 422) {
+        const body = err.body || {};
+        if (Array.isArray(body.failures) && body.failures.length) {
+          setItems((prev) =>
+            prev.map((it, i) => {
+              const f = body.failures.find((x) => x.index === i);
+              return f ? { ...it, status: 'bad', reason: f.reason } : it;
+            })
+          );
+          setError('Some photos did not pass our check. See the notes on them below.');
+        } else {
+          setError(body.countError || 'Your photos did not pass our check. Please adjust and try again.');
+        }
+        setPhase('idle');
+        return;
+      }
       setError(err.message || 'Something went wrong. Please try again.');
       setPhase('idle');
     }
@@ -76,6 +118,19 @@ export default function UploadPage() {
       : phase === 'redirecting'
         ? 'Taking you to checkout'
         : 'Get my headshots';
+
+  let note;
+  if (items.length < QUALITY.minPhotos) {
+    note = `Add at least ${QUALITY.minPhotos} photos to continue.`;
+  } else if (items.length > QUALITY.maxPhotos) {
+    note = `Use at most ${QUALITY.maxPhotos} photos.`;
+  } else if (checking) {
+    note = 'Checking your photos.';
+  } else if (badCount > 0) {
+    note = `${badCount} photo${badCount === 1 ? '' : 's'} need a clearer single face. Remove or replace them.`;
+  } else {
+    note = `${items.length} photos look good. You pay after this, on Stripe.`;
+  }
 
   return (
     <main className="wrap">
@@ -104,8 +159,8 @@ export default function UploadPage() {
         >
           <p className="dropzone__title">Drag your photos here, or click to choose.</p>
           <p className="dropzone__hint">
-            Add {MIN_PHOTOS} to 15 clear photos of one person. Different angles, good light, no
-            sunglasses.
+            Add {QUALITY.minPhotos} to {QUALITY.maxPhotos} clear photos of one person. One face per
+            photo, different angles, good light, no sunglasses.
           </p>
           <input
             ref={inputRef}
@@ -123,7 +178,12 @@ export default function UploadPage() {
         {items.length > 0 && (
           <div className="thumbs">
             {items.map((it, i) => (
-              <div className="thumb" key={it.url}>
+              <div
+                className={`thumb${it.status === 'bad' ? ' thumb--bad' : ''}${
+                  it.status === 'checking' ? ' thumb--checking' : ''
+                }`}
+                key={it.id}
+              >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={it.url} alt={`selfie ${i + 1}`} />
                 {!busy && (
@@ -131,11 +191,12 @@ export default function UploadPage() {
                     type="button"
                     className="thumb__remove"
                     aria-label="Remove photo"
-                    onClick={() => removeAt(i)}
+                    onClick={() => removeAt(it.id)}
                   >
                     &times;
                   </button>
                 )}
+                {it.status === 'bad' && it.reason && <p className="thumb__reason">{it.reason}</p>}
               </div>
             ))}
           </div>
@@ -161,11 +222,7 @@ export default function UploadPage() {
           {ctaLabel} <span className="cta__price">&middot; $35</span>
         </button>
 
-        <p className="formnote">
-          {items.length < MIN_PHOTOS
-            ? `Add at least ${MIN_PHOTOS} photos to continue.`
-            : `${items.length} photo${items.length === 1 ? '' : 's'} ready. You pay after this, on Stripe.`}
-        </p>
+        <p className="formnote">{note}</p>
 
         {error && <p className="error">{error}</p>}
       </form>

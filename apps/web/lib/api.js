@@ -4,7 +4,14 @@ export const API_BASE =
 
 async function asJson(res) {
   const body = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(body.error || `request failed (${res.status})`);
+  if (!res.ok) {
+    // Carry status + parsed body so callers can handle structured errors like the
+    // 422 quality-gate response (per-image failure reasons) instead of a bare message.
+    const err = new Error(body.error || `request failed (${res.status})`);
+    err.status = res.status;
+    err.body = body;
+    throw err;
+  }
   return body;
 }
 
