@@ -82,7 +82,11 @@ async function withRetry(label, fn, { attempts = 4, baseDelayMs = 1000, timeoutM
     } catch (err) {
       lastErr = err;
       if (attempt === attempts) break;
-      const delay = baseDelayMs * 2 ** (attempt - 1);
+      // On a 429 the server tells us when the window resets; a short exponential
+      // backoff would just burn attempts before it clears. Wait the reset window
+      // (plus a small buffer) instead.
+      const backoff = baseDelayMs * 2 ** (attempt - 1);
+      const delay = err.status === 429 && err.retryAfterMs ? err.retryAfterMs + 500 : backoff;
       console.warn(
         `[replicate] ${label} attempt ${attempt}/${attempts} failed (${err.message}); retrying in ${delay}ms`
       );
@@ -115,7 +119,21 @@ async function replicateFetch(path, { method = 'GET', body, signal } = {}) {
   });
   if (!res.ok) {
     const text = await res.text().catch(() => '');
-    throw new Error(`${method} ${path} -> ${res.status} ${res.statusText}: ${text}`);
+    const err = new Error(`${method} ${path} -> ${res.status} ${res.statusText}: ${text}`);
+    err.status = res.status;
+    // Honor the server's throttle window on 429. Prefer the Retry-After header,
+    // fall back to the JSON body's retry_after (Replicate sends both).
+    if (res.status === 429) {
+      const header = Number(res.headers.get('retry-after'));
+      let bodyRetry;
+      try {
+        bodyRetry = JSON.parse(text)?.retry_after;
+      } catch {
+        bodyRetry = undefined;
+      }
+      err.retryAfterMs = (header || Number(bodyRetry) || 0) * 1000 || undefined;
+    }
+    throw err;
   }
   return res.json();
 }
