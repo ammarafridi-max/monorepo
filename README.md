@@ -177,6 +177,38 @@ Phase 5 makes the system safe to point real customers at. No new product feature
 
 The worker now also needs `STRIPE_SECRET_KEY` (for refunds).
 
+## Tuning generation (dev)
+
+Output quality is a GENERATING-stage concern (prompt + `lora_scale`), which is
+cheap, not a TRAINING one, which is expensive. So you can iterate on quality
+against an already-trained model for cents, without retraining and without going
+through the order pipeline.
+
+Two levers, both generation-only:
+
+- **Prompt anchoring:** every prompt in `apps/worker/replicateClient.js` leads with
+  the trigger word then a `SUBJECT` anchor (e.g. `a bearded man`). Naming the
+  subject up front stops the base model's prior from drifting gender or facial
+  hair on a weak-identity seed. Edit `SUBJECT` in one place.
+- **`GEN_LORA_SCALE`:** LoRA strength (~0.8 to 1.1; higher pulls harder toward the
+  trained identity, too high risks artifacts).
+
+Grab a trained model version from a prior order's `replicate.trainedModelVersion`
+(e.g. `db.orders.findOne({status:'DELIVERED'}).replicate.trainedModelVersion`),
+then run the generate-only script:
+
+```sh
+pnpm --filter @headliner/worker tune:gen \
+  --version <owner/name:hash> --scale 1.05 --count 3
+```
+
+It runs the real generation functions against that version, polls to completion,
+prints each image URL, and saves a record under
+`apps/worker/scripts/results/`. It never creates an order or touches
+Mongo/Redis/Stripe. Compare a few scales, and once a prompt set + scale looks
+good it is already promoted: `PROMPTS` is shared with the worker, and
+`GEN_LORA_SCALE` becomes the default for real orders.
+
 ## Conventions
 
 - JavaScript + ESM. No TypeScript; shared shapes use JSDoc typedefs.

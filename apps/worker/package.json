@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "node --watch index.js",
     "start": "node index.js",
-    "test": "node --test 'test/**/*.test.js'"
+    "test": "node --test 'test/**/*.test.js'",
+    "tune:gen": "node scripts/tune-generation.js"
   },
   "dependencies": {
     "@headliner/shared": "workspace:*",

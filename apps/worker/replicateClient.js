@@ -42,10 +42,18 @@ export const TRIGGER_WORD = 'HDLNRZ';
 const TRAINING_USD_PER_SEC = 0.001525;
 const GENERATION_USD_PER_SEC = 0.001525;
 
+// The subject anchor. Every prompt leads with this explicit subject descriptor
+// right after the trigger word. On a seed where the identity signal is weak, the
+// base model's prior can leak through and drift the subject (flip gender, drop
+// the beard); naming the subject up front holds it in place. Edit in ONE place.
+// (A later phase could derive this per order; for now it is a single constant.)
+export const SUBJECT = 'a bearded man';
+
 /**
- * The headshot prompts. One prompt == one output image for now (Phase 5 may make
- * the count configurable). Every prompt embeds TRIGGER_WORD so the trained face
- * is the subject. Copy is not user-facing, so no BRAND.md concerns here.
+ * The headshot prompts. One prompt == one output image for now. Every prompt
+ * embeds TRIGGER_WORD to activate the trained face, immediately followed by
+ * SUBJECT to anchor gender + facial hair. Copy is not user-facing, no BRAND.md
+ * concerns here.
  * @type {readonly string[]}
  */
 export const PROMPTS = Object.freeze(
@@ -57,8 +65,19 @@ export const PROMPTS = Object.freeze(
     'confident executive in a black turtleneck, dark moody background, dramatic rim lighting',
     'friendly approachable headshot in a grey sweater over a collared shirt, soft neutral beige background',
     'formal portrait in a dark grey three-piece suit, subtle bokeh of a modern office interior behind',
-  ].map((look) => `professional headshot photo of ${TRIGGER_WORD}, ${look}, sharp focus, high detail`)
+  ].map((look) => `${TRIGGER_WORD}, ${SUBJECT}, ${look}, sharp focus, high detail`)
 );
+
+/**
+ * Default LoRA strength for generation, read from GEN_LORA_SCALE (float). Sane
+ * range is roughly 0.8 to 1.1: higher pulls harder toward the trained identity
+ * (helps weak seeds) but too high risks a baked, artifact-prone look. 1.0 is
+ * neutral. Read at call time so the tuning script and env changes take effect.
+ */
+export function defaultLoraScale() {
+  const raw = parseFloat(process.env.GEN_LORA_SCALE);
+  return Number.isFinite(raw) ? raw : 1.0;
+}
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -269,9 +288,11 @@ export async function pollTraining(trainingId) {
  *
  * @param {string} modelVersion - "owner/name:hash" from pollTraining
  * @param {string} prompt
+ * @param {number} [loraScale] - LoRA strength (see defaultLoraScale); defaults
+ *        to GEN_LORA_SCALE. Only affects this cheap GENERATING call, never training.
  * @returns {Promise<{ predictionId: string }>}
  */
-export async function startGeneration(modelVersion, prompt) {
+export async function startGeneration(modelVersion, prompt, loraScale = defaultLoraScale()) {
   // The predictions API takes the bare version hash.
   const versionHash = modelVersion.includes(':') ? modelVersion.split(':').pop() : modelVersion;
   const prediction = await withRetry(
@@ -286,6 +307,7 @@ export async function startGeneration(modelVersion, prompt) {
             num_outputs: 1,
             aspect_ratio: '1:1',
             output_format: 'jpg',
+            lora_scale: loraScale,
           },
         },
         signal,
