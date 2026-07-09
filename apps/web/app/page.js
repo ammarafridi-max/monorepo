@@ -1,21 +1,46 @@
 import { getSession } from '../lib/session';
 import UploadForm from './UploadForm';
+import Hero from './Hero';
+import Showcase from './Showcase';
+import HowItWorks from './HowItWorks';
+import WhatYouGet from './WhatYouGet';
+import Pricing from './Pricing';
+import Faq from './Faq';
+import Footer from './Footer';
 
-// Server wrapper: read the session so a logged-in user's order can be linked and
-// their email prefilled. Anonymous visitors get the exact same form as before.
+// The landing page. A server component so a logged-in user's order can be linked
+// and their email prefilled; anonymous visitors get the exact same flow as before.
+// Every section is presentational; the ONLY interactive piece is UploadForm, whose
+// behavior is unchanged. All CTAs scroll to that one uploader (#start).
 export default async function HomePage() {
   const session = await getSession();
 
   return (
-    <main className="wrap">
-      <h1 className="display">Headshots that don&apos;t look AI.</h1>
-      <p className="lede">
-        Upload a few selfies. We train a model on your face and give you studio-quality
-        headshots, ready for LinkedIn in about an hour.
-      </p>
-      <p className="lede muted">One price, thirty-five dollars. No subscription.</p>
+    <>
+      <main>
+        <Hero />
+        <Showcase />
+        <HowItWorks />
+        <WhatYouGet />
+        <Pricing />
+        <Faq />
 
-      <UploadForm authed={!!session} initialEmail={session?.email ?? ''} />
-    </main>
+        <section id="start" className="section start">
+          <div className="container">
+            <div className="start__inner">
+              <p className="eyebrow">Start your order</p>
+              <h2 className="h2">Upload your selfies.</h2>
+              <p className="section__lede">
+                Five to fifteen clear photos of one person. We check them as you add
+                them, so you never pay for photos that will not work.
+              </p>
+              <UploadForm authed={!!session} initialEmail={session?.email ?? ''} />
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <Footer />
+    </>
   );
 }
