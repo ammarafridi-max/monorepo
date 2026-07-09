@@ -191,21 +191,27 @@ pricing: client validation can be bypassed by calling `/checkout` directly):
   and disables the CTA with a short reason on any bad thumbnail ("No clear face",
   "More than one person", "Face too small, get closer"). Fast feedback only. If a
   browser has no `FaceDetector`, the client defers and the server still checks.
-- **Server (apps/api, `POST /checkout`):** re-runs face detection on every
-  uploaded image (AWS Rekognition `DetectFaces`, after a `sharp` downscale) and
-  returns `422` with per-image reasons instead of creating the Stripe session if
-  any fail. No session means no payment. The client shows those reasons and
-  re-disables the CTA.
+- **Server (apps/api, `POST /checkout`):** re-runs detection on every uploaded
+  image and returns `422` with per-image reasons instead of creating the Stripe
+  session if any fail. No session means no payment. The client shows those
+  reasons and re-disables the CTA. Detection runs on Replicate (reusing
+  `REPLICATE_API_TOKEN`, no extra cloud account): `ultralytics/yolov8s-worldv2`
+  on the "person" class. Tradeoff vs a true face-landmark detector: person
+  detection reliably catches the important cases (zero subjects, or more than
+  one), but the "too small" rule becomes a subject-box-size proxy, so a full-body
+  shot with a small face can pass server-side. The browser's `FaceDetector`
+  applies a true face-size check client-side. `detectFaces` is swappable if you
+  later want a dedicated face model.
 
-Rules per image: exactly one clear face (zero = not a face photo, two+ = multiple
-people), and the face must span at least `UPLOAD_MIN_FACE_RATIO` of the frame.
-Plus the promised `UPLOAD_MIN_PHOTOS`..`UPLOAD_MAX_PHOTOS` count.
+Rules per image: exactly one clear subject (zero = not a usable photo, two+ =
+multiple people), and the subject must span at least `UPLOAD_MIN_FACE_RATIO` of
+the frame. Plus the promised `UPLOAD_MIN_PHOTOS`..`UPLOAD_MAX_PHOTOS` count.
 
 Tuning (all env, see `.env.example`): `UPLOAD_MIN_PHOTOS`, `UPLOAD_MAX_PHOTOS`,
-`UPLOAD_MIN_FACE_RATIO`, mirrored to the client as `NEXT_PUBLIC_UPLOAD_*`. The
-gate is on by default and fails closed; it needs AWS creds for Rekognition. For
-local dev without AWS, set `UPLOAD_QUALITY_GATE=off` (this re-opens the
-pay-for-garbage hole, so dev only).
+`UPLOAD_MIN_FACE_RATIO`, mirrored to the client as `NEXT_PUBLIC_UPLOAD_*`, plus
+`REPLICATE_FACE_MODEL_VERSION` / `REPLICATE_FACE_CONF`. The gate is on by default
+and fails closed. For local dev without a token wired up, set
+`UPLOAD_QUALITY_GATE=off` (this re-opens the pay-for-garbage hole, so dev only).
 
 ## Tuning generation (dev)
 

@@ -9,7 +9,6 @@
     "test": "node --test 'test/**/*.test.js'"
   },
   "dependencies": {
-    "@aws-sdk/client-rekognition": "^3.637.0",
     "@headliner/shared": "workspace:*",
     "bullmq": "^5.12.0",
     "cors": "^2.8.5",
