@@ -1,3 +1,6 @@
+// MUST be first: arms Sentry (and its crash handlers) and loads the root .env
+// before any pipeline code runs.
+import { captureError } from './instrument.js';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import dotenv from 'dotenv';
@@ -160,6 +163,16 @@ worker.on('failed', async (job, err) => {
 
   if (!job) return;
 
+  // Report every job failure to Sentry with NON-PII context only (orderId/jobId
+  // are ids, not customer data). This is how a failing pipeline surfaces in prod.
+  captureError(err, {
+    jobId: job.id,
+    orderId: job.data?.orderId,
+    attempt: job.attemptsMade,
+    attempts,
+    finalAttempt: job.attemptsMade >= attempts,
+  });
+
   // Only give up once BullMQ has exhausted all retries. Before that, let the
   // queue back off and try again.
   if (job.attemptsMade < attempts) return;
@@ -170,6 +183,9 @@ worker.on('failed', async (job, err) => {
     await pipeline.failOrder(job.data.orderId, err);
   } catch (e) {
     console.error(`[worker] failure handling error for ${job.data.orderId}: ${e.message}`);
+    // A refund/fail-transition error is the most important thing to surface:
+    // money may be at stake and it is past the normal retry path.
+    captureError(e, { orderId: job.data?.orderId, phase: 'failOrder' });
   }
 });
 

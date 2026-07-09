@@ -272,6 +272,53 @@ Mongo/Redis/Stripe. Compare a few scales, and once a prompt set + scale looks
 good it is already promoted: `PROMPTS` is shared with the worker, and
 `GEN_LORA_SCALE` becomes the default for real orders.
 
+## Production safety
+
+Two protective layers sit around the app: rate limiting on the public API, and
+error tracking across all three services. Both are configured entirely through
+env (see `.env.example`).
+
+### Rate limiting (apps/api)
+
+The public endpoints are unauthenticated, so they are rate limited per client IP:
+
+- A generous **global** backstop on every route, sized above the success page's
+  poll rate so normal use is never throttled.
+- **Stricter** limits on `POST /uploads/presign` and `POST /checkout`, which cost
+  storage and money and are the real abuse targets.
+- The **Stripe webhook is exempt** (it is mounted before the limiter): Stripe can
+  burst retries and must never be throttled.
+- Over-limit requests get a clean `429` with a short JSON body and no internals.
+
+The limiter keys on the real client IP. Behind Fly.io that means trusting exactly
+one proxy hop (`app.set('trust proxy', 1)`), so `req.ip` is the client and not the
+proxy or a spoofable header. Set `TRUST_PROXY_HOPS` if you add more proxies.
+
+Knobs (all optional, defaults in parentheses): `RATE_LIMIT_WINDOW_MS` (15 min),
+`RATE_LIMIT_MAX` (600), `RATE_LIMIT_PRESIGN_MAX` (20), `RATE_LIMIT_CHECKOUT_MAX`
+(10), `TRUST_PROXY_HOPS` (1). `POST /uploads/presign` also caps files per request
+and requires `image/*` content types, rejecting oversized/blocked batches with a
+`400` before signing anything.
+
+### Error tracking (Sentry)
+
+All three services (`api`, `worker`, `web`) report errors to Sentry.
+
+- **Disabled by default.** With `SENTRY_DSN` unset, Sentry is never initialised,
+  every service boots and runs normally, and nothing is sent. Set the DSN to turn
+  it on.
+- `api` captures route and unhandled errors; `worker` reports every BullMQ job
+  failure (and any refund/fail-transition error) so a failing pipeline surfaces;
+  `web` captures client and server errors (App Router).
+- **PII is scrubbed:** emails and uploaded-image URLs are redacted from event
+  payloads, and request bodies/cookies are dropped. We want stack traces, not
+  customer faces.
+- Env: `SENTRY_DSN` (api, worker, web server), `NEXT_PUBLIC_SENTRY_DSN` (web
+  browser, a build-time value so the web app must be rebuilt to enable it),
+  optional `SENTRY_ENVIRONMENT`, `SENTRY_TRACES_SAMPLE_RATE` (default 0, errors
+  only), `SENTRY_RELEASE`, and `SENTRY_ORG`/`SENTRY_PROJECT`/`SENTRY_AUTH_TOKEN`
+  for optional web source-map upload.
+
 ## Conventions
 
 - JavaScript + ESM. No TypeScript; shared shapes use JSDoc typedefs.

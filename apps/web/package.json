@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@headliner/shared": "workspace:*",
+    "@sentry/nextjs": "^10.64.0",
     "bcryptjs": "^2.4.3",
     "dotenv": "^16.4.5",
     "jose": "^5.9.6",

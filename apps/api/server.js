@@ -1,3 +1,6 @@
+// MUST be the first import: it initialises Sentry before express is loaded (so the
+// SDK can instrument it) and loads the root .env before the dotenv.config() below.
+import { Sentry, sentryEnabled, captureError } from './instrument.js';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { randomUUID, timingSafeEqual } from 'node:crypto';
@@ -23,6 +26,7 @@ import {
 } from '@headliner/shared';
 import { detectFaces } from './faceDetector.js';
 import { QUALITY, evaluateImages, countError } from './uploadGate.js';
+import { RATE_LIMITS, createRateLimiters } from './rateLimit.js';
 
 /**
  * Headliner API (Phase 4: uploads + delivery).
@@ -199,6 +203,16 @@ function adminAuthorized(req) {
 
 const app = express();
 
+// Behind Fly.io the real client IP is in X-Forwarded-For, appended by ONE proxy
+// hop. Tell Express exactly how many hops to trust so req.ip (what the rate
+// limiter keys on) is the true client, not the proxy and not a spoofable header.
+// A specific number, never `true`: `true` would let a client forge XFF and dodge
+// the limit. Override TRUST_PROXY_HOPS if you add more proxies in front.
+const TRUST_PROXY_HOPS = Number.parseInt(process.env.TRUST_PROXY_HOPS, 10);
+app.set('trust proxy', Number.isFinite(TRUST_PROXY_HOPS) ? TRUST_PROXY_HOPS : 1);
+
+const { globalLimiter, presignLimiter, checkoutLimiter } = createRateLimiters(RATE_LIMITS);
+
 // The web app is a separate origin (localhost:3000 in dev). Allow it to call
 // the JSON endpoints. The webhook is server-to-server and needs no CORS.
 app.use(cors({ origin: WEB_BASE_URL }));
@@ -268,6 +282,7 @@ app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), async (r
   } catch (err) {
     // Unexpected failure: 500 lets Stripe retry the delivery later.
     console.error('[api] webhook handler error:', err);
+    captureError(err, { route: 'webhooks/stripe' });
     return res.status(500).json({ error: err.message });
   }
 });
@@ -279,14 +294,20 @@ app.get('/health', (req, res) => {
   res.json({ ok: true });
 });
 
+// Global per-IP backstop on every route BELOW this line. Mounted after the
+// webhook (which is registered earlier and must never be throttled) and after
+// /health (so Fly.io health checks are never limited).
+app.use(globalLimiter);
+
 /**
  * POST /uploads/presign  --  hand the browser presigned PUT URLs so it uploads
- * selfies DIRECTLY to R2. We never see the bytes.
+ * selfies DIRECTLY to R2. We never see the bytes. Strict per-IP limit on top of
+ * the global one: this creates storage keys and is a prime abuse target.
  *
  * Body: { files: [{ filename, contentType }] }
  * Returns: { uploads: [{ uploadUrl, publicUrl, key, contentType }] }
  */
-app.post('/uploads/presign', async (req, res) => {
+app.post('/uploads/presign', presignLimiter, async (req, res) => {
   try {
     const { files } = req.body ?? {};
     if (!Array.isArray(files) || files.length === 0) {
@@ -315,6 +336,7 @@ app.post('/uploads/presign', async (req, res) => {
     return res.json({ uploads });
   } catch (err) {
     console.error('[api] POST /uploads/presign failed:', err);
+    captureError(err, { route: 'uploads/presign' });
     return res.status(500).json({ error: err.message });
   }
 });
@@ -326,8 +348,11 @@ app.post('/uploads/presign', async (req, res) => {
  *
  * Body: { customerEmail, uploadedImageUrls: string[] }  (real R2 URLs from the
  * direct upload above)
+ *
+ * Strict per-IP limit on top of the global one: this creates Stripe sessions and
+ * Replicate detections, so it costs real money and is the tightest gate.
  */
-app.post('/checkout', async (req, res) => {
+app.post('/checkout', checkoutLimiter, async (req, res) => {
   try {
     const { customerEmail, uploadedImageUrls } = req.body ?? {};
     if (!customerEmail) {
@@ -403,6 +428,7 @@ app.post('/checkout', async (req, res) => {
     return res.status(201).json({ orderId, checkoutUrl: session.url });
   } catch (err) {
     console.error('[api] POST /checkout failed:', err);
+    captureError(err, { route: 'checkout' });
     return res.status(500).json({ error: err.message });
   }
 });
@@ -450,9 +476,17 @@ app.get('/admin/orders', async (req, res) => {
     });
   } catch (err) {
     console.error('[api] GET /admin/orders failed:', err);
+    captureError(err, { route: 'admin/orders' });
     return res.status(500).json({ error: err.message });
   }
 });
+
+// Sentry's Express error handler catches anything the route try/catch blocks miss
+// (e.g. a throw in middleware). Registered after all routes, before listen. No-op
+// when Sentry is disabled, so it is guarded on the DSN being set.
+if (sentryEnabled) {
+  Sentry.setupExpressErrorHandler(app);
+}
 
 app.listen(PORT, () => {
   console.log(`[api] listening on :${PORT}`);
