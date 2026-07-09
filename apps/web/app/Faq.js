@@ -21,6 +21,10 @@ export default function Faq() {
             </details>
           ))}
         </div>
+
+        <p className="faq__more">
+          <a href="/faq">See all questions</a>
+        </p>
       </div>
     </section>
   );

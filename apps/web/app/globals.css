@@ -983,8 +983,8 @@ a {
 .footer__inner {
   display: flex;
   flex-wrap: wrap;
-  gap: 24px 40px;
-  align-items: baseline;
+  gap: 32px 56px;
+  align-items: flex-start;
   justify-content: space-between;
 }
 
@@ -1001,19 +1001,33 @@ a {
   margin: 4px 0 0;
 }
 
-.footer__nav {
+.footer__cols {
   display: flex;
   flex-wrap: wrap;
-  gap: 18px;
+  gap: 28px 56px;
 }
 
-.footer__nav a {
+.footer__col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer__coltitle {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8a8a90;
+  margin: 0 0 2px;
+}
+
+.footer__col a {
   color: var(--bone);
   font-size: 14px;
   text-decoration: none;
 }
 
-.footer__nav a:hover {
+.footer__col a:hover {
   color: var(--cobalt);
 }
 
@@ -1073,6 +1087,134 @@ a {
     grid-column: 2;
     grid-row: 2;
   }
+}
+
+/* Content pages (privacy, terms, refunds, contact, faq) ------------------- */
+
+.content {
+  padding: clamp(48px, 7vw, 88px) 0 clamp(64px, 9vw, 112px);
+}
+
+/* A narrow reading measure, left-aligned with the rest of the site. */
+.content__inner {
+  max-width: 720px;
+}
+
+.content__title {
+  font-family: var(--serif);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  font-size: clamp(32px, 5vw, 46px);
+  margin: 6px 0 0;
+}
+
+.content__meta {
+  margin: 16px 0 0;
+  font-size: 13px;
+  color: var(--ash);
+}
+
+.content__lede {
+  font-size: 19px;
+  line-height: 1.5;
+  color: var(--ink);
+  margin: 20px 0 0;
+  max-width: 60ch;
+}
+
+.content__note {
+  margin: 40px 0 0;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+  font-size: 15px;
+  color: var(--ash);
+}
+
+/* Prose: the long-form body. Generous line height per BRAND. */
+.prose {
+  margin-top: 8px;
+}
+
+.prose__block {
+  margin-top: 40px;
+}
+
+.prose__h2 {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: clamp(21px, 3vw, 26px);
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  margin: 0 0 12px;
+}
+
+.prose p {
+  margin: 0 0 14px;
+  line-height: 1.65;
+  color: var(--ink);
+  max-width: 68ch;
+}
+
+.prose ul {
+  margin: 0 0 14px;
+  padding-left: 20px;
+  max-width: 68ch;
+}
+
+.prose li {
+  margin: 0 0 8px;
+  line-height: 1.6;
+}
+
+.prose__link {
+  margin-top: 4px;
+}
+
+/* Contact ----------------------------------------------------------------- */
+
+.contactcard {
+  margin-top: 36px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fffdf9;
+  padding: clamp(22px, 4vw, 30px);
+  max-width: 460px;
+}
+
+.contactcard__label {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ash);
+  margin: 0 0 8px;
+}
+
+.contactcard__email {
+  display: inline-block;
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: clamp(22px, 3.5vw, 28px);
+  letter-spacing: -0.01em;
+  word-break: break-all;
+}
+
+.contactcard__btn {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* Small cross-links ------------------------------------------------------- */
+
+.faq__more {
+  margin: 28px 0 0;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.start__agree {
+  margin-top: 16px;
 }
 
 @media (prefers-reduced-motion: reduce) {

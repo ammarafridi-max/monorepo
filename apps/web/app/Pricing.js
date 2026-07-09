@@ -30,7 +30,8 @@ export default function Pricing() {
             Get my headshots <span className="btn__price">$35</span>
           </a>
           <p className="pricecard__fine">
-            You pay on Stripe. Refunded automatically if a run fails.
+            You pay on Stripe. Refunded automatically if a run fails. See our{' '}
+            <a href="/terms">Terms</a> and <a href="/refunds">Refund Policy</a>.
           </p>
         </div>
       </div>

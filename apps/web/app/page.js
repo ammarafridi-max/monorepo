@@ -6,7 +6,6 @@ import HowItWorks from './HowItWorks';
 import WhatYouGet from './WhatYouGet';
 import Pricing from './Pricing';
 import Faq from './Faq';
-import Footer from './Footer';
 
 // The landing page. A server component so a logged-in user's order can be linked
 // and their email prefilled; anonymous visitors get the exact same flow as before.
@@ -35,12 +34,14 @@ export default async function HomePage() {
                 them, so you never pay for photos that will not work.
               </p>
               <UploadForm authed={!!session} initialEmail={session?.email ?? ''} />
+              <p className="formnote start__agree">
+                By continuing you agree to our <a href="/terms">Terms</a> and{' '}
+                <a href="/privacy">Privacy Policy</a>.
+              </p>
             </div>
           </div>
         </section>
       </main>
-
-      <Footer />
     </>
   );
 }

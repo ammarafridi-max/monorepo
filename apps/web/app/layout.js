@@ -1,5 +1,6 @@
 import './globals.css';
 import { getSession } from '../lib/session';
+import Footer from './Footer';
 
 export const metadata = {
   title: 'Headliner. Headshots that don\'t look AI.',
@@ -47,6 +48,7 @@ export default async function RootLayout({ children }) {
           </nav>
         </header>
         {children}
+        <Footer />
       </body>
     </html>
   );
