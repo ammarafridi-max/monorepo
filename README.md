@@ -369,6 +369,44 @@ image data, no order contents).
 - The script auto-tracks a basic pageview on every route; that is the **only**
   thing recorded on the legal/content pages.
 
+## Deferred: identity-based candidate culling
+
+There is a built-but-**disabled** quality feature in the worker: overgenerate
+headshots, score each candidate for identity fidelity against the customer's real
+selfies, and deliver only the best ones, so an occasional off-identity seed (a
+gender flip or dropped beard) is culled instead of shipped, without retraining.
+The plumbing exists (`apps/worker/scoreIdentity.js`, and `selectAndDeliver` in
+`apps/worker/pipeline.js`) but is **off**.
+
+**Why it is off:** it needs a real face-embedding model on Replicate, one that
+takes an `{ image }` and returns a numeric identity vector (ArcFace / InsightFace
+style). There is no off-the-shelf model on Replicate that fits: a search turns up
+only face-swap, InstantID, and restoration models. The one embedding model that
+fits the plumbing (`krthr/clip-embeddings`) is **CLIP**, which measures general
+image appearance, not face identity, so it would be a noisy signal that could
+cull good shots for the wrong reasons. Using it would do the opposite of what the
+feature promises.
+
+**Current behavior (culling off):** with `REPLICATE_FACE_EMBED_MODEL` unset, the
+worker generates exactly what it delivers and skips scoring, so delivery is
+identical to before. The worker boots normally; the var is not required.
+
+**To enable it later (the intended path):**
+1. Deploy an ArcFace/InsightFace face-embedding model to Replicate as a Cog. It
+   must accept an `{ image }` input and return a numeric vector (a plain array,
+   `{ embedding: [...] }`, or `[{ embedding: [...] }]`, all of which
+   `scoreIdentity.js` already parses).
+2. Set `REPLICATE_FACE_EMBED_MODEL=owner/name:versionHash`. That alone turns
+   culling ON. Optionally tune `GENERATE_COUNT` (default 10) and `DELIVER_COUNT`
+   (default = number of prompts) for how aggressively to overgenerate and cull.
+
+That is all on the app side. The API already serves the culled `deliveredImageUrls`
+to customers (`toPublicOrder` in `apps/api/server.js`, with a fallback to the full
+set for older orders), and with culling off `deliveredImageUrls` is still populated
+(it equals every generated image), so nothing else needs changing to switch the
+feature on or off. (The stale `TODO(api)` comment in `selectAndDeliver` can be
+removed; that work is already done.)
+
 ## Conventions
 
 - JavaScript + ESM. No TypeScript; shared shapes use JSDoc typedefs.
