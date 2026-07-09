@@ -16,12 +16,12 @@ import {
   connectMongo,
   createRedisConnection,
   createStorage,
+  createEmailClient,
   Order,
   QUEUE_NAMES,
 } from '@headliner/shared';
 import { PROMPTS } from './replicateClient.js';
 import { createPipeline } from './pipeline.js';
-import { sendDeliveryEmail } from './emailClient.js';
 import { createEnsureRefund } from './refund.js';
 
 /**
@@ -43,7 +43,8 @@ const {
   TEST_IMAGE_ZIP_URL,
   STRIPE_SECRET_KEY,
   WEB_BASE_URL = 'http://localhost:3000',
-  EMAIL_FROM = 'Headliner <onboarding@resend.dev>',
+  BREVO_API_KEY,
+  BREVO_SENDER = 'Headliner <hi@yourdomain.com>',
 } = process.env;
 if (!MONGODB_URI) throw new Error('[worker] MONGODB_URI is required');
 if (!REDIS_URL) throw new Error('[worker] REDIS_URL is required');
@@ -129,27 +130,39 @@ async function resolveTrainingZip(order) {
   return url;
 }
 
+// Brevo transactional email client. null when BREVO_API_KEY is unset, which
+// keeps email a clean no-op for local dev (same behavior as the old Resend path).
+const emailClient = BREVO_API_KEY
+  ? createEmailClient({ apiKey: BREVO_API_KEY, sender: BREVO_SENDER })
+  : null;
+
 /**
  * Idempotent delivery. Send the results email exactly once, guarded by
  * deliveredEmailSentAt (set only on success). If sending FAILS we throw so
  * BullMQ retries the job, which re-enters the DELIVERED case and tries again;
  * this closes the Phase 4 best-effort gap. The throw never affects order state:
  * the order is already DELIVERED (terminal), and the failed handler skips
- * terminal orders. A missing RESEND_API_KEY is treated as "email disabled" (dev)
+ * terminal orders. A missing BREVO_API_KEY is treated as "email disabled" (dev)
  * and does NOT retry.
  */
 async function onDelivered(orderId) {
   const order = await Order.findById(orderId);
   if (!order || order.deliveredEmailSentAt) return;
 
-  if (!process.env.RESEND_API_KEY) {
-    console.warn(`[worker] order ${orderId} delivered but RESEND_API_KEY unset; email skipped`);
+  if (!emailClient) {
+    console.warn(`[worker] order ${orderId} delivered but BREVO_API_KEY unset; email skipped`);
     return;
   }
 
   const resultsUrl = `${WEB_BASE_URL}/success?orderId=${orderId}`;
   try {
-    await sendDeliveryEmail({ to: order.customerEmail, from: EMAIL_FROM, resultsUrl });
+    await emailClient.sendDeliveryEmail({
+      to: order.customerEmail,
+      resultsUrl,
+      orderId,
+      // The culled best set from candidate selection, not the full candidate list.
+      thumbnailUrls: order.deliveredImageUrls ?? [],
+    });
   } catch (err) {
     // Leave deliveredEmailSentAt unset and let the retry re-attempt.
     console.error(`[worker] order ${orderId} delivery email failed, will retry: ${err.message}`);

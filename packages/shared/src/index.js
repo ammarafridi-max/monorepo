@@ -16,3 +16,4 @@ export { connectMongo } from './db.js';
 export { transitionOrder, OrderTransitionConflictError } from './transitions.js';
 export { createRedisConnection } from './redis.js';
 export { createStorage } from './storage.js';
+export { createEmailClient, renderDeliveryEmail } from './emailClient.js';

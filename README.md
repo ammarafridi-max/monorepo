@@ -130,8 +130,13 @@ Phase 4 adds the customer-facing flow. Photos upload straight from the browser t
 R2 (presigned PUT, never through the api); the worker trains on the order's real
 images and emails the results when the order is delivered.
 
-New env (see `.env.example`): R2 storage (`R2_*`), email (`RESEND_API_KEY`,
-`EMAIL_FROM`), `WEB_BASE_URL`, and `NEXT_PUBLIC_API_BASE_URL` for the web app.
+New env (see `.env.example`): R2 storage (`R2_*`), email (`BREVO_API_KEY`,
+`BREVO_SENDER`), `WEB_BASE_URL`, and `NEXT_PUBLIC_API_BASE_URL` for the web app.
+
+Delivery email is sent via Brevo (transactional API) from the shared
+`createEmailClient` helper in `@headliner/shared`. It is a branded HTML template
+(with a plain-text alternative) linking to the order's results page. Leave
+`BREVO_API_KEY` empty in local dev to make delivery a no-op.
 
 Enable public read on the R2 bucket (r2.dev or a custom domain set as
 `R2_PUBLIC_BASE_URL`) and add a bucket CORS rule allowing `PUT` from
