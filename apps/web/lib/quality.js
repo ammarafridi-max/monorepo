@@ -26,26 +26,44 @@ export function faceCheckAvailable() {
   return typeof window !== 'undefined' && 'FaceDetector' in window;
 }
 
+// Hard cap on the browser check. Some browsers (notably macOS Chrome) expose
+// FaceDetector but its detect() never resolves, which would leave a photo stuck
+// showing the "checking" overlay forever and keep the CTA disabled. If detection
+// does not finish in time we give up and defer to the server (the real gate).
+const DETECT_TIMEOUT_MS = 3000;
+
+function withTimeout(promise, ms) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error('detect-timeout')), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
 /**
  * Detect faces in a File using the built-in FaceDetector (zero bundle cost).
- * Returns { faceCount, maxFaceBoxRatio }, or null when detection is unavailable
- * (then the client defers to the server, which always checks).
+ * Returns { faceCount, maxFaceBoxRatio }, or null when detection is unavailable,
+ * stalls, or errors. In every null case the client defers to the server, which
+ * re-runs the same checks and is the authoritative gate, so a flaky or hung
+ * browser detector can never block the upload.
  */
 export async function detectImage(file) {
   if (!faceCheckAvailable()) return null;
   let bitmap;
   try {
-    bitmap = await createImageBitmap(file);
+    bitmap = await withTimeout(createImageBitmap(file), DETECT_TIMEOUT_MS);
     // eslint-disable-next-line no-undef
     const detector = new window.FaceDetector({ fastMode: true, maxDetectedFaces: 5 });
-    const faces = await detector.detect(bitmap);
+    const faces = await withTimeout(detector.detect(bitmap), DETECT_TIMEOUT_MS);
     const maxFaceBoxRatio = faces.reduce((m, f) => {
       const b = f.boundingBox;
       return Math.max(m, b.width / bitmap.width, b.height / bitmap.height);
     }, 0);
     return { faceCount: faces.length, maxFaceBoxRatio };
   } catch {
-    return { error: true, faceCount: 0, maxFaceBoxRatio: 0 };
+    // Timeout, or a broken / unavailable detector: defer to the server rather
+    // than hard-failing a photo the browser simply could not check.
+    return null;
   } finally {
     bitmap?.close?.();
   }
