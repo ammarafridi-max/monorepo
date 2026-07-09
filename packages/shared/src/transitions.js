@@ -16,6 +16,7 @@ import { canTransition, ORDER_STATES } from './orderStates.js';
  */
 const TIMESTAMP_FIELD_FOR = Object.freeze({
   [ORDER_STATES.PAID]: 'paidAt',
+  [ORDER_STATES.AWAITING_UPLOAD]: 'awaitingUploadAt',
   [ORDER_STATES.TRAINING]: 'trainingStartedAt',
   [ORDER_STATES.GENERATING]: 'generatingStartedAt',
   [ORDER_STATES.DELIVERED]: 'deliveredAt',

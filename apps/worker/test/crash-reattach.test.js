@@ -3,10 +3,16 @@ import assert from 'node:assert/strict';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 
-import { Order, ORDER_STATES } from '@headliner/shared';
+import { Order, ORDER_STATES, buildPrompts } from '@headliner/shared';
 import { createPipeline } from '../pipeline.js';
 import { createEnsureRefund } from '../refund.js';
 import * as fake from '../replicateClient.fake.js';
+
+// Sample selections so the harness builds prompts the SAME way production does:
+// through the shared catalog buildPrompts, from an order's selected looks/attire.
+const SAMPLE_LOOKS = ['corporate_studio', 'outdoor_professional'];
+const SAMPLE_ATTIRE = ['business_suit', 'smart_knit'];
+const SUBJECT_ANCHOR = 'HDLNRZ, a person';
 
 /**
  * Phase 3 hardening: prove the worker's crash-reattach + per-slot idempotency
@@ -33,10 +39,23 @@ beforeEach(async () => {
 });
 
 // Fast poll timings so scripted 'processing' statuses don't slow the tests.
-function buildPipeline(prompts, extra = {}) {
+// Prompts come from the SHARED catalog buildPrompts (the production source of
+// truth), built from each order's selections (falling back to sample selections).
+// generateCount drives how many candidate prompts are produced.
+function buildPipeline(extra = {}) {
+  const generateCount = extra.generateCount ?? 14;
+  const deliverCount = extra.deliverCount ?? generateCount;
   return createPipeline({
     client: fake,
-    prompts,
+    buildPrompts: (order) =>
+      buildPrompts({
+        looks: order.selectedLooks ?? SAMPLE_LOOKS,
+        attire: order.selectedAttire ?? SAMPLE_ATTIRE,
+        count: generateCount,
+        subjectAnchor: SUBJECT_ANCHOR,
+      }),
+    generateCount,
+    deliverCount,
     // A neutral default scorer; selection-focused tests inject their own.
     scoreIdentity: extra.scoreIdentity ?? makeScorer(),
     imageZipUrl: 'https://fake.local/selfies.zip',
@@ -97,16 +116,20 @@ test('scenario 1: crash after trainingId persisted, before success -> reattaches
     crashOn: { pollTraining: 1 },
   });
 
+  // The worker enters at TRAINING (enqueued by the image-submit endpoint after it
+  // moved AWAITING_UPLOAD -> TRAINING). Selections drive prompt building later.
   const order = await Order.create({
     customerEmail: 'a@b.com',
-    status: ORDER_STATES.PAID,
+    status: ORDER_STATES.TRAINING,
     uploadedImageUrls: ['selfie.jpg'],
+    selectedLooks: SAMPLE_LOOKS,
+    selectedAttire: SAMPLE_ATTIRE,
   });
   const id = order._id.toString();
-  const pipeline = buildPipeline(['one prompt']);
+  const pipeline = buildPipeline();
 
-  // Run 1: PAID -> TRAINING, startTraining, persist trainingId, then the first
-  // training poll crashes (before it ever reports success).
+  // Run 1: startTraining, persist trainingId, then the first training poll
+  // crashes (before it ever reports success).
   await assert.rejects(() => pipeline.processOrder(id), /SIMULATED_CRASH/);
 
   const mid = await Order.findById(id);
@@ -138,7 +161,7 @@ test('scenario 2: crash after trainedModelVersion persisted -> restart skips tra
     replicate: { trainingId: 'train_pre', trainedModelVersion: 'fakeowner/fakemodel:v1' },
   });
   const id = order._id.toString();
-  const pipeline = buildPipeline(['one prompt']);
+  const pipeline = buildPipeline();
 
   await pipeline.processOrder(id);
 
@@ -159,8 +182,8 @@ test('scenario 3: crash mid-generation with 3/GENERATE_COUNT candidates done -> 
 
   const GENERATE_COUNT = 10;
   const DELIVER_COUNT = 7;
-  // 7 style prompts but 10 candidates: proves candidates cycle the prompt list.
-  const prompts = Array.from({ length: 7 }, (_, i) => `headshot prompt ${i}`);
+  // 10 candidates but only 4 selected look x attire combinations: proves the
+  // candidate slots cycle the buildPrompts output.
   // Lower pred number -> higher score, so the winning set is deterministic.
   const scorer = makeScorer({ scoreFor: (url) => 1 - predNum(url) / 100 });
 
@@ -168,10 +191,12 @@ test('scenario 3: crash mid-generation with 3/GENERATE_COUNT candidates done -> 
     customerEmail: 'a@b.com',
     status: ORDER_STATES.GENERATING,
     uploadedImageUrls: ['selfie.jpg'],
+    selectedLooks: SAMPLE_LOOKS,
+    selectedAttire: SAMPLE_ATTIRE,
     replicate: { trainingId: 'train_pre', trainedModelVersion: 'fakeowner/fakemodel:v1' },
   });
   const id = order._id.toString();
-  const pipeline = buildPipeline(prompts, {
+  const pipeline = buildPipeline({
     generateCount: GENERATE_COUNT,
     deliverCount: DELIVER_COUNT,
     scoreIdentity: scorer,
@@ -229,7 +254,6 @@ test('scenario 5: crash after all candidates generated but BEFORE selection -> r
 
   const GENERATE_COUNT = 6;
   const DELIVER_COUNT = 3;
-  const prompts = Array.from({ length: 4 }, (_, i) => `p${i}`);
   // Crash on the FIRST identity score: all candidates are already generated, but
   // no selection has been persisted -> the "candidates in, selection not done" gap.
   const scorer = makeScorer({ scoreFor: (url) => 1 - predNum(url) / 100, crashOnCall: 1 });
@@ -238,10 +262,12 @@ test('scenario 5: crash after all candidates generated but BEFORE selection -> r
     customerEmail: 'a@b.com',
     status: ORDER_STATES.GENERATING,
     uploadedImageUrls: ['selfie.jpg'],
+    selectedLooks: SAMPLE_LOOKS,
+    selectedAttire: SAMPLE_ATTIRE,
     replicate: { trainingId: 'train_pre', trainedModelVersion: 'fakeowner/fakemodel:v1' },
   });
   const id = order._id.toString();
-  const pipeline = buildPipeline(prompts, {
+  const pipeline = buildPipeline({
     generateCount: GENERATE_COUNT,
     deliverCount: DELIVER_COUNT,
     scoreIdentity: scorer,
@@ -306,7 +332,7 @@ test('scenario 6: crash after selection persisted but BEFORE the DELIVERED trans
     deliveredImageUrls,
   });
   const id = order._id.toString();
-  const pipeline = buildPipeline(['p0'], {
+  const pipeline = buildPipeline({
     generateCount: GENERATE_COUNT,
     deliverCount: DELIVER_COUNT,
     scoreIdentity: scorer,
@@ -333,18 +359,21 @@ test('scenario 4: training fails -> FAILED with error recorded, refund issued ex
   const stripe = makeFakeStripe();
   const ensureRefund = createEnsureRefund({ stripe });
 
+  // Enters at TRAINING (post-upload). The customer actually paid: a payment intent
+  // exists, so a failure is refundable.
   const order = await Order.create({
     customerEmail: 'a@b.com',
-    status: ORDER_STATES.PAID,
+    status: ORDER_STATES.TRAINING,
     uploadedImageUrls: ['selfie.jpg'],
-    // The customer actually paid: a payment intent exists, so a refund is due.
+    selectedLooks: SAMPLE_LOOKS,
+    selectedAttire: SAMPLE_ATTIRE,
     stripePaymentIntentId: 'pi_test_123',
   });
   const id = order._id.toString();
-  const pipeline = buildPipeline(['one prompt'], { onFailed: ensureRefund });
+  const pipeline = buildPipeline({ onFailed: ensureRefund });
 
-  // Phase 1: PAID -> TRAINING, startTraining, then the training poll returns
-  // 'failed' so processOrder rejects (this is what BullMQ sees as a job failure).
+  // Phase 1: startTraining, then the training poll returns 'failed' so
+  // processOrder rejects (this is what BullMQ sees as a job failure).
   let thrown;
   await assert.rejects(
     () => pipeline.processOrder(id),
@@ -385,27 +414,36 @@ test('cost invariant: with identity culling OFF, generate == deliver (never pay 
   // Identity culling is OFF when REPLICATE_FACE_EMBED_MODEL is unset. In that case
   // apps/worker/index.js pins GENERATE_COUNT to DELIVER_COUNT and injects NO scorer
   // (the pipeline falls back to its neutral default). Reproduce that exact wiring:
-  // equal counts + no scorer. The invariant we lock: the GENERATING stage generates
-  // exactly what it delivers, so we never pay to generate images we then discard.
-  const prompts = Array.from({ length: 7 }, (_, i) => `headshot prompt ${i}`);
-  const DELIVER_COUNT = prompts.length; // index.js default when unset
-  const GENERATE_COUNT = DELIVER_COUNT; // index.js: culling off pins generate to deliver
+  // equal counts + no scorer, at the new default count (14), with prompts built
+  // from real selections via the shared catalog. The invariant we lock: the
+  // GENERATING stage generates exactly what it delivers, so we never pay to
+  // generate images we then discard.
+  const DELIVER_COUNT = 14; // index.js default when unset
+  const GENERATE_COUNT = DELIVER_COUNT; // culling off pins generate to deliver
   assert.equal(GENERATE_COUNT, DELIVER_COUNT, 'premise: culling off means generate == deliver');
 
   const order = await Order.create({
     customerEmail: 'a@b.com',
     status: ORDER_STATES.GENERATING,
     uploadedImageUrls: ['selfie.jpg'],
+    selectedLooks: SAMPLE_LOOKS,
+    selectedAttire: SAMPLE_ATTIRE,
     replicate: { trainingId: 'train_pre', trainedModelVersion: 'fakeowner/fakemodel:v1' },
   });
   const id = order._id.toString();
 
   // Built directly (not via buildPipeline, which always injects a stub scorer) so
   // NO scorer is passed and the pipeline uses its neutral default -- the real
-  // culling-off path. No embedding calls, no scoring cost.
+  // culling-off path. Prompts come from the shared catalog buildPrompts.
   const pipeline = createPipeline({
     client: fake,
-    prompts,
+    buildPrompts: (o) =>
+      buildPrompts({
+        looks: o.selectedLooks,
+        attire: o.selectedAttire,
+        count: GENERATE_COUNT,
+        subjectAnchor: SUBJECT_ANCHOR,
+      }),
     generateCount: GENERATE_COUNT,
     deliverCount: DELIVER_COUNT,
     imageZipUrl: 'https://fake.local/selfies.zip',
@@ -425,7 +463,7 @@ test('cost invariant: with identity culling OFF, generate == deliver (never pay 
     done.deliveredImageUrls.length,
     'startGeneration count == deliveredImageUrls.length (generate exactly what we deliver)'
   );
-  // And that is exactly the prompt set: nothing overgenerated, nothing dropped.
-  assert.equal(fake.getCounts().startGeneration, prompts.length, 'generated exactly prompts.length');
-  assert.equal(done.deliveredImageUrls.length, prompts.length, 'delivered exactly prompts.length');
+  // And that is exactly the target count: nothing overgenerated, nothing dropped.
+  assert.equal(fake.getCounts().startGeneration, DELIVER_COUNT, 'generated exactly DELIVER_COUNT (14)');
+  assert.equal(done.deliveredImageUrls.length, DELIVER_COUNT, 'delivered exactly DELIVER_COUNT (14)');
 });

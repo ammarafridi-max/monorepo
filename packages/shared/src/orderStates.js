@@ -16,6 +16,9 @@
 export const ORDER_STATES = Object.freeze({
   AWAITING_PAYMENT: 'AWAITING_PAYMENT',
   PAID: 'PAID',
+  // Money is in, but we are waiting on the HUMAN to upload their photos. This is
+  // NOT a system stall: the stuck-detector must treat it as waiting-on-customer.
+  AWAITING_UPLOAD: 'AWAITING_UPLOAD',
   TRAINING: 'TRAINING',
   GENERATING: 'GENERATING',
   DELIVERED: 'DELIVERED',
@@ -25,14 +28,25 @@ export const ORDER_STATES = Object.freeze({
 /**
  * Allowed transitions: state -> array of states it may move to next.
  *
- * Happy path runs AWAITING_PAYMENT -> PAID -> TRAINING -> GENERATING -> DELIVERED.
+ * Happy path (selection-first, pay before upload):
+ *   AWAITING_PAYMENT -> PAID -> AWAITING_UPLOAD -> TRAINING -> GENERATING -> DELIVERED
+ *
+ * Where the boundaries are:
+ *   - PAID is the webhook's idempotency checkpoint (the atomic AWAITING_PAYMENT
+ *     -> PAID update happens exactly once). The webhook then advances PAID ->
+ *     AWAITING_UPLOAD and does NOT enqueue anything.
+ *   - AWAITING_UPLOAD -> TRAINING is driven by the customer's gate-passing photo
+ *     upload (POST /orders/:id/images), which is also where the pipeline job is
+ *     enqueued. So an order only ever enters TRAINING after a paid, valid upload.
+ *
  * Every non-terminal state may also fail. DELIVERED and FAILED are terminal.
  * @readonly
  * @type {Readonly<Record<string, string[]>>}
  */
 export const ORDER_TRANSITIONS = Object.freeze({
   [ORDER_STATES.AWAITING_PAYMENT]: [ORDER_STATES.PAID, ORDER_STATES.FAILED],
-  [ORDER_STATES.PAID]: [ORDER_STATES.TRAINING, ORDER_STATES.FAILED],
+  [ORDER_STATES.PAID]: [ORDER_STATES.AWAITING_UPLOAD, ORDER_STATES.FAILED],
+  [ORDER_STATES.AWAITING_UPLOAD]: [ORDER_STATES.TRAINING, ORDER_STATES.FAILED],
   [ORDER_STATES.TRAINING]: [ORDER_STATES.GENERATING, ORDER_STATES.FAILED],
   [ORDER_STATES.GENERATING]: [ORDER_STATES.DELIVERED, ORDER_STATES.FAILED],
   [ORDER_STATES.DELIVERED]: [],

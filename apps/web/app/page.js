@@ -1,5 +1,3 @@
-import { getSession } from '../lib/session';
-import UploadForm from './UploadForm';
 import Hero from './Hero';
 import Showcase from './Showcase';
 import HowItWorks from './HowItWorks';
@@ -9,13 +7,10 @@ import Faq from './Faq';
 import TrackEvent from './TrackEvent';
 import { EVENTS } from '../lib/analytics';
 
-// The landing page. A server component so a logged-in user's order can be linked
-// and their email prefilled; anonymous visitors get the exact same flow as before.
-// Every section is presentational; the ONLY interactive piece is UploadForm, whose
-// behavior is unchanged. All CTAs scroll to that one uploader (#start).
-export default async function HomePage() {
-  const session = await getSession();
-
+// The landing page: marketing only. There is ONE purchase flow now, the routed
+// funnel under /generator, and every CTA here starts it at /generator/looks. No
+// upload happens on this page (payment comes before upload in the new flow).
+export default function HomePage() {
   return (
     <>
       <TrackEvent event={EVENTS.LANDING_VIEW} />
@@ -27,19 +22,20 @@ export default async function HomePage() {
         <Pricing />
         <Faq />
 
-        <section id="start" className="section start">
+        <section className="section start">
           <div className="container">
-            <div className="start__inner">
-              <p className="eyebrow">Start your order</p>
-              <h2 className="h2">Upload your selfies.</h2>
-              <p className="section__lede">
-                Five to fifteen clear photos of one person. We check them as you add
-                them, so you never pay for photos that will not work.
+            <div className="start__inner center">
+              <p className="eyebrow" style={{ justifyContent: 'center' }}>
+                Ready when you are
               </p>
-              <UploadForm authed={!!session} initialEmail={session?.email ?? ''} />
-              <p className="formnote start__agree">
-                By continuing you agree to our <a href="/terms">Terms</a> and{' '}
-                <a href="/privacy">Privacy Policy</a>.
+              <h2 className="h2">Your headshots, in about an hour.</h2>
+              <p className="section__lede" style={{ margin: '14px auto 0' }}>
+                Pick your looks, pay once, upload your photos. We handle the rest.
+              </p>
+              <p style={{ marginTop: 24 }}>
+                <a className="btn btn--primary" href="/generator/looks">
+                  Get my headshots <span className="btn__price">$35</span>
+                </a>
               </p>
             </div>
           </div>

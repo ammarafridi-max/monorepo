@@ -14,6 +14,66 @@ design and build plan.
 - `apps/worker` - BullMQ worker: drives orders through real Replicate training + generation (Phase 3).
 - `packages/shared` - shared order contracts, the atomic transition helper, and the Redis connection helper.
 
+## Multi-step funnel (selection-first, pay before upload)
+
+The purchase flow is a routed, multi-step funnel, and payment comes BEFORE upload:
+
+```
+Looks -> Attire -> Details/Review -> PAY -> Upload photos -> processing -> Delivered
+```
+
+The customer picks their looks and attire, enters an email, and pays. Only then do
+they upload photos. A gate-passing upload is what starts training. This is the one
+purchase flow; the old single-page upload+pay flow is gone.
+
+**State machine.** A new state, `AWAITING_UPLOAD`, sits between payment and
+training:
+
+```
+AWAITING_PAYMENT -> PAID -> AWAITING_UPLOAD -> TRAINING -> GENERATING -> DELIVERED
+```
+
+`PAID` is still the webhook's idempotency checkpoint. `AWAITING_UPLOAD` means the
+money is in but we are waiting on the human, so the admin stuck-detector treats it
+as "awaiting customer", never a system stall.
+
+**Where the enqueue and the gate moved.**
+
+- `POST /checkout` now takes `{ email, selectedLooks[], selectedAttire[] }` and NO
+  images. It validates the selections against the shared catalog and creates the
+  order in `AWAITING_PAYMENT`. The image gate does not run here (there are no
+  images yet).
+- The **Stripe webhook no longer enqueues.** It does the idempotent
+  `AWAITING_PAYMENT -> PAID` (recording payment), then `PAID -> AWAITING_UPLOAD`,
+  and never touches the queue.
+- `POST /orders/:id/images` is the new "start training" trigger. Valid only for an
+  `AWAITING_UPLOAD` order, it runs THE REAL gate (face quality + content
+  moderation) on the uploaded images. On failure: a structured `422`, no
+  transition, no enqueue (the order stays `AWAITING_UPLOAD`, so the customer can
+  swap photos and resubmit). On pass: it persists the images, transitions
+  `AWAITING_UPLOAD -> TRAINING`, and enqueues the pipeline job (`jobId = orderId`)
+  exactly once. This is the moved enqueue.
+
+**Shared catalog + prompts.** `packages/shared/src/catalog.js` is the single source
+of truth for the `LOOKS` and `ATTIRE` options AND the `buildPrompts` helper that
+turns a selection into generation prompts. The web renders its selection cards from
+it (via the `@headliner/shared/catalog` subpath, which is mongoose-free and
+client-safe) and the worker builds each order's prompts from it, so the options a
+customer sees can never drift from what we generate. The worker's old fixed
+`PROMPTS` array is replaced by `buildPrompts({ looks, attire, count, subjectAnchor })`.
+
+**Count.** `DELIVER_COUNT` defaults to 14. Identity culling is off, so the worker
+generates exactly what it delivers (generate == deliver, locked by a test).
+
+**Paid but not uploaded.** Most users upload immediately (the post-payment redirect
+goes straight to the upload step). A customer who drops off sits in
+`AWAITING_UPLOAD`, visible in admin as "awaiting customer", and is NOT auto-refunded
+(nothing failed). A reminder email is a `// TODO` in the api for later.
+
+**Preserved guarantees.** Idempotent webhook, idempotent enqueue (`jobId =
+orderId`), resumable/idempotent pipeline, auto-refund on `FAILED`, and idempotent
+email are all unchanged.
+
 ## Getting started
 
 ```sh

@@ -13,6 +13,7 @@ import Stripe from 'stripe';
 dotenv.config({ path: resolve(dirname(fileURLToPath(import.meta.url)), '../../.env') });
 
 import {
+  buildPrompts,
   connectMongo,
   createRedisConnection,
   createStorage,
@@ -20,7 +21,7 @@ import {
   Order,
   QUEUE_NAMES,
 } from '@headliner/shared';
-import { PROMPTS } from './replicateClient.js';
+import { TRIGGER_WORD } from './replicateClient.js';
 import { createPipeline } from './pipeline.js';
 import { createEnsureRefund } from './refund.js';
 
@@ -71,8 +72,8 @@ const IDENTITY_SCORING = Boolean(process.env.REPLICATE_FACE_EMBED_MODEL);
 // How many headshots we deliver. With culling ON we generate MORE candidates
 // (GENERATE_COUNT) and keep the best DELIVER_COUNT; with culling OFF we generate
 // exactly what we deliver, so there is no overgeneration cost.
-const DELIVER_COUNT = intEnv('DELIVER_COUNT', PROMPTS.length);
-const GENERATE_COUNT = IDENTITY_SCORING ? intEnv('GENERATE_COUNT', 10) : DELIVER_COUNT;
+const DELIVER_COUNT = intEnv('DELIVER_COUNT', 14);
+const GENERATE_COUNT = IDENTITY_SCORING ? intEnv('GENERATE_COUNT', 20) : DELIVER_COUNT;
 if (GENERATE_COUNT < DELIVER_COUNT) {
   throw new Error(
     `[worker] GENERATE_COUNT (${GENERATE_COUNT}) must be >= DELIVER_COUNT (${DELIVER_COUNT})`
@@ -191,9 +192,27 @@ async function onDelivered(orderId) {
 // client can be injected; a counting stub replaces it in tests).
 const ensureRefund = createEnsureRefund({ stripe });
 
+// The subject anchor every prompt leads with: the trigger word (activates the
+// trained face) plus a generic subject. Naming the subject up front holds a
+// weak seed's identity so it does not drift; generic ("a person") now that the
+// funnel serves anyone, not one hardcoded subject.
+const SUBJECT_ANCHOR = `${TRIGGER_WORD}, a person`;
+
+// Per-order prompt builder: turn the order's selected looks/attire into
+// GENERATE_COUNT prompts via the SHARED catalog buildPrompts, the single source
+// of truth the web also renders its options from, so shown options can never
+// drift from what we generate.
+const buildOrderPrompts = (order) =>
+  buildPrompts({
+    looks: order.selectedLooks ?? [],
+    attire: order.selectedAttire ?? [],
+    count: GENERATE_COUNT,
+    subjectAnchor: SUBJECT_ANCHOR,
+  });
+
 const pipeline = createPipeline({
   client,
-  prompts: PROMPTS,
+  buildPrompts: buildOrderPrompts,
   scoreIdentity,
   generateCount: GENERATE_COUNT,
   deliverCount: DELIVER_COUNT,

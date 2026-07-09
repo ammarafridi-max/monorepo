@@ -34,16 +34,17 @@ export const DEFAULT_GENERATION_MAX_WAIT_MS = 6 * 60 * 1000; // 6 min per image
  *
  * @param {Object} opts
  * @param {ReplicateClient} opts.client
- * @param {readonly string[]} opts.prompts - the style prompts; candidates cycle
- *        through these (prompts[i % prompts.length]) so with generateCount >
- *        prompts.length some styles get an extra variant on a different seed
+ * @param {(order: any) => string[]} opts.buildPrompts - builds THIS order's prompts
+ *        from its selections (via the shared catalog buildPrompts). Called per
+ *        order at generation time. Candidates cycle through the returned list
+ *        (prompts[i % prompts.length]) if it is shorter than generateCount.
  * @param {(candidateImageUrl: string, referenceImageUrls: readonly string[]) => Promise<{ score: number, costUsd?: number }>} [opts.scoreIdentity]
  *        identity-fidelity scorer used to cull off-identity candidates; higher
  *        score == more like the customer's real selfies. Injectable/stubbable.
- * @param {number} [opts.generateCount] - how many CANDIDATES to generate
- *        (defaults to prompts.length). Must be >= deliverCount.
+ * @param {number} [opts.generateCount] - how many CANDIDATES to generate. Must be
+ *        >= deliverCount.
  * @param {number} [opts.deliverCount] - how many candidates to DELIVER after
- *        scoring (defaults to prompts.length). Clamped to <= generateCount.
+ *        scoring. Clamped to <= generateCount.
  * @param {(order: any) => Promise<string>} [opts.resolveTrainingZip] - returns the
  *        zip URL to train this order on (built from its real uploaded images)
  * @param {string} [opts.imageZipUrl] - static fallback zip URL when no resolver
@@ -58,10 +59,10 @@ export const DEFAULT_GENERATION_MAX_WAIT_MS = 6 * 60 * 1000; // 6 min per image
  */
 export function createPipeline({
   client,
-  prompts,
+  buildPrompts,
   scoreIdentity = async () => ({ score: 0, costUsd: 0 }),
-  generateCount = prompts.length,
-  deliverCount = prompts.length,
+  generateCount = 14,
+  deliverCount = 14,
   resolveTrainingZip,
   imageZipUrl,
   onDelivered,
@@ -192,6 +193,11 @@ export function createPipeline({
     const generationIds = [...(order.replicate?.generationIds ?? [])];
     const resultImageUrls = [...(order.resultImageUrls ?? [])];
 
+    // Build THIS order's prompts from its selected looks/attire (shared catalog).
+    // One prompt per candidate slot; if the list is shorter than generateCount the
+    // slots cycle through it (prompts[i % prompts.length]).
+    const prompts = buildPrompts(order);
+
     // Pass 1: ensure every candidate slot has a started prediction, persisting
     // each id BEFORE any polling so a crash reattaches instead of regenerating.
     // Slots that already carry an id are skipped -> never double-started.
@@ -320,11 +326,11 @@ export function createPipeline({
       if (!order) throw new Error(`order ${orderId} not found`);
 
       switch (order.status) {
-        case ORDER_STATES.PAID:
-          // Nothing external. Move straight into training.
-          await transitionOrder(orderId, ORDER_STATES.PAID, ORDER_STATES.TRAINING);
-          break;
-
+        // The worker ENTERS at TRAINING. In the pay-before-upload flow the pipeline
+        // job is enqueued by POST /orders/:id/images only AFTER it moves the order
+        // AWAITING_UPLOAD -> TRAINING, so PAID / AWAITING_UPLOAD orders never reach
+        // the queue. If one somehow did, it falls through to `default` and fails
+        // (surfacing the anomaly) rather than being silently mishandled.
         case ORDER_STATES.TRAINING:
           await runTrainingStage(orderId, order);
           break;

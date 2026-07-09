@@ -26,7 +26,7 @@ export default function Pricing() {
             ))}
           </ul>
 
-          <a className="btn btn--primary btn--block" href="#start">
+          <a className="btn btn--primary btn--block" href="/generator/looks">
             Get my headshots <span className="btn__price">$35</span>
           </a>
           <p className="pricecard__fine">

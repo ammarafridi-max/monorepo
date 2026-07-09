@@ -37,12 +37,30 @@ export async function putToStorage(uploadUrl, file) {
   if (!res.ok) throw new Error(`upload failed (${res.status})`);
 }
 
-/** Create the order + Stripe session. Returns { orderId, checkoutUrl }. */
-export async function createCheckout(customerEmail, uploadedImageUrls) {
+/**
+ * Create the order + Stripe session from the up-front selections (NO images yet).
+ * Returns { orderId, checkoutUrl }.
+ */
+export async function createCheckout({ email, selectedLooks, selectedAttire }) {
   const res = await fetch(`${API_BASE}/checkout`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ customerEmail, uploadedImageUrls }),
+    body: JSON.stringify({ email, selectedLooks, selectedAttire }),
+  });
+  return asJson(res);
+}
+
+/**
+ * Submit the post-payment photos for a paid order (the new "start training"
+ * trigger). On success returns { orderId, status: 'TRAINING' }. On a gate failure
+ * throws with err.status === 422 and err.body.failures (per-photo reasons), same
+ * shape the old checkout used, so the UI can flag and let the user swap photos.
+ */
+export async function submitOrderImages(orderId, uploadedImageUrls) {
+  const res = await fetch(`${API_BASE}/orders/${orderId}/images`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ uploadedImageUrls }),
   });
   return asJson(res);
 }

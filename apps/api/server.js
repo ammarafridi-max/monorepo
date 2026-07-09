@@ -18,6 +18,8 @@ import {
   connectMongo,
   createRedisConnection,
   createStorage,
+  isValidLook,
+  isValidAttire,
   Order,
   ORDER_STATES,
   OrderTransitionConflictError,
@@ -172,6 +174,10 @@ function toPublicOrder(order) {
     orderId: order._id.toString(),
     status: order.status,
     customerEmail: order.customerEmail,
+    // The customer's choices, so the upload/status pages can render a summary.
+    // Catalog ids only, never internal prompt fragments.
+    selectedLooks: order.selectedLooks ?? [],
+    selectedAttire: order.selectedAttire ?? [],
     resultImageUrls,
     generatedCount,
     totalCount,
@@ -192,8 +198,10 @@ function enteredCurrentStateAt(order) {
       return order.createdAt;
     case ORDER_STATES.PAID:
       return order.paidAt || order.createdAt;
+    case ORDER_STATES.AWAITING_UPLOAD:
+      return order.awaitingUploadAt || order.paidAt || order.createdAt;
     case ORDER_STATES.TRAINING:
-      return order.trainingStartedAt || order.paidAt || order.createdAt;
+      return order.trainingStartedAt || order.awaitingUploadAt || order.paidAt || order.createdAt;
     case ORDER_STATES.GENERATING:
       return order.generatingStartedAt || order.createdAt;
     default:
@@ -214,6 +222,11 @@ function toAdminOrder(order) {
       ? order.amountPaidCents - (order.computeCostCents || 0)
       : null;
 
+  // AWAITING_UPLOAD is paid-but-waiting-on-the-HUMAN, not a system stall. It is
+  // surfaced with its own flag and NEVER counted as stuck, so a customer who paid
+  // and has not uploaded yet is not mistaken for a broken/failed order.
+  const awaitingCustomer = order.status === ORDER_STATES.AWAITING_UPLOAD;
+
   return {
     orderId: order._id.toString(),
     status: order.status,
@@ -223,9 +236,11 @@ function toAdminOrder(order) {
     marginCents,
     stuckForMs,
     stuckForMinutes: stuckForMs == null ? null : Math.round(stuckForMs / 60000),
-    stuck: stuckForMs != null && stuckForMs > STUCK_AFTER_MS,
+    stuck: stuckForMs != null && stuckForMs > STUCK_AFTER_MS && !awaitingCustomer,
+    awaitingCustomer,
     createdAt: order.createdAt,
     paidAt: order.paidAt ?? null,
+    awaitingUploadAt: order.awaitingUploadAt ?? null,
     trainingStartedAt: order.trainingStartedAt ?? null,
     generatingStartedAt: order.generatingStartedAt ?? null,
     deliveredAt: order.deliveredAt ?? null,
@@ -234,6 +249,72 @@ function toAdminOrder(order) {
     refundedAt: order.refundedAt ?? null,
     error: order.error ?? null,
   };
+}
+
+/**
+ * THE REAL upload gate: count + face quality + content moderation on the uploaded
+ * images. Returns a { status, body } to send back on failure, or null if
+ * everything passes. This used to run inside /checkout; in the pay-before-upload
+ * flow there are no images at checkout, so it now runs on POST /orders/:id/images
+ * (after payment). No pass = no training, no pipeline job. Same structured 422
+ * shapes as before so the client can show per-photo reasons and let the user swap.
+ */
+async function runUploadGate(uploadedImageUrls) {
+  if (!(UPLOAD_QUALITY_GATE || UPLOAD_MODERATION)) return null;
+
+  const nErr = countError(uploadedImageUrls.length);
+  if (nErr) {
+    return { status: 422, body: { error: 'quality_gate', countError: nErr, failures: [], rules: QUALITY } };
+  }
+
+  // Bounded concurrency (firing all N at Replicate at once trips its rate limit).
+  // Face detection and moderation run in PARALLEL per image, so moderation adds no
+  // latency, only ~1 extra Replicate prediction per image in cost.
+  const results = await mapWithLimit(uploadedImageUrls, DETECT_CONCURRENCY, async (url, index) => {
+    const [face, moderation] = await Promise.all([
+      UPLOAD_QUALITY_GATE
+        ? detectFaces(url).catch((err) => {
+            // Fail closed on a per-image detection error: an unreadable image is
+            // not allowed to buy its way through.
+            console.error(`[api] face detection failed for ${url}: ${err.message}`);
+            captureError(err, { route: 'orders/images', phase: 'face-detection' });
+            return { faceCount: 0, maxFaceBoxRatio: 0, error: true };
+          })
+        : Promise.resolve(null),
+      UPLOAD_MODERATION
+        ? moderateImage(url).catch((err) => {
+            // The classifier ITSELF errored. Fail open (allow + alert) or closed
+            // per MODERATION_FAIL_OPEN. A positive detection never reaches this
+            // catch, so it is always blocked below.
+            console.error(`[api] moderation failed for ${url}: ${err.message}`);
+            captureError(err, { route: 'orders/images', phase: 'moderation' });
+            return { safe: MODERATION_FAIL_OPEN, score: null, reason: MODERATION_REASON, errored: true };
+          })
+        : Promise.resolve({ safe: true }),
+    ]);
+    return { index, url, face, moderation };
+  });
+
+  // 1) SAFETY FIRST. Reject unsafe images with a non-graphic, branded reason; we
+  //    never say what was detected.
+  if (UPLOAD_MODERATION) {
+    const unsafe = results
+      .filter((r) => !r.moderation.safe)
+      .map((r) => ({ index: r.index, reason: r.moderation.reason || MODERATION_REASON }));
+    if (unsafe.length) {
+      return { status: 422, body: { error: 'content_moderation', failures: unsafe } };
+    }
+  }
+
+  // 2) Then quality (face presence / size).
+  if (UPLOAD_QUALITY_GATE) {
+    const failures = evaluateImages(results.map((r) => ({ index: r.index, url: r.url, ...r.face })));
+    if (failures.length) {
+      return { status: 422, body: { error: 'quality_gate', failures, rules: QUALITY } };
+    }
+  }
+
+  return null;
 }
 
 // Constant-time bearer-token check for the admin route.
@@ -303,27 +384,33 @@ app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), async (r
 
     const orderId = order._id.toString();
 
-    // b. Idempotent + atomic. Money figures come from STRIPE, never the client.
+    // b. THE idempotency checkpoint. Atomic AWAITING_PAYMENT -> PAID, recording
+    //    the money from STRIPE (never the client). Succeeds exactly once.
     try {
       await transitionOrder(orderId, ORDER_STATES.AWAITING_PAYMENT, ORDER_STATES.PAID, {
         amountPaidCents: session.amount_total,
         stripePaymentIntentId: session.payment_intent,
       });
     } catch (err) {
-      // d. Already paid (a Stripe retry) or not in AWAITING_PAYMENT: do not
-      //    enqueue again, but still acknowledge so Stripe stops retrying.
-      if (err instanceof OrderTransitionConflictError) {
-        console.log(
-          `[api] webhook: order ${orderId} already processed (Stripe retry), skipping enqueue`
-        );
-        return res.status(200).json({ received: true });
-      }
-      throw err;
+      // A Stripe retry (already PAID or beyond): do NOT re-record payment, but
+      // FALL THROUGH to ensure the order advanced to AWAITING_UPLOAD (it may have
+      // crashed between the two transitions on a previous delivery).
+      if (!(err instanceof OrderTransitionConflictError)) throw err;
     }
 
-    // c. Transition succeeded -> hand the order to the pipeline exactly once.
-    await orderPipeline.add('process-order', { orderId }, pipelineJobOpts(orderId));
-    console.log(`[api] webhook: order ${orderId} PAID and enqueued`);
+    // c. Advance PAID -> AWAITING_UPLOAD. BIG CHANGE vs the old flow: the webhook
+    //    NO LONGER ENQUEUES the pipeline. Money is in, but there are no images
+    //    yet; the customer uploads next. The enqueue now lives in the gate-passing
+    //    upload (POST /orders/:id/images). This transition is idempotent: it only
+    //    moves an order still in PAID, so a duplicate webhook (already
+    //    AWAITING_UPLOAD or beyond) is a harmless no-op. The queue is NEVER touched
+    //    here.
+    try {
+      await transitionOrder(orderId, ORDER_STATES.PAID, ORDER_STATES.AWAITING_UPLOAD);
+      console.log(`[api] webhook: order ${orderId} PAID -> AWAITING_UPLOAD (awaiting customer upload)`);
+    } catch (err) {
+      if (!(err instanceof OrderTransitionConflictError)) throw err;
+    }
 
     return res.status(200).json({ received: true });
   } catch (err) {
@@ -389,102 +476,48 @@ app.post('/uploads/presign', presignLimiter, async (req, res) => {
 });
 
 /**
- * POST /checkout  --  create an order and a real Stripe Checkout Session.
+ * POST /checkout  --  SELECTION-FIRST: create the order from the customer's
+ * look/attire choices (NO images yet) and a real Stripe Checkout Session.
  *
- * The server owns the price. The client cannot influence what is charged.
+ * The server owns the price. The client cannot influence what is charged. The
+ * image quality/moderation gate does NOT run here anymore (there are no images at
+ * this point); it runs after payment, on POST /orders/:id/images.
  *
- * Body: { customerEmail, uploadedImageUrls: string[] }  (real R2 URLs from the
- * direct upload above)
- *
- * Strict per-IP limit on top of the global one: this creates Stripe sessions and
- * Replicate detections, so it costs real money and is the tightest gate.
+ * Body: { email, selectedLooks: string[], selectedAttire: string[] }
  */
 app.post('/checkout', checkoutLimiter, async (req, res) => {
   try {
-    const { customerEmail, uploadedImageUrls } = req.body ?? {};
-    if (!customerEmail) {
-      return res.status(400).json({ error: 'customerEmail is required' });
+    const { email, selectedLooks, selectedAttire } = req.body ?? {};
+    if (!email) {
+      return res.status(400).json({ error: 'email is required' });
     }
-    if (!Array.isArray(uploadedImageUrls) || uploadedImageUrls.length === 0) {
-      return res.status(400).json({ error: 'uploadedImageUrls must be a non-empty array' });
+    if (!Array.isArray(selectedLooks) || selectedLooks.length === 0) {
+      return res.status(400).json({ error: 'selectedLooks must be a non-empty array' });
     }
-
-    // THIS IS THE REAL GATE. The web client runs the same face checks for fast
-    // feedback, but that is UX only and can be bypassed by calling /checkout
-    // directly, so we re-validate every image here and REFUSE to create the
-    // Stripe session on failure. No session = no payment for input that would
-    // train a bad model and then "succeed" into a DELIVERED order that never
-    // triggers the FAILED auto-refund. Same lesson as server-owned pricing:
-    // never trust the client's "it passed" claim.
-    if (UPLOAD_QUALITY_GATE || UPLOAD_MODERATION) {
-      const nErr = countError(uploadedImageUrls.length);
-      if (nErr) {
-        return res.status(422).json({ error: 'quality_gate', countError: nErr, failures: [], rules: QUALITY });
-      }
-
-      // Process images with BOUNDED concurrency (firing all N at Replicate at once
-      // trips its rate limit). Per image, face detection and content moderation
-      // run in PARALLEL, so moderation overlaps face detection and does not add to
-      // latency; it does add ~1 Replicate prediction per image in cost.
-      const results = await mapWithLimit(uploadedImageUrls, DETECT_CONCURRENCY, async (url, index) => {
-        const [face, moderation] = await Promise.all([
-          UPLOAD_QUALITY_GATE
-            ? detectFaces(url).catch((err) => {
-                // Fail closed on a per-image detection error: an unreadable image
-                // is not allowed to buy its way through.
-                console.error(`[api] face detection failed for ${url}: ${err.message}`);
-                captureError(err, { route: 'checkout', phase: 'face-detection' });
-                return { faceCount: 0, maxFaceBoxRatio: 0, error: true };
-              })
-            : Promise.resolve(null),
-          UPLOAD_MODERATION
-            ? moderateImage(url).catch((err) => {
-                // The classifier ITSELF errored. Fail open (allow + alert) or
-                // closed per MODERATION_FAIL_OPEN. A positive detection never
-                // reaches this catch, so it is always blocked below.
-                console.error(`[api] moderation failed for ${url}: ${err.message}`);
-                captureError(err, { route: 'checkout', phase: 'moderation' });
-                return { safe: MODERATION_FAIL_OPEN, score: null, reason: MODERATION_REASON, errored: true };
-              })
-            : Promise.resolve({ safe: true }),
-        ]);
-        return { index, url, face, moderation };
-      });
-
-      // 1) SAFETY FIRST. Reject unsafe images with a non-graphic, branded reason
-      //    and never say what was detected. No Stripe session gets created.
-      if (UPLOAD_MODERATION) {
-        const unsafe = results
-          .filter((r) => !r.moderation.safe)
-          .map((r) => ({ index: r.index, reason: r.moderation.reason || MODERATION_REASON }));
-        if (unsafe.length) {
-          return res.status(422).json({ error: 'content_moderation', failures: unsafe });
-        }
-      }
-
-      // 2) Then quality (face presence / size), exactly as before.
-      if (UPLOAD_QUALITY_GATE) {
-        const failures = evaluateImages(
-          results.map((r) => ({ index: r.index, url: r.url, ...r.face }))
-        );
-        if (failures.length) {
-          return res.status(422).json({ error: 'quality_gate', failures, rules: QUALITY });
-        }
-      }
+    if (!Array.isArray(selectedAttire) || selectedAttire.length === 0) {
+      return res.status(400).json({ error: 'selectedAttire must be a non-empty array' });
+    }
+    // Validate against the shared catalog so a tampered client cannot store junk
+    // ids that the worker would later fail to turn into prompts.
+    if (!selectedLooks.every(isValidLook)) {
+      return res.status(400).json({ error: 'selectedLooks contains an unknown look id' });
+    }
+    if (!selectedAttire.every(isValidAttire)) {
+      return res.status(400).json({ error: 'selectedAttire contains an unknown attire id' });
     }
 
-    // Create the order first so we have an id to put in the session metadata.
-    // amountPaidCents is intentionally NOT set yet: it is written from Stripe in
-    // the webhook once payment is confirmed.
+    // Create the order in AWAITING_PAYMENT with the selections and NO images.
+    // amountPaidCents is written from Stripe in the webhook once payment confirms.
     const order = await Order.create({
-      customerEmail,
-      uploadedImageUrls,
+      customerEmail: email,
+      selectedLooks,
+      selectedAttire,
     });
     const orderId = order._id.toString();
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
-      customer_email: customerEmail,
+      customer_email: email,
       line_items: [
         {
           quantity: 1,
@@ -496,8 +529,10 @@ app.post('/checkout', checkoutLimiter, async (req, res) => {
         },
       ],
       metadata: { orderId },
-      success_url: `${WEB_BASE_URL}/success?orderId=${orderId}`,
-      cancel_url: `${WEB_BASE_URL}/cancel?orderId=${orderId}`,
+      // After payment, the customer lands on the UPLOAD step for this order.
+      success_url: `${WEB_BASE_URL}/generator/upload?order=${orderId}`,
+      // Cancel returns to the review step so they can pay again (a new order).
+      cancel_url: `${WEB_BASE_URL}/generator/details`,
     });
 
     // The session id is our idempotency anchor: the webhook finds the order by it.
@@ -508,6 +543,71 @@ app.post('/checkout', checkoutLimiter, async (req, res) => {
   } catch (err) {
     console.error('[api] POST /checkout failed:', err);
     captureError(err, { route: 'checkout' });
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * POST /orders/:id/images  --  the NEW "start training" trigger, replacing the
+ * old checkout-time upload. Only valid for a PAID order in AWAITING_UPLOAD.
+ *
+ * Runs THE REAL gate (face quality + content moderation) on the just-uploaded
+ * images. On failure: structured 422, NO transition, NO enqueue -- the order
+ * stays AWAITING_UPLOAD so the customer can swap photos and resubmit. On pass:
+ * persist the images + uploadCompletedAt AND move AWAITING_UPLOAD -> TRAINING
+ * atomically (the conditional transition is the idempotency guard: only one
+ * submit can win), THEN enqueue the pipeline exactly once (jobId = orderId).
+ *
+ * Body: { uploadedImageUrls: string[] }  (real R2 URLs from /uploads/presign)
+ */
+app.post('/orders/:id/images', async (req, res) => {
+  try {
+    const { uploadedImageUrls } = req.body ?? {};
+    if (!Array.isArray(uploadedImageUrls) || uploadedImageUrls.length === 0) {
+      return res.status(400).json({ error: 'uploadedImageUrls must be a non-empty array' });
+    }
+
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ error: 'order not found' });
+
+    // Only a paid order awaiting its upload may submit images. Anything else (not
+    // paid yet, already training, delivered, failed) is refused so a stale client
+    // or a resubmit cannot re-trigger training.
+    if (order.status !== ORDER_STATES.AWAITING_UPLOAD) {
+      return res.status(409).json({ error: 'order is not awaiting upload', status: order.status });
+    }
+
+    // THE REAL GATE now runs here (images finally exist).
+    const gate = await runUploadGate(uploadedImageUrls);
+    if (gate) return res.status(gate.status).json(gate.body);
+
+    const orderId = order._id.toString();
+
+    // Persist images + uploadCompletedAt AND transition atomically. The
+    // conditional update is the idempotency guard: concurrent/duplicate submits
+    // cannot both win, so training is triggered exactly once.
+    try {
+      await transitionOrder(orderId, ORDER_STATES.AWAITING_UPLOAD, ORDER_STATES.TRAINING, {
+        uploadedImageUrls,
+        uploadCompletedAt: new Date(),
+      });
+    } catch (err) {
+      if (err instanceof OrderTransitionConflictError) {
+        // Lost the race to another submit that already started training.
+        return res.status(409).json({ error: 'upload already submitted' });
+      }
+      throw err;
+    }
+
+    // THE MOVED ENQUEUE. jobId = orderId keeps it idempotent (same opts as the old
+    // webhook enqueue). This is the only place the pipeline is now enqueued.
+    await orderPipeline.add('process-order', { orderId }, pipelineJobOpts(orderId));
+    console.log(`[api] order ${orderId} AWAITING_UPLOAD -> TRAINING, pipeline enqueued`);
+
+    return res.status(202).json({ orderId, status: ORDER_STATES.TRAINING });
+  } catch (err) {
+    console.error('[api] POST /orders/:id/images failed:', err);
+    captureError(err, { route: 'orders/images' });
     return res.status(500).json({ error: err.message });
   }
 });

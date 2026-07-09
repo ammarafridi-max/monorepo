@@ -9,6 +9,13 @@
  */
 
 export { ORDER_STATES, ORDER_TRANSITIONS, canTransition } from './orderStates.js';
+export {
+  LOOKS,
+  ATTIRE,
+  buildPrompts,
+  isValidLook,
+  isValidAttire,
+} from './catalog.js';
 export { Order } from './orderModel.js';
 export { User } from './userModel.js';
 export { QUEUE_NAMES } from './queue.js';
