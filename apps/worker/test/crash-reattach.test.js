@@ -37,6 +37,8 @@ function buildPipeline(prompts, extra = {}) {
   return createPipeline({
     client: fake,
     prompts,
+    // A neutral default scorer; selection-focused tests inject their own.
+    scoreIdentity: extra.scoreIdentity ?? makeScorer(),
     imageZipUrl: 'https://fake.local/selfies.zip',
     pollIntervalMs: 1,
     trainingMaxWaitMs: 60_000,
@@ -46,6 +48,29 @@ function buildPipeline(prompts, extra = {}) {
 }
 
 const nonNull = (arr) => (arr ?? []).filter((v) => v != null);
+
+// The fake generation URLs are `https://fake.local/img/pred_<N>.jpg`; N is the
+// prediction sequence, so a lower N == an earlier-started candidate slot.
+const predNum = (url) => Number(String(url).match(/pred_(\d+)/)?.[1]);
+
+// A stubbed identity scorer, same { score, costUsd } contract as scoreIdentity.
+// Counts its calls (so tests can prove one-score-per-candidate + no re-scoring)
+// and can fire a one-shot crash on the Nth call to simulate a crash mid-selection.
+function makeScorer({ scoreFor = () => 0.5, crashOnCall } = {}) {
+  const calls = [];
+  let armed = crashOnCall;
+  const scorer = async (candidateImageUrl) => {
+    calls.push(candidateImageUrl);
+    if (armed && calls.length === armed) {
+      armed = null; // fire once; a restart past this point scores normally
+      throw new Error(`SIMULATED_SCORE_CRASH at call ${calls.length}`);
+    }
+    return { score: scoreFor(candidateImageUrl), costUsd: 0.005 };
+  };
+  scorer.calls = calls;
+  scorer.callCount = () => calls.length;
+  return scorer;
+}
 
 // A counting stub of the Stripe refund API, shaped like the real client
 // (stripe.refunds.create(params, { idempotencyKey })). It records call count and
@@ -124,15 +149,21 @@ test('scenario 2: crash after trainedModelVersion persisted -> restart skips tra
   assert.ok(fake.getCounts().startGeneration >= 1, 'went straight into generating');
 });
 
-test('scenario 3: crash mid-generation with 3/7 slots done -> only missing 4 reattach, startGeneration total == 7', async () => {
+test('scenario 3: crash mid-generation with 3/GENERATE_COUNT candidates done -> only missing reattach, startGeneration total == GENERATE_COUNT, then selection delivers DELIVER_COUNT', async () => {
   // Each generation succeeds on its first poll; crash on the 4th generation poll,
-  // i.e. after 3 slots have been collected.
+  // i.e. after 3 candidates have been collected.
   fake.resetFake({
     generationStatusSeq: ['succeeded'],
     crashOn: { pollGeneration: 4 },
   });
 
+  const GENERATE_COUNT = 10;
+  const DELIVER_COUNT = 7;
+  // 7 style prompts but 10 candidates: proves candidates cycle the prompt list.
   const prompts = Array.from({ length: 7 }, (_, i) => `headshot prompt ${i}`);
+  // Lower pred number -> higher score, so the winning set is deterministic.
+  const scorer = makeScorer({ scoreFor: (url) => 1 - predNum(url) / 100 });
+
   const order = await Order.create({
     customerEmail: 'a@b.com',
     status: ORDER_STATES.GENERATING,
@@ -140,31 +171,48 @@ test('scenario 3: crash mid-generation with 3/7 slots done -> only missing 4 rea
     replicate: { trainingId: 'train_pre', trainedModelVersion: 'fakeowner/fakemodel:v1' },
   });
   const id = order._id.toString();
-  const pipeline = buildPipeline(prompts);
+  const pipeline = buildPipeline(prompts, {
+    generateCount: GENERATE_COUNT,
+    deliverCount: DELIVER_COUNT,
+    scoreIdentity: scorer,
+  });
 
-  // Run 1: all 7 predictions get STARTED (ids persisted), 3 collected, then the
-  // 4th poll crashes.
+  // Run 1: all GENERATE_COUNT predictions get STARTED (ids persisted), 3
+  // collected, then the 4th poll crashes -- before any scoring/selection.
   await assert.rejects(() => pipeline.processOrder(id), /SIMULATED_CRASH/);
 
   const mid = await Order.findById(id);
-  assert.equal(fake.getCounts().startGeneration, 7, 'all 7 slots started exactly once');
+  assert.equal(fake.getCounts().startGeneration, GENERATE_COUNT, 'all candidate slots started exactly once');
   const idsAfterCrash = [...mid.replicate.generationIds];
-  assert.equal(idsAfterCrash.filter(Boolean).length, 7, 'all 7 predictionIds persisted');
-  assert.equal(nonNull(mid.resultImageUrls).length, 3, 'exactly 3 images collected before crash');
+  assert.equal(idsAfterCrash.filter(Boolean).length, GENERATE_COUNT, 'all predictionIds persisted');
+  assert.equal(nonNull(mid.resultImageUrls).length, 3, 'exactly 3 candidates collected before crash');
+  assert.equal(nonNull(mid.candidateScores).length, 0, 'no scoring until every candidate is in');
+  assert.equal(mid.deliveredImageUrls?.length ?? 0, 0, 'nothing delivered yet');
+  assert.equal(scorer.callCount(), 0, 'scorer not called before all candidates collected');
 
-  // Run 2 (restart): the 4 missing slots must REATTACH to their existing
-  // predictionIds; no new generation is started.
+  // Run 2 (restart): the missing candidates must REATTACH to their existing
+  // predictionIds; no new generation is started. Then selection runs.
   await pipeline.processOrder(id);
 
   const done = await Order.findById(id);
   assert.equal(done.status, ORDER_STATES.DELIVERED, 'order completes after restart');
-  assert.equal(fake.getCounts().startGeneration, 7, 'startGeneration total is 7, never more');
+  assert.equal(fake.getCounts().startGeneration, GENERATE_COUNT, 'startGeneration total never exceeds GENERATE_COUNT');
   assert.deepEqual(
     [...done.replicate.generationIds],
     idsAfterCrash,
-    'same 7 predictionIds reused (reattached, not regenerated)'
+    'same predictionIds reused (reattached, not regenerated)'
   );
-  assert.equal(nonNull(done.resultImageUrls).length, 7, 'all 7 images collected');
+  assert.equal(nonNull(done.resultImageUrls).length, GENERATE_COUNT, 'all candidates collected');
+  assert.equal(done.candidateScores.length, GENERATE_COUNT, 'every candidate scored');
+  assert.equal(scorer.callCount(), GENERATE_COUNT, 'scorer called exactly once per candidate');
+  assert.equal(done.deliveredImageUrls.length, DELIVER_COUNT, 'delivered exactly DELIVER_COUNT');
+
+  // Deterministic cull: the DELIVER_COUNT highest-scoring candidates win.
+  const expected = [...done.candidateScores]
+    .sort((a, b) => b.score - a.score)
+    .slice(0, DELIVER_COUNT)
+    .map((s) => s.imageUrl);
+  assert.deepEqual(done.deliveredImageUrls, expected, 'delivered set is the top DELIVER_COUNT by score');
 
   // Regression guard: these MUST persist as real arrays. A positional dotted
   // $set (replicate.generationIds.i) creates an object {"0": ...} on real
@@ -172,6 +220,110 @@ test('scenario 3: crash mid-generation with 3/7 slots done -> only missing 4 rea
   const raw = await Order.findById(id).lean();
   assert.ok(Array.isArray(raw.replicate.generationIds), 'generationIds is an array, not an object');
   assert.ok(Array.isArray(raw.resultImageUrls), 'resultImageUrls is an array, not an object');
+  assert.ok(Array.isArray(raw.candidateScores), 'candidateScores is an array, not an object');
+  assert.ok(Array.isArray(raw.deliveredImageUrls), 'deliveredImageUrls is an array, not an object');
+});
+
+test('scenario 5: crash after all candidates generated but BEFORE selection -> restart runs selection once, deliveredImageUrls = top DELIVER_COUNT by the stubbed scorer', async () => {
+  fake.resetFake({ generationStatusSeq: ['succeeded'] });
+
+  const GENERATE_COUNT = 6;
+  const DELIVER_COUNT = 3;
+  const prompts = Array.from({ length: 4 }, (_, i) => `p${i}`);
+  // Crash on the FIRST identity score: all candidates are already generated, but
+  // no selection has been persisted -> the "candidates in, selection not done" gap.
+  const scorer = makeScorer({ scoreFor: (url) => 1 - predNum(url) / 100, crashOnCall: 1 });
+
+  const order = await Order.create({
+    customerEmail: 'a@b.com',
+    status: ORDER_STATES.GENERATING,
+    uploadedImageUrls: ['selfie.jpg'],
+    replicate: { trainingId: 'train_pre', trainedModelVersion: 'fakeowner/fakemodel:v1' },
+  });
+  const id = order._id.toString();
+  const pipeline = buildPipeline(prompts, {
+    generateCount: GENERATE_COUNT,
+    deliverCount: DELIVER_COUNT,
+    scoreIdentity: scorer,
+  });
+
+  // Run 1: every candidate generated + collected, then the first score crashes.
+  await assert.rejects(() => pipeline.processOrder(id), /SIMULATED_SCORE_CRASH/);
+
+  const mid = await Order.findById(id);
+  assert.equal(mid.status, ORDER_STATES.GENERATING, 'still GENERATING: selection did not finish');
+  assert.equal(nonNull(mid.resultImageUrls).length, GENERATE_COUNT, 'all candidates generated before the crash');
+  assert.equal(nonNull(mid.candidateScores).length, 0, 'no score persisted (crashed on the first score)');
+  assert.equal(mid.deliveredImageUrls?.length ?? 0, 0, 'nothing delivered yet');
+  assert.equal(fake.getCounts().startGeneration, GENERATE_COUNT, 'candidates generated exactly once');
+
+  // Run 2 (restart): selection runs to completion exactly once.
+  await pipeline.processOrder(id);
+
+  const done = await Order.findById(id);
+  assert.equal(done.status, ORDER_STATES.DELIVERED, 'delivered after restart');
+  assert.equal(fake.getCounts().startGeneration, GENERATE_COUNT, 'candidates never regenerated during selection retry');
+  assert.equal(done.candidateScores.length, GENERATE_COUNT, 'every candidate scored');
+  // The crashed first score is retried; the other candidates score once each.
+  assert.equal(scorer.callCount(), GENERATE_COUNT + 1, 'only the crashed candidate was re-scored');
+  assert.equal(done.deliveredImageUrls.length, DELIVER_COUNT, 'delivered exactly DELIVER_COUNT');
+
+  const expected = [...done.candidateScores]
+    .sort((a, b) => b.score - a.score)
+    .slice(0, DELIVER_COUNT)
+    .map((s) => s.imageUrl);
+  assert.deepEqual(done.deliveredImageUrls, expected, 'chosen set is the top DELIVER_COUNT by score');
+});
+
+test('scenario 6: crash after selection persisted but BEFORE the DELIVERED transition -> restart transitions without re-scoring or re-selecting', async () => {
+  fake.resetFake();
+  // This scorer must NEVER be called: deliveredImageUrls is already set.
+  const scorer = makeScorer();
+
+  const GENERATE_COUNT = 6;
+  const DELIVER_COUNT = 3;
+  // Reconstruct the exact post-crash state: candidates generated + collected,
+  // scored, and the delivered set persisted, but the order never advanced past
+  // GENERATING (the transition is the very next step after persisting delivery).
+  const resultImageUrls = Array.from(
+    { length: GENERATE_COUNT },
+    (_, i) => `https://fake.local/img/pred_${i + 1}.jpg`
+  );
+  const candidateScores = resultImageUrls.map((url, i) => ({ imageUrl: url, score: 1 - i / 100 }));
+  const deliveredImageUrls = candidateScores.slice(0, DELIVER_COUNT).map((s) => s.imageUrl);
+
+  const order = await Order.create({
+    customerEmail: 'a@b.com',
+    status: ORDER_STATES.GENERATING,
+    uploadedImageUrls: ['selfie.jpg'],
+    replicate: {
+      trainingId: 'train_pre',
+      trainedModelVersion: 'fakeowner/fakemodel:v1',
+      generationIds: resultImageUrls.map((_, i) => `pred_${i + 1}`),
+    },
+    resultImageUrls,
+    candidateScores,
+    deliveredImageUrls,
+  });
+  const id = order._id.toString();
+  const pipeline = buildPipeline(['p0'], {
+    generateCount: GENERATE_COUNT,
+    deliverCount: DELIVER_COUNT,
+    scoreIdentity: scorer,
+  });
+
+  await pipeline.processOrder(id);
+
+  const done = await Order.findById(id);
+  assert.equal(done.status, ORDER_STATES.DELIVERED, 'transitioned to DELIVERED on restart');
+  assert.equal(scorer.callCount(), 0, 'never re-scored');
+  assert.equal(fake.getCounts().startGeneration, 0, 'never re-generated');
+  assert.deepEqual(done.deliveredImageUrls, deliveredImageUrls, 'delivered set unchanged (no re-selection)');
+  assert.deepEqual(
+    done.candidateScores.map((s) => s.imageUrl),
+    candidateScores.map((s) => s.imageUrl),
+    'candidate scores unchanged'
+  );
 });
 
 test('scenario 4: training fails -> FAILED with error recorded, refund issued exactly once, and re-entering FAILED never refunds again', async () => {

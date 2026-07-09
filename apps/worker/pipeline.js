@@ -34,7 +34,16 @@ export const DEFAULT_GENERATION_MAX_WAIT_MS = 6 * 60 * 1000; // 6 min per image
  *
  * @param {Object} opts
  * @param {ReplicateClient} opts.client
- * @param {readonly string[]} opts.prompts - one prompt per output image
+ * @param {readonly string[]} opts.prompts - the style prompts; candidates cycle
+ *        through these (prompts[i % prompts.length]) so with generateCount >
+ *        prompts.length some styles get an extra variant on a different seed
+ * @param {(candidateImageUrl: string, referenceImageUrls: readonly string[]) => Promise<{ score: number, costUsd?: number }>} [opts.scoreIdentity]
+ *        identity-fidelity scorer used to cull off-identity candidates; higher
+ *        score == more like the customer's real selfies. Injectable/stubbable.
+ * @param {number} [opts.generateCount] - how many CANDIDATES to generate
+ *        (defaults to prompts.length). Must be >= deliverCount.
+ * @param {number} [opts.deliverCount] - how many candidates to DELIVER after
+ *        scoring (defaults to prompts.length). Clamped to <= generateCount.
  * @param {(order: any) => Promise<string>} [opts.resolveTrainingZip] - returns the
  *        zip URL to train this order on (built from its real uploaded images)
  * @param {string} [opts.imageZipUrl] - static fallback zip URL when no resolver
@@ -50,6 +59,9 @@ export const DEFAULT_GENERATION_MAX_WAIT_MS = 6 * 60 * 1000; // 6 min per image
 export function createPipeline({
   client,
   prompts,
+  scoreIdentity = async () => ({ score: 0, costUsd: 0 }),
+  generateCount = prompts.length,
+  deliverCount = prompts.length,
   resolveTrainingZip,
   imageZipUrl,
   onDelivered,
@@ -58,6 +70,9 @@ export function createPipeline({
   trainingMaxWaitMs = DEFAULT_TRAINING_MAX_WAIT_MS,
   generationMaxWaitMs = DEFAULT_GENERATION_MAX_WAIT_MS,
 }) {
+  // Never try to deliver more than we generate. index.js asserts this at startup
+  // from env; clamp here too so the pipeline is safe however it is constructed.
+  const deliverN = Math.min(deliverCount, generateCount);
   /**
    * Poll one Replicate resource to a terminal state. Returns the final snapshot
    * ('succeeded' or 'failed'); throws if it never settles within maxWaitMs. The
@@ -134,8 +149,16 @@ export function createPipeline({
   }
 
   /**
-   * GENERATION stage. One prediction per prompt, index-aligned with `prompts`.
-   * Idempotent + resumable per slot, in two passes:
+   * GENERATION stage. Produces `generateCount` CANDIDATES (>= what we deliver),
+   * then scores them for identity fidelity and delivers only the best
+   * `deliverN`. Overgenerating + culling insures against the occasional
+   * off-identity seed (gender flip / beard drop) without retraining -- those
+   * seeds score low against the real selfies and are dropped automatically.
+   *
+   * One prediction per candidate SLOT, index-aligned with `resultImageUrls`.
+   * Candidates cycle the prompt list (prompts[i % prompts.length]), so when
+   * generateCount > prompts.length some styles get an extra variant on a fresh
+   * seed. Idempotent + resumable per slot, in two passes, EXACTLY as before:
    *
    *   Pass 1 (start):   a slot is started ONLY if it has no predictionId yet.
    *                     A slot that already has a persisted predictionId is left
@@ -146,6 +169,10 @@ export function createPipeline({
    * So the only slots that ever call startGeneration are those with no id at all;
    * every started-but-not-finished slot reattaches. Each id and each finished
    * image is persisted immediately, so a crash resumes exactly the missing slots.
+   *
+   * Once ALL candidates are in, selectAndDeliver() scores + picks the delivered
+   * set. The transition to DELIVERED happens only after deliveredImageUrls is
+   * persisted, so DELIVERED always implies a chosen set exists.
    */
   async function runGenerationStage(orderId, order) {
     const modelVersion = order.replicate?.trainedModelVersion;
@@ -153,15 +180,25 @@ export function createPipeline({
       throw new Error(`[worker] order ${orderId} is GENERATING without a trained model version`);
     }
 
+    // SELECTION receipt-before-acting: if we already scored, chose, and persisted
+    // the delivered set, a restart re-entering GENERATING must NOT re-score or
+    // re-select (same guard shape as deliveredEmailSentAt / refundedAt). Just
+    // advance. All candidates are necessarily present if deliveredImageUrls is.
+    if (order.deliveredImageUrls?.length) {
+      await transitionOrder(orderId, ORDER_STATES.GENERATING, ORDER_STATES.DELIVERED);
+      return;
+    }
+
     const generationIds = [...(order.replicate?.generationIds ?? [])];
     const resultImageUrls = [...(order.resultImageUrls ?? [])];
 
-    // Pass 1: ensure every prompt slot has a started prediction, persisting each
-    // id BEFORE any polling so a crash reattaches instead of regenerating. Slots
-    // that already carry an id are skipped -> never double-started.
-    for (let i = 0; i < prompts.length; i++) {
+    // Pass 1: ensure every candidate slot has a started prediction, persisting
+    // each id BEFORE any polling so a crash reattaches instead of regenerating.
+    // Slots that already carry an id are skipped -> never double-started.
+    for (let i = 0; i < generateCount; i++) {
       if (generationIds[i]) continue;
-      const { predictionId } = await client.startGeneration(modelVersion, prompts[i]);
+      const prompt = prompts[i % prompts.length];
+      const { predictionId } = await client.startGeneration(modelVersion, prompt);
       generationIds[i] = predictionId;
       // Persist the WHOLE array, not a positional `generationIds.i` path: a
       // dotted numeric $set on a not-yet-existing field creates an OBJECT
@@ -169,18 +206,18 @@ export function createPipeline({
       // cannot see it and the slot gets started again (a double-run). Writing the
       // array outright keeps it an array. Still persisted BEFORE polling.
       await Order.updateOne({ _id: orderId }, { $set: { 'replicate.generationIds': generationIds } });
-      console.log(`[worker] order ${orderId} generation ${i} started: ${predictionId}`);
+      console.log(`[worker] order ${orderId} candidate ${i} started: ${predictionId}`);
     }
 
     // Pass 2: collect each still-missing image by REATTACHING to its existing
     // predictionId. Never starts a generation here. Persists per slot so finished
     // work survives a crash and is never re-collected (nor its cost double-counted).
-    for (let i = 0; i < prompts.length; i++) {
+    for (let i = 0; i < generateCount; i++) {
       if (resultImageUrls[i]) continue;
       const predictionId = generationIds[i];
       // Invariant: pass 1 guarantees every slot has an id before we poll.
       if (!predictionId) {
-        throw new Error(`[worker] order ${orderId} generation slot ${i} has no predictionId to reattach`);
+        throw new Error(`[worker] order ${orderId} candidate slot ${i} has no predictionId to reattach`);
       }
       const result = await pollUntilSettled(() => client.pollGeneration(predictionId), {
         maxWaitMs: generationMaxWaitMs,
@@ -199,10 +236,75 @@ export function createPipeline({
           $inc: { computeCostCents: usdToCents(result.costUsd) },
         }
       );
-      console.log(`[worker] order ${orderId} generation ${i} done (${i + 1}/${prompts.length})`);
+      console.log(`[worker] order ${orderId} candidate ${i} done (${i + 1}/${generateCount})`);
     }
 
+    // All candidates are in. Score + choose the delivered set, then transition.
+    await selectAndDeliver(orderId, order, resultImageUrls);
+
     await transitionOrder(orderId, ORDER_STATES.GENERATING, ORDER_STATES.DELIVERED);
+  }
+
+  /**
+   * SELECTION step. Score every candidate for identity fidelity against the
+   * order's real uploaded selfies, then persist the top `deliverN` as
+   * deliveredImageUrls. Idempotent + deterministic + resumable:
+   *
+   *   - Scoring is per-candidate and persisted incrementally (candidateScores,
+   *     index-aligned with resultImageUrls), so a crash mid-scoring re-scores
+   *     ONLY the candidates without a score yet -- never re-scoring a done one,
+   *     never double-charging its scoring call. Same per-slot pattern as Pass 2.
+   *   - Ranking is deterministic: sort by score descending, breaking ties by
+   *     candidate index ascending, so the SAME candidates win on every run given
+   *     the same scores. (If there are no references, every score is neutral and
+   *     the tie-break degrades selection to "the first deliverN candidates".)
+   *   - deliveredImageUrls is the idempotency anchor: the caller's top guard
+   *     skips this whole step once it is set, so re-selection cannot happen.
+   *
+   * Cost note: this raises per-order compute cost -- we now pay for
+   * generateCount generations (more than we ship) PLUS one scoring pass -- a
+   * deliberate quality/refund tradeoff: culling a bad seed before delivery is
+   * far cheaper than a refund or a retrain.
+   */
+  async function selectAndDeliver(orderId, order, resultImageUrls) {
+    const references = order.uploadedImageUrls ?? [];
+    const scores = [...(order.candidateScores ?? [])];
+
+    for (let i = 0; i < resultImageUrls.length; i++) {
+      if (scores[i]) continue; // already scored this candidate -> never re-score
+      const { score, costUsd } = await scoreIdentity(resultImageUrls[i], references);
+      scores[i] = { imageUrl: resultImageUrls[i], score };
+      // Whole array (not a positional path) for the same object-vs-array reason
+      // as generationIds/resultImageUrls. Persisted before the next score so a
+      // crash resumes at the first unscored candidate and its cost lands once.
+      await Order.updateOne(
+        { _id: orderId },
+        {
+          $set: { candidateScores: scores },
+          $inc: { computeCostCents: usdToCents(costUsd) },
+        }
+      );
+      console.log(
+        `[worker] order ${orderId} candidate ${i} identity score ${score.toFixed(4)}`
+      );
+    }
+
+    // Deterministic rank: best score first, candidate index as the tie-break.
+    const deliveredImageUrls = scores
+      .map((s, i) => ({ i, url: s.imageUrl, score: s.score }))
+      .sort((a, b) => b.score - a.score || a.i - b.i)
+      .slice(0, deliverN)
+      .map((c) => c.url);
+
+    await Order.updateOne({ _id: orderId }, { $set: { deliveredImageUrls } });
+    console.log(
+      `[worker] order ${orderId} selected ${deliveredImageUrls.length}/${resultImageUrls.length} candidates for delivery`
+    );
+    // TODO(api): the order's public results endpoint (apps/api/server.js) and the
+    // success page still return/render `resultImageUrls` (the FULL candidate set).
+    // Switch them to `deliveredImageUrls` (the chosen set) so customers only see
+    // the culled results. Left out of THIS change to avoid colliding with the
+    // concurrent apps/api session; pick up after merge.
   }
 
   /**

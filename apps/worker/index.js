@@ -48,10 +48,37 @@ const {
 if (!MONGODB_URI) throw new Error('[worker] MONGODB_URI is required');
 if (!REDIS_URL) throw new Error('[worker] REDIS_URL is required');
 
+/** Parse a positive-integer env var, falling back to a default. */
+function intEnv(name, fallback) {
+  const raw = process.env[name];
+  if (raw == null || raw === '') return fallback;
+  const n = Number(raw);
+  if (!Number.isInteger(n) || n <= 0) {
+    throw new Error(`[worker] ${name} must be a positive integer, got "${raw}"`);
+  }
+  return n;
+}
+
+// Overgenerate candidates and deliver only the best by identity fidelity, so an
+// occasional off-identity seed (gender flip / beard drop) is culled instead of
+// shipped. GENERATE_COUNT candidates are generated; the top DELIVER_COUNT are
+// delivered. Generating more images raises per-order compute cost -- a deliberate
+// quality/refund tradeoff (see selectAndDeliver in pipeline.js).
+const GENERATE_COUNT = intEnv('GENERATE_COUNT', 10);
+const DELIVER_COUNT = intEnv('DELIVER_COUNT', 7);
+if (GENERATE_COUNT < DELIVER_COUNT) {
+  throw new Error(
+    `[worker] GENERATE_COUNT (${GENERATE_COUNT}) must be >= DELIVER_COUNT (${DELIVER_COUNT})`
+  );
+}
+
 if (!USE_FAKE_REPLICATE) {
   if (!process.env.REPLICATE_API_TOKEN) throw new Error('[worker] REPLICATE_API_TOKEN is required');
   if (!process.env.REPLICATE_DESTINATION_MODEL)
     throw new Error('[worker] REPLICATE_DESTINATION_MODEL is required (owner/name)');
+  // The identity-scoring model that culls bad candidates (see scoreIdentity.js).
+  if (!process.env.REPLICATE_FACE_EMBED_MODEL)
+    throw new Error('[worker] REPLICATE_FACE_EMBED_MODEL is required (owner/name:versionHash)');
   // Refunds are money-critical: the real worker must be able to issue them.
   if (!STRIPE_SECRET_KEY) throw new Error('[worker] STRIPE_SECRET_KEY is required (refunds)');
 }
@@ -64,6 +91,11 @@ const stripe = STRIPE_SECRET_KEY ? new Stripe(STRIPE_SECRET_KEY) : null;
 const client = USE_FAKE_REPLICATE
   ? await import('./replicateClient.fake.js')
   : await import('./replicateClient.js');
+// The identity scorer follows the same real-or-fake split (both expose
+// scoreIdentity(candidateUrl, referenceUrls) -> { score, costUsd }).
+const { scoreIdentity } = USE_FAKE_REPLICATE
+  ? await import('./scoreIdentity.fake.js')
+  : await import('./scoreIdentity.js');
 if (USE_FAKE_REPLICATE) console.warn('[worker] USE_FAKE_REPLICATE=1: using the in-memory fake client');
 
 await connectMongo(MONGODB_URI);
@@ -134,6 +166,9 @@ const ensureRefund = createEnsureRefund({ stripe });
 const pipeline = createPipeline({
   client,
   prompts: PROMPTS,
+  scoreIdentity,
+  generateCount: GENERATE_COUNT,
+  deliverCount: DELIVER_COUNT,
   resolveTrainingZip,
   onDelivered,
   onFailed: ensureRefund,

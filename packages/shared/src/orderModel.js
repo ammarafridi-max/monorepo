@@ -29,6 +29,18 @@ const errorSchema = new Schema(
   { _id: false }
 );
 
+// One identity-fidelity score per generated CANDIDATE, index-aligned with
+// resultImageUrls. Self-describing ({ imageUrl, score }) so a later API/UI can
+// show why a shot was chosen and audit the cull. Higher score == more like the
+// customer's real selfies. Written incrementally during selection.
+const candidateScoreSchema = new Schema(
+  {
+    imageUrl: String,
+    score: Number,
+  },
+  { _id: false }
+);
+
 const orderSchema = new Schema(
   {
     status: {
@@ -57,7 +69,21 @@ const orderSchema = new Schema(
 
     replicate: replicateSchema,
 
+    // The RAW candidate set: every image the GENERATING stage produced
+    // (GENERATE_COUNT of them, more than we deliver). Selection scores these and
+    // picks the best DELIVER_COUNT into deliveredImageUrls. Kept whole for audit.
     resultImageUrls: [String],
+
+    // Per-candidate identity scores, index-aligned with resultImageUrls.
+    candidateScores: [candidateScoreSchema],
+
+    // The CHOSEN delivered subset: the top DELIVER_COUNT candidates by identity
+    // score, best-first. This is the idempotency anchor for SELECTION
+    // (receipt-before-acting, same pattern as deliveredEmailSentAt / refundedAt):
+    // once set, a worker restart re-entering GENERATING must NOT re-score or
+    // re-select. The delivery email and the order's public results must read
+    // THIS, not the full resultImageUrls candidate list.
+    deliveredImageUrls: [String],
 
     // Set the moment the delivery email is successfully sent. The idempotency
     // anchor for delivery: a worker restart after DELIVERED must not email
