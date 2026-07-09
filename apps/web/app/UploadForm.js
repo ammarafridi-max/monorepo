@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { presignUploads, putToStorage, createCheckout } from '../lib/api';
 import { QUALITY, detectImage, reasonFor } from '../lib/quality';
 
@@ -19,33 +19,39 @@ export default function UploadForm({ authed = false, initialEmail = '' }) {
     setItems((prev) => prev.map((it) => (it.id === id ? { ...it, ...patch } : it)));
   }, []);
 
-  const addFiles = useCallback(
-    (fileList) => {
-      const picked = Array.from(fileList).filter((f) => f.type.startsWith('image/'));
-      const added = [];
-      setItems((prev) => {
-        const next = [...prev];
-        for (const file of picked) {
-          if (next.length >= QUALITY.maxPhotos) break;
-          const url = URL.createObjectURL(file);
-          const item = { id: url, file, url, status: 'checking', reason: null };
-          next.push(item);
-          added.push(item);
-        }
-        return next;
-      });
-      setError('');
-      for (const item of added) {
-        detectImage(item.file)
-          .then((d) => {
-            const reason = reasonFor(d);
-            updateItem(item.id, { status: reason ? 'bad' : 'ok', reason });
-          })
-          .catch(() => updateItem(item.id, { status: 'ok', reason: null }));
+  const addFiles = useCallback((fileList) => {
+    const picked = Array.from(fileList).filter((f) => f.type.startsWith('image/'));
+    setError('');
+    setItems((prev) => {
+      const next = [...prev];
+      for (const file of picked) {
+        if (next.length >= QUALITY.maxPhotos) break;
+        const url = URL.createObjectURL(file);
+        next.push({ id: url, file, url, status: 'checking', reason: null });
       }
-    },
-    [updateItem]
-  );
+      return next;
+    });
+  }, []);
+
+  // Run the browser quality check off the committed state, not from inside
+  // addFiles. Doing it in the add handler was unreliable: React runs the state
+  // updater during render, so the just-added items were not available to loop
+  // over yet and detection never started, leaving every photo stuck "checking".
+  // Here every checking photo gets detected exactly once (guarded by checkedRef),
+  // whatever the update timing. A null result defers to the server gate.
+  const checkedRef = useRef(new Set());
+  useEffect(() => {
+    for (const item of items) {
+      if (item.status !== 'checking' || checkedRef.current.has(item.id)) continue;
+      checkedRef.current.add(item.id);
+      detectImage(item.file)
+        .then((d) => {
+          const reason = reasonFor(d);
+          updateItem(item.id, { status: reason ? 'bad' : 'ok', reason });
+        })
+        .catch(() => updateItem(item.id, { status: 'ok', reason: null }));
+    }
+  }, [items, updateItem]);
 
   const removeAt = useCallback((id) => {
     setItems((prev) => {
