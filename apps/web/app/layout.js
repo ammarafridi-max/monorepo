@@ -1,4 +1,5 @@
 import './globals.css';
+import { getSession } from '../lib/session';
 
 export const metadata = {
   title: 'Headliner. Headshots that don\'t look AI.',
@@ -6,7 +7,9 @@ export const metadata = {
     'Upload a few selfies. We train a model on your face and give you studio-quality headshots. One price.',
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const session = await getSession();
+
   return (
     <html lang="en">
       <head>
@@ -24,6 +27,24 @@ export default function RootLayout({ children }) {
           <a className="brand" href="/">
             Headliner
           </a>
+          <nav className="nav">
+            {session ? (
+              <>
+                <a className="navlink" href="/account">
+                  Account
+                </a>
+                <form action="/api/auth/logout" method="post">
+                  <button className="navlink navlink--button" type="submit">
+                    Log out
+                  </button>
+                </form>
+              </>
+            ) : (
+              <a className="navlink" href="/login">
+                Log in
+              </a>
+            )}
+          </nav>
         </header>
         {children}
       </body>

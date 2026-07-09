@@ -40,6 +40,11 @@ const orderSchema = new Schema(
 
     customerEmail: { type: String, required: true },
 
+    // Optional owner. Anonymous orders (the default) leave this null; a logged-in
+    // checkout sets it, and signup/login back-links past orders by email. Never
+    // required: buying does not need an account.
+    userId: { type: Schema.Types.ObjectId, ref: 'User', default: null, index: true },
+
     // Integer cents, never a float. Taken straight from Stripe amount_total.
     // Divide by 100 only at display time.
     amountPaidCents: Number,

@@ -177,6 +177,25 @@ Phase 5 makes the system safe to point real customers at. No new product feature
 
 The worker now also needs `STRIPE_SECRET_KEY` (for refunds).
 
+## Accounts (optional)
+
+Buying is anonymous: the upload and checkout flow needs only an email, unchanged.
+Accounts are an additive layer for returning customers to see past orders. Nothing
+in the buy flow is gated; the only gated page is `/account`.
+
+- **User model:** `users` collection in `@headliner/shared` (`User`), email +
+  bcrypt `passwordHash`. Orders gain an optional, nullable `userId`; anonymous
+  orders leave it null.
+- **Sessions:** a signed JWT (`jose`) in a secure httpOnly cookie, hand-rolled to
+  match the repo's minimal style (no NextAuth adapter fighting our Mongoose model).
+  Set `AUTH_SECRET` (`openssl rand -hex 32`). The web app reads the same root
+  `.env` as the services (loaded in `next.config.mjs`).
+- **Pages/routes:** `/signup`, `/login`, `/account`, and a POST `/api/auth/logout`.
+- **Linking orders:** a logged-in checkout links the new order to the account
+  (only when the order email matches the session, so a guessed id cannot claim
+  someone else's order). Signup and login also back-link past anonymous orders
+  that share the account email.
+
 ## Upload quality gate
 
 Bad photos are worse than a failed order: they train a model and then "succeed"
