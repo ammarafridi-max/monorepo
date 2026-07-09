@@ -1,8 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { getOrder } from '../../lib/api';
+import { track, EVENTS } from '../../lib/analytics';
+
+// Payment succeeded and the order is progressing or done. FAILED is excluded: it
+// was paid but is being refunded, so counting it as a completed purchase would
+// inflate the funnel.
+const PAID_STATES = new Set(['PAID', 'TRAINING', 'GENERATING', 'DELIVERED']);
 
 // The pipeline order. AWAITING_PAYMENT sits before the first visible step.
 const STEPS = [
@@ -46,6 +52,16 @@ export default function SuccessView() {
 
   const [order, setOrder] = useState(null);
   const [error, setError] = useState('');
+
+  // Fire purchase_completed exactly once, when the polled order first shows that
+  // payment has gone through. No PII in the event.
+  const purchasedRef = useRef(false);
+  useEffect(() => {
+    if (!purchasedRef.current && order && PAID_STATES.has(order.status)) {
+      purchasedRef.current = true;
+      track(EVENTS.PURCHASE_COMPLETED);
+    }
+  }, [order]);
 
   useEffect(() => {
     if (!orderId) {

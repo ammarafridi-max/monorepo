@@ -1,6 +1,7 @@
 import './globals.css';
 import { getSession } from '../lib/session';
 import Footer from './Footer';
+import Analytics from './Analytics';
 
 export const metadata = {
   title: 'Headliner. Headshots that don\'t look AI.',
@@ -24,6 +25,7 @@ export default async function RootLayout({ children }) {
         />
       </head>
       <body>
+        <Analytics />
         <header className="topbar">
           <a className="brand" href="/">
             Headliner

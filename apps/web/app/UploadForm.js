@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { presignUploads, putToStorage, createCheckout } from '../lib/api';
 import { QUALITY, detectImage, reasonFor } from '../lib/quality';
+import { track, EVENTS } from '../lib/analytics';
 
 // The upload + checkout form. Anonymous by default; `authed`/`initialEmail` come
 // from the server so a logged-in user's order can be linked to them after
@@ -77,10 +78,45 @@ export default function UploadForm({ authed = false, initialEmail = '' }) {
   const emailOk = /.+@.+\..+/.test(email);
   const canSubmit = countOk && badCount === 0 && !checking && emailOk && !busy;
 
+  // ---- Funnel analytics (no PII in any event) --------------------------------
+  // Each fires once, guarded by a ref, so a re-render or add/remove does not
+  // double count. All no-op when analytics is disabled.
+  const startedRef = useRef(false);
+  useEffect(() => {
+    if (items.length > 0 && !startedRef.current) {
+      startedRef.current = true;
+      track(EVENTS.UPLOAD_STARTED);
+    }
+  }, [items.length]);
+
+  // "Photos pass the client quality gate": right count, none bad, none checking.
+  const photosReady = countOk && badCount === 0 && !checking && items.length > 0;
+  const completedRef = useRef(false);
+  useEffect(() => {
+    if (photosReady && !completedRef.current) {
+      completedRef.current = true;
+      track(EVENTS.UPLOAD_COMPLETED);
+    }
+  }, [photosReady]);
+
+  // Optional drop-off signal: photos rejected client-side. Fires once per episode
+  // (resets when there are no bad photos again).
+  const gateFailRef = useRef(false);
+  useEffect(() => {
+    if (badCount > 0 && !gateFailRef.current) {
+      gateFailRef.current = true;
+      track(EVENTS.QUALITY_GATE_FAILED);
+    } else if (badCount === 0) {
+      gateFailRef.current = false;
+    }
+  }, [badCount]);
+
   async function onSubmit(e) {
     e.preventDefault();
     if (!canSubmit) return;
     setError('');
+    // The user committed to buying: fire before the async upload / redirect.
+    track(EVENTS.CHECKOUT_STARTED);
     try {
       setPhase('uploading');
       const files = items.map((it) => it.file);

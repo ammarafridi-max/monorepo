@@ -25,6 +25,7 @@ import {
   transitionOrder,
 } from '@headliner/shared';
 import { detectFaces } from './faceDetector.js';
+import { moderateImage, MODERATION_REASON } from './contentModerator.js';
 import { QUALITY, evaluateImages, countError } from './uploadGate.js';
 import { RATE_LIMITS, createRateLimiters } from './rateLimit.js';
 
@@ -71,9 +72,28 @@ if (!UPLOAD_QUALITY_GATE) {
   console.warn('[api] UPLOAD_QUALITY_GATE=off: accepting all uploads without face validation (dev only)');
 }
 
-// How many gate detections may hit Replicate at once. Small on purpose: the
-// vision provider rate-limits bursts (env-overridable if you raise your limits).
+// How many images the gate processes at once. Small on purpose: the vision
+// provider rate-limits bursts (env-overridable if you raise your limits). Note
+// each image now makes up to TWO Replicate calls (face + moderation), run in
+// parallel per image, so effective concurrency against Replicate is ~2x this.
 const DETECT_CONCURRENCY = Number.parseInt(process.env.UPLOAD_DETECT_CONCURRENCY, 10) || 4;
+
+// Content moderation is ON by default and, like the quality gate, is the real
+// server-side gate. Set UPLOAD_MODERATION=off ONLY for local dev without a
+// classifier wired up.
+const UPLOAD_MODERATION = (process.env.UPLOAD_MODERATION ?? 'on') !== 'off';
+// What to do when the classifier ITSELF errors (outage, misconfig, bad model).
+// Default fail OPEN (allow + alert) so a moderation outage does not take down
+// every checkout; set to "false" to fail CLOSED (block) for strict enforcement.
+// A POSITIVE detection is always blocked regardless of this setting.
+const MODERATION_FAIL_OPEN = (process.env.UPLOAD_MODERATION_FAIL_OPEN ?? 'true') !== 'false';
+if (UPLOAD_MODERATION && MODERATION_FAIL_OPEN) {
+  console.log('[api] content moderation ON (fail-open on classifier errors)');
+} else if (UPLOAD_MODERATION) {
+  console.log('[api] content moderation ON (fail-closed on classifier errors)');
+} else {
+  console.warn('[api] UPLOAD_MODERATION=off: not screening uploads for unsafe content (dev only)');
+}
 
 /**
  * Map over items running at most `limit` async fns concurrently, preserving
@@ -369,28 +389,60 @@ app.post('/checkout', checkoutLimiter, async (req, res) => {
     // train a bad model and then "succeed" into a DELIVERED order that never
     // triggers the FAILED auto-refund. Same lesson as server-owned pricing:
     // never trust the client's "it passed" claim.
-    if (UPLOAD_QUALITY_GATE) {
+    if (UPLOAD_QUALITY_GATE || UPLOAD_MODERATION) {
       const nErr = countError(uploadedImageUrls.length);
       if (nErr) {
         return res.status(422).json({ error: 'quality_gate', countError: nErr, failures: [], rules: QUALITY });
       }
-      // Detect with BOUNDED concurrency. Firing all N images at Replicate at once
-      // reliably trips its rate limit, and a rate-limited image would fail closed
-      // as "unreadable" and wrongly block a valid order. A small pool (plus the
-      // detector's own 429 retry) keeps us under the limit.
-      const detected = await mapWithLimit(uploadedImageUrls, DETECT_CONCURRENCY, async (url, index) => {
-        try {
-          return { index, url, ...(await detectFaces(url)) };
-        } catch (err) {
-          // Fail closed on a per-image detection error: an image we cannot read
-          // is not allowed to buy its way through.
-          console.error(`[api] face detection failed for ${url}: ${err.message}`);
-          return { index, url, faceCount: 0, maxFaceBoxRatio: 0, error: true };
-        }
+
+      // Process images with BOUNDED concurrency (firing all N at Replicate at once
+      // trips its rate limit). Per image, face detection and content moderation
+      // run in PARALLEL, so moderation overlaps face detection and does not add to
+      // latency; it does add ~1 Replicate prediction per image in cost.
+      const results = await mapWithLimit(uploadedImageUrls, DETECT_CONCURRENCY, async (url, index) => {
+        const [face, moderation] = await Promise.all([
+          UPLOAD_QUALITY_GATE
+            ? detectFaces(url).catch((err) => {
+                // Fail closed on a per-image detection error: an unreadable image
+                // is not allowed to buy its way through.
+                console.error(`[api] face detection failed for ${url}: ${err.message}`);
+                captureError(err, { route: 'checkout', phase: 'face-detection' });
+                return { faceCount: 0, maxFaceBoxRatio: 0, error: true };
+              })
+            : Promise.resolve(null),
+          UPLOAD_MODERATION
+            ? moderateImage(url).catch((err) => {
+                // The classifier ITSELF errored. Fail open (allow + alert) or
+                // closed per MODERATION_FAIL_OPEN. A positive detection never
+                // reaches this catch, so it is always blocked below.
+                console.error(`[api] moderation failed for ${url}: ${err.message}`);
+                captureError(err, { route: 'checkout', phase: 'moderation' });
+                return { safe: MODERATION_FAIL_OPEN, score: null, reason: MODERATION_REASON, errored: true };
+              })
+            : Promise.resolve({ safe: true }),
+        ]);
+        return { index, url, face, moderation };
       });
-      const failures = evaluateImages(detected);
-      if (failures.length) {
-        return res.status(422).json({ error: 'quality_gate', failures, rules: QUALITY });
+
+      // 1) SAFETY FIRST. Reject unsafe images with a non-graphic, branded reason
+      //    and never say what was detected. No Stripe session gets created.
+      if (UPLOAD_MODERATION) {
+        const unsafe = results
+          .filter((r) => !r.moderation.safe)
+          .map((r) => ({ index: r.index, reason: r.moderation.reason || MODERATION_REASON }));
+        if (unsafe.length) {
+          return res.status(422).json({ error: 'content_moderation', failures: unsafe });
+        }
+      }
+
+      // 2) Then quality (face presence / size), exactly as before.
+      if (UPLOAD_QUALITY_GATE) {
+        const failures = evaluateImages(
+          results.map((r) => ({ index: r.index, url: r.url, ...r.face }))
+        );
+        if (failures.length) {
+          return res.status(422).json({ error: 'quality_gate', failures, rules: QUALITY });
+        }
       }
     }
 

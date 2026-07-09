@@ -57,6 +57,12 @@ export const privacy = {
       ],
     },
     {
+      h: 'Analytics',
+      body: [
+        'We use privacy-light, cookieless analytics (Plausible) to measure how the site is used, for example how many people reach the upload step or complete an order. It sets no cookies, builds no cross-site profile, and collects no personal data. We never send your email, your photos, or your order contents to it. It counts steps in aggregate only, and it is disabled entirely unless configured.',
+      ],
+    },
+    {
       h: 'Where your data is stored',
       body: [
         'Uploaded photos and generated images are stored with Cloudflare R2. Model training and image generation run on Replicate. Payment data is held by Stripe.',

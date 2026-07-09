@@ -6,6 +6,8 @@ import HowItWorks from './HowItWorks';
 import WhatYouGet from './WhatYouGet';
 import Pricing from './Pricing';
 import Faq from './Faq';
+import TrackEvent from './TrackEvent';
+import { EVENTS } from '../lib/analytics';
 
 // The landing page. A server component so a logged-in user's order can be linked
 // and their email prefilled; anonymous visitors get the exact same flow as before.
@@ -16,6 +18,7 @@ export default async function HomePage() {
 
   return (
     <>
+      <TrackEvent event={EVENTS.LANDING_VIEW} />
       <main>
         <Hero />
         <Showcase />

@@ -319,6 +319,51 @@ All three services (`api`, `worker`, `web`) report errors to Sentry.
   only), `SENTRY_RELEASE`, and `SENTRY_ORG`/`SENTRY_PROJECT`/`SENTRY_AUTH_TOKEN`
   for optional web source-map upload.
 
+### Content moderation
+
+The quality gate checks that a usable face is present; **content moderation**
+checks that an image is safe to accept. It runs server-side in `POST /checkout`,
+in parallel with the face re-validation and BEFORE any Stripe session is created,
+so unsafe images can never be paid for, stored long-term, or sent to training.
+
+- Each image is screened by an NSFW classifier on Replicate (reusing
+  `REPLICATE_API_TOKEN`, like the face detector). The tradeoff: this catches the
+  dominant risk (explicit/sexual imagery) with one credential, but is not a
+  compliance-grade illegal-content system. `moderateImage(url)` in
+  `apps/api/contentModerator.js` is a swappable interface: drop in AWS Rekognition
+  Moderation, Hive, or Google Vision SafeSearch by replacing that one function.
+- A flagged image gets a structured `422` (like the quality gate) listing the
+  rejected images with a **non-graphic, branded reason** ("This photo cannot be
+  used"); we never describe what was detected. No Stripe session, no payment.
+- Runs in parallel with face detection per image, so it adds no latency, only
+  about one extra Replicate prediction per image in cost.
+- Knobs: `UPLOAD_MODERATION` (on by default; `off` for dev),
+  `REPLICATE_MODERATION_MODEL`, `REPLICATE_MODERATION_MODEL_VERSION` (optional
+  pin), `REPLICATE_MODERATION_NSFW_THRESHOLD` (0.85). On a classifier **error**
+  (outage/misconfig) it fails **open** by default (allow + alert to Sentry) so a
+  moderation outage never blocks every checkout; set `UPLOAD_MODERATION_FAIL_OPEN=false`
+  to fail closed. A positive detection is always blocked regardless.
+
+### Analytics
+
+A minimal, **cookieless, privacy-light** funnel via Plausible: no cookies, no
+consent banner, no cross-site profile, and **no PII** in any event (no email, no
+image data, no order contents).
+
+- **Disabled by default.** With `NEXT_PUBLIC_ANALYTICS_DOMAIN` unset, no script
+  loads and every event is a no-op. Set it to your Plausible domain to enable
+  (optional `NEXT_PUBLIC_ANALYTICS_SRC` to self-host/proxy the script).
+- Exactly five funnel events, plus one optional drop-off signal:
+  1. `landing_view` — home page loaded (`app/page.js`).
+  2. `upload_started` — first photo added (`app/UploadForm.js`).
+  3. `upload_completed` — photos pass the client quality gate (`app/UploadForm.js`).
+  4. `checkout_started` — the buy button is clicked (`app/UploadForm.js`).
+  5. `purchase_completed` — success page reached for a paid order
+     (`app/success/SuccessView.js`).
+  - Optional: `quality_gate_failed` — photos rejected client-side.
+- The script auto-tracks a basic pageview on every route; that is the **only**
+  thing recorded on the legal/content pages.
+
 ## Conventions
 
 - JavaScript + ESM. No TypeScript; shared shapes use JSDoc typedefs.
