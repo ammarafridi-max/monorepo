@@ -36,9 +36,48 @@ function conf() {
   return Number.isFinite(c) ? c : 0.35;
 }
 
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * fetch() to Replicate that survives rate limits and transient blips. The upload
+ * gate can fire several detections at once, so a 429 is expected under load and
+ * must NOT be mistaken for an unreadable photo. On 429 we wait the server's
+ * Retry-After (or retry_after body field); on 5xx / network errors we back off
+ * exponentially. Only after the attempts are exhausted does it give up.
+ */
+async function replicateFetch(url, options, { attempts = 5, baseDelayMs = 1000 } = {}) {
+  let lastErr;
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      const res = await fetch(url, options);
+      if (res.status !== 429 && res.status < 500) return res;
+      // Retryable status. Read the body once to surface retry_after / an error.
+      const text = await res.text().catch(() => '');
+      if (attempt === attempts) throw new Error(`replicate ${res.status}: ${text}`);
+      const header = Number(res.headers.get('retry-after'));
+      let bodyRetry;
+      try {
+        bodyRetry = JSON.parse(text)?.retry_after;
+      } catch {
+        bodyRetry = undefined;
+      }
+      const waitMs = (header || Number(bodyRetry) || 0) * 1000 || baseDelayMs * 2 ** (attempt - 1);
+      console.warn(
+        `[faceDetector] replicate ${res.status}, retrying ${attempt}/${attempts} in ${waitMs}ms`
+      );
+      await sleep(waitMs + 250);
+    } catch (err) {
+      lastErr = err;
+      if (attempt === attempts) throw err;
+      await sleep(baseDelayMs * 2 ** (attempt - 1));
+    }
+  }
+  throw lastErr;
+}
+
 /** Create a prediction (sync via Prefer: wait) and poll if it is not terminal. */
 async function runPrediction(imageUrl) {
-  const res = await fetch(`${REPLICATE_API}/v1/predictions`, {
+  const res = await replicateFetch(`${REPLICATE_API}/v1/predictions`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token()}`,
@@ -57,8 +96,8 @@ async function runPrediction(imageUrl) {
   const deadline = Date.now() + 90_000;
   while (pred.status && !terminal.has(pred.status)) {
     if (Date.now() > deadline) throw new Error('face detection timed out');
-    await new Promise((r) => setTimeout(r, 1500));
-    const g = await fetch(`${REPLICATE_API}/v1/predictions/${pred.id}`, {
+    await sleep(1500);
+    const g = await replicateFetch(`${REPLICATE_API}/v1/predictions/${pred.id}`, {
       headers: { Authorization: `Bearer ${token()}` },
     });
     pred = await g.json();

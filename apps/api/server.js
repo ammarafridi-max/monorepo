@@ -67,6 +67,29 @@ if (!UPLOAD_QUALITY_GATE) {
   console.warn('[api] UPLOAD_QUALITY_GATE=off: accepting all uploads without face validation (dev only)');
 }
 
+// How many gate detections may hit Replicate at once. Small on purpose: the
+// vision provider rate-limits bursts (env-overridable if you raise your limits).
+const DETECT_CONCURRENCY = Number.parseInt(process.env.UPLOAD_DETECT_CONCURRENCY, 10) || 4;
+
+/**
+ * Map over items running at most `limit` async fns concurrently, preserving
+ * input order in the result. Keeps the upload gate from firing every image at
+ * the vision provider simultaneously.
+ */
+async function mapWithLimit(items, limit, fn) {
+  const results = new Array(items.length);
+  let next = 0;
+  async function worker() {
+    while (next < items.length) {
+      const i = next++;
+      results[i] = await fn(items[i], i);
+    }
+  }
+  const size = Math.max(1, Math.min(limit, items.length));
+  await Promise.all(Array.from({ length: size }, worker));
+  return results;
+}
+
 await connectMongo(MONGODB_URI);
 console.log('[api] connected to MongoDB');
 
@@ -326,18 +349,20 @@ app.post('/checkout', async (req, res) => {
       if (nErr) {
         return res.status(422).json({ error: 'quality_gate', countError: nErr, failures: [], rules: QUALITY });
       }
-      const detected = await Promise.all(
-        uploadedImageUrls.map(async (url, index) => {
-          try {
-            return { index, url, ...(await detectFaces(url)) };
-          } catch (err) {
-            // Fail closed on a per-image detection error: an image we cannot read
-            // is not allowed to buy its way through.
-            console.error(`[api] face detection failed for ${url}: ${err.message}`);
-            return { index, url, faceCount: 0, maxFaceBoxRatio: 0, error: true };
-          }
-        })
-      );
+      // Detect with BOUNDED concurrency. Firing all N images at Replicate at once
+      // reliably trips its rate limit, and a rate-limited image would fail closed
+      // as "unreadable" and wrongly block a valid order. A small pool (plus the
+      // detector's own 429 retry) keeps us under the limit.
+      const detected = await mapWithLimit(uploadedImageUrls, DETECT_CONCURRENCY, async (url, index) => {
+        try {
+          return { index, url, ...(await detectFaces(url)) };
+        } catch (err) {
+          // Fail closed on a per-image detection error: an image we cannot read
+          // is not allowed to buy its way through.
+          console.error(`[api] face detection failed for ${url}: ${err.message}`);
+          return { index, url, faceCount: 0, maxFaceBoxRatio: 0, error: true };
+        }
+      });
       const failures = evaluateImages(detected);
       if (failures.length) {
         return res.status(422).json({ error: 'quality_gate', failures, rules: QUALITY });
