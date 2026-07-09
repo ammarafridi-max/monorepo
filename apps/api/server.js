@@ -147,7 +147,14 @@ function toPublicOrder(order) {
     orderId: order._id.toString(),
     status: order.status,
     customerEmail: order.customerEmail,
-    resultImageUrls: order.resultImageUrls ?? [],
+    // Serve ONLY the culled best set (deliveredImageUrls), never the full
+    // candidate list (resultImageUrls) or its per-candidate scores. The public
+    // field keeps the name resultImageUrls so the success page needs no change.
+    // Fallback: orders created before candidate selection shipped have no
+    // deliveredImageUrls, so fall back to resultImageUrls so they still show.
+    resultImageUrls: order.deliveredImageUrls?.length
+      ? order.deliveredImageUrls
+      : (order.resultImageUrls ?? []),
     createdAt: order.createdAt,
     deliveredAt: order.deliveredAt ?? null,
     // A calm, non-technical hint for a failed order, so the success page can say
