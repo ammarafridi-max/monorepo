@@ -17,8 +17,14 @@ const userSchema = new Schema(
     // back-linked by (an order carries the same customerEmail).
     email: { type: String, required: true, unique: true, lowercase: true, trim: true, index: true },
 
-    // Credentials auth: a bcrypt hash, never the plaintext password.
-    passwordHash: { type: String, required: true },
+    // Credentials auth: a bcrypt hash, never the plaintext password. Optional
+    // because social-login accounts (Google/Facebook/LinkedIn) have no password;
+    // those users authenticate through the provider. A password account has it set.
+    passwordHash: { type: String, default: null },
+
+    // Which social providers have been linked to this account, if any. Purely
+    // informational; the email above is still the single identity anchor.
+    providers: { type: [String], default: [] },
   },
   { timestamps: true }
 );

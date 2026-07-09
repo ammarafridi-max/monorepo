@@ -1,6 +1,6 @@
 import 'server-only';
 import bcrypt from 'bcryptjs';
-import { Order } from '@headliner/shared';
+import { Order, User } from '@headliner/shared';
 
 /**
  * Credentials helpers: password hashing and the anonymous-order back-link. Kept
@@ -36,4 +36,24 @@ export async function backlinkOrders(userId, email) {
     { customerEmail: normalizeEmail(email), userId: null },
     { $set: { userId } }
   );
+}
+
+/**
+ * Resolve the User for a social sign-in, keyed on the provider's email. If no
+ * account exists we create a passwordless one; if it already exists (password or
+ * another provider) we reuse it and record the provider. Email is the single
+ * identity anchor, so signing in with Google and later with LinkedIn on the same
+ * address is one account. Caller must dbConnect() first.
+ */
+export async function findOrCreateOAuthUser({ email, provider }) {
+  const normalized = normalizeEmail(email);
+  let user = await User.findOne({ email: normalized });
+  if (!user) {
+    return User.create({ email: normalized, providers: [provider] });
+  }
+  if (provider && !(user.providers || []).includes(provider)) {
+    user.providers = [...(user.providers || []), provider];
+    await user.save();
+  }
+  return user;
 }

@@ -141,6 +141,56 @@ a {
   flex: none;
 }
 
+/* Social sign-in ---------------------------------------------------------- */
+
+/* Secondary actions: bordered, ink text. Cobalt stays reserved for the one
+ * primary CTA (the email form's submit), per BRAND's single-accent rule. */
+.social {
+  margin-top: 40px;
+}
+
+.social__btn {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  color: var(--ink);
+  background: #fffdf9;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 13px 18px;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.social__btn:hover {
+  border-color: var(--ash);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  color: var(--ash);
+  font-size: 13px;
+  margin-top: 18px;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.divider span {
+  padding: 0 12px;
+}
+
+/* When social buttons precede it, the email card's own top margin is too much. */
+.social + .card {
+  margin-top: 18px;
+}
+
 /* Type -------------------------------------------------------------------- */
 
 .display {

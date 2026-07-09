@@ -12,9 +12,10 @@ export async function POST(req) {
   await dbConnect();
   const user = await User.findOne({ email: normalized });
 
-  // One generic message whether the email is unknown or the password is wrong, so
-  // we do not reveal which emails have accounts.
-  if (!user || !(await verifyPassword(password || '', user.passwordHash))) {
+  // One generic message whether the email is unknown, the account has no password
+  // (social-only sign-in), or the password is wrong, so we neither reveal which
+  // emails have accounts nor which sign-in method they use.
+  if (!user || !user.passwordHash || !(await verifyPassword(password || '', user.passwordHash))) {
     return Response.json({ error: 'Email or password is incorrect' }, { status: 401 });
   }
 

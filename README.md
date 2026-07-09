@@ -190,7 +190,15 @@ in the buy flow is gated; the only gated page is `/account`.
   match the repo's minimal style (no NextAuth adapter fighting our Mongoose model).
   Set `AUTH_SECRET` (`openssl rand -hex 32`). The web app reads the same root
   `.env` as the services (loaded in `next.config.mjs`).
-- **Pages/routes:** `/signup`, `/login`, `/account`, and a POST `/api/auth/logout`.
+- **Social sign-in (optional):** Google, Facebook, and LinkedIn, hand-rolled in the
+  same style (a small OAuth 2.0 / OIDC code flow that upserts the same `User` and
+  issues the same session cookie, no NextAuth adapter). A provider appears on the
+  login and signup pages only when its `*_CLIENT_ID` and `*_CLIENT_SECRET` are set.
+  Register the redirect URI `<WEB_BASE_URL>/api/auth/oauth/<provider>/callback` with
+  each provider. Social accounts are passwordless; email is still the one identity
+  anchor, so Google and password sign-in on the same address are one account.
+- **Pages/routes:** `/signup`, `/login`, `/account`, a POST `/api/auth/logout`, and
+  `/api/auth/oauth/<provider>` (start) + `/api/auth/oauth/<provider>/callback`.
 - **Linking orders:** a logged-in checkout links the new order to the account
   (only when the order email matches the session, so a guessed id cannot claim
   someone else's order). Signup and login also back-link past anonymous orders
