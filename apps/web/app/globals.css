@@ -460,6 +460,50 @@ a {
   color: var(--ash);
 }
 
+/* Generation progress ----------------------------------------------------- */
+
+.progress {
+  margin-top: 28px;
+}
+
+.progress__track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+/* Ink fill on a hairline track: calm, no second accent (cobalt stays reserved
+   for the current-step dot and links). Width animates as more shots land. */
+.progress__fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--ink);
+  transition: width 600ms ease;
+}
+
+/* Indeterminate state, before the first count arrives: a short bar drifting
+   across the track. No spinner, no scary language, just motion. */
+.progress__fill--idle {
+  width: 35%;
+  animation: progress-idle 1.7s ease-in-out infinite;
+}
+
+@keyframes progress-idle {
+  0% {
+    transform: translateX(-110%);
+  }
+  100% {
+    transform: translateX(320%);
+  }
+}
+
+.progress__label {
+  margin-top: 10px;
+  font-size: 14px;
+  color: var(--ash);
+}
+
 /* Results ----------------------------------------------------------------- */
 
 .results {

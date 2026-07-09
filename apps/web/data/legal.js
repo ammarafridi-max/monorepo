@@ -4,7 +4,7 @@
  * to match how Headliner ACTUALLY works, not generic template text:
  *
  *  - Real processors: Stripe (payment), Cloudflare R2 (storage), Replicate (model
- *    training + image generation), Resend (email).
+ *    training + image generation), Brevo (email).
  *  - The refund is the FAILED-order auto-refund only, not a satisfaction guarantee.
  *  - We do not claim photo auto-deletion or a retention schedule the system does not
  *    enforce; see the TODO markers where a human needs to confirm policy.
@@ -47,7 +47,7 @@ export const privacy = {
         'Stripe, for payment. Your card details go directly to Stripe.',
         'Cloudflare R2, for storage. Your uploaded photos and generated headshots are stored here.',
         'Replicate, for model training and image generation. Your photos are sent to Replicate to train your model and produce your headshots.',
-        'Resend, for email. We use it to send your results link.',
+        'Brevo, for email. We use it to send your results link.',
       ],
     },
     {

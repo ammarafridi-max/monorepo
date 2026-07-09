@@ -118,7 +118,17 @@ export default function SuccessView() {
   const idx = currentIndex(status);
   const isDelivered = status === 'DELIVERED';
   const isFailed = status === 'FAILED';
+  const isGenerating = status === 'GENERATING';
   const wide = isDelivered && (order.resultImageUrls?.length ?? 0) > 0;
+
+  // Live generation progress as a percentage. We show a percentage rather than a
+  // raw "X of N" because we deliberately over-generate and then curate: "7 of 10"
+  // would read as "3 failed" when nothing failed. Null total means generation has
+  // only just started, so the bar runs in a calm indeterminate state instead.
+  const pct =
+    isGenerating && order.totalCount > 0
+      ? Math.min(100, Math.round((order.generatedCount / order.totalCount) * 100))
+      : null;
 
   return (
     <main className={`wrap${wide ? ' wrap--wide' : ''}`}>
@@ -161,20 +171,42 @@ export default function SuccessView() {
           ))}
         </section>
       ) : isFailed ? null : (
-        <ol className="steps">
-          {STEPS.map((step, i) => {
-            const cls =
-              i < idx ? 'step step--done' : i === idx ? 'step step--current' : 'step';
-            return (
-              <li className={cls} key={step.key}>
-                <span className="step__dot" />
-                <span className="step__label">{step.label}</span>
-                {i === idx && <span className="step__detail">now</span>}
-                {i < idx && <span className="step__detail">done</span>}
-              </li>
-            );
-          })}
-        </ol>
+        <>
+          {isGenerating && (
+            <div
+              className="progress"
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={pct ?? 0}
+              aria-label="Rendering your headshots"
+            >
+              <div className="progress__track">
+                <div
+                  className={`progress__fill${pct == null ? ' progress__fill--idle' : ''}`}
+                  style={pct == null ? undefined : { width: `${pct}%` }}
+                />
+              </div>
+              <p className="progress__label">
+                {pct == null ? 'Warming up the studio.' : `${pct}% rendered.`}
+              </p>
+            </div>
+          )}
+          <ol className="steps">
+            {STEPS.map((step, i) => {
+              const cls =
+                i < idx ? 'step step--done' : i === idx ? 'step step--current' : 'step';
+              return (
+                <li className={cls} key={step.key}>
+                  <span className="step__dot" />
+                  <span className="step__label">{step.label}</span>
+                  {i === idx && <span className="step__detail">now</span>}
+                  {i < idx && <span className="step__detail">done</span>}
+                </li>
+              );
+            })}
+          </ol>
+        </>
       )}
 
       <p className="formnote" style={{ textAlign: 'left', marginTop: 28 }}>

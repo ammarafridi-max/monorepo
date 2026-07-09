@@ -143,18 +143,38 @@ function pipelineJobOpts(orderId) {
  * Replicate training internals.
  */
 function toPublicOrder(order) {
+  const isDelivered = order.status === ORDER_STATES.DELIVERED;
+  const isGenerating = order.status === ORDER_STATES.GENERATING;
+
+  // Serve ONLY the culled best set (deliveredImageUrls), and ONLY once DELIVERED.
+  // During GENERATING the culled set is not known yet: selection/culling runs
+  // AFTER all candidates finish, so any completed candidate shown now could be a
+  // bad seed (gender flip / beard drop) that later gets culled out. Showing it
+  // then removing it would flash a broken image at the customer. So we expose NO
+  // images while generating (Option A) and surface progress as plain counts
+  // instead. Legacy fallback: orders delivered before candidate selection shipped
+  // have no deliveredImageUrls, so fall back to resultImageUrls (which, for those
+  // orders, IS the delivered set) so historical results still show.
+  const resultImageUrls = isDelivered
+    ? (order.deliveredImageUrls?.length ? order.deliveredImageUrls : (order.resultImageUrls ?? []))
+    : [];
+
+  // Live generation progress: COUNTS ONLY, never image URLs, per-candidate scores,
+  // or cost. generatedCount = candidate images finished so far; totalCount = the
+  // candidate slots the worker has started (generationIds is persisted before
+  // polling, so it reflects the full target as soon as generation kicks off).
+  // Gated to GENERATING so we never reveal how many candidates we generate once
+  // the order is delivered. Both are safe non-negative integers.
+  const generatedCount = isGenerating ? (order.resultImageUrls?.length ?? 0) : 0;
+  const totalCount = isGenerating ? (order.replicate?.generationIds?.length ?? 0) : 0;
+
   return {
     orderId: order._id.toString(),
     status: order.status,
     customerEmail: order.customerEmail,
-    // Serve ONLY the culled best set (deliveredImageUrls), never the full
-    // candidate list (resultImageUrls) or its per-candidate scores. The public
-    // field keeps the name resultImageUrls so the success page needs no change.
-    // Fallback: orders created before candidate selection shipped have no
-    // deliveredImageUrls, so fall back to resultImageUrls so they still show.
-    resultImageUrls: order.deliveredImageUrls?.length
-      ? order.deliveredImageUrls
-      : (order.resultImageUrls ?? []),
+    resultImageUrls,
+    generatedCount,
+    totalCount,
     createdAt: order.createdAt,
     deliveredAt: order.deliveredAt ?? null,
     // A calm, non-technical hint for a failed order, so the success page can say
