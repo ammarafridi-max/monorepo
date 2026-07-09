@@ -378,3 +378,54 @@ test('scenario 4: training fails -> FAILED with error recorded, refund issued ex
   assert.equal(afterRestart.status, ORDER_STATES.FAILED, 'still FAILED after restart');
   assert.equal(stripe.refundCount(), 1, 'refund count is STILL exactly 1, never refunded twice');
 });
+
+test('cost invariant: with identity culling OFF, generate == deliver (never pay for extra images)', async () => {
+  fake.resetFake({ generationStatusSeq: ['succeeded'] });
+
+  // Identity culling is OFF when REPLICATE_FACE_EMBED_MODEL is unset. In that case
+  // apps/worker/index.js pins GENERATE_COUNT to DELIVER_COUNT and injects NO scorer
+  // (the pipeline falls back to its neutral default). Reproduce that exact wiring:
+  // equal counts + no scorer. The invariant we lock: the GENERATING stage generates
+  // exactly what it delivers, so we never pay to generate images we then discard.
+  const prompts = Array.from({ length: 7 }, (_, i) => `headshot prompt ${i}`);
+  const DELIVER_COUNT = prompts.length; // index.js default when unset
+  const GENERATE_COUNT = DELIVER_COUNT; // index.js: culling off pins generate to deliver
+  assert.equal(GENERATE_COUNT, DELIVER_COUNT, 'premise: culling off means generate == deliver');
+
+  const order = await Order.create({
+    customerEmail: 'a@b.com',
+    status: ORDER_STATES.GENERATING,
+    uploadedImageUrls: ['selfie.jpg'],
+    replicate: { trainingId: 'train_pre', trainedModelVersion: 'fakeowner/fakemodel:v1' },
+  });
+  const id = order._id.toString();
+
+  // Built directly (not via buildPipeline, which always injects a stub scorer) so
+  // NO scorer is passed and the pipeline uses its neutral default -- the real
+  // culling-off path. No embedding calls, no scoring cost.
+  const pipeline = createPipeline({
+    client: fake,
+    prompts,
+    generateCount: GENERATE_COUNT,
+    deliverCount: DELIVER_COUNT,
+    imageZipUrl: 'https://fake.local/selfies.zip',
+    pollIntervalMs: 1,
+    trainingMaxWaitMs: 60_000,
+    generationMaxWaitMs: 60_000,
+  });
+
+  await pipeline.processOrder(id);
+
+  const done = await Order.findById(id);
+  assert.equal(done.status, ORDER_STATES.DELIVERED, 'order delivered');
+
+  // THE COST INVARIANT: images generated == images delivered.
+  assert.equal(
+    fake.getCounts().startGeneration,
+    done.deliveredImageUrls.length,
+    'startGeneration count == deliveredImageUrls.length (generate exactly what we deliver)'
+  );
+  // And that is exactly the prompt set: nothing overgenerated, nothing dropped.
+  assert.equal(fake.getCounts().startGeneration, prompts.length, 'generated exactly prompts.length');
+  assert.equal(done.deliveredImageUrls.length, prompts.length, 'delivered exactly prompts.length');
+});
