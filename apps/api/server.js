@@ -48,6 +48,26 @@ import { RATE_LIMITS, createRateLimiters } from './rateLimit.js';
 const PRICE_CENTS = 3500;
 // Reject absurd upload batches. A face fine-tune wants ~10-15 photos.
 const MAX_UPLOAD_FILES = 20;
+
+// Canonical image extension per content type. The stored R2 key MUST end in a
+// recognizable image extension: the face detector (yolov8 on Replicate) fetches
+// the public URL and infers the format from its EXTENSION, so a key without one
+// (an extension-less or oddly-named upload) makes detection fail with "no image
+// found" and the photo is wrongly rejected as unreadable. We append the right
+// extension so every uploaded image is detectable.
+const IMAGE_EXT = {
+  'image/jpeg': 'jpg',
+  'image/jpg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+  'image/gif': 'gif',
+  'image/bmp': 'bmp',
+  'image/tiff': 'tiff',
+  'image/heic': 'heic',
+  'image/heif': 'heif',
+  'image/avif': 'avif',
+};
+const HAS_IMAGE_EXT = /\.(jpe?g|png|webp|gif|bmp|tiff?|heic|heif|avif)$/i;
 // A non-terminal order sitting longer than this is flagged as stuck by the admin
 // view, so a stall is visible without a customer emailing us. Env-overridable.
 const STUCK_AFTER_MS = (Number(process.env.ADMIN_STUCK_MINUTES) || 30) * 60 * 1000;
@@ -446,7 +466,11 @@ app.post('/uploads/presign', presignLimiter, async (req, res) => {
     const uploads = await Promise.all(
       files.map(async (f) => {
         // A fresh uuid folder per file keeps names unique and un-guessable.
-        const safeName = String(f.filename || 'photo').replace(/[^a-zA-Z0-9._-]/g, '_');
+        const raw = String(f.filename || 'photo').replace(/[^a-zA-Z0-9._-]/g, '_');
+        // Guarantee a recognizable image extension on the key (see IMAGE_EXT), so
+        // downstream face detection never fails on an extension-less filename.
+        const ext = IMAGE_EXT[String(f.contentType).toLowerCase()] || 'jpg';
+        const safeName = HAS_IMAGE_EXT.test(raw) ? raw : `${raw}.${ext}`;
         const key = `uploads/${randomUUID()}/${safeName}`;
         const uploadUrl = await storage.presignPut(key, f.contentType);
         return { uploadUrl, publicUrl: storage.publicUrl(key), key, contentType: f.contentType };

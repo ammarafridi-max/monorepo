@@ -18,7 +18,9 @@ export default function PayPage() {
   const [state, setState] = useState(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [gateFail, setGateFail] = useState(false);
+  // Per-photo gate failures from a 422 ({ index, reason }), so we can show the
+  // customer EXACTLY which photos to swap and why.
+  const [failures, setFailures] = useState([]);
 
   useEffect(() => {
     const s = readState();
@@ -34,7 +36,7 @@ export default function PayPage() {
     if (busy) return;
     setBusy(true);
     setError('');
-    setGateFail(false);
+    setFailures([]);
     track(EVENTS.CHECKOUT_STARTED);
     try {
       const { orderId, checkoutUrl } = await createCheckout({
@@ -52,9 +54,14 @@ export default function PayPage() {
       window.location.href = checkoutUrl;
     } catch (err) {
       if (err.status === 422) {
-        // A photo failed the server gate. Send them back to swap photos.
-        setGateFail(true);
-        setError('Some of your photos did not pass our check. Please choose different photos.');
+        const body = err.body || {};
+        if (Array.isArray(body.failures) && body.failures.length) {
+          // Show which specific photos failed and why, with thumbnails.
+          setFailures(body.failures);
+        } else {
+          // A count problem (too few / too many), no per-photo detail.
+          setError(body.countError || 'Your photos did not pass our check. Please adjust them.');
+        }
         setBusy(false);
         return;
       }
@@ -98,10 +105,26 @@ export default function PayPage() {
       </div>
 
       {error && <p className="error">{error}</p>}
-      {gateFail && (
-        <p className="formnote" style={{ textAlign: 'left' }}>
-          <a href="/generator/upload">Go back to your photos</a> to swap them.
-        </p>
+
+      {failures.length > 0 && (
+        <div className="gatefail">
+          <p className="error">
+            {failures.length === 1 ? 'This photo did' : `${failures.length} of your photos did`} not
+            pass our check. Swap {failures.length === 1 ? 'it' : 'them'} and try again.
+          </p>
+          <div className="thumbs">
+            {failures.map((f) => (
+              <div className="thumb thumb--bad" key={f.index}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={state.images[f.index]} alt={`photo ${f.index + 1}`} />
+                <p className="thumb__reason">{f.reason}</p>
+              </div>
+            ))}
+          </div>
+          <p className="formnote" style={{ textAlign: 'left', marginTop: 10 }}>
+            <a href="/generator/upload">Back to your photos</a> to replace them.
+          </p>
+        </div>
       )}
       <p className="formnote" style={{ textAlign: 'left' }}>
         By continuing you agree to our <a href="/terms">Terms</a> and{' '}
