@@ -1,0 +1,53 @@
+# syntax=docker/dockerfile:1
+#
+# Headliner web (Next.js). Build context = the monorepo root:
+#   fly deploy -c fly.web.toml
+#
+# NEXT_PUBLIC_* values are inlined at BUILD time, so they are passed as build args
+# (set them in fly.web.toml [build.args]), NOT runtime secrets. Runtime secrets
+# (MONGODB_URI, AUTH_SECRET, SENTRY_DSN, OAuth) come from `fly secrets` and are
+# read by server components at request time.
+#
+FROM node:20-slim AS base
+ENV PNPM_HOME="/pnpm" PATH="/pnpm:$PATH"
+RUN corepack enable
+WORKDIR /app
+
+# Install the web + shared, production only (web has no devDependencies).
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY packages/shared/package.json packages/shared/
+COPY apps/api/package.json apps/api/
+COPY apps/worker/package.json apps/worker/
+COPY apps/web/package.json apps/web/
+RUN --mount=type=cache,target=/pnpm/store \
+    pnpm install --frozen-lockfile --prod --filter "@headliner/web..."
+
+COPY packages/shared packages/shared
+COPY apps/web apps/web
+
+# Build-time public config (inlined into the client bundle). NEXT_PUBLIC_API_BASE_URL
+# MUST point at the deployed API origin. The rest are optional (code has defaults).
+ARG NEXT_PUBLIC_API_BASE_URL
+ARG NEXT_PUBLIC_UPLOAD_MIN_PHOTOS=5
+ARG NEXT_PUBLIC_UPLOAD_MAX_PHOTOS=15
+ARG NEXT_PUBLIC_UPLOAD_MIN_FACE_RATIO=0.15
+ARG NEXT_PUBLIC_ANALYTICS_DOMAIN=""
+ARG NEXT_PUBLIC_ANALYTICS_SRC=""
+ARG NEXT_PUBLIC_SENTRY_DSN=""
+ARG NEXT_PUBLIC_SENTRY_ENVIRONMENT="production"
+ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL \
+    NEXT_PUBLIC_UPLOAD_MIN_PHOTOS=$NEXT_PUBLIC_UPLOAD_MIN_PHOTOS \
+    NEXT_PUBLIC_UPLOAD_MAX_PHOTOS=$NEXT_PUBLIC_UPLOAD_MAX_PHOTOS \
+    NEXT_PUBLIC_UPLOAD_MIN_FACE_RATIO=$NEXT_PUBLIC_UPLOAD_MIN_FACE_RATIO \
+    NEXT_PUBLIC_ANALYTICS_DOMAIN=$NEXT_PUBLIC_ANALYTICS_DOMAIN \
+    NEXT_PUBLIC_ANALYTICS_SRC=$NEXT_PUBLIC_ANALYTICS_SRC \
+    NEXT_PUBLIC_SENTRY_DSN=$NEXT_PUBLIC_SENTRY_DSN \
+    NEXT_PUBLIC_SENTRY_ENVIRONMENT=$NEXT_PUBLIC_SENTRY_ENVIRONMENT \
+    NODE_ENV=production
+
+RUN pnpm --filter @headliner/web build
+
+ENV PORT=3000
+WORKDIR /app/apps/web
+EXPOSE 3000
+CMD ["pnpm", "start"]

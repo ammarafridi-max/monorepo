@@ -1,0 +1,19 @@
+# Never bake these into the image. node_modules is reinstalled from the lockfile,
+# .next is rebuilt, and .env holds secrets (those come from Fly secrets at runtime).
+**/node_modules
+**/.next
+.git
+.gitignore
+**/.env
+**/.env.*
+!**/.env.example
+**/*.log
+**/.DS_Store
+# Test-only + local artifacts.
+**/test
+**/coverage
+apps/worker/scripts/results
+scratchpad
+# The deploy artifacts themselves do not need to be in the build context.
+Dockerfile.*
+fly.*.toml

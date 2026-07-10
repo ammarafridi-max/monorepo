@@ -1,0 +1,14 @@
+# Headliner worker. Deploy from the repo root:  fly deploy -c fly.worker.toml
+# No public service: it drains the BullMQ order-pipeline queue and must run
+# continuously, so there is no [http_service] and no auto-stop.
+app = "headliner-worker"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile.worker"
+
+# concurrency is 1 in code (one order at a time); a single machine is the default.
+# The pipeline is resumable + idempotent, so a restart safely reattaches.
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "1024mb"   # building a training zip (download + zip the photos) needs headroom

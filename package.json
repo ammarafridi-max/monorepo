@@ -11,7 +11,10 @@
     "dev": "concurrently -n api,worker -c blue,magenta \"pnpm --filter @headliner/api dev\" \"pnpm --filter @headliner/worker dev\"",
     "web": "pnpm --filter @headliner/web dev",
     "api": "pnpm --filter @headliner/api dev",
-    "worker": "pnpm --filter @headliner/worker dev"
+    "worker": "pnpm --filter @headliner/worker dev",
+    "deploy:api": "fly deploy -c fly.api.toml",
+    "deploy:web": "fly deploy -c fly.web.toml",
+    "deploy:worker": "fly deploy -c fly.worker.toml"
   },
   "devDependencies": {
     "concurrently": "^9.1.0"

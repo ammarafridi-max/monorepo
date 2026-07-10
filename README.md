@@ -100,6 +100,16 @@ order to watch it advance:
 curl -s localhost:3001/orders/<orderId>
 ```
 
+## Deploying (Fly.io)
+
+Three Fly apps (`api`, `web`, `worker`), each built from the monorepo root, with
+MongoDB and Redis as external managed services. Dockerfiles (`Dockerfile.api`,
+`Dockerfile.worker`, `Dockerfile.web`) and Fly configs (`fly.api.toml`,
+`fly.worker.toml`, `fly.web.toml`) are in the repo root; `pnpm deploy:api` /
+`deploy:web` / `deploy:worker` wrap `fly deploy`. Full runbook (create apps, set
+per-app secrets, deploy order, Stripe webhook + R2 CORS wiring) in
+[DEPLOY.md](./DEPLOY.md).
+
 ## Phase 2: testing locally with the Stripe CLI
 
 Phase 2 adds real payments. `POST /checkout` creates an order and a Stripe
