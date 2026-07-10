@@ -326,11 +326,12 @@ export function createPipeline({
       if (!order) throw new Error(`order ${orderId} not found`);
 
       switch (order.status) {
-        // The worker ENTERS at TRAINING. In the pay-before-upload flow the pipeline
-        // job is enqueued by POST /orders/:id/images only AFTER it moves the order
-        // AWAITING_UPLOAD -> TRAINING, so PAID / AWAITING_UPLOAD orders never reach
-        // the queue. If one somehow did, it falls through to `default` and fails
-        // (surfacing the anomaly) rather than being silently mishandled.
+        case ORDER_STATES.PAID:
+          // The webhook enqueues a PAID order after payment (the order already has
+          // its selections + images). Nothing external here; move into training.
+          await transitionOrder(orderId, ORDER_STATES.PAID, ORDER_STATES.TRAINING);
+          break;
+
         case ORDER_STATES.TRAINING:
           await runTrainingStage(orderId, order);
           break;

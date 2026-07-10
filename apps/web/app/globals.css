@@ -634,14 +634,22 @@ a {
   box-shadow: 0 1px 2px rgba(11, 11, 12, 0.08), 0 12px 26px -14px rgba(47, 91, 255, 0.55);
 }
 
-.btn--primary:hover {
+.btn--primary:hover:not(:disabled) {
   background: #2a52e6;
   box-shadow: 0 2px 4px rgba(11, 11, 12, 0.1), 0 16px 32px -14px rgba(47, 91, 255, 0.6);
   transform: translateY(-1px);
 }
 
-.btn--primary:active {
+.btn--primary:active:not(:disabled) {
   transform: translateY(0);
+}
+
+/* Disabled buttons (e.g. Continue before a step is complete). */
+.btn:disabled {
+  opacity: 0.5;
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .btn__price {
@@ -1191,77 +1199,115 @@ a {
   color: var(--bone);
 }
 
-/* Selection cards: the choices are the visual interest; cobalt marks selected. */
-.cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 12px;
-  margin-top: 28px;
+/* Section subheads on the merged select step. */
+.gen-subhead {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 20px;
+  margin: 36px 0 2px;
+}
+.gen-hint {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ash);
 }
 
-.card-select {
+/* Selection cards: each option has a preview image (or a placeholder). The
+ * choices are the visual interest; cobalt marks the selected state. */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.option-card {
   position: relative;
-  display: block;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   text-align: left;
   cursor: pointer;
+  overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fffdf9;
-  padding: 18px 18px 18px 46px;
+  padding: 0;
   font: inherit;
   color: var(--ink);
   transition: border-color 0.14s ease, box-shadow 0.14s ease;
 }
 
-.card-select:hover {
+.option-card:hover {
   border-color: var(--ash);
 }
 
-.card-select--on {
+.option-card--on {
   border-color: var(--cobalt);
   box-shadow: inset 0 0 0 1px var(--cobalt);
 }
 
-.card-select__check {
-  position: absolute;
-  left: 16px;
-  top: 18px;
-  width: 18px;
-  height: 18px;
-  border-radius: 6px;
-  border: 1.5px solid var(--line);
-  background: var(--bone);
+/* Preview image / placeholder. */
+.option-card__media {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  background: #efece6;
+  overflow: hidden;
+}
+.option-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.option-card__ph {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ash);
 }
 
-.card-select--on .card-select__check {
+.option-card__body {
+  padding: 12px 14px 14px;
+}
+.option-card__label {
+  display: block;
+  font-weight: 600;
+  font-size: 15px;
+}
+.option-card__desc {
+  display: block;
+  margin-top: 3px;
+  font-size: 13px;
+  color: var(--ash);
+}
+
+/* Selected tick, top-right over the image. */
+.option-card__check {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+  background: rgba(250, 249, 246, 0.9);
+}
+.option-card--on .option-card__check {
   border-color: var(--cobalt);
   background: var(--cobalt);
 }
-
-.card-select--on .card-select__check::after {
+.option-card--on .option-card__check::after {
   content: '';
   position: absolute;
-  left: 5px;
-  top: 1px;
-  width: 5px;
-  height: 10px;
+  left: 7px;
+  top: 3px;
+  width: 6px;
+  height: 11px;
   border: solid var(--bone);
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
-}
-
-.card-select__label {
-  display: block;
-  font-weight: 600;
-  font-size: 16px;
-}
-
-.card-select__desc {
-  display: block;
-  margin-top: 4px;
-  font-size: 14px;
-  color: var(--ash);
 }
 
 /* Step navigation (back / continue). */

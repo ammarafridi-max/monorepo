@@ -8,11 +8,12 @@
  * A LOOK is the scene/lighting/background. ATTIRE is what the subject wears.
  * `promptFragment` is the piece of the generation prompt each contributes;
  * `label`/`description` are the user-facing copy (BRAND: verdict-first, no em
- * dashes).
+ * dashes). `image` is a preview URL shown next to the option on the select step;
+ * leave it '' to render a placeholder, and drop in a real image URL later.
  */
 
-/** @typedef {{ id: string, label: string, description: string, promptFragment: string }} Look */
-/** @typedef {{ id: string, label: string, promptFragment: string }} Attire */
+/** @typedef {{ id: string, label: string, description: string, promptFragment: string, image: string }} Look */
+/** @typedef {{ id: string, label: string, promptFragment: string, image: string }} Attire */
 
 /** @type {readonly Look[]} */
 export const LOOKS = Object.freeze([
@@ -21,30 +22,35 @@ export const LOOKS = Object.freeze([
     label: 'Corporate studio',
     description: 'Neutral grey seamless, soft key light.',
     promptFragment: 'against a neutral grey seamless studio backdrop, soft key lighting',
+    image: '',
   },
   {
     id: 'office_environment',
     label: 'In-office',
     description: 'A modern office, softly blurred behind you.',
     promptFragment: 'in a modern office interior, softly blurred background bokeh, natural indoor light',
+    image: '',
   },
   {
     id: 'outdoor_professional',
     label: 'Outdoor',
     description: 'Natural daylight, soft city or greenery behind.',
     promptFragment: 'outdoors in natural daylight, softly blurred city and greenery background',
+    image: '',
   },
   {
     id: 'dramatic_studio',
     label: 'Dramatic studio',
     description: 'Dark, low-key background with rim light.',
     promptFragment: 'against a dark low-key studio background, dramatic rim lighting',
+    image: '',
   },
   {
     id: 'bright_natural',
     label: 'Bright and natural',
     description: 'Window light, airy and clean.',
     promptFragment: 'in bright natural window light, airy and clean light background',
+    image: '',
   },
 ]);
 
@@ -54,21 +60,25 @@ export const ATTIRE = Object.freeze([
     id: 'business_suit',
     label: 'Business suit',
     promptFragment: 'wearing a well-tailored business suit',
+    image: '',
   },
   {
     id: 'business_casual',
     label: 'Business casual, collared shirt',
     promptFragment: 'wearing a crisp business-casual collared shirt',
+    image: '',
   },
   {
     id: 'smart_knit',
     label: 'Smart knit or sweater',
     promptFragment: 'wearing a smart knit sweater over a collared shirt',
+    image: '',
   },
   {
     id: 'blazer_tee',
     label: 'Blazer over tee',
     promptFragment: 'wearing a tailored blazer over a plain tee',
+    image: '',
   },
   {
     id: 'formal_traditional',
@@ -76,6 +86,7 @@ export const ATTIRE = Object.freeze([
     // Deliberately neutral so it flatters any wardrobe/background rather than
     // forcing a specific garment.
     promptFragment: 'wearing polished, formal professional attire',
+    image: '',
   },
 ]);
 

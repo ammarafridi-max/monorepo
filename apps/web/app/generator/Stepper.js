@@ -4,13 +4,11 @@ import { usePathname } from 'next/navigation';
 import { FUNNEL_STEPS } from '../../lib/generator';
 
 // Which funnel step the current route is on, so the stepper can render each step
-// as done / current / upcoming. Pay + Results have no route; they only ever show
-// as upcoming here (the user is past them once on /success).
+// as done / current / upcoming. Pay has no route past the Stripe redirect.
 function currentKey(pathname) {
-  if (pathname?.startsWith('/generator/attire')) return 'attire';
-  if (pathname?.startsWith('/generator/details')) return 'details';
   if (pathname?.startsWith('/generator/upload')) return 'upload';
-  return 'looks';
+  if (pathname?.startsWith('/generator/pay')) return 'pay';
+  return 'select';
 }
 
 export default function Stepper() {

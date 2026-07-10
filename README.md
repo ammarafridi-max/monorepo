@@ -14,48 +14,49 @@ design and build plan.
 - `apps/worker` - BullMQ worker: drives orders through real Replicate training + generation (Phase 3).
 - `packages/shared` - shared order contracts, the atomic transition helper, and the Redis connection helper.
 
-## Multi-step funnel (selection-first, pay before upload)
+## Multi-step funnel (select, upload, pay)
 
-The purchase flow is a routed, multi-step funnel, and payment comes BEFORE upload:
-
-```
-Looks -> Attire -> Details/Review -> PAY -> Upload photos -> processing -> Delivered
-```
-
-The customer picks their looks and attire, enters an email, and pays. Only then do
-they upload photos. A gate-passing upload is what starts training. This is the one
-purchase flow; the old single-page upload+pay flow is gone.
-
-**State machine.** A new state, `AWAITING_UPLOAD`, sits between payment and
-training:
+The purchase flow is a routed, three-step funnel:
 
 ```
-AWAITING_PAYMENT -> PAID -> AWAITING_UPLOAD -> TRAINING -> GENERATING -> DELIVERED
+Select (looks + attire + email) -> Upload photos -> Pay -> processing -> Delivered
 ```
 
-`PAID` is still the webhook's idempotency checkpoint. `AWAITING_UPLOAD` means the
-money is in but we are waiting on the human, so the admin stuck-detector treats it
-as "awaiting customer", never a system stall.
+The customer picks their looks and attire and enters an email (one merged step),
+uploads their photos, then pays. Payment is the last step; the order is created at
+checkout already carrying the selections AND the photos. This is the one purchase
+flow; the old single-page upload+pay flow is gone.
 
-**Where the enqueue and the gate moved.**
+**State machine.**
 
-- `POST /checkout` now takes `{ email, selectedLooks[], selectedAttire[] }` and NO
-  images. It validates the selections against the shared catalog and creates the
-  order in `AWAITING_PAYMENT`. The image gate does not run here (there are no
-  images yet).
-- The **Stripe webhook no longer enqueues.** It does the idempotent
-  `AWAITING_PAYMENT -> PAID` (recording payment), then `PAID -> AWAITING_UPLOAD`,
-  and never touches the queue.
-- `POST /orders/:id/images` is the new "start training" trigger. Valid only for an
-  `AWAITING_UPLOAD` order, it runs THE REAL gate (face quality + content
-  moderation) on the uploaded images. On failure: a structured `422`, no
-  transition, no enqueue (the order stays `AWAITING_UPLOAD`, so the customer can
-  swap photos and resubmit). On pass: it persists the images, transitions
-  `AWAITING_UPLOAD -> TRAINING`, and enqueues the pipeline job (`jobId = orderId`)
-  exactly once. This is the moved enqueue.
+```
+AWAITING_PAYMENT -> PAID -> TRAINING -> GENERATING -> DELIVERED
+```
+
+`PAID` is the webhook's idempotency checkpoint and where the pipeline is enqueued;
+the worker then moves `PAID -> TRAINING`.
+
+**The web funnel (`apps/web/app/generator`).** A shared stepper layout over three
+routes: `/generator/select` (looks + attire + email, each option with a preview
+image or a placeholder), `/generator/upload` (client quality gate, then the photos
+go direct-to-R2 and their URLs ride along), and `/generator/pay` (review + pay).
+Selections and uploaded-photo URLs persist in `localStorage` until checkout, so the
+order is created only at the pay step (no abandoned drafts in the DB). Landing CTAs
+route to `/generator/select`.
+
+**Where the gate runs.** `POST /checkout` takes `{ email, selectedLooks[],
+selectedAttire[], uploadedImageUrls[] }`. It validates the selections against the
+shared catalog and runs THE REAL gate (face quality + content moderation) on the
+images BEFORE creating the Stripe session, so there is no session (no payment) for
+input that would train a bad model. On a gate failure it returns a structured
+`422`; the pay step surfaces it and points the user back to swap photos. On pass it
+creates the order in `AWAITING_PAYMENT` and returns the Stripe checkout URL. The
+webhook then does the idempotent `AWAITING_PAYMENT -> PAID` and enqueues the
+pipeline exactly once (`jobId = orderId`).
 
 **Shared catalog + prompts.** `packages/shared/src/catalog.js` is the single source
-of truth for the `LOOKS` and `ATTIRE` options AND the `buildPrompts` helper that
+of truth for the `LOOKS` and `ATTIRE` options (each with a `label`, a
+`promptFragment`, and an `image` preview slot) AND the `buildPrompts` helper that
 turns a selection into generation prompts. The web renders its selection cards from
 it (via the `@headliner/shared/catalog` subpath, which is mongoose-free and
 client-safe) and the worker builds each order's prompts from it, so the options a
@@ -64,11 +65,6 @@ customer sees can never drift from what we generate. The worker's old fixed
 
 **Count.** `DELIVER_COUNT` defaults to 14. Identity culling is off, so the worker
 generates exactly what it delivers (generate == deliver, locked by a test).
-
-**Paid but not uploaded.** Most users upload immediately (the post-payment redirect
-goes straight to the upload step). A customer who drops off sits in
-`AWAITING_UPLOAD`, visible in admin as "awaiting customer", and is NOT auto-refunded
-(nothing failed). A reminder email is a `// TODO` in the api for later.
 
 **Preserved guarantees.** Idempotent webhook, idempotent enqueue (`jobId =
 orderId`), resumable/idempotent pipeline, auto-refund on `FAILED`, and idempotent
@@ -419,13 +415,13 @@ image data, no order contents).
   loads and every event is a no-op. Set it to your Plausible domain to enable
   (optional `NEXT_PUBLIC_ANALYTICS_SRC` to self-host/proxy the script).
 - Exactly five funnel events, plus one optional drop-off signal:
-  1. `landing_view` — home page loaded (`app/page.js`).
-  2. `upload_started` — first photo added (`app/UploadForm.js`).
-  3. `upload_completed` — photos pass the client quality gate (`app/UploadForm.js`).
-  4. `checkout_started` — the buy button is clicked (`app/UploadForm.js`).
-  5. `purchase_completed` — success page reached for a paid order
+  1. `landing_view`: home page loaded (`app/page.js`).
+  2. `upload_started`: first photo added (`app/generator/upload/page.js`).
+  3. `upload_completed`: photos pass the client quality gate (`app/generator/upload/page.js`).
+  4. `checkout_started`: the pay button is clicked (`app/generator/pay/page.js`).
+  5. `purchase_completed`: success page reached for a paid order
      (`app/success/SuccessView.js`).
-  - Optional: `quality_gate_failed` — photos rejected client-side.
+  - Optional: `quality_gate_failed`: photos rejected client-side.
 - The script auto-tracks a basic pageview on every route; that is the **only**
   thing recorded on the legal/content pages.
 

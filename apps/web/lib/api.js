@@ -38,29 +38,16 @@ export async function putToStorage(uploadUrl, file) {
 }
 
 /**
- * Create the order + Stripe session from the up-front selections (NO images yet).
- * Returns { orderId, checkoutUrl }.
+ * Create the order + Stripe session from the selections AND the already-uploaded
+ * photos (payment is the last step). Returns { orderId, checkoutUrl }. On a gate
+ * failure throws with err.status === 422 and err.body.failures (per-photo reasons)
+ * so the UI can flag which photos to swap.
  */
-export async function createCheckout({ email, selectedLooks, selectedAttire }) {
+export async function createCheckout({ email, selectedLooks, selectedAttire, uploadedImageUrls }) {
   const res = await fetch(`${API_BASE}/checkout`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, selectedLooks, selectedAttire }),
-  });
-  return asJson(res);
-}
-
-/**
- * Submit the post-payment photos for a paid order (the new "start training"
- * trigger). On success returns { orderId, status: 'TRAINING' }. On a gate failure
- * throws with err.status === 422 and err.body.failures (per-photo reasons), same
- * shape the old checkout used, so the UI can flag and let the user swap photos.
- */
-export async function submitOrderImages(orderId, uploadedImageUrls) {
-  const res = await fetch(`${API_BASE}/orders/${orderId}/images`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ uploadedImageUrls }),
+    body: JSON.stringify({ email, selectedLooks, selectedAttire, uploadedImageUrls }),
   });
   return asJson(res);
 }

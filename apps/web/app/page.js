@@ -8,8 +8,8 @@ import TrackEvent from './TrackEvent';
 import { EVENTS } from '../lib/analytics';
 
 // The landing page: marketing only. There is ONE purchase flow now, the routed
-// funnel under /generator, and every CTA here starts it at /generator/looks. No
-// upload happens on this page (payment comes before upload in the new flow).
+// funnel under /generator (select -> upload -> pay), and every CTA here starts it
+// at /generator/select. No upload or checkout happens on this page.
 export default function HomePage() {
   return (
     <>
@@ -30,10 +30,10 @@ export default function HomePage() {
               </p>
               <h2 className="h2">Your headshots, in about an hour.</h2>
               <p className="section__lede" style={{ margin: '14px auto 0' }}>
-                Pick your looks, pay once, upload your photos. We handle the rest.
+                Pick your looks, upload your photos, pay once. We handle the rest.
               </p>
               <p style={{ marginTop: 24 }}>
-                <a className="btn btn--primary" href="/generator/looks">
+                <a className="btn btn--primary" href="/generator/select">
                   Get my headshots <span className="btn__price">$35</span>
                 </a>
               </p>

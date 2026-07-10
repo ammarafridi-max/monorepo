@@ -3,50 +3,47 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { LOOKS, ATTIRE } from '@headliner/shared/catalog';
-import { readState, writeState } from '../../../lib/generator';
+import { readState } from '../../../lib/generator';
 import { createCheckout } from '../../../lib/api';
 import { track, EVENTS } from '../../../lib/analytics';
 
 const LOOK_LABEL = Object.fromEntries(LOOKS.map((l) => [l.id, l.label]));
 const ATTIRE_LABEL = Object.fromEntries(ATTIRE.map((a) => [a.id, a.label]));
 
-// Review + email + pay. Creating the order happens HERE (the first DB write), so
-// abandoned selection steps never hit the database. Payment comes before upload:
-// this CTA creates the order from the selections and redirects to Stripe.
-export default function DetailsPage() {
+// Step 3: review + pay. Creating the order happens HERE (the first DB write), with
+// the selections AND the already-uploaded photos. The CTA calls /checkout (which
+// runs the server gate before creating the Stripe session) and redirects to Stripe.
+export default function PayPage() {
   const router = useRouter();
   const [state, setState] = useState(null);
-  const [email, setEmail] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [gateFail, setGateFail] = useState(false);
 
   useEffect(() => {
     const s = readState();
-    // Guard the funnel order: no selections means the user skipped a step.
-    if (s.looks.length === 0) return router.replace('/generator/looks');
-    if (s.attire.length === 0) return router.replace('/generator/attire');
+    // Guard the funnel order.
+    if (s.looks.length === 0 || s.attire.length === 0) return router.replace('/generator/select');
+    if (s.images.length === 0) return router.replace('/generator/upload');
     setState(s);
-    setEmail(s.email);
   }, [router]);
 
   if (!state) return null;
 
-  const emailOk = /.+@.+\..+/.test(email);
-
   async function onPay() {
-    if (!emailOk || busy) return;
+    if (busy) return;
     setBusy(true);
     setError('');
-    writeState({ email });
+    setGateFail(false);
     track(EVENTS.CHECKOUT_STARTED);
     try {
       const { orderId, checkoutUrl } = await createCheckout({
-        email,
+        email: state.email,
         selectedLooks: state.looks,
         selectedAttire: state.attire,
+        uploadedImageUrls: state.images,
       });
-      // Best-effort: link the order to the logged-in account. The route no-ops for
-      // anonymous visitors, so the anonymous flow is unchanged.
+      // Best-effort: link the order to the logged-in account (no-op if anonymous).
       await fetch('/api/orders/link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -54,6 +51,13 @@ export default function DetailsPage() {
       }).catch(() => {});
       window.location.href = checkoutUrl;
     } catch (err) {
+      if (err.status === 422) {
+        // A photo failed the server gate. Send them back to swap photos.
+        setGateFail(true);
+        setError('Some of your photos did not pass our check. Please choose different photos.');
+        setBusy(false);
+        return;
+      }
       setError(err.message || 'Something went wrong. Please try again.');
       setBusy(false);
     }
@@ -63,9 +67,7 @@ export default function DetailsPage() {
     <section>
       <p className="eyebrow">Step 3</p>
       <h1 className="h2">Review and pay.</h1>
-      <p className="section__lede">
-        One price, thirty-five dollars. You upload your photos right after payment.
-      </p>
+      <p className="section__lede">One price, thirty-five dollars. No subscription.</p>
 
       <dl className="review">
         <div className="review__row">
@@ -76,34 +78,31 @@ export default function DetailsPage() {
           <dt className="review__k">Attire</dt>
           <dd className="review__v">{state.attire.map((id) => ATTIRE_LABEL[id]).join(', ')}</dd>
         </div>
+        <div className="review__row">
+          <dt className="review__k">Photos</dt>
+          <dd className="review__v">{state.images.length} uploaded</dd>
+        </div>
+        <div className="review__row">
+          <dt className="review__k">Email</dt>
+          <dd className="review__v">{state.email}</dd>
+        </div>
       </dl>
 
-      <div className="field">
-        <label className="label" htmlFor="email">
-          Where should we send them?
-        </label>
-        <input
-          id="email"
-          className="input"
-          type="email"
-          inputMode="email"
-          placeholder="you@work.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          disabled={busy}
-        />
-      </div>
-
       <div className="gennav">
-        <a className="btn btn--link" href="/generator/attire">
+        <a className="btn btn--link" href="/generator/upload">
           Back
         </a>
-        <button className="btn btn--primary" type="button" disabled={!emailOk || busy} onClick={onPay}>
-          {busy ? 'Taking you to payment' : 'Continue to payment'} <span className="btn__price">$35</span>
+        <button className="btn btn--primary" type="button" disabled={busy} onClick={onPay}>
+          {busy ? 'Taking you to payment' : 'Pay and start'} <span className="btn__price">$35</span>
         </button>
       </div>
 
       {error && <p className="error">{error}</p>}
+      {gateFail && (
+        <p className="formnote" style={{ textAlign: 'left' }}>
+          <a href="/generator/upload">Go back to your photos</a> to swap them.
+        </p>
+      )}
       <p className="formnote" style={{ textAlign: 'left' }}>
         By continuing you agree to our <a href="/terms">Terms</a> and{' '}
         <a href="/privacy">Privacy Policy</a>.

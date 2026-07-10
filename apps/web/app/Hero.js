@@ -22,7 +22,7 @@ export default function Hero() {
             headshots you would actually put on LinkedIn.
           </p>
           <div className="hero__actions">
-            <a className="btn btn--primary" href="/generator/looks">
+            <a className="btn btn--primary" href="/generator/select">
               Get my headshots <span className="btn__price">$35</span>
             </a>
             <a className="btn btn--link" href="#work">

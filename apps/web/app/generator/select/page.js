@@ -1,0 +1,131 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { LOOKS, ATTIRE } from '@headliner/shared/catalog';
+import { readState, writeState } from '../../../lib/generator';
+
+// A grid of selectable option cards, each with a preview image (or a placeholder
+// until a real image URL is added to the catalog). The choices are the visual
+// interest; cobalt marks the selected state.
+function OptionGrid({ items, selected, onToggle, showDesc }) {
+  return (
+    <div className="cards">
+      {items.map((it) => {
+        const on = selected.includes(it.id);
+        return (
+          <button
+            type="button"
+            key={it.id}
+            className={`option-card${on ? ' option-card--on' : ''}`}
+            onClick={() => onToggle(it.id)}
+            aria-pressed={on}
+          >
+            <span className="option-card__media">
+              {it.image ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={it.image} alt="" loading="lazy" />
+              ) : (
+                <span className="option-card__ph">Preview</span>
+              )}
+            </span>
+            <span className="option-card__body">
+              <span className="option-card__label">{it.label}</span>
+              {showDesc && it.description ? (
+                <span className="option-card__desc">{it.description}</span>
+              ) : null}
+            </span>
+            <span className="option-card__check" aria-hidden="true" />
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// Step 1: looks + attire + email, merged into one page. Everything persists to
+// localStorage as it changes so the upload and pay steps can read it.
+export default function SelectPage() {
+  const router = useRouter();
+  const [looks, setLooks] = useState([]);
+  const [attire, setAttire] = useState([]);
+  const [email, setEmail] = useState('');
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const s = readState();
+    setLooks(s.looks);
+    setAttire(s.attire);
+    setEmail(s.email);
+    setReady(true);
+  }, []);
+
+  function toggleLook(id) {
+    setLooks((prev) => {
+      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
+      writeState({ looks: next });
+      return next;
+    });
+  }
+  function toggleAttire(id) {
+    setAttire((prev) => {
+      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
+      writeState({ attire: next });
+      return next;
+    });
+  }
+  function onEmail(v) {
+    setEmail(v);
+    writeState({ email: v });
+  }
+
+  const emailOk = /.+@.+\..+/.test(email);
+  const canContinue = ready && looks.length > 0 && attire.length > 0 && emailOk;
+
+  return (
+    <section>
+      <p className="eyebrow">Step 1</p>
+      <h1 className="h2">Choose your headshots.</h1>
+      <p className="section__lede">
+        Pick your looks and attire, and tell us where to send the results.
+      </p>
+
+      <h3 className="gen-subhead">Looks</h3>
+      <p className="gen-hint">Choose one or more scenes. We spread your set across them.</p>
+      <OptionGrid items={LOOKS} selected={looks} onToggle={toggleLook} showDesc />
+
+      <h3 className="gen-subhead">Attire</h3>
+      <p className="gen-hint">Choose what you want to wear. Mix a few for variety.</p>
+      <OptionGrid items={ATTIRE} selected={attire} onToggle={toggleAttire} showDesc={false} />
+
+      <div className="field">
+        <label className="label" htmlFor="email">
+          Where should we send them?
+        </label>
+        <input
+          id="email"
+          className="input"
+          type="email"
+          inputMode="email"
+          placeholder="you@work.com"
+          value={email}
+          onChange={(e) => onEmail(e.target.value)}
+        />
+      </div>
+
+      <div className="gennav">
+        <a className="btn btn--link" href="/">
+          Back
+        </a>
+        <button
+          className="btn btn--primary"
+          type="button"
+          disabled={!canContinue}
+          onClick={() => router.push('/generator/upload')}
+        >
+          Continue
+        </button>
+      </div>
+    </section>
+  );
+}

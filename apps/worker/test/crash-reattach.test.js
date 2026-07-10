@@ -116,11 +116,10 @@ test('scenario 1: crash after trainingId persisted, before success -> reattaches
     crashOn: { pollTraining: 1 },
   });
 
-  // The worker enters at TRAINING (enqueued by the image-submit endpoint after it
-  // moved AWAITING_UPLOAD -> TRAINING). Selections drive prompt building later.
+  // The webhook enqueues a PAID order (already carrying selections + images).
   const order = await Order.create({
     customerEmail: 'a@b.com',
-    status: ORDER_STATES.TRAINING,
+    status: ORDER_STATES.PAID,
     uploadedImageUrls: ['selfie.jpg'],
     selectedLooks: SAMPLE_LOOKS,
     selectedAttire: SAMPLE_ATTIRE,
@@ -128,8 +127,8 @@ test('scenario 1: crash after trainingId persisted, before success -> reattaches
   const id = order._id.toString();
   const pipeline = buildPipeline();
 
-  // Run 1: startTraining, persist trainingId, then the first training poll
-  // crashes (before it ever reports success).
+  // Run 1: PAID -> TRAINING, startTraining, persist trainingId, then the first
+  // training poll crashes (before it ever reports success).
   await assert.rejects(() => pipeline.processOrder(id), /SIMULATED_CRASH/);
 
   const mid = await Order.findById(id);
@@ -359,11 +358,11 @@ test('scenario 4: training fails -> FAILED with error recorded, refund issued ex
   const stripe = makeFakeStripe();
   const ensureRefund = createEnsureRefund({ stripe });
 
-  // Enters at TRAINING (post-upload). The customer actually paid: a payment intent
-  // exists, so a failure is refundable.
+  // The webhook enqueues a PAID order. The customer actually paid: a payment
+  // intent exists, so a failure is refundable.
   const order = await Order.create({
     customerEmail: 'a@b.com',
-    status: ORDER_STATES.TRAINING,
+    status: ORDER_STATES.PAID,
     uploadedImageUrls: ['selfie.jpg'],
     selectedLooks: SAMPLE_LOOKS,
     selectedAttire: SAMPLE_ATTIRE,
@@ -372,8 +371,8 @@ test('scenario 4: training fails -> FAILED with error recorded, refund issued ex
   const id = order._id.toString();
   const pipeline = buildPipeline({ onFailed: ensureRefund });
 
-  // Phase 1: startTraining, then the training poll returns 'failed' so
-  // processOrder rejects (this is what BullMQ sees as a job failure).
+  // Phase 1: PAID -> TRAINING, startTraining, then the training poll returns
+  // 'failed' so processOrder rejects (this is what BullMQ sees as a job failure).
   let thrown;
   await assert.rejects(
     () => pipeline.processOrder(id),

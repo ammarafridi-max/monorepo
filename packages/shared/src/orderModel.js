@@ -65,22 +65,15 @@ const orderSchema = new Schema(
     stripeSessionId: { type: String, unique: true, sparse: true },
     stripePaymentIntentId: String,
 
-    // The customer's up-front choices (catalog ids from @headliner/shared
-    // catalog.js), captured at checkout BEFORE payment. The worker turns these
-    // into generation prompts via buildPrompts, so they are part of the order
-    // contract, not just display state.
+    // The customer's choices (catalog ids from @headliner/shared catalog.js),
+    // captured at checkout. The worker turns these into generation prompts via
+    // buildPrompts, so they are part of the order contract, not just display state.
     selectedLooks: [String],
     selectedAttire: [String],
 
-    // Populated AFTER payment, when the customer uploads photos on the upload
-    // step (POST /orders/:id/images). Empty until then (the order exists, paid,
-    // in AWAITING_UPLOAD, with no images yet).
+    // The customer's photos, uploaded direct-to-R2 BEFORE payment and passed to
+    // /checkout (the order is created already carrying them).
     uploadedImageUrls: [String],
-
-    // Stamped when a gate-passing upload is submitted (the moment we move
-    // AWAITING_UPLOAD -> TRAINING). Distinguishes "paid, never uploaded" from
-    // "paid and uploaded".
-    uploadCompletedAt: Date,
 
     replicate: replicateSchema,
 
@@ -120,7 +113,6 @@ const orderSchema = new Schema(
 
     // Transition timestamps, stamped as the order moves through its lifecycle.
     paidAt: Date,
-    awaitingUploadAt: Date,
     trainingStartedAt: Date,
     generatingStartedAt: Date,
     deliveredAt: Date,
