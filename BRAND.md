@@ -1,4 +1,4 @@
-# Headliner — Brand Guidelines
+# Picturesk — Brand Guidelines
 
 > Read this file before ANY design, UI, styling, layout, or copy work. No exceptions.
 

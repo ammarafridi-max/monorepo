@@ -1,5 +1,5 @@
 /**
- * Thin wrapper around the Replicate HTTP API for Headliner (Phase 3).
+ * Thin wrapper around the Replicate HTTP API for Picturesk (Phase 3).
  *
  * We deliberately do NOT use the `replicate` npm SDK: the four calls we need are
  * simple HTTP, and hand-rolling them keeps the failure behaviour explicit. Every

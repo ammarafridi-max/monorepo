@@ -65,11 +65,23 @@ const orderSchema = new Schema(
     stripeSessionId: { type: String, unique: true, sparse: true },
     stripePaymentIntentId: String,
 
-    // The customer's choices (catalog ids from @headliner/shared catalog.js),
+    // The customer's choices (catalog ids from @picturesk/shared catalog.js),
     // captured at checkout. The worker turns these into generation prompts via
     // buildPrompts, so they are part of the order contract, not just display state.
     selectedLooks: [String],
     selectedAttire: [String],
+
+    // Subject demographics (catalog ids from @picturesk/shared catalog.js),
+    // captured at checkout. The worker feeds these to buildSubject to lead every
+    // generation prompt with the right subject (e.g. "a woman in their thirties"),
+    // tightening identity so a weak seed drifts less. gender + ageRange are asked
+    // on the select step; race is optional. All optional here so a legacy order
+    // falls back to a generic "a person". facialHair (optional) names the beard in
+    // the prompt so it does not drift toward the base model's clean-shaven prior.
+    gender: String,
+    ageRange: String,
+    race: String,
+    facialHair: String,
 
     // The customer's photos, uploaded direct-to-R2 BEFORE payment and passed to
     // /checkout (the order is created already carrying them).
@@ -84,6 +96,12 @@ const orderSchema = new Schema(
 
     // Per-candidate identity scores, index-aligned with resultImageUrls.
     candidateScores: [candidateScoreSchema],
+
+    // Face-swapped delivered images, when the identity-lock step is enabled. The
+    // customer's real face swapped onto each SELECTED headshot (index-aligned with
+    // the selected set), persisted per slot so the swap pass is resumable. When set,
+    // deliveredImageUrls points at THESE, not the raw generated candidates.
+    swappedImageUrls: [String],
 
     // The CHOSEN delivered subset: the top DELIVER_COUNT candidates by identity
     // score, best-first. This is the idempotency anchor for SELECTION

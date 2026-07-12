@@ -1,4 +1,4 @@
-import { User } from '@headliner/shared';
+import { User } from '@picturesk/shared';
 import { dbConnect } from '../../../../lib/db';
 import { createSessionCookie } from '../../../../lib/session';
 import { verifyPassword, normalizeEmail, backlinkOrders } from '../../../../lib/auth';

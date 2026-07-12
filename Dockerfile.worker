@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 #
-# Headliner worker (BullMQ consumer). No HTTP; it drains the order-pipeline queue.
+# Picturesk worker (BullMQ consumer). No HTTP; it drains the order-pipeline queue.
 # Build context = the monorepo root:
 #   fly deploy -c fly.worker.toml
 #
@@ -18,7 +18,7 @@ COPY apps/api/package.json apps/api/
 COPY apps/worker/package.json apps/worker/
 COPY apps/web/package.json apps/web/
 RUN --mount=type=cache,target=/pnpm/store \
-    pnpm install --frozen-lockfile --prod --filter "@headliner/worker..."
+    pnpm install --frozen-lockfile --prod --filter "@picturesk/worker..."
 
 COPY packages/shared packages/shared
 COPY apps/worker apps/worker

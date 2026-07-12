@@ -1,4 +1,4 @@
-# Headliner
+# Picturesk.ai
 
 ## What this is
 
@@ -28,7 +28,7 @@ packages/
   shared    The contracts every service imports. THE Phase 0 deliverable.
 ```
 
-`@headliner/shared` is the single source of truth so no two services can
+`@picturesk/shared` is the single source of truth so no two services can
 disagree about what an order is:
 
 - `orderStates.js` - the `ORDER_STATES` enum, the `ORDER_TRANSITIONS` map, and
@@ -42,7 +42,7 @@ disagree about what an order is:
 
 We build the money and failure paths BEFORE the UI.
 
-- **Phase 0 - Contracts** (current): monorepo skeleton + `@headliner/shared`.
+- **Phase 0 - Contracts** (current): monorepo skeleton + `@picturesk/shared`.
   No business logic, routes, Stripe/Replicate calls, workers, or UI.
 - **Phase 1 - Walking skeleton**: api + worker wired to Mongo and the queue,
   moving a fake order end to end through the state machine.
@@ -64,6 +64,6 @@ first.**
 
 - JavaScript, ESM everywhere (`"type": "module"`). No TypeScript.
 - Shared shapes are documented with JSDoc typedefs, not TS types.
-- pnpm workspaces. Apps depend on `@headliner/shared` via `workspace:*`.
+- pnpm workspaces. Apps depend on `@picturesk/shared` via `workspace:*`.
 - MongoDB via Mongoose. Redis + BullMQ for the queue. Deploy target Fly.io.
 - No em dashes in any user-facing copy.

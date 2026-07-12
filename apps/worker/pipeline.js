@@ -1,4 +1,4 @@
-import { Order, ORDER_STATES, transitionOrder } from '@headliner/shared';
+import { Order, ORDER_STATES, transitionOrder } from '@picturesk/shared';
 
 /**
  * The order pipeline, factored out of index.js so it can be driven in tests with
@@ -61,6 +61,7 @@ export function createPipeline({
   client,
   buildPrompts,
   scoreIdentity = async () => ({ score: 0, costUsd: 0 }),
+  swapFace,
   generateCount = 14,
   deliverCount = 14,
   resolveTrainingZip,
@@ -296,21 +297,40 @@ export function createPipeline({
     }
 
     // Deterministic rank: best score first, candidate index as the tie-break.
-    const deliveredImageUrls = scores
+    const selectedUrls = scores
       .map((s, i) => ({ i, url: s.imageUrl, score: s.score }))
       .sort((a, b) => b.score - a.score || a.i - b.i)
       .slice(0, deliverN)
       .map((c) => c.url);
 
+    // Optional IDENTITY LOCK: swap the customer's real face onto each selected
+    // headshot, so the delivered face carries their true geometry/hair/expression
+    // instead of the LoRA's drift (long face, wrong hair, invented smile). Resumable
+    // like scoring: swappedImageUrls is persisted per slot, index-aligned with
+    // selectedUrls (a deterministic, stable order), so a crash resumes at the first
+    // un-swapped slot and never re-pays for a done one. When swapping is OFF
+    // (no swapFace injected) we deliver the selected set unchanged.
+    let deliveredImageUrls = selectedUrls;
+    const source = (order.uploadedImageUrls ?? [])[0];
+    if (swapFace && selectedUrls.length > 0 && source) {
+      const swapped = [...(order.swappedImageUrls ?? [])];
+      for (let i = 0; i < selectedUrls.length; i++) {
+        if (swapped[i]) continue; // already swapped this slot -> never redo
+        const { imageUrl, costUsd } = await swapFace(selectedUrls[i], source);
+        swapped[i] = imageUrl;
+        await Order.updateOne(
+          { _id: orderId },
+          { $set: { swappedImageUrls: swapped }, $inc: { computeCostCents: usdToCents(costUsd) } }
+        );
+        console.log(`[worker] order ${orderId} face-swapped ${i + 1}/${selectedUrls.length}`);
+      }
+      deliveredImageUrls = swapped;
+    }
+
     await Order.updateOne({ _id: orderId }, { $set: { deliveredImageUrls } });
     console.log(
       `[worker] order ${orderId} selected ${deliveredImageUrls.length}/${resultImageUrls.length} candidates for delivery`
     );
-    // TODO(api): the order's public results endpoint (apps/api/server.js) and the
-    // success page still return/render `resultImageUrls` (the FULL candidate set).
-    // Switch them to `deliveredImageUrls` (the chosen set) so customers only see
-    // the culled results. Left out of THIS change to avoid colliding with the
-    // concurrent apps/api session; pick up after merge.
   }
 
   /**

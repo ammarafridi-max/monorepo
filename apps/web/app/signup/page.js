@@ -1,7 +1,7 @@
 import AuthForm from '../AuthForm';
 import SocialButtons from '../SocialButtons';
 
-export const metadata = { title: 'Create your account. Headliner' };
+export const metadata = { title: 'Create your account. Picturesk.ai' };
 
 export default function SignupPage() {
   return (

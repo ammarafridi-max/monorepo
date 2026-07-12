@@ -1,12 +1,12 @@
-# Deploying Headliner to Fly.io
+# Deploying Picturesk.ai to Fly.io
 
 Three Fly apps, one per service, all built from the monorepo root:
 
 | Fly app | Source | Public? | Notes |
 |---|---|---|---|
-| `headliner-api` | `apps/api` | Yes (`:3001`) | Stripe webhook + web calls. Keep 1 machine up. |
-| `headliner-web` | `apps/web` | Yes (`:3000`) | Next.js. NEXT_PUBLIC_* are baked at build. |
-| `headliner-worker` | `apps/worker` | No | Drains the BullMQ queue. Runs continuously. |
+| `picturesk-api` | `apps/api` | Yes (`:3001`) | Stripe webhook + web calls. Keep 1 machine up. |
+| `picturesk-web` | `apps/web` | Yes (`:3000`) | Next.js. NEXT_PUBLIC_* are baked at build. |
+| `picturesk-worker` | `apps/worker` | No | Drains the BullMQ queue. Runs continuously. |
 
 MongoDB and Redis are **external managed services** (e.g. MongoDB Atlas + Upstash
 Redis), reused via their connection strings; nothing is provisioned on Fly for
@@ -20,15 +20,15 @@ Rename the apps and set `primary_region` in each `fly.*.toml` to match your setu
 # flyctl installed and logged in
 fly version && fly auth whoami
 # from the repo root
-cd /path/to/headliner
+cd /path/to/picturesk
 ```
 
 ## 1. Create the three apps (one time)
 
 ```sh
-fly apps create headliner-api
-fly apps create headliner-web
-fly apps create headliner-worker
+fly apps create picturesk-api
+fly apps create picturesk-web
+fly apps create picturesk-worker
 ```
 
 ## 2. Set secrets (one time, and whenever a value changes)
@@ -36,19 +36,19 @@ fly apps create headliner-worker
 Secrets are per-app. Runtime config lives here; only the web's `NEXT_PUBLIC_*`
 values are the exception (they are build args, see step 3). Fill in real values.
 
-**API** (`headliner-api`):
+**API** (`picturesk-api`):
 
 ```sh
-fly secrets set -a headliner-api \
+fly secrets set -a picturesk-api \
   MONGODB_URI="mongodb+srv://..." \
   REDIS_URL="rediss://..." \
   STRIPE_SECRET_KEY="sk_live_..." \
   STRIPE_WEBHOOK_SECRET="whsec_..." \
   REPLICATE_API_TOKEN="r8_..." \
-  REPLICATE_DESTINATION_MODEL="youruser/headliner-headshots" \
+  REPLICATE_DESTINATION_MODEL="youruser/picturesk-headshots" \
   R2_ACCOUNT_ID="..." R2_ACCESS_KEY_ID="..." R2_SECRET_ACCESS_KEY="..." \
-  R2_BUCKET="headliner" R2_PUBLIC_BASE_URL="https://pub-xxxx.r2.dev" \
-  WEB_BASE_URL="https://headliner-web.fly.dev" \
+  R2_BUCKET="picturesk" R2_PUBLIC_BASE_URL="https://pub-xxxx.r2.dev" \
+  WEB_BASE_URL="https://picturesk-web.fly.dev" \
   ADMIN_TOKEN="$(openssl rand -hex 32)" \
   TRUST_PROXY_HOPS="1"
 # Optional: UPLOAD_MODERATION, REPLICATE_MODERATION_*, RATE_LIMIT_*, SENTRY_DSN
@@ -58,27 +58,27 @@ fly secrets set -a headliner-api \
 the web app's public origin. `TRUST_PROXY_HOPS=1` is correct behind Fly's proxy
 (so the rate limiter sees the real client IP, not the proxy).
 
-**Worker** (`headliner-worker`):
+**Worker** (`picturesk-worker`):
 
 ```sh
-fly secrets set -a headliner-worker \
+fly secrets set -a picturesk-worker \
   MONGODB_URI="mongodb+srv://..." \
   REDIS_URL="rediss://..." \
   STRIPE_SECRET_KEY="sk_live_..." \
   REPLICATE_API_TOKEN="r8_..." \
-  REPLICATE_DESTINATION_MODEL="youruser/headliner-headshots" \
+  REPLICATE_DESTINATION_MODEL="youruser/picturesk-headshots" \
   R2_ACCOUNT_ID="..." R2_ACCESS_KEY_ID="..." R2_SECRET_ACCESS_KEY="..." \
-  R2_BUCKET="headliner" R2_PUBLIC_BASE_URL="https://pub-xxxx.r2.dev" \
-  BREVO_API_KEY="xkeysib-..." BREVO_SENDER="Headliner <hi@yourdomain.com>" \
-  WEB_BASE_URL="https://headliner-web.fly.dev"
+  R2_BUCKET="picturesk" R2_PUBLIC_BASE_URL="https://pub-xxxx.r2.dev" \
+  BREVO_API_KEY="xkeysib-..." BREVO_SENDER="Picturesk.ai <hello@picturesk.ai>" \
+  WEB_BASE_URL="https://picturesk-web.fly.dev"
 # Optional: GEN_LORA_SCALE, DELIVER_COUNT, SENTRY_DSN
 # Identity culling stays OFF unless you set REPLICATE_FACE_EMBED_MODEL (see README).
 ```
 
-**Web** (`headliner-web`) — runtime secrets only (server components read these):
+**Web** (`picturesk-web`) — runtime secrets only (server components read these):
 
 ```sh
-fly secrets set -a headliner-web \
+fly secrets set -a picturesk-web \
   MONGODB_URI="mongodb+srv://..." \
   AUTH_SECRET="$(openssl rand -hex 32)"
 # Optional: SENTRY_DSN (server), and OAuth: GOOGLE_CLIENT_ID/SECRET, etc.
@@ -90,7 +90,7 @@ etc.) is baked at build time via `fly.web.toml [build.args]`, not here.
 ## 3. Point the web build at the API
 
 Edit `fly.web.toml` -> `[build.args]` -> `NEXT_PUBLIC_API_BASE_URL` to the API's
-public origin (e.g. `https://headliner-api.fly.dev`, or your custom domain). This
+public origin (e.g. `https://picturesk-api.fly.dev`, or your custom domain). This
 is what the browser calls for presign / checkout / order polling. Because it is
 inlined at build, you must redeploy the web app after changing it.
 
@@ -110,16 +110,16 @@ pnpm deploy:worker    # fly deploy -c fly.worker.toml
 ## 5. Post-deploy wiring
 
 1. **Stripe webhook.** In the Stripe dashboard, add an endpoint at
-   `https://headliner-api.fly.dev/webhooks/stripe` for the
+   `https://picturesk-api.fly.dev/webhooks/stripe` for the
    `checkout.session.completed` event, copy its signing secret, and set it:
-   `fly secrets set -a headliner-api STRIPE_WEBHOOK_SECRET="whsec_..."`.
+   `fly secrets set -a picturesk-api STRIPE_WEBHOOK_SECRET="whsec_..."`.
 2. **R2 CORS.** The browser uploads photos to R2 via presigned PUT, so the bucket
-   must allow `PUT` from the web origin. Add `https://headliner-web.fly.dev` (and
+   must allow `PUT` from the web origin. Add `https://picturesk-web.fly.dev` (and
    any custom domain) to the bucket's CORS `AllowedOrigins`, with `PUT` allowed.
 3. **Public read on R2.** The face gate + delivery email fetch the uploaded and
    generated images by URL, so the bucket must be publicly readable at
    `R2_PUBLIC_BASE_URL` (r2.dev or a custom domain).
-4. **Custom domains (optional).** `fly certs add <domain> -a headliner-web`, then
+4. **Custom domains (optional).** `fly certs add <domain> -a picturesk-web`, then
    update `WEB_BASE_URL` (api + worker), `NEXT_PUBLIC_API_BASE_URL` (web build
    arg), the Stripe URLs, and R2 CORS to match.
 
@@ -127,11 +127,11 @@ pnpm deploy:worker    # fly deploy -c fly.worker.toml
 
 ```sh
 pnpm deploy:api            # redeploy after a code change
-fly logs -a headliner-worker
-fly status -a headliner-api
-fly secrets list -a headliner-api
-fly ssh console -a headliner-api
-fly scale count 1 -a headliner-worker   # exactly one worker (queue concurrency is 1)
+fly logs -a picturesk-worker
+fly status -a picturesk-api
+fly secrets list -a picturesk-api
+fly ssh console -a picturesk-api
+fly scale count 1 -a picturesk-worker   # exactly one worker (queue concurrency is 1)
 ```
 
 ## Notes

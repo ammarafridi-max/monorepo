@@ -1,4 +1,4 @@
-import { Order } from '@headliner/shared';
+import { Order } from '@picturesk/shared';
 import { dbConnect } from '../../../../lib/db';
 import { getSession } from '../../../../lib/session';
 

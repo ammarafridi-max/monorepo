@@ -1,5 +1,5 @@
 {
-  "name": "headliner",
+  "name": "picturesk",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -8,10 +8,10 @@
     "node": ">=20"
   },
   "scripts": {
-    "dev": "concurrently -n api,worker -c blue,magenta \"pnpm --filter @headliner/api dev\" \"pnpm --filter @headliner/worker dev\"",
-    "web": "pnpm --filter @headliner/web dev",
-    "api": "pnpm --filter @headliner/api dev",
-    "worker": "pnpm --filter @headliner/worker dev",
+    "dev": "concurrently -n api,worker -c blue,magenta \"pnpm --filter @picturesk/api dev\" \"pnpm --filter @picturesk/worker dev\"",
+    "web": "pnpm --filter @picturesk/web dev",
+    "api": "pnpm --filter @picturesk/api dev",
+    "worker": "pnpm --filter @picturesk/worker dev",
     "deploy:api": "fly deploy -c fly.api.toml",
     "deploy:web": "fly deploy -c fly.web.toml",
     "deploy:worker": "fly deploy -c fly.worker.toml"

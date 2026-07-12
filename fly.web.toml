@@ -1,5 +1,5 @@
-# Headliner web (Next.js). Deploy from the repo root:  fly deploy -c fly.web.toml
-app = "headliner-web"
+# Picturesk web (Next.js). Deploy from the repo root:  fly deploy -c fly.web.toml
+app = "picturesk-web"
 primary_region = "iad"
 
 [build]
@@ -8,13 +8,13 @@ primary_region = "iad"
   # Rebuild (redeploy) the web app after changing any of these.
   [build.args]
     # REQUIRED: the deployed API's public origin (the browser calls it directly).
-    NEXT_PUBLIC_API_BASE_URL = "https://headliner-api.fly.dev"
+    NEXT_PUBLIC_API_BASE_URL = "https://picturesk-api.fly.dev"
     # Optional (code defaults shown). Keep in sync with the API's UPLOAD_* values.
     # NEXT_PUBLIC_UPLOAD_MIN_PHOTOS = "5"
     # NEXT_PUBLIC_UPLOAD_MAX_PHOTOS = "15"
     # NEXT_PUBLIC_UPLOAD_MIN_FACE_RATIO = "0.15"
     # Optional analytics + Sentry (leave unset to disable).
-    # NEXT_PUBLIC_ANALYTICS_DOMAIN = "headliner.studio"
+    # NEXT_PUBLIC_ANALYTICS_DOMAIN = "picturesk.ai"
     # NEXT_PUBLIC_SENTRY_DSN = "https://xxxx@oyyyy.ingest.sentry.io/zzzz"
 
 [http_service]

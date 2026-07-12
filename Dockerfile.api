@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 #
-# Headliner API (Express). Build context = the MONOREPO ROOT so pnpm can resolve
-# the @headliner/shared workspace dependency:
+# Picturesk API (Express). Build context = the MONOREPO ROOT so pnpm can resolve
+# the @picturesk/shared workspace dependency:
 #   fly deploy -c fly.api.toml            (runs from the repo root)
 #
 FROM node:20-slim AS base
@@ -18,7 +18,7 @@ COPY apps/api/package.json apps/api/
 COPY apps/worker/package.json apps/worker/
 COPY apps/web/package.json apps/web/
 RUN --mount=type=cache,target=/pnpm/store \
-    pnpm install --frozen-lockfile --prod --filter "@headliner/api..."
+    pnpm install --frozen-lockfile --prod --filter "@picturesk/api..."
 
 # App source.
 COPY packages/shared packages/shared

@@ -8,7 +8,7 @@ import { SignJWT, jwtVerify } from 'jose';
  * (subject) and email; everything else is looked up from the User model.
  */
 
-const COOKIE = 'headliner_session';
+const COOKIE = 'picturesk_session';
 const MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 days
 
 function secret() {

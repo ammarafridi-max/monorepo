@@ -1,6 +1,6 @@
 import Stepper from './Stepper';
 
-export const metadata = { title: 'Create your headshots. Headliner' };
+export const metadata = { title: 'Create your headshots. Picturesk.ai' };
 
 // Shared layout for the multi-step funnel: a persistent stepper above every step.
 export default function GeneratorLayout({ children }) {

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { LOOKS, ATTIRE } from '@headliner/shared/catalog';
+import { LOOKS, ATTIRE, AGE_RANGES, GENDERS, RACES, FACIAL_HAIR } from '@picturesk/shared/catalog';
 import { readState, writeState } from '../../../lib/generator';
 
 // A grid of selectable option cards, each with a preview image (or a placeholder
@@ -43,12 +43,41 @@ function OptionGrid({ items, selected, onToggle, showDesc }) {
   );
 }
 
-// Step 1: looks + attire + email, merged into one page. Everything persists to
-// localStorage as it changes so the upload and pay steps can read it.
+// A row of single-select chips: text-only pills (demographics have no preview
+// image). Picking one clears the rest; an optional group can be un-picked by
+// tapping the selected chip again. Cobalt marks the selected state.
+function ChoiceRow({ items, value, onSelect, allowClear }) {
+  return (
+    <div className="chips">
+      {items.map((it) => {
+        const on = value === it.id;
+        return (
+          <button
+            type="button"
+            key={it.id}
+            className={`chip${on ? ' chip--on' : ''}`}
+            onClick={() => onSelect(on && allowClear ? '' : it.id)}
+            aria-pressed={on}
+          >
+            {it.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// Step 1: looks + attire + subject details + email, merged into one page.
+// Everything persists to localStorage as it changes so the upload and pay steps
+// can read it.
 export default function SelectPage() {
   const router = useRouter();
   const [looks, setLooks] = useState([]);
   const [attire, setAttire] = useState([]);
+  const [gender, setGender] = useState('');
+  const [ageRange, setAgeRange] = useState('');
+  const [race, setRace] = useState('');
+  const [facialHair, setFacialHair] = useState('');
   const [email, setEmail] = useState('');
   const [ready, setReady] = useState(false);
 
@@ -56,6 +85,10 @@ export default function SelectPage() {
     const s = readState();
     setLooks(s.looks);
     setAttire(s.attire);
+    setGender(s.gender);
+    setAgeRange(s.ageRange);
+    setRace(s.race);
+    setFacialHair(s.facialHair);
     setEmail(s.email);
     setReady(true);
   }, []);
@@ -74,13 +107,30 @@ export default function SelectPage() {
       return next;
     });
   }
+  function onGender(v) {
+    setGender(v);
+    writeState({ gender: v });
+  }
+  function onAgeRange(v) {
+    setAgeRange(v);
+    writeState({ ageRange: v });
+  }
+  function onRace(v) {
+    setRace(v);
+    writeState({ race: v });
+  }
+  function onFacialHair(v) {
+    setFacialHair(v);
+    writeState({ facialHair: v });
+  }
   function onEmail(v) {
     setEmail(v);
     writeState({ email: v });
   }
 
   const emailOk = /.+@.+\..+/.test(email);
-  const canContinue = ready && looks.length > 0 && attire.length > 0 && emailOk;
+  const canContinue =
+    ready && looks.length > 0 && attire.length > 0 && !!gender && !!ageRange && emailOk;
 
   return (
     <section>
@@ -97,6 +147,26 @@ export default function SelectPage() {
       <h3 className="gen-subhead">Attire</h3>
       <p className="gen-hint">Choose what you want to wear. Mix a few for variety.</p>
       <OptionGrid items={ATTIRE} selected={attire} onToggle={toggleAttire} showDesc={false} />
+
+      <h3 className="gen-subhead">About you</h3>
+      <p className="gen-hint">This helps us render you accurately. It stays private.</p>
+
+      <p className="gen-fieldlabel">Gender</p>
+      <ChoiceRow items={GENDERS} value={gender} onSelect={onGender} />
+
+      <p className="gen-fieldlabel">Age range</p>
+      <ChoiceRow items={AGE_RANGES} value={ageRange} onSelect={onAgeRange} />
+
+      <p className="gen-fieldlabel">
+        Race <span className="gen-optional">optional</span>
+      </p>
+      <ChoiceRow items={RACES} value={race} onSelect={onRace} allowClear />
+
+      <p className="gen-fieldlabel">
+        Facial hair <span className="gen-optional">optional</span>
+      </p>
+      <p className="gen-hint">Tell us your current look so your beard stays consistent in the results.</p>
+      <ChoiceRow items={FACIAL_HAIR} value={facialHair} onSelect={onFacialHair} allowClear />
 
       <div className="field">
         <label className="label" htmlFor="email">

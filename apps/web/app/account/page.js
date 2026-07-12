@@ -1,12 +1,12 @@
 import { redirect } from 'next/navigation';
 import { getSession } from '../../lib/session';
 import { dbConnect } from '../../lib/db';
-import { Order } from '@headliner/shared';
+import { Order } from '@picturesk/shared';
 
 // The only gated area. Reading the session (cookies) makes it dynamic anyway;
 // force-dynamic is explicit since it also queries Mongo.
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Your orders. Headliner' };
+export const metadata = { title: 'Your orders. Picturesk.ai' };
 
 const STATUS_LABEL = {
   AWAITING_PAYMENT: 'Awaiting payment',

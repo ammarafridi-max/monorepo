@@ -1,4 +1,4 @@
-# @headliner/worker
+# @picturesk/worker
 
 The BullMQ consumer of the `order-pipeline` queue, built in **Phase 1 (walking
 skeleton)** and made real in **Phase 3 (real Replicate)**.

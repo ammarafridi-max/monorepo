@@ -1,6 +1,6 @@
-# Headliner API. Deploy from the repo root:  fly deploy -c fly.api.toml
+# Picturesk API. Deploy from the repo root:  fly deploy -c fly.api.toml
 # Rename `app` and set `primary_region` to match your setup.
-app = "headliner-api"
+app = "picturesk-api"
 primary_region = "iad"
 
 [build]

@@ -1,5 +1,5 @@
 /*
- * Headliner brand tokens + base styles. See BRAND.md.
+ * Picturesk brand tokens + base styles. See BRAND.md.
  * Bone and ink only (never pure white/black). Cobalt is the single accent,
  * reserved for CTAs, links, and focus. Serif display, grotesque body.
  */
@@ -506,36 +506,75 @@ a {
 
 /* Results ----------------------------------------------------------------- */
 
-.results {
+.gallery {
   margin-top: 28px;
+}
+
+/* Toolbar above the grid: a quiet count on the left, the one primary action
+   (download all) on the right. One accent, one obvious action. */
+.gallery__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.gallery__count {
+  font-size: 15px;
+  color: var(--ash);
+  margin: 0;
+}
+
+.gallery__grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 14px;
 }
 
-.result {
-  border: 1px solid var(--line);
+/* Let the photo be the loudest thing: the card is just the image, with the
+   download control floating over it. No bar, no chrome stealing height. */
+.shot {
+  position: relative;
+  margin: 0;
   border-radius: 8px;
   overflow: hidden;
   background: var(--line);
 }
 
-.result img {
+.shot img {
   width: 100%;
   display: block;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 4 / 5;
   object-fit: cover;
 }
 
-.result__bar {
+/* Floating download button, top-right of each shot. Bone disc, ink glyph, turns
+   cobalt on hover/focus. Understated so the face dominates; always visible so it
+   works on touch (no hover to rely on). */
+.shot__dl {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  color: var(--ink);
   background: var(--bone);
-  padding: 10px 12px;
-  border-top: 1px solid var(--line);
+  border: 1px solid var(--line);
+  box-shadow: 0 2px 8px -2px rgba(11, 11, 12, 0.35);
+  transition: color 0.14s ease, background 0.14s ease, transform 0.14s ease;
 }
 
-.result__bar a {
-  font-size: 14px;
-  font-weight: 500;
+.shot__dl:hover,
+.shot__dl:focus-visible {
+  color: var(--cobalt);
+  border-color: var(--cobalt);
+  transform: translateY(-1px);
 }
 
 .pill {
@@ -1212,6 +1251,47 @@ a {
   color: var(--ash);
 }
 
+/* Sub-label for a single-select group (gender, age, race). */
+.gen-fieldlabel {
+  margin: 18px 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.gen-optional {
+  margin-left: 6px;
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--ash);
+}
+
+/* Single-select chips: text-only pills for demographics (no preview image).
+ * Cobalt marks the selected state, one accent only. */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.chip {
+  cursor: pointer;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fffdf9;
+  padding: 8px 14px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  transition: border-color 0.14s ease, box-shadow 0.14s ease;
+}
+.chip:hover {
+  border-color: var(--ash);
+}
+.chip--on {
+  border-color: var(--cobalt);
+  box-shadow: inset 0 0 0 1px var(--cobalt);
+  color: var(--cobalt);
+}
+
 /* Selection cards: each option has a preview image (or a placeholder). The
  * choices are the visual interest; cobalt marks the selected state. */
 .cards {
@@ -1251,7 +1331,7 @@ a {
 .option-card__media {
   display: grid;
   place-items: center;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 4 / 5;
   background: #efece6;
   overflow: hidden;
 }

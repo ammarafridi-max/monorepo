@@ -3,8 +3,8 @@ import Sections from '../Sections';
 import { faq } from '../../data/faq';
 
 export const metadata = {
-  title: 'FAQ. Headliner',
-  description: 'Every question about Headliner, answered: likeness, photos, timing, refunds, privacy, and usage rights.',
+  title: 'FAQ. Picturesk.ai',
+  description: 'Every question about Picturesk, answered: likeness, photos, timing, refunds, privacy, and usage rights.',
 };
 
 // The full FAQ, from the SAME data/faq.js the home page uses (one source of truth).

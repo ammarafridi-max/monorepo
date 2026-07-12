@@ -43,11 +43,29 @@ export async function putToStorage(uploadUrl, file) {
  * failure throws with err.status === 422 and err.body.failures (per-photo reasons)
  * so the UI can flag which photos to swap.
  */
-export async function createCheckout({ email, selectedLooks, selectedAttire, uploadedImageUrls }) {
+export async function createCheckout({
+  email,
+  selectedLooks,
+  selectedAttire,
+  gender,
+  ageRange,
+  race,
+  facialHair,
+  uploadedImageUrls,
+}) {
   const res = await fetch(`${API_BASE}/checkout`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, selectedLooks, selectedAttire, uploadedImageUrls }),
+    body: JSON.stringify({
+      email,
+      selectedLooks,
+      selectedAttire,
+      gender,
+      ageRange,
+      race,
+      facialHair,
+      uploadedImageUrls,
+    }),
   });
   return asJson(res);
 }
@@ -56,4 +74,13 @@ export async function createCheckout({ email, selectedLooks, selectedAttire, upl
 export async function getOrder(orderId) {
   const res = await fetch(`${API_BASE}/orders/${orderId}`, { cache: 'no-store' });
   return asJson(res);
+}
+
+/**
+ * URL that streams one delivered headshot with Content-Disposition: attachment,
+ * so pointing an <a> at it downloads the file instead of opening it in a new tab
+ * (the plain `download` attribute is ignored for cross-origin R2 URLs).
+ */
+export function downloadUrl(orderId, index) {
+  return `${API_BASE}/orders/${orderId}/download/${index}`;
 }

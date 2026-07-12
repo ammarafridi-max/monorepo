@@ -4,6 +4,7 @@ import { Sentry, sentryEnabled, captureError } from './instrument.js';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { randomUUID, timingSafeEqual } from 'node:crypto';
+import { Readable } from 'node:stream';
 import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
@@ -20,19 +21,23 @@ import {
   createStorage,
   isValidLook,
   isValidAttire,
+  isValidAgeRange,
+  isValidGender,
+  isValidRace,
+  isValidFacialHair,
   Order,
   ORDER_STATES,
   OrderTransitionConflictError,
   QUEUE_NAMES,
   transitionOrder,
-} from '@headliner/shared';
+} from '@picturesk/shared';
 import { detectFaces } from './faceDetector.js';
 import { moderateImage, MODERATION_REASON } from './contentModerator.js';
 import { QUALITY, evaluateImages, countError } from './uploadGate.js';
 import { RATE_LIMITS, createRateLimiters } from './rateLimit.js';
 
 /**
- * Headliner API (Phase 4: uploads + delivery).
+ * Picturesk API (Phase 4: uploads + delivery).
  *
  * - POST /uploads/presign returns presigned PUT URLs so the browser uploads
  *   selfies DIRECTLY to R2. Bytes never pass through this service.
@@ -499,7 +504,16 @@ app.post('/uploads/presign', presignLimiter, async (req, res) => {
  */
 app.post('/checkout', checkoutLimiter, async (req, res) => {
   try {
-    const { email, selectedLooks, selectedAttire, uploadedImageUrls } = req.body ?? {};
+    const {
+      email,
+      selectedLooks,
+      selectedAttire,
+      uploadedImageUrls,
+      gender,
+      ageRange,
+      race,
+      facialHair,
+    } = req.body ?? {};
     if (!email) {
       return res.status(400).json({ error: 'email is required' });
     }
@@ -520,6 +534,22 @@ app.post('/checkout', checkoutLimiter, async (req, res) => {
     if (!selectedAttire.every(isValidAttire)) {
       return res.status(400).json({ error: 'selectedAttire contains an unknown attire id' });
     }
+    // Subject demographics: gender + ageRange are required (the select step asks
+    // for both and they lead every prompt); race is optional. Validate any value
+    // present against the shared catalog so a tampered client cannot store junk.
+    if (!isValidGender(gender)) {
+      return res.status(400).json({ error: 'gender is required and must be a known option' });
+    }
+    if (!isValidAgeRange(ageRange)) {
+      return res.status(400).json({ error: 'ageRange is required and must be a known option' });
+    }
+    if (race != null && race !== '' && !isValidRace(race)) {
+      return res.status(400).json({ error: 'race contains an unknown option' });
+    }
+    // facialHair is optional (names the beard in the prompt so it does not drift).
+    if (facialHair != null && facialHair !== '' && !isValidFacialHair(facialHair)) {
+      return res.status(400).json({ error: 'facialHair contains an unknown option' });
+    }
 
     // THE REAL GATE (face quality + content moderation), BEFORE any Stripe session.
     // The web client runs the same face checks for fast feedback, but that is UX
@@ -536,6 +566,10 @@ app.post('/checkout', checkoutLimiter, async (req, res) => {
       customerEmail: email,
       selectedLooks,
       selectedAttire,
+      gender,
+      ageRange,
+      race: race || undefined,
+      facialHair: facialHair || undefined,
       uploadedImageUrls,
     });
     const orderId = order._id.toString();
@@ -549,7 +583,7 @@ app.post('/checkout', checkoutLimiter, async (req, res) => {
           price_data: {
             currency: 'usd',
             unit_amount: PRICE_CENTS,
-            product_data: { name: 'Headliner professional headshots' },
+            product_data: { name: 'Picturesk professional headshots' },
           },
         },
       ],
@@ -579,6 +613,72 @@ app.get('/orders/:id', async (req, res) => {
     return res.json(toPublicOrder(order));
   } catch (err) {
     return res.status(400).json({ error: err.message });
+  }
+});
+
+/**
+ * GET /orders/:id/download/:index  --  stream one delivered headshot back with
+ * Content-Disposition: attachment so the browser DOWNLOADS it instead of opening
+ * it in a new tab (the <a download> attribute is ignored for cross-origin URLs).
+ *
+ * The delivered images are hosted by Replicate (replicate.delivery), not in our
+ * R2 bucket, so we fetch the stored URL server-side and re-stream it with the
+ * attachment header. The URL is not a request parameter: it is read from the
+ * order in our own DB and selected by a validated index, so there is no SSRF
+ * surface, and we only ever serve the same culled set the success page shows.
+ */
+app.get('/orders/:id/download/:index', async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ error: 'order not found' });
+
+    // Same projection the success page renders: the culled delivered set once
+    // DELIVERED, with the legacy fallback to resultImageUrls.
+    const urls =
+      order.status === ORDER_STATES.DELIVERED
+        ? order.deliveredImageUrls?.length
+          ? order.deliveredImageUrls
+          : (order.resultImageUrls ?? [])
+        : [];
+
+    const index = Number.parseInt(req.params.index, 10);
+    if (!Number.isInteger(index) || index < 0 || index >= urls.length) {
+      return res.status(404).json({ error: 'no such image' });
+    }
+
+    const upstream = await fetch(urls[index]);
+    if (!upstream.ok || !upstream.body) {
+      // The Replicate delivery URL may have expired, or the host is down.
+      return res
+        .status(502)
+        .json({ error: 'could not fetch image', upstreamStatus: upstream.status });
+    }
+
+    const contentType = upstream.headers.get('content-type') || 'image/jpeg';
+    const contentLength = upstream.headers.get('content-length');
+    const ext = (IMAGE_EXT[contentType.split(';')[0].trim()] || 'jpg').replace(/[^a-z0-9]/gi, '');
+
+    res.setHeader('Content-Type', contentType);
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="picturesk-headshot-${index + 1}.${ext}"`
+    );
+    if (contentLength) res.setHeader('Content-Length', contentLength);
+    res.setHeader('Cache-Control', 'private, max-age=3600');
+
+    // Pipe the upstream web stream through to the client. Readable.fromWeb keeps
+    // memory flat (no full buffering) and forwards backpressure.
+    const nodeStream = Readable.fromWeb(upstream.body);
+    nodeStream.on('error', (err) => {
+      captureError(err, { route: 'download', orderId: req.params.id });
+      if (!res.headersSent) res.status(502).json({ error: 'could not read image' });
+      else res.destroy(err);
+    });
+    nodeStream.pipe(res);
+  } catch (err) {
+    captureError(err, { route: 'download', orderId: req.params.id });
+    if (!res.headersSent) return res.status(400).json({ error: err.message });
+    return res.destroy(err);
   }
 });
 

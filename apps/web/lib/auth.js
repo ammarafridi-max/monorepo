@@ -1,6 +1,6 @@
 import 'server-only';
 import bcrypt from 'bcryptjs';
-import { Order, User } from '@headliner/shared';
+import { Order, User } from '@picturesk/shared';
 
 /**
  * Credentials helpers: password hashing and the anonymous-order back-link. Kept

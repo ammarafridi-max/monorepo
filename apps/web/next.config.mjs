@@ -15,7 +15,7 @@ const nextConfig = {
   // misbehaves when bundled). They load from node_modules at runtime, on the
   // Node.js server only.
   experimental: {
-    serverComponentsExternalPackages: ['@headliner/shared', 'mongoose', 'bcryptjs'],
+    serverComponentsExternalPackages: ['@picturesk/shared', 'mongoose', 'bcryptjs'],
     // Required on Next 14 so instrumentation.js (the Sentry bootstrap) runs.
     instrumentationHook: true,
   },

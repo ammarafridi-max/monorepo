@@ -2,8 +2,8 @@ import ContentPage from '../ContentPage';
 import { CONTACT_EMAIL, RESPONSE_TIME } from '../../data/legal';
 
 export const metadata = {
-  title: 'Contact. Headliner',
-  description: 'Reach a human at Headliner. Support email, response time, and what to include.',
+  title: 'Contact. Picturesk.ai',
+  description: 'Reach a human at Picturesk. Support email, response time, and what to include.',
 };
 
 // Contact: no form, no backend risk. Just the support address, clearly, plus what

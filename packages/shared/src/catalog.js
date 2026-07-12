@@ -22,21 +22,21 @@ export const LOOKS = Object.freeze([
     label: 'Corporate studio',
     description: 'Neutral grey seamless, soft key light.',
     promptFragment: 'against a neutral grey seamless studio backdrop, soft key lighting',
-    image: '',
+    image: '/corporate-business.jpg',
   },
   {
     id: 'office_environment',
     label: 'In-office',
     description: 'A modern office, softly blurred behind you.',
     promptFragment: 'in a modern office interior, softly blurred background bokeh, natural indoor light',
-    image: '',
+    image: '/office-formal.jpg',
   },
   {
     id: 'outdoor_professional',
     label: 'Outdoor',
     description: 'Natural daylight, soft city or greenery behind.',
     promptFragment: 'outdoors in natural daylight, softly blurred city and greenery background',
-    image: '',
+    image: '/outdoor-sweater.jpg',
   },
   {
     id: 'dramatic_studio',
@@ -72,7 +72,7 @@ export const ATTIRE = Object.freeze([
     id: 'smart_knit',
     label: 'Smart knit or sweater',
     promptFragment: 'wearing a smart knit sweater over a collared shirt',
-    image: '',
+    image: '/outdoor-sweater.jpg',
   },
   {
     id: 'blazer_tee',
@@ -90,8 +90,69 @@ export const ATTIRE = Object.freeze([
   },
 ]);
 
+/**
+ * Subject demographics. These describe the person, not the scene, so they refine
+ * the SUBJECT ANCHOR that leads every prompt (via buildSubject) rather than being
+ * combined like looks x attire. Gender is the head noun; age and race modify it.
+ * `promptFragment` is the phrase each contributes; `label` is the user-facing copy.
+ *
+ * Age and gender are asked on the select step; race is optional. All three are
+ * optional at the data layer so a legacy or partial order still yields a valid
+ * generic subject ("a person").
+ */
+
+/** @typedef {{ id: string, label: string, promptFragment: string }} Demographic */
+
+/** @type {readonly Demographic[]} */
+export const AGE_RANGES = Object.freeze([
+  { id: 'age_18_24', label: '18 to 24', promptFragment: 'in their early twenties' },
+  { id: 'age_25_34', label: '25 to 34', promptFragment: 'in their late twenties to early thirties' },
+  { id: 'age_35_44', label: '35 to 44', promptFragment: 'in their late thirties to early forties' },
+  { id: 'age_45_54', label: '45 to 54', promptFragment: 'in their late forties to early fifties' },
+  { id: 'age_55_plus', label: '55 and over', promptFragment: 'in their late fifties or older' },
+]);
+
+/** @type {readonly Demographic[]} */
+export const GENDERS = Object.freeze([
+  { id: 'woman', label: 'Woman', promptFragment: 'a woman' },
+  { id: 'man', label: 'Man', promptFragment: 'a man' },
+  { id: 'nonbinary', label: 'Non-binary', promptFragment: 'an androgynous person' },
+]);
+
+/** @type {readonly Demographic[]} */
+export const RACES = Object.freeze([
+  { id: 'east_asian', label: 'East Asian', promptFragment: 'of East Asian descent' },
+  { id: 'south_asian', label: 'South Asian', promptFragment: 'of South Asian descent' },
+  { id: 'southeast_asian', label: 'Southeast Asian', promptFragment: 'of Southeast Asian descent' },
+  { id: 'black', label: 'Black or African', promptFragment: 'of Black or African descent' },
+  { id: 'white', label: 'White or European', promptFragment: 'of White or European descent' },
+  { id: 'hispanic', label: 'Hispanic or Latino', promptFragment: 'of Hispanic or Latino descent' },
+  { id: 'middle_eastern', label: 'Middle Eastern', promptFragment: 'of Middle Eastern descent' },
+  { id: 'indigenous', label: 'Indigenous', promptFragment: 'of Indigenous descent' },
+  { id: 'mixed', label: 'Mixed heritage', promptFragment: 'of mixed heritage' },
+]);
+
+// Facial hair. Optional, but the single most useful appearance cue to name in the
+// prompt: without it, FLUX's "professional headshot" prior drifts toward
+// clean-shaven and the trained beard shrinks or vanishes across the set. Naming it
+// in the subject anchor holds the beard steady. `clean-shaven` is a real choice,
+// not just "unset": it tells the model to KEEP the face bare instead of guessing.
+/** @type {readonly Demographic[]} */
+export const FACIAL_HAIR = Object.freeze([
+  { id: 'clean_shaven', label: 'Clean-shaven', promptFragment: 'clean-shaven' },
+  { id: 'stubble', label: 'Stubble', promptFragment: 'with light stubble' },
+  { id: 'short_beard', label: 'Short beard', promptFragment: 'with a short, neatly trimmed beard' },
+  { id: 'full_beard', label: 'Full beard', promptFragment: 'with a full beard' },
+  { id: 'moustache', label: 'Moustache', promptFragment: 'with a moustache' },
+  { id: 'goatee', label: 'Goatee', promptFragment: 'with a goatee' },
+]);
+
 const LOOKS_BY_ID = Object.freeze(Object.fromEntries(LOOKS.map((l) => [l.id, l])));
 const ATTIRE_BY_ID = Object.freeze(Object.fromEntries(ATTIRE.map((a) => [a.id, a])));
+const AGE_RANGES_BY_ID = Object.freeze(Object.fromEntries(AGE_RANGES.map((a) => [a.id, a])));
+const GENDERS_BY_ID = Object.freeze(Object.fromEntries(GENDERS.map((g) => [g.id, g])));
+const RACES_BY_ID = Object.freeze(Object.fromEntries(RACES.map((r) => [r.id, r])));
+const FACIAL_HAIR_BY_ID = Object.freeze(Object.fromEntries(FACIAL_HAIR.map((f) => [f.id, f])));
 
 /** Is `id` a real look in the catalog? (Used by the api to validate /checkout.) */
 export function isValidLook(id) {
@@ -100,6 +161,49 @@ export function isValidLook(id) {
 /** Is `id` a real attire option in the catalog? */
 export function isValidAttire(id) {
   return Object.prototype.hasOwnProperty.call(ATTIRE_BY_ID, id);
+}
+/** Is `id` a real age range? */
+export function isValidAgeRange(id) {
+  return Object.prototype.hasOwnProperty.call(AGE_RANGES_BY_ID, id);
+}
+/** Is `id` a real gender option? */
+export function isValidGender(id) {
+  return Object.prototype.hasOwnProperty.call(GENDERS_BY_ID, id);
+}
+/** Is `id` a real race option? */
+export function isValidRace(id) {
+  return Object.prototype.hasOwnProperty.call(RACES_BY_ID, id);
+}
+/** Is `id` a real facial-hair option? */
+export function isValidFacialHair(id) {
+  return Object.prototype.hasOwnProperty.call(FACIAL_HAIR_BY_ID, id);
+}
+
+/**
+ * Build the subject phrase that leads every prompt, from the order's demographics.
+ * Pure. Gender is the head noun ("a woman"), age and race modify it. Any missing
+ * piece is simply omitted; with nothing set it falls back to a generic "a person"
+ * so the money path never emits a broken subject.
+ *
+ * e.g. { gender: 'man', ageRange: 'age_25_34', race: 'south_asian', facialHair: 'full_beard' }
+ *      -> "a man in their late twenties to early thirties, of South Asian descent, with a full beard"
+ *
+ * @param {Object} [opts]
+ * @param {string} [opts.gender]     - gender id
+ * @param {string} [opts.ageRange]   - age range id
+ * @param {string} [opts.race]       - race id (optional)
+ * @param {string} [opts.facialHair] - facial-hair id (optional)
+ * @returns {string} the subject phrase (never empty)
+ */
+export function buildSubject({ gender, ageRange, race, facialHair } = {}) {
+  let subject = GENDERS_BY_ID[gender]?.promptFragment || 'a person';
+  const ageFrag = AGE_RANGES_BY_ID[ageRange]?.promptFragment;
+  const raceFrag = RACES_BY_ID[race]?.promptFragment;
+  const hairFrag = FACIAL_HAIR_BY_ID[facialHair]?.promptFragment;
+  if (ageFrag) subject += ` ${ageFrag}`;
+  if (raceFrag) subject += `, ${raceFrag}`;
+  if (hairFrag) subject += `, ${hairFrag}`;
+  return subject;
 }
 
 /**

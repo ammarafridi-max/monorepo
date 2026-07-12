@@ -2,8 +2,30 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { getOrder } from '../../lib/api';
+import { getOrder, downloadUrl } from '../../lib/api';
 import { track, EVENTS } from '../../lib/analytics';
+
+// A small download glyph (arrow into a tray). Inline so it inherits currentColor
+// and needs no asset request. Decorative; the control carries its own aria-label.
+function DownloadIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="18"
+      height="18"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 3v12" />
+      <path d="m7 10 5 5 5-5" />
+      <path d="M5 21h14" />
+    </svg>
+  );
+}
 
 // Payment succeeded and the order is progressing or done. FAILED is excluded: it
 // was paid but is being refunded, so counting it as a completed purchase would
@@ -130,6 +152,23 @@ export default function SuccessView() {
       ? Math.min(100, Math.round((order.generatedCount / order.totalCount) * 100))
       : null;
 
+  // Download every headshot. Each href returns Content-Disposition: attachment, so
+  // clicking a hidden anchor downloads rather than navigates. We stagger the clicks
+  // so browsers don't collapse them into a single download or block the burst.
+  function downloadAll() {
+    const urls = order.resultImageUrls || [];
+    urls.forEach((_, i) => {
+      setTimeout(() => {
+        const a = document.createElement('a');
+        a.href = downloadUrl(orderId, i);
+        a.rel = 'noopener';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }, i * 400);
+    });
+  }
+
   return (
     <main className={`wrap${wide ? ' wrap--wide' : ''}`}>
       <span className={`pill${isDelivered ? ' pill--ok' : isFailed ? ' pill--warn' : ''}`}>
@@ -157,18 +196,32 @@ export default function SuccessView() {
       )}
 
       {isDelivered ? (
-        <section className="results">
-          {(order.resultImageUrls || []).map((url, i) => (
-            <figure className="result" key={url} style={{ margin: 0 }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={url} alt={`headshot ${i + 1}`} />
-              <div className="result__bar">
-                <a href={url} download={`headshot-${i + 1}.jpg`} target="_blank" rel="noreferrer">
-                  Download
+        <section className="gallery">
+          <div className="gallery__bar">
+            <p className="gallery__count">
+              {(order.resultImageUrls || []).length} headshots, yours to keep.
+            </p>
+            {(order.resultImageUrls || []).length > 0 && (
+              <button className="btn btn--primary" type="button" onClick={downloadAll}>
+                <DownloadIcon /> Download all
+              </button>
+            )}
+          </div>
+          <div className="gallery__grid">
+            {(order.resultImageUrls || []).map((url, i) => (
+              <figure className="shot" key={url}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={url} alt={`headshot ${i + 1}`} />
+                <a
+                  className="shot__dl"
+                  href={downloadUrl(orderId, i)}
+                  aria-label={`Download headshot ${i + 1}`}
+                >
+                  <DownloadIcon />
                 </a>
-              </div>
-            </figure>
-          ))}
+              </figure>
+            ))}
+          </div>
         </section>
       ) : isFailed ? null : (
         <>

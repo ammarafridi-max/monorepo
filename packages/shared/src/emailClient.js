@@ -21,12 +21,12 @@ const BREVO_API = 'https://api.brevo.com/v3/smtp/email';
  */
 function normalizeSender(sender) {
   if (sender && typeof sender === 'object' && sender.email) {
-    return { name: sender.name || 'Headliner', email: sender.email };
+    return { name: sender.name || 'Picturesk.ai', email: sender.email };
   }
   if (typeof sender === 'string') {
     const m = sender.match(/^\s*(.*?)\s*<\s*([^>]+?)\s*>\s*$/);
-    if (m) return { name: m[1] || 'Headliner', email: m[2] };
-    if (sender.includes('@')) return { name: 'Headliner', email: sender.trim() };
+    if (m) return { name: m[1] || 'Picturesk.ai', email: m[2] };
+    if (sender.includes('@')) return { name: 'Picturesk.ai', email: sender.trim() };
   }
   throw new Error('[email] createEmailClient: sender must be "Name <email>" or { name, email }');
 }
@@ -169,7 +169,7 @@ export function renderDeliveryEmail({ resultsUrl, orderId, thumbnailUrls = [], l
         <table role="presentation" width="520" cellpadding="0" cellspacing="0" border="0" style="width:520px;max-width:520px;background:${BONE};">
           <tr>
             <td style="padding:0 0 28px 0;font-family:${SANS};font-size:15px;font-weight:600;letter-spacing:0.02em;color:${INK}">
-              Headliner
+              Picturesk.ai
             </td>
           </tr>
           <tr>

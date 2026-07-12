@@ -4,7 +4,7 @@ import Footer from './Footer';
 import Analytics from './Analytics';
 
 export const metadata = {
-  title: 'Headliner. Headshots that don\'t look AI.',
+  title: 'Picturesk.ai. Headshots that don\'t look AI.',
   description:
     'Upload a few selfies. We train a model on your face and give you studio-quality headshots. One price.',
 };
@@ -28,7 +28,7 @@ export default async function RootLayout({ children }) {
         <Analytics />
         <header className="topbar">
           <a className="brand" href="/">
-            Headliner
+            Picturesk.ai
           </a>
           <nav className="nav">
             {session ? (

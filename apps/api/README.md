@@ -1,4 +1,4 @@
-# @headliner/api
+# @picturesk/api
 
 Placeholder. The Express service (Stripe Checkout creation, Stripe webhook
 handling, order creation) is built starting in **Phase 1 (walking skeleton)**

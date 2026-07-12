@@ -1,7 +1,7 @@
 /**
  * Copy for the content pages (privacy, terms, refunds, contact), kept out of JSX
  * so the wording is editable without touching layout. Everything here is written
- * to match how Headliner ACTUALLY works, not generic template text:
+ * to match how Picturesk ACTUALLY works, not generic template text:
  *
  *  - Real processors: Stripe (payment), Cloudflare R2 (storage), Replicate (model
  *    training + image generation), Brevo (email).
@@ -17,12 +17,12 @@ export const LAST_UPDATED = 'July 9, 2026';
 
 // Placeholder support address, mirrored from the footer. Swap for the real inbox.
 // TODO: swap for the real support address before launch.
-export const CONTACT_EMAIL = 'hello@headliner.studio';
+export const CONTACT_EMAIL = 'hello@picturesk.ai';
 export const RESPONSE_TIME = 'within two business days';
 
 export const privacy = {
   updated: LAST_UPDATED,
-  lede: 'This explains what Headliner collects, why, and who we work with. In plain terms: we use your photos only to make your headshots, with a small set of named providers.',
+  lede: 'This explains what Picturesk collects, why, and who we work with. In plain terms: we use your photos only to make your headshots, with a small set of named providers.',
   sections: [
     {
       h: 'What we collect',
@@ -42,7 +42,7 @@ export const privacy = {
     },
     {
       h: 'Who we share it with',
-      body: ['We run Headliner on a small set of processors, each doing one job:'],
+      body: ['We run Picturesk on a small set of processors, each doing one job:'],
       list: [
         'Stripe, for payment. Your card details go directly to Stripe.',
         'Cloudflare R2, for storage. Your uploaded photos and generated headshots are stored here.',
@@ -81,7 +81,7 @@ export const privacy = {
     {
       h: 'Children',
       body: [
-        'Headliner is for adults. You must be at least 18 to use it. It is not directed at children, and we do not knowingly collect data from anyone under 18.',
+        'Picturesk is for adults. You must be at least 18 to use it. It is not directed at children, and we do not knowingly collect data from anyone under 18.',
       ],
     },
     {
@@ -95,33 +95,33 @@ export const privacy = {
 
 export const terms = {
   updated: LAST_UPDATED,
-  lede: 'These terms cover using Headliner. By uploading photos and paying, you agree to them.',
+  lede: 'These terms cover using Picturesk. By uploading photos and paying, you agree to them.',
   sections: [
     {
-      h: 'What Headliner does',
+      h: 'What Picturesk does',
       body: [
-        'Headliner turns your selfies into professional headshots. You upload five to fifteen photos of one person, we fine-tune a model on that face, generate a set of headshots, and email you a link to download them.',
+        'Picturesk turns your selfies into professional headshots. You upload five to fifteen photos of one person, we fine-tune a model on that face, generate a set of headshots, and email you a link to download them.',
         'Results are produced by an AI model and vary with the quality of your input photos. We provide a set of generated headshots, not a specific guaranteed look.',
       ],
     },
     {
       h: 'Eligibility',
       body: [
-        'You must be at least 18 and able to enter a contract. By using Headliner you confirm that you are.',
+        'You must be at least 18 and able to enter a contract. By using Picturesk you confirm that you are.',
       ],
     },
     {
       h: 'Acceptable use',
       body: [
         'Upload only your own face, or the face of someone who has given you clear permission and the rights to use their photos. Do not upload photos of other people without their consent.',
-        'Do not use Headliner for anything illegal, deceptive, or abusive. That includes impersonation, harassment, and any content that infringes the rights of other people.',
+        'Do not use Picturesk for anything illegal, deceptive, or abusive. That includes impersonation, harassment, and any content that infringes the rights of other people.',
         'One person per order. Each order trains on a single face.',
       ],
     },
     {
       h: 'Payment',
       body: [
-        'Headliner costs thirty-five US dollars for one set of headshots. It is a one-time charge, not a subscription.',
+        'Picturesk costs thirty-five US dollars for one set of headshots. It is a one-time charge, not a subscription.',
         'The price is set on our server and charged through Stripe Checkout. You pay before we train your model.',
       ],
     },
@@ -144,20 +144,20 @@ export const terms = {
     {
       h: 'Disclaimers',
       body: [
-        'Headliner is provided as is. Because results are AI-generated and depend on your input photos, we do not warrant that any specific headshot will meet a particular expectation.',
+        'Picturesk is provided as is. Because results are AI-generated and depend on your input photos, we do not warrant that any specific headshot will meet a particular expectation.',
       ],
     },
     {
       h: 'Limitation of liability',
       body: [
-        'To the extent the law allows, our total liability for any claim connected to Headliner is limited to the amount you paid for your order.',
+        'To the extent the law allows, our total liability for any claim connected to Picturesk is limited to the amount you paid for your order.',
       ],
     },
     {
       h: 'Governing law',
       body: [
         // TODO: confirm governing law / jurisdiction (UAE?) and state it explicitly here.
-        'These terms are governed by the laws of the jurisdiction in which Headliner operates. The specific jurisdiction will be confirmed here.',
+        'These terms are governed by the laws of the jurisdiction in which Picturesk operates. The specific jurisdiction will be confirmed here.',
       ],
     },
     {
@@ -177,7 +177,7 @@ export const refunds = {
       h: 'Automatic refund when a run fails',
       body: [
         'If you pay and the system cannot deliver your headshots, your payment is refunded in full, automatically. You do not need to ask.',
-        'This is built into how Headliner works. When an order fails, it issues one full refund to your original Stripe payment, once.',
+        'This is built into how Picturesk works. When an order fails, it issues one full refund to your original Stripe payment, once.',
       ],
     },
     {

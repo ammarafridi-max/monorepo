@@ -1,7 +1,7 @@
-# Headliner worker. Deploy from the repo root:  fly deploy -c fly.worker.toml
+# Picturesk worker. Deploy from the repo root:  fly deploy -c fly.worker.toml
 # No public service: it drains the BullMQ order-pipeline queue and must run
 # continuously, so there is no [http_service] and no auto-stop.
-app = "headliner-worker"
+app = "picturesk-worker"
 primary_region = "iad"
 
 [build]

@@ -14,7 +14,7 @@ importers:
 
   apps/api:
     dependencies:
-      '@headliner/shared':
+      '@picturesk/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@sentry/node':
@@ -44,7 +44,7 @@ importers:
 
   apps/web:
     dependencies:
-      '@headliner/shared':
+      '@picturesk/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@sentry/nextjs':
@@ -71,7 +71,7 @@ importers:
 
   apps/worker:
     dependencies:
-      '@headliner/shared':
+      '@picturesk/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@sentry/node':

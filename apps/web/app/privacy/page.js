@@ -3,8 +3,8 @@ import Sections from '../Sections';
 import { privacy } from '../../data/legal';
 
 export const metadata = {
-  title: 'Privacy Policy. Headliner',
-  description: 'What Headliner collects, how it is used, and the processors we work with.',
+  title: 'Privacy Policy. Picturesk.ai',
+  description: 'What Picturesk collects, how it is used, and the processors we work with.',
 };
 
 export default function PrivacyPage() {

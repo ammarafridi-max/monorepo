@@ -44,9 +44,9 @@
 
 const REPLICATE_API = 'https://api.replicate.com';
 
-// H100-class inference rate, same basis as the generation estimate in
-// replicateClient.js. Only used for computeCostCents margin telemetry.
-const EMBED_USD_PER_SEC = 0.001525;
+// Our face-embed Cog runs on Replicate CPU, not GPU, so use the CPU rate for the
+// computeCostCents margin telemetry (the H100 rate would over-report ~15x).
+const EMBED_USD_PER_SEC = 0.0001;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -106,7 +106,25 @@ async function embed(imageUrl, { attempts = 4, baseDelayMs = 1000, timeoutMs = 6
         err.status = res.status;
         throw err;
       }
-      const body = await res.json();
+      let body = await res.json();
+      // The model scales to zero when idle, so the first call of an order can cold
+      // boot for minutes (longer than the Prefer: wait window). Poll patiently to a
+      // terminal state instead of throwing and burning a whole job retry on boot.
+      const getUrl = body.urls?.get;
+      const deadline = Date.now() + 300000;
+      while (
+        (body.status === 'starting' || body.status === 'processing') &&
+        getUrl &&
+        Date.now() < deadline
+      ) {
+        await sleep(3000);
+        const poll = await fetch(getUrl, {
+          headers: { Authorization: `Bearer ${apiToken()}` },
+          signal: AbortSignal.timeout(30000),
+        });
+        if (!poll.ok) throw new Error(`embed poll -> ${poll.status} ${poll.statusText}`);
+        body = await poll.json();
+      }
       if (body.status !== 'succeeded') {
         throw new Error(`embed prediction ${body.id} status ${body.status}`);
       }

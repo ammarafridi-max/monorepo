@@ -1,4 +1,4 @@
-# Headliner
+# Picturesk.ai
 
 AI headshot generator: upload selfies, pay once (~$35), we fine-tune a model on
 your face via Replicate, generate professional headshots, and email the results.
@@ -19,10 +19,11 @@ design and build plan.
 The purchase flow is a routed, three-step funnel:
 
 ```
-Select (looks + attire + email) -> Upload photos -> Pay -> processing -> Delivered
+Select (looks + attire + about-you + email) -> Upload photos -> Pay -> processing -> Delivered
 ```
 
-The customer picks their looks and attire and enters an email (one merged step),
+The customer picks their looks and attire, tells us a bit about themselves
+(gender and age range, race optional), and enters an email (one merged step),
 uploads their photos, then pays. Payment is the last step; the order is created at
 checkout already carrying the selections AND the photos. This is the one purchase
 flow; the old single-page upload+pay flow is gone.
@@ -37,16 +38,18 @@ AWAITING_PAYMENT -> PAID -> TRAINING -> GENERATING -> DELIVERED
 the worker then moves `PAID -> TRAINING`.
 
 **The web funnel (`apps/web/app/generator`).** A shared stepper layout over three
-routes: `/generator/select` (looks + attire + email, each option with a preview
-image or a placeholder), `/generator/upload` (client quality gate, then the photos
-go direct-to-R2 and their URLs ride along), and `/generator/pay` (review + pay).
+routes: `/generator/select` (looks + attire, each option with a preview image or a
+placeholder; gender + age range + optional race as single-select chips; and email),
+`/generator/upload` (client quality gate, then the photos go direct-to-R2 and their
+URLs ride along), and `/generator/pay` (review + pay).
 Selections and uploaded-photo URLs persist in `localStorage` until checkout, so the
 order is created only at the pay step (no abandoned drafts in the DB). Landing CTAs
 route to `/generator/select`.
 
 **Where the gate runs.** `POST /checkout` takes `{ email, selectedLooks[],
-selectedAttire[], uploadedImageUrls[] }`. It validates the selections against the
-shared catalog and runs THE REAL gate (face quality + content moderation) on the
+selectedAttire[], gender, ageRange, race?, uploadedImageUrls[] }`. It validates the
+selections and demographics against the shared catalog (gender + ageRange required,
+race optional) and runs THE REAL gate (face quality + content moderation) on the
 images BEFORE creating the Stripe session, so there is no session (no payment) for
 input that would train a bad model. On a gate failure it returns a structured
 `422`; the pay step surfaces it and points the user back to swap photos. On pass it
@@ -56,12 +59,17 @@ pipeline exactly once (`jobId = orderId`).
 
 **Shared catalog + prompts.** `packages/shared/src/catalog.js` is the single source
 of truth for the `LOOKS` and `ATTIRE` options (each with a `label`, a
-`promptFragment`, and an `image` preview slot) AND the `buildPrompts` helper that
-turns a selection into generation prompts. The web renders its selection cards from
-it (via the `@headliner/shared/catalog` subpath, which is mongoose-free and
-client-safe) and the worker builds each order's prompts from it, so the options a
-customer sees can never drift from what we generate. The worker's old fixed
-`PROMPTS` array is replaced by `buildPrompts({ looks, attire, count, subjectAnchor })`.
+`promptFragment`, and an `image` preview slot), the subject demographics
+(`GENDERS`, `AGE_RANGES`, `RACES`), AND the pure builders that turn a selection into
+generation prompts: `buildSubject({ gender, ageRange, race })` renders the subject
+phrase that leads every prompt (e.g. "a woman in their late twenties, of South Asian
+descent", falling back to a generic "a person"), and `buildPrompts({ looks, attire,
+count, subjectAnchor })` cycles the look x attire combinations into `count` prompts.
+The web renders its selection cards and chips from this file (via the
+`@picturesk/shared/catalog` subpath, which is mongoose-free and client-safe) and the
+worker builds each order's prompts from it, so the options a customer sees can never
+drift from what we generate. The worker's old fixed `PROMPTS` array is gone from the
+order path; each order's subject anchor is `<trigger word>, <buildSubject(...)>`.
 
 **Count.** `DELIVER_COUNT` defaults to 14. Identity culling is off, so the worker
 generates exactly what it delivers (generate == deliver, locked by a test).
@@ -81,7 +89,7 @@ cp .env.example .env   # then fill in values
 
 The api and worker **require a running MongoDB and Redis.** Set both in `.env`:
 
-- `MONGODB_URI` - e.g. `mongodb://127.0.0.1:27017/headliner`
+- `MONGODB_URI` - e.g. `mongodb://127.0.0.1:27017/picturesk`
 - `REDIS_URL` - e.g. `redis://127.0.0.1:6379`
 
 Start the api and worker together (or run them separately with `pnpm api` and
@@ -110,6 +118,45 @@ MongoDB and Redis as external managed services. Dockerfiles (`Dockerfile.api`,
 per-app secrets, deploy order, Stripe webhook + R2 CORS wiring) in
 [DEPLOY.md](./DEPLOY.md).
 
+### Live deployment status (2026-07-11)
+
+All three apps are deployed to Fly and healthy:
+
+- api: https://picturesk-api.fly.dev (`/health` returns `{"ok":true}`)
+- web: https://picturesk-web.fly.dev
+- worker: `picturesk-worker` (no HTTP; consumes `order-pipeline`, concurrency 1)
+
+Secrets were staged per app from the local `.env` (least-privilege: Stripe keys
+live on api + worker only, never web), with `WEB_BASE_URL` pointed at the web
+app's Fly origin and `TRUST_PROXY_HOPS=1` set on the api.
+
+**Outstanding follow-ups before the deployed funnel is fully live** (revisit):
+
+1. **Stripe webhook.** The api's `STRIPE_WEBHOOK_SECRET` is still the local
+   `stripe listen` secret, which will NOT verify webhooks sent to the Fly URL. In
+   the Stripe dashboard add an endpoint at
+   `https://picturesk-api.fly.dev/webhooks/stripe` for `checkout.session.completed`,
+   then `fly secrets set -a picturesk-api STRIPE_WEBHOOK_SECRET="whsec_..."`. Until
+   this is done a checkout on the deployed site pays but the order never advances
+   to PAID.
+2. **R2 CORS.** Add `https://picturesk-web.fly.dev` to the R2 bucket's allowed
+   origins with `PUT` allowed, or browser uploads fail from the deployed origin.
+3. **Stop the local `pnpm dev` stack.** Its worker reads the same production
+   Upstash/Mongo from `.env`, so it competes with the Fly worker on the same
+   queue (BullMQ locking prevents double-processing, but keep one worker).
+
+**Deferred, working as intended (revisit later):**
+
+- **Stripe is in TEST mode** (`sk_test_...`). Swap to live keys plus a live
+  webhook endpoint to take real payments.
+- **Social login is OFF.** The Google/Facebook/LinkedIn client env vars were empty
+  in `.env`, so they were skipped at deploy. Email login works; add the creds to
+  enable OAuth.
+- **Delivery email sender is `info@travl.ae`** (a verified Brevo sender). Switch to
+  `hello@picturesk.ai` once the domain is bought and verified in Brevo.
+- **4 stale `failed` jobs** from earlier local testing remain in the queue.
+  Harmless; purge when convenient.
+
 ## Phase 2: testing locally with the Stripe CLI
 
 Phase 2 adds real payments. `POST /checkout` creates an order and a Stripe
@@ -132,13 +179,24 @@ once. You also need `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` in `.env`.
    Copy the `whsec_...` it prints into `STRIPE_WEBHOOK_SECRET` in `.env`, then
    restart the api.
 
-3. Create a checkout and open the returned `checkoutUrl` in a browser:
+3. Create a checkout and open the returned `checkoutUrl` in a browser. `/checkout`
+   now takes the full funnel payload and runs the upload gate on real image URLs
+   before creating the session (see the funnel section above), so the practical way
+   to exercise it end to end is the web UI (Phase 4). The shape is:
 
    ```sh
    curl -s -X POST localhost:3001/checkout \
      -H 'content-type: application/json' \
-     -d '{"customerEmail":"test@example.com"}'
+     -d '{
+       "email":"test@example.com",
+       "selectedLooks":["corporate_studio"],
+       "selectedAttire":["business_suit"],
+       "gender":"man","ageRange":"age_25_34",
+       "uploadedImageUrls":["https://<your-r2>/selfie1.jpg","https://<your-r2>/selfie2.jpg"]
+     }'
    # -> { "orderId": "...", "checkoutUrl": "https://checkout.stripe.com/..." }
+   # (the URLs must be real, reachable photos that pass the face + moderation gate,
+   #  or you get a 422 instead; set UPLOAD_QUALITY_GATE=off in dev to skip it)
    ```
 
    Pay with test card `4242 4242 4242 4242`, any future expiry, any CVC.
@@ -165,7 +223,7 @@ minutes, not seconds.
 Set these in `.env` (on top of the Phase 2 values):
 
 - `REPLICATE_API_TOKEN` - from https://replicate.com/account/api-tokens
-- `REPLICATE_DESTINATION_MODEL` - `your-username/headliner-headshots`; the worker
+- `REPLICATE_DESTINATION_MODEL` - `your-username/picturesk-headshots`; the worker
   creates it automatically on first run if it does not exist.
 - `TEST_IMAGE_ZIP_URL` - a publicly reachable zip of ~10-15 selfies of one person
   to train on. Phase 4 replaces this with the order's real uploaded images.
@@ -200,7 +258,7 @@ New env (see `.env.example`): R2 storage (`R2_*`), email (`BREVO_API_KEY`,
 `BREVO_SENDER`), `WEB_BASE_URL`, and `NEXT_PUBLIC_API_BASE_URL` for the web app.
 
 Delivery email is sent via Brevo (transactional API) from the shared
-`createEmailClient` helper in `@headliner/shared`. It is a branded HTML template
+`createEmailClient` helper in `@picturesk/shared`. It is a branded HTML template
 (with a plain-text alternative) linking to the order's results page. Leave
 `BREVO_API_KEY` empty in local dev to make delivery a no-op.
 
@@ -219,8 +277,18 @@ stripe listen --forward-to localhost:3001/webhooks/stripe
 Open http://localhost:3000, add ~10-15 selfies of one person, enter an email, and
 pay with test card `4242 4242 4242 4242`. Stripe returns to `/success`, which
 polls the order and walks paid -> training -> generating -> delivered, then shows
-the downloadable results grid. When it hits delivered, the worker emails the
-results link exactly once (guarded by `deliveredEmailSentAt`).
+the results gallery. When it hits delivered, the worker emails the results link
+exactly once (guarded by `deliveredEmailSentAt`).
+
+**Downloads.** Each headshot has a download control (and a "Download all"), served
+by `GET /orders/:id/download/:index`. The delivered images are hosted by Replicate
+(`replicate.delivery`), not our R2 bucket, so the route fetches the stored URL
+server-side and re-streams it with `Content-Disposition: attachment`, so the browser
+DOWNLOADS the file instead of opening it in a new tab (the plain `<a download>`
+attribute is ignored for cross-origin URLs). The URL is not a request parameter: it
+is read from the order in our DB and picked by a validated index (only the same
+culled delivered set the page already shows), so there is no SSRF surface, and
+downloads do not depend on any cross-origin CORS config.
 
 ## Phase 5: failure hardening
 
@@ -254,7 +322,7 @@ Buying is anonymous: the upload and checkout flow needs only an email, unchanged
 Accounts are an additive layer for returning customers to see past orders. Nothing
 in the buy flow is gated; the only gated page is `/account`.
 
-- **User model:** `users` collection in `@headliner/shared` (`User`), email +
+- **User model:** `users` collection in `@picturesk/shared` (`User`), email +
   bcrypt `passwordHash`. Orders gain an optional, nullable `userId`; anonymous
   orders leave it null.
 - **Sessions:** a signed JWT (`jose`) in a secure httpOnly cookie, hand-rolled to
@@ -320,10 +388,13 @@ through the order pipeline.
 
 Two levers, both generation-only:
 
-- **Prompt anchoring:** every prompt in `apps/worker/replicateClient.js` leads with
-  the trigger word then a `SUBJECT` anchor (e.g. `a bearded man`). Naming the
-  subject up front stops the base model's prior from drifting gender or facial
-  hair on a weak-identity seed. Edit `SUBJECT` in one place.
+- **Prompt anchoring:** every prompt leads with the trigger word then a subject
+  anchor. Naming the subject up front stops the base model's prior from drifting
+  gender or facial hair on a weak-identity seed. Real orders derive that anchor from
+  the customer's demographics (`buildSubject` in the shared catalog); the dev tuning
+  script uses a fixed `SUBJECT` + `PROMPTS` set in `apps/worker/replicateClient.js`
+  so you can iterate on the model without an order. Edit `SUBJECT` there to try a
+  different subject in the tuning script.
 - **`GEN_LORA_SCALE`:** LoRA strength (~0.8 to 1.1; higher pulls harder toward the
   trained identity, too high risks artifacts).
 
@@ -332,16 +403,17 @@ Grab a trained model version from a prior order's `replicate.trainedModelVersion
 then run the generate-only script:
 
 ```sh
-pnpm --filter @headliner/worker tune:gen \
+pnpm --filter @picturesk/worker tune:gen \
   --version <owner/name:hash> --scale 1.05 --count 3
 ```
 
 It runs the real generation functions against that version, polls to completion,
 prints each image URL, and saves a record under
 `apps/worker/scripts/results/`. It never creates an order or touches
-Mongo/Redis/Stripe. Compare a few scales, and once a prompt set + scale looks
-good it is already promoted: `PROMPTS` is shared with the worker, and
-`GEN_LORA_SCALE` becomes the default for real orders.
+Mongo/Redis/Stripe. Compare a few scales; once a scale looks good it is already
+promoted, since `GEN_LORA_SCALE` is the default the worker reads for real orders.
+(Real-order prompts come from the shared catalog + the customer's selections and
+demographics, not the script's fixed `PROMPTS`.)
 
 ## Production safety
 
@@ -435,43 +507,75 @@ image data, no order contents).
 - The script auto-tracks a basic pageview on every route; that is the **only**
   thing recorded on the legal/content pages.
 
-## Deferred: identity-based candidate culling
+## Identity-based candidate culling
 
-There is a built-but-**disabled** quality feature in the worker: overgenerate
-headshots, score each candidate for identity fidelity against the customer's real
-selfies, and deliver only the best ones, so an occasional off-identity seed (a
-gender flip or dropped beard) is culled instead of shipped, without retraining.
-The plumbing exists (`apps/worker/scoreIdentity.js`, and `selectAndDeliver` in
-`apps/worker/pipeline.js`) but is **off**.
+A quality feature in the worker: overgenerate headshots, score each candidate for
+identity fidelity against the customer's real selfies, and deliver only the best
+ones, so an occasional off-identity seed (a gender flip, dropped beard, or shifted
+face shape) is culled instead of shipped, without retraining. Implemented in
+`apps/worker/scoreIdentity.js` and `selectAndDeliver` in `apps/worker/pipeline.js`.
+It is **env-gated and OFF by default**.
 
-**Why it is off:** it needs a real face-embedding model on Replicate, one that
-takes an `{ image }` and returns a numeric identity vector (ArcFace / InsightFace
-style). There is no off-the-shelf model on Replicate that fits: a search turns up
-only face-swap, InstantID, and restoration models. The one embedding model that
-fits the plumbing (`krthr/clip-embeddings`) is **CLIP**, which measures general
-image appearance, not face identity, so it would be a noisy signal that could
-cull good shots for the wrong reasons. Using it would do the opposite of what the
-feature promises.
+**How scoring works.** We compute a face EMBEDDING for each candidate and each
+selfie once (ArcFace / InsightFace `buffalo_l`), then score a candidate by the MAX
+cosine similarity to any selfie. Reference selfie embeddings are memoized, so an
+order embeds each image exactly once: O(candidates + selfies). ArcFace is robust to
+the pose/lighting/background/attire our prompts deliberately vary, so it scores true
+identity, not overall image appearance (which is why CLIP is the wrong tool here).
 
-**Current behavior (culling off):** with `REPLICATE_FACE_EMBED_MODEL` unset, the
-worker generates exactly what it delivers and skips scoring, so delivery is
-identical to before. The worker boots normally; the var is not required.
+**The embedding model.** No off-the-shelf face-embedding model on Replicate returns
+a usable vector, so we deployed our own tiny CPU Cog, `ammarafridi-max/face-embed`
+(source in the scratchpad build dir: `cog.yaml` + `predict.py`). It takes `{ image }`
+and returns a 512-dim vector (or `[]` when no face is found -> that candidate scores
+low and is culled). It runs on CPU, so a call costs CPU-cents, not a GPU prediction.
+The model scales to zero when idle, so the first call of an order cold-boots for a
+few minutes; `scoreIdentity.js` polls patiently through that, then the rest are fast.
 
-**To enable it later (the intended path):**
-1. Deploy an ArcFace/InsightFace face-embedding model to Replicate as a Cog. It
-   must accept an `{ image }` input and return a numeric vector (a plain array,
-   `{ embedding: [...] }`, or `[{ embedding: [...] }]`, all of which
-   `scoreIdentity.js` already parses).
-2. Set `REPLICATE_FACE_EMBED_MODEL=owner/name:versionHash`. That alone turns
-   culling ON. Optionally tune `GENERATE_COUNT` (default 10) and `DELIVER_COUNT`
-   (default = number of prompts) for how aggressively to overgenerate and cull.
+**Enable / tune (worker env):**
+- `REPLICATE_FACE_EMBED_MODEL=owner/name:versionHash` turns culling ON (currently
+  `ammarafridi-max/face-embed:<hash>`). Unset = OFF, delivery identical to before.
+- `GENERATE_COUNT` (default 20 when ON) and `DELIVER_COUNT` (default 14) control how
+  aggressively to overgenerate and cull; `GENERATE_COUNT >= DELIVER_COUNT`.
 
-That is all on the app side. The API already serves the culled `deliveredImageUrls`
-to customers (`toPublicOrder` in `apps/api/server.js`, with a fallback to the full
-set for older orders), and with culling off `deliveredImageUrls` is still populated
-(it equals every generated image), so nothing else needs changing to switch the
-feature on or off. (The stale `TODO(api)` comment in `selectAndDeliver` can be
-removed; that work is already done.)
+**Cost.** Per order with culling ON: `GENERATE_COUNT + selfies` embedding calls
+(each a few CPU-seconds, ~cents total) plus the extra generations. Far cheaper than
+a pairwise face-verification model, which is why we deploy the embedding Cog.
+
+**Rebuilding the embed Cog:** from the build dir, `cog push r8.im/ammarafridi-max/face-embed`
+(needs Docker + `cog`, and `docker login r8.im` with the Replicate API token). The
+weights are baked at an absolute path (`root="/src"`) so setup never re-downloads at
+runtime -- do not remove that or the model fails to boot on Replicate.
+
+The API already serves the culled `deliveredImageUrls` to customers (`toPublicOrder`
+in `apps/api/server.js`, with a fallback to the full set for older orders), and with
+culling off `deliveredImageUrls` still equals every generated image, so nothing else
+changes when switching the feature on or off.
+
+## Identity lock (face swap)
+
+Culling picks the closest-matching shots, but it can't fix the face itself: ArcFace
+identity is invariant to expression and hairstyle, so a shot with the wrong face
+SHAPE, longer hair, or an invented teeth-smile still scores as "them" and ships.
+The face-swap step fixes that by swapping the customer's REAL face onto each
+delivered headshot -- the generated image keeps the pose, outfit, lighting and
+background; only the face is replaced, with the customer's true geometry.
+
+Implemented in `apps/worker/swapFace.js` (+ `.fake.js`), applied in `selectAndDeliver`
+(`apps/worker/pipeline.js`) AFTER culling: it swaps the real face onto the selected
+`deliverN` shots, persisting each to `swappedImageUrls` (resumable, per slot), then
+points `deliveredImageUrls` at the swapped set. The source face is the first
+uploaded selfie. A swap that can't find a face in a shot ships that shot un-swapped
+rather than failing the order. **Env-gated and OFF by default.**
+
+**Enable:** `REPLICATE_FACE_SWAP_MODEL=owner/name:versionHash` (currently
+`cdingram/face-swap`). Unset = OFF, delivery unchanged. ~8s + a few GPU-cents per
+image, so ~`DELIVER_COUNT` swaps per order.
+
+**Note:** with swap ON, identity is guaranteed by the swap, so the embedding cull
+matters less (it then mainly picks the best-composed shots). If swap proves reliable
+you could lower `GENERATE_COUNT`/turn culling off to save cost. Delivered images are
+still temporary `replicate.delivery` URLs (pre-existing) -- persisting the final
+(swapped) set to R2 is a recommended separate hardening.
 
 ## Conventions
 

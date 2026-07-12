@@ -1,7 +1,7 @@
 import AuthForm from '../AuthForm';
 import SocialButtons from '../SocialButtons';
 
-export const metadata = { title: 'Log in. Headliner' };
+export const metadata = { title: 'Log in. Picturesk.ai' };
 
 export default function LoginPage({ searchParams }) {
   // Set when a social sign-in bounced back without a session (denied, expired, or

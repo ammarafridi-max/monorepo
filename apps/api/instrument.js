@@ -14,7 +14,9 @@ import * as Sentry from '@sentry/node';
  * NO DSN => Sentry is never initialised and every Sentry.* call is a safe no-op,
  * so local dev without a DSN boots and runs exactly as before.
  */
-dotenv.config({ path: resolve(dirname(fileURLToPath(import.meta.url)), '../../.env') });
+dotenv.config({
+  path: resolve(dirname(fileURLToPath(import.meta.url)), '../../.env'),
+});
 
 const dsn = process.env.SENTRY_DSN;
 export const sentryEnabled = Boolean(dsn);
@@ -27,7 +29,9 @@ const IMG_URL_RE = /https?:\/\/[^\s"']*\/(uploads|training)\/[^\s"']*/g;
 
 function redact(value) {
   if (typeof value !== 'string') return value;
-  let out = value.replace(EMAIL_RE, '[email]').replace(IMG_URL_RE, '[image-url]');
+  let out = value
+    .replace(EMAIL_RE, '[email]')
+    .replace(IMG_URL_RE, '[image-url]');
   if (R2_BASE) out = out.split(R2_BASE).join('[image-url]');
   return out;
 }
@@ -47,21 +51,25 @@ function scrubEvent(event) {
   if (event.message) event.message = redact(event.message);
   for (const ex of event.exception?.values ?? []) ex.value = redact(ex.value);
   for (const b of event.breadcrumbs ?? []) b.message = redact(b.message);
-  for (const k of Object.keys(event.extra ?? {})) event.extra[k] = redact(event.extra[k]);
+  for (const k of Object.keys(event.extra ?? {}))
+    event.extra[k] = redact(event.extra[k]);
   return event;
 }
 
 if (sentryEnabled) {
   Sentry.init({
     dsn,
-    environment: process.env.SENTRY_ENVIRONMENT || process.env.NODE_ENV || 'development',
+    environment:
+      process.env.SENTRY_ENVIRONMENT || process.env.NODE_ENV || 'development',
     release: process.env.SENTRY_RELEASE || undefined,
     // Errors are the goal here; tracing is opt-in and off by default.
     tracesSampleRate: Number(process.env.SENTRY_TRACES_SAMPLE_RATE) || 0,
     sendDefaultPii: false,
     beforeSend: scrubEvent,
   });
-  console.log(`[api] Sentry error tracking enabled (${process.env.SENTRY_ENVIRONMENT || process.env.NODE_ENV || 'development'})`);
+  console.log(
+    `[api] Sentry error tracking enabled (${process.env.SENTRY_ENVIRONMENT || process.env.NODE_ENV || 'development'})`,
+  );
 } else {
   console.log('[api] SENTRY_DSN unset: error tracking disabled');
 }

@@ -6,7 +6,7 @@ export default function Footer() {
     <footer className="footer">
       <div className="container footer__inner">
         <div className="footer__brand">
-          <p className="footer__word">Headliner</p>
+          <p className="footer__word">Picturesk.ai</p>
           <p className="footer__tag">Studio headshots from your selfies.</p>
         </div>
 
@@ -34,8 +34,8 @@ export default function Footer() {
         </nav>
 
         <p className="footer__legal">
-          <span>© 2026 Headliner</span>
-          <a href="mailto:hello@headliner.studio">hello@headliner.studio</a>
+          <span>© 2026 Picturesk.ai</span>
+          <a href="mailto:hello@picturesk.ai">hello@picturesk.ai</a>
         </p>
       </div>
     </footer>

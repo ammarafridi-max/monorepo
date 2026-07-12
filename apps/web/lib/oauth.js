@@ -12,7 +12,7 @@ import { cookies } from 'next/headers';
  * verify an id_token JWT signature, and every provider here exposes an email there.
  */
 
-export const STATE_COOKIE = 'headliner_oauth_state';
+export const STATE_COOKIE = 'picturesk_oauth_state';
 
 const PROVIDERS = {
   google: {

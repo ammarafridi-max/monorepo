@@ -2,13 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { LOOKS, ATTIRE } from '@headliner/shared/catalog';
+import { LOOKS, ATTIRE, AGE_RANGES, GENDERS, RACES, FACIAL_HAIR } from '@picturesk/shared/catalog';
 import { readState } from '../../../lib/generator';
 import { createCheckout } from '../../../lib/api';
 import { track, EVENTS } from '../../../lib/analytics';
 
 const LOOK_LABEL = Object.fromEntries(LOOKS.map((l) => [l.id, l.label]));
 const ATTIRE_LABEL = Object.fromEntries(ATTIRE.map((a) => [a.id, a.label]));
+const GENDER_LABEL = Object.fromEntries(GENDERS.map((g) => [g.id, g.label]));
+const AGE_LABEL = Object.fromEntries(AGE_RANGES.map((a) => [a.id, a.label]));
+const RACE_LABEL = Object.fromEntries(RACES.map((r) => [r.id, r.label]));
+const FACIAL_HAIR_LABEL = Object.fromEntries(FACIAL_HAIR.map((f) => [f.id, f.label]));
 
 // Step 3: review + pay. Creating the order happens HERE (the first DB write), with
 // the selections AND the already-uploaded photos. The CTA calls /checkout (which
@@ -25,7 +29,8 @@ export default function PayPage() {
   useEffect(() => {
     const s = readState();
     // Guard the funnel order.
-    if (s.looks.length === 0 || s.attire.length === 0) return router.replace('/generator/select');
+    if (s.looks.length === 0 || s.attire.length === 0 || !s.gender || !s.ageRange)
+      return router.replace('/generator/select');
     if (s.images.length === 0) return router.replace('/generator/upload');
     setState(s);
   }, [router]);
@@ -43,6 +48,10 @@ export default function PayPage() {
         email: state.email,
         selectedLooks: state.looks,
         selectedAttire: state.attire,
+        gender: state.gender,
+        ageRange: state.ageRange,
+        race: state.race,
+        facialHair: state.facialHair,
         uploadedImageUrls: state.images,
       });
       // Best-effort: link the order to the logged-in account (no-op if anonymous).
@@ -84,6 +93,19 @@ export default function PayPage() {
         <div className="review__row">
           <dt className="review__k">Attire</dt>
           <dd className="review__v">{state.attire.map((id) => ATTIRE_LABEL[id]).join(', ')}</dd>
+        </div>
+        <div className="review__row">
+          <dt className="review__k">You</dt>
+          <dd className="review__v">
+            {[
+              GENDER_LABEL[state.gender],
+              AGE_LABEL[state.ageRange],
+              RACE_LABEL[state.race],
+              FACIAL_HAIR_LABEL[state.facialHair],
+            ]
+              .filter(Boolean)
+              .join(', ')}
+          </dd>
         </div>
         <div className="review__row">
           <dt className="review__k">Photos</dt>

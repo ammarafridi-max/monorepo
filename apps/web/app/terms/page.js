@@ -3,8 +3,8 @@ import Sections from '../Sections';
 import { terms } from '../../data/legal';
 
 export const metadata = {
-  title: 'Terms of Service. Headliner',
-  description: 'The terms for using Headliner: eligibility, acceptable use, payment, refunds, and your rights.',
+  title: 'Terms of Service. Picturesk.ai',
+  description: 'The terms for using Picturesk: eligibility, acceptable use, payment, refunds, and your rights.',
 };
 
 export default function TermsPage() {

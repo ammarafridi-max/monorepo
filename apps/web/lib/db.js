@@ -1,15 +1,15 @@
 import 'server-only';
 import mongoose from 'mongoose';
-import { connectMongo } from '@headliner/shared';
+import { connectMongo } from '@picturesk/shared';
 
 /**
  * Cached Mongoose connection for the Next server. connectMongo() from
- * @headliner/shared does the actual connect; we cache the promise on globalThis so
+ * @picturesk/shared does the actual connect; we cache the promise on globalThis so
  * dev HMR (which re-imports modules) reuses one connection instead of opening a
  * new one every reload.
  */
-let cached = globalThis.__headlinerMongoose;
-if (!cached) cached = globalThis.__headlinerMongoose = { promise: null };
+let cached = globalThis.__pictureskMongoose;
+if (!cached) cached = globalThis.__pictureskMongoose = { promise: null };
 
 export async function dbConnect() {
   if (mongoose.connection.readyState === 1) return mongoose;

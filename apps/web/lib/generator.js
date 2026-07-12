@@ -8,9 +8,18 @@
 // and the data is catalog ids, an email, and public R2 URLs. Cleared once the
 // order is created.
 
-const KEY = 'headliner.generator';
+const KEY = 'picturesk.generator';
 
-const EMPTY = { looks: [], attire: [], email: '', images: [] };
+const EMPTY = {
+  looks: [],
+  attire: [],
+  gender: '',
+  ageRange: '',
+  race: '',
+  facialHair: '',
+  email: '',
+  images: [],
+};
 
 /** Read the current funnel state. Safe on the server (returns empty). */
 export function readState() {
@@ -20,6 +29,10 @@ export function readState() {
     return {
       looks: Array.isArray(s.looks) ? s.looks : [],
       attire: Array.isArray(s.attire) ? s.attire : [],
+      gender: typeof s.gender === 'string' ? s.gender : '',
+      ageRange: typeof s.ageRange === 'string' ? s.ageRange : '',
+      race: typeof s.race === 'string' ? s.race : '',
+      facialHair: typeof s.facialHair === 'string' ? s.facialHair : '',
       email: typeof s.email === 'string' ? s.email : '',
       images: Array.isArray(s.images) ? s.images : [],
     };

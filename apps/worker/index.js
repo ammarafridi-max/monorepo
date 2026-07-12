@@ -14,19 +14,20 @@ dotenv.config({ path: resolve(dirname(fileURLToPath(import.meta.url)), '../../.e
 
 import {
   buildPrompts,
+  buildSubject,
   connectMongo,
   createRedisConnection,
   createStorage,
   createEmailClient,
   Order,
   QUEUE_NAMES,
-} from '@headliner/shared';
+} from '@picturesk/shared';
 import { TRIGGER_WORD } from './replicateClient.js';
 import { createPipeline } from './pipeline.js';
 import { createEnsureRefund } from './refund.js';
 
 /**
- * Headliner worker (Phase 5: failure hardening).
+ * Picturesk worker (Phase 5: failure hardening).
  *
  * Consumes order-pipeline jobs and drives an order PAID -> TRAINING ->
  * GENERATING -> DELIVERED. The resumable, per-stage-idempotent logic lives in
@@ -45,7 +46,7 @@ const {
   STRIPE_SECRET_KEY,
   WEB_BASE_URL = 'http://localhost:3000',
   BREVO_API_KEY,
-  BREVO_SENDER = 'Headliner <hi@yourdomain.com>',
+  BREVO_SENDER = 'Picturesk.ai <hello@picturesk.ai>',
 } = process.env;
 if (!MONGODB_URI) throw new Error('[worker] MONGODB_URI is required');
 if (!REDIS_URL) throw new Error('[worker] REDIS_URL is required');
@@ -108,12 +109,25 @@ const scoreIdentity = IDENTITY_SCORING
         : await import('./scoreIdentity.js')
     ).scoreIdentity
   : undefined;
+
+// Identity lock via face swap. Gated on REPLICATE_FACE_SWAP_MODEL: when set, the
+// pipeline swaps the customer's real face onto each delivered headshot (fixing face
+// shape / hair / expression the LoRA drifts on). Unset = OFF, delivery unchanged.
+const FACE_SWAP = Boolean(process.env.REPLICATE_FACE_SWAP_MODEL);
+const swapFace = FACE_SWAP
+  ? (
+      USE_FAKE_REPLICATE
+        ? await import('./swapFace.fake.js')
+        : await import('./swapFace.js')
+    ).swapFace
+  : undefined;
 if (USE_FAKE_REPLICATE) console.warn('[worker] USE_FAKE_REPLICATE=1: using the in-memory fake client');
 console.log(
   `[worker] identity culling ${
     IDENTITY_SCORING ? 'ON' : 'OFF (deferred; set REPLICATE_FACE_EMBED_MODEL to enable)'
   }`
 );
+console.log(`[worker] face swap ${FACE_SWAP ? 'ON' : 'OFF (set REPLICATE_FACE_SWAP_MODEL to enable)'}`);
 
 await connectMongo(MONGODB_URI);
 console.log('[worker] connected to MongoDB');
@@ -193,10 +207,18 @@ async function onDelivered(orderId) {
 const ensureRefund = createEnsureRefund({ stripe });
 
 // The subject anchor every prompt leads with: the trigger word (activates the
-// trained face) plus a generic subject. Naming the subject up front holds a
-// weak seed's identity so it does not drift; generic ("a person") now that the
-// funnel serves anyone, not one hardcoded subject.
-const SUBJECT_ANCHOR = `${TRIGGER_WORD}, a person`;
+// trained face) plus the subject, built PER ORDER from its demographics via the
+// shared buildSubject (gender/age/race/facial hair the customer chose on the select
+// step, e.g. "a man in their thirties, with a full beard"). Naming the subject up
+// front holds a weak seed's identity so it does not drift; buildSubject falls back
+// to a generic "a person" when demographics are absent (legacy orders).
+const subjectAnchorFor = (order) =>
+  `${TRIGGER_WORD}, ${buildSubject({
+    gender: order.gender,
+    ageRange: order.ageRange,
+    race: order.race,
+    facialHair: order.facialHair,
+  })}`;
 
 // Per-order prompt builder: turn the order's selected looks/attire into
 // GENERATE_COUNT prompts via the SHARED catalog buildPrompts, the single source
@@ -207,13 +229,14 @@ const buildOrderPrompts = (order) =>
     looks: order.selectedLooks ?? [],
     attire: order.selectedAttire ?? [],
     count: GENERATE_COUNT,
-    subjectAnchor: SUBJECT_ANCHOR,
+    subjectAnchor: subjectAnchorFor(order),
   });
 
 const pipeline = createPipeline({
   client,
   buildPrompts: buildOrderPrompts,
   scoreIdentity,
+  swapFace,
   generateCount: GENERATE_COUNT,
   deliverCount: DELIVER_COUNT,
   resolveTrainingZip,

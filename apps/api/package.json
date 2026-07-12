@@ -1,5 +1,5 @@
 {
-  "name": "@headliner/api",
+  "name": "@picturesk/api",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -9,7 +9,7 @@
     "test": "node --test 'test/**/*.test.js'"
   },
   "dependencies": {
-    "@headliner/shared": "workspace:*",
+    "@picturesk/shared": "workspace:*",
     "@sentry/node": "^10.64.0",
     "bullmq": "^5.12.0",
     "cors": "^2.8.5",

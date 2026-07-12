@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 
-import { Order, ORDER_STATES, buildPrompts } from '@headliner/shared';
+import { Order, ORDER_STATES, buildPrompts } from '@picturesk/shared';
 import { createPipeline } from '../pipeline.js';
 import { createEnsureRefund } from '../refund.js';
 import * as fake from '../replicateClient.fake.js';
