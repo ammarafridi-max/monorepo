@@ -17,6 +17,8 @@ const NAV = [
   { href: '/admin', label: 'Overview', exact: true },
   { href: '/admin/orders', label: 'Orders' },
   { href: '/admin/customers', label: 'Customers' },
+  { href: '/admin/admins', label: 'Team', roles: ['admin'] },
+  { href: '/admin/account', label: 'Account' },
 ];
 
 export default function AdminShell({ children }) {
@@ -56,7 +58,7 @@ export default function AdminShell({ children }) {
             <span className="adm-tag">Admin</span>
           </div>
           <nav className="adm-nav">
-            {NAV.map((n) => {
+            {NAV.filter((n) => !n.roles || n.roles.includes(adminUser.role)).map((n) => {
               const active = n.exact ? pathname === n.href : pathname.startsWith(n.href);
               return (
                 <Link key={n.href} href={n.href} className={active ? 'active' : ''}>

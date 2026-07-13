@@ -367,9 +367,17 @@ monorepo, right-sized to this repo (layered modules in `apps/api`, not DI packag
   margin), `/admin/orders/:id` (full detail), `/admin/stats` (revenue, compute cost,
   margin, counts, refunds, stuck), `/admin/customers`. All behind the cookie session
   OR the `ADMIN_TOKEN` break-glass header (for scripts). Both staff roles can read.
+- **Admin-user management (api, admin only):** `GET`/`POST /admin-users`,
+  `GET`/`PATCH`/`DELETE /admin-users/:username`, `PATCH /admin-users/:username/password`
+  (reset another user's password). Guarded by `restrictTo('admin')`, so `support`
+  cannot reach it. Two invariants: at least one ACTIVE admin must always remain, and
+  you cannot deactivate, demote, or delete your own account. Own profile/password
+  changes are the `/auth/me` + `/auth/update-password` routes instead.
 - **UI (web):** `/admin/login` then `/admin` (overview), `/admin/orders`,
-  `/admin/orders/:id`, `/admin/customers`. Cookie is the credential
-  (`credentials:'include'`); a client guard redirects to login. Not indexed. The
+  `/admin/orders/:id`, `/admin/customers`, `/admin/admins` (Team, admin only:
+  create/edit/activate/delete staff + reset passwords), `/admin/account` (own profile
+  + password). Cookie is the credential (`credentials:'include'`); a client guard
+  redirects to login and hides admin-only nav from `support`. Not indexed. The
   customer topbar/footer are hidden on `/admin`.
 - **Bootstrap the first admin:** set `ADMIN_JWT_SECRET` and a strong `SEED_PASSWORD`
   (plus optional `SEED_NAME/SEED_USERNAME/SEED_EMAIL`), then run

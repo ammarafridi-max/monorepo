@@ -59,6 +59,55 @@ export function getAdminCustomers(params = {}) {
   return adminFetch(`/admin/customers${qs ? `?${qs}` : ''}`);
 }
 
+// --- Admin-user management (admin role only) ---
+export function getAdminUsers(params = {}) {
+  const clean = Object.fromEntries(
+    Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== '')
+  );
+  const qs = new URLSearchParams(clean).toString();
+  return adminFetch(`/admin-users${qs ? `?${qs}` : ''}`);
+}
+export function createAdminUser(data) {
+  return adminFetch('/admin-users', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+}
+export function updateAdminUser(username, data) {
+  return adminFetch(`/admin-users/${username}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+}
+export function deleteAdminUser(username) {
+  return adminFetch(`/admin-users/${username}`, { method: 'DELETE' });
+}
+export function setAdminUserPassword(username, password, passwordConfirm) {
+  return adminFetch(`/admin-users/${username}/password`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password, passwordConfirm }),
+  });
+}
+
+// --- Own account (any admin, via the /auth routes) ---
+export function updateMyProfile(data) {
+  return adminFetch('/auth/me', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+}
+export function updateMyPassword({ passwordCurrent, password, passwordConfirm }) {
+  return adminFetch('/auth/update-password', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ passwordCurrent, password, passwordConfirm }),
+  });
+}
+
 // --- Display helpers ---
 /** Integer cents -> "$35.00". Null/undefined -> "-". */
 export function usd(cents) {

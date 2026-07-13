@@ -430,6 +430,116 @@
   display: block;
 }
 
+/* Team / row actions ------------------------------------------------------ */
+.adm-actions-h {
+  text-align: right;
+}
+.adm-actions {
+  text-align: right;
+  white-space: nowrap;
+}
+.adm-mini {
+  appearance: none;
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  padding: 4px 9px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-left: 6px;
+}
+.adm-mini:hover:not(:disabled) {
+  border-color: var(--cobalt);
+  color: var(--cobalt);
+}
+.adm-mini--danger:hover:not(:disabled) {
+  border-color: var(--warn);
+  color: var(--warn);
+}
+.adm-mini:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.adm-row--muted td {
+  color: var(--ash);
+}
+.adm-selftag {
+  margin-left: 8px;
+  font-size: 11px;
+  color: var(--cobalt);
+  border: 1px solid rgba(47, 91, 255, 0.5);
+  border-radius: 4px;
+  padding: 0 5px;
+}
+.adm-ok {
+  color: var(--ok);
+  border: 1px solid var(--ok);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin: 0 0 14px;
+  font-size: 14px;
+}
+
+/* Modal ------------------------------------------------------------------- */
+.adm-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(11, 11, 12, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 50;
+}
+.adm-modal__card {
+  width: 100%;
+  max-width: 440px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 24px 24px 26px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.adm-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.adm-modal__head h2 {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 20px;
+  margin: 0;
+}
+.adm-modal__x {
+  appearance: none;
+  background: none;
+  border: none;
+  color: var(--ash);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.adm-modal__x:hover {
+  color: var(--ink);
+}
+.adm-form__row {
+  display: flex;
+  gap: 14px;
+}
+.adm-form__row .adm-field {
+  flex: 1;
+}
+.adm-btn--sm {
+  padding: 9px 14px;
+  font-size: 14px;
+  margin: 0;
+}
+
 /* Login ------------------------------------------------------------------- */
 .adm-login {
   min-height: 100vh;

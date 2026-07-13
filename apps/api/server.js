@@ -41,6 +41,7 @@ import { RATE_LIMITS, createRateLimiters } from './rateLimit.js';
 import { createAdminAuth } from './admin/router.js';
 import { restrictTo } from './admin/authMiddleware.js';
 import { createAdminDataRouter } from './admin/adminData.js';
+import { createAdminUsersRouter } from './admin/adminUsersRouter.js';
 
 /**
  * Picturesk API (Phase 4: uploads + delivery).
@@ -841,6 +842,13 @@ function adminGuard(req, res, next) {
  * ./admin/adminData.js so no customer-facing route can leak margin/Stripe/Replicate.
  */
 app.use('/admin', createAdminDataRouter({ guard: adminGuard, restrictTo }));
+
+/**
+ * Admin-user MANAGEMENT (create/edit/deactivate/delete staff, reset passwords).
+ * Admin-only (restrictTo('admin') inside the router), so support-role staff cannot
+ * reach it. Same combined guard as the data routes.
+ */
+app.use('/admin-users', createAdminUsersRouter({ guard: adminGuard, restrictTo }));
 
 // Sentry's Express error handler catches anything the route try/catch blocks miss
 // (e.g. a throw in middleware). Registered after all routes, before listen. No-op
