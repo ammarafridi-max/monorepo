@@ -32,11 +32,26 @@ export const REASONS = Object.freeze({
   multipleFaces: 'More than one person',
   faceTooSmall: 'Face too small, get closer',
   unreadable: 'We could not read this photo',
+  // Strict-gate reasons (from the vision screen in photoGate.js).
+  sunglasses: 'Take the sunglasses off',
+  hat: 'No hats or caps',
+  blurry: 'Too blurry, use a sharp photo',
+  dark: 'Too dark, use good lighting',
+});
+
+// Map a strict-gate issue id to its reason. Deliberately ONLY the two unambiguous,
+// training-wrecking cases (sunglasses, hat). `blurry`/`dark` are subjective and were
+// rejecting good photos, and `far`/`group` are the face detector's job -- all map to
+// null here so they never reject.
+const REASON_BY_ISSUE = Object.freeze({
+  sunglasses: REASONS.sunglasses,
+  hat: REASONS.hat,
 });
 
 /**
- * Decide one image from its detection result.
- * @param {{ faceCount: number, maxFaceBoxRatio: number, error?: boolean }} d
+ * Decide one image from its detection result. `qualityIssue` (optional) is the
+ * strict-gate verdict from the vision screen (photoGate.js).
+ * @param {{ faceCount: number, maxFaceBoxRatio: number, error?: boolean, qualityIssue?: string|null }} d
  * @param {typeof QUALITY} [q]
  * @returns {string|null} a reason if it fails, else null
  */
@@ -45,6 +60,8 @@ export function reasonForImage(d, q = QUALITY) {
   if (!d.faceCount) return REASONS.noFace;
   if (d.faceCount > 1) return REASONS.multipleFaces;
   if (d.maxFaceBoxRatio < q.minFaceBoxRatio) return REASONS.faceTooSmall;
+  // Strict attribute checks (sunglasses / hat / blurry / dark) from the VLM screen.
+  if (d.qualityIssue && REASON_BY_ISSUE[d.qualityIssue]) return REASON_BY_ISSUE[d.qualityIssue];
   return null;
 }
 

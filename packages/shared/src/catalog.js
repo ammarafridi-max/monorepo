@@ -244,7 +244,9 @@ export function buildPrompts({ looks = [], attire = [], count, subjectAnchor }) 
   const prompts = [];
   for (let i = 0; i < n; i++) {
     const { look, att } = combos[i % combos.length];
-    prompts.push(`${subjectAnchor}, ${att}, ${look}, sharp focus, high detail`);
+    prompts.push(
+      `${subjectAnchor}, ${att}, ${look}, natural realistic skin texture, sharp detailed eyes, photographic, sharp focus, high detail`
+    );
   }
   return prompts;
 }

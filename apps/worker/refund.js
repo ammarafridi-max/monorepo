@@ -23,17 +23,24 @@ export function createEnsureRefund({ stripe }) {
     if (order.refundedAt) return; // already refunded
     if (!order.stripePaymentIntentId) return; // never paid, nothing to refund
     if (!stripe) {
-      console.warn(`[worker] order ${orderId} FAILED but no Stripe client; refund skipped`);
+      console.warn(
+        `[worker] order ${orderId} FAILED but no Stripe client; refund skipped`,
+      );
       return;
     }
 
     try {
       await stripe.refunds.create(
         { payment_intent: order.stripePaymentIntentId },
-        { idempotencyKey: `refund:${orderId}` }
+        { idempotencyKey: `refund:${orderId}` },
       );
-      await Order.updateOne({ _id: orderId }, { $set: { refundedAt: new Date() } });
-      console.log(`[worker] order ${orderId} refunded (${order.stripePaymentIntentId})`);
+      await Order.updateOne(
+        { _id: orderId },
+        { $set: { refundedAt: new Date() } },
+      );
+      console.log(
+        `[worker] order ${orderId} refunded (${order.stripePaymentIntentId})`,
+      );
     } catch (err) {
       console.error(`[worker] order ${orderId} refund failed: ${err.message}`);
     }

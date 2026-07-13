@@ -25,6 +25,7 @@ import {
 import { TRIGGER_WORD } from './replicateClient.js';
 import { createPipeline } from './pipeline.js';
 import { createEnsureRefund } from './refund.js';
+import { classifyFacialHair } from './classifyFacialHair.js';
 
 /**
  * Picturesk worker (Phase 5: failure hardening).
@@ -38,6 +39,12 @@ import { createEnsureRefund } from './refund.js';
  */
 
 const USE_FAKE_REPLICATE = process.env.USE_FAKE_REPLICATE === '1';
+
+// Generation backend. 'lora' (default): per-user LoRA training + generation, with
+// optional culling/swap. 'pulid': NO training -- identity comes from a reference
+// selfie fed to bytedance/flux-pulid at generation time, which fixes face shape and
+// removes the train/cull/swap machinery. Gated so prod is unchanged until flipped.
+const USE_PULID = (process.env.GENERATION_BACKEND || 'lora').toLowerCase() === 'pulid';
 
 const {
   MONGODB_URI,
@@ -68,7 +75,9 @@ function intEnv(name, fallback) {
 // that var is UNSET the feature is OFF: we generate exactly what we deliver and
 // skip scoring, so delivery behaves exactly as it did before. Set it (once you
 // deploy an embedding model) to turn on overgenerate-and-cull.
-const IDENTITY_SCORING = Boolean(process.env.REPLICATE_FACE_EMBED_MODEL);
+// PuLID already locks identity + face shape from the reference, so culling adds no
+// value there -- force it off in PuLID mode regardless of the env var.
+const IDENTITY_SCORING = !USE_PULID && Boolean(process.env.REPLICATE_FACE_EMBED_MODEL);
 
 // How many headshots we deliver. With culling ON we generate MORE candidates
 // (GENERATE_COUNT) and keep the best DELIVER_COUNT; with culling OFF we generate
@@ -83,10 +92,12 @@ if (GENERATE_COUNT < DELIVER_COUNT) {
 
 if (!USE_FAKE_REPLICATE) {
   if (!process.env.REPLICATE_API_TOKEN) throw new Error('[worker] REPLICATE_API_TOKEN is required');
-  if (!process.env.REPLICATE_DESTINATION_MODEL)
+  // The destination model is the LoRA trainer's push target -- only the 'lora'
+  // backend trains, so PuLID does not need it.
+  if (!USE_PULID && !process.env.REPLICATE_DESTINATION_MODEL)
     throw new Error('[worker] REPLICATE_DESTINATION_MODEL is required (owner/name)');
   // NOTE: REPLICATE_FACE_EMBED_MODEL is intentionally NOT required. Identity
-  // culling is deferred and OFF until a real embedding model is deployed (README).
+  // culling is OFF until it is set (and always off in PuLID mode).
   // Refunds are money-critical: the real worker must be able to issue them.
   if (!STRIPE_SECRET_KEY) throw new Error('[worker] STRIPE_SECRET_KEY is required (refunds)');
 }
@@ -94,11 +105,16 @@ if (!USE_FAKE_REPLICATE) {
 // Stripe client for refunds. null only in the fake path (no real money).
 const stripe = STRIPE_SECRET_KEY ? new Stripe(STRIPE_SECRET_KEY) : null;
 
-// Pick the real Replicate client or the in-memory fake. The fake exposes the
-// same startTraining/pollTraining/startGeneration/pollGeneration interface.
+// Pick the generation client. All three expose the same
+// startTraining/pollTraining/startGeneration/pollGeneration interface, so the
+// pipeline is identical across them: the fake (in-memory), the LoRA client (real
+// training + generation), or the PuLID client (no training; reference-image
+// generation).
 const client = USE_FAKE_REPLICATE
   ? await import('./replicateClient.fake.js')
-  : await import('./replicateClient.js');
+  : USE_PULID
+    ? await import('./replicateClient.pulid.js')
+    : await import('./replicateClient.js');
 // The identity scorer, loaded ONLY when culling is enabled (it needs the embed
 // model). When disabled, the pipeline uses its neutral default scorer and makes
 // no embedding calls. Real/fake split mirrors the Replicate client.
@@ -113,13 +129,28 @@ const scoreIdentity = IDENTITY_SCORING
 // Identity lock via face swap. Gated on REPLICATE_FACE_SWAP_MODEL: when set, the
 // pipeline swaps the customer's real face onto each delivered headshot (fixing face
 // shape / hair / expression the LoRA drifts on). Unset = OFF, delivery unchanged.
-const FACE_SWAP = Boolean(process.env.REPLICATE_FACE_SWAP_MODEL);
+// Also off in PuLID mode: PuLID already delivers the real face/shape, so a swap
+// on top is redundant.
+const FACE_SWAP = !USE_PULID && Boolean(process.env.REPLICATE_FACE_SWAP_MODEL);
 const swapFace = FACE_SWAP
   ? (
       USE_FAKE_REPLICATE
         ? await import('./swapFace.fake.js')
         : await import('./swapFace.js')
     ).swapFace
+  : undefined;
+
+// Realism enhancement (final polish). Gated on REPLICATE_ENHANCE_MODEL: when set,
+// each delivered image is run through a creative upscaler at low creativity to add
+// skin texture + sharpen eyes (de-plastic) without changing identity. Backend-
+// agnostic -- applies to whatever the delivered set is (LoRA, swapped, or PuLID).
+const ENHANCE_FACE = Boolean(process.env.REPLICATE_ENHANCE_MODEL);
+const enhanceFace = ENHANCE_FACE
+  ? (
+      USE_FAKE_REPLICATE
+        ? await import('./enhanceFace.fake.js')
+        : await import('./enhanceFace.js')
+    ).enhanceFace
   : undefined;
 if (USE_FAKE_REPLICATE) console.warn('[worker] USE_FAKE_REPLICATE=1: using the in-memory fake client');
 console.log(
@@ -128,9 +159,35 @@ console.log(
   }`
 );
 console.log(`[worker] face swap ${FACE_SWAP ? 'ON' : 'OFF (set REPLICATE_FACE_SWAP_MODEL to enable)'}`);
+console.log(
+  `[worker] realism enhance ${ENHANCE_FACE ? 'ON' : 'OFF (set REPLICATE_ENHANCE_MODEL to enable)'}`
+);
+console.log(
+  `[worker] generation backend: ${USE_PULID ? 'pulid (no training; reference-image identity)' : 'lora'}`
+);
 
 await connectMongo(MONGODB_URI);
 console.log('[worker] connected to MongoDB');
+
+// PuLID "training input" is just the reference selfie fed to the model at
+// generation time (the pipeline threads it through the training slot, see
+// replicateClient.pulid.js). Use the first uploaded selfie; the upload gate has
+// already ensured it has a detectable face.
+async function resolvePulidReference(order) {
+  const reference = (order.uploadedImageUrls ?? [])[0] || null;
+  if (!reference) return null;
+  // If the customer left facial hair blank, infer it from the reference so the
+  // prompt names the real beard and PuLID renders it (instead of a generic short
+  // one). Persist once; non-fatal -- a miss just means no derived descriptor.
+  if (!order.facialHair && !order.derivedFacialHair) {
+    const derived = await classifyFacialHair(reference);
+    if (derived) {
+      await Order.updateOne({ _id: order._id }, { $set: { derivedFacialHair: derived } });
+      console.log(`[worker] order ${order._id} derived facial hair: ${derived}`);
+    }
+  }
+  return reference;
+}
 
 /**
  * Resolve the training-images zip for an order. The flux trainer wants a single
@@ -206,19 +263,23 @@ async function onDelivered(orderId) {
 // client can be injected; a counting stub replaces it in tests).
 const ensureRefund = createEnsureRefund({ stripe });
 
-// The subject anchor every prompt leads with: the trigger word (activates the
-// trained face) plus the subject, built PER ORDER from its demographics via the
-// shared buildSubject (gender/age/race/facial hair the customer chose on the select
-// step, e.g. "a man in their thirties, with a full beard"). Naming the subject up
-// front holds a weak seed's identity so it does not drift; buildSubject falls back
-// to a generic "a person" when demographics are absent (legacy orders).
-const subjectAnchorFor = (order) =>
-  `${TRIGGER_WORD}, ${buildSubject({
+// The subject anchor every prompt leads with, built PER ORDER from its demographics
+// via the shared buildSubject (gender/age/race/facial hair, e.g. "a man in their
+// thirties, with a full beard"). In LoRA mode it is prefixed with the trigger word
+// that activates the trained face. In PuLID mode there is NO trigger (identity comes
+// from the reference image), so we use the plain subject description.
+const subjectAnchorFor = (order) => {
+  const subject = buildSubject({
     gender: order.gender,
     ageRange: order.ageRange,
     race: order.race,
-    facialHair: order.facialHair,
-  })}`;
+    // Prefer the customer's choice; fall back to the vision-inferred one (PuLID).
+    facialHair: order.facialHair || order.derivedFacialHair,
+  });
+  // PuLID re-synthesizes the face, so name a calm closed-mouth expression to beat
+  // FLUX's toothy-grin prior (the client also carries a teeth negative prompt).
+  return USE_PULID ? `${subject}, a calm, subtle closed-mouth expression` : `${TRIGGER_WORD}, ${subject}`;
+};
 
 // Per-order prompt builder: turn the order's selected looks/attire into
 // GENERATE_COUNT prompts via the SHARED catalog buildPrompts, the single source
@@ -237,9 +298,11 @@ const pipeline = createPipeline({
   buildPrompts: buildOrderPrompts,
   scoreIdentity,
   swapFace,
+  enhanceFace,
   generateCount: GENERATE_COUNT,
   deliverCount: DELIVER_COUNT,
-  resolveTrainingZip,
+  // PuLID has no zip to build; its "training input" is the reference selfie.
+  resolveTrainingZip: USE_PULID ? resolvePulidReference : resolveTrainingZip,
   onDelivered,
   onFailed: ensureRefund,
 });

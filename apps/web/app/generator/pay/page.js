@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { LOOKS, ATTIRE, AGE_RANGES, GENDERS, RACES, FACIAL_HAIR } from '@picturesk/shared/catalog';
 import { readState } from '../../../lib/generator';
 import { createCheckout } from '../../../lib/api';
@@ -118,9 +119,9 @@ export default function PayPage() {
       </dl>
 
       <div className="gennav">
-        <a className="btn btn--link" href="/generator/upload">
+        <Link className="btn btn--link" href="/generator/upload">
           Back
-        </a>
+        </Link>
         <button className="btn btn--primary" type="button" disabled={busy} onClick={onPay}>
           {busy ? 'Taking you to payment' : 'Pay and start'} <span className="btn__price">$35</span>
         </button>
@@ -144,7 +145,7 @@ export default function PayPage() {
             ))}
           </div>
           <p className="formnote" style={{ textAlign: 'left', marginTop: 10 }}>
-            <a href="/generator/upload">Back to your photos</a> to replace them.
+            <Link href="/generator/upload">Back to your photos</Link> to replace them.
           </p>
         </div>
       )}

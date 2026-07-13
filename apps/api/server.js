@@ -32,6 +32,7 @@ import {
   transitionOrder,
 } from '@picturesk/shared';
 import { detectFaces } from './faceDetector.js';
+import { assessPhoto } from './photoGate.js';
 import { moderateImage, MODERATION_REASON } from './contentModerator.js';
 import { QUALITY, evaluateImages, countError } from './uploadGate.js';
 import { RATE_LIMITS, createRateLimiters } from './rateLimit.js';
@@ -99,11 +100,19 @@ if (!UPLOAD_QUALITY_GATE) {
   console.warn('[api] UPLOAD_QUALITY_GATE=off: accepting all uploads without face validation (dev only)');
 }
 
+// The STRICT screen (sunglasses / hats / blur / dark) via a vision model, on top of
+// face detection. On by default; needs UPLOAD_QUALITY_GATE on too (it augments it).
+// A clean training set is the biggest lever on likeness, so we enforce it here.
+const UPLOAD_STRICT_GATE = UPLOAD_QUALITY_GATE && (process.env.UPLOAD_STRICT_GATE ?? 'on') !== 'off';
+
 // How many images the gate processes at once. Small on purpose: the vision
 // provider rate-limits bursts (env-overridable if you raise your limits). Note
 // each image now makes up to TWO Replicate calls (face + moderation), run in
 // parallel per image, so effective concurrency against Replicate is ~2x this.
-const DETECT_CONCURRENCY = Number.parseInt(process.env.UPLOAD_DETECT_CONCURRENCY, 10) || 4;
+// Lowered to 2: each photo now makes up to THREE Replicate calls (face + moderation
+// + strict screen). On a rate-limited (low-credit) account, high concurrency trips
+// 429s and the fail-closed face check then rejects good photos. Env-overridable.
+const DETECT_CONCURRENCY = Number.parseInt(process.env.UPLOAD_DETECT_CONCURRENCY, 10) || 2;
 
 // Content moderation is ON by default and, like the quality gate, is the real
 // server-side gate. Set UPLOAD_MODERATION=off ONLY for local dev without a
@@ -207,6 +216,9 @@ function toPublicOrder(order) {
     generatedCount,
     totalCount,
     createdAt: order.createdAt,
+    // Processing clock anchors: paidAt is when the worker's work begins, deliveredAt
+    // when it finishes, so the success page can show elapsed/total processing time.
+    paidAt: order.paidAt ?? null,
     deliveredAt: order.deliveredAt ?? null,
     // A calm, non-technical hint for a failed order, so the success page can say
     // whether the payment has been refunded.
@@ -274,6 +286,62 @@ function toAdminOrder(order) {
  * created, so no failing input can be paid for. Structured 422 shapes let the
  * client show per-photo reasons and let the user swap photos.
  */
+// Per-image detection cache (face + moderation + strict), keyed by URL in Redis.
+// The upload step gates the photos first (POST /uploads/gate); by the time
+// /checkout re-runs the gate, every URL is a cache hit, so checkout returns
+// instantly instead of re-hitting Replicate. This is why the pay button no longer
+// stalls. Only CLEAN results are cached -- an errored detection is recomputed.
+const GATE_CACHE_TTL_S = Number.parseInt(process.env.UPLOAD_GATE_CACHE_TTL, 10) || 3600;
+
+async function detectImageAll(url) {
+  const [face, moderation, strict] = await Promise.all([
+    UPLOAD_QUALITY_GATE
+      ? detectFaces(url).catch((err) => {
+          console.error(`[api] face detection failed for ${url}: ${err.message}`);
+          captureError(err, { route: 'orders/images', phase: 'face-detection' });
+          return { faceCount: 0, maxFaceBoxRatio: 0, error: true };
+        })
+      : Promise.resolve(null),
+    UPLOAD_MODERATION
+      ? moderateImage(url).catch((err) => {
+          console.error(`[api] moderation failed for ${url}: ${err.message}`);
+          captureError(err, { route: 'orders/images', phase: 'moderation' });
+          return { safe: MODERATION_FAIL_OPEN, score: null, reason: MODERATION_REASON, errored: true };
+        })
+      : Promise.resolve({ safe: true }),
+    // Strict screen fails OPEN (no issue) so a flaky VLM call never blocks a good
+    // photo. `errored` marks that so we do not cache a fail-open as a real "clean".
+    UPLOAD_STRICT_GATE
+      ? assessPhoto(url).catch((err) => {
+          console.error(`[api] photo screen failed for ${url}: ${err.message}`);
+          captureError(err, { route: 'orders/images', phase: 'photo-screen' });
+          return { issue: null, errored: true };
+        })
+      : Promise.resolve({ issue: null }),
+  ]);
+  return { face, moderation, strict };
+}
+
+async function cachedDetect(url) {
+  const key = `gate:v1:${url}`;
+  try {
+    const hit = await connection.get(key);
+    if (hit) return JSON.parse(hit);
+  } catch {
+    /* cache read failure -> just compute */
+  }
+  const res = await detectImageAll(url);
+  const clean = !res.face?.error && !res.moderation?.errored && !res.strict?.errored;
+  if (clean) {
+    try {
+      await connection.set(key, JSON.stringify(res), 'EX', GATE_CACHE_TTL_S);
+    } catch {
+      /* cache write failure is non-fatal */
+    }
+  }
+  return res;
+}
+
 async function runUploadGate(uploadedImageUrls) {
   if (!(UPLOAD_QUALITY_GATE || UPLOAD_MODERATION)) return null;
 
@@ -283,31 +351,11 @@ async function runUploadGate(uploadedImageUrls) {
   }
 
   // Bounded concurrency (firing all N at Replicate at once trips its rate limit).
-  // Face detection and moderation run in PARALLEL per image, so moderation adds no
-  // latency, only ~1 extra Replicate prediction per image in cost.
+  // Each image's detections are memoized per URL in Redis (cachedDetect), so a URL
+  // already screened at the upload step is a cache hit here.
   const results = await mapWithLimit(uploadedImageUrls, DETECT_CONCURRENCY, async (url, index) => {
-    const [face, moderation] = await Promise.all([
-      UPLOAD_QUALITY_GATE
-        ? detectFaces(url).catch((err) => {
-            // Fail closed on a per-image detection error: an unreadable image is
-            // not allowed to buy its way through.
-            console.error(`[api] face detection failed for ${url}: ${err.message}`);
-            captureError(err, { route: 'orders/images', phase: 'face-detection' });
-            return { faceCount: 0, maxFaceBoxRatio: 0, error: true };
-          })
-        : Promise.resolve(null),
-      UPLOAD_MODERATION
-        ? moderateImage(url).catch((err) => {
-            // The classifier ITSELF errored. Fail open (allow + alert) or closed
-            // per MODERATION_FAIL_OPEN. A positive detection never reaches this
-            // catch, so it is always blocked below.
-            console.error(`[api] moderation failed for ${url}: ${err.message}`);
-            captureError(err, { route: 'orders/images', phase: 'moderation' });
-            return { safe: MODERATION_FAIL_OPEN, score: null, reason: MODERATION_REASON, errored: true };
-          })
-        : Promise.resolve({ safe: true }),
-    ]);
-    return { index, url, face, moderation };
+    const { face, moderation, strict } = await cachedDetect(url);
+    return { index, url, face, moderation, strict };
   });
 
   // 1) SAFETY FIRST. Reject unsafe images with a non-graphic, branded reason; we
@@ -323,7 +371,9 @@ async function runUploadGate(uploadedImageUrls) {
 
   // 2) Then quality (face presence / size).
   if (UPLOAD_QUALITY_GATE) {
-    const failures = evaluateImages(results.map((r) => ({ index: r.index, url: r.url, ...r.face })));
+    const failures = evaluateImages(
+      results.map((r) => ({ index: r.index, url: r.url, ...r.face, qualityIssue: r.strict?.issue }))
+    );
     if (failures.length) {
       return { status: 422, body: { error: 'quality_gate', failures, rules: QUALITY } };
     }
@@ -487,6 +537,31 @@ app.post('/uploads/presign', presignLimiter, async (req, res) => {
     console.error('[api] POST /uploads/presign failed:', err);
     captureError(err, { route: 'uploads/presign' });
     return res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * POST /uploads/gate  --  run the upload quality gate on the given image URLs
+ * WITHOUT creating an order or a Stripe session. The upload step calls this so the
+ * (slow) evaluation happens THERE, with a "Checking your photos" state, instead of
+ * on the pay button. Results are cached per URL, so the later /checkout gate is a
+ * cache hit and returns instantly. Same 422 shape as /checkout on failure.
+ *
+ * Body: { uploadedImageUrls: [] }
+ */
+app.post('/uploads/gate', presignLimiter, async (req, res) => {
+  try {
+    const { uploadedImageUrls } = req.body ?? {};
+    if (!Array.isArray(uploadedImageUrls) || uploadedImageUrls.length === 0) {
+      return res.status(400).json({ error: 'uploadedImageUrls must be a non-empty array' });
+    }
+    const gate = await runUploadGate(uploadedImageUrls);
+    if (gate) return res.status(gate.status).json(gate.body);
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error('[api] POST /uploads/gate failed:', err);
+    captureError(err, { route: 'uploads/gate' });
+    return res.status(500).json({ error: 'gate failed' });
   }
 });
 

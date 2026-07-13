@@ -82,6 +82,10 @@ const orderSchema = new Schema(
     ageRange: String,
     race: String,
     facialHair: String,
+    // Facial hair inferred from the reference selfie (a vision model) when the
+    // customer left facialHair blank. Used by the PuLID backend to describe the
+    // beard in the prompt so it renders the real one, not a generic short beard.
+    derivedFacialHair: String,
 
     // The customer's photos, uploaded direct-to-R2 BEFORE payment and passed to
     // /checkout (the order is created already carrying them).
@@ -102,6 +106,11 @@ const orderSchema = new Schema(
     // the selected set), persisted per slot so the swap pass is resumable. When set,
     // deliveredImageUrls points at THESE, not the raw generated candidates.
     swappedImageUrls: [String],
+
+    // Realism-enhanced delivered images (clarity-upscaler: skin texture + eyes),
+    // the FINAL polish applied to the selected/swapped set, persisted per slot so
+    // the enhance pass is resumable. When set, deliveredImageUrls points at THESE.
+    enhancedImageUrls: [String],
 
     // The CHOSEN delivered subset: the top DELIVER_COUNT candidates by identity
     // score, best-first. This is the idempotency anchor for SELECTION

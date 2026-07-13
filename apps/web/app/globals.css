@@ -262,6 +262,43 @@ a {
   margin: 0;
 }
 
+/* Photo requirements: a calm do / avoid box. Good inputs are the biggest lever on
+ * likeness, so this sits up front. Green/warn dots, no second accent (cobalt stays
+ * reserved), no emoji per BRAND. */
+.reqs {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fffdf9;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.reqs li {
+  position: relative;
+  padding-left: 18px;
+  color: var(--ash);
+}
+.reqs li + li {
+  margin-top: 6px;
+}
+.reqs li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+}
+.reqs__good::before {
+  background: var(--ok);
+}
+.reqs__bad::before {
+  background: var(--warn);
+}
+
 /* Photos are the loudest thing on screen: big, edge to edge in a grid. */
 .thumbs {
   margin-top: 20px;
@@ -446,8 +483,33 @@ a {
   color: var(--ink);
 }
 
+/* The in-progress step spins: a hairline ring with a cobalt arc sweeping around
+ * it, so "now" reads as active motion rather than a static dot. `align-self`
+ * centers the (larger) spinner on the row while the other dots stay baseline. */
 .step--current .step__dot {
-  background: var(--cobalt);
+  width: 14px;
+  height: 14px;
+  background: transparent;
+  border: 2px solid var(--line);
+  border-top-color: var(--cobalt);
+  border-radius: 999px;
+  transform: none;
+  align-self: center;
+  animation: step-spin 0.7s linear infinite;
+}
+
+@keyframes step-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Respect reduced-motion: fall back to a solid cobalt dot, no spin. */
+@media (prefers-reduced-motion: reduce) {
+  .step--current .step__dot {
+    animation: none;
+    border-color: var(--cobalt);
+  }
 }
 
 .step__label {
@@ -458,6 +520,24 @@ a {
   margin-left: auto;
   font-size: 13px;
   color: var(--ash);
+}
+
+/* Processing clock: a muted label + a tabular-figure value. Tabular numbers keep
+ * the live "m:ss" from jittering as digits change. */
+.timer {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 14px 0 0;
+  font-size: 14px;
+}
+.timer__label {
+  color: var(--ash);
+}
+.timer__value {
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
 }
 
 /* Generation progress ----------------------------------------------------- */
@@ -1388,6 +1468,116 @@ a {
   border: solid var(--bone);
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
+}
+
+/* Guided camera capture ---------------------------------------------------- */
+
+.capture__prompt {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 22px;
+  margin: 18px 0 2px;
+}
+.capture__hint {
+  margin: 0 0 14px;
+  font-size: 14px;
+  color: var(--ash);
+}
+
+/* The live preview. Mirrored so it feels like looking in a mirror; the captured
+ * frame itself is drawn un-mirrored (natural orientation). */
+.capture__stage {
+  position: relative;
+  max-width: 380px;
+  margin: 0 auto;
+  aspect-ratio: 3 / 4;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--ink);
+}
+.capture__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+  display: block;
+}
+
+/* Centered oval guide: green when the face is well placed, hairline otherwise. */
+.capture__ring {
+  position: absolute;
+  top: 12%;
+  left: 22%;
+  width: 56%;
+  height: 66%;
+  border: 3px solid rgba(250, 249, 246, 0.55);
+  border-radius: 50%;
+  pointer-events: none;
+  transition: border-color 0.2s ease;
+}
+.capture__ring--ok {
+  border-color: var(--ok);
+}
+.capture__ring--none,
+.capture__ring--far,
+.capture__ring--offcenter,
+.capture__ring--multiple {
+  border-color: rgba(250, 249, 246, 0.55);
+}
+
+.capture__status {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(11, 11, 12, 0.66);
+  color: var(--bone);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/* Progress dots for the pose sequence. */
+.capture__dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 16px 0 0;
+}
+.capture__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--line);
+}
+.capture__dot--done {
+  background: var(--ok);
+}
+.capture__dot--now {
+  background: var(--cobalt);
+}
+
+/* A callout on the upload step offering the guided camera path. */
+.capture-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 18px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fffdf9;
+}
+.capture-cta__text {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink);
+}
+.capture-cta__text span {
+  color: var(--ash);
 }
 
 /* Step navigation (back / continue). */

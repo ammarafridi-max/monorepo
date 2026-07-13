@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { presignUploads, putToStorage } from '../../../lib/api';
+import Link from 'next/link';
+import { presignUploads, putToStorage, gateUploads } from '../../../lib/api';
 import { QUALITY, detectImage, reasonFor } from '../../../lib/quality';
 import { readState, writeState } from '../../../lib/generator';
 import { track, EVENTS } from '../../../lib/analytics';
@@ -96,7 +97,7 @@ export default function UploadPage() {
     [addFiles]
   );
 
-  const busy = phase === 'uploading';
+  const busy = phase === 'uploading' || phase === 'checking';
   const checking = items.some((it) => it.kind === 'new' && it.status === 'checking');
   const badCount = items.filter((it) => it.kind === 'new' && it.status === 'bad').length;
   const countOk = items.length >= QUALITY.minPhotos && items.length <= QUALITY.maxPhotos;
@@ -136,8 +137,29 @@ export default function UploadPage() {
       // Preserve on-screen order across existing + newly uploaded photos.
       const images = items.map((it) => (it.kind === 'existing' ? it.url : urlByNewId.get(it.id)));
       writeState({ images });
+
+      // Run the SERVER gate here (not on the pay button), so the slow evaluation
+      // happens with a "Checking your photos" state and /checkout is then instant.
+      setPhase('checking');
+      await gateUploads(images);
       router.push('/generator/pay');
     } catch (err) {
+      if (err.status === 422) {
+        // Flag the exact photos the server rejected, by their position in `images`.
+        const failures = err.body?.failures || [];
+        const byIndex = new Map(failures.map((f) => [f.index, f.reason]));
+        setItems((prev) =>
+          prev.map((it, i) =>
+            byIndex.has(i) ? { ...it, status: 'bad', reason: byIndex.get(i) } : it
+          )
+        );
+        setError(
+          err.body?.countError ||
+            'Some photos did not pass our check. Replace the flagged ones and try again.'
+        );
+        setPhase('idle');
+        return;
+      }
       setError(err.message || 'Something went wrong. Please try again.');
       setPhase('idle');
     }
@@ -163,9 +185,27 @@ export default function UploadPage() {
       <p className="eyebrow">Step 2</p>
       <h1 className="h2">Upload your photos.</h1>
       <p className="section__lede">
-        Add {QUALITY.minPhotos} to {QUALITY.maxPhotos} clear photos of one person. Remove any with the
-        delete button and add more any time.
+        Your photos are the single biggest factor in how much the results look like you. Add{' '}
+        {QUALITY.minPhotos} to {QUALITY.maxPhotos} recent photos of just you.
       </p>
+      <ul className="reqs">
+        <li className="reqs__good">
+          Do: different angles and expressions, even lighting, your face clear and up close.
+        </li>
+        <li className="reqs__bad">
+          Avoid: sunglasses, hats, filters, blurry shots, and photos with other people. We check each
+          one and will flag any to swap.
+        </li>
+      </ul>
+
+      <div className="capture-cta">
+        <p className="capture-cta__text">
+          Want the best results? <span>Let us guide you through a quick photo shoot.</span>
+        </p>
+        <Link className="btn btn--primary" href="/generator/capture">
+          Use my camera
+        </Link>
+      </div>
 
       <div className="card">
         <div
@@ -232,11 +272,15 @@ export default function UploadPage() {
       </div>
 
       <div className="gennav">
-        <a className="btn btn--link" href="/generator/select">
+        <Link className="btn btn--link" href="/generator/select">
           Back
-        </a>
+        </Link>
         <button className="btn btn--primary" type="button" disabled={!canContinue} onClick={onContinue}>
-          {busy ? 'Uploading your photos' : 'Continue'}
+          {phase === 'checking'
+            ? 'Checking your photos'
+            : phase === 'uploading'
+              ? 'Uploading your photos'
+              : 'Continue'}
         </button>
       </div>
     </section>

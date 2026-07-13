@@ -70,6 +70,22 @@ export async function createCheckout({
   return asJson(res);
 }
 
+/**
+ * Run the server upload gate on already-uploaded photo URLs WITHOUT creating an
+ * order. Called from the upload step so the slow evaluation happens there, not on
+ * the pay button (results are cached, so /checkout is then instant). Returns
+ * { ok: true } on pass; on failure throws with err.status === 422 and
+ * err.body.failures (per-photo reasons).
+ */
+export async function gateUploads(uploadedImageUrls) {
+  const res = await fetch(`${API_BASE}/uploads/gate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ uploadedImageUrls }),
+  });
+  return asJson(res);
+}
+
 /** Public order view for the success page to poll. */
 export async function getOrder(orderId) {
   const res = await fetch(`${API_BASE}/orders/${orderId}`, { cache: 'no-store' });

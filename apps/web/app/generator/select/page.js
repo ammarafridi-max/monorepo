@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { LOOKS, ATTIRE, AGE_RANGES, GENDERS, RACES, FACIAL_HAIR } from '@picturesk/shared/catalog';
 import { readState, writeState } from '../../../lib/generator';
 
@@ -184,9 +185,9 @@ export default function SelectPage() {
       </div>
 
       <div className="gennav">
-        <a className="btn btn--link" href="/">
+        <Link className="btn btn--link" href="/">
           Back
-        </a>
+        </Link>
         <button
           className="btn btn--primary"
           type="button"

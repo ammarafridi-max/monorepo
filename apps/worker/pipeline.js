@@ -62,6 +62,7 @@ export function createPipeline({
   buildPrompts,
   scoreIdentity = async () => ({ score: 0, costUsd: 0 }),
   swapFace,
+  enhanceFace,
   generateCount = 14,
   deliverCount = 14,
   resolveTrainingZip,
@@ -325,6 +326,25 @@ export function createPipeline({
         console.log(`[worker] order ${orderId} face-swapped ${i + 1}/${selectedUrls.length}`);
       }
       deliveredImageUrls = swapped;
+    }
+
+    // FINAL realism polish: enhance each delivered image (skin texture + sharper
+    // eyes, without re-generating so identity holds). Resumable per slot, aligned
+    // with the current deliveredImageUrls (selected or swapped). Off when no
+    // enhancer is injected.
+    if (enhanceFace && deliveredImageUrls.length > 0) {
+      const enhanced = [...(order.enhancedImageUrls ?? [])];
+      for (let i = 0; i < deliveredImageUrls.length; i++) {
+        if (enhanced[i]) continue;
+        const { imageUrl, costUsd } = await enhanceFace(deliveredImageUrls[i]);
+        enhanced[i] = imageUrl;
+        await Order.updateOne(
+          { _id: orderId },
+          { $set: { enhancedImageUrls: enhanced }, $inc: { computeCostCents: usdToCents(costUsd) } }
+        );
+        console.log(`[worker] order ${orderId} enhanced ${i + 1}/${deliveredImageUrls.length}`);
+      }
+      deliveredImageUrls = enhanced;
     }
 
     await Order.updateOne({ _id: orderId }, { $set: { deliveredImageUrls } });

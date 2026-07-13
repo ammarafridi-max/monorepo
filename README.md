@@ -373,10 +373,27 @@ Rules per image: exactly one clear subject (zero = not a usable photo, two+ =
 multiple people), and the subject must span at least `UPLOAD_MIN_FACE_RATIO` of
 the frame. Plus the promised `UPLOAD_MIN_PHOTOS`..`UPLOAD_MAX_PHOTOS` count.
 
+**Strict screen (sunglasses / hats).** A clean training set is the single biggest
+lever on likeness (it is how Aragon and the top tier get resemblance), so on top of
+face detection a vision model (Qwen2-VL, `apps/api/photoGate.js`) screens each photo
+for the two unambiguous, training-wrecking cases yolov8 cannot see: dark sunglasses
+that hide the eyes, and hats covering the head, mapped to a branded reason ("Take
+the sunglasses off", "No hats or caps") shown on the pay step. It is deliberately
+LENIENT -- subjective calls (blurry / dark) rejected good photos, so they are NOT
+screened (face detection handles framing; mild softness/lighting is fine). This
+runs SERVER-SIDE only (the client layer stays face detection). It **fails OPEN**:
+a screen error or cold-boot timeout returns "no issue", so face detection +
+moderation still gate and a transient vision blip never blocks a genuinely good
+photo -- only an actual judgment rejects. On by default via `UPLOAD_STRICT_GATE`
+(needs `UPLOAD_QUALITY_GATE` on); model overridable with `UPLOAD_PHOTO_GATE_MODEL`.
+The upload step also carries an up-front "do / avoid" guide so customers get it
+right the first time.
+
 Tuning (all env, see `.env.example`): `UPLOAD_MIN_PHOTOS`, `UPLOAD_MAX_PHOTOS`,
 `UPLOAD_MIN_FACE_RATIO`, mirrored to the client as `NEXT_PUBLIC_UPLOAD_*`, plus
-`REPLICATE_FACE_MODEL_VERSION` / `REPLICATE_FACE_CONF`. The gate is on by default
-and fails closed. For local dev without a token wired up, set
+`REPLICATE_FACE_MODEL_VERSION` / `REPLICATE_FACE_CONF`, plus the strict screen's
+`UPLOAD_STRICT_GATE` (default on) and `UPLOAD_PHOTO_GATE_MODEL`. The gate is on by
+default and fails closed. For local dev without a token wired up, set
 `UPLOAD_QUALITY_GATE=off` (this re-opens the pay-for-garbage hole, so dev only).
 
 ## Tuning generation (dev)
@@ -576,6 +593,45 @@ matters less (it then mainly picks the best-composed shots). If swap proves reli
 you could lower `GENERATE_COUNT`/turn culling off to save cost. Delivered images are
 still temporary `replicate.delivery` URLs (pre-existing) -- persisting the final
 (swapped) set to R2 is a recommended separate hardening.
+
+## Generation backend: LoRA vs PuLID
+
+The worker has two interchangeable generation backends, chosen by `GENERATION_BACKEND`
+(default `lora`). Both implement the same client interface
+(`startTraining`/`pollTraining`/`startGeneration`/`pollGeneration`), so the pipeline
+and its idempotency/resume guarantees are identical across them.
+
+- **`lora`** (`replicateClient.js`): the original path. Per-user LoRA training on the
+  selfies, then generation from the trained model, with optional culling + face swap.
+  Accurate identity FEATURES, but the base generation drifts on face SHAPE, and
+  training is the source of most cost/latency/failure.
+- **`pulid`** (`replicateClient.pulid.js`): **no training.** Identity comes from a
+  single reference selfie fed to `bytedance/flux-pulid` at generation time, which
+  fixes face SHAPE (what LoRA + swap could not) and deletes the train/cull/swap
+  machinery. ~$0.02/image, minutes not ~25, and it honors a negative prompt so the
+  invented-teeth bug is suppressed.
+
+Adapter trick: PuLID has nothing to train, so its client makes "training" a no-op
+that carries the reference-image URL forward through the pipeline's
+`trainedModelVersion` slot; `startGeneration(ref, prompt)` then uses it as PuLID's
+`main_face_image`. In PuLID mode the trigger word is dropped from the prompt
+(identity is from the image, not a trained token), and culling + swap are forced off.
+
+Because PuLID re-synthesizes the face (rather than pasting it like the swap), it
+needs the prompt to hold the beard and expression, or it drifts to a generic short
+beard and FLUX's toothy grin. Three things keep it faithful:
+- **Facial hair**: `buildSubject` names it from the customer's `facialHair` choice;
+  when that is blank, the worker infers it from the reference selfie with a vision
+  model (`classifyFacialHair.js`, Qwen2-VL) and stores `derivedFacialHair`, so the
+  prompt says e.g. "with a full beard".
+- **Expression**: the PuLID subject appends "a calm, subtle closed-mouth expression"
+  (and the client carries a teeth negative prompt) to beat the grin prior.
+- **`id_weight` 1.2** (default): 1.0 drifted; ~1.1-1.3 holds identity + face shape.
+
+**Enable:** `GENERATION_BACKEND=pulid` on the worker. Tune with `PULID_ID_WEIGHT`,
+`PULID_MODEL`, `PULID_VISION_MODEL`. Reference selfie = the first uploaded photo (the
+gate guarantees a face); a clearer frontal reference improves results, so rejecting
+sunglasses/occluded uploads at the gate is a worthwhile follow-up.
 
 ## Conventions
 

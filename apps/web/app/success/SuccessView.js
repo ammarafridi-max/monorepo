@@ -68,12 +68,26 @@ function currentIndex(status) {
   return STEPS.findIndex((s) => s.key === status);
 }
 
+// Format a millisecond duration as a compact clock: "m:ss", or "h:mm:ss" past an
+// hour. Returns null for missing/negative input so callers can skip rendering.
+function fmtDuration(ms) {
+  if (ms == null || !Number.isFinite(ms) || ms < 0) return null;
+  const total = Math.floor(ms / 1000);
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  const pad = (n) => String(n).padStart(2, '0');
+  return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
+}
+
 export default function SuccessView() {
   const params = useSearchParams();
   const orderId = params.get('orderId');
 
   const [order, setOrder] = useState(null);
   const [error, setError] = useState('');
+  // Ticks once a second so the "elapsed" clock advances between the 4s status polls.
+  const [now, setNow] = useState(() => Date.now());
 
   // Fire purchase_completed exactly once, when the polled order first shows that
   // payment has gone through. No PII in the event.
@@ -84,6 +98,15 @@ export default function SuccessView() {
       track(EVENTS.PURCHASE_COMPLETED);
     }
   }, [order]);
+
+  // Advance the elapsed clock every second while the order is still processing.
+  // Stops once terminal (DELIVERED/FAILED), where the time is frozen at the total.
+  const processing = order && order.status !== 'DELIVERED' && order.status !== 'FAILED';
+  useEffect(() => {
+    if (!processing) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [processing]);
 
   useEffect(() => {
     if (!orderId) {
@@ -143,6 +166,26 @@ export default function SuccessView() {
   const isGenerating = status === 'GENERATING';
   const wide = isDelivered && (order.resultImageUrls?.length ?? 0) > 0;
 
+  // Processing time: counts up live while the order runs, then freezes at the total
+  // once delivered. Anchored on paidAt (when the worker starts), falling back to
+  // createdAt if the webhook has not stamped paidAt yet.
+  const startMs = order.paidAt
+    ? new Date(order.paidAt).getTime()
+    : order.createdAt
+      ? new Date(order.createdAt).getTime()
+      : null;
+  let timerLabel = null;
+  let timerValue = null;
+  if (startMs != null) {
+    if (isDelivered && order.deliveredAt) {
+      timerLabel = 'Processing time';
+      timerValue = fmtDuration(new Date(order.deliveredAt).getTime() - startMs);
+    } else if (!isDelivered && !isFailed) {
+      timerLabel = 'Elapsed';
+      timerValue = fmtDuration(now - startMs);
+    }
+  }
+
   // Live generation progress as a percentage. We show a percentage rather than a
   // raw "X of N" because we deliberately over-generate and then curate: "7 of 10"
   // would read as "3 failed" when nothing failed. Null total means generation has
@@ -192,6 +235,13 @@ export default function SuccessView() {
       {isFailed && (
         <p style={{ marginTop: 8 }}>
           <a href="/">Start a new order</a>
+        </p>
+      )}
+
+      {timerValue && (
+        <p className="timer">
+          <span className="timer__label">{timerLabel}</span>
+          <span className="timer__value">{timerValue}</span>
         </p>
       )}
 
