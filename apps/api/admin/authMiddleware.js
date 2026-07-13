@@ -2,6 +2,20 @@ import { AppError, catchAsync } from './errors.js';
 import { ADMIN_COOKIE } from './jwt.js';
 
 /**
+ * Authorize by role. Standalone (depends only on req.user.role, set by `protect`
+ * OR by the ADMIN_TOKEN break-glass path), so admin data routes can reuse it even
+ * when the JWT auth layer is disabled. Returns 403 for a missing/mismatched role.
+ */
+export function restrictTo(...roles) {
+  return (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return next(new AppError('You do not have permission to perform this action', 403));
+    }
+    next();
+  };
+}
+
+/**
  * Create the admin auth guards. `protect` authenticates the request from the
  * httpOnly cookie and attaches the live AdminUser to req.user; `restrictTo(...roles)`
  * authorizes by role. Mirrors the reference exactly, keyed on Picturesk's cookie.
@@ -49,13 +63,6 @@ export function createAdminAuthMiddleware({ AdminUser, verifyToken }) {
     res.locals.user = currentUser;
     next();
   });
-
-  const restrictTo = (...roles) => (req, res, next) => {
-    if (!req.user || !roles.includes(req.user.role)) {
-      return next(new AppError('You do not have permission to perform this action', 403));
-    }
-    next();
-  };
 
   return { protect, restrictTo };
 }

@@ -39,6 +39,8 @@ import { moderateImage, MODERATION_REASON } from './contentModerator.js';
 import { QUALITY, evaluateImages, countError } from './uploadGate.js';
 import { RATE_LIMITS, createRateLimiters } from './rateLimit.js';
 import { createAdminAuth } from './admin/router.js';
+import { restrictTo } from './admin/authMiddleware.js';
+import { createAdminDataRouter } from './admin/adminData.js';
 
 /**
  * Picturesk API (Phase 4: uploads + delivery).
@@ -77,9 +79,6 @@ const IMAGE_EXT = {
   'image/avif': 'avif',
 };
 const HAS_IMAGE_EXT = /\.(jpe?g|png|webp|gif|bmp|tiff?|heic|heif|avif)$/i;
-// A non-terminal order sitting longer than this is flagged as stuck by the admin
-// view, so a stall is visible without a customer emailing us. Env-overridable.
-const STUCK_AFTER_MS = (Number(process.env.ADMIN_STUCK_MINUTES) || 30) * 60 * 1000;
 
 const {
   MONGODB_URI,
@@ -231,58 +230,6 @@ function toPublicOrder(order) {
     // whether the payment has been refunded.
     failed: order.status === ORDER_STATES.FAILED,
     refunded: Boolean(order.refundedAt),
-  };
-}
-
-// When did the order ENTER its current state? Used to measure how long it has
-// been sitting there (only meaningful for non-terminal states).
-function enteredCurrentStateAt(order) {
-  switch (order.status) {
-    case ORDER_STATES.AWAITING_PAYMENT:
-      return order.createdAt;
-    case ORDER_STATES.PAID:
-      return order.paidAt || order.createdAt;
-    case ORDER_STATES.TRAINING:
-      return order.trainingStartedAt || order.paidAt || order.createdAt;
-    case ORDER_STATES.GENERATING:
-      return order.generatingStartedAt || order.createdAt;
-    default:
-      return null; // terminal: DELIVERED / FAILED
-  }
-}
-
-/**
- * The ADMIN projection. The payoff of stamping a timestamp on every transition:
- * a stall becomes visible (stuckFor + stuck) and per-order profit becomes visible
- * (marginCents) without any extra machinery.
- */
-function toAdminOrder(order) {
-  const enteredAt = enteredCurrentStateAt(order);
-  const stuckForMs = enteredAt ? Date.now() - new Date(enteredAt).getTime() : null;
-  const marginCents =
-    order.status === ORDER_STATES.DELIVERED && typeof order.amountPaidCents === 'number'
-      ? order.amountPaidCents - (order.computeCostCents || 0)
-      : null;
-
-  return {
-    orderId: order._id.toString(),
-    status: order.status,
-    customerEmail: order.customerEmail,
-    amountPaidCents: order.amountPaidCents ?? null,
-    computeCostCents: order.computeCostCents ?? 0,
-    marginCents,
-    stuckForMs,
-    stuckForMinutes: stuckForMs == null ? null : Math.round(stuckForMs / 60000),
-    stuck: stuckForMs != null && stuckForMs > STUCK_AFTER_MS,
-    createdAt: order.createdAt,
-    paidAt: order.paidAt ?? null,
-    trainingStartedAt: order.trainingStartedAt ?? null,
-    generatingStartedAt: order.generatingStartedAt ?? null,
-    deliveredAt: order.deliveredAt ?? null,
-    failedAt: order.failedAt ?? null,
-    deliveredEmailSentAt: order.deliveredEmailSentAt ?? null,
-    refundedAt: order.refundedAt ?? null,
-    error: order.error ?? null,
   };
 }
 
@@ -868,41 +815,32 @@ app.get('/orders/:id/download-all', async (req, res) => {
 });
 
 /**
- * GET /admin/orders  --  token-guarded operational view. Surfaces every order's
- * transition timestamps, flags any non-terminal order stuck too long, and shows
- * per-delivered-order margin. Optional ?status=TRAINING filter.
- *
- * Auth: Authorization: Bearer <ADMIN_TOKEN>  (or x-admin-token header).
+ * Combined admin guard for the read-only data routes (/admin/*). Accepts EITHER
+ * the ADMIN_TOKEN break-glass header (for scripts/monitoring, role 'admin') OR a
+ * valid admin cookie session (Phase A). Sets req.user so the data router's
+ * restrictTo('admin','support') can authorize by role in both paths.
  */
-app.get('/admin/orders', async (req, res) => {
+function adminGuard(req, res, next) {
+  if (ADMIN_TOKEN && adminAuthorized(req)) {
+    req.user = { role: 'admin', email: 'admin-token', username: 'admin-token', _id: null };
+    return next();
+  }
+  if (adminAuth) return adminAuth.protect(req, res, next);
   if (!ADMIN_TOKEN) {
-    return res.status(503).json({ error: 'admin disabled: set ADMIN_TOKEN' });
-  }
-  if (!adminAuthorized(req)) {
-    return res.status(401).json({ error: 'unauthorized' });
-  }
-
-  try {
-    const { status } = req.query;
-    if (status && !Object.values(ORDER_STATES).includes(status)) {
-      return res.status(400).json({ error: `unknown status ${status}` });
-    }
-    const filter = status ? { status } : {};
-    const orders = await Order.find(filter).sort({ createdAt: -1 }).limit(200);
-    const items = orders.map(toAdminOrder);
-
-    return res.json({
-      count: items.length,
-      stuckCount: items.filter((o) => o.stuck).length,
-      stuckAfterMinutes: STUCK_AFTER_MS / 60000,
-      orders: items,
+    return res.status(503).json({
+      status: 'error',
+      message: 'admin disabled: set ADMIN_JWT_SECRET (staff login) or ADMIN_TOKEN',
     });
-  } catch (err) {
-    console.error('[api] GET /admin/orders failed:', err);
-    captureError(err, { route: 'admin/orders' });
-    return res.status(500).json({ error: err.message });
   }
-});
+  return res.status(401).json({ status: 'fail', message: 'unauthorized' });
+}
+
+/**
+ * The read-only admin data surface: GET /admin/orders (list), /admin/orders/:id
+ * (detail), /admin/stats, /admin/customers. Projections + handlers live in
+ * ./admin/adminData.js so no customer-facing route can leak margin/Stripe/Replicate.
+ */
+app.use('/admin', createAdminDataRouter({ guard: adminGuard, restrictTo }));
 
 // Sentry's Express error handler catches anything the route try/catch blocks miss
 // (e.g. a throw in middleware). Registered after all routes, before listen. No-op
