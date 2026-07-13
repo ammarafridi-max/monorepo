@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { getOrder, downloadUrl } from '../../lib/api';
+import { getOrder, downloadUrl, downloadAllUrl } from '../../lib/api';
 import { track, EVENTS } from '../../lib/analytics';
 
 // A small download glyph (arrow into a tray). Inline so it inherits currentColor
@@ -195,23 +195,6 @@ export default function SuccessView() {
       ? Math.min(100, Math.round((order.generatedCount / order.totalCount) * 100))
       : null;
 
-  // Download every headshot. Each href returns Content-Disposition: attachment, so
-  // clicking a hidden anchor downloads rather than navigates. We stagger the clicks
-  // so browsers don't collapse them into a single download or block the burst.
-  function downloadAll() {
-    const urls = order.resultImageUrls || [];
-    urls.forEach((_, i) => {
-      setTimeout(() => {
-        const a = document.createElement('a');
-        a.href = downloadUrl(orderId, i);
-        a.rel = 'noopener';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-      }, i * 400);
-    });
-  }
-
   return (
     <main className={`wrap${wide ? ' wrap--wide' : ''}`}>
       <span className={`pill${isDelivered ? ' pill--ok' : isFailed ? ' pill--warn' : ''}`}>
@@ -252,9 +235,9 @@ export default function SuccessView() {
               {(order.resultImageUrls || []).length} headshots, yours to keep.
             </p>
             {(order.resultImageUrls || []).length > 0 && (
-              <button className="btn btn--primary" type="button" onClick={downloadAll}>
+              <a className="btn btn--primary" href={downloadAllUrl(orderId)}>
                 <DownloadIcon /> Download all
-              </button>
+              </a>
             )}
           </div>
           <div className="gallery__grid">

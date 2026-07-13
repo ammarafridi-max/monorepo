@@ -100,3 +100,12 @@ export async function getOrder(orderId) {
 export function downloadUrl(orderId, index) {
   return `${API_BASE}/orders/${orderId}/download/${index}`;
 }
+
+/**
+ * URL that streams ALL delivered headshots as one zip attachment
+ * (picturesk-headshots.zip), so "Download all" saves a single file instead of
+ * firing one download per image.
+ */
+export function downloadAllUrl(orderId) {
+  return `${API_BASE}/orders/${orderId}/download-all`;
+}

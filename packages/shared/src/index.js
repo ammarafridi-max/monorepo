@@ -27,6 +27,7 @@ export {
 } from './catalog.js';
 export { Order } from './orderModel.js';
 export { User } from './userModel.js';
+export { AdminUser } from './adminUserModel.js';
 export { QUEUE_NAMES } from './queue.js';
 export { connectMongo } from './db.js';
 export { transitionOrder, OrderTransitionConflictError } from './transitions.js';

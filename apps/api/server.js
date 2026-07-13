@@ -5,9 +5,11 @@ import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { randomUUID, timingSafeEqual } from 'node:crypto';
 import { Readable } from 'node:stream';
+import { ZipArchive } from 'archiver';
 import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 
 // Load the monorepo-root .env regardless of the cwd this service is started from
 // (pnpm --filter runs scripts with the package dir as cwd).
@@ -36,6 +38,7 @@ import { assessPhoto } from './photoGate.js';
 import { moderateImage, MODERATION_REASON } from './contentModerator.js';
 import { QUALITY, evaluateImages, countError } from './uploadGate.js';
 import { RATE_LIMITS, createRateLimiters } from './rateLimit.js';
+import { createAdminAuth } from './admin/router.js';
 
 /**
  * Picturesk API (Phase 4: uploads + delivery).
@@ -84,6 +87,10 @@ const {
   STRIPE_SECRET_KEY,
   STRIPE_WEBHOOK_SECRET,
   ADMIN_TOKEN,
+  ADMIN_JWT_SECRET,
+  ADMIN_JWT_EXPIRES_IN = '7d',
+  ADMIN_COOKIE_EXPIRES_DAYS = '7',
+  NODE_ENV = 'development',
   WEB_BASE_URL = 'http://localhost:3000',
   PORT = 3001,
 } = process.env;
@@ -407,8 +414,11 @@ app.set('trust proxy', Number.isFinite(TRUST_PROXY_HOPS) ? TRUST_PROXY_HOPS : 1)
 const { globalLimiter, presignLimiter, checkoutLimiter } = createRateLimiters(RATE_LIMITS);
 
 // The web app is a separate origin (localhost:3000 in dev). Allow it to call
-// the JSON endpoints. The webhook is server-to-server and needs no CORS.
-app.use(cors({ origin: WEB_BASE_URL }));
+// the JSON endpoints. credentials:true lets the browser send the admin session
+// cookie (picturesk_admin) on cross-origin /auth and /admin calls; the origin is
+// still pinned to WEB_BASE_URL so this is not an open CORS surface. The webhook is
+// server-to-server and needs no CORS.
+app.use(cors({ origin: WEB_BASE_URL, credentials: true }));
 
 /**
  * POST /webhooks/stripe  --  THE critical surface. Verify, one atomic write,
@@ -485,6 +495,11 @@ app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), async (r
 // Every route below this line gets a parsed JSON body.
 app.use(express.json());
 
+// Parse cookies so the admin auth middleware can read the httpOnly session cookie
+// (picturesk_admin). Mounted after the raw webhook body parser, before any route
+// that needs req.cookies.
+app.use(cookieParser());
+
 app.get('/health', (req, res) => {
   res.json({ ok: true });
 });
@@ -493,6 +508,32 @@ app.get('/health', (req, res) => {
 // webhook (which is registered earlier and must never be throttled) and after
 // /health (so Fly.io health checks are never limited).
 app.use(globalLimiter);
+
+/**
+ * Admin auth (staff accounts). Real admin sessions: POST /auth/login with
+ * email+password issues an httpOnly JWT cookie (picturesk_admin); GET /auth/me
+ * returns the current admin. The returned `protect` / `restrictTo` guards are
+ * held for Phase B (orders/stats/customers) and later admin-user CRUD.
+ *
+ * Disabled gracefully when ADMIN_JWT_SECRET is unset (503), exactly like the
+ * ADMIN_TOKEN break-glass route, so a deploy without the secret still boots.
+ */
+let adminAuth = null;
+if (ADMIN_JWT_SECRET) {
+  adminAuth = createAdminAuth({
+    jwtSecret: ADMIN_JWT_SECRET,
+    jwtExpiresIn: ADMIN_JWT_EXPIRES_IN,
+    cookieExpiresInDays: Number(ADMIN_COOKIE_EXPIRES_DAYS) || 7,
+    nodeEnv: NODE_ENV,
+  });
+  app.use('/auth', adminAuth.router);
+  console.log('[api] admin auth ON (cookie sessions)');
+} else {
+  app.use('/auth', (req, res) =>
+    res.status(503).json({ status: 'error', message: 'admin auth disabled: set ADMIN_JWT_SECRET' })
+  );
+  console.warn('[api] ADMIN_JWT_SECRET unset: admin auth disabled (/auth returns 503)');
+}
 
 /**
  * POST /uploads/presign  --  hand the browser presigned PUT URLs so it uploads
@@ -752,6 +793,75 @@ app.get('/orders/:id/download/:index', async (req, res) => {
     nodeStream.pipe(res);
   } catch (err) {
     captureError(err, { route: 'download', orderId: req.params.id });
+    if (!res.headersSent) return res.status(400).json({ error: err.message });
+    return res.destroy(err);
+  }
+});
+
+/**
+ * GET /orders/:id/download-all  --  bundle every delivered headshot into ONE zip
+ * and stream it as an attachment, so "Download all" saves a single
+ * picturesk-headshots.zip instead of firing N separate downloads.
+ *
+ * Same order-scoping / no-SSRF story as the single-image route: the URLs come
+ * from the order in our DB, never a request parameter. We fetch every image
+ * FIRST (bounded concurrency) so a failed or expired upstream yields a clean 502
+ * BEFORE any zip bytes are sent, never a truncated archive. JPEGs are already
+ * compressed, so the zip uses STORE (level 0): near-instant and no wasted CPU.
+ */
+app.get('/orders/:id/download-all', async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ error: 'order not found' });
+
+    // Same projection the success page renders: the culled delivered set once
+    // DELIVERED, with the legacy fallback to resultImageUrls.
+    const urls =
+      order.status === ORDER_STATES.DELIVERED
+        ? order.deliveredImageUrls?.length
+          ? order.deliveredImageUrls
+          : (order.resultImageUrls ?? [])
+        : [];
+    if (urls.length === 0) return res.status(404).json({ error: 'no images to download' });
+
+    // Fetch all images up front. Buffering lets us fail cleanly (502) before a
+    // single byte of the zip is written, so the customer never gets a half-written
+    // archive. The first failure wins; order is preserved by mapWithLimit.
+    let failure = null;
+    const files = await mapWithLimit(urls, 6, async (url, i) => {
+      const upstream = await fetch(url);
+      if (!upstream.ok) {
+        failure = failure ?? { index: i, status: upstream.status };
+        return null;
+      }
+      const contentType = (upstream.headers.get('content-type') || 'image/jpeg')
+        .split(';')[0]
+        .trim();
+      const ext = (IMAGE_EXT[contentType] || 'jpg').replace(/[^a-z0-9]/gi, '');
+      const buf = Buffer.from(await upstream.arrayBuffer());
+      return { name: `picturesk-headshot-${i + 1}.${ext}`, buf };
+    });
+    if (failure) {
+      return res
+        .status(502)
+        .json({ error: 'could not fetch image', imageIndex: failure.index, upstreamStatus: failure.status });
+    }
+
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', 'attachment; filename="picturesk-headshots.zip"');
+    res.setHeader('Cache-Control', 'private, max-age=3600');
+
+    const zip = new ZipArchive({ zlib: { level: 0 } }); // STORE: JPEGs don't compress
+    zip.on('error', (err) => {
+      captureError(err, { route: 'download-all', orderId: req.params.id });
+      if (!res.headersSent) res.status(500).json({ error: 'could not build zip' });
+      else res.destroy(err);
+    });
+    zip.pipe(res);
+    for (const f of files) zip.append(f.buf, { name: f.name });
+    await zip.finalize();
+  } catch (err) {
+    captureError(err, { route: 'download-all', orderId: req.params.id });
     if (!res.headersSent) return res.status(400).json({ error: err.message });
     return res.destroy(err);
   }

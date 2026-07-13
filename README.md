@@ -280,15 +280,19 @@ polls the order and walks paid -> training -> generating -> delivered, then show
 the results gallery. When it hits delivered, the worker emails the results link
 exactly once (guarded by `deliveredEmailSentAt`).
 
-**Downloads.** Each headshot has a download control (and a "Download all"), served
-by `GET /orders/:id/download/:index`. The delivered images are hosted by Replicate
-(`replicate.delivery`), not our R2 bucket, so the route fetches the stored URL
-server-side and re-streams it with `Content-Disposition: attachment`, so the browser
-DOWNLOADS the file instead of opening it in a new tab (the plain `<a download>`
-attribute is ignored for cross-origin URLs). The URL is not a request parameter: it
-is read from the order in our DB and picked by a validated index (only the same
-culled delivered set the page already shows), so there is no SSRF surface, and
-downloads do not depend on any cross-origin CORS config.
+**Downloads.** Each headshot has its own download control, served by
+`GET /orders/:id/download/:index`, and **"Download all" saves a single zip**
+(`picturesk-headshots.zip`) via `GET /orders/:id/download-all`. The delivered images
+are hosted by Replicate (`replicate.delivery`), not our R2 bucket, so both routes
+fetch the stored URL(s) server-side and re-stream with `Content-Disposition:
+attachment`, so the browser DOWNLOADS the file instead of opening it in a new tab
+(the plain `<a download>` attribute is ignored for cross-origin URLs). The zip route
+fetches every image up front (bounded concurrency) so an expired/failed upstream
+returns a clean `502` before any zip bytes are sent, never a truncated archive, then
+bundles the buffers with `archiver` using STORE (JPEGs are already compressed). URLs
+are never request parameters: they are read from the order in our DB and picked by a
+validated index (only the same culled delivered set the page shows), so there is no
+SSRF surface, and downloads do not depend on any cross-origin CORS config.
 
 ## Phase 5: failure hardening
 
