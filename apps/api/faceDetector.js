@@ -45,7 +45,11 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
  * Retry-After (or retry_after body field); on 5xx / network errors we back off
  * exponentially. Only after the attempts are exhausted does it give up.
  */
-async function replicateFetch(url, options, { attempts = 5, baseDelayMs = 1000 } = {}) {
+async function replicateFetch(
+  url,
+  options,
+  { attempts = 5, baseDelayMs = 1000 } = {},
+) {
   let lastErr;
   for (let attempt = 1; attempt <= attempts; attempt++) {
     try {
@@ -53,7 +57,8 @@ async function replicateFetch(url, options, { attempts = 5, baseDelayMs = 1000 }
       if (res.status !== 429 && res.status < 500) return res;
       // Retryable status. Read the body once to surface retry_after / an error.
       const text = await res.text().catch(() => '');
-      if (attempt === attempts) throw new Error(`replicate ${res.status}: ${text}`);
+      if (attempt === attempts)
+        throw new Error(`replicate ${res.status}: ${text}`);
       const header = Number(res.headers.get('retry-after'));
       let bodyRetry;
       try {
@@ -61,9 +66,11 @@ async function replicateFetch(url, options, { attempts = 5, baseDelayMs = 1000 }
       } catch {
         bodyRetry = undefined;
       }
-      const waitMs = (header || Number(bodyRetry) || 0) * 1000 || baseDelayMs * 2 ** (attempt - 1);
+      const waitMs =
+        (header || Number(bodyRetry) || 0) * 1000 ||
+        baseDelayMs * 2 ** (attempt - 1);
       console.warn(
-        `[faceDetector] replicate ${res.status}, retrying ${attempt}/${attempts} in ${waitMs}ms`
+        `[faceDetector] replicate ${res.status}, retrying ${attempt}/${attempts} in ${waitMs}ms`,
       );
       await sleep(waitMs + 250);
     } catch (err) {
@@ -86,24 +93,35 @@ async function runPrediction(imageUrl) {
     },
     body: JSON.stringify({
       version: modelVersion(),
-      input: { image: imageUrl, class_names: DETECT_CLASS, conf: conf(), return_json: true },
+      input: {
+        image: imageUrl,
+        class_names: DETECT_CLASS,
+        conf: conf(),
+        return_json: true,
+      },
     }),
   });
   let pred = await res.json();
-  if (!res.ok) throw new Error(`replicate ${res.status}: ${JSON.stringify(pred)}`);
+  if (!res.ok)
+    throw new Error(`replicate ${res.status}: ${JSON.stringify(pred)}`);
 
   const terminal = new Set(['succeeded', 'failed', 'canceled']);
   const deadline = Date.now() + 90_000;
   while (pred.status && !terminal.has(pred.status)) {
     if (Date.now() > deadline) throw new Error('face detection timed out');
     await sleep(1500);
-    const g = await replicateFetch(`${REPLICATE_API}/v1/predictions/${pred.id}`, {
-      headers: { Authorization: `Bearer ${token()}` },
-    });
+    const g = await replicateFetch(
+      `${REPLICATE_API}/v1/predictions/${pred.id}`,
+      {
+        headers: { Authorization: `Bearer ${token()}` },
+      },
+    );
     pred = await g.json();
   }
   if (pred.status !== 'succeeded') {
-    throw new Error(`face detection ${pred.status}: ${pred.error ?? 'unknown'}`);
+    throw new Error(
+      `face detection ${pred.status}: ${pred.error ?? 'unknown'}`,
+    );
   }
   return pred.output;
 }
@@ -132,7 +150,10 @@ async function imageDimensions(url) {
  * @returns {Promise<{ faceCount: number, maxFaceBoxRatio: number }>}
  */
 export async function detectFaces(url) {
-  const [output, { width, height }] = await Promise.all([runPrediction(url), imageDimensions(url)]);
+  const [output, { width, height }] = await Promise.all([
+    runPrediction(url),
+    imageDimensions(url),
+  ]);
 
   let detections = [];
   try {
@@ -147,7 +168,11 @@ export async function detectFaces(url) {
     const b = d.box || {};
     const w = Math.abs((b.x2 ?? 0) - (b.x1 ?? 0));
     const h = Math.abs((b.y2 ?? 0) - (b.y1 ?? 0));
-    maxFaceBoxRatio = Math.max(maxFaceBoxRatio, width ? w / width : 0, height ? h / height : 0);
+    maxFaceBoxRatio = Math.max(
+      maxFaceBoxRatio,
+      width ? w / width : 0,
+      height ? h / height : 0,
+    );
   }
 
   return { faceCount: detections.length, maxFaceBoxRatio };

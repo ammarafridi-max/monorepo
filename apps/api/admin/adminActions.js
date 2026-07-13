@@ -20,6 +20,7 @@ import { AppError, catchAsync, adminErrorHandler } from './errors.js';
  * @param {{ add:Function, remove:Function }} deps.orderPipeline  BullMQ queue
  * @param {(orderId:string)=>object} deps.pipelineJobOpts
  * @param {{ sendDeliveryEmail:Function }|null} deps.emailClient
+ * @param {{ keyForUrl:Function, deleteObjects:Function }|null} deps.storage  R2 client (or null if unconfigured)
  * @param {string} deps.webBaseUrl
  */
 export function createAdminActionsRouter({
@@ -29,6 +30,7 @@ export function createAdminActionsRouter({
   orderPipeline,
   pipelineJobOpts,
   emailClient,
+  storage,
   webBaseUrl,
 }) {
   const router = Router();
@@ -115,6 +117,51 @@ export function createAdminActionsRouter({
       });
       await Order.updateOne({ _id: orderId }, { $set: { deliveredEmailSentAt: new Date() } });
       res.json({ status: 'success', message: `Delivery email re-sent to ${order.customerEmail}.` });
+    })
+  );
+
+  // Delete an order AND the objects WE store for it: the uploaded selfies and the
+  // training zip in R2. The AI-generated images (result/delivered/swapped/enhanced)
+  // live on Replicate (replicate.delivery) and expire on their own, so they are not
+  // ours to delete; keyForUrl returns null for them and they are skipped. Hard
+  // delete and irreversible: the order (its payment/audit record) is gone. Any
+  // queued pipeline job is removed first so the worker never touches a deleted order.
+  router.delete(
+    '/orders/:id',
+    ...adminOnly,
+    catchAsync(async (req, res) => {
+      const order = await findOrder(req.params.id);
+      const orderId = order._id.toString();
+
+      await orderPipeline.remove(orderId).catch(() => {});
+
+      let storageResult = { deleted: 0, failed: 0, skipped: false };
+      if (storage) {
+        const urls = [
+          ...(order.uploadedImageUrls ?? []),
+          ...(order.resultImageUrls ?? []),
+          ...(order.deliveredImageUrls ?? []),
+          ...(order.swappedImageUrls ?? []),
+          ...(order.enhancedImageUrls ?? []),
+        ];
+        const keys = urls.map((u) => storage.keyForUrl(u)).filter(Boolean);
+        keys.push(`training/${orderId}.zip`);
+        storageResult = { ...(await storage.deleteObjects(keys)), skipped: false };
+      } else {
+        storageResult.skipped = true;
+      }
+
+      await Order.deleteOne({ _id: orderId });
+
+      res.json({
+        status: 'success',
+        message: 'Order deleted.',
+        data: {
+          deletedObjects: storageResult.deleted,
+          failedObjects: storageResult.failed,
+          storageSkipped: storageResult.skipped,
+        },
+      });
     })
   );
 

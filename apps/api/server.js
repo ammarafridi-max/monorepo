@@ -173,6 +173,18 @@ const emailClient = BREVO_API_KEY
   ? createEmailClient({ apiKey: BREVO_API_KEY, sender: BREVO_SENDER })
   : null;
 
+// A storage client for the admin "delete order" action (removes the uploaded
+// selfies + training zip from R2). null when R2 is not configured, in which case
+// delete still removes the order but skips storage cleanup.
+const adminStorage = (() => {
+  try {
+    return createStorage();
+  } catch (err) {
+    console.warn(`[api] storage not configured; admin delete will skip R2 cleanup: ${err.message}`);
+    return null;
+  }
+})();
+
 const connection = createRedisConnection(REDIS_URL);
 const orderPipeline = new Queue(QUEUE_NAMES.ORDER_PIPELINE, { connection });
 
@@ -866,6 +878,7 @@ app.use(
     orderPipeline,
     pipelineJobOpts,
     emailClient,
+    storage: adminStorage,
     webBaseUrl: WEB_BASE_URL,
   })
 );

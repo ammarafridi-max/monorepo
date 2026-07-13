@@ -289,6 +289,15 @@
             "url": { "raw": "{{apiBaseUrl}}/admin/orders/{{orderId}}/resend-email", "host": ["{{apiBaseUrl}}"], "path": ["admin", "orders", "{{orderId}}", "resend-email"] },
             "description": "Re-send the delivery email for a DELIVERED order. 400 if not delivered, 503 if BREVO_API_KEY is unset on the api."
           }
+        },
+        {
+          "name": "Delete order",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "x-admin-token", "value": "{{adminToken}}", "description": "Optional break-glass token; or use the login cookie." }],
+            "url": { "raw": "{{apiBaseUrl}}/admin/orders/{{orderId}}", "host": ["{{apiBaseUrl}}"], "path": ["admin", "orders", "{{orderId}}"] },
+            "description": "Hard-delete the order and remove the objects we store for it (uploaded selfies + training zip in R2). AI-generated images are Replicate-hosted and expire on their own, so they are skipped. Irreversible; also drops the payment record."
+          }
         }
       ]
     },

@@ -371,8 +371,12 @@ monorepo, right-sized to this repo (layered modules in `apps/api`, not DI packag
   refund with an idempotency key, stamps `refundedAt`, does not cancel an in-flight
   run), `POST /admin/orders/:id/retry` (re-enqueue a paid, in-progress order so the
   idempotent worker reattaches), `POST /admin/orders/:id/resend-email` (re-send the
-  delivery email for a delivered order; needs `BREVO_API_KEY` on the api, else 503).
-  Shown as buttons on the order-detail page for `admin` only.
+  delivery email for a delivered order; needs `BREVO_API_KEY` on the api, else 503),
+  `DELETE /admin/orders/:id` (hard-delete the order and remove the objects WE store
+  for it, the uploaded selfies + training zip in R2; the AI-generated images live on
+  Replicate and expire on their own, so they are skipped). Shown as buttons on the
+  order-detail page for `admin` only. Delete is irreversible and drops the payment
+  record, so it is a strong-confirm action meant for cleanup / removal requests.
 - **Admin-user management (api, admin only):** `GET`/`POST /admin-users`,
   `GET`/`PATCH`/`DELETE /admin-users/:username`, `PATCH /admin-users/:username/password`
   (reset another user's password). Guarded by `restrictTo('admin')`, so `support`

@@ -59,6 +59,9 @@ export function retryOrder(id) {
 export function resendOrderEmail(id) {
   return adminFetch(`/admin/orders/${id}/resend-email`, { method: 'POST' });
 }
+export function deleteOrder(id) {
+  return adminFetch(`/admin/orders/${id}`, { method: 'DELETE' });
+}
 export function getAdminStats() {
   return adminFetch('/admin/stats');
 }

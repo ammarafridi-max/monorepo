@@ -28,6 +28,13 @@ let unpaidId;
 const stripe = { calls: 0, refunds: { create: async () => { stripe.calls++; return { id: 're_1' }; } } };
 const queue = { added: [], removed: [], add: async (_n, d) => { queue.added.push(d.orderId); }, remove: async (id) => { queue.removed.push(id); } };
 const email = { sent: [], sendDeliveryEmail: async ({ to }) => { email.sent.push(to); } };
+// Stub storage: our bucket is the https://r2/ prefix; anything else (e.g. a
+// replicate.delivery output) returns null and is skipped.
+const storage = {
+  deletedKeys: [],
+  keyForUrl: (url) => (typeof url === 'string' && url.startsWith('https://r2/') ? url.slice('https://r2/'.length) : null),
+  deleteObjects: async (keys) => { storage.deletedKeys.push(...keys); return { deleted: keys.length, failed: 0 }; },
+};
 const pipelineJobOpts = (orderId) => ({ jobId: orderId });
 
 before(async () => {
@@ -55,7 +62,7 @@ before(async () => {
   function adminGuard(req, res, next) {
     return protect(req, res, next);
   }
-  app.use('/admin', createAdminActionsRouter({ guard: adminGuard, restrictTo, stripe, orderPipeline: queue, pipelineJobOpts, emailClient: email, webBaseUrl: 'http://localhost:3000' }));
+  app.use('/admin', createAdminActionsRouter({ guard: adminGuard, restrictTo, stripe, orderPipeline: queue, pipelineJobOpts, emailClient: email, storage, webBaseUrl: 'http://localhost:3000' }));
   app.use('/admin', createAdminDataRouter({ guard: adminGuard, restrictTo }));
 
   await new Promise((resolve) => { server = app.listen(0, resolve); });
@@ -134,6 +141,46 @@ test('resend-email: a non-delivered order has nothing to email (400)', async () 
   const cookie = await cookieFor('admin@p.ai');
   const res = await post(`/admin/orders/${paidId}/resend-email`, cookie);
   assert.equal(res.status, 400);
+});
+
+test('delete: requires an admin (401 unauth, 403 support)', async () => {
+  const order = await Order.create({ customerEmail: 'd@x.com', status: ORDER_STATES.DELIVERED });
+  const id = order._id.toString();
+  const del = (cookie) => fetch(`${base}/admin/orders/${id}`, { method: 'DELETE', headers: cookie ? { Cookie: cookie } : {} });
+  assert.equal((await del()).status, 401);
+  const support = await cookieFor('support@p.ai');
+  assert.equal((await del(support)).status, 403);
+});
+
+test('delete: removes the order, our R2 objects (uploads + training zip), and the job; skips Replicate URLs', async () => {
+  const order = await Order.create({
+    customerEmail: 'e@x.com',
+    status: ORDER_STATES.DELIVERED,
+    uploadedImageUrls: ['https://r2/uploads/abc/a.jpg', 'https://r2/uploads/abc/b.jpg'],
+    resultImageUrls: ['https://replicate.delivery/x/1.png'],
+    deliveredImageUrls: ['https://replicate.delivery/x/1.png'],
+  });
+  const id = order._id.toString();
+  const cookie = await cookieFor('admin@p.ai');
+
+  const res = await fetch(`${base}/admin/orders/${id}`, { method: 'DELETE', headers: { Cookie: cookie } });
+  assert.equal(res.status, 200);
+  const body = await res.json();
+  assert.equal(body.data.deletedObjects, 3); // 2 uploads + training zip
+
+  assert.equal(await Order.findById(id), null); // order gone
+  assert.ok(queue.removed.includes(id)); // job removed
+  assert.ok(storage.deletedKeys.includes('uploads/abc/a.jpg'));
+  assert.ok(storage.deletedKeys.includes('uploads/abc/b.jpg'));
+  assert.ok(storage.deletedKeys.includes(`training/${id}.zip`));
+  // Replicate-hosted outputs are NOT in our bucket, so never sent to storage delete.
+  assert.ok(!storage.deletedKeys.some((k) => k.includes('replicate') || k.includes('1.png')));
+});
+
+test('delete: a missing order is 404', async () => {
+  const cookie = await cookieFor('admin@p.ai');
+  const res = await fetch(`${base}/admin/orders/${new mongoose.Types.ObjectId()}`, { method: 'DELETE', headers: { Cookie: cookie } });
+  assert.equal(res.status, 404);
 });
 
 test('resend-email: 503 when no email client is configured', async () => {

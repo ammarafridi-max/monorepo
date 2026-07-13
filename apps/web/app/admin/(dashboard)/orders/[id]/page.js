@@ -2,13 +2,14 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useAdminAuth } from '../../../AdminAuthContext';
 import {
   getAdminOrder,
   refundOrder,
   retryOrder,
   resendOrderEmail,
+  deleteOrder,
   usd,
   dateTime,
   STATUS_LABEL,
@@ -179,6 +180,7 @@ export default function OrderDetailPage() {
 }
 
 function ActionsCard({ order, reload }) {
+  const router = useRouter();
   const [busy, setBusy] = useState('');
   const [msg, setMsg] = useState('');
   const [error, setError] = useState('');
@@ -186,6 +188,25 @@ function ActionsCard({ order, reload }) {
   const canRefund = Boolean(order.amountPaidCents) && !order.refundedAt;
   const canRetry = RETRYABLE.includes(order.status);
   const canResend = order.status === 'DELIVERED';
+
+  async function onDelete() {
+    const ok = window.confirm(
+      'Delete this order permanently?\n\n' +
+        'This removes the order record and the customer\'s uploaded photos from our storage. ' +
+        'It cannot be undone. (AI-generated images are hosted by Replicate and expire on their own.)'
+    );
+    if (!ok) return;
+    setBusy('delete');
+    setMsg('');
+    setError('');
+    try {
+      await deleteOrder(order.orderId);
+      router.push('/admin/orders');
+    } catch (e) {
+      setError(e.message || 'Could not delete this order.');
+      setBusy('');
+    }
+  }
 
   async function run(kind, fn, confirmMsg, successMsg) {
     if (confirmMsg && !window.confirm(confirmMsg)) return;
@@ -252,6 +273,23 @@ function ActionsCard({ order, reload }) {
         Refund issues a Stripe refund and marks the order refunded (it does not cancel an in-flight run).
         Retry re-queues a stuck order. Resend re-sends the delivery email to the customer.
       </p>
+
+      <div className="adm-danger">
+        <div>
+          <div className="adm-danger__title">Delete order</div>
+          <div className="adm-muted">
+            Removes the order and the uploaded photos from our storage. Permanent.
+          </div>
+        </div>
+        <button
+          type="button"
+          className="adm-btn adm-btn--sm adm-btn--danger"
+          disabled={Boolean(busy)}
+          onClick={onDelete}
+        >
+          {busy === 'delete' ? 'Deleting' : 'Delete order'}
+        </button>
+      </div>
     </section>
   );
 }

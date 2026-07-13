@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 /**
@@ -77,6 +77,34 @@ export function createStorage(env = process.env) {
         new PutObjectCommand({ Bucket: bucket, Key: key, Body: body, ContentType: contentType })
       );
       return publicUrl(key);
+    },
+
+    /**
+     * The storage key for a public URL, or null if the URL is not in OUR bucket.
+     * Lets a caller (the admin delete) turn stored image URLs back into keys and
+     * safely skip foreign URLs (e.g. replicate.delivery outputs we do not own).
+     */
+    keyForUrl(url) {
+      const prefix = `${publicBase}/`;
+      if (typeof url === 'string' && url.startsWith(prefix)) {
+        return url.slice(prefix.length);
+      }
+      return null;
+    },
+
+    /**
+     * Delete objects by key. Best-effort and per-key (a missing key is a no-op
+     * success in S3/R2), returning how many succeeded/failed so the caller can
+     * report without aborting the whole operation on one failure.
+     */
+    async deleteObjects(keys) {
+      const list = [...new Set((keys || []).filter(Boolean))];
+      if (!list.length) return { deleted: 0, failed: 0 };
+      const results = await Promise.allSettled(
+        list.map((Key) => client.send(new DeleteObjectCommand({ Bucket: bucket, Key })))
+      );
+      const deleted = results.filter((r) => r.status === 'fulfilled').length;
+      return { deleted, failed: results.length - deleted };
     },
   };
 }
