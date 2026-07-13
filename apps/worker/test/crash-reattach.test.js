@@ -563,3 +563,48 @@ test('a crash mid-persistence resumes without re-copying already-persisted slots
   assert.equal(done.persistedImageUrls.length, DELIVER_COUNT);
   assert.deepEqual(done.deliveredImageUrls, done.persistedImageUrls);
 });
+
+// --- Wedged-training recovery: cancel a training stuck in "starting" and retry ---
+
+test('a training stuck in "starting" (no hardware) is cancelled and restarted fresh', async () => {
+  fake.resetFake({ unallocatedTrainings: 1 }); // the 1st training never gets hardware
+
+  const order = await Order.create({
+    customerEmail: 'a@b.com',
+    status: ORDER_STATES.PAID,
+    uploadedImageUrls: ['selfie.jpg'],
+    selectedLooks: SAMPLE_LOOKS,
+    selectedAttire: SAMPLE_ATTIRE,
+  });
+  const id = order._id.toString();
+  const pipeline = buildPipeline({ startingMaxWaitMs: 25, maxTrainingRestarts: 3 });
+
+  await pipeline.processOrder(id);
+
+  const done = await Order.findById(id);
+  assert.equal(done.status, ORDER_STATES.DELIVERED, 'completes on the fresh training');
+  assert.equal(fake.getCounts().startTraining, 2, 'exactly two trainings (original + one fresh)');
+  assert.ok(fake.getCounts().cancelTraining >= 1, 'the wedged training was cancelled');
+  assert.equal(done.replicate.trainingRestarts, 1, 'one restart recorded');
+});
+
+test('a persistently unallocated training gives up after maxTrainingRestarts', async () => {
+  fake.resetFake({ unallocatedTrainings: 99 }); // every training stays unallocated
+
+  const order = await Order.create({
+    customerEmail: 'a@b.com',
+    status: ORDER_STATES.PAID,
+    uploadedImageUrls: ['selfie.jpg'],
+    selectedLooks: SAMPLE_LOOKS,
+    selectedAttire: SAMPLE_ATTIRE,
+  });
+  const id = order._id.toString();
+  const pipeline = buildPipeline({ startingMaxWaitMs: 15, maxTrainingRestarts: 2 });
+
+  await assert.rejects(() => pipeline.processOrder(id), /could not get hardware/);
+  // original + 2 restarts = 3 trainings tried, each cancelled.
+  assert.equal(fake.getCounts().startTraining, 3, 'tried original + maxTrainingRestarts fresh trainings');
+  assert.equal(fake.getCounts().cancelTraining, 3, 'each wedged training was cancelled');
+  const stuck = await Order.findById(id);
+  assert.equal(stuck.status, ORDER_STATES.TRAINING, 'still TRAINING; the worker failed handler fails+refunds it');
+});

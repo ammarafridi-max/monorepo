@@ -21,6 +21,15 @@ test('reasonForImage: multiple faces is rejected', () => {
   assert.equal(reasonForImage({ faceCount: 2, maxFaceBoxRatio: 0.5 }), REASONS.multipleFaces);
 });
 
+test('reasonForImage: a solo photo with a small bystander passes (subject-size aware)', () => {
+  // Two people detected, but only one is subject-sized (the other is background/spurious).
+  assert.equal(reasonForImage({ faceCount: 2, subjectCount: 1, maxFaceBoxRatio: 0.5 }), null);
+});
+
+test('reasonForImage: two comparably-sized people is still rejected', () => {
+  assert.equal(reasonForImage({ faceCount: 2, subjectCount: 2, maxFaceBoxRatio: 0.5 }), REASONS.multipleFaces);
+});
+
 test('reasonForImage: a lone but tiny face is rejected', () => {
   const tiny = QUALITY.minFaceBoxRatio - 0.01;
   assert.equal(reasonForImage({ faceCount: 1, maxFaceBoxRatio: tiny }), REASONS.faceTooSmall);

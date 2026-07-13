@@ -20,6 +20,11 @@ const usdToCents = (usd) => Math.round((usd || 0) * 100);
 export const DEFAULT_POLL_INTERVAL_MS = 8000;
 export const DEFAULT_TRAINING_MAX_WAIT_MS = 30 * 60 * 1000; // 30 min
 export const DEFAULT_GENERATION_MAX_WAIT_MS = 6 * 60 * 1000; // 6 min per image
+// How long a training may sit "starting" (accepted but no hardware allocated)
+// before we treat it as wedged, cancel it, and start a fresh one.
+export const DEFAULT_TRAINING_STARTING_MAX_MS = 5 * 60 * 1000; // 5 min
+// How many times to cancel-and-restart a wedged training before giving up (fail + refund).
+export const DEFAULT_MAX_TRAINING_RESTARTS = 3;
 
 /**
  * @typedef {Object} ReplicateClient
@@ -72,6 +77,8 @@ export function createPipeline({
   onFailed,
   pollIntervalMs = DEFAULT_POLL_INTERVAL_MS,
   trainingMaxWaitMs = DEFAULT_TRAINING_MAX_WAIT_MS,
+  startingMaxWaitMs = DEFAULT_TRAINING_STARTING_MAX_MS,
+  maxTrainingRestarts = DEFAULT_MAX_TRAINING_RESTARTS,
   generationMaxWaitMs = DEFAULT_GENERATION_MAX_WAIT_MS,
 }) {
   // Never try to deliver more than we generate. index.js asserts this at startup
@@ -128,13 +135,53 @@ export function createPipeline({
       console.log(`[worker] order ${orderId} reattaching to training ${trainingId}`);
     }
 
-    const result = await pollUntilSettled(() => client.pollTraining(trainingId), {
-      maxWaitMs: trainingMaxWaitMs,
-      label: `training ${trainingId}`,
-    });
+    // Poll to a terminal state, but distinguish "running slowly" from "never got
+    // hardware". A training queued in "starting" (allocated === false) that does not
+    // get hardware within startingMaxWaitMs is WEDGED: cancel it and start a fresh
+    // one (bounded by maxTrainingRestarts), rather than reattaching to a dead training
+    // for the full 30-minute window. Once it is genuinely running (allocated), the
+    // normal trainingMaxWaitMs applies.
+    const runningDeadline = Date.now() + trainingMaxWaitMs;
+    const allocationDeadline = Date.now() + startingMaxWaitMs;
+    let result;
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      result = await client.pollTraining(trainingId);
+      if (result.status === 'succeeded') break;
+      if (result.status === 'failed') {
+        throw new Error(`[worker] training ${trainingId} failed for order ${orderId}`);
+      }
+      // status === 'processing'. `allocated !== false` treats an unknown/absent flag
+      // as running, so any client that does not report allocation keeps the old behaviour.
+      const running = result.allocated !== false;
+      if (running) {
+        if (Date.now() > runningDeadline) {
+          throw new Error(`[worker] training ${trainingId} did not finish within ${trainingMaxWaitMs}ms`);
+        }
+      } else if (Date.now() > allocationDeadline) {
+        const restarts = order.replicate?.trainingRestarts ?? 0;
+        console.warn(
+          `[worker] order ${orderId} training ${trainingId} never got hardware within ${startingMaxWaitMs}ms (restart ${restarts}/${maxTrainingRestarts}); cancelling`
+        );
+        if (client.cancelTraining) await client.cancelTraining(trainingId).catch(() => {});
+        if (restarts >= maxTrainingRestarts) {
+          throw new Error(
+            `[worker] order ${orderId} training could not get hardware after ${restarts + 1} attempts`
+          );
+        }
+        // Clear the wedged id + bump the restart counter, then return: processOrder
+        // re-enters TRAINING and starts a FRESH training (never reattaches to this one).
+        await Order.updateOne(
+          { _id: orderId },
+          { $unset: { 'replicate.trainingId': '' }, $inc: { 'replicate.trainingRestarts': 1 } }
+        );
+        return;
+      }
+      await sleep(pollIntervalMs);
+    }
 
-    if (result.status !== 'succeeded' || !result.trainedModelVersion) {
-      throw new Error(`[worker] training ${trainingId} failed for order ${orderId}`);
+    if (!result.trainedModelVersion) {
+      throw new Error(`[worker] training ${trainingId} succeeded without a model version for order ${orderId}`);
     }
 
     // Persist the trained version + accumulate cost, then transition. If we crash

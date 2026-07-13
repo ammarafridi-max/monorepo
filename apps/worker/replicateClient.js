@@ -278,9 +278,27 @@ export async function pollTraining(trainingId) {
   const trainedModelVersion = status === 'succeeded' ? t.output?.version : undefined;
   return {
     status,
+    // Has Replicate actually allocated hardware and STARTED running this training?
+    // A training queued in "starting" (accepted but no hardware yet) has a null
+    // started_at; once it is genuinely running started_at is set. The worker uses
+    // this to tell "slow to finish" from "never got hardware".
+    allocated: Boolean(t.started_at),
     trainedModelVersion,
     costUsd: estimateCostUsd(t.metrics?.predict_time, TRAINING_USD_PER_SEC),
   };
+}
+
+/**
+ * Cancel a training (e.g. one wedged in "starting" that never got hardware). Best
+ * effort: a couple of attempts, and the caller ignores failures.
+ * @param {string} trainingId
+ */
+export async function cancelTraining(trainingId) {
+  await withRetry(
+    'cancelTraining',
+    (signal) => replicateFetch(`/v1/trainings/${trainingId}/cancel`, { method: 'POST', signal }),
+    { attempts: 2, timeoutMs: 15000 }
+  );
 }
 
 /**

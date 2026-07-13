@@ -144,10 +144,24 @@ async function imageDimensions(url) {
   return { width, height };
 }
 
+// A second person only counts as a distinct SUBJECT if it is a meaningful size
+// next to the main subject. Env-overridable. 0.6 = "at least 60% as large as the
+// biggest person in frame". This is the key easing: a small bystander in the
+// background, or a spurious low box, is far smaller than the subject and so no
+// longer trips the "more than one person" rule on an otherwise-solo photo. A
+// genuine second subject is a comparable size and still does.
+function subjectMinFraction() {
+  const f = parseFloat(process.env.UPLOAD_SUBJECT_MIN_FRACTION);
+  return Number.isFinite(f) ? f : 0.6;
+}
+
 /**
  * Detect subjects in one image URL.
  * @param {string} url
- * @returns {Promise<{ faceCount: number, maxFaceBoxRatio: number }>}
+ * @returns {Promise<{ faceCount: number, subjectCount: number, maxFaceBoxRatio: number }>}
+ *   faceCount = every person detected (for the "no person" check);
+ *   subjectCount = people large enough to be a real subject (for "more than one");
+ *   maxFaceBoxRatio = the largest person's box vs the frame (for "too small").
  */
 export async function detectFaces(url) {
   const [output, { width, height }] = await Promise.all([
@@ -163,17 +177,16 @@ export async function detectFaces(url) {
   }
 
   // Boxes are original-image pixels; ratio = box's larger side vs the image.
-  let maxFaceBoxRatio = 0;
-  for (const d of detections) {
+  const ratios = detections.map((d) => {
     const b = d.box || {};
     const w = Math.abs((b.x2 ?? 0) - (b.x1 ?? 0));
     const h = Math.abs((b.y2 ?? 0) - (b.y1 ?? 0));
-    maxFaceBoxRatio = Math.max(
-      maxFaceBoxRatio,
-      width ? w / width : 0,
-      height ? h / height : 0,
-    );
-  }
+    return Math.max(width ? w / width : 0, height ? h / height : 0);
+  });
+  const maxFaceBoxRatio = ratios.length ? Math.max(...ratios) : 0;
 
-  return { faceCount: detections.length, maxFaceBoxRatio };
+  const threshold = subjectMinFraction() * maxFaceBoxRatio;
+  const subjectCount = ratios.filter((r) => r >= threshold).length;
+
+  return { faceCount: detections.length, subjectCount, maxFaceBoxRatio };
 }

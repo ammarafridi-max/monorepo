@@ -16,6 +16,11 @@ const replicateSchema = new Schema(
     trainingId: String,
     trainedModelVersion: String,
     generationIds: [String],
+    // How many times we cancelled a training that never got hardware (stuck in
+    // "starting") and started a fresh one. Bounds the restart loop so a persistent
+    // Replicate capacity outage eventually fails the order (and refunds) instead of
+    // retrying forever.
+    trainingRestarts: { type: Number, default: 0 },
   },
   { _id: false }
 );

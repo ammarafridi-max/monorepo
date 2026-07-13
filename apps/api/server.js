@@ -301,7 +301,9 @@ async function detectImageAll(url) {
 }
 
 async function cachedDetect(url) {
-  const key = `gate:v1:${url}`;
+  // v2: bumped when the gate rules eased (subject-size aware multi-person check +
+  // lower min subject size), so photos cached as failures re-evaluate under the new rules.
+  const key = `gate:v2:${url}`;
   try {
     const hit = await connection.get(key);
     if (hit) return JSON.parse(hit);

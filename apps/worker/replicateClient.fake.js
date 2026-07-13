@@ -37,7 +37,10 @@ let state;
  */
 export function resetFake(config = {}) {
   state = {
-    counts: { startTraining: 0, pollTraining: 0, startGeneration: 0, pollGeneration: 0 },
+    counts: { startTraining: 0, pollTraining: 0, startGeneration: 0, pollGeneration: 0, cancelTraining: 0 },
+    // The first N trainings created stay "unallocated" (status processing, never
+    // gets hardware) forever, to exercise the worker's cancel-and-restart-fresh path.
+    unallocatedTrainings: config.unallocatedTrainings ?? 0,
     trainingStatusSeq: config.trainingStatusSeq ?? ['succeeded'],
     generationStatusSeq: config.generationStatusSeq ?? ['succeeded'],
     trainedModelVersion: config.trainedModelVersion ?? 'fakeowner/fakemodel:v1',
@@ -84,12 +87,23 @@ export async function startTraining(_imageZipUrl) {
 export async function pollTraining(trainingId) {
   state.counts.pollTraining += 1;
   maybeCrash('pollTraining');
+  // Trainings whose number is within unallocatedTrainings never get hardware:
+  // perpetually "processing" but not allocated (mimics Replicate's stuck "starting").
+  const num = Number(String(trainingId).split('_')[1]);
+  if (num <= state.unallocatedTrainings) {
+    return { status: 'processing', allocated: false };
+  }
   const status = nextStatus(state.trainingPolls, trainingId, state.trainingStatusSeq);
   return {
     status,
+    allocated: true,
     trainedModelVersion: status === 'succeeded' ? state.trainedModelVersion : undefined,
     costUsd: status === 'succeeded' ? state.trainingCostUsd : undefined,
   };
+}
+
+export async function cancelTraining(_trainingId) {
+  state.counts.cancelTraining += 1;
 }
 
 export async function startGeneration(_modelVersion, _prompt) {

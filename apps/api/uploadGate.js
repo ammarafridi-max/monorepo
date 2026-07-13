@@ -21,9 +21,10 @@ function float(v, fallback) {
 export const QUALITY = Object.freeze({
   minPhotos: int(process.env.UPLOAD_MIN_PHOTOS, 5),
   maxPhotos: int(process.env.UPLOAD_MAX_PHOTOS, 15),
-  // The face bounding box must span at least this fraction of the image in its
-  // larger dimension. Rejects tiny/far faces. ~0.15 = face is >=15% of the frame.
-  minFaceBoxRatio: float(process.env.UPLOAD_MIN_FACE_RATIO, 0.15),
+  // The subject's bounding box must span at least this fraction of the image in its
+  // larger dimension. Rejects tiny/far subjects. ~0.12 = subject is >=12% of the
+  // frame (eased from 0.15 so a normal arm's-length shot is not called "too small").
+  minFaceBoxRatio: float(process.env.UPLOAD_MIN_FACE_RATIO, 0.12),
 });
 
 /** Short, calm, branded reasons (no em dashes, no scary language). */
@@ -51,14 +52,18 @@ const REASON_BY_ISSUE = Object.freeze({
 /**
  * Decide one image from its detection result. `qualityIssue` (optional) is the
  * strict-gate verdict from the vision screen (photoGate.js).
- * @param {{ faceCount: number, maxFaceBoxRatio: number, error?: boolean, qualityIssue?: string|null }} d
+ * @param {{ faceCount: number, subjectCount?: number, maxFaceBoxRatio: number, error?: boolean, qualityIssue?: string|null }} d
  * @param {typeof QUALITY} [q]
  * @returns {string|null} a reason if it fails, else null
  */
 export function reasonForImage(d, q = QUALITY) {
   if (d.error) return REASONS.unreadable;
   if (!d.faceCount) return REASONS.noFace;
-  if (d.faceCount > 1) return REASONS.multipleFaces;
+  // "More than one person" now keys on SUBJECT-sized people, not every detection,
+  // so a small bystander / spurious box on a solo photo no longer rejects it.
+  // Falls back to faceCount when subjectCount is absent (older cached results).
+  const subjectCount = d.subjectCount ?? d.faceCount;
+  if (subjectCount > 1) return REASONS.multipleFaces;
   if (d.maxFaceBoxRatio < q.minFaceBoxRatio) return REASONS.faceTooSmall;
   // Strict attribute checks (sunglasses / hat / blurry / dark) from the VLM screen.
   if (d.qualityIssue && REASON_BY_ISSUE[d.qualityIssue]) return REASON_BY_ISSUE[d.qualityIssue];
