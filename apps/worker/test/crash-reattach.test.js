@@ -91,6 +91,26 @@ function makeScorer({ scoreFor = () => 0.5, crashOnCall } = {}) {
   return scorer;
 }
 
+// A stubbed image persister: same { imageUrl } contract as persistImage. Records
+// calls (to prove one copy per delivered slot + no re-copy on resume) and can fire
+// a one-shot crash on the Nth call to simulate a crash mid-persistence. Returns a
+// deterministic pseudo-R2 URL from the key so tests can assert the stored layout.
+function makePersister({ crashOnCall } = {}) {
+  const calls = [];
+  let armed = crashOnCall;
+  const persist = async (sourceUrl, keyBase) => {
+    calls.push({ sourceUrl, keyBase });
+    if (armed && calls.length === armed) {
+      armed = null; // fire once; a restart past this point persists normally
+      throw new Error(`SIMULATED_PERSIST_CRASH at call ${calls.length}`);
+    }
+    return { imageUrl: `https://r2.local/${keyBase}.jpg` };
+  };
+  persist.calls = calls;
+  persist.callCount = () => calls.length;
+  return persist;
+}
+
 // A counting stub of the Stripe refund API, shaped like the real client
 // (stripe.refunds.create(params, { idempotencyKey })). It records call count and
 // the idempotency keys it saw, the same way the fake Replicate client counts
@@ -465,4 +485,81 @@ test('cost invariant: with identity culling OFF, generate == deliver (never pay 
   // And that is exactly the target count: nothing overgenerated, nothing dropped.
   assert.equal(fake.getCounts().startGeneration, DELIVER_COUNT, 'generated exactly DELIVER_COUNT (14)');
   assert.equal(done.deliveredImageUrls.length, DELIVER_COUNT, 'delivered exactly DELIVER_COUNT (14)');
+});
+
+// --- Durability: persist delivered images to our own storage -----------------
+
+test('delivered images are persisted to our storage under deterministic keys', async () => {
+  const GENERATE_COUNT = 6;
+  const DELIVER_COUNT = 4;
+  const scorer = makeScorer({ scoreFor: (url) => 1 - predNum(url) / 100 });
+  const persist = makePersister();
+
+  const order = await Order.create({
+    customerEmail: 'a@b.com',
+    status: ORDER_STATES.GENERATING,
+    uploadedImageUrls: ['selfie.jpg'],
+    selectedLooks: SAMPLE_LOOKS,
+    selectedAttire: SAMPLE_ATTIRE,
+    replicate: { trainingId: 't', trainedModelVersion: 'o/m:v1' },
+  });
+  const id = order._id.toString();
+
+  const pipeline = buildPipeline({
+    generateCount: GENERATE_COUNT,
+    deliverCount: DELIVER_COUNT,
+    scoreIdentity: scorer,
+    persistImage: persist,
+  });
+  await pipeline.processOrder(id);
+
+  const done = await Order.findById(id);
+  assert.equal(done.status, ORDER_STATES.DELIVERED);
+  assert.equal(done.persistedImageUrls.length, DELIVER_COUNT, 'every delivered slot persisted');
+  assert.equal(persist.callCount(), DELIVER_COUNT, 'persist called once per delivered slot');
+  // deliveredImageUrls now points at OUR storage URLs, not the upstream ones.
+  assert.deepEqual(done.deliveredImageUrls, done.persistedImageUrls);
+  assert.ok(
+    done.deliveredImageUrls.every((u, i) => u === `https://r2.local/deliveries/${id}/${i}.jpg`),
+    'stored under deliveries/<orderId>/<i> keys'
+  );
+});
+
+test('a crash mid-persistence resumes without re-copying already-persisted slots', async () => {
+  const GENERATE_COUNT = 6;
+  const DELIVER_COUNT = 4;
+  const scorer = makeScorer({ scoreFor: (url) => 1 - predNum(url) / 100 });
+  const persist = makePersister({ crashOnCall: 3 }); // crash copying the 3rd slot
+
+  const order = await Order.create({
+    customerEmail: 'a@b.com',
+    status: ORDER_STATES.GENERATING,
+    uploadedImageUrls: ['selfie.jpg'],
+    selectedLooks: SAMPLE_LOOKS,
+    selectedAttire: SAMPLE_ATTIRE,
+    replicate: { trainingId: 't', trainedModelVersion: 'o/m:v1' },
+  });
+  const id = order._id.toString();
+
+  const pipeline = buildPipeline({
+    generateCount: GENERATE_COUNT,
+    deliverCount: DELIVER_COUNT,
+    scoreIdentity: scorer,
+    persistImage: persist,
+  });
+
+  // Run 1: two slots copied, the third crashes before delivery is finalized.
+  await assert.rejects(() => pipeline.processOrder(id), /SIMULATED_PERSIST_CRASH/);
+  const mid = await Order.findById(id);
+  assert.equal(mid.status, ORDER_STATES.GENERATING, 'not delivered yet');
+  assert.equal(nonNull(mid.persistedImageUrls).length, 2, 'two slots persisted before the crash');
+  assert.equal(mid.deliveredImageUrls.length, 0, 'delivered set not finalized');
+
+  // Run 2 (restart): only the missing slots are copied; the two done ones are not.
+  await pipeline.processOrder(id);
+  const done = await Order.findById(id);
+  assert.equal(done.status, ORDER_STATES.DELIVERED);
+  assert.equal(persist.callCount(), DELIVER_COUNT + 1, 'crashed slot retried once; done slots not re-copied');
+  assert.equal(done.persistedImageUrls.length, DELIVER_COUNT);
+  assert.deepEqual(done.deliveredImageUrls, done.persistedImageUrls);
 });

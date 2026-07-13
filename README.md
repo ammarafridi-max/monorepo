@@ -373,10 +373,10 @@ monorepo, right-sized to this repo (layered modules in `apps/api`, not DI packag
   idempotent worker reattaches), `POST /admin/orders/:id/resend-email` (re-send the
   delivery email for a delivered order; needs `BREVO_API_KEY` on the api, else 503),
   `DELETE /admin/orders/:id` (hard-delete the order and remove the objects WE store
-  for it, the uploaded selfies + training zip in R2; the AI-generated images live on
-  Replicate and expire on their own, so they are skipped). Shown as buttons on the
-  order-detail page for `admin` only. Delete is irreversible and drops the payment
-  record, so it is a strong-confirm action meant for cleanup / removal requests.
+  for it in R2: the uploaded selfies, the training zip, and the persisted delivered
+  images; the intermediate Replicate artifacts are ephemeral and skipped). Shown as
+  buttons on the order-detail page for `admin` only. Delete is irreversible and drops
+  the payment record, so it is a strong-confirm action meant for cleanup / removal.
 - **Admin-user management (api, admin only):** `GET`/`POST /admin-users`,
   `GET`/`PATCH`/`DELETE /admin-users/:username`, `PATCH /admin-users/:username/password`
   (reset another user's password). Guarded by `restrictTo('admin')`, so `support`
@@ -685,6 +685,26 @@ beard and FLUX's toothy grin. Three things keep it faithful:
 `PULID_MODEL`, `PULID_VISION_MODEL`. Reference selfie = the first uploaded photo (the
 gate guarantees a face); a clearer frontal reference improves results, so rejecting
 sunglasses/occluded uploads at the gate is a worthwhile follow-up.
+
+## Delivered-image durability
+
+Generation, face swap, and enhancement all return **`replicate.delivery` URLs**, and
+Replicate garbage-collects prediction outputs within about an hour. If we served those
+directly, a customer opening the delivery email an hour later (or any download after
+that) would hit a `NoSuchKey` / "file not found" error for headshots they paid for.
+
+So the worker **persists the final delivered set into our own R2 bucket** at delivery
+time (`persistImage`, keys `deliveries/<orderId>/<i>`), and points `deliveredImageUrls`
+at those permanent URLs. It is the last step of `selectAndDeliver`, after
+select -> swap -> enhance, and it is **resumable per slot** via `persistedImageUrls`
+(same shape as `swappedImageUrls` / `enhancedImageUrls`): a crash mid-copy re-copies
+only the missing slots, never a done one. The results page, the download endpoints, and
+the delivery email all reference these R2 URLs, so they never expire. Deleting an order
+cleans them up (they resolve to our bucket).
+
+ON by default (`PERSIST_DELIVERED=on`); requires R2, which the worker already needs.
+Note this does not recover orders delivered BEFORE this shipped, whose upstream URLs
+have already expired; it protects every order from here on.
 
 ## Conventions
 

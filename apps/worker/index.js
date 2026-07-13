@@ -152,6 +152,19 @@ const enhanceFace = ENHANCE_FACE
         : await import('./enhanceFace.js')
     ).enhanceFace
   : undefined;
+
+// DURABILITY: persist the final delivered images into our R2 bucket so they do not
+// expire with the upstream (replicate.delivery) URLs. ON by default (R2 is already
+// required by the worker); set PERSIST_DELIVERED=off to fall back to the ephemeral
+// upstream URLs. The fake variant (no R2/network) is used under USE_FAKE_REPLICATE.
+const PERSIST_DELIVERED = (process.env.PERSIST_DELIVERED ?? 'on') !== 'off';
+const persistImage = PERSIST_DELIVERED
+  ? (
+      USE_FAKE_REPLICATE
+        ? await import('./persistImage.fake.js')
+        : await import('./persistImage.js')
+    ).createImagePersister()
+  : undefined;
 if (USE_FAKE_REPLICATE) console.warn('[worker] USE_FAKE_REPLICATE=1: using the in-memory fake client');
 console.log(
   `[worker] identity culling ${
@@ -161,6 +174,9 @@ console.log(
 console.log(`[worker] face swap ${FACE_SWAP ? 'ON' : 'OFF (set REPLICATE_FACE_SWAP_MODEL to enable)'}`);
 console.log(
   `[worker] realism enhance ${ENHANCE_FACE ? 'ON' : 'OFF (set REPLICATE_ENHANCE_MODEL to enable)'}`
+);
+console.log(
+  `[worker] delivered-image persistence ${PERSIST_DELIVERED ? 'ON (copied to R2)' : 'OFF (PERSIST_DELIVERED=off)'}`
 );
 console.log(
   `[worker] generation backend: ${USE_PULID ? 'pulid (no training; reference-image identity)' : 'lora'}`
@@ -299,6 +315,7 @@ const pipeline = createPipeline({
   scoreIdentity,
   swapFace,
   enhanceFace,
+  persistImage,
   generateCount: GENERATE_COUNT,
   deliverCount: DELIVER_COUNT,
   // PuLID has no zip to build; its "training input" is the reference selfie.

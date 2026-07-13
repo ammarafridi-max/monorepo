@@ -63,6 +63,7 @@ export function createPipeline({
   scoreIdentity = async () => ({ score: 0, costUsd: 0 }),
   swapFace,
   enhanceFace,
+  persistImage,
   generateCount = 14,
   deliverCount = 14,
   resolveTrainingZip,
@@ -345,6 +346,25 @@ export function createPipeline({
         console.log(`[worker] order ${orderId} enhanced ${i + 1}/${deliveredImageUrls.length}`);
       }
       deliveredImageUrls = enhanced;
+    }
+
+    // DURABILITY: copy the final delivered set off the ephemeral upstream host
+    // (replicate.delivery garbage-collects prediction outputs within ~an hour) into
+    // our own R2 bucket, so the results page, download endpoints, and delivery-email
+    // link never 404. Resumable per slot via persistedImageUrls (same shape as
+    // swapped/enhanced), keyed deterministically as deliveries/<orderId>/<i> so a
+    // retry overwrites the same object. Off (deliver the upstream URLs unchanged)
+    // when no persister is injected, keeping the fake path and legacy behaviour intact.
+    if (persistImage && deliveredImageUrls.length > 0) {
+      const persisted = [...(order.persistedImageUrls ?? [])];
+      for (let i = 0; i < deliveredImageUrls.length; i++) {
+        if (persisted[i]) continue; // already copied this slot -> never redo
+        const { imageUrl } = await persistImage(deliveredImageUrls[i], `deliveries/${orderId}/${i}`);
+        persisted[i] = imageUrl;
+        await Order.updateOne({ _id: orderId }, { $set: { persistedImageUrls: persisted } });
+        console.log(`[worker] order ${orderId} persisted ${i + 1}/${deliveredImageUrls.length} to R2`);
+      }
+      deliveredImageUrls = persisted;
     }
 
     await Order.updateOne({ _id: orderId }, { $set: { deliveredImageUrls } });

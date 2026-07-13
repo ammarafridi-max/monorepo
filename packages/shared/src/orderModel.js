@@ -112,6 +112,14 @@ const orderSchema = new Schema(
     // the enhance pass is resumable. When set, deliveredImageUrls points at THESE.
     enhancedImageUrls: [String],
 
+    // The delivered images COPIED INTO OUR OWN R2 bucket (keys deliveries/<id>/<i>),
+    // the durability step: generation/swap/enhance all return replicate.delivery
+    // URLs, which Replicate garbage-collects within ~an hour, so we persist the
+    // final set to storage we control and point deliveredImageUrls at THESE. Written
+    // per slot so the copy is resumable. This is what the results page, the download
+    // endpoints, and the delivery email link to, so they never 404.
+    persistedImageUrls: [String],
+
     // The CHOSEN delivered subset: the top DELIVER_COUNT candidates by identity
     // score, best-first. This is the idempotency anchor for SELECTION
     // (receipt-before-acting, same pattern as deliveredEmailSentAt / refundedAt):
