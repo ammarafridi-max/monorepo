@@ -1,9 +1,20 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { getAdminOrder, usd, dateTime, STATUS_LABEL } from '../../../../../lib/adminApi';
+import { useAdminAuth } from '../../../AdminAuthContext';
+import {
+  getAdminOrder,
+  refundOrder,
+  retryOrder,
+  resendOrderEmail,
+  usd,
+  dateTime,
+  STATUS_LABEL,
+} from '../../../../../lib/adminApi';
+
+const RETRYABLE = ['PAID', 'TRAINING', 'GENERATING'];
 
 function StatusPill({ status }) {
   const cls =
@@ -41,14 +52,19 @@ function Row({ label, children }) {
 
 export default function OrderDetailPage() {
   const { id } = useParams();
+  const { adminUser } = useAdminAuth();
   const [order, setOrder] = useState(null);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    getAdminOrder(id)
+  const load = useCallback(() => {
+    return getAdminOrder(id)
       .then(setOrder)
       .catch((e) => setError(e.status === 404 ? 'Order not found.' : e.message || 'Could not load order.'));
   }, [id]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   if (error) {
     return (
@@ -83,6 +99,8 @@ export default function OrderDetailPage() {
           {order.stuck && <span className="adm-flag">stuck {order.stuckForMinutes}m</span>}
         </div>
       </header>
+
+      {adminUser?.role === 'admin' && <ActionsCard order={order} reload={load} />}
 
       {order.error && (
         <div className="adm-card adm-card--warn">
@@ -157,6 +175,84 @@ export default function OrderDetailPage() {
           )}
       </section>
     </>
+  );
+}
+
+function ActionsCard({ order, reload }) {
+  const [busy, setBusy] = useState('');
+  const [msg, setMsg] = useState('');
+  const [error, setError] = useState('');
+
+  const canRefund = Boolean(order.amountPaidCents) && !order.refundedAt;
+  const canRetry = RETRYABLE.includes(order.status);
+  const canResend = order.status === 'DELIVERED';
+
+  async function run(kind, fn, confirmMsg, successMsg) {
+    if (confirmMsg && !window.confirm(confirmMsg)) return;
+    setBusy(kind);
+    setMsg('');
+    setError('');
+    try {
+      await fn(order.orderId);
+      await reload();
+      setMsg(successMsg);
+    } catch (e) {
+      setError(e.message || 'Action failed.');
+    } finally {
+      setBusy('');
+    }
+  }
+
+  return (
+    <section className="adm-card">
+      <div className="adm-card__head">
+        <h2>Actions</h2>
+      </div>
+
+      {msg && <p className="adm-ok">{msg}</p>}
+      {error && <p className="adm-login__error">{error}</p>}
+
+      <div className="adm-actionbar">
+        <button
+          type="button"
+          className="adm-btn adm-btn--sm adm-btn--danger"
+          disabled={!canRefund || Boolean(busy)}
+          title={order.refundedAt ? 'Already refunded' : !order.amountPaidCents ? 'No payment to refund' : ''}
+          onClick={() =>
+            run('refund', refundOrder, 'Issue a Stripe refund for this order? This cannot be undone.', 'Refund issued.')
+          }
+        >
+          {busy === 'refund' ? 'Refunding' : order.refundedAt ? 'Refunded' : 'Refund'}
+        </button>
+
+        <button
+          type="button"
+          className="adm-btn adm-btn--sm"
+          disabled={!canRetry || Boolean(busy)}
+          title={canRetry ? '' : 'Only a paid, in-progress order can be retried'}
+          onClick={() =>
+            run('retry', retryOrder, 'Re-queue this order for the worker to reattach?', 'Re-queued. The worker will pick it up.')
+          }
+        >
+          {busy === 'retry' ? 'Re-queuing' : 'Retry'}
+        </button>
+
+        <button
+          type="button"
+          className="adm-btn adm-btn--sm"
+          disabled={!canResend || Boolean(busy)}
+          title={canResend ? '' : 'Only a delivered order has results to email'}
+          onClick={() => run('resend', resendOrderEmail, null, 'Delivery email re-sent.')}
+        >
+          {busy === 'resend' ? 'Sending' : 'Resend email'}
+        </button>
+      </div>
+
+      <p className="adm-muted adm-actionbar__note">
+        Refund issues a Stripe refund and marks the order refunded (it does not cancel an in-flight run).
+        Retry re-queues a stuck order. Resend re-sends the delivery email to the customer.
+      </p>
+    </section>
   );
 }
 

@@ -19,6 +19,7 @@ import Stripe from 'stripe';
 import { Queue } from 'bullmq';
 import {
   connectMongo,
+  createEmailClient,
   createRedisConnection,
   createStorage,
   isValidLook,
@@ -42,6 +43,7 @@ import { createAdminAuth } from './admin/router.js';
 import { restrictTo } from './admin/authMiddleware.js';
 import { createAdminDataRouter } from './admin/adminData.js';
 import { createAdminUsersRouter } from './admin/adminUsersRouter.js';
+import { createAdminActionsRouter } from './admin/adminActions.js';
 
 /**
  * Picturesk API (Phase 4: uploads + delivery).
@@ -91,6 +93,8 @@ const {
   ADMIN_JWT_EXPIRES_IN = '7d',
   ADMIN_COOKIE_EXPIRES_DAYS = '7',
   NODE_ENV = 'development',
+  BREVO_API_KEY,
+  BREVO_SENDER = 'Picturesk.ai <hello@picturesk.ai>',
   WEB_BASE_URL = 'http://localhost:3000',
   PORT = 3001,
 } = process.env;
@@ -161,6 +165,13 @@ await connectMongo(MONGODB_URI);
 console.log('[api] connected to MongoDB');
 
 const stripe = new Stripe(STRIPE_SECRET_KEY);
+
+// Brevo transactional email client, for the admin "resend delivery email" action.
+// null when BREVO_API_KEY is unset (same convention as the worker), which makes
+// resend return 503 rather than crash. The worker still owns first-time delivery.
+const emailClient = BREVO_API_KEY
+  ? createEmailClient({ apiKey: BREVO_API_KEY, sender: BREVO_SENDER })
+  : null;
 
 const connection = createRedisConnection(REDIS_URL);
 const orderPipeline = new Queue(QUEUE_NAMES.ORDER_PIPELINE, { connection });
@@ -841,6 +852,24 @@ function adminGuard(req, res, next) {
  * (detail), /admin/stats, /admin/customers. Projections + handlers live in
  * ./admin/adminData.js so no customer-facing route can leak margin/Stripe/Replicate.
  */
+/**
+ * Admin ORDER ACTIONS (refund / retry / resend email). Mounted at /admin BEFORE
+ * the read-only data router: its per-route guards match only the POST action paths,
+ * so read requests fall through to the data router untouched. Admin-only.
+ */
+app.use(
+  '/admin',
+  createAdminActionsRouter({
+    guard: adminGuard,
+    restrictTo,
+    stripe,
+    orderPipeline,
+    pipelineJobOpts,
+    emailClient,
+    webBaseUrl: WEB_BASE_URL,
+  })
+);
+
 app.use('/admin', createAdminDataRouter({ guard: adminGuard, restrictTo }));
 
 /**

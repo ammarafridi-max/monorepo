@@ -367,6 +367,12 @@ monorepo, right-sized to this repo (layered modules in `apps/api`, not DI packag
   margin), `/admin/orders/:id` (full detail), `/admin/stats` (revenue, compute cost,
   margin, counts, refunds, stuck), `/admin/customers`. All behind the cookie session
   OR the `ADMIN_TOKEN` break-glass header (for scripts). Both staff roles can read.
+- **Order actions (api, admin only):** `POST /admin/orders/:id/refund` (Stripe
+  refund with an idempotency key, stamps `refundedAt`, does not cancel an in-flight
+  run), `POST /admin/orders/:id/retry` (re-enqueue a paid, in-progress order so the
+  idempotent worker reattaches), `POST /admin/orders/:id/resend-email` (re-send the
+  delivery email for a delivered order; needs `BREVO_API_KEY` on the api, else 503).
+  Shown as buttons on the order-detail page for `admin` only.
 - **Admin-user management (api, admin only):** `GET`/`POST /admin-users`,
   `GET`/`PATCH`/`DELETE /admin-users/:username`, `PATCH /admin-users/:username/password`
   (reset another user's password). Guarded by `restrictTo('admin')`, so `support`

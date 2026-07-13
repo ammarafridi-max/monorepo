@@ -539,6 +539,20 @@
   font-size: 14px;
   margin: 0;
 }
+.adm-btn--danger {
+  background: var(--warn);
+}
+
+/* Order actions bar ------------------------------------------------------- */
+.adm-actionbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.adm-actionbar__note {
+  margin: 14px 0 0;
+  font-size: 13px;
+}
 
 /* Login ------------------------------------------------------------------- */
 .adm-login {

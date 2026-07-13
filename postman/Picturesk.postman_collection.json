@@ -260,6 +260,39 @@
       ]
     },
     {
+      "name": "API - Order actions (admin only)",
+      "description": "Write actions on an order. ADMIN role only. Auth: the login cookie (Admin auth > Login) or the x-admin-token header. Set the orderId variable first.",
+      "item": [
+        {
+          "name": "Refund order",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "x-admin-token", "value": "{{adminToken}}", "description": "Optional break-glass token; or use the login cookie." }],
+            "url": { "raw": "{{apiBaseUrl}}/admin/orders/{{orderId}}/refund", "host": ["{{apiBaseUrl}}"], "path": ["admin", "orders", "{{orderId}}", "refund"] },
+            "description": "Issue a Stripe refund and stamp refundedAt. Idempotent (409 if already refunded). Does not cancel an in-flight pipeline run."
+          }
+        },
+        {
+          "name": "Retry order",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "x-admin-token", "value": "{{adminToken}}", "description": "Optional break-glass token; or use the login cookie." }],
+            "url": { "raw": "{{apiBaseUrl}}/admin/orders/{{orderId}}/retry", "host": ["{{apiBaseUrl}}"], "path": ["admin", "orders", "{{orderId}}", "retry"] },
+            "description": "Re-enqueue the pipeline for a paid, in-progress order (PAID/TRAINING/GENERATING). The worker reattaches idempotently. 400 for terminal/unpaid orders."
+          }
+        },
+        {
+          "name": "Resend delivery email",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "x-admin-token", "value": "{{adminToken}}", "description": "Optional break-glass token; or use the login cookie." }],
+            "url": { "raw": "{{apiBaseUrl}}/admin/orders/{{orderId}}/resend-email", "host": ["{{apiBaseUrl}}"], "path": ["admin", "orders", "{{orderId}}", "resend-email"] },
+            "description": "Re-send the delivery email for a DELIVERED order. 400 if not delivered, 503 if BREVO_API_KEY is unset on the api."
+          }
+        }
+      ]
+    },
+    {
       "name": "API - Admin users (management)",
       "description": "Manage staff accounts. ADMIN role only (support gets 403). Auth: the login cookie (run Admin auth > Login) or the x-admin-token header. Guards: at least one active admin must remain; you cannot deactivate/demote/delete yourself.",
       "item": [

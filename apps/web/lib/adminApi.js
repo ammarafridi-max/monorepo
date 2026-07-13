@@ -48,6 +48,17 @@ export function getAdminOrders(params = {}) {
 export function getAdminOrder(id) {
   return adminFetch(`/admin/orders/${id}`);
 }
+
+// --- Order actions (admin role only) ---
+export function refundOrder(id) {
+  return adminFetch(`/admin/orders/${id}/refund`, { method: 'POST' });
+}
+export function retryOrder(id) {
+  return adminFetch(`/admin/orders/${id}/retry`, { method: 'POST' });
+}
+export function resendOrderEmail(id) {
+  return adminFetch(`/admin/orders/${id}/resend-email`, { method: 'POST' });
+}
 export function getAdminStats() {
   return adminFetch('/admin/stats');
 }
