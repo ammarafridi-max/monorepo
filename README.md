@@ -347,6 +347,37 @@ in the buy flow is gated; the only gated page is `/account`.
   someone else's order). Signup and login also back-link past anonymous orders
   that share the account email.
 
+## Admin panel
+
+Staff-only area to see every order, revenue/margin, stuck orders, and customers.
+Separate from customer accounts: a distinct `AdminUser` identity, a distinct cookie,
+and its own login. Modeled on the shared admin/auth pattern from the travel-suite
+monorepo, right-sized to this repo (layered modules in `apps/api`, not DI packages).
+
+- **Identity:** `AdminUser` in `@picturesk/shared` (name, username, email,
+  bcrypt `passwordHash`, `role` in `admin|support`, `status`, `passwordChangedAt`).
+  `admin` is full access; `support` is read-only. Schema-only (hashing lives in the
+  api service, like the customer `User`).
+- **Auth (api):** `POST /auth/login` (email + password) issues a JWT in an httpOnly
+  cookie `picturesk_admin` (`{id, role, type:'admin'}`); `GET /auth/me`, `POST
+  /auth/logout`, `PATCH /auth/update-password`. `protect` + `restrictTo(...roles)`
+  guard the routes. Set `ADMIN_JWT_SECRET` (`openssl rand -hex 32`) on the api;
+  unset means `/auth` returns 503 (disabled).
+- **Data (api, read-only):** `GET /admin/orders` (list, `?status`/`?limit`, stuck +
+  margin), `/admin/orders/:id` (full detail), `/admin/stats` (revenue, compute cost,
+  margin, counts, refunds, stuck), `/admin/customers`. All behind the cookie session
+  OR the `ADMIN_TOKEN` break-glass header (for scripts). Both staff roles can read.
+- **UI (web):** `/admin/login` then `/admin` (overview), `/admin/orders`,
+  `/admin/orders/:id`, `/admin/customers`. Cookie is the credential
+  (`credentials:'include'`); a client guard redirects to login. Not indexed. The
+  customer topbar/footer are hidden on `/admin`.
+- **Bootstrap the first admin:** set `ADMIN_JWT_SECRET` and a strong `SEED_PASSWORD`
+  (plus optional `SEED_NAME/SEED_USERNAME/SEED_EMAIL`), then run
+  `pnpm --filter @picturesk/api seed-admin` (idempotent: skips if any admin exists).
+  Cross-origin note: in production the api and web are separate origins, so the admin
+  cookie is `SameSite=None; Secure` and CORS runs with credentials pinned to
+  `WEB_BASE_URL`. Both must be HTTPS for the cookie to stick.
+
 ## Upload quality gate
 
 Bad photos are worse than a failed order: they train a model and then "succeed"

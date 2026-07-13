@@ -1,6 +1,6 @@
 import './globals.css';
 import { getSession } from '../lib/session';
-import Footer from './Footer';
+import SiteChrome from './SiteChrome';
 import Analytics from './Analytics';
 
 export const metadata = {
@@ -26,31 +26,7 @@ export default async function RootLayout({ children }) {
       </head>
       <body>
         <Analytics />
-        <header className="topbar">
-          <a className="brand" href="/">
-            Picturesk.ai
-          </a>
-          <nav className="nav">
-            {session ? (
-              <>
-                <a className="navlink" href="/account">
-                  Account
-                </a>
-                <form action="/api/auth/logout" method="post">
-                  <button className="navlink navlink--button" type="submit">
-                    Log out
-                  </button>
-                </form>
-              </>
-            ) : (
-              <a className="navlink" href="/login">
-                Log in
-              </a>
-            )}
-          </nav>
-        </header>
-        {children}
-        <Footer />
+        <SiteChrome authed={Boolean(session)}>{children}</SiteChrome>
       </body>
     </html>
   );
