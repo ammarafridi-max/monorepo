@@ -16,5 +16,12 @@ import IORedis from 'ioredis';
  */
 export function createRedisConnection(url, options = {}) {
   if (!url) throw new Error('createRedisConnection: a Redis URL is required');
-  return new IORedis(url, { maxRetriesPerRequest: null, ...options });
+  return new IORedis(url, {
+    maxRetriesPerRequest: null,
+    // Back off on reconnects so a Redis blip or outage never becomes a tight
+    // reconnect loop hammering the server (and, on a metered Redis, the quota).
+    // Exponential-ish, capped at 30s. Callers can still override via `options`.
+    retryStrategy: (times) => Math.min(times * 1000, 30000),
+    ...options,
+  });
 }

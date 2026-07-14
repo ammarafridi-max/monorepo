@@ -92,6 +92,14 @@ The api and worker **require a running MongoDB and Redis.** Set both in `.env`:
 - `MONGODB_URI` - e.g. `mongodb://127.0.0.1:27017/picturesk`
 - `REDIS_URL` - e.g. `redis://127.0.0.1:6379`
 
+> **Use a LOCAL Redis for dev, never the production one.** A BullMQ worker polls
+> Redis continuously (even with zero orders), so a local worker plus the deployed
+> worker on one managed Redis doubles the usage and can blow a metered/free plan by
+> itself. Spin up a throwaway local Redis and point `REDIS_URL` at it:
+> `docker run -p 6379:6379 redis`. The worker ships with Redis-frugal defaults
+> (long idle-block, infrequent stalled checks) tunable via `WORKER_DRAIN_DELAY_S`,
+> `WORKER_STALLED_INTERVAL_MS`, `WORKER_LOCK_DURATION_MS`.
+
 Start the api and worker together (or run them separately with `pnpm api` and
 `pnpm worker`):
 

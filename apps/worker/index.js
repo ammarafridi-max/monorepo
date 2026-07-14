@@ -340,8 +340,34 @@ const worker = new Worker(
     console.log(`[worker] picked up job ${job.id} for order ${orderId}`);
     await pipeline.processOrder(orderId);
   },
-  { connection, concurrency: 1 }
+  {
+    connection,
+    concurrency: 1,
+    // Redis-frugal settings for a LOW-VOLUME queue. An idle BullMQ worker polls
+    // Redis constantly (fetch + stalled-check + lock-renew), which alone can exhaust
+    // a small managed-Redis quota with zero traffic. Since orders are infrequent and
+    // long-running, we can safely block much longer when idle, check for stalled jobs
+    // far less often, and renew job locks less frequently -- cutting idle Redis
+    // commands ~10x. A newly enqueued job still starts immediately (the producer wakes
+    // the blocking fetch); drainDelay is only the idle fallback. All env-overridable.
+    drainDelay: Number(process.env.WORKER_DRAIN_DELAY_S) || 60, // seconds to block waiting for a job
+    stalledInterval: Number(process.env.WORKER_STALLED_INTERVAL_MS) || 300000, // stalled check every 5 min
+    lockDuration: Number(process.env.WORKER_LOCK_DURATION_MS) || 120000, // 2 min lock (renews ~every 60s)
+  }
 );
+
+// Throttled error handler. BullMQ emits 'error' on Redis trouble (outage, or a
+// quota/rate-limit reply), and without a listener Node can crash on the event; with
+// a naive one it floods the logs thousands of times a second. Log at most once per
+// 10s so a Redis incident is visible without drowning everything.
+let lastWorkerErrorLog = 0;
+worker.on('error', (err) => {
+  const now = Date.now();
+  if (now - lastWorkerErrorLog > 10000) {
+    lastWorkerErrorLog = now;
+    console.error(`[worker] worker/redis error (throttled): ${err.message}`);
+  }
+});
 
 worker.on('completed', (job) => {
   console.log(`[worker] job ${job.id} completed`);
