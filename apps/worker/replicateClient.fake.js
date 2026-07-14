@@ -41,6 +41,10 @@ export function resetFake(config = {}) {
     // The first N trainings created stay "unallocated" (status processing, never
     // gets hardware) forever, to exercise the worker's cancel-and-restart-fresh path.
     unallocatedTrainings: config.unallocatedTrainings ?? 0,
+    // Every training is "unallocated" for its first N polls, THEN gets hardware and
+    // follows trainingStatusSeq -- simulates Replicate's variable allocation delay.
+    allocateAfterPolls: config.allocateAfterPolls ?? 0,
+    trainingAllocPolls: new Map(),
     trainingStatusSeq: config.trainingStatusSeq ?? ['succeeded'],
     generationStatusSeq: config.generationStatusSeq ?? ['succeeded'],
     trainedModelVersion: config.trainedModelVersion ?? 'fakeowner/fakemodel:v1',
@@ -91,6 +95,12 @@ export async function pollTraining(trainingId) {
   // perpetually "processing" but not allocated (mimics Replicate's stuck "starting").
   const num = Number(String(trainingId).split('_')[1]);
   if (num <= state.unallocatedTrainings) {
+    return { status: 'processing', allocated: false };
+  }
+  // Allocation delay: report "starting" (not allocated) for the first N polls.
+  const seen = state.trainingAllocPolls.get(trainingId) ?? 0;
+  state.trainingAllocPolls.set(trainingId, seen + 1);
+  if (seen < state.allocateAfterPolls) {
     return { status: 'processing', allocated: false };
   }
   const status = nextStatus(state.trainingPolls, trainingId, state.trainingStatusSeq);

@@ -588,6 +588,30 @@ test('a training stuck in "starting" (no hardware) is cancelled and restarted fr
   assert.equal(done.replicate.trainingRestarts, 1, 'one restart recorded');
 });
 
+test('a training that allocates LATE still completes (running clock starts at allocation)', async () => {
+  // Unallocated for 6 polls (~300ms at 50ms each), THEN gets hardware and runs. With a
+  // tiny trainingMaxWaitMs (150ms) anchored at SUBMISSION, the old code would kill it the
+  // instant it started; the running clock must start when it actually begins running.
+  fake.resetFake({ allocateAfterPolls: 6, trainingStatusSeq: ['processing', 'succeeded'] });
+
+  const order = await Order.create({
+    customerEmail: 'a@b.com',
+    status: ORDER_STATES.PAID,
+    uploadedImageUrls: ['selfie.jpg'],
+    selectedLooks: SAMPLE_LOOKS,
+    selectedAttire: SAMPLE_ATTIRE,
+  });
+  const id = order._id.toString();
+  const pipeline = buildPipeline({ pollIntervalMs: 50, trainingMaxWaitMs: 150, startingMaxWaitMs: 10000 });
+
+  await pipeline.processOrder(id);
+
+  const done = await Order.findById(id);
+  assert.equal(done.status, ORDER_STATES.DELIVERED, 'completes despite the long allocation wait');
+  assert.equal(fake.getCounts().startTraining, 1, 'no restart needed -- it was allocated, just late');
+  assert.equal(fake.getCounts().cancelTraining, 0, 'never cancelled');
+});
+
 test('a persistently unallocated training gives up after maxTrainingRestarts', async () => {
   fake.resetFake({ unallocatedTrainings: 99 }); // every training stays unallocated
 

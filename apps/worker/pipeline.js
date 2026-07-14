@@ -21,10 +21,16 @@ export const DEFAULT_POLL_INTERVAL_MS = 8000;
 export const DEFAULT_TRAINING_MAX_WAIT_MS = 30 * 60 * 1000; // 30 min
 export const DEFAULT_GENERATION_MAX_WAIT_MS = 6 * 60 * 1000; // 6 min per image
 // How long a training may sit "starting" (accepted but no hardware allocated)
-// before we treat it as wedged, cancel it, and start a fresh one.
-export const DEFAULT_TRAINING_STARTING_MAX_MS = 5 * 60 * 1000; // 5 min
-// How many times to cancel-and-restart a wedged training before giving up (fail + refund).
-export const DEFAULT_MAX_TRAINING_RESTARTS = 3;
+// before we treat it as wedged, cancel it, and start a fresh one. Set GENEROUSLY:
+// Replicate's allocation delay is highly variable (observed ~5 min to ~44 min under
+// load), and cancelling+restarting does NOT jump the queue, so a short threshold just
+// kills trainings that were about to run. Only a training that never gets hardware for
+// this long is truly dead. Env-overridable via TRAINING_STARTING_MAX_MIN.
+export const DEFAULT_TRAINING_STARTING_MAX_MS = 45 * 60 * 1000; // 45 min
+// How many times to cancel-and-restart a never-allocated training before giving up
+// (fail + refund). Kept low: a restart does not help a capacity queue, so this is a
+// last-resort backstop, not a retry strategy.
+export const DEFAULT_MAX_TRAINING_RESTARTS = 1;
 
 /**
  * @typedef {Object} ReplicateClient
@@ -141,8 +147,11 @@ export function createPipeline({
     // one (bounded by maxTrainingRestarts), rather than reattaching to a dead training
     // for the full 30-minute window. Once it is genuinely running (allocated), the
     // normal trainingMaxWaitMs applies.
-    const runningDeadline = Date.now() + trainingMaxWaitMs;
     const allocationDeadline = Date.now() + startingMaxWaitMs;
+    // The "must finish" clock starts when the training actually STARTS RUNNING, not at
+    // submission -- otherwise a training that waited a long time for hardware would be
+    // killed the instant it began. runningSince is stamped on the first running poll.
+    let runningSince = null;
     let result;
     // eslint-disable-next-line no-constant-condition
     while (true) {
@@ -155,8 +164,9 @@ export function createPipeline({
       // as running, so any client that does not report allocation keeps the old behaviour.
       const running = result.allocated !== false;
       if (running) {
-        if (Date.now() > runningDeadline) {
-          throw new Error(`[worker] training ${trainingId} did not finish within ${trainingMaxWaitMs}ms`);
+        if (runningSince === null) runningSince = Date.now();
+        if (Date.now() - runningSince > trainingMaxWaitMs) {
+          throw new Error(`[worker] training ${trainingId} did not finish within ${trainingMaxWaitMs}ms of starting`);
         }
       } else if (Date.now() > allocationDeadline) {
         const restarts = order.replicate?.trainingRestarts ?? 0;

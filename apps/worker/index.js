@@ -321,10 +321,10 @@ const pipeline = createPipeline({
   // Wedged-training recovery: if a training sits in "starting" (no hardware) longer
   // than this, cancel it and start a fresh one, up to this many times, instead of
   // waiting the full training window on a training Replicate never allocated.
-  startingMaxWaitMs: (Number(process.env.TRAINING_STARTING_MAX_MIN) || 5) * 60 * 1000,
+  startingMaxWaitMs: (Number(process.env.TRAINING_STARTING_MAX_MIN) || 45) * 60 * 1000,
   maxTrainingRestarts: Number.isFinite(Number(process.env.TRAINING_MAX_RESTARTS))
     ? Number(process.env.TRAINING_MAX_RESTARTS)
-    : 3,
+    : 1,
   // PuLID has no zip to build; its "training input" is the reference selfie.
   resolveTrainingZip: USE_PULID ? resolvePulidReference : resolveTrainingZip,
   onDelivered,
