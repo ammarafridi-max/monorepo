@@ -41,6 +41,26 @@ export const createContact = async ({ firstName, lastName, email }) => {
   return true;
 };
 
+export const subscribeContact = async ({ email, attributes = {} }) => {
+  if (!hasBrevoConfig()) {
+    logger.warn('Brevo subscribeContact skipped because BREVO_API_KEY is missing', { email });
+    return false;
+  }
+
+  const res = await fetch(`${BREVO_URL}/contacts`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify({
+      email: email.toLowerCase(),
+      attributes,
+      updateEnabled: true,
+    }),
+  });
+
+  if (!res.ok) { await logBrevoFailure('subscribeContact', res); throw new Error('Brevo subscribe failed'); }
+  return true;
+};
+
 export const updateContactAttribute = async ({ email, attribute, value }) => {
   if (!hasBrevoConfig()) {
     logger.warn('Brevo updateContactAttribute skipped because BREVO_API_KEY is missing', { email, attribute });

@@ -23,7 +23,7 @@ const upsells = [
       'Get a verifiable flight reservation accepted by embassies and visa centers for your application.',
     priceCaption: 'from',
     price: 'AED 49',
-    href: 'https://www.mydummyticket.ae',
+    href: 'https://www.dummyticket365.com',
     external: true,
   },
 ];

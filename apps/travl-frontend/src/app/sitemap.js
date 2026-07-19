@@ -15,6 +15,12 @@ const staticPages = [
     lastmod: "2026-04-28",
   },
   {
+    url: "/travel-itinerary",
+    changeFrequency: "monthly",
+    priority: 0.8,
+    lastmod: "2026-04-28",
+  },
+  {
     url: "/travel-insurance/schengen-visa",
     changeFrequency: "monthly",
     priority: 0.8,

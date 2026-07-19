@@ -31,6 +31,22 @@ function validateParams({ pickupZone, dropoffZone, tripType, distance, hoursBook
   return { pickupZoneId, dropoffZoneId };
 }
 
+// Zone validation without the distance requirement — used when we re-derive an
+// authoritative price at checkout from a persisted booking (which stores zones +
+// vehicle but not the trip distance).
+function validateZones({ pickupZone, dropoffZone, tripType }) {
+  if (!pickupZone) throw new AppError('Pickup zone is required.', 400);
+  if (tripType === 'distance' && !dropoffZone) {
+    throw new AppError('Dropoff zone is required for distance trips.', 400);
+  }
+  const isValidObjectId = (id) =>
+    mongoose.Types.ObjectId.isValid(id) && String(new mongoose.Types.ObjectId(id)) === id;
+  const pickupZoneId = isValidObjectId(pickupZone) ? new mongoose.Types.ObjectId(pickupZone) : null;
+  const dropoffZoneId = dropoffZone && isValidObjectId(dropoffZone) ? new mongoose.Types.ObjectId(dropoffZone) : null;
+  if (!pickupZoneId) throw new AppError('Invalid pickup zone ID.', 400);
+  return { pickupZoneId, dropoffZoneId };
+}
+
 function extractAvailableVehicles(rule) {
   if (!rule) return [];
   return rule.vehicles.filter((v) => v.available && v.vehicle).map((v) => v.vehicle);
@@ -136,5 +152,41 @@ export function createBookingPricingService({ AvailabilityRule, PricingRule }) {
     return vehiclesWithPrices.sort((a, b) => a.totalPrice - b.totalPrice);
   };
 
-  return { getVehiclesForTrip };
+  // Re-derive the authoritative price for ONE already-selected vehicle from a
+  // persisted booking, so checkout never trusts a client-supplied total. Uses only
+  // what the booking stores (zones + vehicle + tripType + hoursBooked) — it does
+  // NOT have the trip distance, so a distance trip is only priceable when a zone
+  // PricingRule covers it. If it isn't (the per-km distance fallback would be
+  // needed), we fail closed rather than guess or trust the client.
+  const getAuthoritativeVehiclePrice = async ({ pickupZone, dropoffZone, tripType, hoursBooked, vehicleId }) => {
+    if (!vehicleId) throw new AppError('Vehicle is required to price this booking.', 400);
+    const { pickupZoneId, dropoffZoneId } = validateZones({ pickupZone, dropoffZone, tripType });
+
+    const availabilityRule = await getAvailabilityRule(pickupZoneId, dropoffZoneId);
+    if (!availabilityRule) throw new AppError('No availability rule found for these zones.', 404);
+
+    const vehicle = extractAvailableVehicles(availabilityRule).find(
+      (v) => String(v._id) === String(vehicleId),
+    );
+    if (!vehicle) throw new AppError('Selected vehicle is not available for these zones.', 409);
+
+    if (tripType === 'hourly') {
+      const hours = Number(hoursBooked) || 0;
+      const tierRate = vehicle.pricing?.hourlyRates?.[`hour${hours}`];
+      const legacyPerHour = vehicle.pricing?.pricePerHour || 0;
+      const total =
+        Number.isFinite(tierRate) && tierRate > 0 ? Math.ceil(tierRate) : Math.ceil(hours * legacyPerHour);
+      if (!(total > 0)) throw new AppError('Unable to determine the hourly price for this vehicle.', 409);
+      return total;
+    }
+
+    const pricingRules = await getPricingRules(pickupZoneId, dropoffZoneId);
+    const matchedRule = findPricingForVehicle(vehicle._id, pricingRules);
+    if (!(matchedRule?.pricing?.oneWay > 0)) {
+      throw new AppError('Unable to verify the price for this trip. Please re-book.', 409);
+    }
+    return Math.ceil(matchedRule.pricing.oneWay);
+  };
+
+  return { getVehiclesForTrip, getAuthoritativeVehiclePrice };
 }

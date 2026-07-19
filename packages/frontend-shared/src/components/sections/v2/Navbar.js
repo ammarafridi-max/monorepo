@@ -126,49 +126,60 @@ export default function Navbar({ pages = [], logoAlt = "Logo" }) {
                         // out in a 2-per-row grid.
                         const isWide = (col.span ?? 1) === 2;
                         return (
-                        <div key={ci} className={isWide ? 'flex-[2]' : 'flex-1'}>
-                          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
-                            {col.heading}
-                          </p>
-                          <ul className={isWide ? 'grid grid-cols-2 gap-x-2 gap-y-1' : 'flex flex-col gap-1'}>
-                            {col.items.map(({ Icon, flag, label, desc, href }) => (
-                              <li key={label}>
-                                <Link
-                                  href={href}
-                                  onClick={() => setMegaOpen(null)}
-                                  className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-primary-50 group transition-colors"
-                                >
-                                  {flag ? (
-                                    <img
-                                      src={`https://cdn.jsdelivr.net/gh/HatScripts/circle-flags@latest/flags/${flag}.svg`}
-                                      alt=""
-                                      aria-hidden="true"
-                                      loading="lazy"
-                                      className="w-8 h-8 rounded-full shrink-0 object-cover"
-                                    />
-                                  ) : Icon ? (
-                                    <div className="w-8 h-8 rounded-lg bg-primary-100 flex items-center justify-center shrink-0 group-hover:bg-primary-200 transition-colors">
-                                      <Icon
-                                        size={15}
-                                        className="text-primary-700"
-                                      />
-                                    </div>
-                                  ) : null}
-                                  <div>
-                                    <p className="font-semibold text-gray-900 text-sm leading-none mb-0.5">
-                                      {label}
-                                    </p>
-                                    {desc && (
-                                      <p className="text-xs text-gray-400">
-                                        {desc}
-                                      </p>
-                                    )}
-                                  </div>
-                                </Link>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
+                          <div
+                            key={ci}
+                            className={isWide ? "flex-2" : "flex-1"}
+                          >
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+                              {col.heading}
+                            </p>
+                            <ul
+                              className={
+                                isWide
+                                  ? "grid grid-cols-2 gap-x-2 gap-y-1"
+                                  : "flex flex-col gap-1"
+                              }
+                            >
+                              {col.items.map(
+                                ({ Icon, flag, label, desc, href }) => (
+                                  <li key={label}>
+                                    <Link
+                                      href={href}
+                                      onClick={() => setMegaOpen(null)}
+                                      className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-primary-50 group transition-colors"
+                                    >
+                                      {flag ? (
+                                        <img
+                                          src={`https://cdn.jsdelivr.net/gh/HatScripts/circle-flags@latest/flags/${flag}.svg`}
+                                          alt=""
+                                          aria-hidden="true"
+                                          loading="lazy"
+                                          className="w-8 h-8 rounded-full shrink-0 object-cover"
+                                        />
+                                      ) : Icon ? (
+                                        <div className="w-8 h-8 rounded-lg bg-primary-100 flex items-center justify-center shrink-0 group-hover:bg-primary-200 transition-colors">
+                                          <Icon
+                                            size={15}
+                                            className="text-primary-700"
+                                          />
+                                        </div>
+                                      ) : null}
+                                      <div>
+                                        <p className="font-semibold text-gray-900 text-sm leading-none mb-0.5">
+                                          {label}
+                                        </p>
+                                        {desc && (
+                                          <p className="text-xs text-gray-400">
+                                            {desc}
+                                          </p>
+                                        )}
+                                      </div>
+                                    </Link>
+                                  </li>
+                                ),
+                              )}
+                            </ul>
+                          </div>
                         );
                       })}
 

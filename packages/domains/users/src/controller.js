@@ -1,4 +1,4 @@
-export function createUserController({ service, cookieExpiresInDays, nodeEnv }) {
+export function createUserController({ service, cookieExpiresInDays, nodeEnv, appBaseUrl }) {
   function sendTokenCookie(res, token) {
     res.cookie('userJwt', token, {
       expires: new Date(Date.now() + cookieExpiresInDays * 24 * 60 * 60 * 1000),
@@ -45,7 +45,12 @@ export function createUserController({ service, cookieExpiresInDays, nodeEnv }) 
 
   const forgotPassword = async (req, res, next) => {
     try {
-      const resetUrl = `${req.protocol}://${req.get('host')}/api/users/reset-password`;
+      // Build the reset link from a server-trusted base URL, NOT the client-supplied
+      // Host header. Trusting req.get('host') lets an attacker set Host to their own
+      // domain and receive a reset link carrying the victim's token (host-header
+      // injection → account takeover).
+      const base = String(appBaseUrl || '').replace(/\/+$/, '');
+      const resetUrl = `${base}/api/users/reset-password`;
       await service.forgotPassword({ email: req.body.email, resetUrl });
       res.json({ status: 'success', message: 'If that email is registered, a reset link has been sent.' });
     } catch (err) {

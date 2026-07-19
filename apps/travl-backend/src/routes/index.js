@@ -8,11 +8,10 @@ import { createBlogRouter, createBlogTagRouter } from "@travel-suite/blog";
 import { createVisaRouter } from "@travel-suite/visa";
 import { createVisaLeadRouter } from "@travel-suite/visa-leads";
 import { createCurrenciesRouter } from "@travel-suite/currencies";
-import { createFlightRouter, createAirportsRouter, createAmadeusClient } from "@travel-suite/flights";
+import { createFlightRouter, createAirportsRouter } from "@travel-suite/flights";
 import { createAirLabsClient } from "@travel-suite/airlabs";
+import { createSerpApiClient } from "@travel-suite/serpapi";
 import { createLocationsRouter } from "@travel-suite/locations";
-import { createAffiliatesRouter, AffiliateSchema } from "@travel-suite/affiliates";
-import { createTicketsRouter } from "@travel-suite/tickets";
 import { createItinerariesRouter } from "@travel-suite/itineraries";
 import { createUsersRouter } from "@travel-suite/users";
 import { createNotificationsService } from "@travel-suite/notifications";
@@ -34,11 +33,6 @@ import { sendEmail } from "../utils/email.js";
 import { insurancePaymentCompletionEmail } from "../notifications/insurance.js";
 import { itineraryPaymentCustomerEmail } from "../notifications/itinerary.js";
 import config from "../utils/config.js";
-
-function getOrRegisterModel(conn, name, schema) {
-  try { return conn.model(name); } catch { return conn.model(name, schema); }
-}
-const AffiliateModel = getOrRegisterModel(db, 'Affiliate', AffiliateSchema);
 
 const router = Router();
 
@@ -85,13 +79,9 @@ const visaImageStorage = createCloudinaryStorage({
 router.use("/visas", createVisaRouter({ db, auth, imageStorage: visaImageStorage }));
 router.use("/currencies", createCurrenciesRouter({ db, auth }));
 
-const amadeus = createAmadeusClient({
-  apiKey: config.amadeus.apiKey,
-  apiSecret: config.amadeus.apiSecret,
-});
-
 const airlabs = createAirLabsClient({ apiKey: config.airlabs.apiKey });
-router.use("/flights", createFlightRouter({ db, amadeus, auth }));
+const serpapi = createSerpApiClient({ apiKey: config.serpapi.apiKey });
+router.use("/flights", createFlightRouter({ db, serpapi, airlabs, auth }));
 router.use("/airports", createAirportsRouter({ airlabs }));
 router.use("/locations", createLocationsRouter({ airlabs }));
 
@@ -113,14 +103,6 @@ const notifications = createNotificationsService({
 router.use("/visa-leads", createVisaLeadRouter({ db, auth, notificationsService: notifications }));
 
 const stripe = createStripeClient({ secretKey: config.stripe.secretKey });
-
-const { router: ticketsRouter, pricingRouter, handleStripeSuccess, TicketModel } = createTicketsRouter({
-  db, auth, stripe, notifications, frontendUrl: config.frontendUrl, AffiliateModel,
-});
-router.use("/tickets", ticketsRouter);
-router.use("/pricing", pricingRouter);
-
-router.use("/affiliates", createAffiliatesRouter({ db, auth, TicketModel }));
 
 // -- Travel itinerary generator ------------------------------------------------
 // AI writes content only -> code validates -> watermarked preview -> pay to unlock.
@@ -188,7 +170,7 @@ async function handlePaymentLinkSuccess(session) {
   });
 }
 
-const brandContext = `Travl.ae is a UAE-based travel services platform offering flight reservation documents (dummy tickets) for visa applications, hotel reservations, and travel insurance. Flight reservations are valid for Schengen, US, UK, and other visa applications. They are verifiable on GDS systems. Customers sometimes worry when airline websites don't show the booking as confirmed — reassure them this is normal for reservation documents.`;
+const brandContext = `Travl.ae is a UAE-based travel services platform offering travel insurance for visa applications, embassy-ready travel itineraries, and visa application support. Travel insurance policies are AXA-backed and valid for Schengen, US, UK, and other visa applications. Travel itineraries are day-by-day plans formatted to meet embassy and visa-center requirements. Travl does not sell flight reservation documents (dummy tickets) or hotel reservations.`;
 
 const { router: emailSupportRouter, pollAndProcess } = createEmailSupportFeature({
   db,
@@ -206,7 +188,6 @@ export const stripeWebhookHandler = createStripeWebhookHandler({
   webhookSecret: config.stripe.webhookSecret,
   db,
   handlers: {
-    ticket: handleStripeSuccess,
     itinerary: handleItinerarySuccess,
     "payment-link": handlePaymentLinkSuccess,
   },
@@ -219,6 +200,7 @@ const { router: usersRouter } = createUsersRouter({
   cookieExpiresInDays: config.userCookieExpiresInDays,
   nodeEnv: config.nodeEnv,
   notifications,
+  appBaseUrl: config.frontendUrl,
 });
 
 router.use("/users", usersRouter);

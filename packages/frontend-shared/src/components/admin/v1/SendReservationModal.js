@@ -13,13 +13,11 @@ const BRANDS = {
     label: 'MyDummyTicket',
     website: 'www.MyDummyTicket.ae',
     websiteUrl: 'https://www.MyDummyTicket.ae',
-    trustpilotUrl: 'https://www.trustpilot.com/evaluate/mydummyticket.ae',
   },
   dt365: {
     label: 'Dummy Ticket 365',
     website: 'www.DummyTicket365.com',
     websiteUrl: 'https://www.DummyTicket365.com',
-    trustpilotUrl: 'https://www.trustpilot.com/evaluate/dummyticket365.com',
   },
 };
 
@@ -32,10 +30,7 @@ Thank you for choosing ${brand.label}. Please find your flight reservation attac
 
 If you also need a travel itinerary, hotel booking or travel insurance, feel free to reach out to us anytime.
 
-Additionally, when you purchase your actual flight ticket from us, we will refund the cost of your dummy ticket.
-
-Finally, if you could take a moment and review your experience with us on our Trustpilot page, it would help us improve our services and travelers like you choose from the best providers.
-
+If you spot an error in the name, routes, or dates, feel free to reach out to us and we'll fix it free of cost.
 
 Kind regards,
 ${agentFirstName || 'Team'}
@@ -47,23 +42,17 @@ function escapeHtml(s) {
 }
 
 // Convert the edited plain-text body to HTML: escape user content,
-// preserve blank lines, then upgrade two specific phrases to real
-// anchor tags — "review your experience" → Trustpilot, the website
-// line → brand homepage. If the agent edits those phrases away, the
-// replacements become no-ops; the email still sends fine as plain
+// preserve blank lines, then upgrade the website line to a real anchor
+// tag → brand homepage. If the agent edits that phrase away, the
+// replacement becomes a no-op; the email still sends fine as plain
 // text with line breaks.
 function bodyToHtml(text) {
   const safe = escapeHtml(text);
   const withBreaks = safe.split('\n').map((l) => l || '&nbsp;').join('<br>');
-  return withBreaks
-    .replace(
-      'review your experience',
-      `<a href="${brand.trustpilotUrl}">review your experience</a>`,
-    )
-    .replace(
-      brand.website,
-      `<a href="${brand.websiteUrl}">${brand.website}</a>`,
-    );
+  return withBreaks.replace(
+    brand.website,
+    `<a href="${brand.websiteUrl}">${brand.website}</a>`,
+  );
 }
 
 export default function SendReservationModal({ open, onClose, ticket, agentName }) {

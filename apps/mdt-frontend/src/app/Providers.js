@@ -84,7 +84,7 @@ export default function Providers({ children }) {
         <QueryClientProvider client={queryClient}>
           <CurrencyProvider>
             <TicketProvider>
-              <InsuranceProvider>
+              <InsuranceProvider maxStartDays={270}>
                 <AppLayout pages={flightItineraryPages} logoAlt={LOGO_ALT} email={EMAIL}>
                   <main>{children}</main>
                 </AppLayout>
@@ -103,7 +103,7 @@ export default function Providers({ children }) {
       <QueryClientProvider client={queryClient}>
         <CurrencyProvider>
           <TicketProvider>
-            <InsuranceProvider>
+            <InsuranceProvider maxStartDays={270}>
               <AppLayout pages={defaultPages} logoAlt={LOGO_ALT} email={EMAIL}>
                 <main>{children}</main>
               </AppLayout>

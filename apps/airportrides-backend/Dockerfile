@@ -9,7 +9,6 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 
 COPY packages/domains/auth/package.json            packages/domains/auth/package.json
 COPY packages/domains/admin-users/package.json     packages/domains/admin-users/package.json
-COPY packages/domains/affiliates/package.json      packages/domains/affiliates/package.json
 COPY packages/domains/blog/package.json            packages/domains/blog/package.json
 COPY packages/domains/bookings/package.json        packages/domains/bookings/package.json
 COPY packages/domains/currencies/package.json      packages/domains/currencies/package.json

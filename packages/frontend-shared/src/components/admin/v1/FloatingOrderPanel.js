@@ -29,7 +29,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Copy, Check, Plane, Pin, X, RefreshCw, ArrowRight } from 'lucide-react';
+import { Copy, Check, Plane, Pin, X, RefreshCw, ArrowRight, AlertTriangle } from 'lucide-react';
 
 const isPiPSupported =
   typeof window !== 'undefined' && 'documentPictureInPicture' in window;
@@ -58,6 +58,9 @@ export function normalizeOrder(raw) {
   if (!raw) return null;
   return {
     customerName: raw.customerName ?? raw.name ?? '—',
+    // Customer's request note. Rendered as a loud banner at the top of the
+    // panel so agents read it before touching the reservation.
+    message: raw.message ?? '',
     status: raw.status ?? [],
     paymentMethod: raw.paymentMethod ?? raw.method ?? '—',
     recordLocator: raw.recordLocator ?? raw.locator ?? '',
@@ -80,7 +83,7 @@ export function normalizeOrder(raw) {
         formatTravelportName(p.lastName, p.firstNames, p.title),
     })),
     // Travelport booking commands run after the name (rendered below passenger rows).
-    // Each entry: { label, value } — e.g. { label: 'PHONE / AGENT', value: 'P.T*REF AMMAR' }
+    // Each entry: { label, value } — e.g. { label: 'PHONE', value: 'P.T*' }
     bookingCommands: (raw.bookingCommands ?? []).filter((c) => c?.value),
   };
 }
@@ -140,6 +143,19 @@ const PIP_CSS = `
   .mdt-meta div span{display:block;color:#cdd3da;font-size:12px;margin-top:2px;}
   .mdt-foot{padding:0 14px 12px;font-size:10px;color:#5a6470;display:flex;align-items:center;gap:6px;cursor:pointer;}
   .mdt-empty{padding:24px 14px;text-align:center;color:#7d8794;font-size:13px;}
+  .mdt-msg{
+    margin:0 0 10px;background:#3a0d0d;border:1px solid #f0595e;
+    border-radius:10px;padding:10px 12px;animation:mdt-msg-pulse 1.4s ease-in-out infinite;
+  }
+  .mdt-msg .mdt-msg-lbl{
+    display:flex;align-items:center;gap:6px;font-size:10px;font-weight:700;
+    letter-spacing:.06em;color:#ff9ea1;text-transform:uppercase;margin-bottom:4px;
+  }
+  .mdt-msg .mdt-msg-txt{font-size:13px;line-height:1.4;color:#ffe3e4;white-space:pre-wrap;word-break:break-word;}
+  @keyframes mdt-msg-pulse{
+    0%,100%{box-shadow:0 0 0 0 rgba(240,89,94,.55);}
+    50%{box-shadow:0 0 0 4px rgba(240,89,94,0);}
+  }
 `;
 
 const pillStyle = (text) => {
@@ -196,7 +212,7 @@ function OrderPanel({ order, onRefresh, onClose }) {
   if (!order) return <div className="mdt-empty">No order loaded.</div>;
 
   const {
-    customerName,
+    message,
     status = [],
     paymentMethod,
     recordLocator,
@@ -224,9 +240,18 @@ function OrderPanel({ order, onRefresh, onClose }) {
         </span>
       </div>
 
+      {message && (
+        <div className="mdt-msg">
+          <span className="mdt-msg-lbl">
+            <AlertTriangle size={12} />
+            Customer message
+          </span>
+          <div className="mdt-msg-txt">{message}</div>
+        </div>
+      )}
+
       <div className="mdt-card">
         <div className="mdt-name">
-          <b>{customerName}</b>
           <span className="mdt-pills">
             {status.map((s) => (
               <span key={s} className="mdt-pill" style={pillStyle(s)}>

@@ -96,8 +96,6 @@ const defaultPages = [
             { flag: 'us', label: 'US Visa',           desc: 'Cover for B1/B2 and other US visa applications', href: '/travel-insurance/us-visa' },
             { flag: 'ca', label: 'Canada Visa',       desc: 'Cover accepted for Canadian visa submissions',   href: '/travel-insurance/canada-visa' },
             { flag: 'au', label: 'Australia Visa',    desc: 'Cover for Australian visitor visa applications', href: '/travel-insurance/australia-visa' },
-            { flag: 'ge', label: 'Georgia Visa',      desc: 'Cover for Georgia visa-on-arrival and e-Visa',   href: '/travel-insurance/georgia-visa' },
-            { flag: 'cn', label: 'China Visa',        desc: 'Cover for Chinese tourist and business visas',   href: '/travel-insurance/china-visa' },
           ],
         },
       ],
@@ -116,7 +114,7 @@ const defaultPages = [
           heading: 'By Destination',
           items: [
             { Icon: Globe,   label: 'All Destinations',    desc: 'Browse all visa services we offer',                  href: '/visa' },
-            { flag: 'eu',    label: 'Schengen Visa',       desc: 'Access 27 European countries with one visa',         href: '/visa/schengen' },
+            { flag: 'eu',    label: 'Schengen Visa',       desc: 'Access 29 European countries with one visa',         href: '/visa/schengen' },
             { flag: 'gb',    label: 'United Kingdom',      desc: 'Tourism, business, and family visits to the UK',     href: '/visa/united-kingdom' },
             { flag: 'us',    label: 'United States',       desc: 'B1/B2 visitor visa with interview coaching',         href: '/visa/usa' },
             { flag: 'ca',    label: 'Canada',              desc: 'Temporary resident visa for tourism and family',     href: '/visa/canada' },
@@ -167,7 +165,7 @@ export default function Providers({ children }) {
       <QueryClientProvider client={queryClient}>
         <GuestAuthProvider>
           <CurrencyProvider>
-            <InsuranceProvider>
+            <InsuranceProvider maxStartDays={270}>
               <AppMegaLayout pages={defaultPages} logoAlt={LOGO_ALT} footer={travlFooter}>
                 <main>{children}</main>
               </AppMegaLayout>

@@ -1,10 +1,6 @@
 import { Router } from "express";
 import { createAuthRouter } from "@travel-suite/auth";
 import { createAdminUsersRouter } from "@travel-suite/admin-users";
-import {
-  createAffiliatesRouter,
-  AffiliateSchema,
-} from "@travel-suite/affiliates";
 import { createBlogRouter, createBlogTagRouter } from "@travel-suite/blog";
 import { createCloudinaryStorage } from "@travel-suite/cloudinary";
 import { createCurrenciesRouter } from "@travel-suite/currencies";
@@ -25,18 +21,9 @@ import {
 } from "@travel-suite/payments";
 import { db } from "../utils/db.js";
 import { sendEmail } from "../utils/email.js";
+import { subscribeContact } from "../utils/brevo.js";
 import { logger } from "@travel-suite/utils";
 import config from "../utils/config.js";
-
-// -- Model pre-registration (ORDER CRITICAL) -----------------------------------
-function getOrRegisterModel(conn, name, schema) {
-  try {
-    return conn.model(name);
-  } catch {
-    return conn.model(name, schema);
-  }
-}
-const AffiliateModel = getOrRegisterModel(db, "Affiliate", AffiliateSchema);
 
 const router = Router();
 
@@ -64,7 +51,7 @@ const imageStorage = createCloudinaryStorage({
   apiKey: config.cloudinary.apiKey,
   apiSecret: config.cloudinary.apiSecret,
   logger,
-  folder: "dt365/blog",
+  folder: "airportrides/blog",
 });
 router.use("/blogs", createBlogRouter({ db, auth, imageStorage }));
 router.use("/blog-tags", createBlogTagRouter({ db, auth }));
@@ -132,8 +119,19 @@ router.post('/contact', async (req, res, next) => {
   }
 });
 
-// -- Affiliates ----------------------------------------------------------------
-// router.use("/affiliates", createAffiliatesRouter({ db, auth, TicketModel })); // TODO: Replace ticket model with ride model
+// -- Launch notify signup (Brevo contact capture) -----------------------------
+router.post('/subscribe', async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: 'A valid email address is required' });
+    }
+    await subscribeContact({ email, attributes: { SOURCE: 'launch-notify' } });
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
 
 // -- Payments (admin: revenue dashboard + custom payment links) ---------------
 const paymentService = createPaymentService({
@@ -256,6 +254,7 @@ const { router: usersRouter } = createUsersRouter({
   cookieExpiresInDays: config.userCookieExpiresInDays,
   nodeEnv: config.nodeEnv,
   notifications,
+  appBaseUrl: config.frontendUrl,
 });
 
 router.use("/users", usersRouter);

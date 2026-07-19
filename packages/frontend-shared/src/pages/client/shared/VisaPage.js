@@ -1,44 +1,70 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
+import { useState } from "react";
+import Link from "next/link";
 import {
-  Check, ArrowRight, ChevronDown,
-  FileText, FolderOpen, BadgeCheck,
-  ShieldCheck, CircleDollarSign, Zap,
-} from 'lucide-react';
-import Container from '../../../components/shared/layout/Container.js';
-import { useGetPublicVisas } from '../../../hooks/visa/useGetPublicVisas.js';
+  Check,
+  ArrowRight,
+  ChevronDown,
+  FileText,
+  FolderOpen,
+  BadgeCheck,
+  ShieldCheck,
+  CircleDollarSign,
+  Zap,
+} from "lucide-react";
+import Container from "../../../components/shared/layout/Container.js";
+import { useGetPublicVisas } from "../../../hooks/visa/useGetPublicVisas.js";
 
 const VISA_META = {
-  schengen:        { flag: '🇪🇺', tagline: 'Visit 27 European countries with a single visa application.' },
-  'united-kingdom': { flag: '🇬🇧', tagline: 'Tourism, business, and family visits handled end-to-end.' },
-  usa:             { flag: '🇺🇸', tagline: 'B1/B2 visitor visa with full document prep and interview coaching.' },
-  canada:          { flag: '🇨🇦', tagline: 'Temporary resident visa for tourism, business, and family visits.' },
-  australia:       { flag: '🇦🇺', tagline: 'Subclass 600 tourist visa with thorough document review.' },
-  china:           { flag: '🇨🇳', tagline: 'L-category tourist visa for leisure and family travel to China.' },
+  schengen: {
+    flag: "🇪🇺",
+    tagline: "Visit 27 European countries with a single visa application.",
+  },
+  "united-kingdom": {
+    flag: "🇬🇧",
+    tagline: "Tourism, business, and family visits handled end-to-end.",
+  },
+  usa: {
+    flag: "🇺🇸",
+    tagline:
+      "B1/B2 visitor visa with full document prep and interview coaching.",
+  },
+  canada: {
+    flag: "🇨🇦",
+    tagline:
+      "Temporary resident visa for tourism, business, and family visits.",
+  },
+  australia: {
+    flag: "🇦🇺",
+    tagline: "Subclass 600 tourist visa with thorough document review.",
+  },
+  china: {
+    flag: "🇨🇳",
+    tagline: "L-category tourist visa for leisure and family travel to China.",
+  },
 };
 
 const FAQS = [
   {
-    question: 'What documents do I need for a Schengen visa?',
+    question: "What documents do I need for a Schengen visa?",
     answer:
-      'Core requirements are: a valid passport (min. 3 months validity beyond travel date), Emirates ID, UAE residence visa, 3 months of bank statements, a salary certificate or NOC from your employer, hotel bookings, and a flight reservation. Travl provides the flight reservation and compiles your full document file on your behalf.',
+      "Core requirements are: a valid passport (min. 3 months validity beyond travel date), Emirates ID, UAE residence visa, 3 months of bank statements, a salary certificate or NOC from your employer, hotel bookings, and a flight reservation. Travl provides the flight reservation and compiles your full document file on your behalf.",
   },
   {
-    question: 'How long does the process take?',
+    question: "How long does the process take?",
     answer:
-      'Schengen standard processing is 15 business days from your VFS appointment. Our Express service targets 3–5 business days. UK and USA timelines vary — we give you a clear, honest estimate at the start of your case and update you throughout.',
+      "Schengen standard processing is 15 business days from your VFS appointment. Our Express service targets 3–5 business days. UK and USA timelines vary — we give you a clear, honest estimate at the start of your case and update you throughout.",
   },
   {
-    question: 'Do you guarantee visa approval?',
+    question: "Do you guarantee visa approval?",
     answer:
-      'No provider can legally guarantee approval — that decision rests with the embassy. What we guarantee is a thoroughly prepared, error-free file that gives you the best possible chance. Our overall approval rate across all cases is 98%. If your application is refused, our Concierge package includes a free resubmission.',
+      "No provider can legally guarantee approval — that decision rests with the embassy. What we guarantee is a thoroughly prepared, error-free file that gives you the best possible chance. Our overall approval rate across all cases is 98%. If your application is refused, our Concierge package includes a free resubmission.",
   },
   {
-    question: 'Can you help if my visa was previously rejected?',
+    question: "Can you help if my visa was previously rejected?",
     answer:
-      'Yes — and this is one of our most common cases. We start by reading your refusal notice in detail to identify exactly what went wrong. Most rejections are fixable with a stronger financial narrative, a better-targeted cover letter, or corrected documents. Many clients get approved on their second application with us.',
+      "Yes — and this is one of our most common cases. We start by reading your refusal notice in detail to identify exactly what went wrong. Most rejections are fixable with a stronger financial narrative, a better-targeted cover letter, or corrected documents. Many clients get approved on their second application with us.",
   },
   {
     question: "What's included in the service fee?",
@@ -49,62 +75,74 @@ const FAQS = [
 
 const HOW_IT_WORKS = [
   {
-    step:        '01',
-    Icon:        FileText,
-    title:       'Submit Your Details',
-    description: 'Fill out a simple form with your travel plans and passport info. It takes under 5 minutes — no office visit needed.',
+    step: "01",
+    Icon: FileText,
+    title: "Submit Your Details",
+    description:
+      "Fill out a simple form with your travel plans and passport info. It takes under 5 minutes — no office visit needed.",
   },
   {
-    step:        '02',
-    Icon:        FolderOpen,
-    title:       'We Prepare Your File',
-    description: 'Our specialists compile and review every document — cover letter, financials, itinerary, insurance, and more.',
+    step: "02",
+    Icon: FolderOpen,
+    title: "We Prepare Your File",
+    description:
+      "Our specialists compile and review every document — cover letter, financials, itinerary, insurance, and more.",
   },
   {
-    step:        '03',
-    Icon:        BadgeCheck,
-    title:       'Get Your Visa',
-    description: 'We guide you through submission and track your application all the way to approval. You stay informed at every stage.',
+    step: "03",
+    Icon: BadgeCheck,
+    title: "Get Your Visa",
+    description:
+      "We guide you through submission and track your application all the way to approval. You stay informed at every stage.",
   },
 ];
 
 const WHY_US = [
   {
-    Icon:        ShieldCheck,
-    title:       'No Rejection Risk',
-    description: 'We review your complete file before submission and flag every issue — so the embassy never has a reason to refuse.',
+    Icon: ShieldCheck,
+    title: "No Rejection Risk",
+    description:
+      "We review your complete file before submission and flag every issue — so the embassy never has a reason to refuse.",
   },
   {
-    Icon:        CircleDollarSign,
-    title:       'Transparent Pricing',
-    description: 'No hidden fees. Our fee, the embassy fee, and VFS charges are all itemised clearly before you pay anything.',
+    Icon: CircleDollarSign,
+    title: "Transparent Pricing",
+    description:
+      "No hidden fees. Our fee, the embassy fee, and VFS charges are all itemised clearly before you pay anything.",
   },
   {
-    Icon:        Zap,
-    title:       'Fast Turnaround',
-    description: 'Standard, Express, and Concierge processing available. Choose the timeline that fits your travel plans.',
+    Icon: Zap,
+    title: "Fast Turnaround",
+    description:
+      "Standard, Express, and Concierge processing available. Choose the timeline that fits your travel plans.",
   },
 ];
 
 function FaqItem({ question, answer }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className={`border-b border-gray-100 last:border-0 transition-colors ${open ? '' : 'hover:bg-gray-50/50'}`}>
+    <div
+      className={`border-b border-gray-100 last:border-0 transition-colors ${open ? "" : "hover:bg-gray-50/50"}`}
+    >
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left cursor-pointer"
       >
-        <span className={`font-outfit font-medium text-[14px] leading-snug transition-colors duration-150 ${open ? 'text-primary-700' : 'text-gray-800'}`}>
+        <span
+          className={`font-outfit font-medium text-[14px] leading-snug transition-colors duration-150 ${open ? "text-primary-700" : "text-gray-800"}`}
+        >
           {question}
         </span>
         <ChevronDown
           size={16}
-          className={`shrink-0 transition-transform duration-200 ${open ? 'rotate-180 text-primary-600' : 'text-gray-400'}`}
+          className={`shrink-0 transition-transform duration-200 ${open ? "rotate-180 text-primary-600" : "text-gray-400"}`}
         />
       </button>
-      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+      <div
+        className={`overflow-hidden transition-all duration-300 ease-in-out ${open ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}
+      >
         <p className="font-outfit font-light text-[13px] text-gray-600 leading-6 px-5 pb-5">
           {answer}
         </p>
@@ -114,21 +152,25 @@ function FaqItem({ question, answer }) {
 }
 
 function VisaCard({ visa }) {
-  const meta   = VISA_META[visa.slug] ?? {};
-  const flag   = meta.flag    ?? '🌍';
-  const tagline = meta.tagline ?? visa.heroSubheadline ?? '';
-  const fromPrice = visa.packages?.length > 0
-    ? Math.min(...visa.packages.map((p) => Number(p.price) || 0))
-    : null;
+  const meta = VISA_META[visa.slug] ?? {};
+  const flag = meta.flag ?? "🌍";
+  const tagline = meta.tagline ?? visa.heroSubheadline ?? "";
+  const fromPrice =
+    visa.packages?.length > 0
+      ? Math.min(...visa.packages.map((p) => Number(p.price) || 0))
+      : null;
 
   return (
     <Link
       href={`/visa/${visa.slug}`}
       className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-[0_4px_20px_rgba(16,24,40,0.06)] hover:-translate-y-1 hover:shadow-[0_12px_36px_rgba(16,24,40,0.12)] transition-all duration-300"
     >
-
-      <div className="aspect-[16/7] bg-gradient-to-br from-primary-50 to-primary-100/50 flex items-center justify-center overflow-hidden">
-        <span className="text-[60px] leading-none select-none" role="img" aria-label={visa.countryName}>
+      <div className="aspect-16/7 bg-linear-to-br from-primary-50 to-primary-100/50 flex items-center justify-center overflow-hidden">
+        <span
+          className="text-[60px] leading-none select-none"
+          role="img"
+          aria-label={visa.countryName}
+        >
           {flag}
         </span>
       </div>
@@ -158,7 +200,7 @@ function VisaCard({ visa }) {
 function VisaCardSkeleton() {
   return (
     <div className="flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-[0_4px_20px_rgba(16,24,40,0.06)] animate-pulse">
-      <div className="aspect-[16/7] bg-gray-100" />
+      <div className="aspect-16/7 bg-gray-100" />
       <div className="py-5 px-5 flex flex-col gap-3">
         <div className="h-4 bg-gray-100 rounded w-2/3" />
         <div className="h-3 bg-gray-100 rounded w-full" />
@@ -192,12 +234,10 @@ export default function VisaPage({ schema, breadcrumbJsonLd }) {
       )}
 
       <section className="relative overflow-hidden bg-[linear-gradient(155deg,#f0fbf9_0%,#e8f2ff_48%,#fff8f4_100%)] pt-32 pb-16 md:pt-36 md:pb-20 lg:pt-40 lg:pb-24">
-
         <div className="pointer-events-none absolute -left-32 -top-20 h-96 w-96 rounded-full bg-primary-200/30 blur-3xl" />
         <div className="pointer-events-none absolute -right-24 bottom-0 h-72 w-72 rounded-full bg-accent-100/40 blur-3xl" />
 
         <Container className="relative text-center">
-
           <p className="inline-flex items-center gap-2.5 text-[11px] font-outfit font-bold text-primary-600 uppercase tracking-[0.18em] mb-6">
             <span className="block w-5 h-[1.5px] bg-primary-400 rounded-full" />
             Visa Assistance · Dubai, UAE
@@ -205,15 +245,22 @@ export default function VisaPage({ schema, breadcrumbJsonLd }) {
           </p>
 
           <h1 className="font-outfit font-medium text-[36px] md:text-[50px] lg:text-[58px] text-gray-900 leading-[1.08] tracking-[-0.025em] mb-5 max-w-3xl mx-auto">
-            Visa Assistance For<br className="hidden sm:block" /> UAE Residents
+            Visa Assistance For
+            <br className="hidden sm:block" /> UAE Residents
           </h1>
 
           <p className="font-outfit font-light text-[16px] md:text-[18px] text-gray-500 leading-[1.8] max-w-xl mx-auto mb-8">
-            Expert document preparation, appointment booking, and end-to-end support. We've helped hundreds of UAE residents get their visa approved — the first time.
+            Expert document preparation, appointment booking, and end-to-end
+            support. We've helped hundreds of UAE residents get their visa
+            approved — the first time.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-2.5 mb-10">
-            {['500+ Visas Processed', '98% Approval Rate', 'Dedicated Case Manager'].map((badge) => (
+            {[
+              "500+ Visas Processed",
+              "98% Approval Rate",
+              "Dedicated Case Manager",
+            ].map((badge) => (
               <span
                 key={badge}
                 className="inline-flex items-center gap-2 bg-white border border-gray-200 rounded-full px-4 py-2 text-[13px] font-outfit font-medium text-gray-700 shadow-sm"
@@ -235,7 +282,6 @@ export default function VisaPage({ schema, breadcrumbJsonLd }) {
 
       <section className="py-14 md:py-20 bg-white">
         <Container>
-
           <div className="text-center mb-10">
             <p className="text-[11px] font-outfit font-semibold uppercase tracking-[0.15em] text-primary-600 mb-2">
               Popular destinations
@@ -247,9 +293,10 @@ export default function VisaPage({ schema, breadcrumbJsonLd }) {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {isLoadingVisas
-              ? Array.from({ length: 4 }).map((_, i) => <VisaCardSkeleton key={i} />)
-              : visas.map((visa) => <VisaCard key={visa.slug} visa={visa} />)
-            }
+              ? Array.from({ length: 4 }).map((_, i) => (
+                  <VisaCardSkeleton key={i} />
+                ))
+              : visas.map((visa) => <VisaCard key={visa.slug} visa={visa} />)}
           </div>
         </Container>
       </section>
@@ -267,8 +314,10 @@ export default function VisaPage({ schema, breadcrumbJsonLd }) {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6">
             {HOW_IT_WORKS.map(({ step, Icon, title, description }, index) => (
-              <div key={step} className="flex flex-col items-center text-center relative">
-
+              <div
+                key={step}
+                className="flex flex-col items-center text-center relative"
+              >
                 {index < HOW_IT_WORKS.length - 1 && (
                   <div className="hidden md:block absolute top-9 left-[calc(50%+44px)] right-[calc(-50%+44px)] h-px bg-gray-200 z-0" />
                 )}
@@ -333,13 +382,13 @@ export default function VisaPage({ schema, breadcrumbJsonLd }) {
               Frequently Asked Questions
             </h2>
             <p className="font-outfit font-light text-[14px] text-gray-500 leading-relaxed">
-              Still have questions?{' '}
+              Still have questions?{" "}
               <a
                 href="mailto:info@travl.ae"
                 className="text-primary-600 hover:text-primary-700 font-medium transition-colors"
               >
                 Email us
-              </a>{' '}
+              </a>{" "}
               — our specialists respond within minutes.
             </p>
           </div>
@@ -354,8 +403,7 @@ export default function VisaPage({ schema, breadcrumbJsonLd }) {
 
       <section className="py-14 md:py-20 bg-white">
         <Container>
-          <div className="rounded-2xl bg-gradient-to-br from-primary-800 to-primary-950 px-8 py-12 md:px-14 md:py-14 text-center relative overflow-hidden">
-
+          <div className="rounded-2xl bg-linear-to-br from-primary-800 to-primary-950 px-8 py-12 md:px-14 md:py-14 text-center relative overflow-hidden">
             <div className="pointer-events-none absolute -right-16 -top-16 w-64 h-64 rounded-full bg-white/5" />
             <div className="pointer-events-none absolute -left-10 -bottom-12 w-48 h-48 rounded-full bg-accent-500/10" />
 
@@ -364,7 +412,9 @@ export default function VisaPage({ schema, breadcrumbJsonLd }) {
                 Don&rsquo;t see your destination?
               </p>
               <p className="font-outfit font-light text-[15px] text-white/65 mb-8 max-w-md mx-auto leading-relaxed">
-                We assist with many more countries not listed here. Our specialists will advise on requirements, timelines, and next steps — usually within minutes.
+                We assist with many more countries not listed here. Our
+                specialists will advise on requirements, timelines, and next
+                steps — usually within minutes.
               </p>
               <Link
                 href="mailto:info@travl.ae"

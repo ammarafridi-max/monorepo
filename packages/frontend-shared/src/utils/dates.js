@@ -37,6 +37,13 @@ export function dateOnlyToLocalDate(value) {
   return new Date(year, month - 1, day);
 }
 
+export function addDaysDateOnly(value, days) {
+  const date = dateOnlyToLocalDate(value);
+  if (!date || !Number.isFinite(days)) return '';
+  date.setDate(date.getDate() + days);
+  return dateOnlyFromInput(date);
+}
+
 export function formatDate(dateString) {
   if (!dateString) return '';
   const date = isDateOnlyString(dateString)

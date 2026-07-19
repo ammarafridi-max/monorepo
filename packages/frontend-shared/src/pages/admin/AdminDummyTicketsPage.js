@@ -6,6 +6,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   Ticket, ChevronLeft, ChevronRight,
   Loader2, ArrowUpRight, Trash2, Search, CalendarDays,
+  SlidersHorizontal, X,
 } from 'lucide-react';
 import { FaPaypal } from 'react-icons/fa';
 import { useDummyTickets } from '../../hooks/dummy-tickets/useDummyTickets';
@@ -105,6 +106,9 @@ function DummyTicketsContent() {
   const [localCreatedAt,    setLocalCreatedAt]    = useState(urlCreatedAt);
   const [localDeliveryDate, setLocalDeliveryDate] = useState(urlDeliveryDate);
 
+  // Phones hide the inline filter bar behind a modal (see below).
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
   // Reconcile local state whenever the URL changes externally (back/forward
   // buttons, external navigation). If the URL matches local already, these
   // setters are no-ops (React bails out of same-value setState).
@@ -177,6 +181,89 @@ function DummyTicketsContent() {
     router.push(`${pathname}?${params.toString()}`);
   }
 
+  // Count of filters narrowed away from their defaults — drives the badge on
+  // the mobile filter button so agents can tell filters are active without
+  // opening the modal.
+  const activeFilterCount = [
+    localPayment !== 'PAID',
+    localOrder !== '',
+    !agentTimeLocked && localCreatedAt !== 'all_time',
+    localDeliveryDate !== '',
+  ].filter(Boolean).length;
+
+  // Filter controls, extracted so the inline bar (sm+) and the modal (phones)
+  // render the exact same inputs. Width/layout comes from the caller via
+  // `className`; the local-state + URL wiring lives here.
+  const selectCls = 'px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white';
+
+  const paymentControl = (className = '') => (
+    <select
+      value={localPayment}
+      onChange={(e) => { setLocalPayment(e.target.value); setParam('paymentStatus', e.target.value); }}
+      className={`${selectCls} ${className}`}
+    >
+      <option value="all">All payments</option>
+      {PAYMENT_TABS.filter(({ value }) => value !== '').map(({ value, label }) => (
+        <option key={value} value={value}>{label}</option>
+      ))}
+    </select>
+  );
+
+  const orderControl = (className = '') => (
+    <select
+      value={localOrder}
+      onChange={(e) => { setLocalOrder(e.target.value); setParam('orderStatus', e.target.value); }}
+      className={`${selectCls} ${className}`}
+    >
+      <option value="">All orders</option>
+      {ORDER_TABS.filter(({ value }) => value !== '').map(({ value, label }) => (
+        <option key={value} value={value}>{label}</option>
+      ))}
+    </select>
+  );
+
+  const timeControl = (className = '') => (
+    agentTimeLocked ? (
+      <span
+        className={`px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50 text-gray-500 ${className}`}
+        title="Agents see the last 4 hours by default. Type in the search box to look up older tickets."
+      >
+        Last 4 hours
+      </span>
+    ) : (
+      <select
+        value={createdAt}
+        onChange={(e) => { setLocalCreatedAt(e.target.value); setParam('createdAt', e.target.value); }}
+        className={`${selectCls} ${className}`}
+      >
+        <option value="all_time">All time</option>
+        {TIME_OPTIONS.filter(({ value }) => value !== 'all_time').map(({ value, label }) => (
+          <option key={value} value={value}>{label}</option>
+        ))}
+      </select>
+    )
+  );
+
+  const deliveryControl = (className = '') => (
+    <div className={`relative ${className}`}>
+      <input
+        type="date"
+        value={localDeliveryDate}
+        onChange={(e) => { setLocalDeliveryDate(e.target.value); setParam('deliveryDate', e.target.value); }}
+        className={`${selectCls} w-full`}
+      />
+      {localDeliveryDate && (
+        <button
+          onClick={() => { setLocalDeliveryDate(''); setParam('deliveryDate', ''); }}
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
+          title="Clear delivery date filter"
+        >
+          ×
+        </button>
+      )}
+    </div>
+  );
+
   return (
     <div className="max-w-7xl mx-auto space-y-5">
 
@@ -190,87 +277,97 @@ function DummyTicketsContent() {
       </div>
 
       <div className="flex flex-wrap items-center gap-4">
-        <div className="relative w-full sm:max-w-sm">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-          <input
-            type="text"
-            value={localSearch}
-            onChange={(e) => setLocalSearch(e.target.value)}
-            placeholder="Search by name, email, session..."
-            className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300"
-          />
+        {/* Search + (phones only) filter button, in one row */}
+        <div className="flex items-center gap-2 w-full sm:w-auto sm:max-w-sm">
+          <div className="relative flex-1">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+            <input
+              type="text"
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
+              placeholder="Search by name, email, session..."
+              className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300"
+            />
+          </div>
+          <button
+            onClick={() => setFiltersOpen(true)}
+            title="Filters"
+            className="sm:hidden relative shrink-0 inline-flex items-center justify-center p-2.5 border border-gray-200 rounded-xl bg-white text-gray-500 hover:text-gray-700 hover:border-gray-300 transition"
+          >
+            <SlidersHorizontal size={16} />
+            {activeFilterCount > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 flex items-center justify-center text-[10px] font-bold text-white bg-primary-600 rounded-full">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
         </div>
 
-        <select
-          value={localPayment}
-          onChange={(e) => { setLocalPayment(e.target.value); setParam('paymentStatus', e.target.value); }}
-          className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
-        >
-          <option value="all">All payments</option>
-          {PAYMENT_TABS.filter(({ value }) => value !== '').map(({ value, label }) => (
-            <option key={value} value={value}>{label}</option>
-          ))}
-        </select>
-
-        <div className="w-px h-5 bg-gray-200 hidden sm:block" />
-
-        <select
-          value={localOrder}
-          onChange={(e) => { setLocalOrder(e.target.value); setParam('orderStatus', e.target.value); }}
-          className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
-        >
-          <option value="">All orders</option>
-          {ORDER_TABS.filter(({ value }) => value !== '').map(({ value, label }) => (
-            <option key={value} value={value}>{label}</option>
-          ))}
-        </select>
-
-        <div className="w-px h-5 bg-gray-200 hidden sm:block" />
-
-        {agentTimeLocked ? (
-          <span
-            className="px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50 text-gray-500"
-            title="Agents see the last 4 hours by default. Type in the search box to look up older tickets."
-          >
-            Last 4 hours
-          </span>
-        ) : (
-          <select
-            value={createdAt}
-            onChange={(e) => { setLocalCreatedAt(e.target.value); setParam('createdAt', e.target.value); }}
-            className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
-          >
-            <option value="all_time">All time</option>
-            {TIME_OPTIONS.filter(({ value }) => value !== 'all_time').map(({ value, label }) => (
-              <option key={value} value={value}>{label}</option>
-            ))}
-          </select>
-        )}
-
-        <div className="w-px h-5 bg-gray-200 hidden sm:block" />
-
-        <div className="flex items-center gap-2">
-          <CalendarDays size={13} className="text-gray-400 shrink-0" />
-          <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Delivery</span>
-          <div className="relative">
-            <input
-              type="date"
-              value={localDeliveryDate}
-              onChange={(e) => { setLocalDeliveryDate(e.target.value); setParam('deliveryDate', e.target.value); }}
-              className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
-            />
-            {localDeliveryDate && (
-              <button
-                onClick={() => { setLocalDeliveryDate(''); setParam('deliveryDate', ''); }}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
-                title="Clear delivery date filter"
-              >
-                ×
-              </button>
-            )}
+        {/* Inline filter bar — sm and up only */}
+        <div className="hidden sm:flex flex-wrap items-center gap-4">
+          {paymentControl()}
+          <div className="w-px h-5 bg-gray-200" />
+          {orderControl()}
+          <div className="w-px h-5 bg-gray-200" />
+          {timeControl()}
+          <div className="w-px h-5 bg-gray-200" />
+          <div className="flex items-center gap-2">
+            <CalendarDays size={13} className="text-gray-400 shrink-0" />
+            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Delivery</span>
+            {deliveryControl()}
           </div>
         </div>
       </div>
+
+      {/* Filter modal — phones only. Bottom sheet with the same controls. */}
+      {filtersOpen && (
+        <div
+          className="sm:hidden fixed inset-0 z-50 flex items-end justify-center bg-black/40"
+          onClick={() => setFiltersOpen(false)}
+        >
+          <div
+            className="bg-white w-full rounded-t-2xl p-5 space-y-5 max-h-[85vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-gray-900">Filters</h3>
+              <button
+                onClick={() => setFiltersOpen(false)}
+                className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Payment</label>
+              {paymentControl('w-full')}
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Order</label>
+              {orderControl('w-full')}
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Time</label>
+              {timeControl('w-full')}
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Delivery date</label>
+              {deliveryControl('w-full')}
+            </div>
+
+            <button
+              onClick={() => setFiltersOpen(false)}
+              className="w-full py-2.5 text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 rounded-xl transition"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
         {isLoadingDummyTickets ? (
@@ -291,7 +388,7 @@ function DummyTicketsContent() {
             </div>
             <div>
               <p className="text-sm font-bold text-gray-600">No tickets found</p>
-              <p className="text-xs text-gray-400 mt-1">Try adjusting the filters above.</p>
+              <p className="text-xs text-gray-400 mt-1">Try adjusting the filters.</p>
             </div>
           </div>
         ) : (

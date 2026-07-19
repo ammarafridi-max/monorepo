@@ -27,6 +27,7 @@ export default function TravelInsuranceForm() {
     setStartDate,
     endDate,
     setEndDate,
+    maxStartDate,
     region,
     setRegion,
     group,
@@ -132,6 +133,7 @@ export default function TravelInsuranceForm() {
             value={startDate}
             onChange={setStartDate}
             minDate={todayDateOnly()}
+            maxDate={maxStartDate || undefined}
             placeholder="Select start date"
           />
         </div>

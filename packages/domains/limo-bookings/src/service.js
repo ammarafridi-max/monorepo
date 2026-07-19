@@ -1,6 +1,13 @@
 import { randomBytes } from 'crypto';
 import { AppError } from '@travel-suite/utils';
 
+// Normalise a Mongoose ref that may be a populated doc or a raw ObjectId/string
+// down to its id string (or undefined).
+function idOf(ref) {
+  const id = ref?._id ?? ref;
+  return id ? String(id) : undefined;
+}
+
 function resolveServiceName(booking) {
   if (booking?.tripType === 'hourly') return 'Chauffeur Service';
   if (booking?.pickup?.type === 'airport' || booking?.dropoff?.type === 'airport') return 'Airport Transfer';
@@ -15,6 +22,18 @@ function resolveServiceName(booking) {
  */
 export function createBookingService({ Booking, stripe, frontendUrl, pricing }) {
   const getVehiclesForTrip = (query) => pricing.getVehiclesForTrip(query);
+
+  // Recompute the price server-side from the persisted booking so checkout never
+  // trusts the client-supplied orderSummary.total. Zones/vehicle may be populated
+  // documents (pre-find hook) or raw ids — normalise to an id string either way.
+  const authoritativeTotal = (booking) =>
+    pricing.getAuthoritativeVehiclePrice({
+      pickupZone: idOf(booking?.pickup?.zone),
+      dropoffZone: idOf(booking?.dropoff?.zone),
+      tripType: booking?.tripType,
+      hoursBooked: booking?.hoursBooked,
+      vehicleId: idOf(booking?.vehicle),
+    });
 
   const getBookings = async ({ page = 1, limit = 20 } = {}) => {
     const currentPage = Number(page) * 1 || 1;
@@ -60,6 +79,13 @@ export function createBookingService({ Booking, stripe, frontendUrl, pricing }) 
   };
 
   const createCheckoutSession = async (booking) => {
+    // Authoritative, server-recomputed total (fails closed if it can't be verified
+    // from the booking's zones + vehicle). The client-supplied orderSummary.total is
+    // never charged.
+    const total = Number(await authoritativeTotal(booking));
+    if (!Number.isFinite(total) || total <= 0) {
+      throw new AppError('Booking total could not be verified', 400);
+    }
     return stripe.checkout.sessions.create({
       customer_email: booking?.bookingDetails?.email,
       success_url: `${frontendUrl}/payment?id=${booking?._id}`,
@@ -69,7 +95,7 @@ export function createBookingService({ Booking, stripe, frontendUrl, pricing }) 
           price_data: {
             currency: (booking?.orderSummary?.currency || 'AED').toLowerCase(),
             product_data: { name: resolveServiceName(booking) },
-            unit_amount: booking?.orderSummary?.total * 100,
+            unit_amount: Math.round(total * 100),
           },
           quantity: 1,
         },

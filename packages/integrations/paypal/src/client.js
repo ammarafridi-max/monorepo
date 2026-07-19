@@ -123,6 +123,9 @@ export function createPayPalClient({ clientId, clientSecret, mode = 'sandbox' })
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
+        // Idempotency key: a retried capture (e.g. network blip after PayPal
+        // committed) is deduplicated by PayPal instead of attempting a second capture.
+        'PayPal-Request-Id': `capture-${orderId}`,
       },
     });
 
@@ -131,7 +134,18 @@ export function createPayPalClient({ clientId, clientSecret, mode = 'sandbox' })
       throw new Error(`PayPal captureOrder failed (${res.status}): ${text}`);
     }
 
-    return res.json();
+    const data = await res.json();
+
+    // A 2xx does NOT mean the money moved — the capture can come back DECLINED or
+    // PENDING. Only COMPLETED means paid; anything else must not be treated as success
+    // (otherwise the caller mis-issues a ticket for an uncaptured payment).
+    const captureStatus =
+      data?.purchase_units?.[0]?.payments?.captures?.[0]?.status || data?.status;
+    if (captureStatus !== 'COMPLETED') {
+      throw new Error(`PayPal capture not completed (status: ${captureStatus || 'unknown'})`);
+    }
+
+    return data;
   }
 
   return { createOrder, captureOrder, getAccessToken };

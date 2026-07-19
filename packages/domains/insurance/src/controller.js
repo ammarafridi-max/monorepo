@@ -6,42 +6,54 @@ function escapeRegex(value = '') {
 }
 
 /**
+ * Builds the Mongo filter shared by the applications list and the summary
+ * aggregation, so the stats cards always reflect exactly the same rows the
+ * table shows. Consumes the same query params the admin UI sets
+ * (paymentStatus, journeyType, createdAt, search); ignores pagination keys.
+ */
+function buildApplicationsFilter(query = {}) {
+  const queryObj = { ...query };
+  const { createdAt, search } = queryObj;
+  ['page', 'limit', 'search', 'createdAt'].forEach((f) => delete queryObj[f]);
+  Object.keys(queryObj).forEach((k) => queryObj[k] === 'all' && delete queryObj[k]);
+
+  const filter = { ...queryObj };
+
+  if (createdAt && createdAt !== 'all_time') {
+    const now = new Date();
+    const map = {
+      '6_hours':  6,    '12_hours': 12,    '24_hours': 24,
+      '7_days':   7  * 24, '14_days': 14 * 24,
+      '30_days':  30 * 24, '90_days': 90 * 24,
+    };
+    if (map[createdAt]) {
+      filter.createdAt = { $gte: new Date(now.getTime() - map[createdAt] * 60 * 60 * 1000) };
+    }
+  }
+
+  if (search) {
+    const regex = new RegExp(escapeRegex(search), 'i');
+    filter.$or = [
+      { email: regex }, { sessionId: regex },
+      { 'passengers.firstName': regex }, { 'passengers.lastName': regex },
+      { policyNumber: regex }, { policyId: regex }, { transactionId: regex },
+    ];
+  }
+
+  return filter;
+}
+
+/**
  * Creates insurance controller handlers with injected dependencies.
  * @param {{ service, wis, Nationality, InsuranceApplication, logger, brevo }} deps
  */
 export function createInsuranceController({ service, wis, Nationality, InsuranceApplication, logger, brevo }) {
   const getAllApplications = catchAsync(async (req, res) => {
-    const queryObj = { ...req.query };
-    const page  = Math.max(1, parseInt(queryObj.page,  10) || 1);
-    const limit = Math.max(1, parseInt(queryObj.limit, 10) || 100);
+    const page  = Math.max(1, parseInt(req.query.page,  10) || 1);
+    const limit = Math.max(1, parseInt(req.query.limit, 10) || 100);
     const skip  = (page - 1) * limit;
 
-    const { createdAt, search } = queryObj;
-    ['page', 'limit', 'search', 'createdAt'].forEach((f) => delete queryObj[f]);
-    Object.keys(queryObj).forEach((k) => queryObj[k] === 'all' && delete queryObj[k]);
-
-    const filter = { ...queryObj };
-
-    if (createdAt && createdAt !== 'all_time') {
-      const now = new Date();
-      const map = {
-        '6_hours':  6,    '12_hours': 12,    '24_hours': 24,
-        '7_days':   7  * 24, '14_days': 14 * 24,
-        '30_days':  30 * 24, '90_days': 90 * 24,
-      };
-      if (map[createdAt]) {
-        filter.createdAt = { $gte: new Date(now.getTime() - map[createdAt] * 60 * 60 * 1000) };
-      }
-    }
-
-    if (search) {
-      const regex = new RegExp(escapeRegex(search), 'i');
-      filter.$or = [
-        { email: regex }, { sessionId: regex },
-        { 'passengers.firstName': regex }, { 'passengers.lastName': regex },
-        { policyNumber: regex }, { policyId: regex }, { transactionId: regex },
-      ];
-    }
+    const filter = buildApplicationsFilter(req.query);
 
     const [applications, total] = await Promise.all([
       InsuranceApplication.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
@@ -58,7 +70,9 @@ export function createInsuranceController({ service, wis, Nationality, Insurance
   });
 
   const getApplicationsSummary = catchAsync(async (req, res) => {
+    const filter = buildApplicationsFilter(req.query);
     const [summary] = await InsuranceApplication.aggregate([
+      { $match: filter },
       {
         $group: {
           _id: null,

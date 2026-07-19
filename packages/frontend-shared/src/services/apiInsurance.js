@@ -160,8 +160,9 @@ export async function getInsuranceApplicationsApi(params = {}) {
   }
 }
 
-export async function getInsuranceApplicationsSummaryApi() {
-  return await apiFetch(`${URL}/summary`);
+export async function getInsuranceApplicationsSummaryApi(params = {}) {
+  const queryString = new URLSearchParams(params).toString();
+  return await apiFetch(`${URL}/summary${queryString ? `?${queryString}` : ''}`);
 }
 
 export async function confirmInsurancePaymentApi(sessionId, paymentSyncToken, paymentStatus = 'PAID') {

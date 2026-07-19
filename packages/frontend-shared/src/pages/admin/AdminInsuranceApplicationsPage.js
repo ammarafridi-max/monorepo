@@ -1,8 +1,8 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   ClipboardList,
   ChevronLeft,
@@ -12,6 +12,8 @@ import {
   Trash2,
   RefreshCw,
   Search,
+  SlidersHorizontal,
+  X,
 } from "lucide-react";
 import { useGetInsuranceApplications } from "../../hooks/insurance/useGetInsuranceApplications";
 import { useDeleteInsuranceApplication } from "../../hooks/insurance/useDeleteInsuranceApplication";
@@ -119,6 +121,7 @@ function leadName(app) {
 
 function ApplicationsContent() {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const {
@@ -133,35 +136,142 @@ function ApplicationsContent() {
     useCreateNationalities();
 
   const page = Number(searchParams.get("page") || 1);
-  const paymentFilter = searchParams.get("paymentStatus") || "";
-  const journeyFilter = searchParams.get("journeyType") || "";
   const totalPages = pagination?.totalPages ?? 1;
   const total = pagination?.total ?? 0;
-  const search = searchParams.get("search") ?? "";
-  const createdAt = searchParams.get("createdAt") ?? "all_time";
+
+  // URL-derived filter values (source of truth for the data hooks).
+  const urlSearch = searchParams.get("search") ?? "";
+  const urlPayment = searchParams.get("paymentStatus") || "";
+  const urlJourney = searchParams.get("journeyType") || "";
+  const urlCreatedAt = searchParams.get("createdAt") ?? "all_time";
+
+  // Local UI state mirrors the URL but updates eagerly on user input so the
+  // controls never snap back to a stale value while router.push is in flight.
+  const [localSearch, setLocalSearch] = useState(urlSearch);
+  const [localPayment, setLocalPayment] = useState(urlPayment);
+  const [localJourney, setLocalJourney] = useState(urlJourney);
+  const [localCreatedAt, setLocalCreatedAt] = useState(urlCreatedAt);
+
+  // Phones hide the inline filter bar behind a modal (see below).
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
+  // Reconcile local state when the URL changes externally (back/forward).
+  useEffect(() => setLocalSearch(urlSearch), [urlSearch]);
+  useEffect(() => setLocalPayment(urlPayment), [urlPayment]);
+  useEffect(() => setLocalJourney(urlJourney), [urlJourney]);
+  useEffect(() => setLocalCreatedAt(urlCreatedAt), [urlCreatedAt]);
+
+  function pushParams(p) {
+    p.delete("page");
+    router.push(`${pathname}?${p.toString()}`);
+  }
 
   function setParam(key, value) {
     const p = new URLSearchParams(searchParams.toString());
     if (value) p.set(key, value);
     else p.delete(key);
-    p.delete("page");
-    router.push(`?${p.toString()}`);
+    pushParams(p);
   }
+
+  // Debounced sync: local search → URL, so we don't push on every keystroke.
+  useEffect(() => {
+    if (localSearch === urlSearch) return;
+    const t = setTimeout(() => {
+      const p = new URLSearchParams(searchParams.toString());
+      if (localSearch) p.set("search", localSearch);
+      else p.delete("search");
+      pushParams(p);
+    }, 300);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [localSearch, urlSearch]);
 
   function goToPage(p) {
     const params = new URLSearchParams(searchParams.toString());
     params.set("page", String(p));
-    router.push(`?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`);
   }
+
+  // Count of filters narrowed away from their defaults — drives the badge on
+  // the filter button so active filters are visible without opening the modal.
+  const activeFilterCount = [
+    localPayment !== "",
+    localJourney !== "",
+    localCreatedAt !== "all_time",
+  ].filter(Boolean).length;
+
+  // Filter controls, extracted so the same inputs render in the modal on every
+  // screen size. Width comes from the caller via `className`.
+  const selectCls =
+    "px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white";
+
+  const paymentControl = (className = "") => (
+    <select
+      value={localPayment}
+      onChange={(e) => {
+        setLocalPayment(e.target.value);
+        setParam("paymentStatus", e.target.value);
+      }}
+      className={`${selectCls} ${className}`}
+    >
+      <option value="">All statuses</option>
+      {PAYMENT_TABS.filter(({ value }) => value !== "").map(
+        ({ value, label }) => (
+          <option key={value} value={value}>
+            {label}
+          </option>
+        ),
+      )}
+    </select>
+  );
+
+  const journeyControl = (className = "") => (
+    <select
+      value={localJourney}
+      onChange={(e) => {
+        setLocalJourney(e.target.value);
+        setParam("journeyType", e.target.value);
+      }}
+      className={`${selectCls} ${className}`}
+    >
+      <option value="">All journeys</option>
+      {JOURNEY_TABS.filter(({ value }) => value !== "").map(
+        ({ value, label }) => (
+          <option key={value} value={value}>
+            {label}
+          </option>
+        ),
+      )}
+    </select>
+  );
+
+  const timeControl = (className = "") => (
+    <select
+      value={localCreatedAt}
+      onChange={(e) => {
+        setLocalCreatedAt(e.target.value);
+        setParam("createdAt", e.target.value);
+      }}
+      className={`${selectCls} ${className}`}
+    >
+      <option value="all_time">All time</option>
+      <option value="24_hours">Last 24 hours</option>
+      <option value="7_days">Last 7 days</option>
+      <option value="30_days">Last 30 days</option>
+      <option value="90_days">Last 90 days</option>
+    </select>
+  );
 
   function summaryCard(label, value, sub, accent = "text-gray-900") {
     return (
-      <div className="bg-white border border-gray-200 rounded-2xl p-4">
-        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wide mb-1">
+      <div className="bg-white border border-gray-200 rounded-2xl p-3 sm:p-4">
+        <p className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-wide mb-1">
           {label}
         </p>
-        <p className={`text-2xl font-extrabold ${accent}`}>{value}</p>
-        {sub && <p className="text-xs text-gray-400 mt-1">{sub}</p>}
+        <p className={`text-lg sm:text-2xl font-extrabold ${accent}`}>
+          {value}
+        </p>
+        {sub && <p className="hidden sm:block text-xs text-gray-400 mt-1">{sub}</p>}
       </div>
     );
   }
@@ -182,7 +292,7 @@ function ApplicationsContent() {
         <button
           onClick={() => createNationalities()}
           disabled={isCreatingNationalities}
-          className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-xl border border-gray-200 bg-white text-gray-600 hover:border-primary-300 hover:text-primary-700 hover:bg-primary-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0"
+          className="hidden sm:inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-xl border border-gray-200 bg-white text-gray-600 hover:border-primary-300 hover:text-primary-700 hover:bg-primary-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0"
           title="Fetch nationalities from WIS and save to database"
         >
           <RefreshCw
@@ -193,16 +303,16 @@ function ApplicationsContent() {
         </button>
       </div>
 
-      <div className="flex gap-4 overflow-x-auto pb-1 [&>*]:min-w-[180px] [&>*]:shrink-0 xl:[&>*]:flex-1 xl:[&>*]:min-w-0">
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4 xl:gap-4">
         {isLoadingSummary ? (
           Array.from({ length: 4 }).map((_, index) => (
             <div
               key={index}
-              className="bg-white border border-gray-200 rounded-2xl p-4 animate-pulse"
+              className="bg-white border border-gray-200 rounded-2xl p-3 sm:p-4 animate-pulse"
             >
               <div className="h-3 w-24 bg-gray-100 rounded mb-3" />
               <div className="h-8 w-16 bg-gray-100 rounded mb-2" />
-              <div className="h-3 w-28 bg-gray-100 rounded" />
+              <div className="hidden sm:block h-3 w-28 bg-gray-100 rounded" />
             </div>
           ))
         ) : (
@@ -237,62 +347,85 @@ function ApplicationsContent() {
         )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-4">
-        <div className="relative w-full sm:max-w-sm">
+      {/* Search + filter button, in one row */}
+      <div className="flex items-center gap-2 w-full sm:max-w-sm">
+        <div className="relative flex-1">
           <Search
             size={14}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
           />
           <input
             type="text"
-            value={search}
-            onChange={(e) => setParam("search", e.target.value)}
+            value={localSearch}
+            onChange={(e) => setLocalSearch(e.target.value)}
             placeholder="Search by email, name, session, policy..."
             className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300"
           />
         </div>
-        <select
-          value={paymentFilter}
-          onChange={(e) => setParam("paymentStatus", e.target.value)}
-          className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+        <button
+          onClick={() => setFiltersOpen(true)}
+          title="Filters"
+          className="relative shrink-0 inline-flex items-center justify-center p-2.5 border border-gray-200 rounded-xl bg-white text-gray-500 hover:text-gray-700 hover:border-gray-300 transition"
         >
-          <option value="">All statuses</option>
-          {PAYMENT_TABS.filter(({ value }) => value !== "").map(
-            ({ value, label }) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ),
+          <SlidersHorizontal size={16} />
+          {activeFilterCount > 0 && (
+            <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 flex items-center justify-center text-[10px] font-bold text-white bg-primary-600 rounded-full">
+              {activeFilterCount}
+            </span>
           )}
-        </select>
-        <div className="w-px h-5 bg-gray-200 hidden sm:block" />
-        <select
-          value={journeyFilter}
-          onChange={(e) => setParam("journeyType", e.target.value)}
-          className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
-        >
-          <option value="">All journeys</option>
-          {JOURNEY_TABS.filter(({ value }) => value !== "").map(
-            ({ value, label }) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ),
-          )}
-        </select>
-        <div className="w-px h-5 bg-gray-200 hidden sm:block" />
-        <select
-          value={createdAt}
-          onChange={(e) => setParam("createdAt", e.target.value)}
-          className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
-        >
-          <option value="all_time">All time</option>
-          <option value="24_hours">Last 24 hours</option>
-          <option value="7_days">Last 7 days</option>
-          <option value="30_days">Last 30 days</option>
-          <option value="90_days">Last 90 days</option>
-        </select>
+        </button>
       </div>
+
+      {/* Filter modal — same controls on every screen. Bottom sheet. */}
+      {filtersOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40"
+          onClick={() => setFiltersOpen(false)}
+        >
+          <div
+            className="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-5 space-y-5 max-h-[85vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-gray-900">Filters</h3>
+              <button
+                onClick={() => setFiltersOpen(false)}
+                className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                Payment status
+              </label>
+              {paymentControl("w-full")}
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                Journey
+              </label>
+              {journeyControl("w-full")}
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                Time
+              </label>
+              {timeControl("w-full")}
+            </div>
+
+            <button
+              onClick={() => setFiltersOpen(false)}
+              className="w-full py-2.5 text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 rounded-xl transition"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
         {isLoadingApplications ? (

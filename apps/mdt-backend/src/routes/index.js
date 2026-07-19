@@ -11,9 +11,9 @@ import { createCurrenciesRouter } from "@travel-suite/currencies";
 import {
   createFlightRouter,
   createAirportsRouter,
-  createAmadeusClient,
 } from "@travel-suite/flights";
 import { createAirLabsClient } from "@travel-suite/airlabs";
+import { createSerpApiClient } from "@travel-suite/serpapi";
 import { createInsuranceRouter } from "@travel-suite/insurance";
 import { createTicketsRouter } from "@travel-suite/tickets";
 import { createUsersRouter } from "@travel-suite/users";
@@ -80,12 +80,9 @@ router.use("/blog-tags", createBlogTagRouter({ db, auth }));
 router.use("/currencies", createCurrenciesRouter({ db, auth }));
 
 // -- Flights -------------------------------------------------------------------
-const amadeus = createAmadeusClient({
-  apiKey: config.amadeus.apiKey,
-  apiSecret: config.amadeus.apiSecret,
-});
 const airlabs = createAirLabsClient({ apiKey: config.airlabs.apiKey });
-router.use("/flights", createFlightRouter({ db, amadeus, auth }));
+const serpapi = createSerpApiClient({ apiKey: config.serpapi.apiKey });
+router.use("/flights", createFlightRouter({ db, airlabs, serpapi, auth }));
 router.use("/airports", createAirportsRouter({ airlabs }));
 
 // -- Insurance -----------------------------------------------------------------
@@ -217,6 +214,7 @@ const { router: usersRouter } = createUsersRouter({
   cookieExpiresInDays: config.userCookieExpiresInDays,
   nodeEnv: config.nodeEnv,
   notifications,
+  appBaseUrl: config.frontendUrl,
 });
 
 router.use("/users", usersRouter);

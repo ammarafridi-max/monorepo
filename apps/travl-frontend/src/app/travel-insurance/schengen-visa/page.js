@@ -58,7 +58,7 @@ const testimonials = [
   },
   {
     quote:
-      "I'd read horror stories about people getting rejected over insurance that didn't hit the EUR 30,000 cover. This one did, all 27 countries listed, and my French visa came back approved first try.",
+      "I'd read horror stories about people getting rejected over insurance that didn't hit the EUR 30,000 cover. This one did, all 29 countries listed, and my French visa came back approved first try.",
     name: "Priya N.",
     location: "Abu Dhabi, UAE",
     stars: 5,
@@ -78,7 +78,7 @@ const benefits = [
   {
     icon: ShieldCheck,
     title: "Embassy-Compliant Schengen Insurance",
-    text: "Every policy meets official Schengen visa requirements, including the mandatory EUR 30,000 medical coverage valid across all 27 Schengen countries.",
+    text: "Every policy meets official Schengen visa requirements, including the mandatory EUR 30,000 medical coverage valid across all 29 Schengen countries.",
   },
   {
     icon: FileCheck,
@@ -121,7 +121,7 @@ export const faqs = [
   {
     question: "Is this policy valid across all Schengen countries?",
     answer:
-      "Yes. The policy is valid in all 27 Schengen countries and fully meets the visa insurance requirements set by European embassies.",
+      "Yes. The policy is valid in all 29 Schengen countries and fully meets the visa insurance requirements set by European embassies.",
   },
   {
     question: "How much does Schengen travel insurance cost for UAE residents?",

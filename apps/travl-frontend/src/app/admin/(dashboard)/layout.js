@@ -51,7 +51,6 @@ const nav = [
     section: 'People',
     items: [
       { label: 'Admin Users', href: '/admin/users', icon: 'Users', roles: ['admin'] },
-      { label: 'Affiliates', href: '/admin/affiliates', icon: 'Handshake', roles: ['admin'] },
     ],
   },
   {

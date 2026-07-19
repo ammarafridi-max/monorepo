@@ -61,6 +61,20 @@ export async function updateDummyTicketApi({ sessionId, orderStatus }) {
   return result;
 }
 
+// Reschedule (or bring forward) a ticket's delivery. Pass `immediate: true`
+// to deliver now, or a `deliveryDate` string (YYYY-MM-DD) to set a date.
+export async function updateDeliveryDateApi({ sessionId, deliveryDate, immediate }) {
+  const result = await apiFetch(`${URL}/${sessionId}/delivery`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(immediate ? { immediate: true } : { deliveryDate }),
+  });
+
+  return result;
+}
+
 export async function deleteDummyTicketApi(sessionId) {
   await apiFetch(`${URL}/${sessionId}`, {
     method: 'DELETE',

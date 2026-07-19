@@ -87,6 +87,7 @@ const { router: usersRouter } = createUsersRouter({
   cookieExpiresInDays: config.userCookieExpiresInDays,
   nodeEnv:             config.nodeEnv,
   notifications,
+  appBaseUrl:          config.frontendUrl,
 });
 
 router.use('/users', usersRouter);

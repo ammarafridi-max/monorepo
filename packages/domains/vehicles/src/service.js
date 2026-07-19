@@ -1,8 +1,12 @@
+import mongoose from 'mongoose';
 import { AppError } from '@travel-suite/utils';
 
-// Cloudinary sub-folder for a vehicle's images, e.g. "vehicles/Mercedes_S_Class".
-function vehicleFolder(brand, model) {
-  return `vehicles/${brand}_${model}`.replace(/\s+/g, '_');
+// Cloudinary sub-folder for a vehicle's images, keyed by the document id, e.g.
+// "vehicles/507f1f77bcf86cd799439011". Keying by _id (not brand_model) guarantees
+// each vehicle owns a private folder, so deleting one can never wipe another
+// vehicle that happens to share the same brand + model.
+function vehicleFolder(id) {
+  return `vehicles/${id}`;
 }
 
 function parsePricing(pricing) {
@@ -40,7 +44,10 @@ export function createVehicleService({ Vehicle, images }) {
   const createVehicle = async ({ body, files }) => {
     if (!files?.featuredImage?.[0]) throw new AppError('Featured image is required', 400);
 
-    const folder = vehicleFolder(body.brand, body.model);
+    // Pre-generate the _id so image uploads land in this vehicle's own per-id
+    // folder before the document exists.
+    const _id = new mongoose.Types.ObjectId();
+    const folder = vehicleFolder(_id);
     const pricing = parsePricing(body.pricing);
 
     try {
@@ -54,6 +61,7 @@ export function createVehicleService({ Vehicle, images }) {
       }
 
       return await Vehicle.create({
+        _id,
         brand: body.brand,
         model: body.model,
         year: body.year,
@@ -81,7 +89,7 @@ export function createVehicleService({ Vehicle, images }) {
     const vehicle = await Vehicle.findById(id);
     if (!vehicle) throw new AppError('Vehicle not found', 404);
 
-    const folder = vehicleFolder(vehicle.brand, vehicle.model);
+    const folder = vehicleFolder(vehicle._id);
     let featuredImageUrl = vehicle.featuredImage;
     let imagesUrls = vehicle.images;
 
@@ -122,7 +130,7 @@ export function createVehicleService({ Vehicle, images }) {
     const vehicle = await Vehicle.findById(id);
     if (!vehicle) throw new AppError('Vehicle not found', 404);
 
-    const folder = vehicleFolder(vehicle.brand, vehicle.model);
+    const folder = vehicleFolder(vehicle._id);
     await images.deleteFolder(folder);
 
     await Vehicle.findByIdAndDelete(id);
@@ -138,6 +146,11 @@ export function createVehicleService({ Vehicle, images }) {
     delete vehicleObj.updatedAt;
     delete vehicleObj.__v;
     vehicleObj.model = `${vehicleObj.model} Copy`;
+    // Start the copy with no images. The source's image URLs live in the source's
+    // per-id Cloudinary folder; reusing them would make deleting the original wipe
+    // the copy's images too. The admin re-uploads images for the duplicate.
+    vehicleObj.featuredImage = undefined;
+    vehicleObj.images = [];
 
     return Vehicle.create(vehicleObj);
   };

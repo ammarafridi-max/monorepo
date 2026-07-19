@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useEffect, useState } from 'react';
 import { useLocalStorage } from '../hooks/general/useLocalStorage.js';
-import { compareDateOnly, todayDateOnly } from '../utils/dates.js';
+import { addDaysDateOnly, compareDateOnly, todayDateOnly } from '../utils/dates.js';
 import { createPassenger, getSelectedQuote } from '../utils/insuranceHelpers.js';
 
 function safeParse(key, fallback) {
@@ -86,8 +86,17 @@ const ageCategories = [
 
 export const InsuranceContext = createContext();
 
-export function InsuranceProvider({ children }) {
+// maxStartDays caps how far ahead a policy can start, mirroring the WIS
+// provider's advance-booking window (it rejects start dates beyond it with
+// "Unable to calculate quotes"). Left null by default so brands without the
+// limit are unaffected; brands that use WIS inject their window (e.g. 270).
+export function InsuranceProvider({ children, maxStartDays = null }) {
   const { updateLocalStorage } = useLocalStorage();
+
+  const maxStartDate =
+    Number.isFinite(maxStartDays) && maxStartDays > 0
+      ? addDaysDateOnly(todayDateOnly(), maxStartDays)
+      : null;
 
   const [quoteId, setQuoteId] = useState(null);
   const [schemeId, setSchemeId] = useState(null);
@@ -244,6 +253,17 @@ export function InsuranceProvider({ children }) {
     }
   }, [endDate, startDate]);
 
+  // Drop a stored/selected start date that falls beyond the provider's
+  // advance-booking window, so a stale far-future date doesn't reload and
+  // trigger a provider rejection on the next quote.
+  useEffect(() => {
+    if (!maxStartDate || !startDate) return;
+    if (compareDateOnly(startDate, maxStartDate) > 0) {
+      setStartDate('');
+      setEndDate('');
+    }
+  }, [maxStartDate, startDate]);
+
   useEffect(() => {
     setPassengers((prevPassengers) =>
       PASSENGER_GROUPS.flatMap((groupItem) =>
@@ -322,6 +342,7 @@ export function InsuranceProvider({ children }) {
         journeyType,
         startDate,
         endDate,
+        maxStartDate,
         region,
         group,
         quantity,

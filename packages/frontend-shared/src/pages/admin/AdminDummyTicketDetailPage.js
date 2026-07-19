@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import {
   ArrowLeft, Loader2, AlertCircle, Trash2, Check, Pencil, Undo, Send,
   Mail, Phone, MapPin, CreditCard, Hash, Plane, Users, Calendar,
-  MessageSquare, ExternalLink, ArrowRight,
+  MessageSquare, ExternalLink, ArrowRight, FileText, X, Zap,
 } from 'lucide-react';
 import { MdWhatsapp } from 'react-icons/md';
 import { FaStripe, FaPaypal } from 'react-icons/fa';
@@ -14,6 +14,7 @@ import { useGetDummyTicket } from '../../hooks/dummy-tickets/useGetDummyTicket';
 import { useDeleteDummyTicket } from '../../hooks/dummy-tickets/useDeleteDummyTicket';
 import { useRefundDummyTicket } from '../../hooks/dummy-tickets/useRefundDummyTicket';
 import { useUpdateDummyTicket } from '../../hooks/dummy-tickets/useUpdateDummyTicket';
+import { useUpdateDeliveryDate } from '../../hooks/dummy-tickets/useUpdateDeliveryDate';
 import SendReservationModal from '../../components/admin/v1/SendReservationModal';
 import OrderPiPButton from '../../components/admin/v1/FloatingOrderPanel';
 import { convertToDubaiTime, convertToDubaiDate, formatDate, formatTravelportDate } from '../../utils/dates';
@@ -33,21 +34,23 @@ const ORDER_CFG = {
   DELIVERED: { dot: 'bg-green-500', cls: 'bg-green-50  text-green-700  border-green-200'  },
 };
 
-function PaymentBadge({ status }) {
+function PaymentBadge({ status, small }) {
   const cfg = PAYMENT_CFG[status] ?? { dot: 'bg-gray-400', cls: 'bg-gray-100 text-gray-500 border-gray-200' };
+  const sizeCls = small ? 'text-[10px] px-2 py-0.5' : 'text-xs px-2.5 py-1';
   return (
-    <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${cfg.cls}`}>
-      <span className={`w-2 h-2 rounded-full ${cfg.dot}`} />
+    <span className={`inline-flex items-center gap-1.5 font-semibold rounded-full border ${sizeCls} ${cfg.cls}`}>
+      <span className={`${small ? 'w-1.5 h-1.5' : 'w-2 h-2'} rounded-full ${cfg.dot}`} />
       {status ?? '—'}
     </span>
   );
 }
 
-function OrderBadge({ status }) {
+function OrderBadge({ status, small }) {
   const cfg = ORDER_CFG[status] ?? { dot: 'bg-gray-400', cls: 'bg-gray-100 text-gray-500 border-gray-200' };
+  const sizeCls = small ? 'text-[10px] px-2 py-0.5' : 'text-xs px-2.5 py-1';
   return (
-    <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${cfg.cls}`}>
-      <span className={`w-2 h-2 rounded-full ${cfg.dot}`} />
+    <span className={`inline-flex items-center gap-1.5 font-semibold rounded-full border ${sizeCls} ${cfg.cls}`}>
+      <span className={`${small ? 'w-1.5 h-1.5' : 'w-2 h-2'} rounded-full ${cfg.dot}`} />
       {status ?? '—'}
     </span>
   );
@@ -188,6 +191,91 @@ function DeleteSection({ sessionId, disabled, disabledReason }) {
   );
 }
 
+// Delivery row with an inline editor. For a scheduled ticket whose customer
+// changed their mind, the agent can either set a new date or hit "Deliver now"
+// (flips it to immediate). Rescheduling recomputes the delivery gate upstream,
+// unlocking Send / Mark Progress once the chosen day is today or past.
+function DeliverySection({ ticket, canEdit }) {
+  const [editing, setEditing] = useState(false);
+  const [date, setDate] = useState('');
+  const { updateDeliveryDate, isUpdatingDelivery } = useUpdateDeliveryDate();
+
+  const isImmediate = ticket?.ticketDelivery?.immediate;
+  const scheduled = isImmediate ? null : ticket?.ticketDelivery?.deliveryDate?.slice(0, 10) || null;
+  const todayDubai = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Dubai' }).format(new Date());
+  const current = isImmediate
+    ? 'Immediate'
+    : ticket?.ticketDelivery?.deliveryDate
+      ? convertToDubaiDate(ticket.ticketDelivery.deliveryDate)
+      : '—';
+
+  function save(payload) {
+    updateDeliveryDate(
+      { sessionId: ticket.sessionId, ...payload },
+      { onSuccess: () => setEditing(false) },
+    );
+  }
+
+  if (!editing) {
+    return (
+      <div className="flex items-start justify-between gap-4 py-2 border-b border-gray-50 last:border-0">
+        <span className="text-sm text-gray-400 shrink-0">Delivery</span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold text-gray-800 text-right">{current}</span>
+          {canEdit && (
+            <button
+              onClick={() => { setDate(scheduled || todayDubai); setEditing(true); }}
+              title="Change delivery date"
+              className="p-1 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition"
+            >
+              <Pencil size={12} />
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="py-2 space-y-3">
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-gray-400">Delivery date</span>
+        <button
+          onClick={() => setEditing(false)}
+          disabled={isUpdatingDelivery}
+          className="p-1 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition disabled:opacity-40"
+        >
+          <X size={14} />
+        </button>
+      </div>
+      <input
+        type="date"
+        value={date}
+        min={todayDubai}
+        onChange={(e) => setDate(e.target.value)}
+        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+      />
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => save({ deliveryDate: date })}
+          disabled={isUpdatingDelivery || !date}
+          className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 text-xs font-bold text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          {isUpdatingDelivery ? <Loader2 size={12} className="animate-spin" /> : <Check size={13} />}
+          Save date
+        </button>
+        <button
+          onClick={() => save({ immediate: true })}
+          disabled={isUpdatingDelivery}
+          className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 hover:bg-amber-100 rounded-lg transition disabled:opacity-40"
+        >
+          <Zap size={13} /> Deliver now
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminDummyTicketDetailPage() {
   const { sessionId } = useParams();
   const { adminUser } = useAdminAuth();
@@ -204,6 +292,11 @@ export default function AdminDummyTicketDetailPage() {
     ? null
     : ticket?.ticketDelivery?.deliveryDate?.slice(0, 10) || null;
   const deliveryDayReached = !scheduledDate || todayDubai >= scheduledDate;
+  // Only admins may reschedule, and only for paid tickets that aren't already
+  // delivered/refunded — the window where the delivery gate still matters.
+  const canEditDelivery = !isAgent
+    && ticket?.paymentStatus === 'PAID'
+    && !['DELIVERED', 'REFUNDED'].includes(ticket?.orderStatus);
   const { updateDummyTicket, isUpdating }              = useUpdateDummyTicket();
   const { refundDummyTicket, isRefunding }             = useRefundDummyTicket();
 
@@ -295,11 +388,9 @@ export default function AdminDummyTicketDetailPage() {
   const QEB_BY_VALIDITY = { '2 Days': '76', '7 Days': '77', '14 Days': '78' };
   const qebCode = QEB_BY_VALIDITY[ticket?.ticketValidity];
 
-  // Agent reference for the P.T*REF field — pulled from the logged-in admin.
-  const agentRef = (adminUser?.name || '').trim().split(/\s+/)[0].toUpperCase() || 'AGENT';
-
   const orderForPanel = ticket && {
     customerName: ticket.leadPassenger || '—',
+    message: ticket.message || '',
     status: [ticket.paymentStatus, ticket.orderStatus].filter(Boolean),
     paymentMethod: ticket.paymentMethod === 'paypal' ? 'PayPal' : 'Stripe',
     recordLocator: ticket.pnr || '',
@@ -323,7 +414,7 @@ export default function AdminDummyTicketDetailPage() {
       travelport: buildPassengerCommand(p),
     })),
     bookingCommands: [
-      { label: 'PHONE / AGENT REF', value: `P.T*REF ${agentRef}` },
+      { label: 'PHONE', value: 'P.T*' },
       { label: 'TICKETING',         value: 'T.T*' },
       { label: 'RECEIVED FROM',     value: 'R.P' },
       { label: `QUEUE · ${ticket?.ticketValidity || ''}`.trim(), value: qebCode ? `QEB/${qebCode}` : '' },
@@ -334,25 +425,17 @@ export default function AdminDummyTicketDetailPage() {
     <div className="max-w-7xl mx-auto space-y-5">
 
       <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/admin/dummy-tickets"
-            className="p-2 rounded-xl border border-gray-200 text-gray-400 hover:text-gray-700 hover:border-gray-300 transition"
-          >
-            <ArrowLeft size={16} />
-          </Link>
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-2xl font-extrabold text-gray-900 capitalize">
-                {String(ticket?.leadPassenger ?? '—').toLowerCase()}
-              </h2>
-              <PaymentBadge status={ticket?.paymentStatus} />
-              <OrderBadge  status={ticket?.orderStatus}   />
-            </div>
-            <p className="text-[11px] text-gray-400 font-mono mt-0.5">
-              Session: {ticket?.sessionId}
-            </p>
+        <div>
+          <h2 className="text-lg font-extrabold text-gray-900 capitalize">
+            {String(ticket?.leadPassenger ?? '—').toLowerCase()}
+          </h2>
+          <div className="flex items-center gap-1.5 flex-wrap mt-1">
+            <PaymentBadge status={ticket?.paymentStatus} small />
+            <OrderBadge  status={ticket?.orderStatus}   small />
           </div>
+          <p className="text-[11px] text-gray-400 font-mono mt-1">
+            Session: {ticket?.sessionId}
+          </p>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
@@ -363,6 +446,15 @@ export default function AdminDummyTicketDetailPage() {
           />
           {ticket?.paymentStatus === 'PAID' && (
             <>
+              {!deliveryDayReached && ticket?.orderStatus !== 'DELIVERED' && (
+                <span
+                  title="Edit the delivery date in Trip Details to send earlier"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-xl"
+                >
+                  <Calendar size={13} />
+                  Scheduled for {convertToDubaiDate(ticket.ticketDelivery.deliveryDate)}. Edit the delivery date to send earlier.
+                </span>
+              )}
               {deliveryDayReached && ticket?.orderStatus !== 'DELIVERED' && (
                 <button
                   onClick={() => setReservationOpen(true)}
@@ -436,12 +528,7 @@ export default function AdminDummyTicketDetailPage() {
             <div className="mt-4 pt-4 border-t border-gray-100">
               <InfoRow label="Type"     value={ticket?.type} />
               <InfoRow label="Validity" value={ticket?.ticketValidity} />
-              <InfoRow label="Delivery"
-                value={ticket?.ticketDelivery?.immediate
-                  ? 'Immediate'
-                  : ticket?.ticketDelivery?.deliveryDate
-                    ? convertToDubaiDate(ticket.ticketDelivery.deliveryDate)
-                    : '—'} />
+              <DeliverySection ticket={ticket} canEdit={canEditDelivery} />
             </div>
           </Card>
 
@@ -550,6 +637,27 @@ export default function AdminDummyTicketDetailPage() {
             <InfoRow label="Updated"     value={`${convertToDubaiDate(ticket?.updatedAt)} ${convertToDubaiTime(ticket?.updatedAt)}`} />
             <InfoRow label="Session"     value={ticket?.sessionId} mono />
           </Card>
+
+          {ticket?.reservationUrl && (
+            <Card title="Reservation" icon={FileText}>
+              <div className="space-y-3">
+                <InfoRow
+                  label="Sent"
+                  value={ticket?.reservationSentAt
+                    ? `${convertToDubaiDate(ticket.reservationSentAt)} ${convertToDubaiTime(ticket.reservationSentAt)}`
+                    : '—'}
+                />
+                <a
+                  href={ticket.reservationUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 text-xs font-semibold text-primary-700 border border-primary-200 hover:bg-primary-50 rounded-xl transition"
+                >
+                  <FileText size={13} /> View PDF <ExternalLink size={11} />
+                </a>
+              </div>
+            </Card>
+          )}
 
           <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
             <div className="px-5 py-3.5 border-b border-gray-100">

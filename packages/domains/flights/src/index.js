@@ -3,8 +3,6 @@ import { createFlightService } from './service.js';
 import { createFlightController } from './controller.js';
 import { createFlightRouterFromParts, createAirportRouterFromParts } from './router.js';
 
-export { createAmadeusClient } from './amadeus.js';
-
 function getOrRegisterModel(conn, name, schema) {
   try {
     return conn.model(name);
@@ -13,16 +11,16 @@ function getOrRegisterModel(conn, name, schema) {
   }
 }
 
-export function createFlightRouter({ db, amadeus, auth }) {
+export function createFlightRouter({ db, airlabs, serpapi, auth }) {
   const Airline = getOrRegisterModel(db, 'airline', AirlineSchema);
-  const service = createFlightService({ Airline, amadeus });
+  const service = createFlightService({ Airline, airlabs, serpapi });
   const controller = createFlightController({ service });
   return createFlightRouterFromParts({ controller, auth });
 }
 
 export function createAirportsRouter({ airlabs }) {
   // Airport search is stateless — no DB model needed. Live AirLabs lookups.
-  const service = createFlightService({ Airline: null, amadeus: null, airlabs });
+  const service = createFlightService({ Airline: null, airlabs });
   const controller = createFlightController({ service });
   return createAirportRouterFromParts({ controller });
 }

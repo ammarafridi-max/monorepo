@@ -37,12 +37,11 @@ export default {
 
   frontendUrl: process.env.FRONTEND_URL ?? "http://localhost:3000",
 
-  amadeus: {
-    apiKey: process.env.AMADEUS_API_KEY,
-    apiSecret: process.env.AMADEUS_SECRET_KEY,
-  },
   airlabs: {
     apiKey: process.env.AIRLABS_API_KEY,
+  },
+  serpapi: {
+    apiKey: process.env.SERPAPI_API_KEY,
   },
 
   stripe: {

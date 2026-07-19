@@ -1,3 +1,6 @@
+import { AppError } from '@travel-suite/utils';
+import { resolveVehicle } from './catalog.js';
+
 function generateBookingRef() {
   return String(Math.floor(100000 + Math.random() * 900000));
 }
@@ -14,7 +17,17 @@ export function createBookingService({ Booking, stripe }) {
   }
 
   async function createBooking({ trip, vehicle, passenger }) {
-    const booking = await Booking.create({ trip, vehicle, passenger });
+    // Never persist a client-supplied price. Resolve the vehicle (and its price)
+    // from the server-side catalogue so the stored record is trustworthy.
+    const resolved = resolveVehicle(vehicle);
+    if (!resolved) throw new AppError('Unknown vehicle selection', 400);
+    const trustedVehicle = {
+      ...vehicle,
+      name: resolved.name,
+      class: resolved.class,
+      price: resolved.price,
+    };
+    const booking = await Booking.create({ trip, vehicle: trustedVehicle, passenger });
     return booking;
   }
 
@@ -31,7 +44,12 @@ export function createBookingService({ Booking, stripe }) {
   }
 
   async function createCheckout({ vehicle, passenger, bookingId, successUrl, cancelUrl }) {
-    const { amount, currency } = vehicle.price;
+    // Authoritative price comes from the server-side catalogue, keyed by the
+    // vehicle id — the client-supplied `vehicle.price` is ignored so a caller can't
+    // pay an amount of their choosing.
+    const resolved = resolveVehicle(vehicle);
+    if (!resolved) throw new AppError('Unknown vehicle selection', 400);
+    const { amount, currency } = resolved.price;
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
@@ -43,7 +61,7 @@ export function createBookingService({ Booking, stripe }) {
           price_data: {
             currency: currency.toLowerCase(),
             unit_amount: Math.round(Number(amount) * 100),
-            product_data: { name: `Airport Transfer — ${vehicle.name}` },
+            product_data: { name: `Airport Transfer — ${resolved.name}` },
           },
           quantity: 1,
         },

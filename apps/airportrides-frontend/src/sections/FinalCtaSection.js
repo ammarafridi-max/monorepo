@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import Container from '@travel-suite/frontend-shared/components/shared/layout/Container';
-import { ArrowRight } from 'lucide-react';
+import { subscribeToLaunchListApi } from '@travel-suite/frontend-shared/services/apiSubscribe';
+import { ArrowRight, Loader2 } from 'lucide-react';
 
 export default function FinalCtaSection({
   title = 'Ready for a smoother arrival?',
@@ -13,12 +14,20 @@ export default function FinalCtaSection({
   notifyBtnLabel = 'Notify me',
 }) {
   const [email, setEmail] = useState('');
+  const [status, setStatus] = useState('idle'); // idle | submitting | success | error
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    // TODO: replace with email-capture call (Brevo contact create).
-    console.log('Launch notify signup:', email);
-    setEmail('');
+    if (status === 'submitting') return;
+
+    setStatus('submitting');
+    try {
+      await subscribeToLaunchListApi({ email });
+      setStatus('success');
+      setEmail('');
+    } catch {
+      setStatus('error');
+    }
   }
 
   return (
@@ -44,28 +53,42 @@ export default function FinalCtaSection({
             </a>
           </div>
 
-          <form onSubmit={handleSubmit} className="mx-auto mt-12 max-w-md">
-            <label htmlFor="launch-email" className="block text-sm font-light text-sand-100/85">
-              {notifyLabel}
-            </label>
-            <div className="mt-3 flex flex-col gap-3 sm:flex-row">
-              <input
-                id="launch-email"
-                type="email"
-                required
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-pill border border-white/25 bg-white/10 px-5 py-3.5 text-sm text-white placeholder:text-sand-100/60 focus:border-white/50 focus:outline-none focus:ring-2 focus:ring-white/30"
-              />
-              <button
-                type="submit"
-                className="shrink-0 rounded-pill bg-ink px-6 py-3.5 text-sm font-semibold text-sand-50 transition-colors duration-200 hover:bg-clay-900"
-              >
-                {notifyBtnLabel}
-              </button>
-            </div>
-          </form>
+          {status === 'success' ? (
+            <p className="mx-auto mt-12 max-w-md text-sm font-medium text-sand-50">
+              Thanks! We&apos;ll email you the moment we launch in your city.
+            </p>
+          ) : (
+            <form onSubmit={handleSubmit} className="mx-auto mt-12 max-w-md">
+              <label htmlFor="launch-email" className="block text-sm font-light text-sand-100/85">
+                {notifyLabel}
+              </label>
+              <div className="mt-3 flex flex-col gap-3 sm:flex-row">
+                <input
+                  id="launch-email"
+                  type="email"
+                  required
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={status === 'submitting'}
+                  className="w-full rounded-pill border border-white/25 bg-white/10 px-5 py-3.5 text-sm text-white placeholder:text-sand-100/60 focus:border-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 disabled:opacity-60"
+                />
+                <button
+                  type="submit"
+                  disabled={status === 'submitting'}
+                  className="inline-flex shrink-0 items-center justify-center gap-2 rounded-pill bg-ink px-6 py-3.5 text-sm font-semibold text-sand-50 transition-colors duration-200 hover:bg-clay-900 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {status === 'submitting' && <Loader2 size={15} className="animate-spin" />}
+                  {status === 'submitting' ? 'Signing you up…' : notifyBtnLabel}
+                </button>
+              </div>
+              {status === 'error' && (
+                <p className="mt-3 text-sm font-medium text-sand-50">
+                  Something went wrong. Please try again.
+                </p>
+              )}
+            </form>
+          )}
         </div>
       </Container>
     </section>

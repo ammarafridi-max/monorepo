@@ -75,7 +75,7 @@ export const homepageFaqs = [
   {
     question: 'Does your travel insurance meet Schengen requirements?',
     answer:
-      'Yes. Our travel insurance plans include the mandatory minimum medical coverage and are valid across all 26 Schengen member states.',
+      'Yes. Our travel insurance plans include the mandatory minimum medical coverage and are valid across all 29 Schengen member states.',
   },
   {
     question: 'How quickly will I receive my policy?',

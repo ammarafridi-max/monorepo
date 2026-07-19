@@ -22,130 +22,192 @@ function extractIataCode(locationString = '') {
   return start > 0 && end > start ? locationString.slice(start, end) : null;
 }
 
-export function createFlightService({ Airline, amadeus, airlabs }) {
-  function requireAmadeus() {
-    if (!amadeus) throw new AppError('Flight search is not configured on this server', 503);
-  }
+function minutesToISO(min) {
+  const total = Math.max(0, Math.round(Number(min) || 0));
+  return `PT${Math.floor(total / 60)}H${total % 60}M`;
+}
 
+// ---------------------------------------------------------------------------
+// SerpApi Google Flights -> flight-offers shape adapter
+// ---------------------------------------------------------------------------
+// Google Flights returns full itineraries (nonstop / 1-stop / 2-stop) with a
+// segment array, so there's no stitching to do. We only reshape into the
+// flight-offer contract the frontend consumes (itineraries[].segments[]
+// with `.at` datetimes, ISO `duration`, `number`, `carrierCode`). Fares are
+// ignored — the ticket is priced by validity, not the flight.
+
+// "EK 1" -> { carrierCode: 'EK', number: '1' }
+function splitFlightNumber(fn) {
+  const m = String(fn || '').trim().match(/^([A-Z0-9]{2,3})\s*(.*)$/);
+  return m
+    ? { carrierCode: m[1], number: m[2].trim() }
+    : { carrierCode: '', number: String(fn || '').trim() };
+}
+
+// SerpApi times are "YYYY-MM-DD HH:MM" (local). transformItinerary splits on
+// 'T' and `new Date(at)` must parse it, so normalise to "YYYY-MM-DDTHH:MM:00".
+function serpTimeToISO(t) {
+  const s = String(t || '').trim();
+  if (!s) return s;
+  const [date, time = '00:00'] = s.split(' ');
+  return `${date}T${time}:00`;
+}
+
+function segmentFromSerp(f) {
+  const { carrierCode, number } = splitFlightNumber(f.flight_number);
+  return {
+    departure: { iataCode: f.departure_airport?.id, at: serpTimeToISO(f.departure_airport?.time) },
+    arrival: { iataCode: f.arrival_airport?.id, at: serpTimeToISO(f.arrival_airport?.time) },
+    duration: minutesToISO(f.duration),
+    carrierCode,
+    number,
+    ...(f.airplane ? { aircraft: { code: f.airplane } } : {}),
+    // Google's marketing airline name — authoritative for the flight shown, and
+    // avoids ambiguous IATA-code lookups (e.g. AirLabs maps "PC" to a cargo firm
+    // instead of Pegasus). Consumed by attachAirlines, then stripped.
+    airlineName: f.airline || null,
+  };
+}
+
+// Attach airline display data using SerpApi's per-segment airline name (source
+// of truth) and the bundled local logo map. Pure/sync — no DB or AirLabs round
+// trips. Nonstop itineraries sort first (fewest segments).
+function attachAirlines(flights) {
+  const detailFor = (code, nameByCode) => ({
+    iataCode: code,
+    businessName: nameByCode[code] || code,
+    commonName: nameByCode[code] || code,
+    logo: airlineLogo(code),
+  });
+
+  return flights
+    .map((flight) => {
+      const nameByCode = {};
+      flight.itineraries.forEach((it) =>
+        it.segments.forEach((s) => {
+          if (s.carrierCode && s.airlineName && !nameByCode[s.carrierCode]) {
+            nameByCode[s.carrierCode] = s.airlineName;
+          }
+        }),
+      );
+      return {
+        ...flight,
+        itineraries: flight.itineraries.map((it) => ({
+          ...it,
+          segments: it.segments.map(({ airlineName, ...s }) => ({
+            ...s,
+            airlineDetail: detailFor(s.carrierCode, nameByCode),
+          })),
+        })),
+        airlineDetails: flight.validatingAirlineCodes.map((code) => detailFor(code, nameByCode)),
+      };
+    })
+    .sort((a, b) => a.itineraries[0].segments.length - b.itineraries[0].segments.length);
+}
+
+function offerToItinerary(offer) {
+  return {
+    duration: minutesToISO(offer.total_duration),
+    segments: (offer.flights || []).map(segmentFromSerp),
+  };
+}
+
+function wrapFlight(itineraries) {
+  const validatingAirlineCodes = [
+    ...new Set(itineraries.flatMap((it) => it.segments.map((s) => s.carrierCode)).filter(Boolean)),
+  ];
+  return { itineraries, validatingAirlineCodes };
+}
+
+// Flight search is served by SerpApi (Google Flights). AirLabs supplies airport
+// and airline reference data.
+export function createFlightService({ Airline, airlabs, serpapi }) {
   function requireAirLabs() {
     if (!airlabs) throw new AppError('Airport search is not configured on this server', 503);
   }
 
   const addAirlineByCode = async (airlineCode) => {
-    requireAmadeus();
+    requireAirLabs();
     const exists = await Airline.findOne({ iataCode: airlineCode });
     if (exists) throw new AppError('This airline data already exists', 409);
 
-    const response = await amadeus.referenceData.airlines.get({ airlineCodes: airlineCode });
-    const [data] = response.data || [];
-
-    if (!data || !data.icaoCode || data.businessName === 'UNDEFINED') {
-      throw new AppError('No airline found', 404);
-    }
+    const data = await airlabs.getAirline(airlineCode);
+    if (!data || !data.iata_code) throw new AppError('No airline found', 404);
 
     return Airline.create({
-      iataCode: data.iataCode,
-      icaoCode: data.icaoCode,
-      businessName: data.businessName,
-      commonName: data.commonName,
-      logo: airlineLogo(data.iataCode),
+      iataCode: data.iata_code,
+      icaoCode: data.icao_code || null,
+      businessName: data.name,
+      commonName: data.name,
+      logo: airlineLogo(data.iata_code),
     });
   };
 
-  const enrichFlightsWithAirlines = async (flights) => {
-    const airlineCodes = [...new Set(flights.flatMap((f) => f.validatingAirlineCodes))];
-    const airlinesInDb = await Airline.find({ iataCode: { $in: airlineCodes } });
-    const airlineMap = new Map(airlinesInDb.map((a) => [a.iataCode, a]));
+  // SerpApi flight builder. Returns unenriched flights in the flight-offer
+  // shape the frontend consumes. Return trips are two one-way searches, zipped
+  // into out+return pairs (frontend reads itineraries[0]=outbound, itineraries[1]=return).
+  const buildSerpApiFlights = async ({ type, origin, dest, departureDate, returnDate }) => {
+    const outboundOffers = await serpapi.searchOneWay({
+      departureId: origin,
+      arrivalId: dest,
+      outboundDate: departureDate,
+    });
+    const outbound = outboundOffers.map(offerToItinerary).filter((it) => it.segments.length);
+    if (!outbound.length) return [];
 
-    const missingCodes = airlineCodes.filter((code) => !airlineMap.has(code));
-
-    if (missingCodes.length) {
-      const response = await amadeus.referenceData.airlines.get({ airlineCodes: missingCodes.join() });
-      const newAirlines = (response.data || []).map((a) => ({
-        iataCode: a.iataCode,
-        icaoCode: a.icaoCode,
-        businessName: a.businessName,
-        commonName: a.commonName,
-        logo: airlineLogo(a.iataCode),
-      }));
-
-      await Airline.insertMany(newAirlines, { ordered: false });
-      newAirlines.forEach((a) => airlineMap.set(a.iataCode, a));
+    if (type !== 'Return') {
+      return outbound.slice(0, 20).map((it) => wrapFlight([it]));
     }
 
-    // Back-fill logo on existing records that were inserted before this field existed
-    const logolessInDb = airlinesInDb.filter((a) => !a.logo && airlineLogo(a.iataCode));
-    if (logolessInDb.length) {
-      await Promise.all(
-        logolessInDb.map((a) =>
-          Airline.updateOne({ iataCode: a.iataCode }, { $set: { logo: airlineLogo(a.iataCode) } })
-        )
-      );
-      logolessInDb.forEach((a) => { a.logo = airlineLogo(a.iataCode); });
-    }
+    const inboundOffers = await serpapi.searchOneWay({
+      departureId: dest,
+      arrivalId: origin,
+      outboundDate: returnDate,
+    });
+    const inbound = inboundOffers.map(offerToItinerary).filter((it) => it.segments.length);
+    if (!inbound.length) return [];
 
-    return flights
-      .map((flight) => ({
-        ...flight,
-        itineraries: flight.itineraries.map((it) => ({
-          ...it,
-          segments: it.segments.map((seg) => ({
-            ...seg,
-            airlineDetail: airlineMap.get(seg.carrierCode) || {},
-          })),
-        })),
-        airlineDetails: flight.validatingAirlineCodes.map((code) => airlineMap.get(code) || {}),
-      }))
-      .sort((a, b) => a.itineraries[0].segments.length - b.itineraries[0].segments.length);
+    return outbound.slice(0, 12).map((out, i) => wrapFlight([out, inbound[i % inbound.length]]));
   };
 
   const searchFlights = async ({ type, from, to, departureDate, returnDate, quantity = {} }) => {
-    requireAmadeus();
+    if (!serpapi) {
+      throw new AppError('Flight search is not configured on this server', 503);
+    }
     if (!from || !to || !departureDate) {
       throw new AppError('Please provide departure, arrival, and departure date', 400);
     }
-
     if (type === 'Return' && !returnDate) {
       throw new AppError('Please provide a return date for return trips', 400);
     }
 
-    const originLocationCode = extractIataCode(from);
-    const destinationLocationCode = extractIataCode(to);
-
-    if (!originLocationCode || !destinationLocationCode) {
+    const origin = extractIataCode(from);
+    const dest = extractIataCode(to);
+    if (!origin || !dest) {
       throw new AppError('Please provide valid airport selections', 400);
     }
 
     const adults = Number(quantity.adults || 1);
-    const children = Number(quantity.children || 0);
-    const infants = Number(quantity.infants || 0);
-    const totalPassengers = adults + children + infants;
-
+    const totalPassengers = adults + Number(quantity.children || 0) + Number(quantity.infants || 0);
     if (adults < 1 || totalPassengers < 1 || totalPassengers > 9) {
       throw new AppError('Total passengers must be between 1 and 9, with at least 1 adult', 400);
     }
 
-    const params = {
-      originLocationCode,
-      destinationLocationCode,
-      departureDate,
-      adults,
-      ...(children > 0 ? { children } : {}),
-      ...(infants > 0 ? { infants } : {}),
-      ...(type === 'Return' && returnDate ? { returnDate } : {}),
-    };
+    // SerpApi carries airline names inline, so results enrich synchronously.
+    try {
+      const serpFlights = await buildSerpApiFlights({ type, origin, dest, departureDate, returnDate });
+      if (serpFlights.length) return attachAirlines(serpFlights);
+    } catch (err) {
+      console.error('[flights] serpapi search failed:', err.message);
+    }
 
-    const response = await amadeus.shopping.flightOffersSearch.get(params);
-    if (!response?.data) throw new AppError('No flights available', 404);
-
-    const flights = response.data.filter((f) => f.itineraries[0].segments.length <= 2);
-    return enrichFlightsWithAirlines(flights);
+    throw new AppError('No flights available', 404);
   };
 
   // Live airport search via AirLabs /suggest. One endpoint handles both
   // IATA codes ("DXB") and freeform text ("dubai"). We keep only entries
   // whose `type === 'airport'` (drops airbases, heliports, seaplane bases),
-  // sort by popularity, and map to the legacy Amadeus-compatible shape
+  // sort by popularity, and map to the airport shape
   // ({ iataCode, address: { cityName } }) so existing callers and the
   // frontend dropdown work unchanged.
   function validateKeyword(keyword, label) {

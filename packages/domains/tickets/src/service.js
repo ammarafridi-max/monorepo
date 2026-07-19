@@ -52,6 +52,18 @@ function getDubaiDateString() {
   return `${y}-${m}-${d}`;
 }
 
+// Whether a ticket's scheduled delivery day has arrived, in Dubai time.
+// Immediate deliveries and tickets with no scheduled date are always ready.
+// Delivery dates are stored as YYYY-MM-DD-prefixed strings, so a lexical
+// compare against today's Dubai date is correct regardless of server locale.
+// Mirrors the gate the admin UI applies before showing Send / Mark Progress.
+function isDeliveryDayReached(ticket) {
+  if (ticket?.ticketDelivery?.immediate) return true;
+  const scheduled = ticket?.ticketDelivery?.deliveryDate?.slice(0, 10);
+  if (!scheduled) return true;
+  return getDubaiDateString() >= scheduled;
+}
+
 function applyDeliveryDateFilter(queryObj, deliveryDate) {
   if (!deliveryDate) return;
   const dateStr = deliveryDate === 'today' ? getDubaiDateString() : deliveryDate;
@@ -112,6 +124,9 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     const ticket = await Ticket.findOne({ sessionId });
     if (!ticket) throw new AppError('Ticket not found', 404);
     if (!ticket.email) throw new AppError('Ticket has no customer email on file', 400);
+    if (!isDeliveryDayReached(ticket)) {
+      throw new AppError('This ticket is scheduled for a later delivery date. Bring the delivery date forward before sending.', 409);
+    }
 
     // 'image' (not 'raw') so Cloudinary treats the PDF as a renderable
     // multi-page asset — gives us console previews, page thumbnails, and
@@ -169,9 +184,48 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     if (!allowed.includes(orderStatus)) throw new AppError('Invalid order status', 400);
     if (!mongoose.Types.ObjectId.isValid(userId)) throw new AppError('Invalid user ID', 400);
 
+    // Scheduled deliveries can't be advanced to PROGRESS/DELIVERED before the
+    // delivery day arrives — the agent must bring the delivery date forward
+    // first (see updateDeliveryDate). PENDING/REFUNDED transitions aren't gated.
+    if (orderStatus === 'PROGRESS' || orderStatus === 'DELIVERED') {
+      const existing = await Ticket.findOne({ sessionId });
+      if (!existing) throw new AppError('Ticket not found', 404);
+      if (!isDeliveryDayReached(existing)) {
+        throw new AppError('This ticket is scheduled for a later delivery date. Bring the delivery date forward first.', 409);
+      }
+    }
+
     const updated = await Ticket.findOneAndUpdate(
       { sessionId },
       { $set: { orderStatus, handledBy: new mongoose.Types.ObjectId(userId) } },
+      { new: true },
+    ).populate('handledBy');
+
+    if (!updated) throw new AppError('Ticket not found', 404);
+    return updated;
+  };
+
+  // Reschedule (or bring forward) a ticket's delivery. Agents use this when a
+  // customer who picked a later date changes their mind. Either flip it to
+  // immediate delivery, or set a specific YYYY-MM-DD date. Stamps handledBy
+  // with the acting agent, consistent with the other admin mutations.
+  const updateDeliveryDate = async (sessionId, userId, { deliveryDate, immediate } = {}) => {
+    if (!mongoose.Types.ObjectId.isValid(userId)) throw new AppError('Invalid user ID', 400);
+
+    let ticketDelivery;
+    if (immediate) {
+      ticketDelivery = { immediate: true, deliveryDate: null };
+    } else {
+      const dateStr = typeof deliveryDate === 'string' ? deliveryDate.slice(0, 10) : '';
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+        throw new AppError('A valid delivery date (YYYY-MM-DD) or immediate delivery is required', 400);
+      }
+      ticketDelivery = { immediate: false, deliveryDate: dateStr };
+    }
+
+    const updated = await Ticket.findOneAndUpdate(
+      { sessionId },
+      { $set: { ticketDelivery, handledBy: new mongoose.Types.ObjectId(userId) } },
       { new: true },
     ).populate('handledBy');
 
@@ -527,5 +581,5 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     return refund;
   };
 
-  return { getAllTickets, getLatestPaidTicket, getTicketBySessionId, updateOrderStatus, deleteTicket, sendReservation, createTicketRequest, createStripePaymentUrl, handleStripeSuccess, createPayPalOrder, capturePayPalOrder, refundByTransactionId };
+  return { getAllTickets, getLatestPaidTicket, getTicketBySessionId, updateOrderStatus, updateDeliveryDate, deleteTicket, sendReservation, createTicketRequest, createStripePaymentUrl, handleStripeSuccess, createPayPalOrder, capturePayPalOrder, refundByTransactionId };
 }

@@ -17,11 +17,11 @@ import {
 } from "@/lib/schema";
 import { homepageFaqs } from "@/data/faqs";
 import { ShieldCheck, Zap, FileCheck, Headphones, Banknote, Globe } from "lucide-react";
-import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineHotel } from "react-icons/md";
+import { MdOutlineHealthAndSafety, MdOutlineMap, MdOutlineTravelExplore } from "react-icons/md";
 
 const testimonials = [
   {
-    quote: "Travl made my visa process incredibly smooth. The insurance policy had the full medical coverage, covered all Schengen countries, and arrived instantly. My visa was approved without any problems.",
+    quote: "I needed Schengen insurance in a hurry and Travl sorted it in minutes. The cover met the 30,000 euro requirement, the policy read clearly, and my visa came back approved with no follow-up questions.",
     name: "David S.",
     location: "Traveler from the United States",
     stars: 5,
@@ -33,7 +33,7 @@ const testimonials = [
     stars: 5,
   },
   {
-    quote: "I got my Schengen travel insurance through Travl and it was straightforward. The policy had the full medical coverage, covered all Schengen countries, and arrived instantly. My visa was approved without any problems.",
+    quote: "I fly often so I went with the annual multi-trip plan. Signing up took a few minutes, the document was accepted at the VFS centre straight away, and support replied every time I had a question. Solid value.",
     name: "Ahmed R.",
     location: "Frequent Flyer from India",
     stars: 5,
@@ -44,12 +44,12 @@ const benefits = [
   {
     icon: ShieldCheck,
     title: "Travel Insurance from AED 30",
-    text: "Schengen-compliant travel insurance with the required medical coverage, valid across all 26 Schengen states. Issued instantly and delivered straight to your inbox.",
+    text: "Schengen-compliant travel insurance with the required medical coverage, valid across all 29 Schengen states. Issued instantly and delivered straight to your inbox.",
   },
   {
     icon: Zap,
     title: "Instant Document Delivery",
-    text: "Every policy, flight itinerary, and hotel reservation is delivered to your inbox within minutes of payment. No office visit, no waiting.",
+    text: "Every insurance policy and travel itinerary is delivered to your inbox within minutes of payment. No office visit, no waiting.",
   },
   {
     icon: FileCheck,
@@ -106,16 +106,16 @@ const pageData = {
             "Genuine AXA-backed travel insurance for UAE residents. Schengen-compliant plans from AED 30, worldwide coverage from AED 70, and annual multi-trip plans from AED 245. Every policy is delivered instantly after payment.",
         },
         {
-          icon: <MdOutlineAirplaneTicket />,
-          title: "Flight Itineraries",
+          icon: <MdOutlineMap />,
+          title: "Travel Itineraries",
           description:
-            "Verifiable flight reservations with a real PNR code, accepted by VFS, BLS, and embassies. Required alongside insurance for most Schengen and international visa applications. From AED 49.",
+            "Embassy-ready, day-by-day travel itineraries for your visa application. Generated instantly and formatted for VFS, BLS, and consulate submissions. One-time AED 49, downloaded as a print-ready PDF.",
         },
         {
-          icon: <MdOutlineHotel />,
-          title: "Hotel Reservations",
+          icon: <MdOutlineTravelExplore />,
+          title: "Visa Services",
           description:
-            "Proof of accommodation formatted to meet embassy and consulate standards. Ready to include in your visa application package alongside your insurance and flight itinerary.",
+            "Application support for Schengen, UK, US, Canada, and more. We help UAE residents put together a complete, correctly formatted visa application from start to finish.",
         },
       ],
     },

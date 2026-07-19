@@ -48,5 +48,26 @@ export function createAirLabsClient({ apiKey }) {
     return json?.response?.cities ?? [];
   };
 
-  return { suggestAirports, suggestCities };
+  // Scheduled route timetable. Pass either/both of depIata/arrIata:
+  //   { depIata, arrIata } -> nonstop routes on that exact city pair
+  //   { depIata }          -> every nonstop route out of an airport
+  //   { arrIata }          -> every nonstop route into an airport
+  // Each row is a marketed flight (operating + codeshares) with dep_time/
+  // arr_time (local HH:mm), duration (minutes), and days (weekday list).
+  const getRoutes = async ({ depIata, arrIata } = {}) => {
+    const params = {};
+    if (depIata) params.dep_iata = depIata;
+    if (arrIata) params.arr_iata = arrIata;
+    const json = await request("/routes", params);
+    return json?.response ?? [];
+  };
+
+  // Airline reference data (name / ICAO) by IATA code, for enrichment.
+  const getAirline = async (iataCode) => {
+    if (!iataCode) return null;
+    const json = await request("/airlines", { iata_code: iataCode });
+    return json?.response?.[0] ?? null;
+  };
+
+  return { suggestAirports, suggestCities, getRoutes, getAirline };
 }
