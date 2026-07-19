@@ -1,9 +1,12 @@
 name: Travl Daily Blog Publish
 
 on:
-  schedule:
-    - cron: '0 5 * * *' # 9AM UAE (UTC+4) = 5AM UTC
-  workflow_dispatch: # allow manual trigger from GitHub UI
+  # PAUSED 2026-07-19: the daily auto-run is disabled while the 40-post backlog
+  # publishes one per day (scheduled through 2026-08-28). To resume, uncomment the
+  # schedule block below and push — new posts will then publish automatically again.
+  # schedule:
+  #   - cron: '0 5 * * *' # 9AM UAE (UTC+4) = 5AM UTC
+  workflow_dispatch: # manual trigger from the GitHub UI still works while paused
 
 jobs:
   generate-blog-draft:
