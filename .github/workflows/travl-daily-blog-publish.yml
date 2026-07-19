@@ -1,4 +1,4 @@
-name: Travl Daily Blog Draft
+name: Travl Daily Blog Publish
 
 on:
   schedule:
@@ -21,7 +21,7 @@ jobs:
         run: npm install
         working-directory: scripts
 
-      - name: Generate blog draft
+      - name: Generate and publish blog post
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           TRAVL_ADMIN_EMAIL: ${{ secrets.TRAVL_ADMIN_EMAIL }}

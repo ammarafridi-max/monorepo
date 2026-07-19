@@ -33,3 +33,6 @@ Thumbs.db
 # Test coverage
 coverage/
 apps/emirateslimo-frontend/.env.build
+
+# Local blog-migration content backups (rollback artifacts, not source)
+travl-blog-backups/

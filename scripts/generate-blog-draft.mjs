@@ -2,8 +2,8 @@
  * generate-blog-draft.mjs
  *
  * Daily automation: picks today's topic from topics.json (by UAE date UTC+4),
- * generates a full blog post using Claude, and POSTs it as a draft to the
- * Travl backend at https://api.travl.ae.
+ * generates a full blog post using Claude, and POSTs it as a published post to
+ * the Travl backend at https://api.travl.ae.
  *
  * Run:  node generate-blog-draft.mjs
  * Env:  ANTHROPIC_API_KEY, TRAVL_ADMIN_EMAIL, TRAVL_ADMIN_PASSWORD
@@ -288,7 +288,7 @@ async function postDraft({ token, topic, content, availableTags }) {
   form.append("quickAnswer", content.quickAnswer);
   form.append("metaTitle", content.metaTitle);
   form.append("metaDescription", content.metaDescription);
-  form.append("status", "draft");
+  form.append("status", "published");
   form.append("faqs", JSON.stringify(content.faqs));
   form.append("coverImage", coverImageBlob, "cover-placeholder.jpg");
 
@@ -306,13 +306,13 @@ async function postDraft({ token, topic, content, availableTags }) {
   const body = await res.json().catch(() => ({}));
   if (!res.ok) {
     throw new Error(
-      `Failed to create draft: ${res.status} ${JSON.stringify(body)}`,
+      `Failed to create post: ${res.status} ${JSON.stringify(body)}`,
     );
   }
 
   const blogId = body?.data?._id || body?.data?.id;
   const slug = body?.data?.slug;
-  console.log(`✓ Draft created — ID: ${blogId}, slug: ${slug}`);
+  console.log(`✓ Published — ID: ${blogId}, slug: ${slug}`);
   return body.data;
 }
 
@@ -356,11 +356,11 @@ async function main() {
     availableTags,
   });
 
-  // 7. Post draft
+  // 7. Post and publish
   const draft = await postDraft({ token, topic, content, availableTags });
 
-  console.log(`\n✅ Done! Draft "${draft?.title}" saved.`);
-  console.log(`   Review at: https://www.travl.ae/admin/blogs`);
+  console.log(`\n✅ Done! Published "${draft?.title}" — now live.`);
+  console.log(`   Live at: https://www.travl.ae/blog/${draft?.slug}`);
 }
 
 main().catch((err) => {
