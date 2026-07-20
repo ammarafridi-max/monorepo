@@ -19,6 +19,7 @@ const EMPTY = {
   facialHair: '',
   email: '',
   images: [],
+  tier: 'starter',
 };
 
 /** Read the current funnel state. Safe on the server (returns empty). */
@@ -35,6 +36,7 @@ export function readState() {
       facialHair: typeof s.facialHair === 'string' ? s.facialHair : '',
       email: typeof s.email === 'string' ? s.email : '',
       images: Array.isArray(s.images) ? s.images : [],
+      tier: typeof s.tier === 'string' && s.tier ? s.tier : 'starter',
     };
   } catch {
     return { ...EMPTY };

@@ -31,6 +31,6 @@ export const faq = [
   },
   {
     q: 'Is this a subscription?',
-    a: 'No. One payment of thirty-five dollars for one set of headshots. No plan, no recurring charge, and no account required to buy.',
+    a: 'No. You pick one of three plans and pay once, from twenty-nine dollars for one set of headshots. No recurring charge, and no account required to buy.',
   },
 ];

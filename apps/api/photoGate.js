@@ -51,19 +51,25 @@ function toIssue(text) {
   if (a.includes('blur')) return 'blurry';
   if (a.includes('dark') || a.includes('dim')) return 'dark';
   if (a.includes('far') || a.includes('small')) return 'far';
-  if (a.includes('group') || a.includes('multiple') || a.includes('people')) return 'group';
+  if (a.includes('group') || a.includes('multiple') || a.includes('people'))
+    return 'group';
   return null; // "none" / "ok" / unrecognized -> not a strict-gate failure
 }
 
 /** fetch() to Replicate that waits out 429s / 5xx (the gate fires several at once). */
-async function replicateFetch(url, options, { attempts = 5, baseDelayMs = 1000 } = {}) {
+async function replicateFetch(
+  url,
+  options,
+  { attempts = 5, baseDelayMs = 1000 } = {},
+) {
   let lastErr;
   for (let attempt = 1; attempt <= attempts; attempt++) {
     try {
       const res = await fetch(url, options);
       if (res.status !== 429 && res.status < 500) return res;
       const text = await res.text().catch(() => '');
-      if (attempt === attempts) throw new Error(`replicate ${res.status}: ${text}`);
+      if (attempt === attempts)
+        throw new Error(`replicate ${res.status}: ${text}`);
       const header = Number(res.headers.get('retry-after'));
       let bodyRetry;
       try {
@@ -71,7 +77,9 @@ async function replicateFetch(url, options, { attempts = 5, baseDelayMs = 1000 }
       } catch {
         bodyRetry = undefined;
       }
-      const waitMs = (header || Number(bodyRetry) || 0) * 1000 || baseDelayMs * 2 ** (attempt - 1);
+      const waitMs =
+        (header || Number(bodyRetry) || 0) * 1000 ||
+        baseDelayMs * 2 ** (attempt - 1);
       await sleep(waitMs + 250);
     } catch (err) {
       lastErr = err;
@@ -101,19 +109,24 @@ export async function assessPhoto(url) {
     }),
   });
   let pred = await res.json();
-  if (!res.ok) throw new Error(`replicate ${res.status}: ${JSON.stringify(pred)}`);
+  if (!res.ok)
+    throw new Error(`replicate ${res.status}: ${JSON.stringify(pred)}`);
 
   const terminal = new Set(['succeeded', 'failed', 'canceled']);
   const deadline = Date.now() + 90_000;
   while (pred.status && !terminal.has(pred.status)) {
     if (Date.now() > deadline) throw new Error('photo screen timed out');
     await sleep(1500);
-    const g = await replicateFetch(`${REPLICATE_API}/v1/predictions/${pred.id}`, {
-      headers: { Authorization: `Bearer ${token()}` },
-    });
+    const g = await replicateFetch(
+      `${REPLICATE_API}/v1/predictions/${pred.id}`,
+      {
+        headers: { Authorization: `Bearer ${token()}` },
+      },
+    );
     pred = await g.json();
   }
-  if (pred.status !== 'succeeded') throw new Error(`photo screen ${pred.status}: ${pred.error ?? '?'}`);
+  if (pred.status !== 'succeeded')
+    throw new Error(`photo screen ${pred.status}: ${pred.error ?? '?'}`);
 
   const text = Array.isArray(pred.output) ? pred.output.join('') : pred.output;
   return { issue: toIssue(text) };

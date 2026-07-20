@@ -13,8 +13,21 @@ export const ANALYTICS_DOMAIN = process.env.NEXT_PUBLIC_ANALYTICS_DOMAIN || '';
 export const ANALYTICS_SRC =
   process.env.NEXT_PUBLIC_ANALYTICS_SRC || 'https://plausible.io/js/script.js';
 
-export function analyticsEnabled() {
+// GA4 measurement ID (G-XXXXXXXXXX). Loaded only when set at build time, same
+// opt-in shape as Plausible. Both can run together; track() fans out to whichever
+// script is present.
+export const GA_ID = process.env.NEXT_PUBLIC_GA_ID || '';
+
+export function plausibleEnabled() {
   return Boolean(ANALYTICS_DOMAIN);
+}
+
+export function gaEnabled() {
+  return Boolean(GA_ID);
+}
+
+export function analyticsEnabled() {
+  return plausibleEnabled() || gaEnabled();
 }
 
 /**
@@ -37,10 +50,15 @@ export const EVENTS = Object.freeze({
  */
 export function track(event, props) {
   if (typeof window === 'undefined') return;
-  if (typeof window.plausible !== 'function') return;
-  try {
-    window.plausible(event, props ? { props } : undefined);
-  } catch {
-    // Analytics must never break the app.
+  // Analytics must never break the app: guard each sink independently.
+  if (typeof window.plausible === 'function') {
+    try {
+      window.plausible(event, props ? { props } : undefined);
+    } catch {}
+  }
+  if (typeof window.gtag === 'function') {
+    try {
+      window.gtag('event', event, props || {});
+    } catch {}
   }
 }

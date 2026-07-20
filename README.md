@@ -1,7 +1,8 @@
 # Picturesk.ai
 
-AI headshot generator: upload selfies, pay once (~$35), we fine-tune a model on
-your face via Replicate, generate professional headshots, and email the results.
+AI headshot generator: upload selfies, pick a one-time plan (three tiers, from
+$29), we fine-tune a model on your face via Replicate, generate professional
+headshots, and email the results.
 
 Core design principle: **money in, then a slow external job we don't control;
 never lose or double-run an order.** See [CLAUDE.md](./CLAUDE.md) for the full
@@ -19,7 +20,7 @@ design and build plan.
 The purchase flow is a routed, three-step funnel:
 
 ```
-Select (looks + attire + about-you + email) -> Upload photos -> Pay -> processing -> Delivered
+Select (looks + attire + about-you + email) -> Upload photos -> Pick plan + Pay -> processing -> Delivered
 ```
 
 The customer picks their looks and attire, tells us a bit about themselves
@@ -41,15 +42,18 @@ the worker then moves `PAID -> TRAINING`.
 routes: `/generator/select` (looks + attire, each option with a preview image or a
 placeholder; gender + age range + optional race as single-select chips; and email),
 `/generator/upload` (client quality gate, then the photos go direct-to-R2 and their
-URLs ride along), and `/generator/pay` (review + pay).
+URLs ride along), and `/generator/pay` (pick a pricing plan, review, and pay).
 Selections and uploaded-photo URLs persist in `localStorage` until checkout, so the
 order is created only at the pay step (no abandoned drafts in the DB). Landing CTAs
 route to `/generator/select`.
 
 **Where the gate runs.** `POST /checkout` takes `{ email, selectedLooks[],
-selectedAttire[], gender, ageRange, race?, uploadedImageUrls[] }`. It validates the
-selections and demographics against the shared catalog (gender + ageRange required,
-race optional) and runs THE REAL gate (face quality + content moderation) on the
+selectedAttire[], gender, ageRange, race?, uploadedImageUrls[], tier }`. It validates
+the selections and demographics against the shared catalog (gender + ageRange
+required, race optional) and the `tier` against the shared pricing catalog (invalid
+tier -> 400, absent -> the default `starter`). The server owns the price: the client
+sends only a tier id, never an amount, and the Stripe amount comes from
+`getTier(tier).priceCents`. It then runs THE REAL gate (face quality + content moderation) on the
 images BEFORE creating the Stripe session, so there is no session (no payment) for
 input that would train a bad model. On a gate failure it returns a structured
 `422`; the pay step surfaces it and points the user back to swap photos. On pass it
@@ -71,12 +75,43 @@ worker builds each order's prompts from it, so the options a customer sees can n
 drift from what we generate. The worker's old fixed `PROMPTS` array is gone from the
 order path; each order's subject anchor is `<trigger word>, <buildSubject(...)>`.
 
-**Count.** `DELIVER_COUNT` defaults to 14. Identity culling is off, so the worker
-generates exactly what it delivers (generate == deliver, locked by a test).
+**Count.** How many headshots an order delivers comes from its purchased pricing
+tier (see below), snapshotted onto the order at checkout as `deliverCount` /
+`generateCount`; the worker reads them per order. Identity culling is off, so the
+worker generates exactly what it delivers (generate == deliver). Legacy pre-tier
+orders leave those fields unset and fall back to the `DELIVER_COUNT` /
+`GENERATE_COUNT` env defaults.
 
 **Preserved guarantees.** Idempotent webhook, idempotent enqueue (`jobId =
 orderId`), resumable/idempotent pipeline, auto-refund on `FAILED`, and idempotent
 email are all unchanged.
+
+## Pricing tiers
+
+Three one-time plans (no subscription). The catalog is the single source of truth in
+`packages/shared/src/pricing.js` (`TIERS`, `getTier`, `isValidTier`, `DEFAULT_TIER`),
+imported by both the api (to set the Stripe amount + stamp the order) and the web
+(via the mongoose-free `@picturesk/shared/pricing` subpath, to render the plan
+cards), so price, delivered count, and turnaround can never drift between them.
+
+| Tier | id | Price | Headshots | Turnaround (BullMQ priority) |
+|------|------|-------|-----------|------------------------------|
+| Starter | `starter` | $29 | 25 | standard (priority 3) |
+| Pro | `pro` | $45 | 60 | priority (2) |
+| Premium | `premium` | $79 | 120 | front of queue (1) |
+
+Each tier differs on three levers: **price** (`priceCents`), **delivered count**
+(`deliverCount` / `generateCount`), and **turnaround**. Turnaround is the BullMQ job
+`priority` set at enqueue (lower number = pulled off the queue first), so a Premium
+order jumps ahead of a queued Starter one. The worker runs one order at a time by
+default (`WORKER_CONCURRENCY`, default 1), which is why priority matters; raise it to
+process orders in parallel (an order is mostly Replicate polling, so a single process
+handles many cheaply, bounded by Replicate rate limit + credit).
+
+The tier is stored on the order **as a snapshot** (`tier` + `deliverCount` +
+`generateCount`), not looked up live, so changing the catalog never mutates an
+in-flight order. Quality levers (4K upscale, face-swap identity lock) are a planned
+phase 2 and are not tier-gated yet.
 
 ## Getting started
 
@@ -132,7 +167,7 @@ All three apps are deployed to Fly and healthy:
 
 - api: https://picturesk-api.fly.dev (`/health` returns `{"ok":true}`)
 - web: https://picturesk-web.fly.dev
-- worker: `picturesk-worker` (no HTTP; consumes `order-pipeline`, concurrency 1)
+- worker: `picturesk-worker` (no HTTP; consumes `order-pipeline`, `WORKER_CONCURRENCY` default 1)
 
 Secrets were staged per app from the local `.env` (least-privilege: Stripe keys
 live on api + worker only, never web), with `WEB_BASE_URL` pointed at the web
@@ -607,17 +642,36 @@ a usable vector, so we deployed our own tiny CPU Cog, `ammarafridi-max/face-embe
 and returns a 512-dim vector (or `[]` when no face is found -> that candidate scores
 low and is culled). It runs on CPU, so a call costs CPU-cents, not a GPU prediction.
 The model scales to zero when idle, so the first call of an order cold-boots for a
-few minutes; `scoreIdentity.js` polls patiently through that, then the rest are fast.
+few minutes; `scoreIdentity.js` polls patiently through that.
+
+**Scoring is parallel.** `selectAndDeliver` scores the FIRST candidate alone (this
+absorbs the one cold boot and populates the memoized selfie embeddings), then fans
+the rest out with bounded concurrency (`SCORE_CONCURRENCY`, default 6) and persists
+the whole scored set in ONE write instead of one-per-candidate. A crash before that
+write just re-scores the unscored candidates on the next attempt, which is cheap now
+that scoring is parallel. This turns a slow one-at-a-time loop into a few fast waves.
+
+**Overgeneration is culling-gated.** How many candidates we generate is decided in
+the worker from whether culling is on, NOT baked into the order:
+- **Culling ON:** generate `ceil(deliverCount * OVERGENERATE_FACTOR)` candidates
+  (factor default **1.5**), score them all, and deliver the best `deliverCount`.
+- **Culling OFF (e.g. prod today):** generate EXACTLY `deliverCount`. No overgeneration,
+  no wasted images, since with no scorer culling would keep them all anyway.
+
+`deliverCount` comes from the order's purchased tier (see [Pricing tiers](#pricing-tiers));
+legacy pre-tier orders fall back to the `DELIVER_COUNT` / `GENERATE_COUNT` env defaults.
 
 **Enable / tune (worker env):**
 - `REPLICATE_FACE_EMBED_MODEL=owner/name:versionHash` turns culling ON (currently
   `ammarafridi-max/face-embed:<hash>`). Unset = OFF, delivery identical to before.
-- `GENERATE_COUNT` (default 20 when ON) and `DELIVER_COUNT` (default 14) control how
-  aggressively to overgenerate and cull; `GENERATE_COUNT >= DELIVER_COUNT`.
+- `OVERGENERATE_FACTOR` (default 1.5): the culling-ON multiplier above. Higher = better
+  culling, more generation cost + scoring time. Ignored when culling is off.
+- `SCORE_CONCURRENCY` (default 6): how many candidates to identity-score at once.
+  Raise for speed (needs Replicate rate/credit headroom), lower if throttled.
 
-**Cost.** Per order with culling ON: `GENERATE_COUNT + selfies` embedding calls
-(each a few CPU-seconds, ~cents total) plus the extra generations. Far cheaper than
-a pairwise face-verification model, which is why we deploy the embedding Cog.
+**Cost.** Per order with culling ON: `ceil(deliverCount * OVERGENERATE_FACTOR) + selfies`
+embedding calls (each a few CPU-seconds, ~cents total) plus the extra generations. Far
+cheaper than a pairwise face-verification model, which is why we deploy the embedding Cog.
 
 **Rebuilding the embed Cog:** from the build dir, `cog push r8.im/ammarafridi-max/face-embed`
 (needs Docker + `cog`, and `docker login r8.im` with the Replicate API token). The

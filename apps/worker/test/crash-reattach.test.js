@@ -47,11 +47,11 @@ function buildPipeline(extra = {}) {
   const deliverCount = extra.deliverCount ?? generateCount;
   return createPipeline({
     client: fake,
-    buildPrompts: (order) =>
+    buildPrompts: (order, count) =>
       buildPrompts({
         looks: order.selectedLooks ?? SAMPLE_LOOKS,
         attire: order.selectedAttire ?? SAMPLE_ATTIRE,
-        count: generateCount,
+        count: count ?? generateCount,
         subjectAnchor: SUBJECT_ANCHOR,
       }),
     generateCount,
@@ -631,4 +631,132 @@ test('a persistently unallocated training gives up after maxTrainingRestarts', a
   assert.equal(fake.getCounts().cancelTraining, 3, 'each wedged training was cancelled');
   const stuck = await Order.findById(id);
   assert.equal(stuck.status, ORDER_STATES.TRAINING, 'still TRAINING; the worker failed handler fails+refunds it');
+});
+
+test('per-order tier counts drive generation + delivery, overriding the pipeline defaults', async () => {
+  fake.resetFake();
+
+  // Pipeline built with the DEFAULT fallback counts (14/14), as production does.
+  // The ORDER carries its purchased tier's snapshot (generate 6, deliver 3), which
+  // must win: a lower tier delivers fewer, a wider tier would deliver more.
+  const pipeline = buildPipeline({
+    generateCount: 14,
+    deliverCount: 14,
+    scoreIdentity: makeScorer({ scoreFor: (url) => predNum(url) }), // higher pred == higher score
+  });
+
+  // Pre-trained (skip the training stage) PAID-equivalent order carrying per-order counts.
+  const order = await Order.create({
+    customerEmail: 'tiered@b.com',
+    status: ORDER_STATES.TRAINING,
+    uploadedImageUrls: ['selfie.jpg'],
+    selectedLooks: SAMPLE_LOOKS,
+    selectedAttire: SAMPLE_ATTIRE,
+    replicate: { trainingId: 'train_pre', trainedModelVersion: 'fakeowner/fakemodel:v1' },
+    generateCount: 6,
+    deliverCount: 3,
+  });
+  const id = order._id.toString();
+
+  await pipeline.processOrder(id);
+
+  const done = await Order.findById(id);
+  assert.equal(done.status, ORDER_STATES.DELIVERED);
+  assert.equal(
+    fake.getCounts().startGeneration,
+    6,
+    'generated the ORDER generateCount (6), not the pipeline default (14)'
+  );
+  assert.equal(nonNull(done.resultImageUrls).length, 6, 'kept 6 candidates');
+  assert.equal(
+    nonNull(done.deliveredImageUrls).length,
+    3,
+    'delivered the ORDER deliverCount (3), not the pipeline default (14)'
+  );
+});
+
+test('an order with NO tier counts falls back to the pipeline defaults', async () => {
+  fake.resetFake();
+
+  const pipeline = buildPipeline({ generateCount: 5, deliverCount: 5 });
+  const order = await Order.create({
+    customerEmail: 'legacy@b.com',
+    status: ORDER_STATES.TRAINING,
+    uploadedImageUrls: ['selfie.jpg'],
+    selectedLooks: SAMPLE_LOOKS,
+    selectedAttire: SAMPLE_ATTIRE,
+    replicate: { trainingId: 'train_pre', trainedModelVersion: 'fakeowner/fakemodel:v1' },
+    // no generateCount / deliverCount -> a legacy pre-tier order
+  });
+  const id = order._id.toString();
+
+  await pipeline.processOrder(id);
+
+  const done = await Order.findById(id);
+  assert.equal(done.status, ORDER_STATES.DELIVERED);
+  assert.equal(fake.getCounts().startGeneration, 5, 'fell back to the pipeline default generateCount (5)');
+  assert.equal(nonNull(done.deliveredImageUrls).length, 5, 'delivered the pipeline default deliverCount (5)');
+});
+
+test('culling ON overgenerates by the factor, then culls down to deliverCount', async () => {
+  fake.resetFake();
+
+  // deliverCount 4, factor 1.5 -> generate ceil(4*1.5)=6 candidates, deliver the best 4.
+  const pipeline = buildPipeline({
+    deliverCount: 4,
+    cullingEnabled: true,
+    overgenerateFactor: 1.5,
+    scoreIdentity: makeScorer({ scoreFor: (url) => predNum(url) }), // higher pred = higher score
+  });
+
+  const order = await Order.create({
+    customerEmail: 'cull@b.com',
+    status: ORDER_STATES.TRAINING,
+    uploadedImageUrls: ['selfie.jpg'],
+    selectedLooks: SAMPLE_LOOKS,
+    selectedAttire: SAMPLE_ATTIRE,
+    replicate: { trainingId: 'train_pre', trainedModelVersion: 'fakeowner/fakemodel:v1' },
+    deliverCount: 4,
+  });
+  const id = order._id.toString();
+
+  await pipeline.processOrder(id);
+
+  const done = await Order.findById(id);
+  assert.equal(done.status, ORDER_STATES.DELIVERED);
+  assert.equal(fake.getCounts().startGeneration, 6, 'overgenerated to ceil(deliver * 1.5) = 6');
+  assert.equal(nonNull(done.resultImageUrls).length, 6, 'kept all 6 raw candidates');
+  assert.equal(nonNull(done.candidateScores).length, 6, 'scored all 6');
+  assert.equal(nonNull(done.deliveredImageUrls).length, 4, 'culled down to deliverCount (4)');
+});
+
+test('culling OFF generates exactly deliverCount (no overgeneration / no waste)', async () => {
+  fake.resetFake();
+
+  // Same deliverCount + factor, but culling disabled -> generate == deliver, no waste.
+  const pipeline = buildPipeline({
+    deliverCount: 4,
+    cullingEnabled: false,
+    overgenerateFactor: 1.5,
+  });
+
+  const order = await Order.create({
+    customerEmail: 'nocull@b.com',
+    status: ORDER_STATES.TRAINING,
+    uploadedImageUrls: ['selfie.jpg'],
+    selectedLooks: SAMPLE_LOOKS,
+    selectedAttire: SAMPLE_ATTIRE,
+    replicate: { trainingId: 'train_pre', trainedModelVersion: 'fakeowner/fakemodel:v1' },
+    // A real tier snapshot carries generateCount == deliverCount when culling is off.
+    deliverCount: 4,
+    generateCount: 4,
+  });
+  const id = order._id.toString();
+
+  await pipeline.processOrder(id);
+
+  const done = await Order.findById(id);
+  assert.equal(done.status, ORDER_STATES.DELIVERED);
+  assert.equal(fake.getCounts().startGeneration, 4, 'no overgeneration when culling is off');
+  assert.equal(nonNull(done.deliveredImageUrls).length, 4, 'delivered deliverCount');
 });

@@ -23,14 +23,14 @@ export default function Hero() {
           </p>
           <div className="hero__actions">
             <a className="btn btn--primary" href="/generator/select">
-              Get my headshots <span className="btn__price">$35</span>
+              Get my headshots <span className="btn__price">from $29</span>
             </a>
             <a className="btn btn--link" href="#work">
               See real results
             </a>
           </div>
           <p className="hero__meta">
-            One price, thirty-five dollars. Delivered by email in about an hour.
+            Three one-time plans, from twenty-nine dollars. Delivered by email in about an hour.
           </p>
         </div>
 

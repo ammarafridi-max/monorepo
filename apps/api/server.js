@@ -13,7 +13,12 @@ import cookieParser from 'cookie-parser';
 
 // Load the monorepo-root .env regardless of the cwd this service is started from
 // (pnpm --filter runs scripts with the package dir as cwd).
-dotenv.config({ path: resolve(dirname(fileURLToPath(import.meta.url)), '../../.env') });
+dotenv.config({
+  path: resolve(
+    dirname(fileURLToPath(import.meta.url)),
+    `../../.env.${process.env.NODE_ENV || 'development'}`,
+  ),
+});
 
 import Stripe from 'stripe';
 import { Queue } from 'bullmq';
@@ -28,6 +33,9 @@ import {
   isValidGender,
   isValidRace,
   isValidFacialHair,
+  getTier,
+  isValidTier,
+  DEFAULT_TIER,
   Order,
   ORDER_STATES,
   OrderTransitionConflictError,
@@ -58,8 +66,9 @@ import { createAdminActionsRouter } from './admin/adminActions.js';
  *   for the success page to poll.
  */
 
-// The server owns the price. Never trust the client for money.
-const PRICE_CENTS = 3500;
+// The server owns the price. The client picks a TIER id (validated against the
+// shared pricing catalog); the server looks up the amount. Never trust the client
+// for money: the only pricing input we accept is the tier id, never an amount.
 // Reject absurd upload batches. A face fine-tune wants ~10-15 photos.
 const MAX_UPLOAD_FILES = 20;
 
@@ -190,9 +199,12 @@ const orderPipeline = new Queue(QUEUE_NAMES.ORDER_PIPELINE, { connection });
 
 // Enqueue options shared by every producer of the pipeline. jobId = orderId
 // makes the enqueue idempotent: the same order can never be queued twice.
-function pipelineJobOpts(orderId) {
+// `priority` comes from the purchased tier (lower number = higher priority in
+// BullMQ), so a Premium order is pulled off the queue ahead of a Starter one.
+function pipelineJobOpts(orderId, priority) {
   return {
     jobId: orderId,
+    priority,
     // A run spans a multi-minute Replicate training we don't control, so give it
     // several reattach attempts before we give up and refund. Reattach is
     // idempotent (never retrains, never regenerates a started slot), so extra
@@ -452,8 +464,10 @@ app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), async (r
       throw err;
     }
 
-    // c. Transition succeeded -> hand the order to the pipeline exactly once.
-    await orderPipeline.add('process-order', { orderId }, pipelineJobOpts(orderId));
+    // c. Transition succeeded -> hand the order to the pipeline exactly once,
+    //    at the priority its purchased tier bought (higher tiers jump the queue).
+    const { priority } = getTier(order.tier);
+    await orderPipeline.add('process-order', { orderId }, pipelineJobOpts(orderId, priority));
     console.log(`[api] webhook: order ${orderId} PAID and enqueued`);
 
     return res.status(200).json({ received: true });
@@ -602,6 +616,7 @@ app.post('/checkout', checkoutLimiter, async (req, res) => {
       ageRange,
       race,
       facialHair,
+      tier,
     } = req.body ?? {};
     if (!email) {
       return res.status(400).json({ error: 'email is required' });
@@ -639,6 +654,13 @@ app.post('/checkout', checkoutLimiter, async (req, res) => {
     if (facialHair != null && facialHair !== '' && !isValidFacialHair(facialHair)) {
       return res.status(400).json({ error: 'facialHair contains an unknown option' });
     }
+    // Pricing tier. Optional for back-compat (absent -> default tier); a value that
+    // is present must be a real tier. The server owns the price via getTier below,
+    // so a tampered client can at worst pick a valid tier, never set an amount.
+    if (tier != null && tier !== '' && !isValidTier(tier)) {
+      return res.status(400).json({ error: 'tier is not a known pricing tier' });
+    }
+    const selectedTier = getTier(tier || DEFAULT_TIER);
 
     // THE REAL GATE (face quality + content moderation), BEFORE any Stripe session.
     // The web client runs the same face checks for fast feedback, but that is UX
@@ -660,6 +682,11 @@ app.post('/checkout', checkoutLimiter, async (req, res) => {
       race: race || undefined,
       facialHair: facialHair || undefined,
       uploadedImageUrls,
+      // Stamp the tier + a snapshot of its numeric levers so the worker delivers
+      // the right count even if the catalog later changes (durable record).
+      tier: selectedTier.id,
+      deliverCount: selectedTier.deliverCount,
+      generateCount: selectedTier.generateCount,
     });
     const orderId = order._id.toString();
 
@@ -671,8 +698,10 @@ app.post('/checkout', checkoutLimiter, async (req, res) => {
           quantity: 1,
           price_data: {
             currency: 'usd',
-            unit_amount: PRICE_CENTS,
-            product_data: { name: 'Picturesk professional headshots' },
+            unit_amount: selectedTier.priceCents,
+            product_data: {
+              name: `Picturesk headshots (${selectedTier.label}, ${selectedTier.deliverCount} photos)`,
+            },
           },
         },
       ],

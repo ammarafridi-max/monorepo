@@ -121,8 +121,8 @@ export const terms = {
     {
       h: 'Payment',
       body: [
-        'Picturesk costs thirty-five US dollars for one set of headshots. It is a one-time charge, not a subscription.',
-        'The price is set on our server and charged through Stripe Checkout. You pay before we train your model.',
+        'Picturesk offers three one-time plans, starting at twenty-nine US dollars for one set of headshots. Each is a one-time charge, not a subscription.',
+        'The price for each plan is set on our server and charged through Stripe Checkout. You pay before we train your model.',
       ],
     },
     {

@@ -4,7 +4,13 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { LOOKS, ATTIRE, AGE_RANGES, GENDERS, RACES, FACIAL_HAIR } from '@picturesk/shared/catalog';
+import { TIERS } from '@picturesk/shared/pricing';
 import { readState, writeState } from '../../../lib/generator';
+
+// Whole-dollar price from integer cents (tier prices are round dollars).
+const usd = (cents) => `$${Math.round(cents / 100)}`;
+// One line of "what changes" per tier: count first (verdict), then turnaround.
+const TURNAROUND = { starter: 'Standard queue', pro: 'Priority queue', premium: 'Front of the queue' };
 
 // A grid of selectable option cards, each with a preview image (or a placeholder
 // until a real image URL is added to the catalog). The choices are the visual
@@ -26,6 +32,12 @@ function OptionGrid({ items, selected, onToggle, showDesc }) {
               {it.image ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={it.image} alt="" loading="lazy" />
+              ) : it.swatch ? (
+                <span
+                  className="option-card__swatch"
+                  style={{ background: it.swatch }}
+                  aria-hidden="true"
+                />
               ) : (
                 <span className="option-card__ph">Preview</span>
               )}
@@ -80,6 +92,7 @@ export default function SelectPage() {
   const [race, setRace] = useState('');
   const [facialHair, setFacialHair] = useState('');
   const [email, setEmail] = useState('');
+  const [tier, setTier] = useState('starter');
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -91,8 +104,14 @@ export default function SelectPage() {
     setRace(s.race);
     setFacialHair(s.facialHair);
     setEmail(s.email);
+    setTier(s.tier);
     setReady(true);
   }, []);
+
+  function pickTier(id) {
+    setTier(id);
+    writeState({ tier: id });
+  }
 
   function toggleLook(id) {
     setLooks((prev) => {
@@ -138,11 +157,35 @@ export default function SelectPage() {
       <p className="eyebrow">Step 1</p>
       <h1 className="h2">Choose your headshots.</h1>
       <p className="section__lede">
-        Pick your looks and attire, and tell us where to send the results.
+        Pick your plan, background, and attire, and tell us where to send the results.
       </p>
 
-      <h3 className="gen-subhead">Looks</h3>
-      <p className="gen-hint">Choose one or more scenes. We spread your set across them.</p>
+      <h3 className="gen-subhead">Plan</h3>
+      <p className="gen-hint">One time, no subscription. Choose how many headshots you want.</p>
+      <div className="plans" role="radiogroup" aria-label="Pricing plan">
+        {TIERS.map((t) => {
+          const on = tier === t.id;
+          return (
+            <button
+              type="button"
+              key={t.id}
+              className={`plan${on ? ' plan--on' : ''}`}
+              role="radio"
+              aria-checked={on}
+              onClick={() => pickTier(t.id)}
+            >
+              {t.popular && <span className="plan__badge">Most popular</span>}
+              <span className="plan__name">{t.label}</span>
+              <span className="plan__price">{usd(t.priceCents)}</span>
+              <span className="plan__meta">{t.deliverCount} headshots</span>
+              <span className="plan__meta">{TURNAROUND[t.id]}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      <h3 className="gen-subhead">Background</h3>
+      <p className="gen-hint">Choose one or more backgrounds. We spread your set across them.</p>
       <OptionGrid items={LOOKS} selected={looks} onToggle={toggleLook} showDesc />
 
       <h3 className="gen-subhead">Attire</h3>

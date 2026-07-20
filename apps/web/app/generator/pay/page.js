@@ -4,9 +4,13 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { LOOKS, ATTIRE, AGE_RANGES, GENDERS, RACES, FACIAL_HAIR } from '@picturesk/shared/catalog';
+import { getTier } from '@picturesk/shared/pricing';
 import { readState } from '../../../lib/generator';
 import { createCheckout } from '../../../lib/api';
 import { track, EVENTS } from '../../../lib/analytics';
+
+// Whole-dollar price from integer cents (our tier prices are round dollars).
+const usd = (cents) => `$${Math.round(cents / 100)}`;
 
 const LOOK_LABEL = Object.fromEntries(LOOKS.map((l) => [l.id, l.label]));
 const ATTIRE_LABEL = Object.fromEntries(ATTIRE.map((a) => [a.id, a.label]));
@@ -38,6 +42,9 @@ export default function PayPage() {
 
   if (!state) return null;
 
+  // The plan is chosen on the Select step; here we only show it and charge it.
+  const selectedTier = getTier(state.tier);
+
   async function onPay() {
     if (busy) return;
     setBusy(true);
@@ -54,6 +61,7 @@ export default function PayPage() {
         race: state.race,
         facialHair: state.facialHair,
         uploadedImageUrls: state.images,
+        tier: state.tier,
       });
       // Best-effort: link the order to the logged-in account (no-op if anonymous).
       await fetch('/api/orders/link', {
@@ -84,11 +92,17 @@ export default function PayPage() {
     <section>
       <p className="eyebrow">Step 3</p>
       <h1 className="h2">Review and pay.</h1>
-      <p className="section__lede">One price, thirty-five dollars. No subscription.</p>
+      <p className="section__lede">One time. No subscription.</p>
 
       <dl className="review">
         <div className="review__row">
-          <dt className="review__k">Looks</dt>
+          <dt className="review__k">Plan</dt>
+          <dd className="review__v">
+            {selectedTier.label}, {selectedTier.deliverCount} headshots, {usd(selectedTier.priceCents)}
+          </dd>
+        </div>
+        <div className="review__row">
+          <dt className="review__k">Background</dt>
           <dd className="review__v">{state.looks.map((id) => LOOK_LABEL[id]).join(', ')}</dd>
         </div>
         <div className="review__row">
@@ -123,7 +137,8 @@ export default function PayPage() {
           Back
         </Link>
         <button className="btn btn--primary" type="button" disabled={busy} onClick={onPay}>
-          {busy ? 'Taking you to payment' : 'Pay and start'} <span className="btn__price">$35</span>
+          {busy ? 'Taking you to payment' : 'Pay and start'}{' '}
+          <span className="btn__price">{usd(selectedTier.priceCents)}</span>
         </button>
       </div>
 

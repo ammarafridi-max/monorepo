@@ -14,7 +14,12 @@ import * as Sentry from '@sentry/node';
  * NO DSN => never initialised, every Sentry.* call is a safe no-op, so local dev
  * (and the test suite) runs exactly as before.
  */
-dotenv.config({ path: resolve(dirname(fileURLToPath(import.meta.url)), '../../.env') });
+dotenv.config({
+  path: resolve(
+    dirname(fileURLToPath(import.meta.url)),
+    `../../.env.${process.env.NODE_ENV || 'development'}`,
+  ),
+});
 
 const dsn = process.env.SENTRY_DSN;
 export const sentryEnabled = Boolean(dsn);

@@ -32,7 +32,7 @@ export const looks = [
 ];
 
 export const included = [
-  'Seven headshots, one per look',
+  '25 to 120 headshots, depending on your plan',
   'High-resolution square JPGs, 1:1',
   'A model trained on your own face',
   'Delivered by email in about an hour',
@@ -41,7 +41,7 @@ export const included = [
 ];
 
 export const price = {
-  amount: '$35',
+  amount: 'from $29',
   cadence: 'one time',
-  note: 'No subscription. No account required to buy.',
+  note: 'Three plans, no subscription. No account required to buy.',
 };

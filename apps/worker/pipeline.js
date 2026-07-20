@@ -67,7 +67,31 @@ export const DEFAULT_MAX_TRAINING_RESTARTS = 1;
  * @param {number} [opts.pollIntervalMs]
  * @param {number} [opts.trainingMaxWaitMs]
  * @param {number} [opts.generationMaxWaitMs]
+ * @param {number} [opts.scoreConcurrency] - how many candidates to identity-score
+ *        at once (default 6). Scoring is I/O-bound (a CPU embed call per candidate),
+ *        so a bounded fan-out is far faster than one-at-a-time without stressing the
+ *        model. Set via SCORE_CONCURRENCY.
  */
+
+/**
+ * Run `fn` over `items` with at most `limit` in flight at once, preserving order.
+ * Single-threaded JS means the per-item callbacks can safely mutate a shared array
+ * at distinct indices with no lock. (Mirrors the api's upload-gate mapWithLimit.)
+ */
+async function mapWithLimit(items, limit, fn) {
+  const results = new Array(items.length);
+  let next = 0;
+  const size = Math.max(1, Math.min(limit, items.length));
+  async function worker() {
+    while (next < items.length) {
+      const i = next++;
+      results[i] = await fn(items[i], i);
+    }
+  }
+  await Promise.all(Array.from({ length: size }, worker));
+  return results;
+}
+
 export function createPipeline({
   client,
   buildPrompts,
@@ -77,6 +101,9 @@ export function createPipeline({
   persistImage,
   generateCount = 14,
   deliverCount = 14,
+  scoreConcurrency = 6,
+  cullingEnabled = false,
+  overgenerateFactor = 1.5,
   resolveTrainingZip,
   imageZipUrl,
   onDelivered,
@@ -87,9 +114,22 @@ export function createPipeline({
   maxTrainingRestarts = DEFAULT_MAX_TRAINING_RESTARTS,
   generationMaxWaitMs = DEFAULT_GENERATION_MAX_WAIT_MS,
 }) {
-  // Never try to deliver more than we generate. index.js asserts this at startup
-  // from env; clamp here too so the pipeline is safe however it is constructed.
-  const deliverN = Math.min(deliverCount, generateCount);
+  // How many to DELIVER for an order, from its purchased tier (order.deliverCount),
+  // falling back to the pipeline default for legacy pre-tier orders.
+  const deliverCountFor = (order) => order?.deliverCount ?? deliverCount;
+
+  // How many CANDIDATES to generate. When culling is ON we overgenerate so scoring
+  // has spare candidates to drop the worst and still deliver the full count; when
+  // OFF (e.g. prod today) we generate EXACTLY what we deliver -- no wasted images,
+  // since with no scorer culling would keep them all anyway. `order.generateCount`
+  // (the tier snapshot, == deliverCount) is the fallback for legacy/no-cull paths.
+  const genCountFor = (order) =>
+    cullingEnabled
+      ? Math.ceil(deliverCountFor(order) * overgenerateFactor)
+      : (order?.generateCount ?? generateCount);
+
+  // Never deliver more than we generated (guards odd factor/count combinations).
+  const deliverNFor = (order) => Math.min(deliverCountFor(order), genCountFor(order));
   /**
    * Poll one Replicate resource to a terminal state. Returns the final snapshot
    * ('succeeded' or 'failed'); throws if it never settles within maxWaitMs. The
@@ -253,15 +293,20 @@ export function createPipeline({
     const generationIds = [...(order.replicate?.generationIds ?? [])];
     const resultImageUrls = [...(order.resultImageUrls ?? [])];
 
+    // How many candidates THIS order generates, from its purchased tier (falls back
+    // to the pipeline default for legacy pre-tier orders).
+    const genCount = genCountFor(order);
+
     // Build THIS order's prompts from its selected looks/attire (shared catalog).
-    // One prompt per candidate slot; if the list is shorter than generateCount the
-    // slots cycle through it (prompts[i % prompts.length]).
-    const prompts = buildPrompts(order);
+    // One prompt per candidate slot; if the list is shorter than genCount the
+    // slots cycle through it (prompts[i % prompts.length]). Pass genCount so the
+    // prompt count always matches the generation loop (esp. under overgeneration).
+    const prompts = buildPrompts(order, genCount);
 
     // Pass 1: ensure every candidate slot has a started prediction, persisting
     // each id BEFORE any polling so a crash reattaches instead of regenerating.
     // Slots that already carry an id are skipped -> never double-started.
-    for (let i = 0; i < generateCount; i++) {
+    for (let i = 0; i < genCount; i++) {
       if (generationIds[i]) continue;
       const prompt = prompts[i % prompts.length];
       const { predictionId } = await client.startGeneration(modelVersion, prompt);
@@ -278,7 +323,7 @@ export function createPipeline({
     // Pass 2: collect each still-missing image by REATTACHING to its existing
     // predictionId. Never starts a generation here. Persists per slot so finished
     // work survives a crash and is never re-collected (nor its cost double-counted).
-    for (let i = 0; i < generateCount; i++) {
+    for (let i = 0; i < genCount; i++) {
       if (resultImageUrls[i]) continue;
       const predictionId = generationIds[i];
       // Invariant: pass 1 guarantees every slot has an id before we poll.
@@ -302,7 +347,7 @@ export function createPipeline({
           $inc: { computeCostCents: usdToCents(result.costUsd) },
         }
       );
-      console.log(`[worker] order ${orderId} candidate ${i} done (${i + 1}/${generateCount})`);
+      console.log(`[worker] order ${orderId} candidate ${i} done (${i + 1}/${genCount})`);
     }
 
     // All candidates are in. Score + choose the delivered set, then transition.
@@ -335,23 +380,50 @@ export function createPipeline({
   async function selectAndDeliver(orderId, order, resultImageUrls) {
     const references = order.uploadedImageUrls ?? [];
     const scores = [...(order.candidateScores ?? [])];
+    // How many to ship for THIS order, from its purchased tier (falls back to the
+    // pipeline default for legacy pre-tier orders); never more than we generated.
+    const deliverN = deliverNFor(order);
 
+    // Which candidate slots still need a score. Already-scored slots survive a
+    // restart untouched (resumable), so we only ever score the remainder.
+    const todo = [];
     for (let i = 0; i < resultImageUrls.length; i++) {
-      if (scores[i]) continue; // already scored this candidate -> never re-score
-      const { score, costUsd } = await scoreIdentity(resultImageUrls[i], references);
-      scores[i] = { imageUrl: resultImageUrls[i], score };
-      // Whole array (not a positional path) for the same object-vs-array reason
-      // as generationIds/resultImageUrls. Persisted before the next score so a
-      // crash resumes at the first unscored candidate and its cost lands once.
+      if (!scores[i]) todo.push(i);
+    }
+
+    if (todo.length) {
+      let costAccum = 0;
+      const scoreOne = async (i) => {
+        const { score, costUsd } = await scoreIdentity(resultImageUrls[i], references);
+        // Distinct index, single-threaded JS: safe to write from parallel workers.
+        scores[i] = { imageUrl: resultImageUrls[i], score };
+        costAccum += costUsd ?? 0;
+      };
+
+      // WARM-UP: score the first candidate alone. This cold-boots the CPU embed
+      // model once and populates scoreIdentity's reference-embedding cache, so the
+      // parallel fan-out below runs warm and never re-embeds the selfies N times
+      // (which is exactly what a cold parallel start would do).
+      await scoreOne(todo[0]);
+      // PARALLEL: score the rest with bounded concurrency.
+      await mapWithLimit(todo.slice(1), scoreConcurrency, scoreOne);
+
+      // BATCHED PERSIST: one write for the whole scored set (+ accumulated cost),
+      // instead of a write per candidate. The tradeoff vs per-candidate writes: a
+      // crash before this write re-scores the unscored candidates on the next
+      // attempt, which is cheap now that scoring is parallel. Whole array (not a
+      // positional path) for the same object-vs-array reason as resultImageUrls.
       await Order.updateOne(
         { _id: orderId },
         {
           $set: { candidateScores: scores },
-          $inc: { computeCostCents: usdToCents(costUsd) },
+          $inc: { computeCostCents: usdToCents(costAccum) },
         }
       );
       console.log(
-        `[worker] order ${orderId} candidate ${i} identity score ${score.toFixed(4)}`
+        `[worker] order ${orderId} scored ${todo.length} candidate${
+          todo.length === 1 ? '' : 's'
+        } (concurrency ${scoreConcurrency})`
       );
     }
 

@@ -21,7 +21,12 @@ import dotenv from 'dotenv';
 import { connectMongo, AdminUser } from '@picturesk/shared';
 import { hashPassword } from '../admin/authService.js';
 
-dotenv.config({ path: resolve(dirname(fileURLToPath(import.meta.url)), '../../../.env') });
+dotenv.config({
+  path: resolve(
+    dirname(fileURLToPath(import.meta.url)),
+    `../../../.env.${process.env.NODE_ENV || 'development'}`,
+  ),
+});
 
 const { MONGODB_URI } = process.env;
 if (!MONGODB_URI) {

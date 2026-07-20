@@ -12,7 +12,9 @@
  * leave it '' to render a placeholder, and drop in a real image URL later.
  */
 
-/** @typedef {{ id: string, label: string, description: string, promptFragment: string, image: string }} Look */
+/** @typedef {{ id: string, label: string, description: string, promptFragment: string, image: string, swatch?: string }} Look */
+// `swatch` is a solid CSS color the UI shows as the preview when there is no real
+// `image` yet -- for a background option, the backdrop tone is a fair stand-in.
 /** @typedef {{ id: string, label: string, promptFragment: string, image: string }} Attire */
 
 /** @type {readonly Look[]} */
@@ -22,44 +24,111 @@ export const LOOKS = Object.freeze([
     label: 'Corporate studio',
     description: 'Neutral grey seamless, soft key light.',
     promptFragment: 'against a neutral grey seamless studio backdrop, soft key lighting',
-    image: '/corporate-business.jpg',
+    image: '/corporate-studio.jpg',
   },
   {
     id: 'office_environment',
     label: 'In-office',
     description: 'A modern office, softly blurred behind you.',
     promptFragment: 'in a modern office interior, softly blurred background bokeh, natural indoor light',
-    image: '/office-formal.jpg',
+    image: '/in-office.jpg',
   },
   {
     id: 'outdoor_professional',
     label: 'Outdoor',
     description: 'Natural daylight, soft city or greenery behind.',
     promptFragment: 'outdoors in natural daylight, softly blurred city and greenery background',
-    image: '/outdoor-sweater.jpg',
+    image: '/outdoor.jpg',
   },
   {
     id: 'dramatic_studio',
     label: 'Dramatic studio',
     description: 'Dark, low-key background with rim light.',
     promptFragment: 'against a dark low-key studio background, dramatic rim lighting',
-    image: '',
+    image: '/dramatic-studio.jpg',
+    swatch: '#1b1b20',
   },
   {
     id: 'bright_natural',
     label: 'Bright and natural',
     description: 'Window light, airy and clean.',
     promptFragment: 'in bright natural window light, airy and clean light background',
-    image: '',
+    image: '/bright-natural.jpg',
+    swatch: '#f1efe9',
+  },
+  {
+    id: 'white_studio',
+    label: 'White studio',
+    description: 'Clean white seamless, high-key.',
+    promptFragment: 'against a clean white seamless studio backdrop, bright high-key lighting',
+    image: '/white-studio.jpg',
+    swatch: '#f6f5f1',
+  },
+  {
+    id: 'blue_gradient',
+    label: 'Blue studio',
+    description: 'Cool blue studio backdrop.',
+    promptFragment: 'against a smooth blue gradient studio backdrop, even soft lighting',
+    image: '/blue-studio.jpg',
+    swatch: '#3d5c86',
+  },
+  {
+    id: 'warm_neutral',
+    label: 'Warm neutral',
+    description: 'Soft beige backdrop, warm tone.',
+    promptFragment: 'against a warm neutral beige studio backdrop, soft flattering light',
+    image: '/warm-neutral.jpg',
+    swatch: '#e7ddcd',
+  },
+  {
+    id: 'library_bookshelf',
+    label: 'Library',
+    description: 'Warm bookshelves, softly blurred.',
+    promptFragment: 'in front of a warm wooden bookshelf, softly blurred background, cozy indoor lighting',
+    image: '/library.jpg',
+    swatch: '#6a4c31',
+  },
+  {
+    id: 'urban_brick',
+    label: 'Urban brick',
+    description: 'Textured brick wall, city feel.',
+    promptFragment: 'against a textured exposed brick wall, soft directional daylight',
+    image: '/urban-brick.jpg',
+    swatch: '#9d5a44',
+  },
+  {
+    id: 'greenery',
+    label: 'Greenery',
+    description: 'Lush green foliage outdoors.',
+    promptFragment: 'outdoors against lush green foliage, soft natural daylight, blurred background',
+    image: '/greenery.jpg',
+    swatch: '#3f6b4a',
   },
 ]);
 
 /** @type {readonly Attire[]} */
+// Ordered dressiest -> most casual. Every fragment is gender-neutral: the gender
+// anchor (buildSubject) decides the cut, so "business suit" / "black-tie attire"
+// render correctly for any subject. Keep it that way unless we add gender-conditional
+// attire (which would unlock gendered garments like gowns or cultural formal wear).
 export const ATTIRE = Object.freeze([
+  {
+    id: 'black_tie',
+    label: 'Black tie',
+    // Neutral wording so the gender anchor renders a tux or an evening gown.
+    promptFragment: 'wearing elegant black-tie evening attire',
+    image: '',
+  },
   {
     id: 'business_suit',
     label: 'Business suit',
     promptFragment: 'wearing a well-tailored business suit',
+    image: '',
+  },
+  {
+    id: 'three_piece',
+    label: 'Three-piece suit',
+    promptFragment: 'wearing a tailored three-piece suit with a waistcoat',
     image: '',
   },
   {
@@ -69,23 +138,27 @@ export const ATTIRE = Object.freeze([
     image: '',
   },
   {
-    id: 'smart_knit',
-    label: 'Smart knit or sweater',
-    promptFragment: 'wearing a smart knit sweater over a collared shirt',
-    image: '/outdoor-sweater.jpg',
-  },
-  {
     id: 'blazer_tee',
     label: 'Blazer over tee',
     promptFragment: 'wearing a tailored blazer over a plain tee',
     image: '',
   },
   {
-    id: 'formal_traditional',
-    label: 'Formal',
-    // Deliberately neutral so it flatters any wardrobe/background rather than
-    // forcing a specific garment.
-    promptFragment: 'wearing polished, formal professional attire',
+    id: 'polo',
+    label: 'Polo shirt',
+    promptFragment: 'wearing a smart fitted polo shirt',
+    image: '',
+  },
+  {
+    id: 'smart_knit',
+    label: 'Smart knit or sweater',
+    promptFragment: 'wearing a smart knit sweater over a collared shirt',
+    image: '/outdoor-sweater.jpg',
+  },
+  {
+    id: 'turtleneck',
+    label: 'Turtleneck',
+    promptFragment: 'wearing a fitted dark turtleneck',
     image: '',
   },
 ]);

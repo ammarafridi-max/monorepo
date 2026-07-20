@@ -8,7 +8,7 @@ export default function WhatYouGet() {
     <section className="section get">
       <div className="container">
         <p className="eyebrow">What you get</p>
-        <h2 className="h2">Seven finished headshots, ready to use.</h2>
+        <h2 className="h2">Finished headshots, ready to use.</h2>
         <p className="section__lede">
           One upload, a set of distinct professional looks. No shoot, no studio, no
           waiting on a photographer.

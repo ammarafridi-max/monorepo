@@ -15,7 +15,10 @@ import * as Sentry from '@sentry/node';
  * so local dev without a DSN boots and runs exactly as before.
  */
 dotenv.config({
-  path: resolve(dirname(fileURLToPath(import.meta.url)), '../../.env'),
+  path: resolve(
+    dirname(fileURLToPath(import.meta.url)),
+    `../../.env.${process.env.NODE_ENV || 'development'}`,
+  ),
 });
 
 const dsn = process.env.SENTRY_DSN;

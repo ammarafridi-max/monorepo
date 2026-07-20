@@ -16,8 +16,9 @@ export default function SiteChrome({ authed, children }) {
   return (
     <>
       <header className="topbar">
-        <a className="brand" href="/">
-          Picturesk.ai
+        <a className="brand" href="/" aria-label="Picturesk.ai home">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="brand__logo" src="/logo.png" alt="Picturesk.ai" />
         </a>
         <nav className="nav">
           {authed ? (

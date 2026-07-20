@@ -6,7 +6,8 @@
   "main": "src/index.js",
   "exports": {
     ".": "./src/index.js",
-    "./catalog": "./src/catalog.js"
+    "./catalog": "./src/catalog.js",
+    "./pricing": "./src/pricing.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.637.0",

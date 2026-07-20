@@ -34,7 +34,7 @@ export default function HomePage() {
               </p>
               <p style={{ marginTop: 24 }}>
                 <a className="btn btn--primary" href="/generator/select">
-                  Get my headshots <span className="btn__price">$35</span>
+                  Get my headshots <span className="btn__price">from $29</span>
                 </a>
               </p>
             </div>

@@ -11,6 +11,19 @@ dotenv.config({ path: resolve(dirname(fileURLToPath(import.meta.url)), '../../.e
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Canonical host is www.picturesk.ai. Any request that arrives on the bare apex
+  // (picturesk.ai) is 308-redirected to the www host, preserving the path. Matches
+  // on the Host header, so it never touches fly.dev or localhost traffic.
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'picturesk.ai' }],
+        destination: 'https://www.picturesk.ai/:path*',
+        permanent: true,
+      },
+    ];
+  },
   // Keep these server-only packages out of the bundler (mongoose in particular
   // misbehaves when bundled). They load from node_modules at runtime, on the
   // Node.js server only.

@@ -25,6 +25,7 @@ export {
   isValidRace,
   isValidFacialHair,
 } from './catalog.js';
+export { TIERS, DEFAULT_TIER, getTier, isValidTier } from './pricing.js';
 export { Order } from './orderModel.js';
 export { User } from './userModel.js';
 export { AdminUser } from './adminUserModel.js';

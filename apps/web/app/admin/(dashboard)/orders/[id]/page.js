@@ -129,7 +129,7 @@ export default function OrderDetailPage() {
           <div className="adm-card__head">
             <h2>Request</h2>
           </div>
-          <Row label="Looks">{order.selectedLooks?.join(', ')}</Row>
+          <Row label="Background">{order.selectedLooks?.join(', ')}</Row>
           <Row label="Attire">{order.selectedAttire?.join(', ')}</Row>
           <Row label="Subject">{choices}</Row>
           <Row label="Account">{order.userId ? 'Yes' : 'Guest'}</Row>

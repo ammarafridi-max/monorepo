@@ -181,6 +181,9 @@ console.log(
 console.log(
   `[worker] generation backend: ${USE_PULID ? 'pulid (no training; reference-image identity)' : 'lora'}`
 );
+console.log(
+  `[worker] counts per order from its pricing tier; fallback for legacy orders: generate=${GENERATE_COUNT} deliver=${DELIVER_COUNT}`
+);
 
 await connectMongo(MONGODB_URI);
 console.log('[worker] connected to MongoDB');
@@ -301,11 +304,13 @@ const subjectAnchorFor = (order) => {
 // GENERATE_COUNT prompts via the SHARED catalog buildPrompts, the single source
 // of truth the web also renders its options from, so shown options can never
 // drift from what we generate.
-const buildOrderPrompts = (order) =>
+const buildOrderPrompts = (order, count) =>
   buildPrompts({
     looks: order.selectedLooks ?? [],
     attire: order.selectedAttire ?? [],
-    count: GENERATE_COUNT,
+    // The pipeline passes the effective candidate count (which accounts for culling
+    // overgeneration); fall back to the tier snapshot / env for older call sites.
+    count: count ?? order.generateCount ?? GENERATE_COUNT,
     subjectAnchor: subjectAnchorFor(order),
   });
 
@@ -318,6 +323,13 @@ const pipeline = createPipeline({
   persistImage,
   generateCount: GENERATE_COUNT,
   deliverCount: DELIVER_COUNT,
+  // How many candidates to identity-score at once (culling). Scoring is a CPU embed
+  // call per candidate, so a bounded fan-out is far faster than one-at-a-time.
+  scoreConcurrency: Number(process.env.SCORE_CONCURRENCY) || 6,
+  // Overgenerate ONLY when culling is on, so scoring has spare candidates to cull.
+  // With culling off (e.g. prod), generation stays == deliverCount (no waste).
+  cullingEnabled: IDENTITY_SCORING,
+  overgenerateFactor: Number(process.env.OVERGENERATE_FACTOR) || 1.5,
   // Wedged-training recovery: if a training sits in "starting" (no hardware) longer
   // than this, cancel it and start a fresh one, up to this many times, instead of
   // waiting the full training window on a training Replicate never allocated.
@@ -333,6 +345,14 @@ const pipeline = createPipeline({
 
 const connection = createRedisConnection(REDIS_URL);
 
+// How many orders this worker process runs at once. An order is almost entirely
+// spent AWAITING Replicate (training + generation polls), so a single process can
+// hold many of these loops open cheaply -- raising this parallelises orders instead
+// of processing them strictly one at a time. The real ceiling is Replicate's rate
+// limit + your account CREDIT (each concurrent order is a live GPU spend), not the
+// worker. Default 1 (serial) so nothing changes until you opt in. Tune via the env.
+const WORKER_CONCURRENCY = Number(process.env.WORKER_CONCURRENCY) || 1;
+
 const worker = new Worker(
   QUEUE_NAMES.ORDER_PIPELINE,
   async (job) => {
@@ -342,7 +362,7 @@ const worker = new Worker(
   },
   {
     connection,
-    concurrency: 1,
+    concurrency: WORKER_CONCURRENCY,
     // Redis-frugal settings for a LOW-VOLUME queue. An idle BullMQ worker polls
     // Redis constantly (fetch + stalled-check + lock-renew), which alone can exhaust
     // a small managed-Redis quota with zero traffic. Since orders are infrequent and
@@ -407,4 +427,6 @@ worker.on('failed', async (job, err) => {
   }
 });
 
-console.log(`[worker] started, listening on '${QUEUE_NAMES.ORDER_PIPELINE}' (concurrency 1)`);
+console.log(
+  `[worker] started, listening on '${QUEUE_NAMES.ORDER_PIPELINE}' (concurrency ${WORKER_CONCURRENCY})`
+);

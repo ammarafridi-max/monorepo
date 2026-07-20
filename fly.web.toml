@@ -8,7 +8,9 @@ primary_region = "iad"
   # Rebuild (redeploy) the web app after changing any of these.
   [build.args]
     # REQUIRED: the deployed API's public origin (the browser calls it directly).
-    NEXT_PUBLIC_API_BASE_URL = "https://picturesk-api.fly.dev"
+    NEXT_PUBLIC_API_BASE_URL = "https://api.picturesk.ai"
+    # GA4 measurement ID. Inlined at build; a web redeploy is required to change it.
+    NEXT_PUBLIC_GA_ID = "G-V68VHN1XSX"
     # Optional (code defaults shown). Keep in sync with the API's UPLOAD_* values.
     # NEXT_PUBLIC_UPLOAD_MIN_PHOTOS = "5"
     # NEXT_PUBLIC_UPLOAD_MAX_PHOTOS = "15"

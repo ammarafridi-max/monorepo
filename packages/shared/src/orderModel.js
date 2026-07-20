@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import { ORDER_STATES } from './orderStates.js';
+import { DEFAULT_TIER } from './pricing.js';
 
 /**
  * Mongoose schema + model for an Order.
@@ -65,6 +66,15 @@ const orderSchema = new Schema(
     // Integer cents, never a float. Taken straight from Stripe amount_total.
     // Divide by 100 only at display time.
     amountPaidCents: Number,
+
+    // The purchased pricing tier (id from @picturesk/shared pricing.js), plus a
+    // SNAPSHOT of its numeric levers taken at checkout. We store the snapshot, not
+    // just the id, so a later change to the tier catalog never mutates an in-flight
+    // order: the worker reads deliverCount/generateCount straight off the order.
+    // Legacy orders predate tiers and leave these unset (worker falls back to env).
+    tier: { type: String, default: DEFAULT_TIER, index: true },
+    deliverCount: Number,
+    generateCount: Number,
 
     // Idempotency anchor: one Stripe Checkout session maps to at most one order.
     stripeSessionId: { type: String, unique: true, sparse: true },

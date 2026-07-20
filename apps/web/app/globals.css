@@ -64,9 +64,11 @@ a {
 }
 
 .topbar {
-  max-width: 960px;
+  /* Match the page .container (max-width + side padding) so the navbar edges line
+     up with the Hero and the rest of the content. */
+  max-width: 1040px;
   margin: 0 auto;
-  padding: 28px 24px 0;
+  padding: 28px clamp(20px, 5vw, 24px) 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -79,6 +81,20 @@ a {
   letter-spacing: -0.01em;
   color: var(--ink);
   text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+/* The wordmark logo in the header. Height-driven so it scales cleanly; width auto
+   keeps the aspect ratio. Slightly smaller on narrow screens. */
+.brand__logo {
+  height: 30px;
+  width: auto;
+  display: block;
+}
+@media (max-width: 560px) {
+  .brand__logo {
+    height: 26px;
+  }
 }
 
 .nav {
@@ -366,6 +382,23 @@ a {
   position: absolute;
   inset: 0;
   background: rgba(250, 249, 246, 0.55);
+}
+
+/* An accepted photo: a small green check, top-left (opposite the remove button). */
+.thumb--ok {
+  border-color: var(--ok);
+}
+.thumb__check {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--ok);
+  color: var(--bone);
 }
 
 .field {
@@ -1381,6 +1414,29 @@ a {
   margin-top: 16px;
 }
 
+/* On small screens the grid eats too much vertical space, so switch to a horizontal
+   swipe slider that shows ~2.2 cards at a time (the partial third hints there's more
+   to swipe). Scroll-snap keeps it feeling deliberate; no JS/library needed. */
+@media (max-width: 560px) {
+  .cards {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    gap: 10px;
+    /* a touch of end padding so the last card can snap fully into view */
+    scroll-padding-inline: 0;
+    scrollbar-width: none; /* Firefox: hide the bar, the peeking card is the cue */
+  }
+  .cards::-webkit-scrollbar {
+    display: none; /* WebKit */
+  }
+  .cards > * {
+    flex: 0 0 44%; /* ~2.2 cards visible (100 / 44 ≈ 2.27) */
+    scroll-snap-align: start;
+  }
+}
+
 .option-card {
   position: relative;
   display: flex;
@@ -1426,6 +1482,13 @@ a {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ash);
+}
+/* Solid-color preview for a background option that has no photo yet: fills the
+   media area with the backdrop's tone. */
+.option-card__swatch {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .option-card__body {
@@ -1753,5 +1816,67 @@ a {
   .btn--primary:hover,
   .cta:hover:not(:disabled) {
     transform: none;
+  }
+}
+
+/* Pricing plans: single-select cards on the pay step. Mirrors .option-card.
+   Cobalt only marks the chosen plan and the "Most popular" badge (single accent). */
+.plans {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 4px 0 22px;
+}
+.plan {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fffdf9;
+  padding: 16px 16px 18px;
+  font: inherit;
+  color: var(--ink);
+  transition: border-color 0.14s ease, box-shadow 0.14s ease;
+}
+.plan:hover {
+  border-color: var(--ash);
+}
+.plan--on {
+  border-color: var(--cobalt);
+  box-shadow: inset 0 0 0 1px var(--cobalt);
+}
+.plan__name {
+  font-weight: 600;
+  font-size: 15px;
+}
+.plan__price {
+  font-family: var(--serif, Georgia, serif);
+  font-size: 30px;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+.plan__meta {
+  font-size: 13px;
+  color: var(--ash);
+}
+.plan__badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--cobalt);
+  border: 1px solid var(--cobalt);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+@media (max-width: 640px) {
+  .plans {
+    grid-template-columns: 1fr;
   }
 }

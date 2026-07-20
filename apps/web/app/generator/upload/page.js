@@ -121,45 +121,68 @@ export default function UploadPage() {
     }
   }, [badCount]);
 
+  // Promote a passed 'new' item to an accepted 'existing' one: it now carries its R2
+  // URL, shows the green tick, and is never re-uploaded or re-screened again.
+  const accept = (it, url) => {
+    URL.revokeObjectURL(it.url);
+    return { ...it, kind: 'existing', url, file: undefined, status: 'ok', reason: null };
+  };
+
   async function onContinue() {
     if (!canContinue) return;
     setError('');
+
+    // Only genuinely-new photos need uploading + screening. Photos already accepted
+    // (kind 'existing') were screened once and are carried through untouched: no
+    // re-upload, no re-check. This is what makes "remove a flagged photo and retry"
+    // fast, and it keeps the green ticks on everything that already passed.
+    const pending = items.filter((it) => it.kind === 'new');
+
     try {
-      setPhase('uploading');
-      const newItems = items.filter((it) => it.kind === 'new');
-      let urlByNewId = new Map();
-      if (newItems.length) {
-        const files = newItems.map((it) => it.file);
+      let urlById = new Map();
+      if (pending.length) {
+        setPhase('uploading');
+        const files = pending.map((it) => it.file);
         const { uploads } = await presignUploads(files);
         await Promise.all(uploads.map((u, i) => putToStorage(u.uploadUrl, files[i])));
-        urlByNewId = new Map(newItems.map((it, i) => [it.id, uploads[i].publicUrl]));
-      }
-      // Preserve on-screen order across existing + newly uploaded photos.
-      const images = items.map((it) => (it.kind === 'existing' ? it.url : urlByNewId.get(it.id)));
-      writeState({ images });
+        urlById = new Map(pending.map((it, i) => [it.id, uploads[i].publicUrl]));
 
-      // Run the SERVER gate here (not on the pay button), so the slow evaluation
-      // happens with a "Checking your photos" state and /checkout is then instant.
-      setPhase('checking');
-      await gateUploads(images);
+        // Screen ONLY the new uploads. (Checkout re-runs the gate on the full set as a
+        // backstop, but already-accepted URLs are cache hits there, so it stays instant.)
+        setPhase('checking');
+        try {
+          await gateUploads(pending.map((it) => urlById.get(it.id)));
+        } catch (err) {
+          if (err.status === 422) {
+            // Failures are indexed into the pending set we just sent. The pending items
+            // NOT in that set passed -> promote them (green tick); flag the rest.
+            const badByIdx = new Map((err.body?.failures || []).map((f) => [f.index, f.reason]));
+            setItems((prev) =>
+              prev.map((it) => {
+                const idx = pending.findIndex((p) => p.id === it.id);
+                if (idx === -1) return it; // already-accepted photo, untouched
+                if (badByIdx.has(idx)) return { ...it, status: 'bad', reason: badByIdx.get(idx) };
+                return accept(it, urlById.get(it.id));
+              })
+            );
+            setError(
+              err.body?.countError ||
+                'Some photos did not pass our check. Replace the flagged ones and try again.'
+            );
+            setPhase('idle');
+            return;
+          }
+          throw err;
+        }
+      }
+
+      // Everything passed (or nothing new to check). Promote the new photos and carry
+      // the full ordered set to the pay step.
+      const finalItems = items.map((it) => (it.kind === 'new' ? accept(it, urlById.get(it.id)) : it));
+      setItems(finalItems);
+      writeState({ images: finalItems.map((it) => it.url) });
       router.push('/generator/pay');
     } catch (err) {
-      if (err.status === 422) {
-        // Flag the exact photos the server rejected, by their position in `images`.
-        const failures = err.body?.failures || [];
-        const byIndex = new Map(failures.map((f) => [f.index, f.reason]));
-        setItems((prev) =>
-          prev.map((it, i) =>
-            byIndex.has(i) ? { ...it, status: 'bad', reason: byIndex.get(i) } : it
-          )
-        );
-        setError(
-          err.body?.countError ||
-            'Some photos did not pass our check. Replace the flagged ones and try again.'
-        );
-        setPhase('idle');
-        return;
-      }
       setError(err.message || 'Something went wrong. Please try again.');
       setPhase('idle');
     }
@@ -246,11 +269,25 @@ export default function UploadPage() {
               <div
                 className={`thumb${it.status === 'bad' ? ' thumb--bad' : ''}${
                   it.status === 'checking' ? ' thumb--checking' : ''
-                }`}
+                }${it.status === 'ok' ? ' thumb--ok' : ''}`}
                 key={it.id}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={it.url} alt={`photo ${i + 1}`} />
+                {it.status === 'ok' && (
+                  <span className="thumb__check" role="img" aria-label="Accepted">
+                    <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true">
+                      <path
+                        d="M20 6 9 17l-5-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </span>
+                )}
                 {!busy && (
                   <button
                     type="button"

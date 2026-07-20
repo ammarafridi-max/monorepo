@@ -52,6 +52,7 @@ export async function createCheckout({
   race,
   facialHair,
   uploadedImageUrls,
+  tier,
 }) {
   const res = await fetch(`${API_BASE}/checkout`, {
     method: 'POST',
@@ -65,6 +66,7 @@ export async function createCheckout({
       race,
       facialHair,
       uploadedImageUrls,
+      tier,
     }),
   });
   return asJson(res);
