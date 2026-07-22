@@ -94,11 +94,11 @@ imported by both the api (to set the Stripe amount + stamp the order) and the we
 (via the mongoose-free `@picturesk/shared/pricing` subpath, to render the plan
 cards), so price, delivered count, and turnaround can never drift between them.
 
-| Tier | id | Price | Headshots | Turnaround (BullMQ priority) |
-|------|------|-------|-----------|------------------------------|
-| Starter | `starter` | $29 | 25 | standard (priority 3) |
-| Pro | `pro` | $45 | 60 | priority (2) |
-| Premium | `premium` | $79 | 120 | front of queue (1) |
+| Tier    | id        | Price | Headshots | Turnaround (BullMQ priority) |
+| ------- | --------- | ----- | --------- | ---------------------------- |
+| Starter | `starter` | $29   | 25        | standard (priority 3)        |
+| Pro     | `pro`     | $45   | 60        | priority (2)                 |
+| Premium | `premium` | $79   | 120       | front of queue (1)           |
 
 Each tier differs on three levers: **price** (`priceCents`), **delivered count**
 (`deliverCount` / `generateCount`), and **turnaround**. Turnaround is the BullMQ job
@@ -403,7 +403,7 @@ monorepo, right-sized to this repo (layered modules in `apps/api`, not DI packag
   api service, like the customer `User`).
 - **Auth (api):** `POST /auth/login` (email + password) issues a JWT in an httpOnly
   cookie `picturesk_admin` (`{id, role, type:'admin'}`); `GET /auth/me`, `POST
-  /auth/logout`, `PATCH /auth/update-password`. `protect` + `restrictTo(...roles)`
+/auth/logout`, `PATCH /auth/update-password`. `protect` + `restrictTo(...roles)`
   guard the routes. Set `ADMIN_JWT_SECRET` (`openssl rand -hex 32`) on the api;
   unset means `/auth` returns 503 (disabled).
 - **Data (api, read-only):** `GET /admin/orders` (list, `?status`/`?limit`, stuck +
@@ -429,9 +429,9 @@ monorepo, right-sized to this repo (layered modules in `apps/api`, not DI packag
 - **UI (web):** `/admin/login` then `/admin` (overview), `/admin/orders`,
   `/admin/orders/:id`, `/admin/customers`, `/admin/admins` (Team, admin only:
   create/edit/activate/delete staff + reset passwords), `/admin/account` (own profile
-  + password). Cookie is the credential (`credentials:'include'`); a client guard
-  redirects to login and hides admin-only nav from `support`. Not indexed. The
-  customer topbar/footer are hidden on `/admin`.
+  - password). Cookie is the credential (`credentials:'include'`); a client guard
+    redirects to login and hides admin-only nav from `support`. Not indexed. The
+    customer topbar/footer are hidden on `/admin`.
 - **Bootstrap the first admin:** set `ADMIN_JWT_SECRET` and a strong `SEED_PASSWORD`
   (plus optional `SEED_NAME/SEED_USERNAME/SEED_EMAIL`), then run
   `pnpm --filter @picturesk/api seed-admin` (idempotent: skips if any admin exists).
@@ -653,6 +653,7 @@ that scoring is parallel. This turns a slow one-at-a-time loop into a few fast w
 
 **Overgeneration is culling-gated.** How many candidates we generate is decided in
 the worker from whether culling is on, NOT baked into the order:
+
 - **Culling ON:** generate `ceil(deliverCount * OVERGENERATE_FACTOR)` candidates
   (factor default **1.5**), score them all, and deliver the best `deliverCount`.
 - **Culling OFF (e.g. prod today):** generate EXACTLY `deliverCount`. No overgeneration,
@@ -662,6 +663,7 @@ the worker from whether culling is on, NOT baked into the order:
 legacy pre-tier orders fall back to the `DELIVER_COUNT` / `GENERATE_COUNT` env defaults.
 
 **Enable / tune (worker env):**
+
 - `REPLICATE_FACE_EMBED_MODEL=owner/name:versionHash` turns culling ON (currently
   `ammarafridi-max/face-embed:<hash>`). Unset = OFF, delivery identical to before.
 - `OVERGENERATE_FACTOR` (default 1.5): the culling-ON multiplier above. Higher = better
@@ -735,6 +737,7 @@ that carries the reference-image URL forward through the pipeline's
 Because PuLID re-synthesizes the face (rather than pasting it like the swap), it
 needs the prompt to hold the beard and expression, or it drifts to a generic short
 beard and FLUX's toothy grin. Three things keep it faithful:
+
 - **Facial hair**: `buildSubject` names it from the customer's `facialHair` choice;
   when that is blank, the worker infers it from the reference selfie with a vision
   model (`classifyFacialHair.js`, Qwen2-VL) and stores `derivedFacialHair`, so the
