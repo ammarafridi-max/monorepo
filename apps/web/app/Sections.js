@@ -20,6 +20,21 @@ export default function Sections({ sections }) {
           <a href={s.link.href}>{s.link.text}</a>
         </p>
       )}
+      {s.links && (
+        <p className="prose__link">
+          {s.links.map((l, i) => (
+            <a
+              key={i}
+              href={l.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ marginRight: 16 }}
+            >
+              {l.text}
+            </a>
+          ))}
+        </p>
+      )}
     </section>
   ));
 }

@@ -14,6 +14,9 @@
  */
 
 export const LAST_UPDATED = 'July 9, 2026';
+// The privacy policy carries its own date so an analytics/cookies change does not
+// imply the terms or refund policy also changed.
+export const PRIVACY_UPDATED = 'July 22, 2026';
 
 // Placeholder support address, mirrored from the footer. Swap for the real inbox.
 // TODO: swap for the real support address before launch.
@@ -21,7 +24,7 @@ export const CONTACT_EMAIL = 'hello@picturesk.ai';
 export const RESPONSE_TIME = 'within two business days';
 
 export const privacy = {
-  updated: LAST_UPDATED,
+  updated: PRIVACY_UPDATED,
   lede: 'This explains what Picturesk collects, why, and who we work with. In plain terms: we use your photos only to make your headshots, with a small set of named providers.',
   sections: [
     {
@@ -38,6 +41,7 @@ export const privacy = {
       body: [
         'We use your photos for one purpose: to fine-tune a model on your face and generate your headshots. We do not use them to train any shared or general model, and we do not sell them.',
         'We use your email to deliver your results and send messages about your order. If you create an account, we use it to show you your past orders.',
+        'If you sign in with Google, we receive your email address from Google to create or open your account. We do not receive your Google password.',
       ],
     },
     {
@@ -48,6 +52,8 @@ export const privacy = {
         'Cloudflare R2, for storage. Your uploaded photos and generated headshots are stored here.',
         'Replicate, for model training and image generation. Your photos are sent to Replicate to train your model and produce your headshots.',
         'Brevo, for email. We use it to send your results link.',
+        'Google, for website analytics and for optional Google sign-in. Analytics data is shared only if you accept analytics cookies. If you sign in with Google, Google confirms your email address to us.',
+        'Microsoft, for Microsoft Clarity analytics and session replay. Data is shared only if you accept analytics cookies.',
       ],
     },
     {
@@ -59,7 +65,21 @@ export const privacy = {
     {
       h: 'Analytics',
       body: [
-        'We use privacy-light, cookieless analytics (Plausible) to measure how the site is used, for example how many people reach the upload step or complete an order. It sets no cookies, builds no cross-site profile, and collects no personal data. We never send your email, your photos, or your order contents to it. It counts steps in aggregate only, and it is disabled entirely unless configured.',
+        'To understand how the site is used, for example how many people reach the upload step or finish an order, we use two analytics tools: Google Analytics 4, provided by Google, and Microsoft Clarity, provided by Microsoft. Clarity also records anonymized replays and heatmaps of how people move through the pages, so we can find and fix steps that confuse people.',
+        'These tools set cookies and collect usage data such as your IP address, approximate location, device and browser, and the pages and actions in your visit. We configure Clarity to mask sensitive content, so your uploaded photos, your camera view, your generated headshots, and your email are hidden from its session replays.',
+        'These analytics tools are optional. They load only after you accept analytics cookies in our cookie banner, and declining has no effect on your order. We never send your email, your photos, or your order contents to them.',
+      ],
+      links: [
+        { text: 'Google Privacy Policy', href: 'https://policies.google.com/privacy' },
+        { text: 'Microsoft Privacy Statement', href: 'https://privacy.microsoft.com/privacystatement' },
+      ],
+    },
+    {
+      h: 'Cookies',
+      body: [
+        'We use a small number of essential cookies to run the site, for example to keep you signed in and to protect the sign-in flow. These are always on because the site cannot work without them.',
+        'We also use optional analytics cookies, from Google Analytics 4 and Microsoft Clarity, described above. These load only if you accept them. When you first visit you can accept or decline, and declining leaves everything except analytics working normally.',
+        'To change your choice later, clear this site\'s cookies and stored data in your browser and the banner will appear again on your next visit.',
       ],
     },
     {

@@ -3,9 +3,10 @@ import { dirname, resolve } from 'node:path';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import dotenv from 'dotenv';
 
-// Load the monorepo-root .env (same explicit-path pattern as the services).
+// Load the monorepo-root per-environment env file (same NODE_ENV pattern as the
+// services and the other diag scripts: .env.development locally, .env.production).
 const here = dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: resolve(here, '../../../.env') });
+dotenv.config({ path: resolve(here, `../../../.env.${process.env.NODE_ENV || 'development'}`) });
 
 import {
   PROMPTS,

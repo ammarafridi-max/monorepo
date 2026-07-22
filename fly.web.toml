@@ -11,6 +11,11 @@ primary_region = "iad"
     NEXT_PUBLIC_API_BASE_URL = "https://api.picturesk.ai"
     # GA4 measurement ID. Inlined at build; a web redeploy is required to change it.
     NEXT_PUBLIC_GA_ID = "G-V68VHN1XSX"
+    # Microsoft Clarity project id (session replay + heatmaps). Public client id,
+    # inlined at build; a web redeploy is required to change it. IMPORTANT: Clarity
+    # records session replays, so mask the face photos + email in the Clarity project
+    # privacy settings before relying on it.
+    NEXT_PUBLIC_CLARITY_ID = "xqj0zkf6z3"
     # Optional (code defaults shown). Keep in sync with the API's UPLOAD_* values.
     # NEXT_PUBLIC_UPLOAD_MIN_PHOTOS = "5"
     # NEXT_PUBLIC_UPLOAD_MAX_PHOTOS = "15"

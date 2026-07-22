@@ -284,7 +284,9 @@ export default function CapturePage() {
         <>
           <p className="capture__prompt">{POSES[stepIndex]?.label}</p>
           <p className="capture__hint">{POSES[stepIndex]?.hint}</p>
-          <div className="capture__stage">
+          {/* data-clarity-mask: this is the LIVE camera feed of the customer's face;
+              never record it in Clarity session replay. */}
+          <div className="capture__stage" data-clarity-mask="true">
             {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
             <video ref={videoRef} className="capture__video" autoPlay playsInline muted />
             <div className={`capture__ring capture__ring--${status}`} />
@@ -315,7 +317,8 @@ export default function CapturePage() {
       {phase === 'review' && (
         <>
           <p className="section__lede">Here is your set. Retake if any look off, then continue.</p>
-          <div className="thumbs">
+          {/* data-clarity-mask: captured face photos; keep them out of Clarity replay. */}
+          <div className="thumbs" data-clarity-mask="true">
             {captures.map((c, i) => (
               <div className="thumb" key={i}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -240,7 +240,9 @@ export default function SuccessView() {
               </a>
             )}
           </div>
-          <div className="gallery__grid">
+          {/* data-clarity-mask: the delivered headshots are the customer's face; never
+              record them in Clarity session replay. */}
+          <div className="gallery__grid" data-clarity-mask="true">
             {(order.resultImageUrls || []).map((url, i) => (
               <figure className="shot" key={url}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -296,7 +298,9 @@ export default function SuccessView() {
       )}
 
       <p className="formnote" style={{ textAlign: 'left', marginTop: 28 }}>
-        Order {order.orderId}. A copy of your results link goes to {order.customerEmail}.
+        Order {order.orderId}. A copy of your results link goes to{' '}
+        {/* data-clarity-mask: customer email (PII); keep it out of Clarity replay. */}
+        <span data-clarity-mask="true">{order.customerEmail}</span>.
       </p>
     </main>
   );

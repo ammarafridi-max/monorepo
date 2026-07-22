@@ -264,7 +264,9 @@ export default function UploadPage() {
         </div>
 
         {items.length > 0 && (
-          <div className="thumbs">
+          // data-clarity-mask: these are the customer's uploaded face photos; never
+          // record them in Clarity session replay (masked regardless of project mode).
+          <div className="thumbs" data-clarity-mask="true">
             {items.map((it, i) => (
               <div
                 className={`thumb${it.status === 'bad' ? ' thumb--bad' : ''}${

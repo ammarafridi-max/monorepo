@@ -62,7 +62,7 @@ import { mkdirSync, writeFileSync, readdirSync, statSync, rmSync, readFileSync a
 import dotenv from 'dotenv';
 
 const here = dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: resolve(here, '../../../.env') });
+dotenv.config({ path: resolve(here, `../../../.env.${process.env.NODE_ENV || 'development'}`) });
 
 import * as lora from '../replicateClient.js';
 import * as pulid from '../replicateClient.pulid.js';

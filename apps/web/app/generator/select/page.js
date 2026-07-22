@@ -219,6 +219,7 @@ export default function SelectPage() {
         <input
           id="email"
           className="input"
+          data-clarity-mask="true"
           type="email"
           inputMode="email"
           placeholder="you@work.com"

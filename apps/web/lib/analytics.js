@@ -18,6 +18,13 @@ export const ANALYTICS_SRC =
 // script is present.
 export const GA_ID = process.env.NEXT_PUBLIC_GA_ID || '';
 
+// Microsoft Clarity project id. Same opt-in, build-time-inlined shape as GA4.
+// Clarity is session replay + heatmaps, NOT just counts: enabling it records
+// REPLAYS of real sessions, so anything sensitive (the face photos and email on
+// the upload/capture/pay pages) must be masked in the Clarity project's privacy
+// settings (and/or via data-clarity-mask on those elements).
+export const CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_ID || '';
+
 export function plausibleEnabled() {
   return Boolean(ANALYTICS_DOMAIN);
 }
@@ -26,8 +33,12 @@ export function gaEnabled() {
   return Boolean(GA_ID);
 }
 
+export function clarityEnabled() {
+  return Boolean(CLARITY_ID);
+}
+
 export function analyticsEnabled() {
-  return plausibleEnabled() || gaEnabled();
+  return plausibleEnabled() || gaEnabled() || clarityEnabled();
 }
 
 /**
@@ -59,6 +70,13 @@ export function track(event, props) {
   if (typeof window.gtag === 'function') {
     try {
       window.gtag('event', event, props || {});
+    } catch {}
+  }
+  // Clarity custom event: tags the current session replay so funnel steps can be
+  // filtered/segmented in Clarity (e.g. watch only sessions that reached checkout).
+  if (typeof window.clarity === 'function') {
+    try {
+      window.clarity('event', event);
     } catch {}
   }
 }

@@ -103,11 +103,11 @@ export default function PayPage() {
         </div>
         <div className="review__row">
           <dt className="review__k">Background</dt>
-          <dd className="review__v">{state.looks.map((id) => LOOK_LABEL[id]).join(', ')}</dd>
+          <dd className="review__v">{state.looks.map((id) => LOOK_LABEL[id]).filter(Boolean).join(', ')}</dd>
         </div>
         <div className="review__row">
           <dt className="review__k">Attire</dt>
-          <dd className="review__v">{state.attire.map((id) => ATTIRE_LABEL[id]).join(', ')}</dd>
+          <dd className="review__v">{state.attire.map((id) => ATTIRE_LABEL[id]).filter(Boolean).join(', ')}</dd>
         </div>
         <div className="review__row">
           <dt className="review__k">You</dt>
@@ -128,7 +128,8 @@ export default function PayPage() {
         </div>
         <div className="review__row">
           <dt className="review__k">Email</dt>
-          <dd className="review__v">{state.email}</dd>
+          {/* data-clarity-mask: customer email (PII); keep it out of Clarity replay. */}
+          <dd className="review__v" data-clarity-mask="true">{state.email}</dd>
         </div>
       </dl>
 
@@ -150,7 +151,8 @@ export default function PayPage() {
             {failures.length === 1 ? 'This photo did' : `${failures.length} of your photos did`} not
             pass our check. Swap {failures.length === 1 ? 'it' : 'them'} and try again.
           </p>
-          <div className="thumbs">
+          {/* data-clarity-mask: the customer's rejected face photos; keep them out of replay. */}
+          <div className="thumbs" data-clarity-mask="true">
             {failures.map((f) => (
               <div className="thumb thumb--bad" key={f.index}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}

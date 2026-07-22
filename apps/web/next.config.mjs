@@ -3,10 +3,18 @@ import { dirname, resolve } from 'node:path';
 import dotenv from 'dotenv';
 import { withSentryConfig } from '@sentry/nextjs';
 
-// Same root-.env pattern as the Node services (api/worker): one .env for the whole
-// monorepo. Loaded here so server code (route handlers, server components) reads
-// MONGODB_URI / AUTH_SECRET, and NEXT_PUBLIC_* stays inlined at build.
-dotenv.config({ path: resolve(dirname(fileURLToPath(import.meta.url)), '../../.env') });
+// Same root env pattern as the Node services (api/worker) and the diag scripts:
+// one per-environment file for the whole monorepo, selected by NODE_ENV
+// (.env.development locally, .env.production for build/start). Loaded here so
+// server code (route handlers, server components) reads MONGODB_URI / AUTH_SECRET /
+// GOOGLE_CLIENT_ID, and NEXT_PUBLIC_* stays inlined at build. On Fly the file is
+// absent and dotenv does not override the injected secrets, so prod is unaffected.
+dotenv.config({
+  path: resolve(
+    dirname(fileURLToPath(import.meta.url)),
+    `../../.env.${process.env.NODE_ENV || 'development'}`,
+  ),
+});
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {

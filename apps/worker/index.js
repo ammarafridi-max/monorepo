@@ -8,9 +8,14 @@ import { Worker } from 'bullmq';
 import JSZip from 'jszip';
 import Stripe from 'stripe';
 
-// Load the monorepo-root .env regardless of the cwd this service is started from
-// (pnpm --filter runs scripts with the package dir as cwd).
-dotenv.config({ path: resolve(dirname(fileURLToPath(import.meta.url)), '../../.env') });
+// Load the monorepo-root per-environment .env regardless of the cwd this service is
+// started from (pnpm --filter runs scripts with the package dir as cwd). instrument.js
+// (imported above) already loaded the same file first; this is a harmless re-load since
+// dotenv does not override already-set vars. Selected by NODE_ENV to match instrument.js,
+// server/api, and the diag scripts (.env.development locally, .env.production on deploy).
+dotenv.config({
+  path: resolve(dirname(fileURLToPath(import.meta.url)), `../../.env.${process.env.NODE_ENV || 'development'}`),
+});
 
 import {
   buildPrompts,
