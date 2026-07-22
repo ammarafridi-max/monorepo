@@ -282,6 +282,9 @@ export default function Page() {
               { name: "Spain Visa Insurance", href: "/travel-insurance/spain-visa" },
               { name: "Germany Visa Insurance", href: "/travel-insurance/germany-visa" },
               { name: "Greece Visa Insurance", href: "/travel-insurance/greece-visa" },
+              { name: "Switzerland Visa Insurance", href: "/travel-insurance/switzerland-visa" },
+              { name: "Netherlands Visa Insurance", href: "/travel-insurance/netherlands-visa" },
+              { name: "Austria Visa Insurance", href: "/travel-insurance/austria-visa" },
               { name: "All Travel Insurance Plans", href: "/travel-insurance" },
             ].map((link) => (
               <Link
