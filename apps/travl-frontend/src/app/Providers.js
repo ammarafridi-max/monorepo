@@ -71,6 +71,7 @@ const defaultPages = [
     name: 'Travel Insurance',
     links: ['/travel-insurance'],
     mega: {
+      layout: 'tabs',
       columns: [
         {
           heading: 'By Trip Type',
@@ -83,8 +84,7 @@ const defaultPages = [
           ],
         },
         {
-          heading: 'By Visa',
-          span: 2,
+          heading: 'By Country',
           items: [
             { flag: 'eu', label: 'Schengen Visa',     desc: 'EUR 30,000 cover, VFS & BLS accepted',           href: '/travel-insurance/schengen-visa' },
             { flag: 'fr', label: 'France Visa',       desc: 'Schengen cover accepted by VFS Global France',   href: '/travel-insurance/france-visa' },
@@ -92,6 +92,9 @@ const defaultPages = [
             { flag: 'it', label: 'Italy Visa',        desc: 'Schengen cover accepted by VFS Global Italy',    href: '/travel-insurance/italy-visa' },
             { flag: 'de', label: 'Germany Visa',      desc: 'Schengen cover accepted by VFS Global Germany',  href: '/travel-insurance/germany-visa' },
             { flag: 'gr', label: 'Greece Visa',       desc: 'Schengen cover accepted by VFS Global Greece',   href: '/travel-insurance/greece-visa' },
+            { flag: 'ch', label: 'Switzerland Visa',  desc: 'Schengen cover accepted by VFS Global Switzerland', href: '/travel-insurance/switzerland-visa' },
+            { flag: 'nl', label: 'Netherlands Visa',  desc: 'Schengen cover accepted by VFS Global Netherlands', href: '/travel-insurance/netherlands-visa' },
+            { flag: 'at', label: 'Austria Visa',      desc: 'Schengen cover accepted by VFS Global Austria',  href: '/travel-insurance/austria-visa' },
             { flag: 'gb', label: 'UK Visa',           desc: 'Cover that meets UK visa requirements',          href: '/travel-insurance/uk-visa' },
             { flag: 'us', label: 'US Visa',           desc: 'Cover for B1/B2 and other US visa applications', href: '/travel-insurance/us-visa' },
             { flag: 'ca', label: 'Canada Visa',       desc: 'Cover accepted for Canadian visa submissions',   href: '/travel-insurance/canada-visa' },

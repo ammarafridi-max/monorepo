@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { ChevronDown, User, LogOut, ArrowRight } from "lucide-react";
+import { ChevronDown, ChevronRight, User, LogOut, ArrowRight } from "lucide-react";
 import { useAuth } from "../../../contexts/AuthContextBase.js";
 import { logoutUserSessionApi } from "../../../services/apiAuth.js";
 import Container from "../../shared/layout/Container.js";
@@ -33,6 +33,7 @@ export default function Navbar({ pages = [], logoAlt = "Logo" }) {
   const pathname = usePathname();
 
   const [megaOpen, setMegaOpen] = useState(null);
+  const [megaTab, setMegaTab] = useState(0);
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
@@ -82,8 +83,10 @@ export default function Navbar({ pages = [], logoAlt = "Logo" }) {
               <div
                 key={i}
                 onMouseEnter={() => {
-                  if (isMegaItem) openMega(i);
-                  else if (isDropItem) openDrop(i);
+                  if (isMegaItem) {
+                    openMega(i);
+                    setMegaTab(0);
+                  } else if (isDropItem) openDrop(i);
                 }}
                 onMouseLeave={() => {
                   if (isMegaItem) closeMega();
@@ -119,6 +122,77 @@ export default function Navbar({ pages = [], logoAlt = "Logo" }) {
                     onMouseLeave={closeMega}
                     className="absolute left-0 right-0 top-full bg-white border-b border-gray-200 shadow-2xl"
                   >
+                    {page.mega.layout === "tabs" ? (
+                      /* Tabbed layout (opt-in): heading tabs on the left, the
+                         active tab's items in a 4-per-row grid on the right. */
+                      <Container className="py-6 flex gap-8">
+                        <div className="w-56 shrink-0 flex flex-col gap-1 border-r border-gray-100 pr-4">
+                          {page.mega.columns.map((col, ci) => (
+                            <button
+                              key={ci}
+                              type="button"
+                              onClick={() => setMegaTab(ci)}
+                              onMouseEnter={() => setMegaTab(ci)}
+                              className={`flex items-center justify-between gap-2 text-left px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                                megaTab === ci
+                                  ? "bg-primary-50 text-primary-700"
+                                  : "text-gray-600 hover:bg-gray-50"
+                              }`}
+                            >
+                              {col.heading}
+                              <ChevronRight
+                                size={15}
+                                className={
+                                  megaTab === ci ? "opacity-100" : "opacity-30"
+                                }
+                              />
+                            </button>
+                          ))}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <ul className="grid grid-cols-4 gap-x-2 gap-y-1">
+                            {(page.mega.columns[megaTab]?.items ?? []).map(
+                              ({ Icon, flag, label, desc, href }) => (
+                                <li key={label}>
+                                  <Link
+                                    href={href}
+                                    onClick={() => setMegaOpen(null)}
+                                    className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-primary-50 group transition-colors"
+                                  >
+                                    {flag ? (
+                                      <img
+                                        src={`https://cdn.jsdelivr.net/gh/HatScripts/circle-flags@latest/flags/${flag}.svg`}
+                                        alt=""
+                                        aria-hidden="true"
+                                        loading="lazy"
+                                        className="w-8 h-8 rounded-full shrink-0 object-cover"
+                                      />
+                                    ) : Icon ? (
+                                      <div className="w-8 h-8 rounded-lg bg-primary-100 flex items-center justify-center shrink-0 group-hover:bg-primary-200 transition-colors">
+                                        <Icon
+                                          size={15}
+                                          className="text-primary-700"
+                                        />
+                                      </div>
+                                    ) : null}
+                                    <div className="min-w-0">
+                                      <p className="font-semibold text-gray-900 text-sm leading-none mb-0.5">
+                                        {label}
+                                      </p>
+                                      {desc && (
+                                        <p className="text-xs text-gray-400 leading-snug">
+                                          {desc}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </Link>
+                                </li>
+                              ),
+                            )}
+                          </ul>
+                        </div>
+                      </Container>
+                    ) : (
                     <Container className="py-6 flex gap-6">
                       {page.mega.columns.map((col, ci) => {
                         // Columns can opt into a wider footprint via `span: 2`,
@@ -203,6 +277,7 @@ export default function Navbar({ pages = [], logoAlt = "Logo" }) {
                         </div>
                       )}
                     </Container>
+                    )}
                   </div>
                 )}
 
