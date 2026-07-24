@@ -7,6 +7,13 @@ primary_region = "iad"
 [build]
   dockerfile = "Dockerfile.worker"
 
+[env]
+  # LoRA generation strength for real orders (read at call time by the worker's
+  # defaultLoraScale). 1.0 is neutral; 1.15 pulls harder toward the trained face to
+  # improve likeness. This is slightly above the documented 0.8-1.1 range, so watch
+  # for an over-baked / artifacty look and dial back if it appears.
+  GEN_LORA_SCALE = "1.15"
+
 # concurrency is 1 in code (one order at a time); a single machine is the default.
 # The pipeline is resumable + idempotent, so a restart safely reattaches.
 [[vm]]

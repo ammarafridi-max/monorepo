@@ -18,9 +18,8 @@ export const LAST_UPDATED = 'July 9, 2026';
 // imply the terms or refund policy also changed.
 export const PRIVACY_UPDATED = 'July 22, 2026';
 
-// Placeholder support address, mirrored from the footer. Swap for the real inbox.
-// TODO: swap for the real support address before launch.
-export const CONTACT_EMAIL = 'hello@picturesk.ai';
+// Support inbox, mirrored in the footer.
+export const CONTACT_EMAIL = 'info@picturesk.ai';
 export const RESPONSE_TIME = 'within two business days';
 
 export const privacy = {

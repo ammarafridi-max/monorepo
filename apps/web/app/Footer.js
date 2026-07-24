@@ -35,7 +35,7 @@ export default function Footer() {
 
         <p className="footer__legal">
           <span>© 2026 Picturesk.ai</span>
-          <a href="mailto:hello@picturesk.ai">hello@picturesk.ai</a>
+          <a href="mailto:info@picturesk.ai">info@picturesk.ai</a>
         </p>
       </div>
     </footer>

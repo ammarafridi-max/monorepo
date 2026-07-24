@@ -771,6 +771,27 @@ ON by default (`PERSIST_DELIVERED=on`); requires R2, which the worker already ne
 Note this does not recover orders delivered BEFORE this shipped, whose upstream URLs
 have already expired; it protects every order from here on.
 
+## Deferred: legal and compliance (revisit before scaling)
+
+We are launching internationally and training models on customers' **faces**, so
+these carry real legal weight. They are known and deliberately deferred, not
+resolved. Get a lawyer to review the privacy policy + terms before scaling ad spend.
+
+- **Cookie consent withdrawal.** There is an opt-in banner gating GA4 + Clarity
+  (`apps/web/app/Analytics.js`), but no easy "withdraw" path. GDPR wants withdrawing
+  to be as easy as giving; today changing the choice means clearing site data. Add a
+  "Cookie choices" footer link that reopens the banner.
+- **Governing law / jurisdiction.** Still a TODO in the terms
+  (`apps/web/data/legal.js`); it currently says the jurisdiction "will be confirmed".
+- **Data retention / deletion.** No automatic deletion runs: uploaded selfies,
+  training zips, and delivered images persist in R2 until manually removed. The
+  privacy policy has no concrete retention schedule. Define and (ideally) enforce one.
+- **Biometric / special-category data.** Training on faces can trigger biometric
+  regimes (Illinois BIPA, EU GDPR Art. 9) that require explicit consent and a written
+  retention/destruction policy. Not yet addressed.
+- **Lawyer review.** The privacy policy and terms were written to match how the
+  product actually works, but have not had a legal review.
+
 ## Conventions
 
 - JavaScript + ESM. No TypeScript; shared shapes use JSDoc typedefs.
