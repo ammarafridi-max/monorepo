@@ -15,16 +15,4 @@ export const samples = [
     before: ['/work/before-1.jpg', '/work/before-2.jpg', '/work/before-3.jpg'],
     after: ['/work/after-1.jpg', '/work/after-2.jpg', '/work/after-3.jpg', '/work/after-4.jpg'],
   },
-  {
-    name: 'Priya',
-    role: 'Product lead',
-    before: ['', '', ''],
-    after: ['', '', '', ''],
-  },
-  {
-    name: 'Marcus',
-    role: 'Consultant',
-    before: ['', '', ''],
-    after: ['', '', '', ''],
-  },
 ];
