@@ -130,6 +130,9 @@ export default function SelectPage() {
   function onGender(v) {
     setGender(v);
     writeState({ gender: v });
+    // Facial hair is hidden for women; clear any beard picked earlier so it
+    // does not silently persist into the order.
+    if (v === 'woman' && facialHair) onFacialHair('');
   }
   function onAgeRange(v) {
     setAgeRange(v);
@@ -206,26 +209,58 @@ export default function SelectPage() {
       </p>
       <ChoiceRow items={RACES} value={race} onSelect={onRace} allowClear />
 
-      <p className="gen-fieldlabel">
-        Facial hair <span className="gen-optional">optional</span>
-      </p>
-      <p className="gen-hint">Tell us your current look so your beard stays consistent in the results.</p>
-      <ChoiceRow items={FACIAL_HAIR} value={facialHair} onSelect={onFacialHair} allowClear />
+      {gender !== 'woman' && (
+        <>
+          <p className="gen-fieldlabel">
+            Facial hair <span className="gen-optional">optional</span>
+          </p>
+          <p className="gen-hint">Tell us your current look so your beard stays consistent in the results.</p>
+          <ChoiceRow items={FACIAL_HAIR} value={facialHair} onSelect={onFacialHair} allowClear />
+        </>
+      )}
 
       <div className="field">
         <label className="label" htmlFor="email">
           Where should we send them?
         </label>
-        <input
-          id="email"
-          className="input"
-          data-clarity-mask="true"
-          type="email"
-          inputMode="email"
-          placeholder="you@work.com"
-          value={email}
-          onChange={(e) => onEmail(e.target.value)}
-        />
+        <div className="input-icon">
+          <svg
+            className="input-icon__mark"
+            width="18"
+            height="18"
+            viewBox="0 0 20 20"
+            fill="none"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <rect
+              x="2.5"
+              y="4"
+              width="15"
+              height="12"
+              rx="2"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            />
+            <path
+              d="M3 5.5 10 11l7-5.5"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          <input
+            id="email"
+            className="input input--onwhite"
+            data-clarity-mask="true"
+            type="email"
+            inputMode="email"
+            placeholder="you@work.com"
+            value={email}
+            onChange={(e) => onEmail(e.target.value)}
+          />
+        </div>
       </div>
 
       <div className="gennav">

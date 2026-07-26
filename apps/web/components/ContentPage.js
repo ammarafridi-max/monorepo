@@ -1,10 +1,12 @@
 // Shared layout for long-form content pages (privacy, terms, refunds, contact,
 // faq). One place for the reading measure, heading scale, and generous line
 // height, so every page shares typography per BRAND. Left-aligned, narrow column.
+import Container from './Container';
+
 export default function ContentPage({ eyebrow, title, updated, lede, children, contactNote = false }) {
   return (
     <main className="content">
-      <div className="container">
+      <Container>
         <div className="content__inner">
           {eyebrow && <p className="eyebrow">{eyebrow}</p>}
           <h1 className="content__title">{title}</h1>
@@ -19,7 +21,7 @@ export default function ContentPage({ eyebrow, title, updated, lede, children, c
             </p>
           )}
         </div>
-      </div>
+      </Container>
     </main>
   );
 }

@@ -1,11 +1,12 @@
 import { steps } from '../data/landing';
+import Container from '../components/Container';
 
 // How it works: a real three-step sequence, so numbered markers (01/02/03)
 // genuinely encode order. Calm, no icons, no emoji.
 export default function HowItWorks() {
   return (
     <section id="how" className="section how">
-      <div className="container">
+      <Container>
         <p className="eyebrow">How it works</p>
         <h2 className="h2">Three steps, about an hour.</h2>
 
@@ -18,7 +19,7 @@ export default function HowItWorks() {
             </li>
           ))}
         </ol>
-      </div>
+      </Container>
     </section>
   );
 }

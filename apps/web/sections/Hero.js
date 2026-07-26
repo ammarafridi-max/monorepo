@@ -1,5 +1,6 @@
 import { samples } from '../data/samples';
-import Frame from './Frame';
+import Frame from '../components/Frame';
+import Container from '../components/Container';
 
 // Hero: the thesis. Serif verdict headline, one primary action that scrolls to
 // the uploader, and a small cluster of real result frames so photos are loud from
@@ -11,7 +12,7 @@ export default function Hero() {
 
   return (
     <section className="hero">
-      <div className="container hero__inner">
+      <Container className="hero__inner">
         <div className="hero__copy">
           <p className="eyebrow">A photo studio in your browser</p>
           <h1 className="display hero__title">
@@ -39,7 +40,7 @@ export default function Hero() {
             <Frame key={i} src={src} alt="" className={`hero__frame hero__frame--${i + 1}`} />
           ))}
         </div>
-      </div>
+      </Container>
     </section>
   );
 }

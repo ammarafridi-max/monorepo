@@ -1,9 +1,10 @@
-import ContentPage from '../ContentPage';
+import ContentPage from '../../components/ContentPage';
 import { CONTACT_EMAIL, RESPONSE_TIME } from '../../data/legal';
 
 export const metadata = {
   title: 'Contact. Picturesk.ai',
   description: 'Reach a human at Picturesk. Support email, response time, and what to include.',
+  alternates: { canonical: '/contact' },
 };
 
 // Contact: no form, no backend risk. Just the support address, clearly, plus what

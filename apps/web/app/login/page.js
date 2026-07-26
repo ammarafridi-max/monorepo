@@ -1,7 +1,7 @@
-import AuthForm from '../AuthForm';
-import SocialButtons from '../SocialButtons';
+import AuthForm from '../../components/AuthForm';
+import SocialButtons from '../../components/SocialButtons';
 
-export const metadata = { title: 'Log in. Picturesk.ai' };
+export const metadata = { title: 'Log in. Picturesk.ai', robots: { index: false, follow: false } };
 
 export default function LoginPage({ searchParams }) {
   // Set when a social sign-in bounced back without a session (denied, expired, or

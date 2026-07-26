@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { FUNNEL_STEPS } from '../../lib/generator';
+import { FUNNEL_STEPS } from '../lib/generator';
 
 // Which funnel step the current route is on, so the stepper can render each step
 // as done / current / upcoming. Pay has no route past the Stripe redirect.

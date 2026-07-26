@@ -1,18 +1,67 @@
-import Hero from './Hero';
-import Showcase from './Showcase';
-import HowItWorks from './HowItWorks';
-import WhatYouGet from './WhatYouGet';
-import Pricing from './Pricing';
-import Faq from './Faq';
-import TrackEvent from './TrackEvent';
+import Hero from '../sections/Hero';
+import Showcase from '../sections/Showcase';
+import HowItWorks from '../sections/HowItWorks';
+import WhatYouGet from '../sections/WhatYouGet';
+import Pricing from '../sections/Pricing';
+import Faq from '../sections/Faq';
+import Container from '../components/Container';
+import TrackEvent from '../components/TrackEvent';
 import { EVENTS } from '../lib/analytics';
+import { faq } from '../data/faq';
+import {
+  SITE_URL,
+  buildMetadata,
+  buildGraph,
+  buildOrganization,
+  buildWebsite,
+  buildWebPage,
+  buildProduct,
+  buildFAQPage,
+} from '../lib/schema';
+
+// Title <= 60 chars, description <= 160 chars (spaces included), both carrying the
+// primary keyword "AI Headshot Generator" and no em dashes. See CLAUDE.md.
+const TITLE = 'AI Headshot Generator | Studio Headshots from Selfies';
+const DESCRIPTION =
+  'Picturesk is an AI Headshot Generator that turns a few selfies into studio-quality professional headshots for LinkedIn. One price, delivered in about an hour.';
+const CANONICAL = SITE_URL;
+
+export const metadata = buildMetadata({
+  title: TITLE,
+  description: DESCRIPTION,
+  canonical: CANONICAL,
+  type: 'website',
+});
 
 // The landing page: marketing only. There is ONE purchase flow now, the routed
 // funnel under /generator (select -> upload -> pay), and every CTA here starts it
 // at /generator/select. No upload or checkout happens on this page.
 export default function HomePage() {
+  const schema = buildGraph([
+    buildOrganization(),
+    buildWebsite(),
+    buildWebPage({ canonical: CANONICAL, title: TITLE, description: DESCRIPTION }),
+    buildProduct({
+      canonical: CANONICAL,
+      name: 'AI Headshots',
+      description:
+        'Professional AI headshots trained on your own selfies, delivered by email in about an hour.',
+      price: '29',
+    }),
+    buildFAQPage({
+      canonical: CANONICAL,
+      title: 'Picturesk FAQ',
+      description: DESCRIPTION,
+      faqs: faq.map((f) => ({ question: f.q, answer: f.a })),
+    }),
+  ]);
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      />
       <TrackEvent event={EVENTS.LANDING_VIEW} />
       <main>
         <Hero />
@@ -23,7 +72,7 @@ export default function HomePage() {
         <Faq />
 
         <section className="section start">
-          <div className="container">
+          <Container>
             <div className="start__inner center">
               <p className="eyebrow" style={{ justifyContent: 'center' }}>
                 Ready when you are
@@ -38,7 +87,7 @@ export default function HomePage() {
                 </a>
               </p>
             </div>
-          </div>
+          </Container>
         </section>
       </main>
     </>

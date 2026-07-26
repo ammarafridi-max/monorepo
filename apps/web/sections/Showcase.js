@@ -1,5 +1,6 @@
 import { samples } from '../data/samples';
-import Frame from './Frame';
+import Frame from '../components/Frame';
+import Container from '../components/Container';
 
 // The results showcase: the loudest section on the page, built as a photography
 // studio's portfolio. Each sample shows the ordinary selfies it started from
@@ -8,7 +9,7 @@ import Frame from './Frame';
 export default function Showcase() {
   return (
     <section id="work" className="section showcase">
-      <div className="container">
+      <Container>
         <p className="eyebrow">The work</p>
         <h2 className="h2">Real headshots, from real selfies.</h2>
         <p className="section__lede">
@@ -50,7 +51,7 @@ export default function Showcase() {
             </article>
           ))}
         </div>
-      </div>
+      </Container>
     </section>
   );
 }

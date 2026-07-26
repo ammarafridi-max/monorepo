@@ -1,4 +1,5 @@
 import { faq } from '../data/faq';
+import Container from '../components/Container';
 
 // FAQ: native details/summary, so answers live in the DOM (good for AI citation
 // and for no-JS), and each item is keyboard accessible for free. Content is
@@ -6,7 +7,7 @@ import { faq } from '../data/faq';
 export default function Faq() {
   return (
     <section id="faq" className="section faq">
-      <div className="container">
+      <Container>
         <p className="eyebrow">FAQ</p>
         <h2 className="h2">Questions, answered.</h2>
 
@@ -25,7 +26,7 @@ export default function Faq() {
         <p className="faq__more">
           <a href="/faq">See all questions</a>
         </p>
-      </div>
+      </Container>
     </section>
   );
 }

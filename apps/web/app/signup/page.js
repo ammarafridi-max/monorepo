@@ -1,7 +1,7 @@
-import AuthForm from '../AuthForm';
-import SocialButtons from '../SocialButtons';
+import AuthForm from '../../components/AuthForm';
+import SocialButtons from '../../components/SocialButtons';
 
-export const metadata = { title: 'Create your account. Picturesk.ai' };
+export const metadata = { title: 'Create your account. Picturesk.ai', robots: { index: false, follow: false } };
 
 export default function SignupPage() {
   return (

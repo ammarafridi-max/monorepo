@@ -1,10 +1,11 @@
-import ContentPage from '../ContentPage';
-import Sections from '../Sections';
+import ContentPage from '../../components/ContentPage';
+import Sections from '../../components/Sections';
 import { faq } from '../../data/faq';
 
 export const metadata = {
   title: 'FAQ. Picturesk.ai',
   description: 'Every question about Picturesk, answered: likeness, photos, timing, refunds, privacy, and usage rights.',
+  alternates: { canonical: '/faq' },
 };
 
 // The full FAQ, from the SAME data/faq.js the home page uses (one source of truth).

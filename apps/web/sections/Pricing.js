@@ -1,6 +1,7 @@
 import { TIERS } from '@picturesk/shared/pricing';
 import { included } from '../data/landing';
-import Check from './Check';
+import Check from '../components/Check';
+import Container from '../components/Container';
 
 // Whole-dollar price from integer cents (tier prices are round dollars).
 const usd = (cents) => `$${Math.round(cents / 100)}`;
@@ -13,7 +14,7 @@ const TURNAROUND = { starter: 'Standard queue', pro: 'Priority queue', premium: 
 export default function Pricing() {
   return (
     <section id="pricing" className="section pricing">
-      <div className="container">
+      <Container>
         <p className="eyebrow">Pricing</p>
         <h2 className="h2">Three plans. One time.</h2>
 
@@ -45,7 +46,7 @@ export default function Pricing() {
           You pay on Stripe. Refunded automatically if a run fails. See our{' '}
           <a href="/terms">Terms</a> and <a href="/refunds">Refund Policy</a>.
         </p>
-      </div>
+      </Container>
     </section>
   );
 }

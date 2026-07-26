@@ -1,12 +1,15 @@
 import './globals.css';
 import { getSession } from '../lib/session';
-import SiteChrome from './SiteChrome';
-import Analytics from './Analytics';
+import SiteChrome from '../components/SiteChrome';
+import Analytics from '../components/Analytics';
+import { SITE_URL } from '../lib/seo';
 
 export const metadata = {
+  metadataBase: new URL(SITE_URL),
   title: 'Picturesk.ai. Headshots that don\'t look AI.',
   description:
     'Upload a few selfies. We train a model on your face and give you studio-quality headshots. One price.',
+  robots: { index: true, follow: true },
 };
 
 export default async function RootLayout({ children }) {
@@ -26,7 +29,9 @@ export default async function RootLayout({ children }) {
       </head>
       <body>
         <Analytics />
-        <SiteChrome authed={Boolean(session)}>{children}</SiteChrome>
+        <SiteChrome authed={Boolean(session)} email={session?.email}>
+          {children}
+        </SiteChrome>
       </body>
     </html>
   );

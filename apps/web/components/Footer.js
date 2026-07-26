@@ -1,10 +1,13 @@
-// Site footer: brand + grouped links + contact, on a dark ink surface (BRAND
-// allows ink as a dark surface). Rendered once from the root layout, so links are
-// absolute paths (the home anchors point at /#section) and work from any page.
+// Site footer: brand + grouped links + contact, on the deep-green Forest & Gold
+// surface. The brand is an ivory text wordmark (the stored logo.png is dark and
+// would vanish on green). Rendered once from the root layout, so links are absolute
+// paths (the home anchors point at /#section) and work from any page.
+import Container from './Container';
+
 export default function Footer() {
   return (
     <footer className="footer">
-      <div className="container footer__inner">
+      <Container className="footer__inner">
         <div className="footer__brand">
           <p className="footer__word">Picturesk.ai</p>
           <p className="footer__tag">Studio headshots from your selfies.</p>
@@ -37,7 +40,7 @@ export default function Footer() {
           <span>© 2026 Picturesk.ai</span>
           <a href="mailto:info@picturesk.ai">info@picturesk.ai</a>
         </p>
-      </div>
+      </Container>
     </footer>
   );
 }

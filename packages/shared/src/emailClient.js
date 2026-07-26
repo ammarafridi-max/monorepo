@@ -95,18 +95,20 @@ export function createEmailClient({ apiKey, sender }) {
   };
 }
 
-// BRAND.md palette. Bone and ink only, cobalt as the single accent on one CTA.
-const INK = '#0B0B0C';
-const BONE = '#FAF9F6';
-const COBALT = '#2F5BFF';
-const ASH = '#6B6B70';
-const LINE = '#E6E4DF';
+// Forest & Gold palette. Deep green ink on warm sand, green CTA, gold as a
+// sparing accent. Constant NAMES are kept from the old palette to minimize edits
+// (COBALT is now a deep green; SERIF is now the humanist sans, matching the site).
+const INK = '#163A33';
+const BONE = '#F5EFE2';
+const COBALT = '#0E4A44';
+const ASH = '#5F6B62';
+const LINE = '#E4DCC8';
+const GOLD = '#E7B24C';
 
-// Real Fraunces will not load in most mail clients, so headings fall back to a
-// web-safe serif (still editorial, still signals "studio"). Body is a grotesque
-// stack falling back to Arial.
-const SERIF = "'Fraunces', Georgia, 'Times New Roman', serif";
+// Body and headings share the humanist sans stack (matching the site), falling
+// back to Arial. SERIF keeps its name but now points at the same sans stack.
 const SANS = "Inter, -apple-system, 'Segoe UI', Arial, sans-serif";
+const SERIF = SANS;
 
 /**
  * Render the branded delivery email (HTML + plain-text alternative).
@@ -187,7 +189,7 @@ export function renderDeliveryEmail({ resultsUrl, orderId, thumbnailUrls = [], l
             <td style="padding:0 0 28px 0">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse">
                 <tr>
-                  <td align="center" style="border-radius:6px;background:${COBALT}">
+                  <td align="center" style="border-radius:6px;background:${COBALT};border-top:3px solid ${GOLD}">
                     <a href="${resultsUrl}" style="display:inline-block;padding:14px 26px;font-family:${SANS};font-size:16px;font-weight:600;color:${BONE};text-decoration:none;border-radius:6px">
                       View my headshots
                     </a>

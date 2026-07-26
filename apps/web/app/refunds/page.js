@@ -1,10 +1,11 @@
-import ContentPage from '../ContentPage';
-import Sections from '../Sections';
+import ContentPage from '../../components/ContentPage';
+import Sections from '../../components/Sections';
 import { refunds } from '../../data/legal';
 
 export const metadata = {
   title: 'Refund Policy. Picturesk.ai',
   description: 'If a run fails, you are refunded automatically. What that covers, and what it does not.',
+  alternates: { canonical: '/refunds' },
 };
 
 export default function RefundsPage() {

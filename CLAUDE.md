@@ -67,3 +67,16 @@ first.**
 - pnpm workspaces. Apps depend on `@picturesk/shared` via `workspace:*`.
 - MongoDB via Mongoose. Redis + BullMQ for the queue. Deploy target Fly.io.
 - No em dashes in any user-facing copy.
+
+## SEO metadata rules
+
+Whenever you write or edit a page `<title>` or meta description (including
+`buildMetadata` calls in `apps/web/lib/schema.js` and per-page `metadata` exports):
+
+- **Title: at most 60 characters, spaces included.** Strictly 60, never more.
+- **Meta description: at most 160 characters, spaces included.** Strictly 160, never more.
+- Both must contain the page's primary keyword. The home page's primary keyword is
+  **"AI Headshot Generator"**.
+- No em dashes (already required for all user-facing copy).
+
+Always count the characters (spaces included) and confirm the limits before finishing.

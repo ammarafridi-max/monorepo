@@ -1,3 +1,5 @@
+export const metadata = { title: 'Checkout canceled. Picturesk.ai', robots: { index: false, follow: false } };
+
 export default function CancelPage() {
   return (
     <main className="wrap">

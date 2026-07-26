@@ -1,20 +1,39 @@
 /*
  * Picturesk brand tokens + base styles. See BRAND.md.
- * Bone and ink only (never pure white/black). Cobalt is the single accent,
- * reserved for CTAs, links, and focus. Serif display, grotesque body.
+ * Forest & Gold: warm sand body, deep-green ink, green as the workhorse accent
+ * (CTAs, links, focus) with gold as the second accent. Inter (humanist sans) for
+ * both display and body. Token NAMES kept (--cobalt = green, --serif = sans) to
+ * avoid churn across existing var() refs.
  */
 
 :root {
-  --ink: #0b0b0c;
-  --bone: #faf9f6;
-  --cobalt: #2f5bff;
-  --ash: #6b6b70;
-  --line: #e6e4df;
+  /* Forest & Gold brand (rebrand). Token names kept so existing var() refs work.
+     --cobalt is now the GREEN workhorse accent; --serif now resolves to the
+     humanist sans display stack (headings are sans in this identity). */
+  --ink: #163a33;
+  --bone: #f5efe2;
+  --cobalt: #0e4a44;
+  --gold: #e7b24c;
+  --ash: #5f6b62;
+  --line: #e4dcc8;
+  --card: #fbf7ec;
   --ok: #1f9d57;
   --warn: #c4462b;
-
-  --serif: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --serif: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
   --sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --fg-gold: #e7b24c;
+  --fg-hero-fg: #f4eee1;
+  --fg-hero-muted: #a9c3bd;
+  --fg-hero-ring: rgba(244, 238, 225, 0.16);
+  --fg-body-bg: #f5efe2;
+  --fg-body-bg2: #eee6d3;
+  --fg-ink: #163a33;
+  --fg-muted: #5f6b62;
+  --fg-green: #0e4a44;
+  --fg-line: #e4dcc8;
+  --fg-card: #fbf7ec;
+  --fg-footer: #0a3833;
+  --fg-on-gold: #123f3a;
 }
 
 * {
@@ -313,7 +332,7 @@ a {
 
 .dropzone--active {
   border-color: var(--cobalt);
-  background: #f4f6ff;
+  background: #e7efe9;
 }
 
 .dropzone__title {
@@ -475,6 +494,30 @@ a {
   outline: none;
 }
 
+/* A white-background input variant, to lift the field off the sand page. */
+.input--onwhite {
+  background: #fff;
+}
+
+/* Wrapper that floats a leading inline-SVG icon over an input. The input gets
+   extra left padding so its text and placeholder clear the icon. */
+.input-icon {
+  position: relative;
+}
+
+.input-icon__mark {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ash);
+  pointer-events: none;
+}
+
+.input-icon .input {
+  padding-left: 44px;
+}
+
 /* The one primary action per screen. Considered: subtle radius, a single soft
  * cobalt-tinted shadow, and clear hover / active / focus / disabled states. */
 .cta {
@@ -488,13 +531,13 @@ a {
   border-radius: 8px;
   padding: 15px 20px;
   cursor: pointer;
-  box-shadow: 0 1px 2px rgba(11, 11, 12, 0.08), 0 12px 26px -14px rgba(47, 91, 255, 0.55);
+  box-shadow: 0 1px 2px rgba(11, 11, 12, 0.08), 0 12px 26px -14px rgba(14, 74, 68, 0.28);
   transition: background 0.14s ease, box-shadow 0.14s ease, transform 0.14s ease;
 }
 
 .cta:hover:not(:disabled) {
-  background: #2a52e6;
-  box-shadow: 0 2px 4px rgba(11, 11, 12, 0.1), 0 16px 32px -14px rgba(47, 91, 255, 0.6);
+  background: #12564f;
+  box-shadow: 0 2px 4px rgba(11, 11, 12, 0.1), 0 16px 32px -14px rgba(14, 74, 68, 0.28);
   transform: translateY(-1px);
 }
 
@@ -779,6 +822,10 @@ a {
   padding: 0 clamp(20px, 5vw, 24px);
 }
 
+.container--narrow {
+  max-width: 720px;
+}
+
 .section {
   padding: clamp(64px, 9vw, 116px) 0;
   scroll-margin-top: 32px;
@@ -832,12 +879,12 @@ a {
 .btn--primary {
   color: var(--bone);
   background: var(--cobalt);
-  box-shadow: 0 1px 2px rgba(11, 11, 12, 0.08), 0 12px 26px -14px rgba(47, 91, 255, 0.55);
+  box-shadow: 0 1px 2px rgba(11, 11, 12, 0.08), 0 12px 26px -14px rgba(14, 74, 68, 0.28);
 }
 
 .btn--primary:hover:not(:disabled) {
-  background: #2a52e6;
-  box-shadow: 0 2px 4px rgba(11, 11, 12, 0.1), 0 16px 32px -14px rgba(47, 91, 255, 0.6);
+  background: #12564f;
+  box-shadow: 0 2px 4px rgba(11, 11, 12, 0.1), 0 16px 32px -14px rgba(14, 74, 68, 0.28);
   transform: translateY(-1px);
 }
 
@@ -1346,6 +1393,12 @@ a {
 
 .generator {
   padding-top: 40px;
+}
+
+/* The funnel needs more room than the narrow .wrap column so the option-card
+   grids breathe. Override .wrap's 720px with a wider column for all four steps. */
+.wrap.generator {
+  max-width: 900px;
 }
 
 .stepper {
@@ -1928,4 +1981,794 @@ a {
   .plans {
     grid-template-columns: 1fr;
   }
+}
+
+/* =========================================================================== *
+ * Forest & Gold — GLOBAL brand. See BRAND rebrand.
+ *
+ * The "Forest & Gold" direction, applied site-wide: a DARK GREEN hero into a
+ * LIGHT sand body, ivory + gold accents, humanist sans (Inter) headings. The
+ * --fg-* custom props live in :root, and the base body/link rules already theme
+ * via the tokens, so these rules layer the marketing/chrome treatment on top.
+ * `.hero` only affects the home page (only Hero.js renders it).
+ * =========================================================================== */
+
+/* --- Nav: a flat green bar that reads as the top of the hero. Full-bleed
+       colour; the inner <Container> aligns the brand + nav to the 1040 width.
+       The bar uses the hero's DOMINANT tone (#0e4a44, the gradient's 50% stop and
+       --fg-green) rather than its bright top-centre tint. The old #14615a made the
+       bar read as a lighter band sitting above a darker hero; matching the tone the
+       eye reads as "the hero colour" lets the nav and hero look like one continuous
+       dark-green surface on the home page. Solid green on every route (nav is
+       global), so non-home pages keep a clean green bar. -- */
+.topbar {
+  max-width: none;
+  margin: 0;
+  padding: 20px 0;
+  background: #0e4a44;
+  display: block;
+}
+
+.topbar__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  font-family: var(--sans);
+  color: var(--fg-hero-fg);
+}
+
+.brand__word {
+  font-family: var(--sans);
+  font-weight: 800;
+  font-size: 21px;
+  letter-spacing: -0.02em;
+  color: var(--fg-hero-fg);
+}
+
+/* Nav links are ivory white with an explicit, fixed size + weight so every
+   current and future link (Log in, and any added later) renders identically.
+   Hover lifts to full white. */
+.navlink {
+  color: var(--fg-hero-fg);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.navlink:hover {
+  color: #fff;
+}
+
+/* --- Profile menu (authed nav identity) ----------------------------------
+   Avatar (gold circle, dark-green initial) + first name + chevron in a rounded
+   pill trigger; a deep-green dropdown reads on the green chrome. Opens on hover,
+   click, and keyboard focus (see ProfileMenu.js). ------------------------------ */
+.profile {
+  position: relative;
+  display: inline-block;
+}
+
+.profile__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 10px 5px 5px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  color: var(--fg-hero-fg);
+  font: inherit;
+  line-height: 1;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+/* Hover / open: lighten to a translucent-ivory wash over the green. */
+.profile:hover .profile__trigger,
+.profile__trigger:hover,
+.profile__trigger[aria-expanded='true'] {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(244, 238, 225, 0.18);
+}
+
+.profile__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--fg-gold);
+  color: var(--fg-on-gold);
+  font-weight: 800;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.profile__name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--fg-hero-fg);
+}
+
+.profile__chev {
+  color: var(--fg-hero-muted);
+  transition: transform 0.15s ease;
+}
+.profile__chev--open {
+  transform: rotate(180deg);
+}
+
+/* Dropdown panel: a solid deep-green card with a hairline border + soft shadow. */
+.profile__menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 184px;
+  padding: 6px;
+  background: #0a3833;
+  border: 1px solid rgba(244, 238, 225, 0.12);
+  border-radius: 8px;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.3);
+  z-index: 50;
+}
+
+.profile__menu[hidden] {
+  display: none;
+}
+
+/* Transparent bridge across the 8px gap so hovering trigger -> panel never closes. */
+.profile__menu::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 0;
+  right: 0;
+  height: 8px;
+}
+
+.profile__logout {
+  margin: 0;
+}
+
+.profile__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border-radius: 6px;
+  color: var(--fg-hero-fg);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.profile__item svg {
+  flex: none;
+  color: var(--fg-hero-muted);
+}
+
+.profile__item:hover,
+.profile__item:focus-visible {
+  background: rgba(244, 238, 225, 0.1);
+  color: #fff;
+  outline: none;
+}
+
+.profile__item:hover svg,
+.profile__item:focus-visible svg {
+  color: var(--fg-gold);
+}
+
+/* --- Hero: dark radial green, ivory type, gold + ivory actions -------------
+   The gradient now BEGINS at the nav colour (#0e4a44) and holds it across the top
+   before darkening to #0a3833 lower down. So the nav's bottom edge and the hero's
+   top edge are the exact same tone — no brighter band under the bar — and the two
+   read as one continuous dark-green surface, with the falloff giving the hero its
+   depth. (Was #14615a at 0%, which put a lighter tint directly beneath the nav.) */
+.hero {
+  background: radial-gradient(130% 115% at 50% -10%, #0e4a44 0%, #0e4a44 38%, #0a3833 100%);
+  color: var(--fg-hero-fg);
+}
+
+.hero .eyebrow {
+  color: var(--fg-gold);
+  font-weight: 700;
+}
+
+.hero .eyebrow::before {
+  background: var(--fg-gold);
+}
+
+.hero .display {
+  font-family: var(--sans);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--fg-hero-fg);
+}
+
+.hero .lede {
+  color: #cfe0dc;
+}
+
+.hero__meta {
+  color: var(--fg-hero-muted);
+}
+
+/* --- Headings + ledes in the light body ----------------------------------- */
+.h2 {
+  font-family: var(--sans);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--fg-ink);
+}
+
+.section__lede {
+  color: var(--fg-muted);
+}
+
+/* --- Body eyebrows: green label + green tick ------------------------------ */
+.eyebrow {
+  color: var(--fg-green);
+  font-weight: 700;
+}
+
+.eyebrow::before {
+  background: var(--fg-green);
+}
+
+/* --- Alternating light bands (matches Layout A's rhythm) ------------------- */
+.section.showcase,
+.section.get,
+.section.faq {
+  background: var(--fg-body-bg);
+}
+
+.section.how,
+.section.pricing,
+.section.start {
+  background: var(--fg-body-bg2);
+}
+
+/* --- Buttons: pill shape, no cobalt glow ---------------------------------- */
+.btn {
+  border-radius: 40px;
+}
+
+.btn__price {
+  font-weight: 400;
+  opacity: 0.72;
+}
+
+/* Body/pricing primary = green pill, ivory text. */
+.btn--primary {
+  background: var(--fg-green);
+  color: var(--fg-hero-fg);
+  box-shadow: none;
+}
+
+.btn--primary:hover:not(:disabled) {
+  background: #12564f;
+  box-shadow: none;
+  transform: translateY(-1px);
+}
+
+/* Hero primary = gold pill, dark-green text. */
+.hero .btn--primary {
+  background: var(--fg-gold);
+  color: var(--fg-on-gold);
+  box-shadow: none;
+}
+
+.hero .btn--primary:hover:not(:disabled) {
+  background: #eec06a;
+  box-shadow: none;
+  transform: translateY(-1px);
+}
+
+/* Hero secondary ("See real results") = ivory with a translucent underline. */
+.btn--link {
+  color: var(--fg-hero-fg);
+  background: none;
+  border-radius: 0;
+  padding: 6px 2px;
+  border-bottom: 1.5px solid rgba(244, 238, 225, 0.35);
+}
+
+.btn--link:hover {
+  text-decoration: none;
+  border-bottom-color: rgba(244, 238, 225, 0.7);
+}
+
+/* --- Frames / showcase ---------------------------------------------------- */
+.frame {
+  border-color: var(--fg-line);
+  background: #e7ddc9;
+}
+
+.frame--empty {
+  background: linear-gradient(158deg, #cfe0dc, #8fb0a8);
+}
+
+.frame__ph {
+  color: var(--fg-muted);
+}
+
+.sample,
+.sample:last-child {
+  border-color: var(--fg-line);
+}
+
+.sample__label,
+.sample__who {
+  color: var(--fg-muted);
+}
+
+.sample__name {
+  color: var(--fg-ink);
+}
+
+/* --- How it works: gold numeral in a green circle ------------------------- */
+.stepcard {
+  border-top: none;
+  padding-top: 0;
+}
+
+.stepcard__num {
+  font-family: var(--sans);
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--fg-gold);
+  background: var(--fg-green);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  margin-bottom: 16px;
+}
+
+.stepcard__title {
+  color: var(--fg-ink);
+}
+
+.stepcard__body {
+  color: var(--fg-muted);
+}
+
+/* --- What you get --------------------------------------------------------- */
+.checklist__item {
+  color: var(--fg-ink);
+}
+
+.check {
+  color: var(--fg-green);
+}
+
+.looks__label {
+  color: var(--fg-muted);
+}
+
+.tag {
+  background: var(--fg-card);
+  border-color: var(--fg-line);
+  color: var(--fg-ink);
+}
+
+/* --- Pricing plans -------------------------------------------------------- */
+.plan {
+  background: var(--fg-card);
+  border-color: var(--fg-line);
+  border-radius: 16px;
+}
+
+.plan__name {
+  color: var(--fg-ink);
+}
+
+.plan__price {
+  font-family: var(--sans);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--fg-ink);
+}
+
+.plan__meta {
+  color: var(--fg-muted);
+}
+
+/* The "popular" plan: solid green fill, ivory text, overhanging gold badge. */
+.plan--on {
+  background: var(--fg-green);
+  border-color: var(--fg-green);
+  box-shadow: 0 24px 50px -26px rgba(14, 74, 68, 0.55);
+  color: var(--fg-hero-fg);
+}
+
+.plan--on .plan__name,
+.plan--on .plan__price {
+  color: var(--fg-hero-fg);
+}
+
+.plan--on .plan__meta {
+  color: #d7e4e0;
+}
+
+.plan__badge {
+  top: -11px;
+  left: 16px;
+  right: auto;
+  background: var(--fg-gold);
+  color: var(--fg-on-gold);
+  border: none;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 4px 10px;
+}
+
+.pricecard__fine {
+  color: var(--fg-muted);
+}
+
+.pricecard__fine a {
+  color: var(--fg-green);
+}
+
+/* --- FAQ ------------------------------------------------------------------ */
+.qa,
+.qa:first-child {
+  border-color: var(--fg-line);
+}
+
+.qa__q {
+  color: var(--fg-ink);
+}
+
+.qa__mark::before,
+.qa__mark::after {
+  background: var(--fg-green);
+}
+
+.qa__a {
+  color: var(--fg-muted);
+}
+
+.faq__more a {
+  color: var(--fg-green);
+}
+
+/* --- Footer: deep green, ivory brand, muted teal links -------------------- */
+.footer {
+  background: var(--fg-footer);
+  color: var(--fg-hero-muted);
+}
+
+.footer__word {
+  font-family: var(--sans);
+  font-weight: 800;
+  color: var(--fg-hero-fg);
+}
+
+.footer__tag {
+  color: #9fbdb7;
+}
+
+.footer__coltitle {
+  color: #7fa39c;
+}
+
+.footer__col a {
+  color: var(--fg-hero-fg);
+}
+
+.footer__col a:hover {
+  color: var(--fg-gold);
+}
+
+.footer__legal {
+  color: #9fbdb7;
+  border-top-color: rgba(159, 189, 183, 0.25);
+}
+
+.footer__legal a {
+  color: #9fbdb7;
+}
+
+/* --- Visible focus stays; recolour to gold on the dark/green surfaces ------ */
+a:focus-visible,
+button:focus-visible,
+.btn:focus-visible {
+  outline: 2px solid var(--fg-gold);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn--primary:hover:not(:disabled),
+  .hero .btn--primary:hover:not(:disabled) {
+    transform: none;
+  }
+}
+/* ==== end Forest & Gold — GLOBAL brand ==== */
+
+/* ========================================================================== *
+ * Account dashboard (/account). Current bone/ink/cobalt brand (BRAND.md):
+ * subtle radius, hairline borders, cobalt reserved for the one primary action;
+ * warn (never a second accent) marks the destructive delete zone.
+ * ========================================================================== */
+.acct__head {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 24px;
+}
+.acct__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+}
+.acct__meta .tag {
+  font-size: 12.5px;
+  color: var(--ash);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 12px;
+  background: #fffdf9;
+}
+.acct__signout-form {
+  margin-left: auto;
+}
+.acct__signout {
+  background: none;
+  border: none;
+  padding: 4px 2px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--ash);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.acct__signout:hover {
+  color: var(--cobalt);
+}
+
+.acct__section {
+  margin-top: 44px;
+}
+.acct__h2 {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+  margin: 0 0 6px;
+}
+.acct__hint {
+  color: var(--ash);
+  font-size: 15px;
+  margin: 0 0 18px;
+  max-width: 60ch;
+}
+.acct__card {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fffdf9;
+  padding: 22px;
+}
+.acct__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+.acct__empty p {
+  margin: 0;
+  color: var(--ash);
+}
+
+/* Order list: a media thumb, the plan + count, a status pill, and actions. */
+.ords {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.ord {
+  display: grid;
+  grid-template-columns: 64px 1fr auto auto;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fffdf9;
+  padding: 12px 16px 12px 12px;
+}
+.ord__media {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #efece6;
+  border: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+}
+.ord__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.ord__ph {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ash);
+}
+.ord__body {
+  min-width: 0;
+}
+.ord__title {
+  margin: 0 0 3px;
+  font-weight: 600;
+  font-size: 15px;
+}
+.ord__sub {
+  margin: 0;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.ord__actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.ord .btn--link {
+  padding: 8px 10px;
+  font-size: 14px;
+}
+@media (max-width: 620px) {
+  .ord {
+    grid-template-columns: 52px 1fr;
+    grid-template-areas:
+      'media body'
+      'media pill'
+      'actions actions';
+    row-gap: 6px;
+    column-gap: 14px;
+  }
+  .ord__media {
+    width: 52px;
+    height: 52px;
+    grid-area: media;
+    align-self: start;
+  }
+  .ord__body {
+    grid-area: body;
+  }
+  .ord .pill {
+    grid-area: pill;
+    justify-self: start;
+  }
+  .ord__actions {
+    grid-area: actions;
+    justify-content: flex-start;
+    margin-left: -10px;
+  }
+}
+
+/* Account forms + destructive delete zone. */
+.acct-form .field:first-of-type {
+  margin-top: 0;
+}
+.acct-form .btn--primary {
+  margin-top: 20px;
+}
+.acct-ok {
+  margin-top: 14px;
+  color: var(--ok);
+  font-size: 14px;
+}
+.btn--danger {
+  color: var(--warn);
+  background: none;
+  border: 1px solid var(--warn);
+  border-radius: 8px;
+  padding: 12px 20px;
+}
+.btn--danger:hover:not(:disabled) {
+  background: var(--warn);
+  color: var(--bone);
+}
+.acct-confirm {
+  border: 1px solid var(--warn);
+  border-radius: 10px;
+  padding: 20px;
+  background: #fdf3f1;
+  max-width: 480px;
+}
+.acct-confirm__note {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: var(--ink);
+  line-height: 1.5;
+}
+.acct-confirm__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+/* Account tabs: a hairline tab bar with a single cobalt underline on the active
+ * tab (the one repeated accent), server-rendered panels toggled client-side. */
+.tabs {
+  margin-top: 8px;
+}
+.tablist {
+  display: flex;
+  gap: 2px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 28px;
+  overflow-x: auto;
+}
+.tab {
+  appearance: none;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ash);
+  padding: 12px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.tab:hover {
+  color: var(--ink);
+}
+.tab--on {
+  color: var(--ink);
+  font-weight: 600;
+  border-bottom-color: var(--cobalt);
+}
+.tab__count {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ash);
+  background: var(--line);
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+.tab--on .tab__count {
+  color: var(--cobalt);
+  background: #e7efe9;
+}
+.tab:focus-visible {
+  outline: 2px solid var(--cobalt);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.tabpanel:focus {
+  outline: none;
+}
+.tabpanel[hidden] {
+  display: none;
+}
+.acct__section--first {
+  margin-top: 0;
 }

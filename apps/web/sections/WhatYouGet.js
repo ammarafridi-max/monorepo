@@ -1,12 +1,13 @@
 import { included, looks } from '../data/landing';
-import Check from './Check';
+import Check from '../components/Check';
+import Container from '../components/Container';
 
 // What you get: concrete, verdict-first specifics. Left column is the deliverable
 // checklist, right column names every look so the value is legible at a glance.
 export default function WhatYouGet() {
   return (
     <section className="section get">
-      <div className="container">
+      <Container>
         <p className="eyebrow">What you get</p>
         <h2 className="h2">Finished headshots, ready to use.</h2>
         <p className="section__lede">
@@ -35,7 +36,7 @@ export default function WhatYouGet() {
             </ul>
           </div>
         </div>
-      </div>
+      </Container>
     </section>
   );
 }
