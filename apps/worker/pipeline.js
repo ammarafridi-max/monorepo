@@ -98,6 +98,7 @@ export function createPipeline({
   scoreIdentity = async () => ({ score: 0, costUsd: 0 }),
   swapFace,
   enhanceFace,
+  blurBackground,
   persistImage,
   generateCount = 14,
   deliverCount = 14,
@@ -475,6 +476,30 @@ export function createPipeline({
         console.log(`[worker] order ${orderId} enhanced ${i + 1}/${deliveredImageUrls.length}`);
       }
       deliveredImageUrls = enhanced;
+    }
+
+    // BACKGROUND BLUR: matte the subject and blur the background so the shot reads
+    // as a photographer's portrait, not a sharp-background selfie. Runs on the
+    // current delivered set (selected/swapped/enhanced) WITHOUT touching identity,
+    // resumable per slot via blurredImageUrls, keyed blurred/<orderId>/<i>. Cosmetic
+    // and non-fatal (a failure ships the image un-blurred). Off when no blurrer is
+    // injected (set REPLICATE_MATTE_MODEL to enable).
+    if (blurBackground && deliveredImageUrls.length > 0) {
+      const blurred = [...(order.blurredImageUrls ?? [])];
+      for (let i = 0; i < deliveredImageUrls.length; i++) {
+        if (blurred[i]) continue; // already blurred this slot -> never redo
+        const { imageUrl, costUsd } = await blurBackground(
+          deliveredImageUrls[i],
+          `blurred/${orderId}/${i}`
+        );
+        blurred[i] = imageUrl;
+        await Order.updateOne(
+          { _id: orderId },
+          { $set: { blurredImageUrls: blurred }, $inc: { computeCostCents: usdToCents(costUsd) } }
+        );
+        console.log(`[worker] order ${orderId} background-blurred ${i + 1}/${deliveredImageUrls.length}`);
+      }
+      deliveredImageUrls = blurred;
     }
 
     // DURABILITY: copy the final delivered set off the ephemeral upstream host

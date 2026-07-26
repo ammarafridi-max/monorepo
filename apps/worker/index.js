@@ -158,6 +158,20 @@ const enhanceFace = ENHANCE_FACE
     ).enhanceFace
   : undefined;
 
+// BACKGROUND BLUR (the "photographer look"). Gated on REPLICATE_MATTE_MODEL: when
+// set, each delivered image has its background matted + blurred (subject kept sharp)
+// so the shot reads as shot-by-a-photographer instead of a sharp-background selfie.
+// Runs after enhance, before persist. Identity is untouched (only the background
+// changes). Cosmetic + non-fatal: a failure ships the image un-blurred. Tune BLUR_SIGMA.
+const BLUR_BACKGROUND = Boolean(process.env.REPLICATE_MATTE_MODEL);
+const blurBackground = BLUR_BACKGROUND
+  ? (
+      USE_FAKE_REPLICATE
+        ? await import('./blurBackground.fake.js')
+        : await import('./blurBackground.js')
+    ).createBackgroundBlurrer()
+  : undefined;
+
 // DURABILITY: persist the final delivered images into our R2 bucket so they do not
 // expire with the upstream (replicate.delivery) URLs. ON by default (R2 is already
 // required by the worker); set PERSIST_DELIVERED=off to fall back to the ephemeral
@@ -179,6 +193,9 @@ console.log(
 console.log(`[worker] face swap ${FACE_SWAP ? 'ON' : 'OFF (set REPLICATE_FACE_SWAP_MODEL to enable)'}`);
 console.log(
   `[worker] realism enhance ${ENHANCE_FACE ? 'ON' : 'OFF (set REPLICATE_ENHANCE_MODEL to enable)'}`
+);
+console.log(
+  `[worker] background blur ${BLUR_BACKGROUND ? 'ON' : 'OFF (set REPLICATE_MATTE_MODEL to enable)'}`
 );
 console.log(
   `[worker] delivered-image persistence ${PERSIST_DELIVERED ? 'ON (copied to R2)' : 'OFF (PERSIST_DELIVERED=off)'}`
@@ -325,6 +342,7 @@ const pipeline = createPipeline({
   scoreIdentity,
   swapFace,
   enhanceFace,
+  blurBackground,
   persistImage,
   generateCount: GENERATE_COUNT,
   deliverCount: DELIVER_COUNT,
