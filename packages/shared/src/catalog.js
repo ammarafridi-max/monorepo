@@ -117,25 +117,25 @@ export const ATTIRE = Object.freeze([
     label: 'Black tie',
     // Neutral wording so the gender anchor renders a tux or an evening gown.
     promptFragment: 'wearing elegant black-tie evening attire',
-    image: '',
+    image: '/attire-black-tie.jpg',
   },
   {
     id: 'business_suit',
     label: 'Business suit',
     promptFragment: 'wearing a well-tailored business suit',
-    image: '',
+    image: '/attire-business-suit.jpg',
   },
   {
     id: 'three_piece',
     label: 'Three-piece suit',
     promptFragment: 'wearing a tailored three-piece suit with a waistcoat',
-    image: '',
+    image: '/attire-three-piece.jpg',
   },
   {
     id: 'business_casual',
     label: 'Business casual, collared shirt',
     promptFragment: 'wearing a crisp business-casual collared shirt',
-    image: '',
+    image: '/attire-business-casual.jpg',
   },
   {
     id: 'blazer_tee',
@@ -159,7 +159,7 @@ export const ATTIRE = Object.freeze([
     id: 'turtleneck',
     label: 'Turtleneck',
     promptFragment: 'wearing a fitted dark turtleneck',
-    image: '',
+    image: '/attire-turtleneck.jpg',
   },
 ]);
 

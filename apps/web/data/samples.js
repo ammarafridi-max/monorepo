@@ -10,10 +10,10 @@
  */
 export const samples = [
   {
-    name: 'Daniel',
-    role: 'Founder',
-    before: ['', '', ''],
-    after: ['', '', '', ''],
+    name: 'Ammar Afridi',
+    role: 'Founder @ Travl.ae',
+    before: ['/work/before-1.jpg', '/work/before-2.jpg', '/work/before-3.jpg'],
+    after: ['/work/after-1.jpg', '/work/after-2.jpg', '/work/after-3.jpg', '/work/after-4.jpg'],
   },
   {
     name: 'Priya',
