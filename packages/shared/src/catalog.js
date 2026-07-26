@@ -300,6 +300,25 @@ export function buildSubject({ gender, ageRange, race, facialHair } = {}) {
  * @param {string} opts.subjectAnchor - e.g. "HDLNRZ, a person" (trigger + subject)
  * @returns {string[]} exactly `count` prompt strings
  */
+// The shared quality/photography tail appended to every generation prompt. It
+// does the work behind "make it look like a photographer shot it, not a selfie":
+//  - "head and shoulders framing with space above the head" pulls the camera back
+//    and leaves headroom, so the square output survives LinkedIn's circular crop
+//    instead of clipping the top of the head / chin.
+//  - "85mm portrait lens at eye level" gives a photographer's distance and kills
+//    the wide-angle selfie distortion.
+//  - "shallow depth of field, softly blurred background" gives professional bokeh
+//    (the old tail said "sharp focus, high detail", which kept the background tack
+//    sharp); "sharp focus on the face" keeps the subject crisp.
+// Scene-neutral wording ("headshot portrait", not "studio") so it does not fight
+// an outdoor / office / greenery look. FLUX has no negative prompt, so everything
+// here is positive phrasing. Kept in ONE place and reused by the dev tune script.
+export const QUALITY_TAIL =
+  'professional headshot portrait, head and shoulders framing with space above the head, ' +
+  'shot on a DSLR with an 85mm portrait lens at eye level, shallow depth of field, ' +
+  'softly blurred background, sharp focus on the face, natural realistic skin texture, ' +
+  'sharp detailed eyes, high detail';
+
 export function buildPrompts({ looks = [], attire = [], count, subjectAnchor }) {
   const lookFrags = looks.map((id) => LOOKS_BY_ID[id]?.promptFragment).filter(Boolean);
   const attireFrags = attire.map((id) => ATTIRE_BY_ID[id]?.promptFragment).filter(Boolean);
@@ -317,9 +336,7 @@ export function buildPrompts({ looks = [], attire = [], count, subjectAnchor }) 
   const prompts = [];
   for (let i = 0; i < n; i++) {
     const { look, att } = combos[i % combos.length];
-    prompts.push(
-      `${subjectAnchor}, ${att}, ${look}, natural realistic skin texture, sharp detailed eyes, photographic, sharp focus, high detail`
-    );
+    prompts.push(`${subjectAnchor}, ${att}, ${look}, ${QUALITY_TAIL}`);
   }
   return prompts;
 }

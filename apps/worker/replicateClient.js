@@ -21,6 +21,8 @@
  * unique version hash, so orders never collide.
  */
 
+import { QUALITY_TAIL } from '@picturesk/shared/catalog';
+
 const REPLICATE_API = 'https://api.replicate.com';
 
 // Trainer model + pinned version. Version hashes change as the trainer is
@@ -65,7 +67,7 @@ export const PROMPTS = Object.freeze(
     'confident executive in a black turtleneck, dark moody background, dramatic rim lighting',
     'friendly approachable headshot in a grey sweater over a collared shirt, soft neutral beige background',
     'formal portrait in a dark grey three-piece suit, subtle bokeh of a modern office interior behind',
-  ].map((look) => `${TRIGGER_WORD}, ${SUBJECT}, ${look}, sharp focus, high detail`)
+  ].map((look) => `${TRIGGER_WORD}, ${SUBJECT}, ${look}, ${QUALITY_TAIL}`)
 );
 
 /**
