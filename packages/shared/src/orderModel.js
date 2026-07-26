@@ -127,14 +127,6 @@ const orderSchema = new Schema(
     // the enhance pass is resumable. When set, deliveredImageUrls points at THESE.
     enhancedImageUrls: [String],
 
-    // Background-blurred delivered images: each selected/enhanced headshot with its
-    // background matted and blurred (the subject kept sharp) so the shot reads as a
-    // shot-by-a-photographer portrait instead of a sharp-background selfie. Applied
-    // after enhance, before persist, and written per slot so the blur pass is
-    // resumable. When set, deliveredImageUrls points at THESE (then persist copies
-    // them into our R2 deliveries/ bucket).
-    blurredImageUrls: [String],
-
     // The delivered images COPIED INTO OUR OWN R2 bucket (keys deliveries/<id>/<i>),
     // the durability step: generation/swap/enhance all return replicate.delivery
     // URLs, which Replicate garbage-collects within ~an hour, so we persist the
