@@ -34,10 +34,14 @@
   --color-accent-900: #701700;
   --color-accent-950: #3d0d00;
 
-  --font-sans:         var(--font-outfit);
-  --font-nunito:       'Outfit', sans-serif;
-  --font-merriweather: 'Outfit', sans-serif;
-  --font-outfit:       'Outfit', sans-serif;
+  /* Travl uses Geist (UI/body) + Geist Mono (reference codes). The historical
+     --font-outfit / --font-nunito / --font-merriweather aliases are repointed to
+     Geist so every existing `font-outfit`/`var(--font-outfit)` usage inherits it. */
+  --font-sans:         var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-mono:         var(--font-geist-mono), ui-monospace, monospace;
+  --font-nunito:       var(--font-geist), sans-serif;
+  --font-merriweather: var(--font-geist), sans-serif;
+  --font-outfit:       var(--font-geist), sans-serif;
 
   --rounded-input-sm: 5px;
   --rounded-input-md: 8px;

@@ -19,6 +19,8 @@ const ROLE_ROUTE_RULES = [
   { prefix: '/admin/products',                roles: ['admin', 'agent'] },
   { prefix: '/admin/account',                 roles: ['admin', 'agent', 'blog-manager'] },
   { prefix: '/admin/insurance-applications',  roles: ['admin'] },
+  { prefix: '/admin/visa-applications',            roles: ['admin', 'agent'] },
+  { prefix: '/admin/document-registry',       roles: ['admin'] },
   { prefix: '/admin/affiliates',              roles: ['admin'] },
   { prefix: '/admin/users',                   roles: ['admin'] },
   { prefix: '/admin/currencies',              roles: ['admin'] },

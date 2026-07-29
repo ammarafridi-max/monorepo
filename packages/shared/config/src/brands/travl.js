@@ -16,7 +16,7 @@ const travl = {
     accentColor: '#ff603a',
   },
   features: {
-    dummyTickets: true,
+    dummyTickets: false,
     insurance: true,
     hotelVouchers: false,
   },
@@ -24,7 +24,7 @@ const travl = {
     titleTemplate: '%s | Travl',
     defaultTitle: 'Travl',
     defaultDescription:
-      'Get dummy tickets, hotel reservations, and travel insurance for your visa application. Instant delivery. Trusted by UAE residents.',
+      'Travel insurance, embassy-ready travel itineraries, and visa application assistance for UAE residents. Trusted, fast, and fully supported.',
     ogImage: '/og-image.png',
   },
   legal: {

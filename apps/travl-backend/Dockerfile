@@ -5,8 +5,12 @@ RUN npm install -g pnpm@9.15.0
 # NO headless browser. @napi-rs/canvas ships a self-contained prebuilt binary, so
 # we only need ca-certificates and a base font set. (This removed Chromium/Puppeteer
 # and the entire "Network.enable timed out" failure class.)
+# tzdata: node:22-slim (debian bookworm-slim) ships NO /usr/share/zoneinfo. Node's
+# bundled ICU covers Intl/node-cron timezone math, but tzdata makes TZ-based Date
+# handling and any zoneinfo lookups correct too — needed for the 09:00 Asia/Dubai
+# reminder cron to behave predictably.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates fontconfig fonts-liberation \
+    ca-certificates tzdata fontconfig fonts-liberation \
     && rm -rf /var/lib/apt/lists/*
 
 # ── Install dependencies (cached separately from source) ─────────────────────
@@ -36,6 +40,7 @@ COPY packages/shared/utils/package.json           packages/shared/utils/package.
 COPY packages/domains/email-support/package.json   packages/domains/email-support/package.json
 COPY packages/domains/visa/package.json            packages/domains/visa/package.json
 COPY packages/domains/visa-leads/package.json      packages/domains/visa-leads/package.json
+COPY packages/domains/visa-applications/package.json  packages/domains/visa-applications/package.json
 COPY apps/travl-backend/package.json       apps/travl-backend/package.json
 
 RUN pnpm install --frozen-lockfile

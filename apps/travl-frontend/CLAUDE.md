@@ -4,7 +4,7 @@ Scoped guidance for the **Travl** frontend. Read the repo-root `CLAUDE.md` first
 
 ## What Travl is
 
-Travl (`travl.ae`) sells **visa-application support documents** to UAE residents. The product line, not transfers: **dummy/verifiable flight tickets, travel itineraries, travel insurance, and visa services.** Brand identity, theme (teal `#14948f`), and feature flags live in `packages/shared/config/src/brands/travl.js` — `dummyTickets` and `insurance` are on, `hotelVouchers` is off. Don't build UI for a disabled feature.
+Travl (`travl.ae`) sells **visa-application support** to UAE residents. The product line, not transfers: **travel insurance, embassy-ready travel itineraries, and visa application assistance.** Travl does **not** sell dummy/verifiable flight tickets or hotel reservations — those are referred out to partner brands. Brand identity, theme (teal `#14948f`), and feature flags live in `packages/shared/config/src/brands/travl.js` — `insurance` is on; `dummyTickets` and `hotelVouchers` are off. Don't build UI for a disabled feature.
 
 ## Route map (`src/app`)
 

@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { AppError } from '@travel-suite/utils';
 
-export function createUserService({ User, jwtSecret, jwtExpiresIn, notifications }) {
+export function createUserService({ User, jwtSecret, jwtExpiresIn, notifications, apiBaseUrl = '' }) {
   function signToken(id) {
     return jwt.sign({ id }, jwtSecret, { expiresIn: jwtExpiresIn });
   }
@@ -79,6 +79,55 @@ export function createUserService({ User, jwtSecret, jwtExpiresIn, notifications
     return { token, user: { _id: user._id, firstName: user.firstName, lastName: user.lastName, email: user.email, isVerified: user.isVerified } };
   };
 
+  // ---- Magic link (passwordless) -------------------------------------------
+  // Creates the user if absent, stores a hashed 20-min token, emails the link.
+  // Caller must ALWAYS respond 200 regardless of outcome (no account enumeration).
+  const requestMagicLink = async ({ email }) => {
+    const normalized = String(email || '').trim().toLowerCase();
+    if (!normalized || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) return;
+
+    let user = await User.findOne({ email: normalized });
+    if (!user) {
+      // Passwordless account: random password purely to satisfy any hashing path;
+      // it is never usable for password login (correctPassword also guards on it).
+      user = await User.create({ email: normalized, password: crypto.randomBytes(24).toString('hex') });
+    }
+    if (!user.isActive) return;
+
+    const rawToken = user.createMagicLinkToken();
+    await user.save({ validateBeforeSave: false });
+
+    const base = String(apiBaseUrl || '').replace(/\/+$/, '');
+    const magicLinkUrl = `${base}/api/users/magic-link/${rawToken}`;
+
+    if (notifications?.sendMagicLink) {
+      await notifications.sendMagicLink({ email: normalized, magicLinkUrl }).catch(async () => {
+        user.magicLinkToken = undefined;
+        user.magicLinkExpires = undefined;
+        await user.save({ validateBeforeSave: false });
+      });
+    }
+  };
+
+  const verifyMagicLink = async (rawToken) => {
+    if (!rawToken) throw new AppError('Token is invalid or has expired', 400);
+    const hashed = crypto.createHash('sha256').update(rawToken).digest('hex');
+    const user = await User.findOne({
+      magicLinkToken: hashed,
+      magicLinkExpires: { $gt: Date.now() },
+      isActive: true,
+    }).select('+magicLinkToken +magicLinkExpires');
+    if (!user) throw new AppError('Token is invalid or has expired', 400);
+
+    user.magicLinkToken = undefined;
+    user.magicLinkExpires = undefined;
+    user.isVerified = true; // proving control of the inbox verifies the email
+    await user.save({ validateBeforeSave: false });
+
+    const token = signToken(user._id);
+    return { token, user: { _id: user._id, firstName: user.firstName, lastName: user.lastName, email: user.email, isVerified: user.isVerified } };
+  };
+
   const getProfile = async (userId) => {
     const user = await User.findById(userId);
     if (!user) throw new AppError('User not found', 404);
@@ -113,5 +162,5 @@ export function createUserService({ User, jwtSecret, jwtExpiresIn, notifications
     await user.save({ validateBeforeSave: false });
   };
 
-  return { register, login, verifyEmail, forgotPassword, resetPassword, getProfile, updateProfile, updatePassword, deleteAccount };
+  return { register, login, verifyEmail, forgotPassword, resetPassword, requestMagicLink, verifyMagicLink, getProfile, updateProfile, updatePassword, deleteAccount };
 }

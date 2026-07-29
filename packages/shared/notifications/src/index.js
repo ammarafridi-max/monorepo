@@ -4,6 +4,17 @@ import { renderBookingPaymentTemplate } from './templates/booking-payment.js';
 import { renderBookingPaymentAdminTemplate } from './templates/booking-payment-admin.js';
 import { renderPaymentLinkPaidTemplate } from './templates/payment-link-paid.js';
 import { renderVisaLeadTemplate } from './templates/visa-lead.js';
+import {
+  renderMagicLink,
+  renderApplicationAssigned,
+  renderDocumentRejected,
+  renderAllApproved,
+  renderChecklistCompleteAdmin,
+  renderDocumentsStillNeeded,
+  renderRejectionReminder,
+  renderApplicationEscalated,
+  renderFileReadyForStaff,
+} from './templates/visa-applications.js';
 import { formatDate, formatToDDMMM, formatToDDMMMYYYYMixed, extractIataCode } from './helpers.js';
 
 /**
@@ -288,6 +299,151 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
     }
   }
 
+  // -- 9. Visa applications ---------------------------------------------------
+
+  async function sendMagicLink({ email, magicLinkUrl }) {
+    try {
+      if (!email || !magicLinkUrl) return false;
+      await sendEmail({
+        email,
+        name: email,
+        subject: `Your ${brand.name} sign-in link`,
+        htmlContent: renderMagicLink({ brand, magicLinkUrl }),
+      });
+      return true;
+    } catch (err) {
+      log('[notifications] sendMagicLink failed', { email, err: err.message });
+      return false;
+    }
+  }
+
+  async function sendApplicationAssigned({ email, applicationRef, destinationCountry, magicLinkUrl }) {
+    try {
+      if (!email || !magicLinkUrl) return false;
+      await sendEmail({
+        email,
+        name: email,
+        subject: `Your ${destinationCountry || 'Schengen'} visa application ${applicationRef} is ready`,
+        htmlContent: renderApplicationAssigned({ brand, applicationRef, destinationCountry, magicLinkUrl }),
+      });
+      return true;
+    } catch (err) {
+      log('[notifications] sendApplicationAssigned failed', { applicationRef, err: err.message });
+      return false;
+    }
+  }
+
+  async function sendDocumentRejected({ email, applicationRef, docType, rejectionReason, link }) {
+    try {
+      if (!email) return false;
+      await sendEmail({
+        email,
+        name: email,
+        subject: `Action needed on application ${applicationRef}`,
+        htmlContent: renderDocumentRejected({ brand, applicationRef, docType, rejectionReason, link }),
+      });
+      return true;
+    } catch (err) {
+      log('[notifications] sendDocumentRejected failed', { applicationRef, err: err.message });
+      return false;
+    }
+  }
+
+  async function sendAllDocumentsApproved({ email, applicationRef, destinationCountry, link }) {
+    try {
+      if (!email) return false;
+      await sendEmail({
+        email,
+        name: email,
+        subject: `All documents approved — application ${applicationRef}`,
+        htmlContent: renderAllApproved({ brand, applicationRef, destinationCountry, link }),
+      });
+      return true;
+    } catch (err) {
+      log('[notifications] sendAllDocumentsApproved failed', { applicationRef, err: err.message });
+      return false;
+    }
+  }
+
+  async function sendChecklistCompleteToAdmin({ applicationRef, destinationCountry }) {
+    try {
+      await sendEmail({
+        email: brand.adminEmail,
+        name: brand.teamName,
+        subject: `Documents complete — application ${applicationRef}`,
+        htmlContent: renderChecklistCompleteAdmin({ brand, applicationRef, destinationCountry }),
+      });
+      return true;
+    } catch (err) {
+      log('[notifications] sendChecklistCompleteToAdmin failed', { applicationRef, err: err.message });
+      return false;
+    }
+  }
+
+  // -- 10. Visa reminder engine ----------------------------------------------
+
+  async function sendDocumentsStillNeeded({ email, applicationRef, destinationCountry, missing, link }) {
+    try {
+      if (!email) return false;
+      await sendEmail({
+        email,
+        name: email,
+        subject: `Reminder — documents still needed for application ${applicationRef}`,
+        htmlContent: renderDocumentsStillNeeded({ brand, applicationRef, destinationCountry, missing, link }),
+      });
+      return true;
+    } catch (err) {
+      log('[notifications] sendDocumentsStillNeeded failed', { applicationRef, err: err.message });
+      return false;
+    }
+  }
+
+  async function sendRejectionReminder({ email, applicationRef, destinationCountry, rejected, link }) {
+    try {
+      if (!email) return false;
+      await sendEmail({
+        email,
+        name: email,
+        subject: `Reminder — a document still needs fixing for application ${applicationRef}`,
+        htmlContent: renderRejectionReminder({ brand, applicationRef, destinationCountry, rejected, link }),
+      });
+      return true;
+    } catch (err) {
+      log('[notifications] sendRejectionReminder failed', { applicationRef, err: err.message });
+      return false;
+    }
+  }
+
+  async function sendFileReadyForStaff({ applicationRef, destinationCountry }) {
+    try {
+      await sendEmail({
+        email: brand.adminEmail,
+        name: brand.teamName,
+        subject: `Your turn — ${applicationRef} is ready to prepare`,
+        htmlContent: renderFileReadyForStaff({ brand, applicationRef, destinationCountry }),
+      });
+      return true;
+    } catch (err) {
+      log('[notifications] sendFileReadyForStaff failed', { applicationRef, err: err.message });
+      return false;
+    }
+  }
+
+  async function sendApplicationEscalated({ applicationRef, destinationCountry, customerEmail, reminderCount, link }) {
+    try {
+      await sendEmail({
+        email: brand.adminEmail,
+        name: brand.teamName,
+        subject: `Application ${applicationRef} has gone quiet — needs a call`,
+        htmlContent: renderApplicationEscalated({ brand, applicationRef, destinationCountry, customerEmail, reminderCount, link }),
+      });
+      return true;
+    } catch (err) {
+      log('[notifications] sendApplicationEscalated failed', { applicationRef, err: err.message });
+      return false;
+    }
+  }
+
   return {
     sendInsuranceFormSubmission,
     sendInsurancePaymentToAdmin,
@@ -298,5 +454,14 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
     sendPaymentLinkPaidToAdmin,
     sendContactFormToAdmin,
     sendVisaLeadToAdmin,
+    sendMagicLink,
+    sendApplicationAssigned,
+    sendDocumentRejected,
+    sendAllDocumentsApproved,
+    sendChecklistCompleteToAdmin,
+    sendDocumentsStillNeeded,
+    sendRejectionReminder,
+    sendApplicationEscalated,
+    sendFileReadyForStaff,
   };
 }

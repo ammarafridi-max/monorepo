@@ -8,14 +8,14 @@ import {
   LayoutDashboard, Ticket, ShieldCheck, Inbox, Mail, BookOpen, Tag, Stamp,
   TrendingUp, Link2, Package, DollarSign, CircleDollarSign, Users, Handshake,
   UserCircle, LogOut, ChevronLeft, ChevronRight, Menu, X, Plane, ClipboardList,
-  Shield, CalendarCheck, Car, MapPin, SlidersHorizontal, CalendarDays,
+  Shield, CalendarCheck, Car, MapPin, SlidersHorizontal, CalendarDays, FileText,
 } from 'lucide-react';
 
 const ICON_MAP = {
   LayoutDashboard, Ticket, ShieldCheck, Inbox, Mail, BookOpen, Tag, Stamp,
   TrendingUp, Link2, Package, DollarSign, CircleDollarSign, Users, Handshake,
   UserCircle, Plane, ClipboardList, Shield, CalendarCheck,
-  Car, MapPin, SlidersHorizontal, CalendarDays,
+  Car, MapPin, SlidersHorizontal, CalendarDays, FileText,
 };
 
 function NavItem({ item, collapsed }) {

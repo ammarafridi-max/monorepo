@@ -14,6 +14,7 @@ import { createSerpApiClient } from "@travel-suite/serpapi";
 import { createLocationsRouter } from "@travel-suite/locations";
 import { createItinerariesRouter } from "@travel-suite/itineraries";
 import { createUsersRouter } from "@travel-suite/users";
+import { createVisaApplicationsRouter } from "@travel-suite/visa-applications";
 import { createNotificationsService } from "@travel-suite/notifications";
 import {
   createStripeClient,
@@ -193,7 +194,7 @@ export const stripeWebhookHandler = createStripeWebhookHandler({
   },
 });
 
-const { router: usersRouter } = createUsersRouter({
+const { router: usersRouter, middleware: userAuth, User } = createUsersRouter({
   db,
   jwtSecret: config.userJwtSecret,
   jwtExpiresIn: config.userJwtExpiresIn,
@@ -201,8 +202,36 @@ const { router: usersRouter } = createUsersRouter({
   nodeEnv: config.nodeEnv,
   notifications,
   appBaseUrl: config.frontendUrl,
+  apiBaseUrl: config.backendUrl,
 });
 
 router.use("/users", usersRouter);
+
+// -- Schengen visa application system -----------------------------------------
+// Private customer documents (passport/bank statements) go to a SEPARATE
+// authenticated Cloudinary space; reads are always via signed short-lived URLs.
+const visaApplicationStorage = createCloudinaryStorage({
+  cloudName: config.cloudinary.cloudName,
+  apiKey: config.cloudinary.apiKey,
+  apiSecret: config.cloudinary.apiSecret,
+  logger,
+  folder: "travl/visa-applications",
+});
+
+const { router: visaApplicationsRouter, runReminderSweep } = createVisaApplicationsRouter({
+  db,
+  auth,          // admin protect/restrictTo
+  userAuth,      // customer (userJwt) protect
+  User,
+  storage: visaApplicationStorage,
+  notifications,
+  apiBaseUrl: config.backendUrl,
+  appBaseUrl: config.frontendUrl,
+  logger,
+});
+router.use("/visa-applications", visaApplicationsRouter);
+
+// Exposed so server.js can schedule the daily reminder sweep (node-cron).
+export { runReminderSweep as runVisaReminderSweep };
 
 export default router;

@@ -12,6 +12,7 @@ import { UserAuthContext } from '@travel-suite/frontend-shared/contexts/AuthCont
 import { CurrencyProvider } from '@travel-suite/frontend-shared/contexts/CurrencyContext';
 import { InsuranceProvider } from '@travel-suite/frontend-shared/contexts/InsuranceContext';
 import AppMegaLayout from '@travel-suite/frontend-shared/layouts/AppMegaLayout';
+import { UserAuthProvider } from '@travel-suite/frontend-shared/contexts/UserAuthProvider';
 import Footer from '@travel-suite/frontend-shared/components/sections/v2/Footer';
 import StickyWhatsApp from '@travel-suite/frontend-shared/components/ui/v2/StickyWhatsApp';
 import AnalyticsInit from '@travel-suite/frontend-shared/components/shared/AnalyticsInit';
@@ -138,6 +139,10 @@ function GuestAuthProvider({ children }) {
 export default function Providers({ children }) {
   const pathname = usePathname();
   const isAdminRoute = pathname?.startsWith('/admin');
+  // Real customer auth only on the /apply visa-application routes; every other
+  // public page keeps the guest provider (unchanged behaviour).
+  const isApplyRoute = pathname?.startsWith('/apply');
+  const AuthProvider = isApplyRoute ? UserAuthProvider : GuestAuthProvider;
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -166,7 +171,7 @@ export default function Providers({ children }) {
       <HotjarInit />
       <Toaster />
       <QueryClientProvider client={queryClient}>
-        <GuestAuthProvider>
+        <AuthProvider>
           <CurrencyProvider>
             <InsuranceProvider maxStartDays={270}>
               <AppMegaLayout pages={defaultPages} logoAlt={LOGO_ALT} footer={travlFooter}>
@@ -174,11 +179,11 @@ export default function Providers({ children }) {
               </AppMegaLayout>
               <StickyWhatsApp
                 phoneNumber={WHATSAPP_NUMBER}
-                hidePathPrefixes={['/insurance-booking']}
+                hidePathPrefixes={['/insurance-booking', '/apply']}
               />
             </InsuranceProvider>
           </CurrencyProvider>
-        </GuestAuthProvider>
+        </AuthProvider>
       </QueryClientProvider>
     </>
   );

@@ -36,6 +36,9 @@ export default {
   },
 
   frontendUrl: process.env.FRONTEND_URL ?? "http://localhost:3000",
+  // Public base URL of THIS backend — used to build magic-link sign-in URLs that
+  // the browser hits directly (e.g. https://api.travl.ae). Falls back to the local port.
+  backendUrl: process.env.BACKEND_URL ?? `http://localhost:${parseNumber(process.env.PORT, 4000)}`,
 
   airlabs: {
     apiKey: process.env.AIRLABS_API_KEY,
@@ -58,6 +61,10 @@ export default {
   userJwtSecret: process.env.USER_JWT_SECRET ?? process.env.JWT_SECRET,
   userJwtExpiresIn: process.env.USER_JWT_EXPIRES_IN ?? "30d",
   userCookieExpiresInDays: parseNumber(process.env.USER_COOKIE_EXPIRES_IN, 30),
+
+  // Daily visa-application reminder sweep (node-cron, 09:00 Asia/Dubai). Off unless
+  // explicitly enabled so it never double-runs across multiple machines/regions.
+  enableReminderCron: ['1', 'true', 'yes'].includes(String(process.env.ENABLE_REMINDER_CRON ?? '').toLowerCase()),
 
   anthropicApiKey: process.env.ANTHROPIC_API_KEY,
   gmail: {

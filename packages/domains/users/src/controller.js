@@ -68,6 +68,30 @@ export function createUserController({ service, cookieExpiresInDays, nodeEnv, ap
     }
   };
 
+  const requestMagicLink = async (req, res, next) => {
+    try {
+      await service.requestMagicLink({ email: req.body.email });
+      // Always 200 — never reveal whether the email exists.
+      res.json({ status: 'success', message: 'If that email is valid, a sign-in link has been sent.' });
+    } catch {
+      // Even on unexpected error we return 200 to avoid enumeration; the failure is logged upstream.
+      res.json({ status: 'success', message: 'If that email is valid, a sign-in link has been sent.' });
+    }
+  };
+
+  const verifyMagicLink = async (req, res, next) => {
+    try {
+      const { token } = await service.verifyMagicLink(req.params.token);
+      sendTokenCookie(res, token);
+      const base = String(appBaseUrl || '').replace(/\/+$/, '');
+      res.redirect(`${base}/apply`);
+    } catch (err) {
+      // Send the user to the login page with an error flag rather than a JSON 400.
+      const base = String(appBaseUrl || '').replace(/\/+$/, '');
+      res.redirect(`${base}/apply/login?error=expired`);
+    }
+  };
+
   const getProfile = async (req, res, next) => {
     try {
       const user = await service.getProfile(req.user._id);
@@ -106,5 +130,5 @@ export function createUserController({ service, cookieExpiresInDays, nodeEnv, ap
     }
   };
 
-  return { register, login, logout, verifyEmail, forgotPassword, resetPassword, getProfile, updateProfile, updatePassword, deleteAccount };
+  return { register, login, logout, verifyEmail, forgotPassword, resetPassword, requestMagicLink, verifyMagicLink, getProfile, updateProfile, updatePassword, deleteAccount };
 }

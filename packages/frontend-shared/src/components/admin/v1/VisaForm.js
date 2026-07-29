@@ -305,7 +305,7 @@ export default function VisaForm({
 
         <div className="space-y-5">
 
-          <Card title="Visa Details">
+          <Card title="Visa Details" collapsible>
             <div className="space-y-4">
               <Field label="Country Name" error={errors.countryName?.message}>
                 <TextInput
@@ -335,7 +335,7 @@ export default function VisaForm({
             </div>
           </Card>
 
-          <Card title="Hero Section">
+          <Card title="Hero Section" collapsible>
             <div className="space-y-4">
               <Field label="Headline">
                 <TextInput {...register('heroHeadline')} placeholder="e.g. Apply for UAE Visa Online" />
@@ -373,7 +373,7 @@ export default function VisaForm({
             </div>
           </Card>
 
-          <Card title="Packages">
+          <Card title="Packages" collapsible>
             <div className="space-y-4">
               {pkgFields.length === 0 && (
                 <p className="text-xs text-gray-400 text-center py-2">No packages yet.</p>
@@ -886,7 +886,7 @@ export default function VisaForm({
         <div className="space-y-5 xl:sticky xl:top-6">
 
           {isEdit && initialData && (
-            <Card title="Visa Info">
+            <Card title="Visa Info" collapsible>
               <dl className="space-y-2 text-xs">
                 {[
                   ['Country', initialData.countryName || '—'],
@@ -904,7 +904,7 @@ export default function VisaForm({
           )}
 
           {isEdit && (
-            <Card title="Visibility">
+            <Card title="Visibility" collapsible>
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-gray-500 font-medium">Status</span>
@@ -938,7 +938,7 @@ export default function VisaForm({
             </Card>
           )}
 
-          <Card title="Hero Image">
+          <Card title="Hero Image" collapsible>
             {initialData?.heroImageUrl && (
               <div className="mb-3">
                 <img

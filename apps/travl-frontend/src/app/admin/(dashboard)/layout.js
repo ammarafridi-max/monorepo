@@ -21,6 +21,8 @@ const nav = [
       { label: 'Insurance', href: '/admin/insurance-applications', icon: 'ShieldCheck', roles: ['admin', 'agent'] },
       { label: 'Itineraries', href: '/admin/itineraries', icon: 'MapPin', roles: ['admin', 'agent'] },
       { label: 'Visa Leads', href: '/admin/visa-leads', icon: 'Inbox', roles: ['admin'] },
+      { label: 'Visa Applications', href: '/admin/visa-applications', icon: 'ClipboardList', roles: ['admin', 'agent'] },
+      { label: 'Document Registry', href: '/admin/document-registry', icon: 'FileText', roles: ['admin'] },
     ],
   },
   {

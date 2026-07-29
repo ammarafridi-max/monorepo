@@ -12,12 +12,12 @@ function getOrRegisterModel(conn, name, schema) {
   }
 }
 
-export function createUsersRouter({ db, jwtSecret, jwtExpiresIn = '7d', cookieExpiresInDays = 7, nodeEnv = 'development', notifications, appBaseUrl } = {}) {
+export function createUsersRouter({ db, jwtSecret, jwtExpiresIn = '7d', cookieExpiresInDays = 7, nodeEnv = 'development', notifications, appBaseUrl, apiBaseUrl } = {}) {
   const User = getOrRegisterModel(db, 'User', UserSchema);
-  const service = createUserService({ User, jwtSecret, jwtExpiresIn, notifications });
+  const service = createUserService({ User, jwtSecret, jwtExpiresIn, notifications, apiBaseUrl });
   const middleware = createUserMiddleware({ User, jwtSecret });
   const controller = createUserController({ service, cookieExpiresInDays, nodeEnv, appBaseUrl });
   const router = createUserRouterFromParts({ controller, middleware });
 
-  return { router, middleware };
+  return { router, middleware, User };
 }

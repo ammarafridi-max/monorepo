@@ -45,6 +45,18 @@ export async function apiFetchPublic(path, options = {}) {
   return await returnData(res);
 }
 
+// Fetches a raw binary body (with auth cookies) and returns a Blob — used to
+// render private documents inline without exposing a URL or writing to disk.
+export async function apiFetchBlob(path, options = {}) {
+  const res = await fetch(`${BACKEND}${path}`, {
+    ...options,
+    headers: { ...(options.headers || {}) },
+    credentials: 'include',
+  });
+  await checkError(res);
+  return await res.blob();
+}
+
 export async function apiUpload(path, formData, method = 'POST') {
   const res = await fetch(`${BACKEND}${path}`, {
     method,
