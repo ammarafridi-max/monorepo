@@ -35,6 +35,7 @@ const travlFooter = (
         links: [
           { label: 'All Plans', href: '/travel-insurance' },
           { label: 'Schengen Visa', href: '/travel-insurance/schengen-visa' },
+          { label: 'Family Travel Insurance', href: '/travel-insurance/family' },
           { label: 'Annual Multi-Trip', href: '/travel-insurance/annual-multi-trip' },
           { label: 'Single Trip', href: '/travel-insurance/single-trip' },
           { label: 'Travel Medical', href: '/travel-insurance/medical' },
@@ -78,6 +79,7 @@ const defaultPages = [
           heading: 'By Trip Type',
           items: [
             { Icon: ShieldPlus,    label: 'All Plans',              desc: 'Browse every insurance plan we offer',          href: '/travel-insurance' },
+            { Icon: Users,         label: 'Family Travel Insurance', desc: 'One policy covering the whole family',         href: '/travel-insurance/family' },
             { Icon: CalendarDays,  label: 'Annual Multi-Trip',      desc: 'One policy covering all trips for 12 months',   href: '/travel-insurance/annual-multi-trip' },
             { Icon: HeartPulse,    label: 'Single Trip',            desc: 'Pay only for the days you travel',              href: '/travel-insurance/single-trip' },
             { Icon: Stethoscope,   label: 'Travel Medical',         desc: 'Emergency treatment & hospitalisation cover',   href: '/travel-insurance/medical' },

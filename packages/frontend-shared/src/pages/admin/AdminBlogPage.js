@@ -51,7 +51,7 @@ export default function AdminBlogPage() {
 
   const { blogs, pagination, isLoadingBlogs } = useGetBlogs({
     page,
-    limit: 10,
+    limit: 50,
     status: statusFilter !== 'all' ? statusFilter : undefined,
     search: search.trim() || undefined,
   });

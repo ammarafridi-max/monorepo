@@ -61,7 +61,7 @@ export default async function Page({ params, searchParams }) {
 
   const data = await getPublishedBlogsApi({
     page: currentPage,
-    limit: 9,
+    limit: 15,
     tag: tag.name,
   }).catch(() => ({ blogs: [], pagination: null }));
 

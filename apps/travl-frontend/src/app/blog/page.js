@@ -57,7 +57,7 @@ export default async function Page({ searchParams }) {
   let blogs = [];
   let pagination = null;
   try {
-    const data = await getPublishedBlogsApi({ page: currentPage, limit: 9 });
+    const data = await getPublishedBlogsApi({ page: currentPage, limit: 15 });
     blogs = data?.blogs || [];
     pagination = data?.pagination || null;
   } catch {

@@ -129,6 +129,12 @@ const staticPages = [
     lastmod: "2026-07-25",
   },
   {
+    url: "/travel-insurance/family",
+    changeFrequency: "monthly",
+    priority: 0.8,
+    lastmod: "2026-07-30",
+  },
+  {
     url: "/visa",
     changeFrequency: "monthly",
     priority: 0.8,

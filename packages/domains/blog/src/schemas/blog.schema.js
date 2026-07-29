@@ -31,6 +31,7 @@ const BlogSchema = new mongoose.Schema(
 );
 
 BlogSchema.index({ createdAt: -1 });
+BlogSchema.index({ status: 1, publishedAt: -1 });
 
 BlogSchema.pre('save', function () {
   if (this.status === 'published' && !this.publishedAt) this.publishedAt = new Date();
