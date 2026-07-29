@@ -457,14 +457,14 @@ export default function ReviewSummary() {
               <p className="text-xs text-gray-600 leading-relaxed">
                 I confirm all details above are correct and I agree to the{" "}
                 <Link
-                  href="/terms"
+                  href="/terms-and-conditions"
                   className="text-primary-700 hover:underline font-semibold"
                 >
                   Terms & Conditions
                 </Link>{" "}
                 and{" "}
                 <Link
-                  href="/privacy"
+                  href="/privacy-policy"
                   className="text-primary-700 hover:underline font-semibold"
                 >
                   Privacy Policy

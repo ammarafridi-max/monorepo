@@ -229,11 +229,11 @@ export default function TicketReviewDetailsPage({ onBeginCheckout, enablePayPal 
               </div>
               <p className="text-xs text-gray-600 leading-relaxed">
                 I confirm all details above are correct and I agree to the{' '}
-                <Link href="/terms" className="text-primary-700 hover:underline font-semibold">
+                <Link href="/terms-and-conditions" className="text-primary-700 hover:underline font-semibold">
                   Terms & Conditions
                 </Link>{' '}
                 and{' '}
-                <Link href="/privacy" className="text-primary-700 hover:underline font-semibold">
+                <Link href="/privacy-policy" className="text-primary-700 hover:underline font-semibold">
                   Privacy Policy
                 </Link>
                 .

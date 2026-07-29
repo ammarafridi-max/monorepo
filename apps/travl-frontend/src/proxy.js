@@ -13,6 +13,10 @@ const GONE_301 = {
   '/flight-itinerary': '/travel-itinerary',
   '/blog/why-you-need-travel-insurance-for-your-schengen-visa-application':
     '/blog/why-travel-insurance-is-mandatory-for-a-schengen-visa-and-what-coverage-you-need',
+  // Legacy/shortened paths reported as 404s in Search Console, each mapped to its live canonical.
+  '/terms': '/terms-and-conditions',
+  '/privacy': '/privacy-policy',
+  '/schengen-travel-insurance': '/travel-insurance/schengen-visa',
 };
 
 export function proxy(req) {
