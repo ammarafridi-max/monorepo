@@ -1,7 +1,7 @@
 # Picturesk.ai
 
 AI headshot generator: upload selfies, pick a one-time plan (three tiers, from
-$29), we fine-tune a model on your face via Replicate, generate professional
+$9), we fine-tune a model on your face via Replicate, generate professional
 headshots, and email the results.
 
 Core design principle: **money in, then a slow external job we don't control;
@@ -40,26 +40,33 @@ the worker then moves `PAID -> TRAINING`.
 
 **The web funnel (`apps/web/app/generator`).** A shared stepper layout over three
 routes: `/generator/select` (looks + attire, each option with a preview image or a
-placeholder; gender + age range + optional race as single-select chips; and email),
-`/generator/upload` (client quality gate, then the photos go direct-to-R2 and their
-URLs ride along), and `/generator/pay` (pick a pricing plan, review, and pay).
+placeholder; gender + age range + optional race as single-select chips, with the
+facial-hair field carrying an info tooltip; and email), `/generator/upload` (each
+photo is uploaded to R2 and server-gated as it is added; the green tick appears only
+after it passes), and `/generator/pay` (pick a pricing plan, review, and pay - which
+now only retrieves the Stripe URL).
 Selections and uploaded-photo URLs persist in `localStorage` until checkout, so the
 order is created only at the pay step (no abandoned drafts in the DB). Landing CTAs
 route to `/generator/select`.
 
-**Where the gate runs.** `POST /checkout` takes `{ email, selectedLooks[],
-selectedAttire[], gender, ageRange, race?, uploadedImageUrls[], tier }`. It validates
-the selections and demographics against the shared catalog (gender + ageRange
-required, race optional) and the `tier` against the shared pricing catalog (invalid
-tier -> 400, absent -> the default `starter`). The server owns the price: the client
-sends only a tier id, never an amount, and the Stripe amount comes from
-`getTier(tier).priceCents`. It then runs THE REAL gate (face quality + content moderation) on the
-images BEFORE creating the Stripe session, so there is no session (no payment) for
-input that would train a bad model. On a gate failure it returns a structured
-`422`; the pay step surfaces it and points the user back to swap photos. On pass it
-creates the order in `AWAITING_PAYMENT` and returns the Stripe checkout URL. The
-webhook then does the idempotent `AWAITING_PAYMENT -> PAID` and enqueues the
-pipeline exactly once (`jobId = orderId`).
+**Where the gate runs.** Photos are screened at the **upload step, not at
+checkout.** As each photo is added on `/generator/upload` it is uploaded to R2 and
+run through the real server gate (`POST /uploads/gate`: face quality + content
+moderation); its green tick appears only after that gate passes, and a failure flags
+the photo with a reason so the user swaps it before continuing. `POST /checkout` then
+takes `{ email, selectedLooks[], selectedAttire[], gender, ageRange, race?,
+uploadedImageUrls[], tier }`, validates the selections + demographics against the
+shared catalog (gender + ageRange required, race optional) and the `tier` against the
+shared pricing catalog (invalid tier -> 400, absent -> the default `starter`), and
+then does nothing but create the order + Stripe session. The server owns the price:
+the client sends only a tier id, never an amount, and the Stripe amount comes from
+`getTier(tier).priceCents`. So **checkout makes no Replicate calls and returns the
+payment URL immediately** (the pay step just retrieves the URL). It creates the order
+in `AWAITING_PAYMENT` and returns the Stripe checkout URL; the webhook then does the
+idempotent `AWAITING_PAYMENT -> PAID` and enqueues the pipeline exactly once (`jobId =
+orderId`). Trade-off: because the gate no longer runs at checkout, content moderation
+happens only at the upload step, so a direct `/checkout` API call (bypassing the UI)
+skips it; the normal funnel always gates.
 
 **Shared catalog + prompts.** `packages/shared/src/catalog.js` is the single source
 of truth for the `LOOKS` and `ATTIRE` options (each with a `label`, a
@@ -74,6 +81,9 @@ The web renders its selection cards and chips from this file (via the
 worker builds each order's prompts from it, so the options a customer sees can never
 drift from what we generate. The worker's old fixed `PROMPTS` array is gone from the
 order path; each order's subject anchor is `<trigger word>, <buildSubject(...)>`.
+Every generated prompt ends with a shared `QUALITY_TAIL` (photographer framing: an
+85mm portrait lens, head-and-shoulders with headroom for LinkedIn's circular crop,
+and shallow depth of field) so results read as shot by a photographer, not a selfie.
 
 **Count.** How many headshots an order delivers comes from its purchased pricing
 tier (see below), snapshotted onto the order at checkout as `deliverCount` /
@@ -94,11 +104,11 @@ imported by both the api (to set the Stripe amount + stamp the order) and the we
 (via the mongoose-free `@picturesk/shared/pricing` subpath, to render the plan
 cards), so price, delivered count, and turnaround can never drift between them.
 
-| Tier    | id        | Price | Headshots | Turnaround (BullMQ priority) |
-| ------- | --------- | ----- | --------- | ---------------------------- |
-| Starter | `starter` | $29   | 25        | standard (priority 3)        |
-| Pro     | `pro`     | $45   | 60        | priority (2)                 |
-| Premium | `premium` | $79   | 120       | front of queue (1)           |
+| Tier    | id        | Price | Headshots | Turnaround (BullMQ priority)     |
+| ------- | --------- | ----- | --------- | -------------------------------- |
+| Starter | `starter` | $9    | 5         | standard (priority 3)            |
+| Pro     | `pro`     | $29   | 25        | priority (2), "Most popular"     |
+| Premium | `premium` | $49   | 60        | front of queue (1)               |
 
 Each tier differs on three levers: **price** (`priceCents`), **delivered count**
 (`deliverCount` / `generateCount`), and **turnaround**. Turnaround is the BullMQ job
@@ -161,44 +171,29 @@ MongoDB and Redis as external managed services. Dockerfiles (`Dockerfile.api`,
 per-app secrets, deploy order, Stripe webhook + R2 CORS wiring) in
 [DEPLOY.md](./DEPLOY.md).
 
-### Live deployment status (2026-07-11)
+### Live deployment status
 
-All three apps are deployed to Fly and healthy:
+All three apps are deployed to Fly and live on the custom domain, running an order
+end to end (checkout -> train -> generate -> deliver -> email):
 
-- api: https://picturesk-api.fly.dev (`/health` returns `{"ok":true}`)
-- web: https://picturesk-web.fly.dev
+- web: https://www.picturesk.ai (also serves `/admin`)
+- api: https://api.picturesk.ai (`/health` returns `{"ok":true}`)
 - worker: `picturesk-worker` (no HTTP; consumes `order-pipeline`, `WORKER_CONCURRENCY` default 1)
 
-Secrets were staged per app from the local `.env` (least-privilege: Stripe keys
-live on api + worker only, never web), with `WEB_BASE_URL` pointed at the web
-app's Fly origin and `TRUST_PROXY_HOPS=1` set on the api.
+Secrets are staged per app (least-privilege: Stripe keys on api + worker only, never
+web), with `WEB_BASE_URL=https://www.picturesk.ai` and `TRUST_PROXY_HOPS=1` on the
+api. In place: the production Stripe webhook at `/webhooks/stripe`, R2 CORS for the
+web origin, Google OAuth sign-in, GA4 + Microsoft Clarity behind the consent banner,
+and Brevo delivery email. `NEXT_PUBLIC_*` values are build args (see `fly.web.toml`),
+so a web redeploy is required to change them.
 
-**Outstanding follow-ups before the deployed funnel is fully live** (revisit):
+**Still deferred (revisit before scaling):**
 
-1. **Stripe webhook.** The api's `STRIPE_WEBHOOK_SECRET` is still the local
-   `stripe listen` secret, which will NOT verify webhooks sent to the Fly URL. In
-   the Stripe dashboard add an endpoint at
-   `https://picturesk-api.fly.dev/webhooks/stripe` for `checkout.session.completed`,
-   then `fly secrets set -a picturesk-api STRIPE_WEBHOOK_SECRET="whsec_..."`. Until
-   this is done a checkout on the deployed site pays but the order never advances
-   to PAID.
-2. **R2 CORS.** Add `https://picturesk-web.fly.dev` to the R2 bucket's allowed
-   origins with `PUT` allowed, or browser uploads fail from the deployed origin.
-3. **Stop the local `pnpm dev` stack.** Its worker reads the same production
-   Upstash/Mongo from `.env`, so it competes with the Fly worker on the same
-   queue (BullMQ locking prevents double-processing, but keep one worker).
-
-**Deferred, working as intended (revisit later):**
-
-- **Stripe is in TEST mode** (`sk_test_...`). Swap to live keys plus a live
-  webhook endpoint to take real payments.
-- **Social login is OFF.** The Google/Facebook/LinkedIn client env vars were empty
-  in `.env`, so they were skipped at deploy. Email login works; add the creds to
-  enable OAuth.
-- **Delivery email sender is `info@travl.ae`** (a verified Brevo sender). Switch to
-  `hello@picturesk.ai` once the domain is bought and verified in Brevo.
-- **4 stale `failed` jobs** from earlier local testing remain in the queue.
-  Harmless; purge when convenient.
+- **Stripe mode.** Confirm live keys + a live webhook endpoint before taking real
+  charges (test keys are `sk_test_...`).
+- **Delivery email sender.** Support address is `info@picturesk.ai`; verify the
+  `hello@picturesk.ai` sender in Brevo.
+- **Legal/compliance** items (see the deferred section near the end).
 
 ## Phase 2: testing locally with the Stripe CLI
 
@@ -335,7 +330,11 @@ returns a clean `502` before any zip bytes are sent, never a truncated archive, 
 bundles the buffers with `archiver` using STORE (JPEGs are already compressed). URLs
 are never request parameters: they are read from the order in our DB and picked by a
 validated index (only the same culled delivered set the page shows), so there is no
-SSRF surface, and downloads do not depend on any cross-origin CORS config.
+SSRF surface, and downloads do not depend on any cross-origin CORS config. Each
+headshot also has an **eye** button that opens it full-size in a lightbox modal (a
+shared `Lightbox` component, reused on the admin order page where every thumbnail
+opens the same viewer). The success gallery lays the delivered headshots out
+4-per-row on desktop, 2 on phones.
 
 ## Phase 5: failure hardening
 
@@ -389,6 +388,12 @@ in the buy flow is gated; the only gated page is `/account`.
   (only when the order email matches the session, so a guessed id cannot claim
   someone else's order). Signup and login also back-link past anonymous orders
   that share the account email.
+- **Account page:** a tabbed dashboard (Orders + Settings) with a Sign-out button,
+  change/set password, and delete-account. Past orders each link to their results
+  and a "Download all". In **development only** (`NODE_ENV=development`) each order row also
+  shows a per-record **Delete** button (`DELETE /api/account/orders/[id]`, hard-gated
+  to development on the server) so a developer can prune their own test orders; it is
+  never rendered or reachable in production.
 
 ## Admin panel
 
@@ -443,27 +448,28 @@ monorepo, right-sized to this repo (layered modules in `apps/api`, not DI packag
 
 Bad photos are worse than a failed order: they train a model and then "succeed"
 into a DELIVERED order, so the FAILED auto-refund never fires and the customer
-paid for garbage. So we reject bad input BEFORE the Stripe session is created,
-not after training.
+paid for garbage. So we reject bad input at the UPLOAD step, before the user can
+reach pay, not after training.
 
 Two layers, and the server one is the real gate (same lesson as server-owned
-pricing: client validation can be bypassed by calling `/checkout` directly):
+pricing: client validation can be bypassed by calling the API directly):
 
-- **Client (apps/web):** on file drop, the browser's `FaceDetector` runs per photo
-  and disables the CTA with a short reason on any bad thumbnail ("No clear face",
-  "More than one person", "Face too small, get closer"). Fast feedback only. If a
-  browser has no `FaceDetector`, the client defers and the server still checks.
-- **Server (apps/api, `POST /checkout`):** re-runs detection on every uploaded
-  image and returns `422` with per-image reasons instead of creating the Stripe
-  session if any fail. No session means no payment. The client shows those
-  reasons and re-disables the CTA. Detection runs on Replicate (reusing
-  `REPLICATE_API_TOKEN`, no extra cloud account): `ultralytics/yolov8s-worldv2`
-  on the "person" class. Tradeoff vs a true face-landmark detector: person
-  detection reliably catches the important cases (zero subjects, or more than
-  one), but the "too small" rule becomes a subject-box-size proxy, so a full-body
-  shot with a small face can pass server-side. The browser's `FaceDetector`
-  applies a true face-size check client-side. `detectFaces` is swappable if you
-  later want a dedicated face model.
+- **Client (apps/web):** on file add, the browser's `FaceDetector` runs per photo as
+  a fast pre-check, flagging an obvious problem instantly ("No clear face", "More than
+  one person", "Face too small, get closer"). It is Chromium-only and fail-open, so it
+  never earns the green tick on its own -- a passing or deferred pre-check just
+  proceeds to the server gate.
+- **Server (apps/api, `POST /uploads/gate`):** each photo is uploaded to R2 and run
+  through this gate AS IT IS ADDED. Only a server pass promotes the photo (green
+  tick); a failure returns `422` with a per-image reason shown on the thumbnail, and
+  Continue stays disabled until every photo passes. Checkout does NOT re-screen, so by
+  the time the user pays every URL is already gated (this is also what makes the pay
+  step instant). Detection runs on Replicate (reusing `REPLICATE_API_TOKEN`, no extra
+  cloud account): `ultralytics/yolov8s-worldv2` on the "person" class. Tradeoff vs a
+  true face-landmark detector: person detection reliably catches the important cases
+  (zero subjects, or more than one), but the "too small" rule becomes a
+  subject-box-size proxy, so a full-body shot with a small face can pass server-side.
+  `detectFaces` is swappable if you later want a dedicated face model.
 
 Rules per image: exactly one clear subject (zero = not a usable photo, two+ =
 multiple people), and the subject must span at least `UPLOAD_MIN_FACE_RATIO` of
@@ -578,9 +584,10 @@ All three services (`api`, `worker`, `web`) report errors to Sentry.
 ### Content moderation
 
 The quality gate checks that a usable face is present; **content moderation**
-checks that an image is safe to accept. It runs server-side in `POST /checkout`,
-in parallel with the face re-validation and BEFORE any Stripe session is created,
-so unsafe images can never be paid for, stored long-term, or sent to training.
+checks that an image is safe to accept. It runs server-side in `POST /uploads/gate`,
+in parallel with the face check as each photo is uploaded, so unsafe images are
+rejected at the upload step and can never be paid for, stored long-term, or sent to
+training.
 
 - Each image is screened by an NSFW classifier on Replicate (reusing
   `REPLICATE_API_TOKEN`, like the face detector). The tradeoff: this catches the
@@ -602,23 +609,27 @@ so unsafe images can never be paid for, stored long-term, or sent to training.
 
 ### Analytics
 
-A minimal, **cookieless, privacy-light** funnel via Plausible: no cookies, no
-consent banner, no cross-site profile, and **no PII** in any event (no email, no
-image data, no order contents).
+Three complementary tools, all **disabled by default** and all keeping **PII out of
+events** (no email, no image data, no order contents):
 
-- **Disabled by default.** With `NEXT_PUBLIC_ANALYTICS_DOMAIN` unset, no script
-  loads and every event is a no-op. Set it to your Plausible domain to enable
-  (optional `NEXT_PUBLIC_ANALYTICS_SRC` to self-host/proxy the script).
-- Exactly five funnel events, plus one optional drop-off signal:
-  1. `landing_view`: home page loaded (`app/page.js`).
-  2. `upload_started`: first photo added (`app/generator/upload/page.js`).
-  3. `upload_completed`: photos pass the client quality gate (`app/generator/upload/page.js`).
-  4. `checkout_started`: the pay button is clicked (`app/generator/pay/page.js`).
-  5. `purchase_completed`: success page reached for a paid order
-     (`app/success/SuccessView.js`).
-  - Optional: `quality_gate_failed`: photos rejected client-side.
-- The script auto-tracks a basic pageview on every route; that is the **only**
-  thing recorded on the legal/content pages.
+- **GA4** (`NEXT_PUBLIC_GA_ID`): the funnel + the `purchase_completed` conversion,
+  imported into Google Ads.
+- **Microsoft Clarity** (`NEXT_PUBLIC_CLARITY_ID`): session replay + heatmaps, with
+  the face photos and email masked (`data-clarity-mask`) so a replay never records a
+  customer's face.
+- **Plausible** (`NEXT_PUBLIC_ANALYTICS_DOMAIN`, optional `NEXT_PUBLIC_ANALYTICS_SRC`):
+  a cookieless alternative; a no-op when unset.
+
+GA4 + Clarity load only **after opt-in via a cookie-consent banner**
+(`apps/web/app/Analytics.js`); until then no analytics cookies are set. The same five
+funnel events fire across whichever tool is enabled:
+
+1. `landing_view`: home page loaded (`app/page.js`).
+2. `upload_started`: first photo added (`app/generator/upload/page.js`).
+3. `upload_completed`: all photos pass the gate (`app/generator/upload/page.js`).
+4. `checkout_started`: the pay button is clicked (`app/generator/pay/page.js`).
+5. `purchase_completed`: success page reached for a paid order (`app/success/SuccessView.js`).
+   - Optional: `quality_gate_failed`: photos rejected at the gate.
 
 ## Identity-based candidate culling
 

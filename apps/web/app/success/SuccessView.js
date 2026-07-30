@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { getOrder, downloadUrl, downloadAllUrl } from '../../lib/api';
 import { track, EVENTS } from '../../lib/analytics';
+import Lightbox from '../../components/Lightbox';
 
 // A small download glyph (arrow into a tray). Inline so it inherits currentColor
 // and needs no asset request. Decorative; the control carries its own aria-label.
@@ -23,6 +24,26 @@ function DownloadIcon() {
       <path d="M12 3v12" />
       <path d="m7 10 5 5 5-5" />
       <path d="M5 21h14" />
+    </svg>
+  );
+}
+
+// An eye glyph for "view larger". Same inline style as DownloadIcon.
+function EyeIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="18"
+      height="18"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
     </svg>
   );
 }
@@ -86,6 +107,8 @@ export default function SuccessView() {
 
   const [order, setOrder] = useState(null);
   const [error, setError] = useState('');
+  // The delivered image currently open in the lightbox (null = closed).
+  const [preview, setPreview] = useState(null);
   // Ticks once a second so the "elapsed" clock advances between the 4s status polls.
   const [now, setNow] = useState(() => Date.now());
 
@@ -247,13 +270,23 @@ export default function SuccessView() {
               <figure className="shot" key={url}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={url} alt={`headshot ${i + 1}`} />
-                <a
-                  className="shot__dl"
-                  href={downloadUrl(orderId, i)}
-                  aria-label={`Download headshot ${i + 1}`}
-                >
-                  <DownloadIcon />
-                </a>
+                <div className="shot__actions">
+                  <button
+                    type="button"
+                    className="shot__view"
+                    aria-label={`View headshot ${i + 1}`}
+                    onClick={() => setPreview(url)}
+                  >
+                    <EyeIcon />
+                  </button>
+                  <a
+                    className="shot__dl"
+                    href={downloadUrl(orderId, i)}
+                    aria-label={`Download headshot ${i + 1}`}
+                  >
+                    <DownloadIcon />
+                  </a>
+                </div>
               </figure>
             ))}
           </div>
@@ -302,6 +335,8 @@ export default function SuccessView() {
         {/* data-clarity-mask: customer email (PII); keep it out of Clarity replay. */}
         <span data-clarity-mask="true">{order.customerEmail}</span>.
       </p>
+
+      <Lightbox src={preview} alt="Headshot preview" onClose={() => setPreview(null)} />
     </main>
   );
 }

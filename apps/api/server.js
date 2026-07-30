@@ -662,14 +662,12 @@ app.post('/checkout', checkoutLimiter, async (req, res) => {
     }
     const selectedTier = getTier(tier || DEFAULT_TIER);
 
-    // THE REAL GATE (face quality + content moderation), BEFORE any Stripe session.
-    // The web client runs the same face checks for fast feedback, but that is UX
-    // only and can be bypassed by calling /checkout directly, so we re-validate
-    // every image here and REFUSE to create the session on failure. No session =
-    // no payment for input that would train a bad model and then "succeed" into a
-    // DELIVERED order that never triggers the FAILED auto-refund.
-    const gate = await runUploadGate(uploadedImageUrls);
-    if (gate) return res.status(gate.status).json(gate.body);
+    // NO image screening here. Photos are gated ONCE, at the upload step
+    // (POST /uploads/gate, run by /ai-headshot-generator/upload) -- face quality, content
+    // moderation, and the 5-to-15 count all happen there. Checkout only creates the
+    // Stripe session, so the pay step returns the payment URL immediately with zero
+    // Replicate calls and no stall. (uploadedImageUrls is already validated as a
+    // non-empty array above.)
 
     // Create the order in AWAITING_PAYMENT with selections + images. amountPaidCents
     // is written from Stripe in the webhook once payment confirms.
@@ -707,8 +705,8 @@ app.post('/checkout', checkoutLimiter, async (req, res) => {
       ],
       metadata: { orderId },
       success_url: `${WEB_BASE_URL}/success?orderId=${orderId}`,
-      // Cancel returns to the pay step so they can retry (a new order).
-      cancel_url: `${WEB_BASE_URL}/generator/pay`,
+      // Cancel returns to the payment step so they can retry (a new order).
+      cancel_url: `${WEB_BASE_URL}/ai-headshot-generator/payment`,
     });
 
     // The session id is our idempotency anchor: the webhook finds the order by it.

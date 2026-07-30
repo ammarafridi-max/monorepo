@@ -147,7 +147,7 @@ export const ATTIRE = Object.freeze([
     id: 'polo',
     label: 'Polo shirt',
     promptFragment: 'wearing a smart fitted polo shirt',
-    image: '',
+    image: '/attire-polo.jpg',
   },
   {
     id: 'smart_knit',

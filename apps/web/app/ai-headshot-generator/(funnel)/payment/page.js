@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { LOOKS, ATTIRE, AGE_RANGES, GENDERS, RACES, FACIAL_HAIR } from '@picturesk/shared/catalog';
 import { getTier } from '@picturesk/shared/pricing';
-import { readState } from '../../../lib/generator';
-import { createCheckout } from '../../../lib/api';
-import { track, EVENTS } from '../../../lib/analytics';
+import { readState } from '../../../../lib/generator';
+import { createCheckout } from '../../../../lib/api';
+import { track, EVENTS } from '../../../../lib/analytics';
 
 // Whole-dollar price from integer cents (our tier prices are round dollars).
 const usd = (cents) => `$${Math.round(cents / 100)}`;
@@ -35,8 +35,8 @@ export default function PayPage() {
     const s = readState();
     // Guard the funnel order.
     if (s.looks.length === 0 || s.attire.length === 0 || !s.gender || !s.ageRange)
-      return router.replace('/generator/select');
-    if (s.images.length === 0) return router.replace('/generator/upload');
+      return router.replace('/ai-headshot-generator/select');
+    if (s.images.length === 0) return router.replace('/ai-headshot-generator/upload');
     setState(s);
   }, [router]);
 
@@ -134,7 +134,7 @@ export default function PayPage() {
       </dl>
 
       <div className="gennav">
-        <Link className="btn btn--link" href="/generator/upload">
+        <Link className="btn btn--link" href="/ai-headshot-generator/upload">
           Back
         </Link>
         <button className="btn btn--primary" type="button" disabled={busy} onClick={onPay}>
@@ -162,7 +162,7 @@ export default function PayPage() {
             ))}
           </div>
           <p className="formnote" style={{ textAlign: 'left', marginTop: 10 }}>
-            <Link href="/generator/upload">Back to your photos</Link> to replace them.
+            <Link href="/ai-headshot-generator/upload">Back to your photos</Link> to replace them.
           </p>
         </div>
       )}

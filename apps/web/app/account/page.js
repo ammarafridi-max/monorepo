@@ -7,6 +7,8 @@ import { downloadAllUrl } from '../../lib/api';
 import AccountTabs from './AccountTabs';
 import PasswordForm from './PasswordForm';
 import DeleteAccount from './DeleteAccount';
+import DeleteOrderButton from './DeleteOrderButton';
+import { FiLogOut } from 'react-icons/fi';
 
 // The only gated area. Reading the session (cookies) makes it dynamic anyway;
 // force-dynamic is explicit since it also queries Mongo.
@@ -73,6 +75,7 @@ export default async function AccountPage() {
           ))}
           <form action="/api/auth/logout" method="post" className="acct__signout-form">
             <button className="acct__signout" type="submit">
+              <FiLogOut aria-hidden="true" />
               Sign out
             </button>
           </form>
@@ -90,8 +93,8 @@ export default async function AccountPage() {
           {view.length === 0 ? (
             <div className="acct__card acct__empty">
               <p>No orders yet.</p>
-              <a className="btn btn--primary" href="/generator/select">
-                Start your first set <span className="btn__price">from $29</span>
+              <a className="btn btn--primary" href="/ai-headshot-generator/select">
+                Start your first set <span className="btn__price">from $9</span>
               </a>
             </div>
           ) : (
@@ -125,6 +128,9 @@ export default async function AccountPage() {
                       <a className="btn btn--link" href={downloadAllUrl(o.orderId)}>
                         Download
                       </a>
+                    )}
+                    {process.env.NODE_ENV === 'development' && (
+                      <DeleteOrderButton orderId={o.orderId} />
                     )}
                   </div>
                 </li>

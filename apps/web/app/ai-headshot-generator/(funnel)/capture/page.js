@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { presignUploads, putToStorage, gateUploads } from '../../../lib/api';
-import { faceCheckAvailable } from '../../../lib/quality';
-import { readState, writeState } from '../../../lib/generator';
+import { presignUploads, putToStorage, gateUploads } from '../../../../lib/api';
+import { faceCheckAvailable } from '../../../../lib/quality';
+import { readState, writeState } from '../../../../lib/generator';
 
 // Guided camera capture (prototype). Instead of hoping the customer uploads good
 // photos, we CONTROL the shoot: a short sequence of pose prompts, capturing a clean,
@@ -96,7 +96,7 @@ export default function CapturePage() {
   useEffect(() => {
     const s = readState();
     if (s.looks.length === 0 || s.attire.length === 0) {
-      router.replace('/generator/select');
+      router.replace('/ai-headshot-generator/select');
       return;
     }
     setReady(true);
@@ -217,7 +217,7 @@ export default function CapturePage() {
       // Gate here so the pay button stays fast (results are cached for /checkout).
       setPhase('checking');
       await gateUploads(images);
-      router.push('/generator/pay');
+      router.push('/ai-headshot-generator/payment');
     } catch (err) {
       if (err.status === 422) {
         const n = (err.body?.failures || []).length;
@@ -253,7 +253,7 @@ export default function CapturePage() {
             <li className="reqs__bad">Take off glasses and hats, and make sure it is just you.</li>
           </ul>
           <div className="gennav">
-            <Link className="btn btn--link" href="/generator/upload">
+            <Link className="btn btn--link" href="/ai-headshot-generator/upload">
               Prefer to upload instead
             </Link>
             <button className="btn btn--primary" type="button" onClick={startCamera}>
@@ -270,7 +270,7 @@ export default function CapturePage() {
             instead.
           </p>
           <div className="gennav">
-            <Link className="btn btn--link" href="/generator/upload">
+            <Link className="btn btn--link" href="/ai-headshot-generator/upload">
               Upload instead
             </Link>
             <button className="btn btn--primary" type="button" onClick={startCamera}>

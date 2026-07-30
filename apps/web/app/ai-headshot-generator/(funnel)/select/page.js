@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { FiInfo } from 'react-icons/fi';
 import { LOOKS, ATTIRE, AGE_RANGES, GENDERS, RACES, FACIAL_HAIR } from '@picturesk/shared/catalog';
 import { TIERS } from '@picturesk/shared/pricing';
-import { readState, writeState } from '../../../lib/generator';
+import { readState, writeState } from '../../../../lib/generator';
 
 // Whole-dollar price from integer cents (tier prices are round dollars).
 const usd = (cents) => `$${Math.round(cents / 100)}`;
@@ -187,14 +188,6 @@ export default function SelectPage() {
         })}
       </div>
 
-      <h3 className="gen-subhead">Background</h3>
-      <p className="gen-hint">Choose one or more backgrounds. We spread your set across them.</p>
-      <OptionGrid items={LOOKS} selected={looks} onToggle={toggleLook} showDesc />
-
-      <h3 className="gen-subhead">Attire</h3>
-      <p className="gen-hint">Choose what you want to wear. Mix a few for variety.</p>
-      <OptionGrid items={ATTIRE} selected={attire} onToggle={toggleAttire} showDesc={false} />
-
       <h3 className="gen-subhead">About you</h3>
       <p className="gen-hint">This helps us render you accurately. It stays private.</p>
 
@@ -213,11 +206,29 @@ export default function SelectPage() {
         <>
           <p className="gen-fieldlabel">
             Facial hair <span className="gen-optional">optional</span>
+            <span
+              className="info-tip"
+              tabIndex={0}
+              role="note"
+              aria-label="Tell us your current look so your beard stays consistent in the results."
+            >
+              <FiInfo aria-hidden="true" />
+              <span className="info-tip__bubble" role="tooltip">
+                Tell us your current look so your beard stays consistent in the results.
+              </span>
+            </span>
           </p>
-          <p className="gen-hint">Tell us your current look so your beard stays consistent in the results.</p>
           <ChoiceRow items={FACIAL_HAIR} value={facialHair} onSelect={onFacialHair} allowClear />
         </>
       )}
+
+      <h3 className="gen-subhead">Background</h3>
+      <p className="gen-hint">Choose one or more backgrounds. We spread your set across them.</p>
+      <OptionGrid items={LOOKS} selected={looks} onToggle={toggleLook} showDesc />
+
+      <h3 className="gen-subhead">Attire</h3>
+      <p className="gen-hint">Choose what you want to wear. Mix a few for variety.</p>
+      <OptionGrid items={ATTIRE} selected={attire} onToggle={toggleAttire} showDesc={false} />
 
       <div className="field">
         <label className="label" htmlFor="email">
@@ -271,7 +282,7 @@ export default function SelectPage() {
           className="btn btn--primary"
           type="button"
           disabled={!canContinue}
-          onClick={() => router.push('/generator/upload')}
+          onClick={() => router.push('/ai-headshot-generator/upload')}
         >
           Continue
         </button>

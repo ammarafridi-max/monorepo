@@ -3,10 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { presignUploads, putToStorage, gateUploads } from '../../../lib/api';
-import { QUALITY, detectImage, reasonFor } from '../../../lib/quality';
-import { readState, writeState } from '../../../lib/generator';
-import { track, EVENTS } from '../../../lib/analytics';
+import { presignUploads, putToStorage, gateUploads } from '../../../../lib/api';
+import { QUALITY, detectImage, reasonFor } from '../../../../lib/quality';
+import { readState, writeState } from '../../../../lib/generator';
+import { track, EVENTS } from '../../../../lib/analytics';
 
 // Step 2: upload photos. One unified grid holds both photos already uploaded on a
 // previous visit (kind 'existing', an R2 URL) and newly picked files (kind 'new',
@@ -18,7 +18,6 @@ export default function UploadPage() {
   const [items, setItems] = useState([]); // { id, kind:'existing'|'new', url, file?, status, reason }
   const [error, setError] = useState('');
   const [dragging, setDragging] = useState(false);
-  const [phase, setPhase] = useState('idle'); // idle | uploading
   const [ready, setReady] = useState(false);
   const inputRef = useRef(null);
 
@@ -26,7 +25,7 @@ export default function UploadPage() {
     const s = readState();
     // Guard the funnel order: no selections means step 1 was skipped.
     if (s.looks.length === 0 || s.attire.length === 0) {
-      router.replace('/generator/select');
+      router.replace('/ai-headshot-generator/select');
       return;
     }
     // Seed with any already-uploaded photos so the user can keep, delete, or add to them.
@@ -65,20 +64,54 @@ export default function UploadPage() {
     });
   }, []);
 
-  // Client quality check for NEW items only (existing ones already passed once).
+  // Verify each NEW item as it is added. A fast client pre-check catches obvious
+  // problems instantly; then the photo is uploaded and run through the REAL server
+  // gate. The green tick appears ONLY after the server confirms it passes (the item
+  // is promoted to a verified 'existing'); until then it stays 'checking' (no tick).
+  // Existing items already passed once and are skipped.
   const checkedRef = useRef(new Set());
   useEffect(() => {
     for (const item of items) {
       if (item.kind !== 'new' || item.status !== 'checking' || checkedRef.current.has(item.id)) continue;
       checkedRef.current.add(item.id);
-      detectImage(item.file)
-        .then((d) => {
-          const reason = reasonFor(d);
-          updateItem(item.id, { status: reason ? 'bad' : 'ok', reason });
-        })
-        .catch(() => updateItem(item.id, { status: 'ok', reason: null }));
+      verifyItem(item);
     }
-  }, [items, updateItem]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items]);
+
+  async function verifyItem(item) {
+    // 1) Fast client pre-check (Chromium-only; defers to the server otherwise).
+    try {
+      const reason = reasonFor(await detectImage(item.file));
+      if (reason) {
+        updateItem(item.id, { status: 'bad', reason });
+        return;
+      }
+    } catch {
+      /* browser detector unavailable/flaky -> defer to the server gate below */
+    }
+    // 2) Upload, then the REAL server gate. Only a server pass earns the tick.
+    try {
+      const { uploads } = await presignUploads([item.file]);
+      await putToStorage(uploads[0].uploadUrl, item.file);
+      const url = uploads[0].publicUrl;
+      try {
+        await gateUploads([url]);
+      } catch (err) {
+        if (err.status === 422) {
+          const reason =
+            err.body?.failures?.[0]?.reason || err.body?.countError || 'Did not pass our check';
+          updateItem(item.id, { status: 'bad', reason });
+          return;
+        }
+        throw err;
+      }
+      // Passed the real gate -> promote to a verified 'existing' item (green tick).
+      setItems((prev) => prev.map((it) => (it.id === item.id ? accept(it, url) : it)));
+    } catch {
+      updateItem(item.id, { status: 'bad', reason: 'Upload failed, remove and try again' });
+    }
+  }
 
   const removeAt = useCallback((id) => {
     setItems((prev) => {
@@ -97,12 +130,12 @@ export default function UploadPage() {
     [addFiles]
   );
 
-  const busy = phase === 'uploading' || phase === 'checking';
+  // Any NEW photo still being uploaded + server-gated (no tick yet).
   const checking = items.some((it) => it.kind === 'new' && it.status === 'checking');
   const badCount = items.filter((it) => it.kind === 'new' && it.status === 'bad').length;
   const countOk = items.length >= QUALITY.minPhotos && items.length <= QUALITY.maxPhotos;
   const photosReady = countOk && badCount === 0 && !checking && items.length > 0;
-  const canContinue = photosReady && !busy;
+  const canContinue = photosReady;
 
   const completedRef = useRef(false);
   useEffect(() => {
@@ -128,64 +161,13 @@ export default function UploadPage() {
     return { ...it, kind: 'existing', url, file: undefined, status: 'ok', reason: null };
   };
 
-  async function onContinue() {
+  function onContinue() {
     if (!canContinue) return;
+    // Every photo was uploaded and passed the server gate as it was added, so all
+    // items here are verified 'existing' ones. Just carry the set to the pay step.
     setError('');
-
-    // Only genuinely-new photos need uploading + screening. Photos already accepted
-    // (kind 'existing') were screened once and are carried through untouched: no
-    // re-upload, no re-check. This is what makes "remove a flagged photo and retry"
-    // fast, and it keeps the green ticks on everything that already passed.
-    const pending = items.filter((it) => it.kind === 'new');
-
-    try {
-      let urlById = new Map();
-      if (pending.length) {
-        setPhase('uploading');
-        const files = pending.map((it) => it.file);
-        const { uploads } = await presignUploads(files);
-        await Promise.all(uploads.map((u, i) => putToStorage(u.uploadUrl, files[i])));
-        urlById = new Map(pending.map((it, i) => [it.id, uploads[i].publicUrl]));
-
-        // Screen ONLY the new uploads. (Checkout re-runs the gate on the full set as a
-        // backstop, but already-accepted URLs are cache hits there, so it stays instant.)
-        setPhase('checking');
-        try {
-          await gateUploads(pending.map((it) => urlById.get(it.id)));
-        } catch (err) {
-          if (err.status === 422) {
-            // Failures are indexed into the pending set we just sent. The pending items
-            // NOT in that set passed -> promote them (green tick); flag the rest.
-            const badByIdx = new Map((err.body?.failures || []).map((f) => [f.index, f.reason]));
-            setItems((prev) =>
-              prev.map((it) => {
-                const idx = pending.findIndex((p) => p.id === it.id);
-                if (idx === -1) return it; // already-accepted photo, untouched
-                if (badByIdx.has(idx)) return { ...it, status: 'bad', reason: badByIdx.get(idx) };
-                return accept(it, urlById.get(it.id));
-              })
-            );
-            setError(
-              err.body?.countError ||
-                'Some photos did not pass our check. Replace the flagged ones and try again.'
-            );
-            setPhase('idle');
-            return;
-          }
-          throw err;
-        }
-      }
-
-      // Everything passed (or nothing new to check). Promote the new photos and carry
-      // the full ordered set to the pay step.
-      const finalItems = items.map((it) => (it.kind === 'new' ? accept(it, urlById.get(it.id)) : it));
-      setItems(finalItems);
-      writeState({ images: finalItems.map((it) => it.url) });
-      router.push('/generator/pay');
-    } catch (err) {
-      setError(err.message || 'Something went wrong. Please try again.');
-      setPhase('idle');
-    }
+    writeState({ images: items.map((it) => it.url) });
+    router.push('/ai-headshot-generator/payment');
   }
 
   if (!ready) return null;
@@ -225,7 +207,7 @@ export default function UploadPage() {
         <p className="capture-cta__text">
           Want the best results? <span>Let us guide you through a quick photo shoot.</span>
         </p>
-        <Link className="btn btn--primary" href="/generator/capture">
+        <Link className="btn btn--primary" href="/ai-headshot-generator/capture">
           Use my camera
         </Link>
       </div>
@@ -290,16 +272,14 @@ export default function UploadPage() {
                     </svg>
                   </span>
                 )}
-                {!busy && (
-                  <button
-                    type="button"
-                    className="thumb__remove"
-                    aria-label="Delete photo"
-                    onClick={() => removeAt(it.id)}
-                  >
-                    &times;
-                  </button>
-                )}
+                <button
+                  type="button"
+                  className="thumb__remove"
+                  aria-label="Delete photo"
+                  onClick={() => removeAt(it.id)}
+                >
+                  &times;
+                </button>
                 {it.status === 'bad' && it.reason && <p className="thumb__reason">{it.reason}</p>}
               </div>
             ))}
@@ -311,15 +291,11 @@ export default function UploadPage() {
       </div>
 
       <div className="gennav">
-        <Link className="btn btn--link" href="/generator/select">
+        <Link className="btn btn--link" href="/ai-headshot-generator/select">
           Back
         </Link>
         <button className="btn btn--primary" type="button" disabled={!canContinue} onClick={onContinue}>
-          {phase === 'checking'
-            ? 'Checking your photos'
-            : phase === 'uploading'
-              ? 'Uploading your photos'
-              : 'Continue'}
+          {checking ? 'Checking your photos' : 'Continue'}
         </button>
       </div>
     </section>

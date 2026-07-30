@@ -141,6 +141,28 @@ a {
   cursor: pointer;
 }
 
+/* Logged-out nav auth: "[icon] Sign Up / Log in". Inherits the ivory .navlink
+   color; the icon (currentColor) matches the text, the slash is a muted divider. */
+.nav-auth {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.nav-auth .navlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.nav-auth .navlink svg {
+  width: 16px;
+  height: 16px;
+}
+.nav-auth__sep {
+  color: var(--fg-hero-fg);
+  opacity: 0.5;
+  font-weight: 400;
+}
+
 /* Account order list. */
 .orders {
   list-style: none;
@@ -734,8 +756,13 @@ a {
 
 .gallery__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(4, 1fr); /* 4 per row on desktop */
   gap: 14px;
+}
+@media (max-width: 620px) {
+  .gallery__grid {
+    grid-template-columns: repeat(2, 1fr); /* 2 per row on phones */
+  }
 }
 
 /* Let the photo be the loudest thing: the card is just the image, with the
@@ -755,13 +782,18 @@ a {
   object-fit: cover;
 }
 
-/* Floating download button, top-right of each shot. Bone disc, ink glyph, turns
-   cobalt on hover/focus. Understated so the face dominates; always visible so it
-   works on touch (no hover to rely on). */
-.shot__dl {
+/* Floating view + download controls, top-right of each shot. Bone discs, ink
+   glyphs, turn cobalt on hover/focus. Understated so the face dominates; always
+   visible so they work on touch (no hover to rely on). */
+.shot__actions {
   position: absolute;
   top: 10px;
   right: 10px;
+  display: flex;
+  gap: 8px;
+}
+.shot__dl,
+.shot__view {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -772,14 +804,65 @@ a {
   background: var(--bone);
   border: 1px solid var(--line);
   box-shadow: 0 2px 8px -2px rgba(11, 11, 12, 0.35);
+  cursor: pointer;
   transition: color 0.14s ease, background 0.14s ease, transform 0.14s ease;
 }
-
 .shot__dl:hover,
-.shot__dl:focus-visible {
+.shot__dl:focus-visible,
+.shot__view:hover,
+.shot__view:focus-visible {
   color: var(--cobalt);
   border-color: var(--cobalt);
   transform: translateY(-1px);
+}
+
+/* Image lightbox (modal) used by /success and the admin order page. */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(10, 20, 18, 0.82);
+  animation: lightbox-in 0.14s ease;
+}
+@keyframes lightbox-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.lightbox__img {
+  max-width: min(92vw, 900px);
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.6);
+}
+.lightbox__close {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid rgba(244, 238, 225, 0.35);
+  background: rgba(10, 20, 18, 0.5);
+  color: var(--ivory, #f4eee1);
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.14s ease, border-color 0.14s ease;
+}
+.lightbox__close:hover,
+.lightbox__close:focus-visible {
+  background: rgba(10, 20, 18, 0.85);
+  border-color: var(--ivory, #f4eee1);
+  outline: none;
 }
 
 .pill {
@@ -1138,6 +1221,44 @@ a {
   gap: 8px;
 }
 
+/* Use-cases grid ("Who it's for"): scannable cards, subtle radius per BRAND. */
+.usecases__grid {
+  list-style: none;
+  margin: 28px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+@media (max-width: 860px) {
+  .usecases__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 480px) {
+  .usecases__grid {
+    grid-template-columns: 1fr;
+  }
+}
+.usecase {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  padding: 18px 18px 20px;
+}
+.usecase__title {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.usecase__body {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ash);
+}
+
 .tag {
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -1209,19 +1330,35 @@ a {
 }
 
 .qa__q {
-  list-style: none;
+  width: 100%;
   cursor: pointer;
   padding: 20px 0;
+  font: inherit;
   font-size: 18px;
   font-weight: 500;
+  color: inherit;
+  background: none;
+  border: none;
+  text-align: left;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
 }
 
-.qa__q::-webkit-details-marker {
-  display: none;
+/* Collapsible answer panel. The answer is always in the DOM; grid-rows animates it
+   from 0 (collapsed) to its natural height (open), so nothing is hidden from crawlers. */
+.qa__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.22s ease;
+}
+.qa--open .qa__panel {
+  grid-template-rows: 1fr;
+}
+.qa__panel > .qa__a {
+  overflow: hidden;
+  min-height: 0;
 }
 
 /* Plus that becomes a minus on open. */
@@ -1254,7 +1391,7 @@ a {
   transition: transform 0.15s ease;
 }
 
-.qa[open] .qa__mark::after {
+.qa--open .qa__mark::after {
   transform: scaleY(0);
 }
 
@@ -1478,6 +1615,65 @@ a {
   font-weight: 400;
   font-size: 12px;
   color: var(--ash);
+}
+
+/* Info tooltip: a small (i) next to a field label; the hint appears ABOVE the icon
+   on hover or keyboard focus, so the label stays uncluttered. */
+.info-tip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  color: var(--ash);
+  cursor: help;
+  vertical-align: middle;
+}
+.info-tip svg {
+  width: 15px;
+  height: 15px;
+}
+.info-tip:hover,
+.info-tip:focus-visible {
+  color: var(--cobalt);
+  outline: none;
+}
+.info-tip__bubble {
+  position: absolute;
+  bottom: calc(100% + 9px);
+  left: -6px;
+  width: max-content;
+  max-width: 260px;
+  padding: 8px 11px;
+  background: var(--ink);
+  color: var(--bone);
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: left;
+  letter-spacing: 0;
+  border-radius: 6px;
+  box-shadow: 0 8px 20px -8px rgba(11, 11, 12, 0.35);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition: opacity 0.14s ease, transform 0.14s ease;
+  pointer-events: none;
+  z-index: 20;
+}
+/* Little arrow pointing down at the icon. */
+.info-tip__bubble::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 12px;
+  border: 5px solid transparent;
+  border-top-color: var(--ink);
+}
+.info-tip:hover .info-tip__bubble,
+.info-tip:focus-within .info-tip__bubble {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
 }
 
 /* Single-select chips: text-only pills for demographics (no preview image).
@@ -2530,18 +2726,28 @@ button:focus-visible,
   margin-left: auto;
 }
 .acct__signout {
-  background: none;
-  border: none;
-  padding: 4px 2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--bone);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 7px 14px;
   font: inherit;
-  font-size: 14px;
-  color: var(--ash);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--cobalt);
   cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
+}
+.acct__signout svg {
+  width: 15px;
+  height: 15px;
 }
 .acct__signout:hover {
-  color: var(--cobalt);
+  background: var(--cobalt);
+  border-color: var(--cobalt);
+  color: var(--bone);
 }
 
 .acct__section {
@@ -2634,9 +2840,22 @@ button:focus-visible,
   align-items: center;
   gap: 2px;
 }
+/* View / Download: real, visible buttons (not the ivory hero link style that
+   leaks onto .btn--link). Outlined green on the near-white row, filling on hover. */
 .ord .btn--link {
-  padding: 8px 10px;
-  font-size: 14px;
+  padding: 8px 14px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--cobalt);
+  background: var(--bone);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+}
+.ord .btn--link:hover {
+  background: var(--cobalt);
+  border-color: var(--cobalt);
+  color: var(--bone);
+  text-decoration: none;
 }
 @media (max-width: 620px) {
   .ord {
@@ -2679,6 +2898,29 @@ button:focus-visible,
   margin-top: 14px;
   color: var(--ok);
   font-size: 14px;
+}
+
+/* Dev-only per-order delete button (rendered only in development), sized to sit next
+   to View/Download in the order row and warn-tinted to read as destructive. */
+.ord__del {
+  padding: 8px 12px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--warn);
+  background: var(--bone);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
+}
+.ord__del:hover:not(:disabled) {
+  background: var(--warn);
+  border-color: var(--warn);
+  color: var(--bone);
+}
+.ord__del:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 .btn--danger {
   color: var(--warn);

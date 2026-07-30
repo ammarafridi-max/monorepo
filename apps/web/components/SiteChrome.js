@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import Footer from './Footer';
 import Container from './Container';
 import ProfileMenu from './ProfileMenu';
+import { FiUserPlus } from 'react-icons/fi';
 
 /**
  * The customer-facing chrome (topbar + footer). Hidden on the /admin subtree, which
@@ -31,9 +32,18 @@ export default function SiteChrome({ authed, email, children }) {
               {authed ? (
                 <ProfileMenu email={email} />
               ) : (
-                <a className="navlink" href="/login">
-                  Log in
-                </a>
+                <span className="nav-auth">
+                  <a className="navlink" href="/signup">
+                    <FiUserPlus aria-hidden="true" />
+                    Sign Up
+                  </a>
+                  <span className="nav-auth__sep" aria-hidden="true">
+                    /
+                  </span>
+                  <a className="navlink" href="/login">
+                    Log in
+                  </a>
+                </span>
               )}
             </nav>
           </div>

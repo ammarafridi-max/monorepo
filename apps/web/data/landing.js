@@ -32,7 +32,7 @@ export const looks = [
 ];
 
 export const included = [
-  '25 to 120 headshots, depending on your plan',
+  '5 to 60 headshots, depending on your plan',
   'High-resolution square JPGs, 1:1',
   'A model trained on your own face',
   'Delivered by email in about an hour',
@@ -41,7 +41,21 @@ export const included = [
 ];
 
 export const price = {
-  amount: 'from $29',
+  amount: 'from $9',
   cadence: 'one time',
   note: 'Three plans, no subscription. No account required to buy.',
 };
+
+// Who it's for: concrete use cases. Each maps to a real search intent (LinkedIn,
+// resumes, team pages, and more), so the section adds SEO reach and helps a visitor
+// self-identify. One tight line each; no filler.
+export const useCases = [
+  { title: 'LinkedIn profiles', body: 'A profile photo that gets you taken seriously.' },
+  { title: 'Resumes and CVs', body: 'Look the part before the interview.' },
+  { title: 'Company and team pages', body: 'One consistent, sharp look across the whole team.' },
+  { title: 'Consultants and freelancers', body: 'Show up polished to every new client.' },
+  { title: 'Real estate agents', body: 'The friendly, trustworthy headshot buyers expect.' },
+  { title: 'Founders and speakers', body: 'Press-ready shots for bios, panels, and decks.' },
+  { title: 'Remote and distributed teams', body: 'Everyone photographed to one standard, no studio visit.' },
+  { title: 'Conference and press bios', body: 'A current headshot ready whenever you are asked for one.' },
+];

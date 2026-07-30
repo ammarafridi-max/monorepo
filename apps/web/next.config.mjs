@@ -30,6 +30,13 @@ const nextConfig = {
         destination: 'https://www.picturesk.ai/:path*',
         permanent: true,
       },
+      // The funnel moved under /ai-headshot-generator (and /pay -> /payment).
+      // Permanent-redirect the old URLs so bookmarks and any in-flight Stripe
+      // cancel_urls do not 404.
+      { source: '/generator/select', destination: '/ai-headshot-generator/select', permanent: true },
+      { source: '/generator/upload', destination: '/ai-headshot-generator/upload', permanent: true },
+      { source: '/generator/pay', destination: '/ai-headshot-generator/payment', permanent: true },
+      { source: '/generator/capture', destination: '/ai-headshot-generator/capture', permanent: true },
     ];
   },
   // Keep these server-only packages out of the bundler (mongoose in particular

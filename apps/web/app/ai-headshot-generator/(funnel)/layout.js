@@ -1,4 +1,4 @@
-import Stepper from '../../components/Stepper';
+import Stepper from '../../../components/Stepper';
 
 export const metadata = { title: 'Create your headshots. Picturesk.ai', robots: { index: false, follow: false } };
 

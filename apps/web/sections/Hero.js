@@ -23,15 +23,15 @@ export default function Hero() {
             headshots you would actually put on LinkedIn.
           </p>
           <div className="hero__actions">
-            <a className="btn btn--primary" href="/generator/select">
-              Get my headshots <span className="btn__price">from $29</span>
+            <a className="btn btn--primary" href="/ai-headshot-generator/select">
+              Get my headshots <span className="btn__price">from $9</span>
             </a>
             <a className="btn btn--link" href="#work">
               See real results
             </a>
           </div>
           <p className="hero__meta">
-            Three one-time plans, from twenty-nine dollars. Delivered by email in about an hour.
+            Three one-time plans, from nine dollars. Delivered by email in about an hour.
           </p>
         </div>
 

@@ -31,6 +31,34 @@ export const faq = [
   },
   {
     q: 'Is this a subscription?',
-    a: 'No. You pick one of three plans and pay once, from twenty-nine dollars for one set of headshots. No recurring charge, and no account required to buy.',
+    a: 'No. You pick one of three plans and pay once, from nine dollars for one set of headshots. No recurring charge, and no account required to buy.',
+  },
+  {
+    q: 'Are these good for LinkedIn?',
+    a: 'Yes, that is what most people use them for. You get clean, professional headshots framed for a profile photo, so you can update LinkedIn, a company page, or a resume the same day.',
+  },
+  {
+    q: 'Do I need a professional camera?',
+    a: 'No. Clear phone selfies are exactly what we train on. Good light and a few different angles matter far more than the camera. If a photo will hurt the result, we flag it as you add it.',
+  },
+  {
+    q: 'How is this different from a filter or Photoshop?',
+    a: 'A filter edits one photo. We train a model on your actual face and generate new photographs of you, in outfits and settings you never shot. The results keep your real features, not a smoothed-over version of a single selfie.',
+  },
+  {
+    q: 'Which backgrounds and outfits can I choose?',
+    a: 'You pick from a range of backgrounds (studio, office, outdoor, and more) and outfits (business suit, business casual, and others), and we spread your set across the ones you choose. More looks mean more variety in what you get back.',
+  },
+  {
+    q: 'Does it work for everyone?',
+    a: 'Yes. Because we train on your own photos, it works across ages, genders, and skin tones. You also tell us a few details up front, like gender and age range, so the results match you more closely.',
+  },
+  {
+    q: 'What resolution are the headshots?',
+    a: 'Sharp, high-resolution square images, ready for LinkedIn, resumes, company pages, and most web profiles. Download them one at a time or grab the whole set as a single zip.',
+  },
+  {
+    q: 'Is my payment secure?',
+    a: 'Yes. Payment runs through Stripe, so we never see or store your card details. You pay once, with no subscription and no hidden charges.',
   },
 ];

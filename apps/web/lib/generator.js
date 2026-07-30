@@ -84,7 +84,7 @@ export function clearState() {
  * it still renders in the stepper. Order defines "done vs upcoming".
  */
 export const FUNNEL_STEPS = [
-  { key: 'select', label: 'Select', href: '/generator/select' },
-  { key: 'upload', label: 'Upload', href: '/generator/upload' },
+  { key: 'select', label: 'Select', href: '/ai-headshot-generator/select' },
+  { key: 'upload', label: 'Upload', href: '/ai-headshot-generator/upload' },
   { key: 'pay', label: 'Pay' },
 ];

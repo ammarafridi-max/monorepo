@@ -39,8 +39,8 @@ export default function Pricing() {
           ))}
         </ul>
 
-        <a className="btn btn--primary btn--block" href="/generator/select">
-          Get my headshots <span className="btn__price">from $29</span>
+        <a className="btn btn--primary btn--block" href="/ai-headshot-generator/select">
+          Get my headshots <span className="btn__price">from $9</span>
         </a>
         <p className="pricecard__fine">
           You pay on Stripe. Refunded automatically if a run fails. See our{' '}

@@ -6,8 +6,8 @@ import { FUNNEL_STEPS } from '../lib/generator';
 // Which funnel step the current route is on, so the stepper can render each step
 // as done / current / upcoming. Pay has no route past the Stripe redirect.
 function currentKey(pathname) {
-  if (pathname?.startsWith('/generator/upload')) return 'upload';
-  if (pathname?.startsWith('/generator/pay')) return 'pay';
+  if (pathname?.startsWith('/ai-headshot-generator/upload')) return 'upload';
+  if (pathname?.startsWith('/ai-headshot-generator/payment')) return 'pay';
   return 'select';
 }
 

@@ -14,6 +14,8 @@ import {
   dateTime,
   STATUS_LABEL,
 } from '../../../../../lib/adminApi';
+import Lightbox from '../../../../../components/Lightbox';
+import { FiEye } from 'react-icons/fi';
 
 const RETRYABLE = ['PAID', 'TRAINING', 'GENERATING'];
 
@@ -23,7 +25,7 @@ function StatusPill({ status }) {
   return <span className={cls}>{STATUS_LABEL[status] || status}</span>;
 }
 
-function ImageGrid({ title, urls }) {
+function ImageGrid({ title, urls, onView }) {
   if (!urls || urls.length === 0) return null;
   return (
     <div className="adm-imgblock">
@@ -32,10 +34,19 @@ function ImageGrid({ title, urls }) {
       </div>
       <div className="adm-imggrid">
         {urls.map((u, i) => (
-          <a key={`${u}-${i}`} href={u} target="_blank" rel="noreferrer" className="adm-thumb">
+          <button
+            key={`${u}-${i}`}
+            type="button"
+            className="adm-thumb"
+            onClick={() => onView(u)}
+            aria-label={`View ${title} ${i + 1}`}
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={u} alt={`${title} ${i + 1}`} loading="lazy" />
-          </a>
+            <span className="adm-thumb__eye" aria-hidden="true">
+              <FiEye />
+            </span>
+          </button>
         ))}
       </div>
     </div>
@@ -56,6 +67,7 @@ export default function OrderDetailPage() {
   const { adminUser } = useAdminAuth();
   const [order, setOrder] = useState(null);
   const [error, setError] = useState('');
+  const [preview, setPreview] = useState(null); // image open in the lightbox
 
   const load = useCallback(() => {
     return getAdminOrder(id)
@@ -164,17 +176,19 @@ export default function OrderDetailPage() {
         <div className="adm-card__head">
           <h2>Images</h2>
         </div>
-        <ImageGrid title="Uploaded" urls={order.uploadedImageUrls} />
-        <ImageGrid title="Delivered" urls={order.deliveredImageUrls} />
-        <ImageGrid title="Enhanced" urls={order.enhancedImageUrls} />
-        <ImageGrid title="Swapped" urls={order.swappedImageUrls} />
-        <ImageGrid title="Raw candidates" urls={order.resultImageUrls} />
+        <ImageGrid title="Uploaded" urls={order.uploadedImageUrls} onView={setPreview} />
+        <ImageGrid title="Delivered" urls={order.deliveredImageUrls} onView={setPreview} />
+        <ImageGrid title="Enhanced" urls={order.enhancedImageUrls} onView={setPreview} />
+        <ImageGrid title="Swapped" urls={order.swappedImageUrls} onView={setPreview} />
+        <ImageGrid title="Raw candidates" urls={order.resultImageUrls} onView={setPreview} />
         {(order.uploadedImageUrls?.length ?? 0) === 0 &&
           (order.deliveredImageUrls?.length ?? 0) === 0 &&
           (order.resultImageUrls?.length ?? 0) === 0 && (
             <p className="adm-muted">No images yet.</p>
           )}
       </section>
+
+      <Lightbox src={preview} alt="Order image" onClose={() => setPreview(null)} />
     </>
   );
 }
