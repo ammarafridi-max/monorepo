@@ -9,7 +9,6 @@ import { ChevronDown, ChevronRight, User, LogOut, ArrowRight } from "lucide-reac
 import { useAuth } from "../../../contexts/AuthContextBase.js";
 import { logoutUserSessionApi } from "../../../services/apiAuth.js";
 import Container from "../../shared/layout/Container.js";
-import Currency from "../../ui/v2/Currency.js";
 import MobileNavigation from "./MobileNavigation.js";
 
 /**
@@ -315,10 +314,8 @@ export default function Navbar({ pages = [], logoAlt = "Logo" }) {
           })}
         </nav>
 
-        {/* Right side: currency + auth + mobile nav */}
+        {/* Right side: auth + mobile nav */}
         <div className="flex items-center gap-2">
-          <Currency className="hidden lg:block" />
-
           {/* User menu / Login */}
           {isAuthenticated ? (
             <div className="hidden lg:block relative">

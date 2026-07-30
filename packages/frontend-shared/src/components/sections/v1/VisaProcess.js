@@ -14,33 +14,30 @@ export default function VisaProcess({ steps = [] }) {
   return (
     <section className="py-12 md:py-16 bg-gray-50/80 border-y border-gray-100">
       <Container>
-        <SectionHead eyebrow="How it works" title="Simple, Guided Process" />
+        <SectionHead
+          title="Simple, Guided Process"
+          subtitle="From your first consultation to a decision, we handle every step with you so nothing gets missed."
+        />
 
-        <div className="hidden lg:flex items-start">
-          {steps.map((step, i) => {
-            const isLast = i === steps.length - 1;
-            return (
-              <div
-                key={i}
-                className="flex-1 relative flex flex-col items-center text-center px-3"
-              >
-                {!isLast && (
-                  <div className="absolute top-[18px] left-[calc(50%+22px)] right-0 h-px bg-gray-200" />
-                )}
-                <div className="relative z-10 w-9 h-9 rounded-full bg-primary-700 text-white flex items-center justify-center text-[12px] font-outfit font-semibold mb-3 shadow-sm">
-                  {String(i + 1).padStart(2, "0")}
-                </div>
-                <h3 className="font-outfit font-medium text-[14px] text-gray-900 mb-1 leading-snug">
-                  {step.title}
-                </h3>
-                {step.description && (
-                  <p className="font-outfit font-light text-[12px] text-gray-500 leading-5">
-                    {step.description}
-                  </p>
-                )}
+        <div className="hidden lg:grid grid-cols-3 gap-x-8 gap-y-12 max-w-4xl mx-auto">
+          {steps.map((step, i) => (
+            <div
+              key={i}
+              className="flex flex-col items-center text-center px-3"
+            >
+              <div className="w-14 h-14 rounded-full bg-primary-700 text-white flex items-center justify-center text-lg font-outfit font-bold mb-4 shadow-md">
+                {String(i + 1).padStart(2, "0")}
               </div>
-            );
-          })}
+              <h3 className="font-outfit font-medium text-[15px] text-gray-900 mb-1 leading-snug">
+                {step.title}
+              </h3>
+              {step.description && (
+                <p className="font-outfit font-light text-[13px] text-gray-600 leading-5">
+                  {step.description}
+                </p>
+              )}
+            </div>
+          ))}
         </div>
 
         <div className="lg:hidden space-y-4">
@@ -64,7 +61,7 @@ export default function VisaProcess({ steps = [] }) {
                     {step.title}
                   </h3>
                   {step.description && (
-                    <p className="font-outfit font-light text-[13px] text-gray-500 leading-5">
+                    <p className="font-outfit font-light text-[13px] text-gray-600 leading-5">
                       {step.description}
                     </p>
                   )}

@@ -22,6 +22,7 @@ function Counter({ label, ageRange, value, onDecrement, onIncrement }) {
           type="button"
           onClick={onDecrement}
           disabled={value === 0}
+          aria-label={`Decrease ${label}`}
           className="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center text-gray-500 hover:border-primary-500 hover:text-primary-600 transition-colors disabled:opacity-30"
         >
           <Minus size={13} />
@@ -32,6 +33,7 @@ function Counter({ label, ageRange, value, onDecrement, onIncrement }) {
         <button
           type="button"
           onClick={onIncrement}
+          aria-label={`Increase ${label}`}
           className="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center text-gray-500 hover:border-primary-500 hover:text-primary-600 transition-colors"
         >
           <Plus size={13} />

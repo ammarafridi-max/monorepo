@@ -4,7 +4,7 @@ import Container from "../../shared/layout/Container.js";
 
 function CtaButton({ children, onClick, href, size = "md" }) {
   const sz = size === "lg" ? "text-[15px] py-3 px-6" : "text-[14px] py-2.5 px-5";
-  const cls = `inline-flex items-center justify-center gap-2 font-outfit font-medium rounded-xl bg-accent-500 hover:bg-accent-600 text-white border border-accent-500 transition-colors duration-200 cursor-pointer ${sz}`;
+  const cls = `inline-flex items-center justify-center gap-2 font-outfit font-semibold rounded-full bg-white hover:bg-primary-50 text-primary-700 border border-white transition-colors duration-200 cursor-pointer ${sz}`;
   if (onClick)
     return (
       <button type="button" onClick={onClick} className={cls}>
@@ -26,7 +26,7 @@ export default function VisaFinalCta({ headline, ctaText, onCtaClick }) {
         <div className="rounded-2xl bg-gradient-to-br from-primary-800 to-primary-950 p-8 md:p-10 flex flex-col md:flex-row items-start md:items-center gap-6 justify-between overflow-hidden relative">
 
           <div className="pointer-events-none absolute -right-20 -top-20 w-64 h-64 rounded-full bg-white/5" />
-          <div className="pointer-events-none absolute -right-8 -bottom-12 w-40 h-40 rounded-full bg-accent-500/10" />
+          <div className="pointer-events-none absolute -right-8 -bottom-12 w-40 h-40 rounded-full bg-white/5" />
 
           <div className="relative">
             {headline && (
@@ -46,7 +46,7 @@ export default function VisaFinalCta({ headline, ctaText, onCtaClick }) {
             </CtaButton>
             <a
               href="https://wa.me/971000000000"
-              className="inline-flex items-center justify-center gap-2 text-[14px] font-outfit font-medium py-3 px-5 rounded-xl border border-white/25 text-white hover:bg-white/10 transition-colors duration-200 whitespace-nowrap"
+              className="inline-flex items-center justify-center gap-2 text-[14px] font-outfit font-semibold py-3 px-5 rounded-full border border-white/25 text-white hover:bg-white/10 transition-colors duration-200 whitespace-nowrap"
             >
               Chat on WhatsApp
             </a>

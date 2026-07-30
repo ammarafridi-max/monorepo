@@ -75,7 +75,7 @@ export default function Footer({
         </div>
         {columns.map(({ heading, links }) => (
           <div key={heading}>
-            <h4 className="font-semibold text-white mb-4">{heading}</h4>
+            <p className="font-semibold text-white mb-4">{heading}</p>
             <ul className="space-y-2">
               {links.map((link) => {
                 // Accept either string (legacy) or { label, href } objects.

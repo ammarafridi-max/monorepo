@@ -8,6 +8,7 @@ import VisaProcess from "../../../components/sections/v1/VisaProcess.js";
 import VisaRequirements from "../../../components/sections/v1/VisaRequirements.js";
 import VisaPricingBreakdown from "../../../components/sections/v1/VisaPricingBreakdown.js";
 import VisaTrust from "../../../components/sections/v1/VisaTrust.js";
+import VisaTestimonials from "../../../components/sections/v1/VisaTestimonials.js";
 import VisaFaqs from "../../../components/sections/v1/VisaFaqs.js";
 import VisaFinalCta from "../../../components/sections/v1/VisaFinalCta.js";
 
@@ -54,7 +55,8 @@ export default function VisaDetailPage({ visa, schema, breadcrumbJsonLd }) {
       <VisaProcess steps={visa.processSteps} />
       <VisaRequirements sections={visa.requirementSections} />
       <VisaPricingBreakdown rows={visa.pricingBreakdown} />
-      <VisaTrust items={visa.whyUs} testimonials={visa.testimonials ?? []} />
+      <VisaTrust items={visa.whyUs} />
+      <VisaTestimonials testimonials={visa.testimonials ?? []} />
       <VisaFaqs faqs={visa.faqs} countryName={visa.countryName} />
       <VisaFinalCta
         headline={visa.finalCtaHeadline}

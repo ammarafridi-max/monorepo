@@ -66,13 +66,13 @@ function PackageCard({ pkg, onCtaClick }) {
   }[tier];
 
   const timelineCls = {
-    standard: "text-gray-400",
+    standard: "text-gray-600",
     express: "text-white/60",
-    concierge: "text-gray-400",
+    concierge: "text-gray-600",
   }[tier];
 
   const currencyCls = {
-    standard: "text-gray-400",
+    standard: "text-gray-600",
     express: "text-white/50",
     concierge: "text-amber-500/70",
   }[tier];
@@ -84,20 +84,20 @@ function PackageCard({ pkg, onCtaClick }) {
   }[tier];
 
   const perCls = {
-    standard: "text-gray-400",
+    standard: "text-gray-600",
     express: "text-white/40",
-    concierge: "text-gray-400",
+    concierge: "text-gray-600",
   }[tier];
 
   const descCls = {
-    standard: "text-gray-500",
+    standard: "text-gray-600",
     express: "text-white/75",
-    concierge: "text-gray-500",
+    concierge: "text-gray-600",
   }[tier];
 
   const tickCls = {
-    standard: "text-green-500",
-    express: "text-accent-300",
+    standard: "text-primary-600",
+    express: "text-white",
     concierge: "text-amber-500",
   }[tier];
 
@@ -108,14 +108,14 @@ function PackageCard({ pkg, onCtaClick }) {
   }[tier];
 
   const exclusionXCls = {
-    standard: "text-gray-300",
+    standard: "text-gray-400",
     express: "text-white/35",
-    concierge: "text-gray-300",
+    concierge: "text-gray-400",
   }[tier];
   const exclusionTxtCls = {
-    standard: "text-gray-400",
+    standard: "text-gray-600",
     express: "text-white/45",
-    concierge: "text-gray-400",
+    concierge: "text-gray-600",
   }[tier];
 
   return (
@@ -124,7 +124,7 @@ function PackageCard({ pkg, onCtaClick }) {
     >
       {tier === "express" && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <span className="inline-block bg-accent-500 text-white text-[10px] font-bold font-outfit px-3 py-1 rounded-full uppercase tracking-wider">
+          <span className="inline-block bg-white text-primary-700 text-[10px] font-bold font-outfit px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
             Most Popular
           </span>
         </div>
@@ -186,7 +186,7 @@ function PackageCard({ pkg, onCtaClick }) {
         <button
           type="button"
           onClick={onCtaClick}
-          className="inline-flex items-center justify-center gap-2 font-outfit font-medium text-[14px] py-2.5 px-5 rounded-xl bg-accent-500 hover:bg-accent-600 text-white border border-accent-500 transition-colors duration-200 cursor-pointer"
+          className="inline-flex items-center justify-center gap-2 font-outfit font-semibold text-[14px] py-2.5 px-5 rounded-full bg-white hover:bg-primary-50 text-primary-700 border border-white transition-colors duration-200 cursor-pointer"
         >
           Choose {name}
         </button>
@@ -195,7 +195,7 @@ function PackageCard({ pkg, onCtaClick }) {
         <button
           type="button"
           onClick={onCtaClick}
-          className="inline-flex items-center justify-center gap-2 font-outfit font-medium text-[14px] py-2.5 px-5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white border border-amber-600 transition-colors duration-200 cursor-pointer"
+          className="inline-flex items-center justify-center gap-2 font-outfit font-semibold text-[14px] py-2.5 px-5 rounded-full bg-amber-600 hover:bg-amber-700 text-white border border-amber-600 transition-colors duration-200 cursor-pointer"
         >
           Choose {name}
         </button>
@@ -204,7 +204,7 @@ function PackageCard({ pkg, onCtaClick }) {
         <button
           type="button"
           onClick={onCtaClick}
-          className="inline-flex items-center justify-center gap-2 font-outfit font-medium text-[14px] py-2.5 px-5 rounded-xl bg-transparent hover:bg-gray-50 text-gray-700 border border-gray-300 transition-colors duration-200 cursor-pointer"
+          className="inline-flex items-center justify-center gap-2 font-outfit font-semibold text-[14px] py-2.5 px-5 rounded-full bg-transparent hover:bg-primary-50 text-primary-700 border border-primary-600 transition-colors duration-200 cursor-pointer"
         >
           Choose {name}
         </button>
@@ -248,7 +248,10 @@ export default function VisaPackages({ packages = [], onPackageSelect }) {
   return (
     <section id="packages" className="py-12 md:py-16">
       <Container>
-        <SectionHead eyebrow="Pricing" title="Simple, Transparent Pricing" />
+        <SectionHead
+          title="Simple, Transparent Pricing"
+          subtitle="Clear, upfront package pricing with no hidden fees. Choose the option that fits your timeline and budget."
+        />
         <div
           className={`grid gap-5 ${
             packages.length === 3

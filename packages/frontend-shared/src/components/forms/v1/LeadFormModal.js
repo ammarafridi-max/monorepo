@@ -382,7 +382,7 @@ export default function LeadFormModal({ isOpen, onClose, visa, defaultPackage = 
               type="submit"
               form="lead-form"
               disabled={isSubmittingLead}
-              className="w-full flex items-center justify-center gap-2 bg-accent-500 hover:bg-accent-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-outfit font-medium text-[15px] py-3 px-6 rounded-xl transition-colors duration-200"
+              className="w-full flex items-center justify-center gap-2 bg-primary-700 hover:bg-primary-800 disabled:opacity-60 disabled:cursor-not-allowed text-white font-outfit font-semibold text-[15px] py-3 px-6 rounded-full transition-colors duration-200"
             >
               {isSubmittingLead ? (
                 <>
