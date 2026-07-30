@@ -36,7 +36,9 @@ primary_region = "iad"
     timeout = "3s"
     grace_period = "10s"
     method = "GET"
-    path = "/"
+    # "/" now 308-redirects to /ai-headshot-generator, and Fly HTTP checks only pass on
+    # 2xx, so the health check must target a 200 route. robots.txt is static and fast.
+    path = "/robots.txt"
 
 [[vm]]
   size = "shared-cpu-1x"
