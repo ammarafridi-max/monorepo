@@ -10,6 +10,10 @@ export const faq = [
     a: 'Yes, when your photos are good. We train a model on your own face from the selfies you upload, so the results are you, not a generic lookalike. The biggest factor is your input: clear, recent, well lit photos from a few angles give the strongest likeness.',
   },
   {
+    q: 'What if the headshots don\'t look like me?',
+    a: 'Then you shouldn\'t pay for them. If you open your results and they don\'t look like you, just reply to your delivery email or write to info@picturesk.ai within 14 days, and we\'ll refund your full purchase. You keep the images either way. We\'re a new studio earning your trust, so the risk is on us, not you.',
+  },
+  {
     q: 'How many photos do I need?',
     a: 'Five to fifteen photos of one person, with one clear face in each. Use different angles and good light, and skip sunglasses and hats. We check every photo as you add it and flag anything that will hurt the result before you pay.',
   },

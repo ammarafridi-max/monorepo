@@ -1060,6 +1060,12 @@ a {
   margin-top: 28px;
 }
 
+.hero__guarantee {
+  margin: 16px 0 0;
+  font-size: 13px;
+  color: var(--fg-hero-muted);
+}
+
 .hero__meta {
   margin: 18px 0 0;
   font-size: 14px;

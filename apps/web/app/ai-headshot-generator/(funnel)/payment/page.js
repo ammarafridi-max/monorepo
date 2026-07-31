@@ -143,6 +143,11 @@ export default function PayPage() {
         </button>
       </div>
 
+      <p className="formnote" style={{ textAlign: 'left' }}>
+        <strong>Look-like-you guarantee.</strong> If your headshots don&apos;t look like you,
+        email us and we&apos;ll refund you in full. Pay with confidence.
+      </p>
+
       {error && <p className="error">{error}</p>}
 
       {failures.length > 0 && (

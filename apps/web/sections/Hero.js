@@ -30,6 +30,7 @@ export default function Hero() {
               See real results
             </a>
           </div>
+          <p className="hero__guarantee">Look-like-you guarantee, or your money back.</p>
           <p className="hero__meta">
             Three one-time plans, from nine dollars. Delivered by email in about an hour.
           </p>

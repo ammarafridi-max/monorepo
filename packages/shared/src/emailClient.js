@@ -204,6 +204,11 @@ export function renderDeliveryEmail({ resultsUrl, orderId, thumbnailUrls = [], l
             </td>
           </tr>
           <tr>
+            <td style="padding:0 0 28px 0;font-family:${SANS};font-size:14px;line-height:1.6;color:${ASH}">
+              Our promise: if these don't look like you, just reply to this email within 14 days and we'll refund you in full.
+            </td>
+          </tr>
+          <tr>
             <td style="border-top:1px solid ${LINE};padding:20px 0 0 0;font-family:${SANS};font-size:13px;line-height:1.6;color:${ASH}">
               Trouble with the button? Paste this link into your browser:<br />
               <a href="${resultsUrl}" style="color:${COBALT};text-decoration:none;word-break:break-all">${resultsUrl}</a>
@@ -228,6 +233,8 @@ export function renderDeliveryEmail({ resultsUrl, orderId, thumbnailUrls = [], l
     resultsUrl,
     '',
     lifetimeLine,
+    '',
+    "Our promise: if these don't look like you, just reply to this email within 14 days and we'll refund you in full.",
     '',
     `Order ${orderId}`,
   ].join('\n');
