@@ -15,19 +15,21 @@ design and build plan.
 - `apps/worker` - BullMQ worker: drives orders through real Replicate training + generation (Phase 3).
 - `packages/shared` - shared order contracts, the atomic transition helper, and the Redis connection helper.
 
-## Multi-step funnel (select, upload, pay)
+## Multi-step funnel (select, upload, payment)
 
-The purchase flow is a routed, three-step funnel:
+The purchase flow is a routed, three-step funnel under `/ai-headshot-generator`:
 
 ```
-Select (looks + attire + about-you + email) -> Upload photos -> Pick plan + Pay -> processing -> Delivered
+Select (plan + about-you + looks + attire + email) -> Upload photos -> Payment -> processing -> Delivered
 ```
 
-The customer picks their looks and attire, tells us a bit about themselves
-(gender and age range, race optional), and enters an email (one merged step),
+The customer picks a plan, tells us a bit about themselves (gender and age range,
+race optional), picks looks and attire, and enters an email (one merged step),
 uploads their photos, then pays. Payment is the last step; the order is created at
 checkout already carrying the selections AND the photos. This is the one purchase
-flow; the old single-page upload+pay flow is gone.
+flow; the old single-page upload+pay flow is gone. (The old `/generator/*` URLs
+permanent-redirect to their `/ai-headshot-generator/*` equivalents, `pay ->
+payment`, in `apps/web/next.config.mjs`.)
 
 **State machine.**
 
@@ -38,19 +40,19 @@ AWAITING_PAYMENT -> PAID -> TRAINING -> GENERATING -> DELIVERED
 `PAID` is the webhook's idempotency checkpoint and where the pipeline is enqueued;
 the worker then moves `PAID -> TRAINING`.
 
-**The web funnel (`apps/web/app/generator`).** A shared stepper layout over three
-routes: `/generator/select` (looks + attire, each option with a preview image or a
-placeholder; gender + age range + optional race as single-select chips, with the
-facial-hair field carrying an info tooltip; and email), `/generator/upload` (each
-photo is uploaded to R2 and server-gated as it is added; the green tick appears only
-after it passes), and `/generator/pay` (pick a pricing plan, review, and pay - which
-now only retrieves the Stripe URL).
-Selections and uploaded-photo URLs persist in `localStorage` until checkout, so the
-order is created only at the pay step (no abandoned drafts in the DB). Landing CTAs
-route to `/generator/select`.
+**The web funnel (`apps/web/app/ai-headshot-generator/(funnel)`).** A shared stepper
+layout over three routes: `/ai-headshot-generator/select` (pick a plan first, then
+gender + age range + optional race as single-select chips with the facial-hair field
+carrying an info tooltip, then looks + attire each with a preview image or a
+placeholder, then email), `/ai-headshot-generator/upload` (each photo is uploaded to
+R2 and server-gated as it is added; the green tick appears only after it passes), and
+`/ai-headshot-generator/payment` (review and pay - which now only retrieves the Stripe
+URL). Selections and uploaded-photo URLs persist in `localStorage` until checkout, so
+the order is created only at the payment step (no abandoned drafts in the DB). Landing
+CTAs route to `/ai-headshot-generator/select`.
 
 **Where the gate runs.** Photos are screened at the **upload step, not at
-checkout.** As each photo is added on `/generator/upload` it is uploaded to R2 and
+checkout.** As each photo is added on `/ai-headshot-generator/upload` it is uploaded to R2 and
 run through the real server gate (`POST /uploads/gate`: face quality + content
 moderation); its green tick appears only after that gate passes, and a failure flags
 the photo with a reason so the user swaps it before continuing. `POST /checkout` then
@@ -624,10 +626,11 @@ GA4 + Clarity load only **after opt-in via a cookie-consent banner**
 (`apps/web/app/Analytics.js`); until then no analytics cookies are set. The same five
 funnel events fire across whichever tool is enabled:
 
-1. `landing_view`: home page loaded (`app/page.js`).
-2. `upload_started`: first photo added (`app/generator/upload/page.js`).
-3. `upload_completed`: all photos pass the gate (`app/generator/upload/page.js`).
-4. `checkout_started`: the pay button is clicked (`app/generator/pay/page.js`).
+1. `landing_view`: landing page loaded (`app/ai-headshot-generator/page.js`; `/`
+   permanent-redirects here).
+2. `upload_started`: first photo added (`app/ai-headshot-generator/(funnel)/upload/page.js`).
+3. `upload_completed`: all photos pass the gate (`app/ai-headshot-generator/(funnel)/upload/page.js`).
+4. `checkout_started`: the pay button is clicked (`app/ai-headshot-generator/(funnel)/payment/page.js`).
 5. `purchase_completed`: success page reached for a paid order (`app/success/SuccessView.js`).
    - Optional: `quality_gate_failed`: photos rejected at the gate.
 
