@@ -2430,17 +2430,16 @@ a {
   background: var(--fg-green);
 }
 
-/* --- Alternating light bands (matches Layout A's rhythm) ------------------- */
+/* --- Home page sections: white background. Hero and footer keep the dark
+   green chrome; every marketing section between them sits on white. ---------- */
 .section.showcase,
 .section.get,
-.section.faq {
-  background: var(--fg-body-bg);
-}
-
+.section.faq,
+.section.usecases,
 .section.how,
 .section.pricing,
 .section.start {
-  background: var(--fg-body-bg2);
+  background: #ffffff;
 }
 
 /* --- Buttons: pill shape, no cobalt glow ---------------------------------- */
