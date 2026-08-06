@@ -72,6 +72,7 @@ export function normalizeOrder(raw) {
       from: s.from,
       to: s.to,
       flight: s.flight,
+      stops: s.stops ?? [],
     })),
     // Travelport availability commands (rendered above passenger rows).
     // Each entry: { label, value } — e.g. { label: 'AVAILABILITY · DEP', value: 'A24JUNBERSAW' }
@@ -106,7 +107,7 @@ const PIP_CSS = `
   .mdt-head .sp{margin-left:auto;display:flex;gap:12px;color:#5a6470;cursor:pointer;}
   .mdt-card{
     background:#11161d;border:.5px solid rgba(93,202,165,.28);
-    border-radius:12px;overflow:hidden;
+    border-radius:12px;overflow:hidden;padding-bottom:12px;
   }
   .mdt-name{
     display:flex;align-items:center;justify-content:space-between;
@@ -214,9 +215,7 @@ function OrderPanel({ order, onRefresh, onClose }) {
   const {
     message,
     status = [],
-    paymentMethod,
     recordLocator,
-    type,
     validity,
     delivery,
     segments = [],
@@ -273,10 +272,19 @@ function OrderPanel({ order, onRefresh, onClose }) {
             </div>
             <div className="mdt-sub">
               {seg.date}
-              {type ? ` · ${type}` : ''}
+              {seg.stops?.length ? ` · Stops in ${seg.stops.join(', ')}` : ' · Direct'}
             </div>
           </div>
         ))}
+
+        <div className="mdt-meta">
+          <div>
+            Validity<span>{validity}</span>
+          </div>
+          <div>
+            Delivery<span>{delivery}</span>
+          </div>
+        </div>
 
         {availabilityCommands.map((c, i) => (
           <CopyRow key={`avail-${i}`} label={c.label} value={c.value} />
@@ -301,18 +309,6 @@ function OrderPanel({ order, onRefresh, onClose }) {
         {recordLocator && (
           <CopyRow label="RECORD LOCATOR" value={recordLocator} />
         )}
-
-        <div className="mdt-meta">
-          <div>
-            Validity<span>{validity}</span>
-          </div>
-          <div>
-            Delivery<span>{delivery}</span>
-          </div>
-          <div>
-            Paid via<span>{paymentMethod}</span>
-          </div>
-        </div>
       </div>
     </>
   );

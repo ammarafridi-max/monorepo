@@ -120,7 +120,7 @@ function PassengersTable({ passengers }) {
       <table className="w-full text-sm min-w-[300px]">
         <thead>
           <tr className="bg-gray-50/60">
-            {['#', 'Name'].map((h, i) => (
+            {['#', 'Name', 'Type'].map((h, i) => (
               <th key={i} className="text-left text-xs font-bold text-gray-400 uppercase tracking-wide px-5 py-2.5 whitespace-nowrap">
                 {h}
               </th>
@@ -136,6 +136,15 @@ function PassengersTable({ passengers }) {
                   const namePart = [p.firstName, p.lastName].filter(Boolean).join(' / ');
                   return [p.title, namePart].filter(Boolean).join(' ') || '—';
                 })()}
+              </td>
+              <td className="px-5 py-2.5 align-middle">
+                {p.type ? (
+                  <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-[11px] font-semibold text-gray-600 capitalize">
+                    {p.type}
+                  </span>
+                ) : (
+                  <span className="text-gray-400">—</span>
+                )}
               </td>
             </tr>
           ))}
@@ -292,10 +301,9 @@ export default function AdminDummyTicketDetailPage() {
     ? null
     : ticket?.ticketDelivery?.deliveryDate?.slice(0, 10) || null;
   const deliveryDayReached = !scheduledDate || todayDubai >= scheduledDate;
-  // Only admins may reschedule, and only for paid tickets that aren't already
-  // delivered/refunded — the window where the delivery gate still matters.
-  const canEditDelivery = !isAgent
-    && ticket?.paymentStatus === 'PAID'
+  // Admins and agents may reschedule, and only for paid tickets that aren't
+  // already delivered/refunded — the window where the delivery gate still matters.
+  const canEditDelivery = ticket?.paymentStatus === 'PAID'
     && !['DELIVERED', 'REFUNDED'].includes(ticket?.orderStatus);
   const { updateDummyTicket, isUpdating }              = useUpdateDummyTicket();
   const { refundDummyTicket, isRefunding }             = useRefundDummyTicket();
@@ -368,12 +376,26 @@ export default function AdminDummyTicketDetailPage() {
 
   // Shape the ticket into the order contract the floating PiP panel expects.
   // Read-only — the panel renders whatever is here whenever `ticket` updates.
-  const segmentToPanel = (s) => ({
-    date: s?.departure?.date ? formatDate(s.departure.date) : '',
-    from: s?.departure?.iataCode,
-    to:   s?.arrival?.iataCode,
-    flight: `${s?.carrierCode || ''} ${s?.flightNumber || ''}`.trim() || '—',
-  });
+  // Collapse a flight leg (which may include connecting hops) into a single
+  // origin -> final-destination row for the pop-out overview. Intermediate
+  // arrival airports become the "stops" list; the leg's flight numbers are
+  // joined so no booking detail is lost.
+  const legToPanel = (segments = []) => {
+    if (!segments.length) return null;
+    const first = segments[0];
+    const last  = segments[segments.length - 1];
+    const stops = segments.slice(0, -1).map((s) => s?.arrival?.iataCode).filter(Boolean);
+    const flights = segments
+      .map((s) => `${s?.carrierCode || ''} ${s?.flightNumber || ''}`.trim())
+      .filter(Boolean);
+    return {
+      date: first?.departure?.date ? formatDate(first.departure.date) : '',
+      from: first?.departure?.iataCode,
+      to:   last?.arrival?.iataCode,
+      flight: flights.join(' / ') || '—',
+      stops,
+    };
+  };
 
   // Travelport availability commands: A{DD}{MMM}{FROM}{TO} for departure,
   // AR{DD}{MMM} for the return (AR inherits the previous availability's pair).
@@ -402,9 +424,9 @@ export default function AdminDummyTicketDetailPage() {
         ? convertToDubaiDate(ticket.ticketDelivery.deliveryDate)
         : '—',
     segments: [
-      ...(ticket.flightDetails?.departureFlight?.segments || []).map(segmentToPanel),
-      ...(ticket.flightDetails?.returnFlight?.segments || []).map(segmentToPanel),
-    ],
+      legToPanel(ticket.flightDetails?.departureFlight?.segments),
+      legToPanel(ticket.flightDetails?.returnFlight?.segments),
+    ].filter(Boolean),
     availabilityCommands: [
       { label: isReturn ? 'AVAILABILITY · DEP' : 'AVAILABILITY', value: depAvail },
       { label: 'AVAILABILITY · RET',                              value: retAvail },
@@ -414,9 +436,6 @@ export default function AdminDummyTicketDetailPage() {
       travelport: buildPassengerCommand(p),
     })),
     bookingCommands: [
-      { label: 'PHONE', value: 'P.T*' },
-      { label: 'TICKETING',         value: 'T.T*' },
-      { label: 'RECEIVED FROM',     value: 'R.P' },
       { label: `QUEUE · ${ticket?.ticketValidity || ''}`.trim(), value: qebCode ? `QEB/${qebCode}` : '' },
     ],
   };
@@ -507,6 +526,16 @@ export default function AdminDummyTicketDetailPage() {
 
         <div className="space-y-5">
 
+          {ticket?.message && (
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
+              <div className="flex items-center gap-1.5 mb-2">
+                <MessageSquare size={13} className="text-amber-500 shrink-0" />
+                <span className="text-[11px] font-bold text-amber-600 uppercase tracking-wide">Customer Message</span>
+              </div>
+              <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{ticket.message}</p>
+            </div>
+          )}
+
           <Card title="Trip Details" icon={Plane}>
             <div className={`grid gap-4 ${isReturn ? 'sm:grid-cols-2' : 'grid-cols-1'}`}>
               <FlightCard
@@ -557,15 +586,6 @@ export default function AdminDummyTicketDetailPage() {
                 </p>
               </div>
             </div>
-            {ticket?.message && (
-              <div className="mt-4 pt-4 border-t border-gray-100">
-                <div className="flex items-center gap-1.5 mb-2">
-                  <MessageSquare size={12} className="text-gray-400" />
-                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wide">Message</span>
-                </div>
-                <p className="text-sm text-gray-700 leading-relaxed">{ticket.message}</p>
-              </div>
-            )}
           </Card>
 
           {(ticket?.affiliate || ticket?.affiliateId) && (

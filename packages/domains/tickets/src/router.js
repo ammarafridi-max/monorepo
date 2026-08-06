@@ -25,7 +25,7 @@ export function createTicketRouter({ controller, auth }) {
   // Admin + Agent
   router.get('/', protect, restrictTo('admin', 'agent'), controller.getAllTickets);
   router.patch('/:sessionId/order-status', protect, restrictTo('admin', 'agent'), controller.updateOrderStatus);
-  router.patch('/:sessionId/delivery', protect, restrictTo('admin'), controller.updateDelivery);
+  router.patch('/:sessionId/delivery', protect, restrictTo('admin', 'agent'), controller.updateDelivery);
   router.post('/:sessionId/send-reservation', protect, restrictTo('admin', 'agent'), upload.single('file'), controller.sendReservation);
 
   // Admin only
