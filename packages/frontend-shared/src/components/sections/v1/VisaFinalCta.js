@@ -34,7 +34,7 @@ export default function VisaFinalCta({ headline, ctaText, onCtaClick }) {
                 {headline}
               </h2>
             )}
-            <p className="font-outfit font-light text-[14px] text-white/60 max-w-md leading-6">
+            <p className="font-outfit font-normal text-[14px] text-white/60 max-w-md leading-6">
               Our specialists are available 7 days a week. Get a free
               consultation before you commit.
             </p>

@@ -49,7 +49,7 @@ export default function VisaTrust({ items = [] }) {
                     {item.title}
                   </h3>
                   {item.description && (
-                    <p className="font-outfit font-light text-[14px] text-gray-600 leading-6">
+                    <p className="font-outfit font-normal text-[14px] text-gray-600 leading-6">
                       {item.description}
                     </p>
                   )}
@@ -71,7 +71,7 @@ export default function VisaTrust({ items = [] }) {
               <p className="font-outfit font-medium text-[13px] text-gray-800 mb-0.5">
                 {label}
               </p>
-              <p className="font-outfit font-light text-[12px] text-gray-600 leading-4">
+              <p className="font-outfit font-normal text-[12px] text-gray-600 leading-4">
                 {caption}
               </p>
             </div>

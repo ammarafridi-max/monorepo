@@ -25,6 +25,30 @@ function parseStringArray(value) {
   return [];
 }
 
+export const SECTION_GUIDE_KEYS = ['packages', 'process', 'requirements', 'pricing', 'faqs'];
+
+const isObjectId = (v) => /^[a-f0-9]{24}$/i.test(String(v));
+
+// Keeps only known section keys and valid blog ids; anything else becomes null
+// so clearing a link in the admin form actually clears it.
+function parseSectionGuides(value) {
+  if (value === undefined) return undefined;
+  let raw = value;
+  if (typeof raw === 'string') {
+    if (raw === '') return {};
+    try { raw = JSON.parse(raw); } catch { throw new AppError('Invalid sectionGuides format — must be valid JSON', 400); }
+  }
+  if (raw === null) return {};
+  if (typeof raw !== 'object' || Array.isArray(raw)) throw new AppError('Invalid sectionGuides format', 400);
+
+  const out = {};
+  for (const key of SECTION_GUIDE_KEYS) {
+    const id = raw[key];
+    out[key] = id && isObjectId(id) ? String(id) : null;
+  }
+  return out;
+}
+
 function isValidSlug(slug) {
   return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug);
 }
@@ -74,6 +98,7 @@ export function createVisaService({ Visa, imageStorage }) {
     whyUs:               parseJsonField(body.whyUs,               'whyUs'),
     testimonials:        parseJsonField(body.testimonials,        'testimonials'),
     faqs:                parseJsonField(body.faqs,                'faqs'),
+    sectionGuides:       parseSectionGuides(body.sectionGuides),
   });
 
   // ─── Publish-time validation ─────────────────────────────────────────────────
@@ -103,8 +128,22 @@ export function createVisaService({ Visa, imageStorage }) {
     return Visa.find({ status: 'published' }).sort({ countryName: 1 }).lean();
   };
 
+  const guidePopulate = SECTION_GUIDE_KEYS.map((key) => ({
+    path: `sectionGuides.${key}`,
+    select: 'title slug status',
+  }));
+
   const getPublicVisaBySlug = async (slug) => {
-    return Visa.findOne({ slug, status: 'published' }).lean();
+    try {
+      return await Visa.findOne({ slug, status: 'published' }).populate(guidePopulate).lean();
+    } catch (err) {
+      // A brand that mounts visas without the blog domain has no Blog model to
+      // populate against — serve the page rather than 500 on a missing guide.
+      if (err?.name === 'MissingSchemaError') {
+        return Visa.findOne({ slug, status: 'published' }).lean();
+      }
+      throw err;
+    }
   };
 
   const getAdminVisas = async ({ page, limit, status, search }) => {
@@ -198,6 +237,8 @@ export function createVisaService({ Visa, imageStorage }) {
     for (const field of arrayFields) {
       if (parsed[field] !== undefined) visa[field] = parsed[field];
     }
+
+    if (parsed.sectionGuides !== undefined) visa.sectionGuides = parsed.sectionGuides;
 
     if (file) {
       visa.heroImageUrl = await saveHeroImage(file, visa._id, visa.heroImageUrl);

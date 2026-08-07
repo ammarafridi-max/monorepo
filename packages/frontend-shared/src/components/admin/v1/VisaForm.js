@@ -2,11 +2,18 @@
 
 import { useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
+import { useGetBlogs } from '../../../hooks/blog/useGetBlogs.js';
 import {
-  ArrowLeft, Lock, Unlock, ChevronDown, ChevronUp,
+  Lock, Unlock, ChevronDown, ChevronUp,
   Plus, Trash2, Star, Globe, EyeOff, Copy,
 } from 'lucide-react';
-import Link from 'next/link';
+
+// A guide arrives as a raw ObjectId from the admin endpoint, or as a populated
+// object from the public one. Normalise both to the id string the <select> uses.
+function guideId(value) {
+  if (!value) return '';
+  return typeof value === 'object' ? String(value._id || '') : String(value);
+}
 
 function slugify(str) {
   return str.toLowerCase().trim()
@@ -23,7 +30,7 @@ function Card({ title, children, collapsible = false, defaultOpen = true }) {
         className={`flex items-center justify-between px-5 py-4 border-b border-gray-100 ${collapsible ? 'cursor-pointer select-none' : ''}`}
         onClick={collapsible ? () => setOpen((o) => !o) : undefined}
       >
-        <h3 className="text-sm font-bold text-gray-700">{title}</h3>
+        <h3 className="text-base font-bold text-gray-900">{title}</h3>
         {collapsible && (open
           ? <ChevronUp size={15} className="text-gray-400" />
           : <ChevronDown size={15} className="text-gray-400" />
@@ -64,13 +71,44 @@ function TextareaInput({ rows = 3, className = '', ...props }) {
   );
 }
 
-function SectionHeader({ label, onRemove }) {
+function DeleteButton({ onClick, title = 'Delete' }) {
   return (
-    <div className="flex items-center justify-between mb-3">
-      <span className="text-xs font-bold text-gray-500">{label}</span>
-      <button type="button" onClick={onRemove} className="text-gray-300 hover:text-red-400 transition">
-        <Trash2 size={13} />
-      </button>
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      className="flex items-center gap-1 text-[11px] font-semibold text-red-500 hover:text-red-600 hover:bg-red-50 px-2 py-1 rounded-lg transition"
+    >
+      <Trash2 size={12} />
+      Delete
+    </button>
+  );
+}
+
+// Stores the blog _id, never the slug, so renaming a post can't break the link.
+function GuideSelect({ blogs, isLoading, ...props }) {
+  return (
+    <select
+      {...props}
+      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-700"
+    >
+      <option value="">{isLoading ? 'Loading posts…' : 'No linked guide'}</option>
+      {blogs.map((b) => (
+        <option key={b._id} value={b._id}>{b.title}</option>
+      ))}
+    </select>
+  );
+}
+
+function GuideField({ name, register, blogs, isLoading }) {
+  return (
+    <div className="pt-4 mt-1 border-t border-gray-100">
+      <Field
+        label="Linked Guide (optional)"
+        hint="Adds a “Read our guide” link at the end of this section on the live page."
+      >
+        <GuideSelect {...register(name)} blogs={blogs} isLoading={isLoading} />
+      </Field>
     </div>
   );
 }
@@ -88,8 +126,35 @@ function AddButton({ onClick, label, disabled }) {
   );
 }
 
-function ItemBox({ children }) {
-  return <div className="border border-gray-100 rounded-xl p-4 space-y-3">{children}</div>;
+function ItemBox({ label, onRemove, actions, children, defaultOpen = false }) {
+  const [open, setOpen] = useState(defaultOpen);
+
+  // Unlabelled boxes stay as plain grey containers (nothing to collapse against).
+  if (!label) {
+    return <div className="border border-gray-100 bg-gray-50 rounded-xl p-4 space-y-3">{children}</div>;
+  }
+
+  return (
+    <div className="border border-gray-100 bg-gray-50 rounded-xl overflow-hidden">
+      <div className="flex items-center justify-between gap-2 px-4 py-3">
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          className="flex items-center gap-2 min-w-0 select-none cursor-pointer"
+        >
+          {open
+            ? <ChevronUp size={14} className="text-gray-400 shrink-0" />
+            : <ChevronDown size={14} className="text-gray-400 shrink-0" />}
+          <span className="text-xs font-bold text-gray-500 truncate">{label}</span>
+        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          {actions}
+          {onRemove && <DeleteButton onClick={onRemove} />}
+        </div>
+      </div>
+      {open && <div className="px-4 pb-4 space-y-3">{children}</div>}
+    </div>
+  );
 }
 
 const STATUS_CFG = {
@@ -124,6 +189,8 @@ export default function VisaForm({
 
   const [slugLocked, setSlugLocked] = useState(!!initialData);
 
+  const { blogs, isLoadingBlogs } = useGetBlogs({ limit: 200, status: 'published' });
+
   const {
     register,
     handleSubmit,
@@ -144,6 +211,13 @@ export default function VisaForm({
       metaTitle:           initialData?.metaTitle           || '',
       metaDescription:     initialData?.metaDescription     || '',
       qualifierItems:      initialData?.qualifierItems      || [],
+      sectionGuides: {
+        packages:     guideId(initialData?.sectionGuides?.packages),
+        process:      guideId(initialData?.sectionGuides?.process),
+        requirements: guideId(initialData?.sectionGuides?.requirements),
+        pricing:      guideId(initialData?.sectionGuides?.pricing),
+        faqs:         guideId(initialData?.sectionGuides?.faqs),
+      },
       packages:            initialData?.packages            || [],
       processSteps:        initialData?.processSteps        || [],
       requirementSections: initialData?.requirementSections || [],
@@ -282,16 +356,9 @@ export default function VisaForm({
     <form onSubmit={handleSubmit(onFormSubmit)}>
 
       <div className="flex items-center justify-between gap-4 mb-6">
-        <Link
-          href="/admin/visa"
-          className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-gray-700 transition"
-        >
-          <ArrowLeft size={14} />
-          Back to visa pages
-        </Link>
-        <span className="text-sm font-bold text-gray-800">
+        <h2 className="text-lg font-extrabold text-gray-900">
           {isEdit ? 'Edit Visa Page' : 'New Visa Page'}
-        </span>
+        </h2>
         <button
           type="submit"
           disabled={isPending}
@@ -385,33 +452,26 @@ export default function VisaForm({
                 const highlighted = pkg.isHighlighted || false;
 
                 return (
-                  <ItemBox key={field.id}>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-gray-500">Package {i + 1}</span>
-                      <div className="flex items-center gap-2">
-
-                        <button
-                          type="button"
-                          onClick={() => setHighlighted(i)}
-                          title={highlighted ? 'Highlighted (click to remove)' : 'Set as highlighted package'}
-                          className={`flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-lg border transition ${
-                            highlighted
-                              ? 'bg-amber-50 border-amber-300 text-amber-600'
-                              : 'bg-white border-gray-200 text-gray-400 hover:border-amber-300 hover:text-amber-500'
-                          }`}
-                        >
-                          <Star size={11} className={highlighted ? 'fill-amber-400 text-amber-400' : ''} />
-                          {highlighted ? 'Highlighted' : 'Highlight'}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => removePkg(i)}
-                          className="text-gray-300 hover:text-red-400 transition"
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
-                    </div>
+                  <ItemBox
+                    key={field.id}
+                    label={`Package ${i + 1}`}
+                    onRemove={() => removePkg(i)}
+                    actions={
+                      <button
+                        type="button"
+                        onClick={() => setHighlighted(i)}
+                        title={highlighted ? 'Highlighted (click to remove)' : 'Set as highlighted package'}
+                        className={`flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-lg border transition ${
+                          highlighted
+                            ? 'bg-amber-50 border-amber-300 text-amber-600'
+                            : 'bg-white border-gray-200 text-gray-400 hover:border-amber-300 hover:text-amber-500'
+                        }`}
+                      >
+                        <Star size={11} className={highlighted ? 'fill-amber-400 text-amber-400' : ''} />
+                        {highlighted ? 'Highlighted' : 'Highlight'}
+                      </button>
+                    }
+                  >
 
                     <div className="grid grid-cols-2 gap-3">
                       <Field label="Name">
@@ -496,6 +556,7 @@ export default function VisaForm({
               {pkgFields.length === 3 && (
                 <p className="text-[11px] text-gray-400">Maximum 3 packages reached.</p>
               )}
+              <GuideField name="sectionGuides.packages" register={register} blogs={blogs} isLoading={isLoadingBlogs} />
             </div>
           </Card>
 
@@ -505,8 +566,7 @@ export default function VisaForm({
                 <p className="text-xs text-gray-400 text-center py-2">No steps yet.</p>
               )}
               {stepFields.map((field, i) => (
-                <ItemBox key={field.id}>
-                  <SectionHeader label={`Step ${i + 1}`} onRemove={() => removeStep(i)} />
+                <ItemBox key={field.id} label={`Step ${i + 1}`} onRemove={() => removeStep(i)}>
                   <div className="grid grid-cols-[1fr_auto] gap-3">
                     <Field label="Title">
                       <TextInput {...register(`processSteps.${i}.title`)} placeholder="Step title…" />
@@ -529,6 +589,7 @@ export default function VisaForm({
               {stepFields.length === 7 && (
                 <p className="text-[11px] text-gray-400">Maximum 7 steps reached.</p>
               )}
+              <GuideField name="sectionGuides.process" register={register} blogs={blogs} isLoading={isLoadingBlogs} />
             </div>
           </Card>
 
@@ -540,8 +601,7 @@ export default function VisaForm({
               {reqFields.map((field, si) => {
                 const sectionItems = watchedReqSections?.[si]?.items || [];
                 return (
-                  <ItemBox key={field.id}>
-                    <SectionHeader label={`Section ${si + 1}`} onRemove={() => removeReq(si)} />
+                  <ItemBox key={field.id} label={`Section ${si + 1}`} onRemove={() => removeReq(si)}>
                     <Field label="Title">
                       <TextInput {...register(`requirementSections.${si}.title`)} placeholder="e.g. Personal Documents" />
                     </Field>
@@ -590,6 +650,7 @@ export default function VisaForm({
               {reqFields.length === 10 && (
                 <p className="text-[11px] text-gray-400">Maximum 10 sections reached.</p>
               )}
+              <GuideField name="sectionGuides.requirements" register={register} blogs={blogs} isLoading={isLoadingBlogs} />
             </div>
           </Card>
 
@@ -599,8 +660,7 @@ export default function VisaForm({
                 <p className="text-xs text-gray-400 text-center py-2">No breakdown items yet.</p>
               )}
               {pricFields.map((field, i) => (
-                <ItemBox key={field.id}>
-                  <SectionHeader label={`Item ${i + 1}`} onRemove={() => removePric(i)} />
+                <ItemBox key={field.id} label={`Item ${i + 1}`} onRemove={() => removePric(i)}>
                   <div className="grid grid-cols-2 gap-3">
                     <Field label="Description">
                       <TextInput {...register(`pricingBreakdown.${i}.item`)} placeholder="e.g. Visa Fee" />
@@ -631,6 +691,7 @@ export default function VisaForm({
               {pricFields.length === 15 && (
                 <p className="text-[11px] text-gray-400">Maximum 15 items reached.</p>
               )}
+              <GuideField name="sectionGuides.pricing" register={register} blogs={blogs} isLoading={isLoadingBlogs} />
             </div>
           </Card>
 
@@ -640,8 +701,7 @@ export default function VisaForm({
                 <p className="text-xs text-gray-400 text-center py-2">No items yet.</p>
               )}
               {whyFields.map((field, i) => (
-                <ItemBox key={field.id}>
-                  <SectionHeader label={`Point ${i + 1}`} onRemove={() => removeWhy(i)} />
+                <ItemBox key={field.id} label={`Point ${i + 1}`} onRemove={() => removeWhy(i)}>
                   <div className="grid grid-cols-[1fr_auto] gap-3">
                     <Field label="Title">
                       <TextInput {...register(`whyUs.${i}.title`)} placeholder="e.g. Fast Processing" />
@@ -673,12 +733,12 @@ export default function VisaForm({
                 <p className="text-xs text-gray-400 text-center py-2">No testimonials yet.</p>
               )}
               {testimonialFields.map((field, i) => (
-                <ItemBox key={field.id}>
-
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-gray-500">Testimonial {i + 1}</span>
-
+                <ItemBox
+                  key={field.id}
+                  label={`Testimonial ${i + 1}`}
+                  onRemove={() => removeTestimonial(i)}
+                  actions={
+                    <>
                       <label className="flex items-center gap-1.5 cursor-pointer select-none">
                         <input
                           type="checkbox"
@@ -687,8 +747,6 @@ export default function VisaForm({
                         />
                         <span className="text-[11px] font-semibold text-gray-400">Featured</span>
                       </label>
-                    </div>
-                    <div className="flex items-center gap-2">
                       <button
                         type="button"
                         onClick={() => duplicateTestimonial(i)}
@@ -697,16 +755,9 @@ export default function VisaForm({
                       >
                         <Copy size={13} />
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => removeTestimonial(i)}
-                        title="Delete"
-                        className="text-gray-300 hover:text-red-400 transition"
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
-                  </div>
+                    </>
+                  }
+                >
 
                   <Field label="Full Name">
                     <TextInput
@@ -826,20 +877,14 @@ export default function VisaForm({
                   <p className="text-xs text-gray-400 text-center py-4">No FAQs yet.</p>
                 )}
                 {faqFields.map((field, i) => (
-                  <div key={field.id} className="border border-gray-100 rounded-xl p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-gray-500">FAQ {i + 1}</span>
-                      <button type="button" onClick={() => removeFaq(i)} className="text-gray-300 hover:text-red-400 transition">
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
+                  <ItemBox key={field.id} label={`FAQ ${i + 1}`} onRemove={() => removeFaq(i)}>
                     <Field label="Question">
                       <TextInput {...register(`faqs.${i}.question`)} placeholder="Question…" />
                     </Field>
                     <Field label="Answer">
                       <TextareaInput {...register(`faqs.${i}.answer`)} rows={3} placeholder="Answer…" />
                     </Field>
-                  </div>
+                  </ItemBox>
                 ))}
                 {faqFields.length < 30 && (
                   <AddButton onClick={() => appendFaq({ question: '', answer: '' })} label="Add FAQ" />
@@ -847,6 +892,7 @@ export default function VisaForm({
                 {faqFields.length === 30 && (
                   <p className="text-[11px] text-gray-400">Maximum 30 FAQs reached.</p>
                 )}
+                <GuideField name="sectionGuides.faqs" register={register} blogs={blogs} isLoading={isLoadingBlogs} />
               </div>
             )}
           </Card>

@@ -3,19 +3,22 @@
 import * as LucideIcons from "lucide-react";
 import Container from "../../shared/layout/Container.js";
 import SectionHead from "./VisaSectionHead.js";
+import VisaGuideLink from "./VisaGuideLink.js";
 
 function resolveIcon(name, fallback = "Circle") {
   if (!name) return LucideIcons[fallback] || LucideIcons.Circle;
   return LucideIcons[name] || LucideIcons[fallback] || LucideIcons.Circle;
 }
 
-export default function VisaProcess({ steps = [] }) {
+export default function VisaProcess({ steps = [], countryName = "", guide }) {
   if (!steps.length) return null;
+  const prefix = countryName ? `${countryName} Visa` : "Visa";
+  const subject = countryName ? `${countryName} visa` : "visa";
   return (
     <section className="py-12 md:py-16 bg-gray-50/80 border-y border-gray-100">
       <Container>
         <SectionHead
-          title="Simple, Guided Process"
+          title={`${prefix} Process`}
           subtitle="From your first consultation to a decision, we handle every step with you so nothing gets missed."
         />
 
@@ -32,7 +35,7 @@ export default function VisaProcess({ steps = [] }) {
                 {step.title}
               </h3>
               {step.description && (
-                <p className="font-outfit font-light text-[13px] text-gray-600 leading-5">
+                <p className="font-outfit font-normal text-[13px] text-gray-600 leading-5">
                   {step.description}
                 </p>
               )}
@@ -61,7 +64,7 @@ export default function VisaProcess({ steps = [] }) {
                     {step.title}
                   </h3>
                   {step.description && (
-                    <p className="font-outfit font-light text-[13px] text-gray-600 leading-5">
+                    <p className="font-outfit font-normal text-[13px] text-gray-600 leading-5">
                       {step.description}
                     </p>
                   )}
@@ -70,6 +73,8 @@ export default function VisaProcess({ steps = [] }) {
             );
           })}
         </div>
+
+        <VisaGuideLink guide={guide} label={`Read our guide on the complete ${subject} process`} />
       </Container>
     </section>
   );

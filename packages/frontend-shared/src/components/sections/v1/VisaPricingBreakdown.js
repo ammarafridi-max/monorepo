@@ -2,8 +2,10 @@
 
 import Container from "../../shared/layout/Container.js";
 import SectionHead from "./VisaSectionHead.js";
+import VisaGuideLink from "./VisaGuideLink.js";
 
-export default function VisaPricingBreakdown({ rows = [] }) {
+export default function VisaPricingBreakdown({ rows = [], countryName = "", guide }) {
+  const subject = countryName ? `${countryName} visa` : "visa";
   if (!rows.length) return null;
   const total = rows.reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
   const currency = rows[0]?.currency || "AED";
@@ -12,7 +14,7 @@ export default function VisaPricingBreakdown({ rows = [] }) {
     <section className="py-12 md:py-16 bg-gray-50/80 border-y border-gray-100">
       <Container>
         <SectionHead
-          title="Cost Breakdown"
+          title={`${countryName ? `${countryName} Visa` : "Visa"} Cost Breakdown`}
           subtitle="A full breakdown of every fee, including government and third-party charges passed through at cost."
         />
         <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
@@ -38,12 +40,12 @@ export default function VisaPricingBreakdown({ rows = [] }) {
                       {row.item}
                     </p>
                     {row.note && (
-                      <p className="font-outfit font-light text-[13px] text-gray-600 mt-0.5">
+                      <p className="font-outfit font-normal text-[13px] text-gray-600 mt-0.5">
                         {row.note}
                       </p>
                     )}
                   </td>
-                  <td className="px-5 py-3.5 font-outfit font-light text-[14px] text-gray-600 whitespace-nowrap">
+                  <td className="px-5 py-3.5 font-outfit font-normal text-[14px] text-gray-600 whitespace-nowrap">
                     {row.paidTo || "—"}
                   </td>
                   <td className="px-5 py-3.5 text-right font-outfit font-semibold text-[15px] text-gray-900 whitespace-nowrap">
@@ -67,10 +69,12 @@ export default function VisaPricingBreakdown({ rows = [] }) {
             </tfoot>
           </table>
         </div>
-        <p className="mt-3 font-outfit font-light text-[11px] text-gray-600 max-w-2xl leading-5">
+        <p className="mt-3 font-outfit font-normal text-[11px] text-gray-600 max-w-2xl leading-5">
           Prices are indicative. Government and third-party fees are passed
           through at cost and may change without notice.
         </p>
+
+        <VisaGuideLink guide={guide} label={`Read our guide on the full cost breakdown of a ${subject}`} />
       </Container>
     </section>
   );

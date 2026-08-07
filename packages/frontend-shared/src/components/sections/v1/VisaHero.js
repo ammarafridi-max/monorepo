@@ -1,6 +1,7 @@
 "use client";
 
-import { Check, Building2, Zap, Languages } from "lucide-react";
+import Image from "next/image";
+import { Building2, Zap, Languages } from "lucide-react";
 import Container from "../../shared/layout/Container.js";
 
 function splitHeadline(text = "") {
@@ -9,65 +10,79 @@ function splitHeadline(text = "") {
   return { first: text.slice(0, idx + 1), second: text.slice(idx + 2) };
 }
 
+const TRUST_ITEMS = [
+  { Icon: Building2, label: "Licensed Dubai office" },
+  { Icon: Zap, label: "3-minute response time" },
+  { Icon: Languages, label: "Native-language support" },
+];
+
 export default function VisaHero({
-  countryName = "",
   headline = "",
   subheadline = "",
   ctaText = "Get free consultation",
-  qualifierItems = [],
+  imageUrl = "",
+  imageAlt = "",
   onCtaClick,
 }) {
   const { first: headFirst, second: headSecond } = splitHeadline(headline);
+  const hasImage = Boolean(imageUrl);
 
   return (
-    <section className="relative overflow-hidden bg-gray-50">
-      <div className="pointer-events-none absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full bg-primary-100/40" />
-      <div className="pointer-events-none absolute -bottom-24 -left-24 w-[360px] h-[360px] rounded-full bg-primary-100/30" />
+    <section
+      className={`relative overflow-hidden ${hasImage ? "bg-gray-900" : "bg-gray-50"}`}
+    >
+      {hasImage ? (
+        <>
+          <Image
+            src={imageUrl}
+            alt={imageAlt}
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-center"
+          />
+          <div className="absolute inset-0 bg-linear-to-b from-gray-900/85 via-gray-900/70 to-gray-900/85" />
+        </>
+      ) : (
+        <>
+          <div className="pointer-events-none absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full bg-primary-100/40" />
+          <div className="pointer-events-none absolute -bottom-24 -left-24 w-[360px] h-[360px] rounded-full bg-primary-100/30" />
+        </>
+      )}
 
-      <Container className="relative pt-12 pb-14 md:pt-14 md:pb-16 lg:pt-16 lg:pb-20">
-        <div className="max-w-4xl">
-          {countryName && (
-            <div className="flex items-center gap-3 mb-7">
-              <span className="block w-8 h-[2px] bg-primary-500 rounded-full shrink-0" />
-              <span className="text-gray-600 text-[12px] font-outfit font-semibold uppercase tracking-[0.16em]">
-                {countryName} Visa Assistance
-              </span>
-            </div>
-          )}
-
+      <Container className="relative pt-16 pb-18 md:pt-18 md:pb-20 lg:pt-20 lg:pb-24">
+        <div className="max-w-4xl lg:mx-auto lg:text-center">
           {headline && (
-            <h1 className="font-outfit font-bold text-[32px] md:text-[44px] lg:text-[52px] text-gray-900 leading-[1.1] tracking-[-0.025em] mb-5 max-w-3xl">
+            <h1
+              className={`font-outfit font-bold text-[32px] md:text-[44px] lg:text-[52px] leading-[1.1] tracking-[-0.025em] mb-5 max-w-3xl lg:mx-auto ${
+                hasImage ? "text-white" : "text-gray-900"
+              }`}
+            >
               {headFirst}
               {headSecond && (
                 <>
                   {" "}
-                  <span className="text-primary-600">{headSecond}</span>
+                  <span
+                    className={hasImage ? "text-primary-300" : "text-primary-600"}
+                  >
+                    {headSecond}
+                  </span>
                 </>
               )}
             </h1>
           )}
 
           {subheadline && (
-            <p className="font-outfit font-light text-[17px] md:text-[19px] text-gray-600 leading-[1.7] mb-7 max-w-2xl">
+            <p
+              className={`font-outfit font-light text-[17px] md:text-[19px] leading-[1.7] mb-7 max-w-2xl lg:mx-auto ${
+                hasImage ? "text-gray-200" : "text-gray-600"
+              }`}
+            >
               {subheadline}
             </p>
           )}
 
-          {qualifierItems.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-9">
-              {qualifierItems.map((item, i) => (
-                <span
-                  key={i}
-                  className="inline-flex items-center gap-2 bg-white border border-gray-200 rounded-full px-4 py-2 text-[13px] font-outfit font-medium text-gray-700 shadow-sm"
-                >
-                  <Check size={12} className="text-primary-600 shrink-0" />
-                  {item}
-                </span>
-              ))}
-            </div>
-          )}
-
-          <div className="flex flex-wrap gap-3 mb-8">
+          <div className="flex flex-wrap gap-3 mb-8 lg:justify-center">
             <button
               type="button"
               onClick={onCtaClick}
@@ -77,25 +92,31 @@ export default function VisaHero({
             </button>
             <a
               href="#packages"
-              className="inline-flex items-center gap-2 text-[15px] font-outfit font-medium py-3.5 px-6 rounded-full border border-gray-300 text-gray-700 hover:bg-white hover:border-gray-400 transition-colors duration-200"
+              className={`inline-flex items-center gap-2 text-[15px] font-outfit font-medium py-3.5 px-6 rounded-full border transition-colors duration-200 ${
+                hasImage
+                  ? "border-white/40 text-white hover:bg-white/10 hover:border-white/70"
+                  : "border-gray-300 text-gray-700 hover:bg-white hover:border-gray-400"
+              }`}
             >
               View packages
             </a>
           </div>
 
-          <div className="flex flex-wrap gap-x-6 gap-y-2.5">
-            <span className="inline-flex items-center gap-1.5 text-[13px] font-outfit font-light text-gray-600">
-              <Building2 size={14} className="text-primary-600 shrink-0" />
-              Licensed Dubai office
-            </span>
-            <span className="inline-flex items-center gap-1.5 text-[13px] font-outfit font-light text-gray-600">
-              <Zap size={14} className="text-primary-600 shrink-0" />
-              3-minute response time
-            </span>
-            <span className="inline-flex items-center gap-1.5 text-[13px] font-outfit font-light text-gray-600">
-              <Languages size={14} className="text-primary-600 shrink-0" />
-              Native-language support
-            </span>
+          <div className="flex flex-wrap gap-x-6 gap-y-2.5 lg:justify-center">
+            {TRUST_ITEMS.map(({ Icon, label }) => (
+              <span
+                key={label}
+                className={`inline-flex items-center gap-1.5 text-[13px] font-outfit font-normal ${
+                  hasImage ? "text-gray-200" : "text-gray-600"
+                }`}
+              >
+                <Icon
+                  size={14}
+                  className={`shrink-0 ${hasImage ? "text-primary-300" : "text-primary-600"}`}
+                />
+                {label}
+              </span>
+            ))}
           </div>
         </div>
       </Container>

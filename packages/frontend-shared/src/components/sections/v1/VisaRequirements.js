@@ -3,14 +3,16 @@
 import { ChevronRight } from "lucide-react";
 import Container from "../../shared/layout/Container.js";
 import SectionHead from "./VisaSectionHead.js";
+import VisaGuideLink from "./VisaGuideLink.js";
 
-export default function VisaRequirements({ sections = [] }) {
+export default function VisaRequirements({ sections = [], countryName = "", guide }) {
+  const subject = countryName ? `${countryName} visa` : "visa";
   if (!sections.length) return null;
   return (
     <section className="py-12 md:py-16">
       <Container>
         <SectionHead
-          title="Document Requirements"
+          title={`${countryName ? `${countryName} Visa` : "Visa"} Document Requirements`}
           subtitle="Everything you need to prepare for a smooth application, organized by category."
         />
         <div className="max-w-3xl mx-auto space-y-2">
@@ -31,7 +33,7 @@ export default function VisaRequirements({ sections = [] }) {
               </summary>
               <div className="px-5 pb-5">
                 {section.intro && (
-                  <p className="font-outfit font-light text-[13px] text-gray-600 leading-6 mb-3 pt-2 border-t border-gray-50">
+                  <p className="font-outfit font-normal text-[13px] text-gray-600 leading-6 mb-3 pt-2 border-t border-gray-50">
                     {section.intro}
                   </p>
                 )}
@@ -40,7 +42,7 @@ export default function VisaRequirements({ sections = [] }) {
                     {section.items.map((item, ii) => (
                       <li key={ii} className="flex items-start gap-2.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-primary-400 shrink-0 mt-[7px]" />
-                        <span className="font-outfit font-light text-[13px] text-gray-700 leading-6">
+                        <span className="font-outfit font-normal text-[13px] text-gray-700 leading-6">
                           {item}
                         </span>
                       </li>
@@ -51,6 +53,8 @@ export default function VisaRequirements({ sections = [] }) {
             </details>
           ))}
         </div>
+
+        <VisaGuideLink guide={guide} label={`Read our guide on every document you need for a ${subject}`} />
       </Container>
     </section>
   );

@@ -27,7 +27,12 @@ import MobileNavigation from "./MobileNavigation.js";
  *      }
  *    }
  */
-export default function Navbar({ pages = [], logoAlt = "Logo" }) {
+export default function Navbar({
+  pages = [],
+  logoAlt = "Logo",
+  loginHref = "/login",
+  signupHref = "/signup",
+}) {
   const { user, isAuthenticated } = useAuth();
   const pathname = usePathname();
 
@@ -390,12 +395,28 @@ export default function Navbar({ pages = [], logoAlt = "Logo" }) {
               )}
             </div>
           ) : (
-            <Link
-              href="/login"
-              className="hidden lg:inline-flex bg-primary-700 hover:bg-primary-800 text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-colors"
-            >
-              Login
-            </Link>
+            <div className="hidden lg:inline-flex items-center gap-2 text-sm font-semibold text-gray-700">
+              <User size={16} className="text-primary-700 shrink-0" />
+              {signupHref && (
+                <>
+                  <Link
+                    href={signupHref}
+                    className="hover:text-primary-700 transition-colors"
+                  >
+                    Sign Up
+                  </Link>
+                  <span className="text-gray-300" aria-hidden="true">
+                    /
+                  </span>
+                </>
+              )}
+              <Link
+                href={loginHref}
+                className="hover:text-primary-700 transition-colors"
+              >
+                Log In
+              </Link>
+            </div>
           )}
 
           <MobileNavigation pages={pages} />

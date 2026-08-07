@@ -75,6 +75,21 @@ const faqSchema = new mongoose.Schema(
   { _id: false },
 );
 
+// A section can deep-link to a blog post. We store the blog _id rather than its
+// slug so renaming a post never breaks the link on a published visa page.
+const guideRef = () => ({ type: mongoose.Schema.Types.ObjectId, ref: 'Blog', default: null });
+
+const sectionGuidesSchema = new mongoose.Schema(
+  {
+    packages:     guideRef(),
+    process:      guideRef(),
+    requirements: guideRef(),
+    pricing:      guideRef(),
+    faqs:         guideRef(),
+  },
+  { _id: false },
+);
+
 const VisaSchema = new mongoose.Schema(
   {
     countryName: { type: String, required: [true, 'Country name is required'], trim: true },
@@ -129,6 +144,8 @@ const VisaSchema = new mongoose.Schema(
       default: [],
       validate: { validator: (v) => v.length <= 30, message: 'A visa can have at most 30 FAQs' },
     },
+
+    sectionGuides: { type: sectionGuidesSchema, default: () => ({}) },
 
     finalCtaHeadline: { type: String, trim: true },
     finalCtaText:     { type: String, trim: true },

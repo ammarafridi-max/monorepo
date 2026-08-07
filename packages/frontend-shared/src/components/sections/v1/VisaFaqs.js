@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Container from "../../shared/layout/Container.js";
 import SectionHead from "./VisaSectionHead.js";
+import VisaGuideLink from "./VisaGuideLink.js";
 
 function FaqItem({ question, answer }) {
   const [open, setOpen] = useState(false);
@@ -47,7 +48,7 @@ function FaqItem({ question, answer }) {
       <div
         className={`overflow-hidden transition-all duration-300 ease-in-out ${open ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"}`}
       >
-        <p className="font-outfit font-light text-[13px] text-gray-600 leading-6 px-5 pb-5">
+        <p className="font-outfit font-normal text-[13px] text-gray-600 leading-6 px-5 pb-5">
           {answer}
         </p>
       </div>
@@ -55,7 +56,8 @@ function FaqItem({ question, answer }) {
   );
 }
 
-export default function VisaFaqs({ faqs = [], countryName }) {
+export default function VisaFaqs({ faqs = [], countryName, guide }) {
+  const subject = countryName ? `${countryName} visa` : "visa";
   if (!faqs.length) return null;
 
   return (
@@ -65,7 +67,7 @@ export default function VisaFaqs({ faqs = [], countryName }) {
     >
       <Container>
         <SectionHead
-          title="Frequently Asked Questions"
+          title={`${countryName ? `${countryName} Visa: ` : ""}Frequently Asked Questions`}
           subtitle={`Common questions about ${countryName} visas. If you don't see your question, get in touch and our specialists respond within minutes.`}
         />
 
@@ -74,6 +76,8 @@ export default function VisaFaqs({ faqs = [], countryName }) {
             <FaqItem key={i} question={faq.question} answer={faq.answer} />
           ))}
         </div>
+
+        <VisaGuideLink guide={guide} label={`Read our complete ${subject} guide`} />
       </Container>
     </section>
   );

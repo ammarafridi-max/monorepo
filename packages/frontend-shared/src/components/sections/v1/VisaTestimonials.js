@@ -62,7 +62,7 @@ export default function VisaTestimonials({ testimonials = [] }) {
                   )}
                   <StarRow count={t.rating ?? 5} />
                 </div>
-                <p className="font-outfit font-light text-[14px] text-gray-600 leading-6 flex-1">
+                <p className="font-outfit font-normal text-[14px] text-gray-600 leading-6 flex-1">
                   &ldquo;{t.quote}&rdquo;
                 </p>
                 <div className="mt-4 pt-4 border-t border-gray-50">
@@ -70,7 +70,7 @@ export default function VisaTestimonials({ testimonials = [] }) {
                     {t.name}
                   </p>
                   {meta && (
-                    <p className="font-outfit font-light text-[11px] text-gray-600 mt-0.5 leading-tight">
+                    <p className="font-outfit font-normal text-[11px] text-gray-600 mt-0.5 leading-tight">
                       {meta}
                     </p>
                   )}

@@ -114,7 +114,7 @@ const defaultPages = [
     links: ['/travel-itinerary'],
   },
   {
-    name: 'Visa',
+    name: 'Visa Assistance',
     links: ['/visa'],
     mega: {
       columns: [

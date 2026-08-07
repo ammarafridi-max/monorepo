@@ -3,6 +3,7 @@
 import { useState } from "react";
 import LeadFormModal from "../../../components/forms/v1/LeadFormModal.js";
 import VisaHero from "../../../components/sections/v1/VisaHero.js";
+import VisaQualifiers from "../../../components/sections/v1/VisaQualifiers.js";
 import VisaPackages from "../../../components/sections/v1/VisaPackages.js";
 import VisaProcess from "../../../components/sections/v1/VisaProcess.js";
 import VisaRequirements from "../../../components/sections/v1/VisaRequirements.js";
@@ -25,6 +26,8 @@ export default function VisaDetailPage({ visa, schema, breadcrumbJsonLd }) {
 
   if (!visa) return null;
 
+  const guides = visa.sectionGuides || {};
+
   return (
     <>
       {schema && (
@@ -41,23 +44,45 @@ export default function VisaDetailPage({ visa, schema, breadcrumbJsonLd }) {
       )}
 
       <VisaHero
-        countryName={visa.countryName}
         headline={visa.heroHeadline}
         subheadline={visa.heroSubheadline}
         ctaText={visa.heroCtaText}
-        qualifierItems={visa.qualifierItems}
+        imageUrl={visa.heroImageUrl}
+        imageAlt={visa.countryName ? `${visa.countryName} visa assistance` : ""}
         onCtaClick={() => openModal("undecided", "hero_cta")}
+      />
+      <VisaQualifiers
+        items={visa.qualifierItems}
+        countryName={visa.countryName}
       />
       <VisaPackages
         packages={visa.packages}
+        countryName={visa.countryName}
+        guide={guides.packages}
         onPackageSelect={(name) => openModal(name, "package_card")}
       />
-      <VisaProcess steps={visa.processSteps} />
-      <VisaRequirements sections={visa.requirementSections} />
-      <VisaPricingBreakdown rows={visa.pricingBreakdown} />
+      <VisaProcess
+        steps={visa.processSteps}
+        countryName={visa.countryName}
+        guide={guides.process}
+      />
+      <VisaRequirements
+        sections={visa.requirementSections}
+        countryName={visa.countryName}
+        guide={guides.requirements}
+      />
+      <VisaPricingBreakdown
+        rows={visa.pricingBreakdown}
+        countryName={visa.countryName}
+        guide={guides.pricing}
+      />
       <VisaTrust items={visa.whyUs} />
       <VisaTestimonials testimonials={visa.testimonials ?? []} />
-      <VisaFaqs faqs={visa.faqs} countryName={visa.countryName} />
+      <VisaFaqs
+        faqs={visa.faqs}
+        countryName={visa.countryName}
+        guide={guides.faqs}
+      />
       <VisaFinalCta
         headline={visa.finalCtaHeadline}
         ctaText={visa.finalCtaText}

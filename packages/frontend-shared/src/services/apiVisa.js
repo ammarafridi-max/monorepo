@@ -27,6 +27,10 @@ function buildVisaFormData({ data, file, fileFieldName = 'heroImage' }) {
     fd.append('qualifierItems', JSON.stringify(data.qualifierItems ?? []));
   }
 
+  if (data.sectionGuides !== undefined) {
+    fd.append('sectionGuides', JSON.stringify(data.sectionGuides ?? {}));
+  }
+
   const jsonArrayFields = [
     'packages',
     'processSteps',
