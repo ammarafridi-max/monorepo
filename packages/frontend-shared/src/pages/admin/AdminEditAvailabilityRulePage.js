@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation';
 import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
-import AvailabilityRuleForm from '../../components/admin/v1/AvailabilityRuleForm';
+import AvailabilityRuleForm from '../../components/admin/AvailabilityRuleForm';
 import { useGetAvailabilityRule } from '../../hooks/availability-rules/useGetAvailabilityRule';
 import { useUpdateAvailabilityRule } from '../../hooks/availability-rules/useUpdateAvailabilityRule';
 

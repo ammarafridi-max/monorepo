@@ -195,6 +195,7 @@ export function createVisaService({ Visa, imageStorage }) {
       countryName:         body.countryName,
       slug:                uniqueSlug,
       status:              'draft',
+      excerpt:             body.excerpt,
       heroHeadline:        body.heroHeadline,
       heroSubheadline:     body.heroSubheadline,
       heroCtaText:         body.heroCtaText,
@@ -228,7 +229,7 @@ export function createVisaService({ Visa, imageStorage }) {
       visa.slug = await ensureUniqueSlug(rawSlug, visa._id);
     }
 
-    const scalarFields = ['countryName', 'heroHeadline', 'heroSubheadline', 'heroCtaText', 'finalCtaHeadline', 'finalCtaText', 'metaTitle', 'metaDescription'];
+    const scalarFields = ['countryName', 'excerpt', 'heroHeadline', 'heroSubheadline', 'heroCtaText', 'finalCtaHeadline', 'finalCtaText', 'metaTitle', 'metaDescription'];
     for (const field of scalarFields) {
       if (body[field] !== undefined) visa[field] = body[field];
     }

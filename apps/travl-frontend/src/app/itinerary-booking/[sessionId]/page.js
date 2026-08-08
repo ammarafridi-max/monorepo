@@ -1,5 +1,5 @@
 import ItineraryLayout from '@travel-suite/frontend-shared/layouts/ItineraryLayout';
-import ItineraryPreviewPage from '@travel-suite/frontend-shared/pages/client/shared/ItineraryPreviewPage';
+import ItineraryPreviewPage from '@travel-suite/frontend-shared/pages/client/ItineraryPreviewPage';
 
 export const metadata = {
   title: 'Your Itinerary | Travl',

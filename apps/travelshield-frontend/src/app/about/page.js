@@ -1,6 +1,6 @@
 import Navbar from '@travel-suite/frontend-shared/components/sections/v2/Navbar';
 import Footer from '@travel-suite/frontend-shared/components/sections/v2/Footer';
-import TestimonialCard from '@travel-suite/frontend-shared/components/cards/v2/TestimonialCard';
+import TestimonialCard from '@travel-suite/frontend-shared/components/cards/TestimonialCard';
 import Link from 'next/link';
 import {
   ShieldCheck,

@@ -1,5 +1,5 @@
 import Container from '@travel-suite/frontend-shared/components/shared/layout/Container';
-import FaqAccordion from '@travel-suite/frontend-shared/components/ui/v1/FaqAccordion';
+import FaqAccordion from '@travel-suite/frontend-shared/components/ui/v2/FaqAccordion';
 import PrimarySection from '@travel-suite/frontend-shared/components/shared/layout/PrimarySection';
 import PageHero from '@travel-suite/frontend-shared/components/sections/v1/PageHero';
 import { insuranceFaqs } from '@/data/faqs';
@@ -63,7 +63,7 @@ export default function Page() {
       />
       <PrimarySection className="py-10 lg:py-15 bg-white">
         <Container>
-          <div className="flex flex-col lg:items-center lg:justify-center lg:max-w-240 lg:mx-auto gap-5">
+          <div className="lg:max-w-240 lg:mx-auto rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_4px_rgba(16,24,40,0.04)] overflow-hidden">
             {faqs.map((faq, i) => (
               <FaqAccordion key={i} question={faq?.question}>
                 {faq.answer}

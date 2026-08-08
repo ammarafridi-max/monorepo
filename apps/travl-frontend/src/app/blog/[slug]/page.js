@@ -14,7 +14,8 @@ import {
   buildWebPage,
   buildWebsite,
 } from '@/lib/schema';
-import BlogPostPage from '@travel-suite/frontend-shared/pages/client/v2/BlogPostPage';
+import BlogPostPage from '@travel-suite/frontend-shared/pages/client/BlogPostPage';
+import { getBlogOffers, getBlogInlineOffer } from '@/config/blogOffers';
 
 export const revalidate = 300;
 
@@ -74,6 +75,10 @@ export default async function Page({ params }) {
     .sort((a, b) => new Date(b?.publishedAt || b?.createdAt || 0) - new Date(a?.publishedAt || a?.createdAt || 0))
     .slice(0, 3);
 
+  // Further reading is matched on the post's own tags. The most specific tag is
+  // the least common one, so prefer that over whatever happens to be first.
+  const relatedPosts = await getRelatedPosts(blog, recentData?.blogs || []);
+
   const title = blog.metaTitle || blog.title || 'Blog Post';
   const description =
     blog.metaDescription || blog.excerpt || 'Read the latest post from Travl.';
@@ -110,6 +115,9 @@ export default async function Page({ params }) {
     <BlogPostPage
       blog={blog}
       recentPosts={recentPosts}
+      relatedPosts={relatedPosts}
+      offers={getBlogOffers(blog)}
+      inlineOffer={getBlogInlineOffer(blog)}
       allBlogTags={allBlogTags}
       canonical={canonical}
       siteUrl={SITE_URL}
@@ -118,4 +126,36 @@ export default async function Page({ params }) {
       breadcrumbPaths={breadcrumbPaths}
     />
   );
+}
+
+// Tags on these posts are broad, so the rarest tag on the post is the most
+// specific signal available. Falls back to recent posts when a tag query comes
+// back thin, so the grid is never half-empty.
+const TAG_PRIORITY = ['Dummy Ticket', 'Flight Itinerary', 'Schengen Visa', 'Europe Travel', 'Travel Insurance', 'Visa Documents', 'Visa Tips', 'UAE Travel'];
+
+async function getRelatedPosts(blog, fallbackPool = []) {
+  const tags = Array.isArray(blog?.tags) ? blog.tags : [];
+  const primaryTag =
+    TAG_PRIORITY.find((tag) => tags.includes(tag)) || tags[0] || null;
+
+  let pool = [];
+  if (primaryTag) {
+    const data = await getPublishedBlogsApi({ page: 1, limit: 12, tag: primaryTag }).catch(
+      () => ({ blogs: [] }),
+    );
+    pool = data?.blogs || [];
+  }
+
+  const seen = new Set([String(blog?._id)]);
+  const picked = [];
+
+  for (const candidate of [...pool, ...fallbackPool]) {
+    const id = String(candidate?._id || '');
+    if (!id || seen.has(id)) continue;
+    seen.add(id);
+    picked.push(candidate);
+    if (picked.length === 3) break;
+  }
+
+  return picked;
 }

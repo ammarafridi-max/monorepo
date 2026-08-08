@@ -1,5 +1,5 @@
 export function buildMetadata({
-  siteUrl = '',
+  siteUrl = "",
   title,
   description,
   canonical,
@@ -22,7 +22,7 @@ export function buildMetadata({
       images: resolvedImages,
     },
     twitter: {
-      card: 'summary_large_image',
+      card: "summary_large_image",
       title,
       description,
       images: resolvedImages,

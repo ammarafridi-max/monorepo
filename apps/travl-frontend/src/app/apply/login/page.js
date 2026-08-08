@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import ApplyLoginPage from '@travel-suite/frontend-shared/pages/client/shared/ApplyLoginPage';
+import ApplyLoginPage from '@travel-suite/frontend-shared/pages/client/ApplyLoginPage';
 
 export const metadata = {
   title: 'Sign in to your application',

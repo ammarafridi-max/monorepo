@@ -80,8 +80,8 @@ const defaultPages = [
           heading: 'By Trip Type',
           items: [
             { Icon: ShieldPlus,    label: 'All Plans',              desc: 'Browse every insurance plan we offer',          href: '/travel-insurance' },
-            { Icon: Plane,         label: 'Annual Travel Insurance', desc: 'One policy covering every trip for a year',    href: '/travel-insurance/annual' },
-            { Icon: Users,         label: 'Family Travel Insurance', desc: 'One policy covering the whole family',         href: '/travel-insurance/family' },
+            { Icon: Plane,         label: 'Annual',                 desc: 'One policy covering every trip for a year',    href: '/travel-insurance/annual' },
+            { Icon: Users,         label: 'Family',                 desc: 'One policy covering the whole family',         href: '/travel-insurance/family' },
             { Icon: CalendarDays,  label: 'Annual Multi-Trip',      desc: 'One policy covering all trips for 12 months',   href: '/travel-insurance/annual-multi-trip' },
             { Icon: HeartPulse,    label: 'Single Trip',            desc: 'Pay only for the days you travel',              href: '/travel-insurance/single-trip' },
             { Icon: Stethoscope,   label: 'Travel Medical',         desc: 'Emergency treatment & hospitalisation cover',   href: '/travel-insurance/medical' },
@@ -91,7 +91,7 @@ const defaultPages = [
         {
           heading: 'By Country',
           items: [
-            { flag: 'eu', label: 'Schengen Visa',     desc: 'EUR 30,000 cover, VFS & BLS accepted',           href: '/travel-insurance/schengen-visa' },
+            { flag: 'european_union', label: 'Schengen Visa', desc: 'EUR 30,000 cover, VFS & BLS accepted',    href: '/travel-insurance/schengen-visa' },
             { flag: 'fr', label: 'France Visa',       desc: 'Schengen cover accepted by VFS Global France',   href: '/travel-insurance/france-visa' },
             { flag: 'es', label: 'Spain Visa',        desc: 'Schengen cover accepted by BLS Spain',           href: '/travel-insurance/spain-visa' },
             { flag: 'it', label: 'Italy Visa',        desc: 'Schengen cover accepted by VFS Global Italy',    href: '/travel-insurance/italy-visa' },
@@ -117,12 +117,13 @@ const defaultPages = [
     name: 'Visa Assistance',
     links: ['/visa'],
     mega: {
+      layout: 'tabs',
       columns: [
         {
-          heading: 'By Destination',
+          heading: 'By Country',
           items: [
             { Icon: Globe,   label: 'All Destinations',    desc: 'Browse all visa services we offer',                  href: '/visa' },
-            { flag: 'eu',    label: 'Schengen Visa',       desc: 'Access 29 European countries with one visa',         href: '/visa/schengen' },
+            { flag: 'european_union', label: 'Schengen Visa', desc: 'Access 29 European countries with one visa',    href: '/visa/schengen' },
             { flag: 'gb',    label: 'United Kingdom',      desc: 'Tourism, business, and family visits to the UK',     href: '/visa/united-kingdom' },
             { flag: 'us',    label: 'United States',       desc: 'B1/B2 visitor visa with interview coaching',         href: '/visa/usa' },
             { flag: 'ca',    label: 'Canada',              desc: 'Temporary resident visa for tourism and family',     href: '/visa/canada' },

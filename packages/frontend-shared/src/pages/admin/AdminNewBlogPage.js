@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import BlogForm from '../../components/admin/v1/BlogForm';
+import BlogForm from '../../components/admin/BlogForm';
 import { useCreateBlog } from '../../hooks/blog/useCreateBlog';
 
 export default function AdminNewBlogPage() {

@@ -1,5 +1,5 @@
 import { getPublishedBlogsApi } from '../../../services/apiBlog';
-import BlogCard from '../../cards/v1/BlogCard';
+import BlogCard from '../../cards/BlogCard';
 import Container from '../../shared/layout/Container';
 import PrimarySection from '../../shared/layout/PrimarySection';
 import SectionTitle from '../../shared/layout/SectionTitle';

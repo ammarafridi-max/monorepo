@@ -8,6 +8,7 @@ function buildVisaFormData({ data, file, fileFieldName = 'heroImage' }) {
   const scalars = [
     'countryName',
     'slug',
+    'excerpt',
     'heroHeadline',
     'heroSubheadline',
     'heroCtaText',

@@ -3,7 +3,7 @@
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
-import ZoneForm from '../../components/admin/v1/ZoneForm';
+import ZoneForm from '../../components/admin/ZoneForm';
 import { useGetZone } from '../../hooks/zones/useGetZone';
 import { useUpdateZone } from '../../hooks/zones/useUpdateZone';
 

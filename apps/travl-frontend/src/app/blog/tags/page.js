@@ -7,7 +7,7 @@ import {
   buildWebPage,
   buildWebsite,
 } from '@/lib/schema';
-import BlogTagsPage from '@travel-suite/frontend-shared/pages/client/v2/BlogTagsPage';
+import BlogTagsPage from '@travel-suite/frontend-shared/pages/client/BlogTagsPage';
 
 const meta = {
   title: 'Blog Tags | Travl',

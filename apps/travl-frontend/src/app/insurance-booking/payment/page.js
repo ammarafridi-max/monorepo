@@ -1,4 +1,4 @@
-import InsurancePaymentPage from '@travel-suite/frontend-shared/pages/client/shared/InsurancePaymentPage';
+import InsurancePaymentPage from '@travel-suite/frontend-shared/pages/client/InsurancePaymentPage';
 import { Plane, Ticket } from 'lucide-react';
 
 export const metadata = {

@@ -1,5 +1,5 @@
 import ItineraryLayout from '@travel-suite/frontend-shared/layouts/ItineraryLayout';
-import ItinerarySuccessPage from '@travel-suite/frontend-shared/pages/client/shared/ItinerarySuccessPage';
+import ItinerarySuccessPage from '@travel-suite/frontend-shared/pages/client/ItinerarySuccessPage';
 import { ShieldCheck, Ticket } from 'lucide-react';
 
 export const metadata = {

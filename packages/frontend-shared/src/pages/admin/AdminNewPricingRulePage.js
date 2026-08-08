@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import PricingRuleForm from '../../components/admin/v1/PricingRuleForm';
+import PricingRuleForm from '../../components/admin/PricingRuleForm';
 import { useCreatePricingRule } from '../../hooks/pricing-rules/useCreatePricingRule';
 
 export default function AdminNewPricingRulePage() {

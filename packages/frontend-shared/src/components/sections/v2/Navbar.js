@@ -46,6 +46,9 @@ export default function Navbar({
 
   function openMega(i) {
     clearTimeout(megaTimer.current);
+    // megaTab is shared across menus — a menu with fewer tabs than the last one
+    // would otherwise open on an index it doesn't have.
+    if (megaOpen !== i) setMegaTab(0);
     setMegaOpen(i);
   }
   function closeMega() {
@@ -81,6 +84,9 @@ export default function Navbar({
               (l) => l === pathname || (l !== "/" && pathname?.startsWith(l)),
             );
             const isMegaItem = !!page.mega;
+            const activeMegaTab = isMegaItem
+              ? Math.min(megaTab, page.mega.columns.length - 1)
+              : 0;
             const isDropItem = !!page.subpages;
 
             return (
@@ -138,7 +144,7 @@ export default function Navbar({
                               onClick={() => setMegaTab(ci)}
                               onMouseEnter={() => setMegaTab(ci)}
                               className={`flex items-center justify-between gap-2 text-left px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
-                                megaTab === ci
+                                activeMegaTab === ci
                                   ? "bg-primary-50 text-primary-700"
                                   : "text-gray-600 hover:bg-gray-50"
                               }`}
@@ -147,7 +153,7 @@ export default function Navbar({
                               <ChevronRight
                                 size={15}
                                 className={
-                                  megaTab === ci ? "opacity-100" : "opacity-30"
+                                  activeMegaTab === ci ? "opacity-100" : "opacity-30"
                                 }
                               />
                             </button>
@@ -155,7 +161,7 @@ export default function Navbar({
                         </div>
                         <div className="flex-1 min-w-0">
                           <ul className="grid grid-cols-4 gap-x-2 gap-y-1">
-                            {(page.mega.columns[megaTab]?.items ?? []).map(
+                            {(page.mega.columns[activeMegaTab]?.items ?? []).map(
                               ({ Icon, flag, label, desc, href }) => (
                                 <li key={label}>
                                   <Link

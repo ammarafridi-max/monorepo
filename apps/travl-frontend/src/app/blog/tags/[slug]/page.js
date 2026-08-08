@@ -10,7 +10,7 @@ import {
   buildWebPage,
   buildWebsite,
 } from '@/lib/schema';
-import BlogTagDetailPage from '@travel-suite/frontend-shared/pages/client/v2/BlogTagDetailPage';
+import BlogTagDetailPage from '@travel-suite/frontend-shared/pages/client/BlogTagDetailPage';
 
 export const revalidate = 300;
 

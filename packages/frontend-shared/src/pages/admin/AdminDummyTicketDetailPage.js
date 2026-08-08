@@ -15,8 +15,8 @@ import { useDeleteDummyTicket } from '../../hooks/dummy-tickets/useDeleteDummyTi
 import { useRefundDummyTicket } from '../../hooks/dummy-tickets/useRefundDummyTicket';
 import { useUpdateDummyTicket } from '../../hooks/dummy-tickets/useUpdateDummyTicket';
 import { useUpdateDeliveryDate } from '../../hooks/dummy-tickets/useUpdateDeliveryDate';
-import SendReservationModal from '../../components/admin/v1/SendReservationModal';
-import OrderPiPButton from '../../components/admin/v1/FloatingOrderPanel';
+import SendReservationModal from '../../components/admin/SendReservationModal';
+import OrderPiPButton from '../../components/admin/FloatingOrderPanel';
 import { convertToDubaiTime, convertToDubaiDate, formatDate, formatTravelportDate } from '../../utils/dates';
 import { extractIataCode } from '../../utils/extractIataCode';
 import { formatAmount } from '../../utils/currency';

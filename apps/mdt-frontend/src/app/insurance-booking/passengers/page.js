@@ -1,4 +1,4 @@
-import InsurancePassengersPage from '@travel-suite/frontend-shared/pages/client/shared/InsurancePassengersPage';
+import InsurancePassengersPage from '@travel-suite/frontend-shared/pages/client/InsurancePassengersPage';
 
 export const metadata = {
   title: 'Passenger Details — My Dummy Ticket',

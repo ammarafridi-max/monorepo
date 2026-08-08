@@ -3,7 +3,7 @@
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
-import PricingRuleForm from '../../components/admin/v1/PricingRuleForm';
+import PricingRuleForm from '../../components/admin/PricingRuleForm';
 import { useGetPricingRule } from '../../hooks/pricing-rules/useGetPricingRule';
 import { useUpdatePricingRule } from '../../hooks/pricing-rules/useUpdatePricingRule';
 

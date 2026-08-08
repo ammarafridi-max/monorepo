@@ -1,6 +1,6 @@
 import Container from '../../shared/layout/Container';
 import PrimarySection from '../../shared/layout/PrimarySection';
-import TestimonialCard from '../../cards/v1/TestimonialCard';
+import TestimonialCard from '../../cards/TestimonialCard';
 import SectionTitle from '../../shared/layout/SectionTitle';
 
 export default function Testimonials({
@@ -14,16 +14,19 @@ export default function Testimonials({
         <SectionTitle textAlign="center" subtitle={subtitle} className="mb-10 md:mb-12">
           {title}
         </SectionTitle>
-        <div className="flex gap-5 overflow-x-auto snap-x snap-mandatory md:grid md:grid-cols-3 md:gap-7">
+        {/* Mobile is a snap carousel. The card no longer carries its own
+            min-width, so the sizing lives on the wrapper here. */}
+        <div className="flex gap-5 overflow-x-auto snap-x snap-mandatory md:grid md:grid-cols-3 md:gap-7 md:overflow-visible">
           {testimonials.map((test, i) => (
-            <TestimonialCard
-              key={i}
-              quote={test.quote}
-              name={test.name}
-              location={test.location}
-              stars={test.stars}
-              plan={test.plan}
-            />
+            <div key={i} className="min-w-[85%] snap-center md:min-w-0">
+              <TestimonialCard
+                quote={test.quote}
+                name={test.name}
+                location={test.location}
+                stars={test.stars}
+                plan={test.plan}
+              />
+            </div>
           ))}
         </div>
       </Container>

@@ -3,7 +3,7 @@
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
-import VehicleForm from '../../components/admin/v1/VehicleForm';
+import VehicleForm from '../../components/admin/VehicleForm';
 import { useGetVehicle } from '../../hooks/vehicles/useGetVehicle';
 import { useUpdateVehicle } from '../../hooks/vehicles/useUpdateVehicle';
 

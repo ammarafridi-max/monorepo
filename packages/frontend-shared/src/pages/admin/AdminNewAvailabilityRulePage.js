@@ -1,6 +1,6 @@
 'use client';
 
-import AvailabilityRuleForm from '../../components/admin/v1/AvailabilityRuleForm';
+import AvailabilityRuleForm from '../../components/admin/AvailabilityRuleForm';
 import { useCreateAvailabilityRule } from '../../hooks/availability-rules/useCreateAvailabilityRule';
 
 export default function AdminNewAvailabilityRulePage() {

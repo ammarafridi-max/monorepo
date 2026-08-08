@@ -1,6 +1,6 @@
-import AdminSidebar from "@travel-suite/frontend-shared/components/admin/v2/AdminSidebar";
-import AdminHeader from "@travel-suite/frontend-shared/components/admin/v2/AdminHeader";
-import AdminShell from "@travel-suite/frontend-shared/components/admin/v2/AdminShell";
+import AdminSidebar from "@travel-suite/frontend-shared/components/admin/AdminSidebar";
+import AdminHeader from "@travel-suite/frontend-shared/components/admin/AdminHeader";
+import AdminShell from "@travel-suite/frontend-shared/components/admin/AdminShell";
 import { AdminAuthProvider } from "@travel-suite/frontend-shared/contexts/AdminAuthContext";
 
 export const metadata = {

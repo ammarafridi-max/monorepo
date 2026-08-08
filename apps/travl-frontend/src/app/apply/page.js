@@ -1,4 +1,4 @@
-import ApplyDashboardPage from '@travel-suite/frontend-shared/pages/client/shared/ApplyDashboardPage';
+import ApplyDashboardPage from '@travel-suite/frontend-shared/pages/client/ApplyDashboardPage';
 
 export const metadata = {
   title: 'My visa applications',

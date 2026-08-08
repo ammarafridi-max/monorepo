@@ -1,5 +1,3 @@
-
-
 export function createSchemaBuilders({
   siteUrl,
   siteName,
@@ -12,43 +10,43 @@ export function createSchemaBuilders({
   const websiteId = `${siteUrl}/#website`;
 
   const buildOrganization = () => ({
-    '@type': 'Organization',
-    '@id': organizationId,
+    "@type": "Organization",
+    "@id": organizationId,
     name: siteName,
     url: siteUrl,
-    logo: { '@type': 'ImageObject', url: logoUrl },
+    logo: { "@type": "ImageObject", url: logoUrl },
     ...(email ? { email } : {}),
-    ...(address ? { address: { '@type': 'PostalAddress', ...address } } : {}),
+    ...(address ? { address: { "@type": "PostalAddress", ...address } } : {}),
     ...(contactPoint
-      ? { contactPoint: { '@type': 'ContactPoint', ...contactPoint } }
+      ? { contactPoint: { "@type": "ContactPoint", ...contactPoint } }
       : {}),
   });
 
   const buildWebsite = () => ({
-    '@type': 'WebSite',
-    '@id': websiteId,
+    "@type": "WebSite",
+    "@id": websiteId,
     name: siteName,
     url: siteUrl,
-    publisher: { '@id': organizationId },
+    publisher: { "@id": organizationId },
   });
 
   const buildWebPage = ({ canonical, title, description }) => ({
-    '@type': 'WebPage',
-    '@id': `${canonical}#webpage`,
+    "@type": "WebPage",
+    "@id": `${canonical}#webpage`,
     url: canonical,
     name: title,
     description,
-    isPartOf: { '@id': websiteId },
-    publisher: { '@id': organizationId },
+    isPartOf: { "@id": websiteId },
+    publisher: { "@id": organizationId },
   });
 
   const buildBlog = ({ canonical, title, description }) => ({
-    '@type': 'Blog',
-    '@id': `${canonical}#blog`,
+    "@type": "Blog",
+    "@id": `${canonical}#blog`,
     url: canonical,
     name: title,
     description,
-    publisher: { '@id': organizationId },
+    publisher: { "@id": organizationId },
   });
 
   const buildBlogPosting = ({
@@ -60,27 +58,27 @@ export function createSchemaBuilders({
     dateModified,
     authorName,
   }) => ({
-    '@type': 'BlogPosting',
-    '@id': `${canonical}#blogpost`,
+    "@type": "BlogPosting",
+    "@id": `${canonical}#blogpost`,
     headline: title,
     description,
     image: image ? [image] : undefined,
-    author: authorName ? { '@type': 'Person', name: authorName } : undefined,
+    author: authorName ? { "@type": "Person", name: authorName } : undefined,
     datePublished: datePublished || undefined,
     dateModified: dateModified || datePublished || undefined,
-    publisher: { '@id': organizationId },
-    mainEntityOfPage: { '@id': `${canonical}#webpage` },
+    publisher: { "@id": organizationId },
+    mainEntityOfPage: { "@id": `${canonical}#webpage` },
   });
 
   const buildService = ({ canonical, name, description, areaServed }) => ({
-    '@type': 'Service',
-    '@id': `${canonical}#service`,
+    "@type": "Service",
+    "@id": `${canonical}#service`,
     name,
     description,
     serviceType: name,
     url: canonical,
     areaServed,
-    provider: { '@id': organizationId },
+    provider: { "@id": organizationId },
   });
 
   const buildProduct = ({
@@ -88,22 +86,22 @@ export function createSchemaBuilders({
     name,
     description,
     price,
-    currency = 'USD',
-    availability = 'https://schema.org/InStock',
+    currency = "USD",
+    availability = "https://schema.org/InStock",
   }) => ({
-    '@type': 'Product',
-    '@id': `${canonical}#product`,
+    "@type": "Product",
+    "@id": `${canonical}#product`,
     name,
     description,
     url: canonical,
-    brand: { '@id': organizationId },
+    brand: { "@id": organizationId },
     offers: {
-      '@type': 'Offer',
+      "@type": "Offer",
       price,
       priceCurrency: currency,
       availability,
       url: canonical,
-      seller: { '@id': organizationId },
+      seller: { "@id": organizationId },
     },
   });
 
@@ -118,14 +116,14 @@ export function createSchemaBuilders({
   };
 }
 
-const toAbsoluteUrl = ({ baseUrl = '', value = '/', basePath = '' }) => {
+const toAbsoluteUrl = ({ baseUrl = "", value = "/", basePath = "" }) => {
   if (!value) return baseUrl;
   if (/^https?:\/\//.test(value)) return value;
 
   const normalizedBasePath = basePath
-    ? `/${String(basePath).replace(/^\/+|\/+$/g, '')}`
-    : '';
-  const normalizedValue = value.startsWith('/') ? value : `/${value}`;
+    ? `/${String(basePath).replace(/^\/+|\/+$/g, "")}`
+    : "";
+  const normalizedValue = value.startsWith("/") ? value : `/${value}`;
   const needsBasePath =
     normalizedBasePath &&
     normalizedValue !== normalizedBasePath &&
@@ -135,16 +133,16 @@ const toAbsoluteUrl = ({ baseUrl = '', value = '/', basePath = '' }) => {
 };
 
 export const buildFAQPage = ({ canonical, title, description, faqs }) => ({
-  '@type': 'FAQPage',
-  '@id': `${canonical}#faq`,
+  "@type": "FAQPage",
+  "@id": `${canonical}#faq`,
   url: canonical,
   name: title,
   description,
   mainEntity: (faqs || []).map((faq) => ({
-    '@type': 'Question',
+    "@type": "Question",
     name: faq.question,
     acceptedAnswer: {
-      '@type': 'Answer',
+      "@type": "Answer",
       text: faq.answer,
     },
   })),
@@ -152,24 +150,24 @@ export const buildFAQPage = ({ canonical, title, description, faqs }) => ({
 
 export const buildBreadcrumbList = ({
   paths = [],
-  baseUrl = '',
-  basePath = '',
+  baseUrl = "",
+  basePath = "",
 } = {}) => ({
-  '@context': 'https://schema.org',
-  '@type': 'BreadcrumbList',
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
   itemListElement: paths.map((item, index) => ({
-    '@type': 'ListItem',
+    "@type": "ListItem",
     position: index + 1,
     name: item.label,
     item: toAbsoluteUrl({
       baseUrl,
-      value: item.href || item.path || '/',
+      value: item.href || item.path || "/",
       basePath,
     }),
   })),
 });
 
 export const buildGraph = (items) => ({
-  '@context': 'https://schema.org',
-  '@graph': items,
+  "@context": "https://schema.org",
+  "@graph": items,
 });

@@ -1,8 +1,8 @@
 import { AdminAuthProvider } from '../../contexts/AdminAuthContext';
-import AdminShell from '../../components/admin/v1/AdminShell';
-import AdminSidebar from '../../components/admin/v1/AdminSidebar';
-import AdminHeader from '../../components/admin/v1/AdminHeader';
-import NewOrderPinger from '../../components/admin/v1/NewOrderPinger';
+import AdminShell from '../../components/admin/AdminShell';
+import AdminSidebar from '../../components/admin/AdminSidebar';
+import AdminHeader from '../../components/admin/AdminHeader';
+import NewOrderPinger from '../../components/admin/NewOrderPinger';
 
 export default function AdminDashboardLayout({ children, nav, brand }) {
   return (

@@ -1,4 +1,4 @@
-import TestimonialCard from '../../cards/v2/TestimonialCard.js';
+import TestimonialCard from '../../cards/TestimonialCard.js';
 import PrimarySection from '../../shared/layout/PrimarySection.js';
 import Container from '../../shared/layout/Container.js';
 

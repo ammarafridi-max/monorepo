@@ -1,6 +1,6 @@
 import { countryCodes } from '@/data/countryCodes';
 import ItineraryLayout from '@travel-suite/frontend-shared/layouts/ItineraryLayout';
-import ItineraryGeneratorPage from '@travel-suite/frontend-shared/pages/client/shared/ItineraryGeneratorPage';
+import ItineraryGeneratorPage from '@travel-suite/frontend-shared/pages/client/ItineraryGeneratorPage';
 
 export const metadata = {
   title: 'Create Your Travel Itinerary | Travl',

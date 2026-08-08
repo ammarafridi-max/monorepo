@@ -1,7 +1,7 @@
 import { getPublishedBlogsApi } from '../../../services/apiBlog.js';
 import PrimarySection from '../../shared/layout/PrimarySection.js';
 import Container from '../../shared/layout/Container.js';
-import BlogCard from '../../cards/v2/BlogCard.js';
+import BlogCard from '../../cards/BlogCard.js';
 
 export const revalidate = 300;
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import VehicleForm from '../../components/admin/v1/VehicleForm';
+import VehicleForm from '../../components/admin/VehicleForm';
 import { useCreateVehicle } from '../../hooks/vehicles/useCreateVehicle';
 
 export default function AdminNewVehiclePage() {

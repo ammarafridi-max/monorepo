@@ -96,6 +96,10 @@ const VisaSchema = new mongoose.Schema(
     slug:        { type: String, required: [true, 'Slug is required'], unique: true, lowercase: true, trim: true, index: true },
     status:      { type: String, enum: ['draft', 'published'], default: 'draft', index: true },
 
+    // Short summary for the /visa listing card. Kept separate from
+    // metaDescription, which is written for search results.
+    excerpt:           { type: String, trim: true, maxlength: 200 },
+
     heroImageUrl:      { type: String },
     heroHeadline:      { type: String, trim: true },
     heroSubheadline:   { type: String, trim: true },

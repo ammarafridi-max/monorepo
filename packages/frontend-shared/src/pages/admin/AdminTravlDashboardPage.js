@@ -17,7 +17,7 @@ import {
   Mail,
   ChevronRight,
 } from 'lucide-react';
-import StatCard from '../../components/admin/v1/StatCard';
+import StatCard from '../../components/admin/StatCard';
 import { getInsuranceApplicationsApi, getInsuranceApplicationsSummaryApi } from '../../services/apiInsurance';
 import { getAdminVisaLeadsApi } from '../../services/apiVisaLeads';
 import { getAffiliatesApi } from '../../services/apiAffiliates';
