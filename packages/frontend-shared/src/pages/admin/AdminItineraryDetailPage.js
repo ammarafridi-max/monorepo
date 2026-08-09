@@ -182,12 +182,6 @@ export default function AdminItineraryDetailPage() {
 
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">
-          <Link
-            href="/admin/itineraries"
-            className="p-2 rounded-xl border border-gray-200 text-gray-400 hover:text-gray-700 hover:border-gray-300 transition"
-          >
-            <ArrowLeft size={16} />
-          </Link>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-2xl font-extrabold text-gray-900 capitalize">

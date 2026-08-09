@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { useAdminAuth } from '../../contexts/AdminAuthContext.js';
+import { isUnderPath } from '../../utils/paths.js';
 
 const ROLE_DEFAULT_PATH = {
   admin: '/admin',
@@ -34,7 +35,7 @@ const ROLE_ROUTE_RULES = [
 
 function getAllowedRoles(pathname) {
   return (
-    ROLE_ROUTE_RULES.find((rule) => pathname.startsWith(rule.prefix))
+    ROLE_ROUTE_RULES.find((rule) => isUnderPath(pathname, rule.prefix))
       ?.roles || ['admin', 'agent', 'blog-manager']
   );
 }

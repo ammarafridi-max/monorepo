@@ -224,12 +224,6 @@ export default function AdminVisaLeadDetailPage() {
     <div className="max-w-6xl mx-auto space-y-5">
 
       <div className="flex items-start gap-4">
-        <Link
-          href="/admin/visa-leads"
-          className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-primary-700 transition-colors mt-1 shrink-0"
-        >
-          <ArrowLeft size={14} /> All leads
-        </Link>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 flex-wrap">
             <h2 className="text-2xl font-extrabold text-gray-900 truncate">{fullName}</h2>

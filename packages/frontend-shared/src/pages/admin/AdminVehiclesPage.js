@@ -15,6 +15,7 @@ import {
 import { useGetVehicles } from '../../hooks/vehicles/useGetVehicles';
 import { useDeleteVehicle } from '../../hooks/vehicles/useDeleteVehicle';
 import { useDuplicateVehicle } from '../../hooks/vehicles/useDuplicateVehicle';
+import Link from 'next/link';
 
 function fmtPrice(value) {
   if (value == null) return '0';
@@ -95,9 +96,12 @@ export default function AdminVehiclesPage() {
                     className={`hover:bg-gray-50/60 transition-colors group ${busy ? 'pointer-events-none' : ''}`}
                   >
                     <td className="px-4 py-3">
-                      <div className="font-bold text-gray-900 capitalize">
+                      <Link
+                        href={`/admin/vehicles/${vehicle._id}`}
+                        className="block font-bold text-gray-900 capitalize hover:text-primary-700 hover:underline transition-colors"
+                      >
                         {vehicle.brand} {vehicle.model}
-                      </div>
+                      </Link>
                       <div className="flex flex-wrap gap-1.5 mt-1.5">
                         {vehicle.type && (
                           <span className="text-[10px] font-bold text-gray-500 bg-gray-50 border border-gray-100 px-1.5 py-0.5 rounded-full">

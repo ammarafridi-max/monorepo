@@ -212,9 +212,12 @@ function ItinerariesContent() {
                       <tr key={item?.sessionId || item?._id} className="hover:bg-gray-50/60 transition-colors group">
 
                         <td className="px-4 py-3">
-                          <p className="font-semibold text-gray-900 capitalize leading-snug">
+                          <Link
+                            href={`/admin/itineraries/${item?.sessionId}`}
+                            className="block font-semibold text-gray-900 capitalize leading-snug hover:text-primary-700 hover:underline transition-colors"
+                          >
                             {String(t.fullName || t.firstName || '—').toLowerCase()}
-                          </p>
+                          </Link>
                           {input.travellers > 1 && (
                             <p className="text-xs text-gray-400 mt-0.5">{input.travellers} travellers</p>
                           )}

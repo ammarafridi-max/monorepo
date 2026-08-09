@@ -10,6 +10,7 @@ import {
   UserCircle, LogOut, ChevronLeft, ChevronRight, Menu, X, Plane, ClipboardList,
   Shield, CalendarCheck, Car, MapPin, SlidersHorizontal, CalendarDays, FileText,
 } from 'lucide-react';
+import { isNavItemActive } from '../../utils/paths.js';
 
 const ICON_MAP = {
   LayoutDashboard, Ticket, ShieldCheck, Inbox, Mail, BookOpen, Tag, Stamp,
@@ -20,9 +21,7 @@ const ICON_MAP = {
 
 function NavItem({ item, collapsed }) {
   const pathname = usePathname();
-  const isActive = item.exact
-    ? pathname === item.href
-    : pathname.startsWith(item.href);
+  const isActive = isNavItemActive(pathname, item.href, item.exact);
   const Icon = ICON_MAP[item.icon];
 
   return (

@@ -2,7 +2,6 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import {
-  ArrowLeft,
   AlertCircle,
   Car,
   CreditCard,
@@ -146,13 +145,6 @@ export default function AdminLimoBookingDetailPage() {
     <div className="max-w-5xl mx-auto space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => router.push('/admin/bookings')}
-            className="p-2 rounded-xl border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 transition"
-            title="Back"
-          >
-            <ArrowLeft size={16} />
-          </button>
           <div>
             <h2 className="text-2xl font-extrabold text-gray-900 font-mono">
               {booking.bookingRef || '—'}

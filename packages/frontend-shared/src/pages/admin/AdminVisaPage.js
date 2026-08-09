@@ -197,9 +197,12 @@ export default function AdminVisaPage() {
                             <Layers size={14} className="text-gray-400" />
                           </div>
                         )}
-                        <p className="font-semibold text-gray-900 truncate max-w-[180px]">
+                        <Link
+                          href={`/admin/visa/${visa._id}/edit`}
+                          className="block font-semibold text-gray-900 truncate max-w-[180px] hover:text-primary-700 hover:underline transition-colors"
+                        >
                           {visa.countryName || '—'}
-                        </p>
+                        </Link>
                       </div>
                     </td>
 

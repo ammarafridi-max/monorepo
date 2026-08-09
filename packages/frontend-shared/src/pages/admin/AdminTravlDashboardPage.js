@@ -280,7 +280,7 @@ function DashboardContent() {
                   {recentApplications.map((app) => (
                     <tr key={app.sessionId} className="hover:bg-gray-50/60 transition-colors group">
                       <td className="px-4 py-3">
-                        <p className="font-semibold text-gray-900 leading-snug whitespace-nowrap">{leadName(app)}</p>
+                        <Link href={`/admin/insurance-applications/${app.sessionId}`} className="block font-semibold text-gray-900 leading-snug whitespace-nowrap hover:text-primary-700 hover:underline transition-colors">{leadName(app)}</Link>
                         <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[160px]">{app.email}</p>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">

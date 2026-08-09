@@ -423,12 +423,6 @@ function AffiliateDetailContent() {
 
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">
-            <Link
-              href="/admin/affiliates"
-              className="p-2 rounded-xl border border-gray-200 text-gray-400 hover:text-gray-700 hover:border-gray-300 transition"
-            >
-              <ArrowLeft size={16} />
-            </Link>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-accent-100 flex items-center justify-center shrink-0">
                 <span className="text-sm font-bold text-accent-700">

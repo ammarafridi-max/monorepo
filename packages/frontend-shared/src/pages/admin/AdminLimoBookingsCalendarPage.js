@@ -3,7 +3,6 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
-  ArrowLeft,
   ChevronLeft,
   ChevronRight,
   Loader2,
@@ -64,13 +63,6 @@ export default function AdminLimoBookingsCalendarPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-5">
       <div className="flex items-center gap-3">
-        <Link
-          href="/admin/bookings"
-          className="p-2 rounded-xl border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 transition"
-          title="Back"
-        >
-          <ArrowLeft size={16} />
-        </Link>
         <div>
           <h2 className="text-2xl font-extrabold text-gray-900">Bookings Calendar</h2>
           <p className="text-sm text-gray-400 mt-0.5">Grouped by pickup date</p>

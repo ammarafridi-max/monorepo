@@ -157,8 +157,13 @@ export default function AdminPricingRulesPage() {
                     key={rule._id}
                     className={`hover:bg-gray-50/60 transition-colors group ${isDeletingPricingRule ? 'pointer-events-none' : ''}`}
                   >
-                    <td className="px-4 py-3 font-bold text-gray-900 align-top">
-                      {rule.name}
+                    <td className="px-4 py-3 align-top">
+                      <Link
+                        href={`/admin/pricing-rules/${rule._id}`}
+                        className="font-bold text-gray-900 hover:text-primary-700 hover:underline transition-colors"
+                      >
+                        {rule.name}
+                      </Link>
                     </td>
                     <td className="px-4 py-3 align-top">
                       <div className="flex flex-col gap-0.5">

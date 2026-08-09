@@ -8,6 +8,7 @@ import {
 import { useGetAdminVisaLeads } from '../../hooks/visa-leads/useGetAdminVisaLeads.js';
 import { useGetAdminVisas }     from '../../hooks/visa/useGetAdminVisas.js';
 import { useGetAdminUsers }     from '../../hooks/admin-users/useGetAdminUsers.js';
+import Link from 'next/link';
 
 const STATUSES = ['new', 'contacted', 'qualified', 'converted', 'lost'];
 
@@ -223,9 +224,13 @@ export default function AdminVisaLeadsPage() {
 
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <p className="font-semibold text-gray-900 whitespace-nowrap">
+                          <Link
+                            href={`/admin/visa-leads/${lead._id}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="font-semibold text-gray-900 whitespace-nowrap hover:text-primary-700 hover:underline transition-colors"
+                          >
                             {lead.firstName} {lead.lastName}
-                          </p>
+                          </Link>
                           {isNew && (
                             <span className="text-[9px] font-bold uppercase tracking-wider bg-accent-500 text-white px-1.5 py-0.5 rounded-full shrink-0">
                               New

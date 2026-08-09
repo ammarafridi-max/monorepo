@@ -213,9 +213,12 @@ export default function AdminBlogPage() {
                     </td>
 
                     <td className="px-4 py-3 max-w-[260px]">
-                      <p className="font-semibold text-gray-900 truncate leading-snug">
+                      <Link
+                        href={`/admin/blog/${blog._id}/edit`}
+                        className="block font-semibold text-gray-900 truncate leading-snug hover:text-primary-700 hover:underline transition-colors"
+                      >
                         {blog.title}
-                      </p>
+                      </Link>
                       {blog.excerpt && (
                         <p className="text-xs text-gray-400 truncate mt-0.5">{blog.excerpt}</p>
                       )}

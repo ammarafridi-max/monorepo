@@ -479,9 +479,12 @@ function ApplicationsContent() {
                       className="hover:bg-gray-50/60 transition-colors group"
                     >
                       <td className="px-4 py-3">
-                        <p className="font-semibold text-gray-900 leading-snug">
+                        <Link
+                          href={`/admin/insurance-applications/${app.sessionId}`}
+                          className="font-semibold text-gray-900 leading-snug hover:text-primary-700 hover:underline transition-colors"
+                        >
                           {leadName(app)}
-                        </p>
+                        </Link>
                         {app.policyNumber && (
                           <p className="text-xs text-gray-400 font-mono mt-0.5">
                             {app.policyNumber}

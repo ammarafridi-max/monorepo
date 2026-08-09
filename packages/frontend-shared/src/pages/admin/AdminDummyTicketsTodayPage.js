@@ -177,9 +177,12 @@ function TodayDeliveriesContent() {
                       className="hover:bg-gray-50/60 transition-colors group"
                     >
                       <td className="px-4 py-3">
-                        <p className="font-semibold text-gray-900 capitalize leading-snug">
+                        <Link
+                          href={`/admin/dummy-tickets/${item?.sessionId}`}
+                          className="block font-semibold text-gray-900 capitalize leading-snug hover:text-primary-700 hover:underline transition-colors"
+                        >
                           {String(item?.leadPassenger ?? "—").toLowerCase()}
-                        </p>
+                        </Link>
                         {item?.passengers?.length > 1 && (
                           <p className="text-xs text-gray-400 mt-0.5">
                             +{item.passengers.length - 1} more

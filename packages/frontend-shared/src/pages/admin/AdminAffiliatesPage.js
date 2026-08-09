@@ -290,7 +290,7 @@ function AffiliatesContent() {
                               </span>
                             </div>
                             <div>
-                              <p className="font-semibold text-gray-900 leading-snug">{aff.name}</p>
+                              <Link href={`/admin/affiliates/${aff._id}`} className="block font-semibold text-gray-900 leading-snug hover:text-primary-700 hover:underline transition-colors">{aff.name}</Link>
                               <p className="text-[11px] text-gray-400">{aff.email}</p>
                             </div>
                           </div>
