@@ -17,7 +17,7 @@ export const EMPLOYMENT_STATUSES = [
 
 const applicantSchema = new Schema(
   {
-    application: { type: ObjectId, ref: 'VisaApplication', required: true, index: true },
+    application: { type: ObjectId, ref: 'visa-application', required: true, index: true },
     isPrimary: { type: Boolean, default: false },
 
     firstName: { type: String, trim: true, maxlength: 80, default: '' },
@@ -34,7 +34,7 @@ const applicantSchema = new Schema(
     employmentStatus: { type: String, enum: [...EMPLOYMENT_STATUSES, null], default: null },
     financialSupport: { type: String, enum: [...FINANCIAL_SUPPORT, null], default: null },
     // Set when financialSupport is SPONSORED — points at the applicant who funds them.
-    sponsorApplicant: { type: ObjectId, ref: 'Applicant', default: null },
+    sponsorApplicant: { type: ObjectId, ref: 'applicant', default: null },
     minorTravellingWith: { type: String, enum: [...MINOR_TRAVELLING_WITH, null], default: null },
   },
   {

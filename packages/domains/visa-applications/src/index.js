@@ -29,11 +29,11 @@ function getOrRegisterModel(conn, name, schema) {
  * }} deps
  */
 export function createVisaApplicationsRouter({ db, auth, userAuth, User, storage, notifications, apiBaseUrl, appBaseUrl, logger }) {
-  const VisaApplication = getOrRegisterModel(db, 'VisaApplication', VisaApplicationSchema);
-  const Applicant = getOrRegisterModel(db, 'Applicant', ApplicantSchema);
-  const ApplicationDocument = getOrRegisterModel(db, 'ApplicationDocument', ApplicationDocumentSchema);
-  const DocumentType = getOrRegisterModel(db, 'DocumentType', DocumentTypeSchema);
-  const ChecklistTemplate = getOrRegisterModel(db, 'ChecklistTemplate', ChecklistTemplateSchema);
+  const VisaApplication = getOrRegisterModel(db, 'visa-application', VisaApplicationSchema);
+  const Applicant = getOrRegisterModel(db, 'applicant', ApplicantSchema);
+  const ApplicationDocument = getOrRegisterModel(db, 'application-document', ApplicationDocumentSchema);
+  const DocumentType = getOrRegisterModel(db, 'document-type', DocumentTypeSchema);
+  const ChecklistTemplate = getOrRegisterModel(db, 'checklist-template', ChecklistTemplateSchema);
 
   const service = createVisaApplicationService({
     VisaApplication,

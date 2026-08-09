@@ -26,12 +26,6 @@ const nav = [
     ],
   },
   {
-    section: 'Emails',
-    items: [
-      { label: 'Email Support', href: '/admin/emails', icon: 'Mail', roles: ['admin', 'agent'] },
-    ],
-  },
-  {
     section: 'Content',
     items: [
       { label: 'Blog', href: '/admin/blog', icon: 'BookOpen', roles: ['admin', 'blog-manager'] },

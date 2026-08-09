@@ -3,7 +3,7 @@ import { logger } from "@travel-suite/utils";
 import { connectDB } from "./utils/db.js";
 import config from "./utils/config.js";
 import app from "./app.js";
-import { pollAndProcess, runVisaReminderSweep } from "./routes/index.js";
+import { runVisaReminderSweep } from "./routes/index.js";
 
 // Next occurrence of `hour`:00 wall-clock in the given IANA timezone, as a real
 // UTC instant. Uses Intl (bundled ICU) to read the current wall-clock and derive
@@ -33,18 +33,6 @@ const start = async () => {
     });
   });
 
-  try {
-    pollAndProcess().catch((err) =>
-      logger.error('[email-support] Initial poll failed', { error: err.message }),
-    );
-    setInterval(() => {
-      pollAndProcess().catch((err) =>
-        logger.error('[email-support] Poll failed', { error: err.message }),
-      );
-    }, 5 * 60 * 1000);
-  } catch (err) {
-    logger.error('[email-support] Failed to start polling', { error: err.message });
-  }
 
   // Daily visa-application reminder sweep at 09:00 Asia/Dubai. Guarded by
   // ENABLE_REMINDER_CRON so it runs on exactly one instance (never fan out).

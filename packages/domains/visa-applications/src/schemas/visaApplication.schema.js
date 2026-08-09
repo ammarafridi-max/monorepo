@@ -51,7 +51,7 @@ const visaApplicationSchema = new Schema(
 
     user: { type: ObjectId, ref: 'User', required: true, index: true },
     // Optional back-reference set when an application is created from a captured lead.
-    visaLead: { type: ObjectId, ref: 'VisaLead', default: null },
+    visaLead: { type: ObjectId, ref: 'visa-lead', default: null },
 
     destinationCountry: { type: String, required: true, trim: true, maxlength: 100 },
     packageName: { type: String, trim: true, maxlength: 100 },

@@ -28,11 +28,11 @@ const documentHistorySchema = new Schema(
 
 const applicationDocumentSchema = new Schema(
   {
-    application: { type: ObjectId, ref: 'VisaApplication', required: true, index: true },
-    applicant: { type: ObjectId, ref: 'Applicant', required: true, index: true },
+    application: { type: ObjectId, ref: 'visa-application', required: true, index: true },
+    applicant: { type: ObjectId, ref: 'applicant', required: true, index: true },
 
     // Data-driven type: a ref plus a denormalised key copy for readability/queries.
-    documentType: { type: ObjectId, ref: 'DocumentType', required: true },
+    documentType: { type: ObjectId, ref: 'document-type', required: true },
     docTypeKey: { type: String, uppercase: true, trim: true, required: true, index: true },
     // Copied from the DocumentType at seed time (who is responsible for this row).
     source: { type: String, enum: DOCUMENT_SOURCES, required: true, index: true },
@@ -45,7 +45,7 @@ const applicationDocumentSchema = new Schema(
     // a sponsored spouse's SPONSOR_BANK_STATEMENT → her husband's BANK_STATEMENT).
     // A satisfied row stores no file of its own; it reads its status from the source
     // row and counts complete once that source row is APPROVED.
-    satisfiedBy: { type: ObjectId, ref: 'ApplicationDocument', default: null },
+    satisfiedBy: { type: ObjectId, ref: 'application-document', default: null },
 
     // Rows staff add outside the active template are never auto-removed by reconcile.
     addedManually: { type: Boolean, default: false },

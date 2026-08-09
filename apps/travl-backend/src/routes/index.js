@@ -1,7 +1,6 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import { createAuthRouter } from "@travel-suite/auth";
-import { createEmailSupportFeature } from "@travel-suite/email-support";
 import { createInsuranceRouter } from "@travel-suite/insurance";
 import { createAdminUsersRouter } from "@travel-suite/admin-users";
 import { createBlogRouter, createBlogTagRouter } from "@travel-suite/blog";
@@ -171,18 +170,8 @@ async function handlePaymentLinkSuccess(session) {
   });
 }
 
-const brandContext = `Travl.ae is a UAE-based travel services platform offering travel insurance for visa applications, embassy-ready travel itineraries, and visa application support. Travel insurance policies are AXA-backed and valid for Schengen, US, UK, and other visa applications. Travel itineraries are day-by-day plans formatted to meet embassy and visa-center requirements. Travl does not sell flight reservation documents (dummy tickets) or hotel reservations.`;
-
-const { router: emailSupportRouter, pollAndProcess } = createEmailSupportFeature({
-  db,
-  auth,
-  anthropicApiKey: config.anthropicApiKey,
-  brandContext,
-  gmailConfig: config.gmail,
-  logger,
-});
-router.use('/email-support', emailSupportRouter);
-export { pollAndProcess };
+// Email support is temporarily unmounted for Travl. The feature package is
+// untouched; re-enable by restoring the createEmailSupportFeature block.
 
 export const stripeWebhookHandler = createStripeWebhookHandler({
   stripe,
