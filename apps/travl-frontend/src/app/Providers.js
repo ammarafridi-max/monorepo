@@ -126,6 +126,10 @@ const defaultPages = [
           items: [
             { Icon: Globe,   label: 'All Destinations',    desc: 'Browse all visa services we offer',                  href: '/visa' },
             { flag: 'european_union', label: 'Schengen Visa', desc: 'Access 29 European countries with one visa',    href: '/visa/schengen' },
+            { flag: 'fr',    label: 'France',              desc: 'Schengen visa handled through VFS Global France',    href: '/visa/france-visa' },
+            { flag: 'de',    label: 'Germany',             desc: 'Schengen visa handled through VFS Global Germany',   href: '/visa/germany-visa' },
+            { flag: 'it',    label: 'Italy',               desc: 'Schengen visa handled through VFS Global Italy',     href: '/visa/italy-visa' },
+            { flag: 'es',    label: 'Spain',               desc: 'Schengen visa handled through BLS Spain',            href: '/visa/spain-visa' },
             { flag: 'gb',    label: 'United Kingdom',      desc: 'Tourism, business, and family visits to the UK',     href: '/visa/united-kingdom' },
             { flag: 'us',    label: 'United States',       desc: 'B1/B2 visitor visa with interview coaching',         href: '/visa/usa' },
             { flag: 'ca',    label: 'Canada',              desc: 'Temporary resident visa for tourism and family',     href: '/visa/canada' },
