@@ -1,0 +1,44 @@
+import {
+  createSchemaBuilders,
+  buildFAQPage,
+  buildBreadcrumbList as _buildBreadcrumbList,
+  buildGraph,
+} from '@travel-suite/frontend-shared/utils/schema';
+import { buildMetadata as _buildMetadata } from '@travel-suite/frontend-shared/utils/publicMetadata';
+import { EMAIL } from '@/config/contact';
+
+export const SITE_URL = 'https://www.visawadi.ae';
+
+export const {
+  buildOrganization,
+  buildWebsite,
+  buildWebPage,
+  buildBlog,
+  buildBlogPosting,
+  buildService,
+  buildProduct,
+} = createSchemaBuilders({
+  siteUrl: SITE_URL,
+  siteName: 'VisaWadi',
+  logoUrl: `${SITE_URL}/logo.webp`,
+  email: EMAIL,
+  // TODO: replace with VisaWadi's registered address once confirmed.
+  address: {
+    addressLocality: 'Dubai',
+    addressRegion: 'Dubai',
+    addressCountry: 'AE',
+  },
+  contactPoint: {
+    email: EMAIL,
+    contactType: 'customer support',
+    availableLanguage: 'English',
+    hoursAvailable: 'Mo-Su 00:00-24:00',
+  },
+});
+
+export { buildFAQPage, buildGraph };
+
+export const buildBreadcrumbList = (opts = {}) =>
+  _buildBreadcrumbList({ baseUrl: SITE_URL, ...opts });
+
+export const buildMetadata = (opts) => _buildMetadata({ siteUrl: SITE_URL, ...opts });

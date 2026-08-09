@@ -1,0 +1,28 @@
+# Fly.io config for visawadi-backend
+# Deploy from monorepo root with: flyctl deploy -c fly.visawadi-backend.toml
+
+app = "visawadi-backend"
+primary_region = "fra"
+
+[build]
+  dockerfile = "apps/visawadi-backend/Dockerfile"
+
+[http_service]
+  internal_port = 3001
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  # Kept at 1 so the daily visa-application reminder sweep has a machine to run on
+  # and cold starts never delay a customer upload.
+  min_machines_running = 1
+
+[[vm]]
+  size = "shared-cpu-1x"
+  # No PDF rendering and no Chromium in this image, so 512mb is enough.
+  memory = "512mb"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "3001"
+  # ENABLE_REMINDER_CRON is deliberately NOT set here. Turn it on as a secret for
+  # exactly one machine, or the 09:00 Asia/Dubai sweep fans out and emails twice.
