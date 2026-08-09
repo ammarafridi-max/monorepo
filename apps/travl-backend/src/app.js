@@ -5,13 +5,9 @@ import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import { randomUUID } from 'crypto';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
 import { logger, AppError } from '@travel-suite/utils';
 import config from './utils/config.js';
 import indexRouter, { stripeWebhookHandler } from './routes/index.js';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 
@@ -40,10 +36,6 @@ app.use(cookieParser());
 app.use(express.json({ limit: '2mb' }));
 
 app.use('/api', rateLimit({ windowMs: 60 * 60 * 1000, max: 500, standardHeaders: true, legacyHeaders: false }));
-
-app.use('/airlines', express.static(join(__dirname, 'public/airlines'), {
-  setHeaders: (res) => res.set('Cross-Origin-Resource-Policy', 'cross-origin'),
-}));
 
 app.get('/health', (_req, res) => res.status(200).json({ status: 'ok', brand: 'travl' }));
 app.use('/api', indexRouter);
