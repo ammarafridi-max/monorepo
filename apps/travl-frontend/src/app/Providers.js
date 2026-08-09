@@ -17,10 +17,9 @@ import Footer from '@travel-suite/frontend-shared/components/sections/v2/Footer'
 import StickyWhatsApp from '@travel-suite/frontend-shared/components/ui/v2/StickyWhatsApp';
 import AnalyticsInit from '@travel-suite/frontend-shared/components/shared/AnalyticsInit';
 import HotjarInit from '@travel-suite/frontend-shared/components/shared/HotjarInit';
+import { EMAIL, WHATSAPP_NUMBER, ADDRESS, GMB_URL, SOCIALS } from '@/config/contact';
 
 const LOGO_ALT = 'Travl';
-const EMAIL = 'info@travl.ae';
-const WHATSAPP_NUMBER = '+971569964924';
 
 const travlFooter = (
   <Footer
@@ -29,6 +28,9 @@ const travlFooter = (
     logoAlt="Travl"
     description="Travel documentation and insurance services for UAE residents since 2018."
     copyright={`© ${new Date().getFullYear()} Travl Technologies LLC. All rights reserved.`}
+    socials={SOCIALS}
+    address={ADDRESS}
+    addressHref={GMB_URL}
     columns={[
       {
         heading: 'Travel Insurance',

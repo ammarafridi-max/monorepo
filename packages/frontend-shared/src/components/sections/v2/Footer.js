@@ -1,6 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
+import { MapPin } from "lucide-react";
 import Container from "../../shared/layout/Container.js";
+import SocialLinks from "../../ui/v2/SocialLinks.js";
 
 const DEFAULT_COLUMNS = [
   {
@@ -44,6 +46,9 @@ export default function Footer({
   description = "Protecting travellers worldwide since 2018. Licensed and regulated in 40+ countries.",
   copyright,
   columns = DEFAULT_COLUMNS,
+  socials = [],
+  address = null,
+  addressHref = null,
 } = {}) {
   const year = new Date().getFullYear();
   const copyrightText =
@@ -72,6 +77,27 @@ export default function Footer({
             )}
           </Link>
           <p className="text-sm leading-relaxed">{description}</p>
+
+          {address &&
+            (addressHref ? (
+              <a
+                href={addressHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-flex items-start gap-2 text-sm leading-relaxed hover:text-white transition-colors"
+              >
+                <MapPin size={15} className="mt-0.5 shrink-0" aria-hidden="true" />
+                <span>{address}</span>
+              </a>
+            ) : (
+              <p className="mt-4 flex items-start gap-2 text-sm leading-relaxed">
+                <MapPin size={15} className="mt-0.5 shrink-0" aria-hidden="true" />
+                <span>{address}</span>
+              </p>
+            ))}
+
+          <SocialLinks socials={socials} tone="dark" className="mt-5" />
+
         </div>
         {columns.map(({ heading, links }) => (
           <div key={heading}>
