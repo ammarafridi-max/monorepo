@@ -4,6 +4,7 @@ import { createAdminUsersRouter } from "@travel-suite/admin-users";
 import { createBlogRouter, createBlogTagRouter } from "@travel-suite/blog";
 import { createVisaRouter } from "@travel-suite/visa";
 import { createVisaLeadRouter } from "@travel-suite/visa-leads";
+import { createVisaRequirementsRouter } from "@travel-suite/visa-requirements";
 import { createCurrenciesRouter } from "@travel-suite/currencies";
 import { createUsersRouter } from "@travel-suite/users";
 import { createVisaApplicationsRouter } from "@travel-suite/visa-applications";
@@ -73,6 +74,22 @@ const notifications = createNotificationsService({
 });
 
 router.use("/visa-leads", createVisaLeadRouter({ db, auth, notificationsService: notifications }));
+
+// Visa requirement checker. Runs entirely on our own curated rules; a paid
+// provider can be added later by setting SHERPA_API_KEY, without touching the
+// tool or the frontend. servicedSlugs decides which answers push the
+// consultation CTA rather than just informing.
+const { router: visaRequirementsRouter } = createVisaRequirementsRouter({
+  db,
+  auth,
+  servicedSlugs: [
+    "schengen", "united-kingdom", "usa", "canada",
+    "france-visa", "germany-visa", "italy-visa", "spain-visa",
+  ],
+  sherpaApiKey: config.sherpaApiKey,
+  logger,
+});
+router.use("/visa-requirements", visaRequirementsRouter);
 
 const stripe = createStripeClient({ secretKey: config.stripe.secretKey });
 

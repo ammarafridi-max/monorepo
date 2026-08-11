@@ -56,6 +56,7 @@ const visawadiFooter = (
       {
         heading: 'Company',
         links: [
+          { label: 'Visa Checker', href: '/visa-checker' },
           { label: 'Blog', href: '/blog' },
           { label: 'Contact Us', href: '/contact' },
           { label: 'Privacy Policy', href: '/privacy-policy' },
@@ -90,6 +91,7 @@ const defaultPages = [
       ],
     },
   },
+  { name: 'Visa Checker', links: ['/visa-checker'] },
   { name: 'Blog', links: ['/blog'] },
   { name: 'Email Us', links: [`mailto:${EMAIL}`] },
 ];

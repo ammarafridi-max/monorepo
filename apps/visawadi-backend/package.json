@@ -23,6 +23,7 @@
     "@travel-suite/visa": "workspace:*",
     "@travel-suite/visa-applications": "workspace:*",
     "@travel-suite/visa-leads": "workspace:*",
+    "@travel-suite/visa-requirements": "workspace:^",
     "compression": "^1.8.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",

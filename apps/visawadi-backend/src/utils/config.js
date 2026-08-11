@@ -21,6 +21,10 @@ export default {
   jwtCookieExpiresInDays: parseNumber(process.env.JWT_COOKIE_EXPIRES_IN, 7),
 
   brevoApiKey: process.env.BREVO_API_KEY,
+
+  // Optional. Unset means the visa checker runs on curated rules only, which
+  // is the intended starting state — Sherpa is $1,500/month with no free tier.
+  sherpaApiKey: process.env.SHERPA_API_KEY ?? null,
   adminEmail: process.env.ADMIN_EMAIL ?? "info@visawadi.com",
 
   corsOrigins: parseList(process.env.CORS_ORIGINS, [
