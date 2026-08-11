@@ -1,40 +1,63 @@
-# Travel Suite — Multi-Brand Travel SaaS Monorepo
+# Travel Suite — Multi-Brand Travel Monorepo
 
-This monorepo contains four travel brands: **MDT**, **DT365**, **TravelShield**, and **Travl**. Each brand has its own Next.js frontend and Express 5 backend. Shared business logic lives in the `packages/` directory and is consumed by apps via workspace references.
+Six travel brands, each a separate business, built from shared code. Every brand
+ships as two apps: a Next.js frontend and an Express 5 + Mongoose / MongoDB
+backend. All the real logic lives in `packages/` and is composed per brand.
 
-## Folder Structure
+| Brand | What it sells |
+|---|---|
+| `airportrides` | Airport transfers |
+| `dt365` | Dummy / verifiable flight tickets |
+| `emirateslimo` | Limo and chauffeur bookings |
+| `mdt` | Dummy tickets and travel documents |
+| `travl` | AXA travel insurance, plus travel itineraries |
+| `visawadi` | Visa application assistance |
+
+`travelshield` was discontinued in August 2026 and its apps deleted. Dead
+references remain in `packages/shared/config` and a couple of domains; ignore
+them and don't build against them.
+
+Everything is ESM (`"type": "module"`), Node 22, React 19, Tailwind v4.
+
+> Working on this with an AI agent? Read `CLAUDE.md` — it carries the
+> conventions and the rules that matter, and each app has its own scoped one.
+
+## Layout
 
 ```
 /
 ├── apps/
-│   ├── mdt-frontend/          # MDT — Next.js frontend
-│   ├── mdt-backend/           # MDT — Express 5 + MongoDB backend
-│   ├── dt365-frontend/        # DT365 — Next.js frontend
-│   ├── dt365-backend/         # DT365 — Express 5 + MongoDB backend
-│   ├── travelshield-frontend/ # TravelShield — Next.js frontend
-│   ├── travelshield-backend/  # TravelShield — Express 5 + MongoDB backend
-│   ├── travl-frontend/        # Travl — Next.js frontend
-│   └── travl-backend/         # Travl — Express 5 + MongoDB backend
+│   └── <brand>-frontend / <brand>-backend    # thin shells over packages/
 ├── packages/
-│   ├── config/                # Brand config resolved from BRAND env var
-│   ├── auth/                  # Shared auth (JWT, sessions)
-│   ├── users/                 # User domain logic
-│   ├── admin-users/           # Admin user domain logic
-│   ├── insurance/             # Insurance domain logic
-│   ├── payments/              # Payment processing logic
-│   ├── notifications/         # Email / SMS / push notifications
-│   ├── tickets/               # Support ticket logic
-│   └── utils/                 # Shared utilities and helpers
-├── .nvmrc                     # Node 22 LTS
+│   ├── domains/          # one self-contained package per business domain
+│   │   ├── auth, admin-users, users
+│   │   ├── blog, currencies, payments, tickets, email-support
+│   │   ├── insurance, itineraries                      (travl)
+│   │   ├── visa, visa-leads, visa-applications,
+│   │   │   visa-requirements                           (visawadi)
+│   │   ├── bookings, limo-bookings, vehicles,
+│   │   │   zones, pricing-rules, availability-rules    (transfers)
+│   │   ├── flights, locations                          (flight search)
+│   │   └── affiliates
+│   ├── integrations/     # thin clients: airlabs, brevo, cloudinary,
+│   │                     #   paypal, serpapi, transferz, wis
+│   ├── shared/           # config (brand resolution), notifications, utils
+│   └── frontend-shared/  # React components, hooks, contexts, services, pages
+├── docs/                 # system maps and the audit archive
+├── fly.<brand>-<tier>.toml
 ├── turbo.json
 ├── pnpm-workspace.yaml
 └── package.json
 ```
 
+Not every brand mounts every domain. The set is chosen per brand in
+`apps/<brand>-backend/src/routes/index.js`, which is the map when you need to
+know what a given backend actually exposes.
+
 ## Prerequisites
 
-- Node 22 LTS (`nvm use`)
-- pnpm 9 (`npm i -g pnpm@9`)
+- Node 22 (`nvm use`)
+- pnpm 9 — pinned via the `packageManager` field
 
 ## Install
 
@@ -44,47 +67,59 @@ pnpm install
 
 ## Development
 
-Run a single app:
+The normal loop is one app at a time:
 
 ```bash
-pnpm turbo dev --filter=travelshield-frontend
-```
-
-Run an app and all its dependent packages in watch mode:
-
-```bash
-pnpm turbo dev --filter=travelshield-backend...
-```
-
-## Build
-
-Build everything:
-
-```bash
-pnpm turbo build
-```
-
-Build a single app:
-
-```bash
+pnpm turbo dev --filter=visawadi-frontend        # one app
+pnpm turbo dev --filter=travl-backend...         # app + its workspace deps in watch
 pnpm turbo build --filter=mdt-frontend
 ```
 
-## Adding Dependencies
+Backends run on Node's built-in watcher and env-file loader — no nodemon, no
+dotenv:
 
-Add a dependency to a specific workspace:
+```bash
+# from apps/<brand>-backend
+pnpm dev      # node --env-file=.env.development --watch src/server.js
+pnpm start    # node --env-file=.env.production src/server.js
+
+node --env-file=.env.development scripts/seed-admin.js
+```
+
+Only one backend at a time. They share port 3001, and two running together will
+bind different IP stacks and answer each other's requests, which is a confusing
+way to lose an hour.
+
+## Adding a dependency
 
 ```bash
 pnpm add <pkg> --filter=<workspace-name>
 ```
 
-Examples:
+## Brand configuration
+
+Brand identity — name, theme colours, feature flags — resolves from a single env
+var: `BRAND` on backends, `NEXT_PUBLIC_BRAND` on Next.js. `getBrand(key)` reads
+`packages/shared/config/src/brands/<brand>.js` and **validates at module load**,
+so a misconfigured brand fails at startup rather than at request time.
+
+Frontends also keep a thin local `src/config.js` reading `NEXT_PUBLIC_*` vars
+(backend URL, GA4, TinyMCE).
+
+## Testing
+
+There isn't a test suite. `turbo test` is wired but no test files exist. Don't
+claim tests pass. Linting exists on frontends only (`next lint`); shared
+packages have no build step and are consumed as raw source through subpath
+exports.
+
+## Deployment
+
+Fly.io, one config per app at the repo root:
 
 ```bash
-pnpm add express --filter=travelshield-backend
-pnpm add next react react-dom --filter=travelshield-frontend
+flyctl deploy -c fly.visawadi-backend.toml --remote-only
 ```
 
-## Brand Configuration
-
-Each brand's runtime settings (name, logo URL, theme colours, feature flags) are resolved from `@travel-suite/config` using the `BRAND` environment variable. Set `BRAND=mdt`, `BRAND=dt365`, `BRAND=travelshield`, or `BRAND=travl` in each app's environment before starting.
+Secrets live only in Fly secrets. Never commit one, never echo an `.env` file,
+and never put a Mongo URI or an `sk_` / `whsec_` key in a `fly.*.toml`.
