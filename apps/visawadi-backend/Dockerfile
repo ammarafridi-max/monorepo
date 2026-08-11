@@ -20,7 +20,12 @@ WORKDIR /repo
 # Workspace manifests — copy these first for better layer caching
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 
-# Every package the backend pulls in (direct + transitive workspace deps)
+# Every package the backend pulls in (direct + transitive workspace deps).
+#
+# THIS LIST IS LOAD-BEARING. pnpm links a package's peer dependencies only if its
+# manifest is present at install time, so a workspace package missing from here
+# builds fine and then dies at boot with ERR_MODULE_NOT_FOUND on mongoose. Add a
+# line whenever the backend gains a workspace dependency.
 COPY packages/domains/auth/package.json            packages/domains/auth/package.json
 COPY packages/domains/admin-users/package.json     packages/domains/admin-users/package.json
 COPY packages/domains/blog/package.json            packages/domains/blog/package.json
@@ -41,6 +46,7 @@ COPY packages/domains/email-support/package.json   packages/domains/email-suppor
 COPY packages/domains/visa/package.json            packages/domains/visa/package.json
 COPY packages/domains/visa-leads/package.json      packages/domains/visa-leads/package.json
 COPY packages/domains/visa-applications/package.json  packages/domains/visa-applications/package.json
+COPY packages/domains/visa-requirements/package.json  packages/domains/visa-requirements/package.json
 COPY apps/visawadi-backend/package.json       apps/visawadi-backend/package.json
 
 RUN pnpm install --frozen-lockfile

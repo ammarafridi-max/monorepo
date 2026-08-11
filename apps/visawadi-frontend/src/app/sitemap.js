@@ -1,14 +1,15 @@
 import { SITE_URL } from "@/lib/schema";
 import { getPublishedBlogsApi } from "@travel-suite/frontend-shared/services/apiBlog";
 import { getBlogTagsApi } from "@travel-suite/frontend-shared/services/apiBlogTags";
-import { getPublicVisasApi } from "@travel-suite/frontend-shared/services/apiVisa";
+import { getPublicVisasForResidenceApi } from "@travel-suite/frontend-shared/services/apiVisa";
+import { LIVE_COUNTRIES } from "@/config/countries";
 
 // Regenerate hourly so blog/visa/tag entries appear once the backend is reachable
 // at runtime (the build-time Docker container usually can't reach it).
 export const revalidate = 3600;
 const staticPages = [
   { url: "/", changeFrequency: "weekly", priority: 1.0, lastmod: "2026-08-09" },
-  { url: "/visa", changeFrequency: "weekly", priority: 0.9, lastmod: "2026-08-09" },
+  { url: "/uae", changeFrequency: "weekly", priority: 0.9, lastmod: "2026-08-11" },
   { url: "/blog", changeFrequency: "daily", priority: 0.8, lastmod: "2026-08-09" },
   { url: "/blog/tags", changeFrequency: "weekly", priority: 0.5, lastmod: "2026-08-09" },
   { url: "/about", changeFrequency: "monthly", priority: 0.5, lastmod: "2026-08-09" },
@@ -45,19 +46,26 @@ export default async function sitemap() {
     console.error("[sitemap] fetch failed:", err);
   }
 
+  // One entry per live country per destination it actually serves. A country
+  // with no overlay for a destination has no page for it, so it is not listed.
   let visaEntries = [];
-  try {
-    const visas = (await getPublicVisasApi()) || [];
-    visaEntries = visas
-      .filter((visa) => visa?.slug)
-      .map((visa) => ({
-        url: `${SITE_URL}/visa/${visa.slug}`,
-        lastModified: visa.updatedAt || visa.createdAt || now,
-        changeFrequency: "weekly",
-        priority: 0.7,
-      }));
-  } catch (err) {
-    console.error("[sitemap] fetch failed:", err);
+  for (const country of LIVE_COUNTRIES) {
+    try {
+      const res = await getPublicVisasForResidenceApi(country.code);
+      const visas = Array.isArray(res) ? res : res?.data || [];
+      visaEntries.push(
+        ...visas
+          .filter((visa) => visa?.slug)
+          .map((visa) => ({
+            url: `${SITE_URL}/${country.slug}/visa/${visa.slug}`,
+            lastModified: visa.updatedAt || visa.createdAt || now,
+            changeFrequency: "weekly",
+            priority: 0.7,
+          })),
+      );
+    } catch (err) {
+      console.error(`[sitemap] visas for ${country.slug} failed:`, err);
+    }
   }
 
   let tagEntries = [];
