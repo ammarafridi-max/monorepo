@@ -39,7 +39,7 @@ const DEFAULT_COLUMNS = [
  * Defaults preserve the original look for any caller that doesn't pass props.
  */
 export default function Footer({
-  brand = "TravelShield",
+  brand = "",
   logoEmoji = "🛡️",
   logoSrc = null,
   logoAlt = "",

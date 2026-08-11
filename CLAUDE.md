@@ -4,7 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A pnpm + Turborepo monorepo ("travel-suite") hosting **six travel brands**, each a separate business but built from shared code: `airportrides`, `dt365`, `emirateslimo`, `mdt`, `travelshield`, `travl`. Every brand ships as two apps — a Next.js frontend (`apps/<brand>-frontend`) and an Express 5 + Mongoose 9 / MongoDB backend (`apps/<brand>-backend`). All the real logic lives in `packages/` and is composed per-brand.
+A pnpm + Turborepo monorepo ("travel-suite") hosting **six travel brands**, each a separate business but built from shared code: `airportrides`, `dt365`, `emirateslimo`, `mdt`, `travl`, `visawadi`.
+
+`travelshield` was discontinued and its apps deleted. Leftover references remain in `packages/shared/config/src/brands/travelshield.js`, the tickets and affiliates domains, and `docs/`. They are harmless but dead — do not build against them.
+
+The split in progress: **travl** is narrowing to travel insurance only, and **visawadi** takes all visa assistance. Every brand ships as two apps — a Next.js frontend (`apps/<brand>-frontend`) and an Express 5 + Mongoose 9 / MongoDB backend (`apps/<brand>-backend`). All the real logic lives in `packages/` and is composed per-brand.
 
 Everything is ESM (`"type": "module"`), Node 22, React 19, Tailwind v4.
 
