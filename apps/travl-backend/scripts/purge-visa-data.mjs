@@ -13,11 +13,8 @@
  *   visas            (all 9 already live on VisaWadi, and /visa now redirects)
  *   document-types   (checklist reference data, VisaWadi has its own)
  *
- * WHAT IT DELIBERATELY LEAVES ALONE
- *   visa-leads — these are NOT all test data. Real prospects are in there,
- *   including at least one with status "new" that nobody has contacted. Losing
- *   a live enquiry is not an acceptable side effect of a cleanup, so they stay
- *   until you decide whether to move them to VisaWadi.
+ *   visa-leads       (real prospects — deleted ONLY after confirming each one
+ *                     is present on VisaWadi, see the check below)
  *
  * Usage, from apps/travl-backend:
  *   node --env-file=.env.production scripts/purge-visa-data.mjs          # dry run
@@ -31,8 +28,12 @@ import mongoose from 'mongoose';
 const APPLY = process.argv.includes('--apply');
 const OUT = path.join(process.cwd(), 'migration-output', 'travl-visa-data-backup.json');
 
-const PURGE = ['application-documents', 'applicants', 'visa-applications', 'users', 'visas', 'document-types'];
-const KEEP = ['visa-leads'];
+const PURGE = ['application-documents', 'applicants', 'visa-applications', 'users', 'visas', 'document-types', 'visa-leads'];
+const KEEP = [];
+
+// visa-leads are real prospects, so they are only safe to delete once VisaWadi
+// holds them. Verified against the live VisaWadi API before anything is removed.
+const VISAWADI_API = 'https://api.visawadi.com';
 
 if (!process.env.MONGO_URI) {
   console.error('Missing MONGO_URI. Run with --env-file=.env.production');
@@ -63,6 +64,32 @@ if (uploaded.length) {
   throw new Error(`${uploaded.length} document(s) were actually uploaded. Refusing until reviewed.`);
 }
 console.log(`  safety checks passed: ${apps.length} applications, all applicants unnamed, no uploaded documents`);
+
+// Never delete a lead Travl still owns exclusively.
+const leads = await db.collection('visa-leads').find({}, { projection: { _id: 1, email: 1 } }).toArray();
+if (leads.length) {
+  const res = await fetch(`${VISAWADI_API}/health`);
+  if (!res.ok) {
+    await mongoose.disconnect();
+    throw new Error('Cannot reach VisaWadi to confirm the leads were migrated. Refusing.');
+  }
+  const { default: m } = await import('mongoose');
+  const vw = await m.createConnection(process.env.VISAWADI_MONGO_URI || '', {}).asPromise().catch(() => null);
+  if (!vw) {
+    await mongoose.disconnect();
+    throw new Error(
+      `${leads.length} visa-leads present. Set VISAWADI_MONGO_URI so this script can confirm they were imported, ` +
+      'or run import-visa-leads-from-travl.mjs first and re-run with the variable set.',
+    );
+  }
+  const present = await vw.db.collection('visa-leads').countDocuments({ _id: { $in: leads.map((l) => l._id) } });
+  await vw.close();
+  if (present !== leads.length) {
+    await mongoose.disconnect();
+    throw new Error(`Only ${present}/${leads.length} leads found on VisaWadi. Refusing to delete.`);
+  }
+  console.log(`  all ${leads.length} visa-leads confirmed present on VisaWadi`);
+}
 
 const dump = {};
 for (const c of [...PURGE, ...KEEP]) dump[c] = await db.collection(c).find({}).toArray();
