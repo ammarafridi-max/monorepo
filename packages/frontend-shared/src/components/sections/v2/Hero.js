@@ -1,21 +1,9 @@
 import Link from "next/link";
-import PrimarySection from '../../shared/layout/PrimarySection.js';
-import Container from '../../shared/layout/Container.js';
+import PrimarySection from "../../shared/layout/PrimarySection.js";
+import Container from "../../shared/layout/Container.js";
 import { HiCheck, HiChevronRight } from "react-icons/hi2";
 import HeroQuoteForm from "../../ui/v2/HeroQuoteForm.js";
 
-/**
- * @param layout  "split" (default) puts the copy beside a white form card.
- *                "centered" drops the card and runs full width, with the copy
- *                centred from lg up and left-aligned below that, and `below`
- *                rendered underneath. Used where the call to action is a wide
- *                search bar rather than a form that fits in a side panel.
- * @param below   Rendered under the copy. Ignored in the split layout.
- * @param dark    Dark treatment matching the visa detail hero: gray-900 ground,
- *                white copy. Only applies to the centered layout. Anything
- *                passed as `below` keeps its own colours — a white search bar on
- *                a dark ground is the point, not something to tint.
- */
 export default function Hero({
   title = "Travel the World with Peace of Mind",
   text = "Comprehensive travel insurance covering medical emergencies, trip cancellations, lost luggage, and more — anywhere in the world.",
@@ -34,16 +22,14 @@ export default function Hero({
       <PrimarySection
         className={`relative ${dark ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"}`}
       >
-        {/* Clipping lives here, not on the section: the section must not clip
-            the country dropdown, which escapes the hero when opened. */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div
-            className={`absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full ${
+            className={`absolute -top-32 -right-32 w-125 h-125 rounded-full ${
               dark ? "bg-primary-500/10" : "bg-primary-100/40"
             }`}
           />
           <div
-            className={`absolute -bottom-20 -left-20 w-[350px] h-[350px] rounded-full ${
+            className={`absolute -bottom-20 -left-20 w-87.5 h-87.5 rounded-full ${
               dark ? "bg-primary-500/10" : "bg-primary-100/30"
             }`}
           />
@@ -67,10 +53,14 @@ export default function Hero({
               {text}
             </p>
 
-            {trustBar && <div className="mt-6 lg:flex lg:justify-center">{trustBar}</div>}
+            {trustBar && (
+              <div className="mt-6 lg:flex lg:justify-center">{trustBar}</div>
+            )}
           </div>
 
-          {below && <div className="relative mt-10 max-w-4xl lg:mx-auto">{below}</div>}
+          {below && (
+            <div className="relative mt-10 max-w-4xl lg:mx-auto">{below}</div>
+          )}
 
           {/* Below the search bar: the tool is what people came for, so nothing
               sits between it and the headline. */}
@@ -85,7 +75,10 @@ export default function Hero({
                       : "bg-white border-gray-200 text-gray-700"
                   }`}
                 >
-                  <HiCheck size={12} className={`shrink-0 ${dark ? "text-primary-300" : "text-primary-600"}`} />
+                  <HiCheck
+                    size={12}
+                    className={`shrink-0 ${dark ? "text-primary-300" : "text-primary-600"}`}
+                  />
                   {pill}
                 </span>
               ))}
