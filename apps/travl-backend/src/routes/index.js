@@ -5,10 +5,6 @@ import { createInsuranceRouter } from "@travel-suite/insurance";
 import { createAdminUsersRouter } from "@travel-suite/admin-users";
 import { createBlogRouter, createBlogTagRouter } from "@travel-suite/blog";
 import { createCurrenciesRouter } from "@travel-suite/currencies";
-import { createFlightRouter, createAirportsRouter } from "@travel-suite/flights";
-import { createAirLabsClient } from "@travel-suite/airlabs";
-import { createSerpApiClient } from "@travel-suite/serpapi";
-import { createLocationsRouter } from "@travel-suite/locations";
 import { createItinerariesRouter } from "@travel-suite/itineraries";
 import { createNotificationsService } from "@travel-suite/notifications";
 import {
@@ -67,11 +63,6 @@ router.use("/blog-tags", createBlogTagRouter({ db, auth }));
 
 router.use("/currencies", createCurrenciesRouter({ db, auth }));
 
-const airlabs = createAirLabsClient({ apiKey: config.airlabs.apiKey });
-const serpapi = createSerpApiClient({ apiKey: config.serpapi.apiKey });
-router.use("/flights", createFlightRouter({ db, serpapi, airlabs, auth }));
-router.use("/airports", createAirportsRouter({ airlabs }));
-router.use("/locations", createLocationsRouter({ airlabs }));
 
 const notifications = createNotificationsService({
   sendEmail,

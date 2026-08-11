@@ -662,9 +662,6 @@ importers:
       '@travel-suite/admin-users':
         specifier: workspace:*
         version: link:../../packages/domains/admin-users
-      '@travel-suite/airlabs':
-        specifier: workspace:*
-        version: link:../../packages/integrations/airlabs
       '@travel-suite/auth':
         specifier: workspace:*
         version: link:../../packages/domains/auth
@@ -680,27 +677,18 @@ importers:
       '@travel-suite/email-support':
         specifier: workspace:*
         version: link:../../packages/domains/email-support
-      '@travel-suite/flights':
-        specifier: workspace:*
-        version: link:../../packages/domains/flights
       '@travel-suite/insurance':
         specifier: workspace:*
         version: link:../../packages/domains/insurance
       '@travel-suite/itineraries':
         specifier: workspace:*
         version: link:../../packages/domains/itineraries
-      '@travel-suite/locations':
-        specifier: workspace:*
-        version: link:../../packages/domains/locations
       '@travel-suite/notifications':
         specifier: workspace:*
         version: link:../../packages/shared/notifications
       '@travel-suite/payments':
         specifier: workspace:*
         version: link:../../packages/domains/payments
-      '@travel-suite/serpapi':
-        specifier: workspace:*
-        version: link:../../packages/integrations/serpapi
       '@travel-suite/utils':
         specifier: workspace:*
         version: link:../../packages/shared/utils
