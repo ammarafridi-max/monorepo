@@ -64,10 +64,10 @@ export default function NotFound() {
             <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
               {[
                 { label: 'Home', href: '/' },
-                { label: 'Get a Quote', href: '/quote' },
+                { label: 'Get a Quote', href: '/travel-insurance' },
                 { label: 'About Us', href: '/about' },
-                { label: 'Privacy Policy', href: '/privacy' },
-                { label: 'Terms & Conditions', href: '/terms' },
+                { label: 'Privacy Policy', href: '/privacy-policy' },
+                { label: 'Terms & Conditions', href: '/terms-and-conditions' },
               ].map(({ label, href }) => (
                 <Link
                   key={href}
@@ -102,13 +102,9 @@ export default function NotFound() {
             ],
           },
           {
-            heading: 'Visa Services',
+            heading: 'Other Services',
             links: [
-              { label: 'All Destinations', href: '/visa' },
-              { label: 'Schengen Visa', href: '/visa/schengen' },
-              { label: 'United Kingdom', href: '/visa/united-kingdom' },
-              { label: 'United States', href: '/visa/usa' },
-              { label: 'Canada', href: '/visa/canada' },
+              { label: 'Travel Itinerary', href: '/travel-itinerary' },
             ],
           },
           {

@@ -7,10 +7,8 @@ import Testimonials from "@travel-suite/frontend-shared/components/sections/v2/T
 import Faqs from "@travel-suite/frontend-shared/components/sections/v2/Faqs";
 import Contact from "@travel-suite/frontend-shared/components/sections/v2/Contact";
 import BlogPosts from "@travel-suite/frontend-shared/components/sections/v2/BlogPosts";
-import VisaCard from "@travel-suite/frontend-shared/components/cards/VisaCard";
 import Container from "@travel-suite/frontend-shared/components/shared/layout/Container";
 import PrimarySection from "@travel-suite/frontend-shared/components/shared/layout/PrimarySection";
-import { getPublicVisasApi } from "@travel-suite/frontend-shared/services/apiVisa";
 import {
   SITE_URL,
   buildFAQPage,
@@ -21,16 +19,14 @@ import {
   buildWebsite,
 } from "@/lib/schema";
 import { homepageFaqs } from "@/data/faqs";
-import { WHATSAPP_URL } from "@/config/contact";
 import {
   ArrowRight,
   ShieldCheck,
   Zap,
-  FileCheck,
   Headphones,
   Banknote,
   Globe,
-  Check,
+  FileCheck,
 } from "lucide-react";
 import { MdOutlineHealthAndSafety, MdOutlineTravelExplore } from "react-icons/md";
 
@@ -58,118 +54,70 @@ const testimonials = [
   },
 ];
 
-// Reordered so the visa-application benefits lead and insurance supports.
 const benefits = [
   {
+    icon: MdOutlineHealthAndSafety,
+    title: "Underwritten by AXA",
+    text: "Every policy is issued by AXA, not a broker's own paper. That is the name consulates and hospitals recognise when it matters.",
+  },
+  {
+    icon: Zap,
+    title: "Policy in Your Inbox in Minutes",
+    text: "Buy online and the certificate arrives by email straight away. No waiting on an agent, no office visit, no callback.",
+  },
+  {
     icon: FileCheck,
-    title: "Every Document Checked Before You Submit",
-    text: "A specialist reviews your file against current embassy requirements and flags the gaps that cause refusals, before it reaches the counter.",
+    title: "Meets Schengen Requirements",
+    text: "EUR 30,000 minimum medical cover across the whole Schengen Area, formatted the way consulates and VFS Global expect it.",
   },
   {
     icon: Globe,
-    title: "Schengen, UK, US and Canada",
-    text: "Application support for the destinations UAE residents apply to most, including France, Germany, Italy and Spain individually.",
+    title: "Cover Wherever You Are Going",
+    text: "Single trip, annual multi-trip, family and worldwide plans, for Europe and well beyond it.",
   },
   {
     icon: Headphones,
     title: "3-Minute Response Time",
-    text: "Message us on WhatsApp or by email during business hours and you will usually hear back within three minutes. Outside them, within the hour.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Travel Insurance from AED 30",
-    text: "Schengen-compliant AXA-backed cover with the required medical limits, valid across all 29 Schengen states and issued instantly.",
-  },
-  {
-    icon: Zap,
-    title: "Embassy-Accepted Formats",
-    text: "Everything we prepare is formatted to meet the requirements of embassies, VFS Global and BLS International. Submit with confidence.",
+    text: "Message us during business hours and you will usually hear back within three minutes. Outside them, within the hour.",
   },
   {
     icon: Banknote,
-    title: "No Hidden Fees",
-    text: "The price you see is the price you pay. Embassy and visa-centre fees are passed through at cost and never marked up.",
+    title: "From AED 30, No Hidden Fees",
+    text: "The price you see is the price you pay. No booking fee, no card surcharge, no admin charge at the end.",
   },
 ];
 
 const HOW_IT_WORKS = [
   {
     title: "Tell us about your trip",
-    text: "Share your destination, travel dates and situation. It takes a few minutes and costs nothing.",
+    text: "Dates, destination and travellers. It takes about a minute and you get a price immediately.",
   },
   {
-    title: "We prepare and check the file",
-    text: "A specialist builds your application, reviews every document and fixes the gaps before submission.",
+    title: "Pick your plan",
+    text: "Compare single trip, annual and family cover side by side, with the medical limits shown up front.",
   },
   {
-    title: "Submit and track to a decision",
-    text: "We book your appointment, brief you on the day, and follow the application until your passport is back.",
+    title: "Get your policy by email",
+    text: "Pay online and your AXA certificate arrives in minutes, ready to attach to a visa application.",
   },
 ];
 
 const pageData = {
   meta: {
-    title: "Visa Assistance for UAE Residents | Travl",
+    title: "AXA Travel Insurance for UAE Residents | Travl",
     description:
-      "Expert visa application support for UAE residents. Schengen, UK, US and Canada. Document review, appointment booking and full file preparation from AED 299.",
+      "Travel insurance issued by AXA for UAE residents, from AED 30. EUR 30,000 medical cover that meets Schengen visa requirements, delivered to your inbox in minutes.",
     canonical: SITE_URL,
   },
-  sections: {
-    hero: {
-      title: "Visa Assistance for UAE Residents",
-      text: "Most refusals come from document errors that were preventable. Our Dubai specialists build your application and check every page before it goes in.",
-      pills: [
-        "Licensed Dubai Office",
-        "3-Minute Response Time",
-        "Document Review Included",
-        "Native-Language Support",
-      ],
-    },
-    process: {
-      title: "How It Works",
-      subtitle:
-        "Three steps from first consultation to a decision, with a specialist on your file throughout",
-    },
-    about: {
-      title: "About Us",
-      services: [
-        {
-          icon: <MdOutlineTravelExplore />,
-          title: "Visa Assistance",
-          description:
-            "Application support for Schengen, UK, US and Canada, plus France, Germany, Italy and Spain individually. We review your documents, prepare the full file, book your appointment and track the application until a decision is made. Packages from AED 299.",
-        },
-        {
-          icon: <MdOutlineHealthAndSafety />,
-          title: "Travel Insurance",
-          description:
-            "Genuine AXA-backed travel insurance for UAE residents. Schengen-compliant plans from AED 30, worldwide coverage from AED 70, and annual multi-trip plans from AED 245. Every policy is delivered instantly after payment.",
-        },
-      ],
-    },
-    benefits: {
-      title: "Why UAE Residents Choose Travl",
-      subtitle:
-        "A licensed travel agency based in Dubai, trusted for visa applications and travel documentation across the UAE and GCC",
-      benefits,
-    },
-    testimonials: {
-      title: "What Our Customers Say",
-      subtitle:
-        "Real feedback from travelers across the UAE who used Travl for their visa documents",
-      testimonials,
-    },
-    faqs: {
-      title: "Frequently Asked Questions",
-      subtitle:
-        "Common questions about our services, delivery times, and what you need for your visa application",
-      faqs: homepageFaqs,
-    },
-    blogs: {
-      title: "From the Blog",
-      subtitle:
-        "Guides and tips on visa applications, travel documents, and planning your trip from the UAE",
-    },
+  hero: {
+    title: "Travel Insurance, Issued by AXA and Delivered in Minutes",
+    text: "Cover that meets Schengen visa requirements and works far beyond Europe. Get a price in under a minute and your certificate by email the same day.",
+    pills: [
+      "Underwritten by AXA",
+      "From AED 30",
+      "EUR 30,000 Medical Cover",
+      "Instant Email Delivery",
+    ],
   },
 };
 
@@ -182,104 +130,83 @@ export const metadata = {
     url: pageData.meta.canonical,
     title: pageData.meta.title,
     description: pageData.meta.description,
-    images: [`${SITE_URL}/og-image.png`],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: pageData.meta.title,
-    description: pageData.meta.description,
-    images: [`${SITE_URL}/og-image.png`],
   },
 };
 
 export const revalidate = 300;
 
 /**
- * Hero panel. Replaces the insurance quote form that Hero renders by default,
- * so the primary action on the homepage is a visa consultation.
+ * The plans people actually shop for. Deliberately a short list: the full
+ * catalogue lives on /travel-insurance, which stays the hub for comparison.
  */
-function VisaConsultCard() {
-  const included = [
-    "Document review against current embassy rules",
-    "Cover letter, itinerary and flight reservation",
-    "VFS or BLS appointment booked for you",
-    "Tracked until your passport comes back",
-  ];
+const PLANS = [
+  {
+    name: "Single Trip",
+    href: "/travel-insurance/single-trip",
+    price: "From AED 30",
+    text: "One journey, fixed dates. The usual choice for a Schengen visa application.",
+  },
+  {
+    name: "Annual Multi-Trip",
+    href: "/travel-insurance/annual-multi-trip",
+    price: "From AED 245",
+    text: "Unlimited trips over 12 months. Works out cheaper from about the third trip.",
+  },
+  {
+    name: "Family",
+    href: "/travel-insurance/family",
+    price: "One policy",
+    text: "Both parents and the children on a single certificate, at a lower combined price.",
+  },
+  {
+    name: "Schengen Visa",
+    href: "/travel-insurance/schengen-visa",
+    price: "EUR 30,000 cover",
+    text: "Written specifically to satisfy the Schengen medical-cover requirement.",
+  },
+];
 
-  return (
-    <div>
-      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary-700">
-        Free consultation
-      </p>
-      <p className="mt-2 text-xl font-bold text-gray-900 leading-snug">
-        Find out what your application needs
-      </p>
-      <p className="mt-2 text-sm text-gray-500 leading-relaxed">
-        Tell us where you are going and we will tell you exactly what to prepare. No obligation.
-      </p>
-
-      <ul className="mt-5 flex flex-col gap-2.5">
-        {included.map((item) => (
-          <li key={item} className="flex items-start gap-2.5 text-[13px] text-gray-600 leading-snug">
-            <Check size={14} className="text-primary-600 shrink-0 mt-0.5" />
-            <span>{item}</span>
-          </li>
-        ))}
-      </ul>
-
-      <div className="mt-6 flex flex-col gap-2.5">
-        <Link
-          href="/visa"
-          className="inline-flex items-center justify-center gap-2 rounded-full bg-primary-700 hover:bg-primary-800 px-5 py-3 text-sm font-semibold text-white transition-colors"
-        >
-          Get free consultation <ArrowRight size={15} />
-        </Link>
-        <a
-          href={WHATSAPP_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center justify-center rounded-full border border-gray-200 px-5 py-3 text-sm font-semibold text-gray-700 hover:border-primary-300 hover:text-primary-700 transition-colors"
-        >
-          Ask on WhatsApp
-        </a>
-      </div>
-
-      <p className="mt-4 text-center text-xs text-gray-400">
-        Packages from AED 299. Insurance available separately from AED 30.
-      </p>
-    </div>
-  );
-}
-
-/** Destination grid, using the same card as the /visa listing. */
-function VisaDestinations({ visas }) {
-  if (!visas.length) return null;
-
+function PlanGrid() {
   return (
     <PrimarySection className="py-14 md:py-20">
       <Container>
-        <div className="max-w-2xl mb-10">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
-            Visas We Handle
+        <div className="mb-10 max-w-2xl">
+          <h2 className="text-3xl font-bold text-gray-900 md:text-4xl">
+            Choose Your Cover
           </h2>
-          <p className="mt-3 text-gray-500 leading-relaxed">
-            Full application support for the destinations UAE residents apply to most. Every
-            package includes document review, file preparation and appointment booking.
+          <p className="mt-3 leading-relaxed text-gray-500">
+            Every plan is underwritten by AXA and delivered by email within
+            minutes of payment. Pick the shape that fits your trip.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {visas.map((visa) => (
-            <VisaCard key={visa.slug} visa={visa} />
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {PLANS.map((plan) => (
+            <Link
+              key={plan.href}
+              href={plan.href}
+              className="flex flex-col rounded-2xl border border-gray-100 bg-white p-6 shadow-[0_4px_20px_rgba(16,24,40,0.06)] transition-colors hover:border-primary-300"
+            >
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary-700">
+                {plan.price}
+              </p>
+              <p className="mt-2 text-lg font-bold text-gray-900">{plan.name}</p>
+              <p className="mt-2 grow text-sm leading-relaxed text-gray-500">
+                {plan.text}
+              </p>
+              <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary-700">
+                See cover <ArrowRight size={14} />
+              </span>
+            </Link>
           ))}
         </div>
 
         <div className="mt-10">
           <Link
-            href="/visa"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-primary-700 hover:text-primary-800 transition-colors"
+            href="/travel-insurance"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-primary-700 transition-colors hover:text-primary-800"
           >
-            See all destinations <ArrowRight size={15} />
+            Compare every plan <ArrowRight size={15} />
           </Link>
         </div>
       </Container>
@@ -287,32 +214,7 @@ function VisaDestinations({ visas }) {
   );
 }
 
-// The API sorts alphabetically, which buries Schengen and drops the biggest
-// destinations off the end of a six-card grid. Lead with demand instead.
-const DESTINATION_ORDER = [
-  "schengen",
-  "united-kingdom",
-  "usa",
-  "canada",
-  "germany-visa",
-  "france-visa",
-  "italy-visa",
-  "spain-visa",
-];
-
-function orderDestinations(visas) {
-  const rank = (v) => {
-    const i = DESTINATION_ORDER.indexOf(v.slug);
-    return i === -1 ? DESTINATION_ORDER.length : i;
-  };
-  return [...visas].sort((a, b) => rank(a) - rank(b) || a.countryName.localeCompare(b.countryName));
-}
-
-export default async function HomePage() {
-  const visas = await getPublicVisasApi().catch(() => []);
-  const all = Array.isArray(visas) ? visas : visas?.visas || [];
-  const list = orderDestinations(all).slice(0, 6);
-
+export default function HomePage() {
   const schema = buildGraph([
     buildOrganization(),
     buildWebsite(),
@@ -323,7 +225,7 @@ export default async function HomePage() {
     }),
     buildService({
       canonical: pageData.meta.canonical,
-      name: "Visa Assistance for UAE Residents",
+      name: "Travel Insurance for UAE Residents",
       description: pageData.meta.description,
       areaServed: "AE",
     }),
@@ -331,7 +233,7 @@ export default async function HomePage() {
       canonical: pageData.meta.canonical,
       title: "Frequently Asked Questions",
       description: pageData.meta.description,
-      faqs: pageData.sections.faqs.faqs,
+      faqs: homepageFaqs,
     }),
   ]);
 
@@ -343,40 +245,52 @@ export default async function HomePage() {
       />
 
       <Hero
-        title={pageData.sections.hero.title}
-        text={pageData.sections.hero.text}
-        pills={pageData.sections.hero.pills}
-        form={<VisaConsultCard />}
+        title={pageData.hero.title}
+        text={pageData.hero.text}
+        pills={pageData.hero.pills}
       />
-      <VisaDestinations visas={list} />
+      <PlanGrid />
       <HowItWorks
-        title={pageData.sections.process.title}
-        subtitle={pageData.sections.process.subtitle}
+        title="How It Works"
+        subtitle="Three steps from a price to a policy in your inbox, with no paperwork in between"
         steps={HOW_IT_WORKS}
       />
       <About
-        title={pageData.sections.about.title}
-        text="Travl Technologies LLC is a licensed travel agency based in Dubai, UAE. We help residents across the UAE and GCC apply for visas and get the supporting documents embassies ask for, quickly and without hassle."
-        services={pageData.sections.about.services}
+        title="About Us"
+        text="Travl Technologies LLC is a licensed travel agency based in Dubai, UAE. We sell AXA-underwritten travel insurance to residents across the UAE and GCC, and we build the day-by-day travel itineraries that visa applications often ask for."
+        services={[
+          {
+            icon: <MdOutlineHealthAndSafety />,
+            title: "Travel Insurance",
+            description:
+              "AXA-underwritten cover from AED 30, with EUR 30,000 of medical protection that meets the Schengen requirement. Single trip, annual multi-trip, family and worldwide plans, all delivered by email within minutes of payment.",
+          },
+          {
+            icon: <MdOutlineTravelExplore />,
+            title: "Travel Itineraries",
+            description:
+              "A day-by-day plan of your trip, formatted the way consulates expect to see it. Useful when an embassy asks for a detailed itinerary alongside the rest of your file.",
+          },
+        ]}
       />
       <Benefits
-        title={pageData.sections.benefits.title}
-        subtitle={pageData.sections.benefits.subtitle}
-        benefits={pageData.sections.benefits.benefits}
+        title="Why UAE Residents Choose Travl"
+        subtitle="AXA cover, honest pricing, and a team that answers quickly"
+        benefits={benefits}
       />
       <Testimonials
-        title={pageData.sections.testimonials.title}
-        subtitle={pageData.sections.testimonials.subtitle}
-        testimonials={pageData.sections.testimonials.testimonials}
+        title="What Our Customers Say"
+        subtitle="Real feedback from UAE residents who bought their cover through us"
+        testimonials={testimonials}
       />
       <Faqs
-        title={pageData.sections.faqs.title}
-        subtitle={pageData.sections.faqs.subtitle}
-        faqs={pageData.sections.faqs.faqs}
+        title="Frequently Asked Questions"
+        subtitle="Common questions about coverage, Schengen requirements, and how your policy is delivered"
+        faqs={homepageFaqs}
       />
       <BlogPosts
-        title={pageData.sections.blogs.title}
-        subtitle={pageData.sections.blogs.subtitle}
+        title="From the Blog"
+        subtitle="Guides on travel insurance and trip planning for UAE residents"
       />
       <Contact email="info@travl.ae" />
     </>

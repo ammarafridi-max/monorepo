@@ -12,7 +12,6 @@ import { UserAuthContext } from '@travel-suite/frontend-shared/contexts/AuthCont
 import { CurrencyProvider } from '@travel-suite/frontend-shared/contexts/CurrencyContext';
 import { InsuranceProvider } from '@travel-suite/frontend-shared/contexts/InsuranceContext';
 import AppMegaLayout from '@travel-suite/frontend-shared/layouts/AppMegaLayout';
-import { UserAuthProvider } from '@travel-suite/frontend-shared/contexts/UserAuthProvider';
 import Footer from '@travel-suite/frontend-shared/components/sections/v2/Footer';
 import StickyWhatsApp from '@travel-suite/frontend-shared/components/ui/v2/StickyWhatsApp';
 import AnalyticsInit from '@travel-suite/frontend-shared/components/shared/AnalyticsInit';
@@ -46,14 +45,9 @@ const travlFooter = (
         ],
       },
       {
-        heading: 'Visa Services',
+        heading: 'Other Services',
         links: [
           { label: 'Travel Itinerary', href: '/travel-itinerary' },
-          { label: 'All Destinations', href: '/visa' },
-          { label: 'Schengen Visa', href: '/visa/schengen' },
-          { label: 'United Kingdom', href: '/visa/united-kingdom' },
-          { label: 'United States', href: '/visa/usa' },
-          { label: 'Canada', href: '/visa/canada' },
         ],
       },
       {
@@ -115,29 +109,6 @@ const defaultPages = [
     name: 'Travel Itinerary',
     links: ['/travel-itinerary'],
   },
-  {
-    name: 'Visa Assistance',
-    links: ['/visa'],
-    mega: {
-      layout: 'tabs',
-      columns: [
-        {
-          heading: 'By Country',
-          items: [
-            { Icon: Globe,   label: 'All Destinations',    desc: 'Browse all visa services we offer',                  href: '/visa' },
-            { flag: 'european_union', label: 'Schengen Visa', desc: 'Access 29 European countries with one visa',    href: '/visa/schengen' },
-            { flag: 'fr',    label: 'France',              desc: 'Schengen visa handled through VFS Global France',    href: '/visa/france-visa' },
-            { flag: 'de',    label: 'Germany',             desc: 'Schengen visa handled through VFS Global Germany',   href: '/visa/germany-visa' },
-            { flag: 'it',    label: 'Italy',               desc: 'Schengen visa handled through VFS Global Italy',     href: '/visa/italy-visa' },
-            { flag: 'es',    label: 'Spain',               desc: 'Schengen visa handled through BLS Spain',            href: '/visa/spain-visa' },
-            { flag: 'gb',    label: 'United Kingdom',      desc: 'Tourism, business, and family visits to the UK',     href: '/visa/united-kingdom' },
-            { flag: 'us',    label: 'United States',       desc: 'B1/B2 visitor visa with interview coaching',         href: '/visa/usa' },
-            { flag: 'ca',    label: 'Canada',              desc: 'Temporary resident visa for tourism and family',     href: '/visa/canada' },
-          ],
-        },
-      ],
-    },
-  },
   { name: 'Email Us', links: [`mailto:${EMAIL}`] },
 ];
 
@@ -150,10 +121,9 @@ function GuestAuthProvider({ children }) {
 export default function Providers({ children }) {
   const pathname = usePathname();
   const isAdminRoute = pathname?.startsWith('/admin');
-  // Real customer auth only on the /apply visa-application routes; every other
-  // public page keeps the guest provider (unchanged behaviour).
-  const isApplyRoute = pathname?.startsWith('/apply');
-  const AuthProvider = isApplyRoute ? UserAuthProvider : GuestAuthProvider;
+  // Travl has no customer accounts since /apply moved to VisaWadi, so every
+  // public route is a guest route.
+  const AuthProvider = GuestAuthProvider;
   const [queryClient] = useState(
     () =>
       new QueryClient({

@@ -701,21 +701,9 @@ importers:
       '@travel-suite/serpapi':
         specifier: workspace:*
         version: link:../../packages/integrations/serpapi
-      '@travel-suite/users':
-        specifier: workspace:*
-        version: link:../../packages/domains/users
       '@travel-suite/utils':
         specifier: workspace:*
         version: link:../../packages/shared/utils
-      '@travel-suite/visa':
-        specifier: workspace:*
-        version: link:../../packages/domains/visa
-      '@travel-suite/visa-applications':
-        specifier: workspace:*
-        version: link:../../packages/domains/visa-applications
-      '@travel-suite/visa-leads':
-        specifier: workspace:*
-        version: link:../../packages/domains/visa-leads
       '@travel-suite/wis':
         specifier: workspace:*
         version: link:../../packages/integrations/wis

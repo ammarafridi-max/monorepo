@@ -83,18 +83,13 @@ export const homepageFaqs = [
       'Your travel insurance policy is issued instantly and delivered to your email within minutes of payment.',
   },
   {
-    question: 'What visa types do your services support?',
+    question: 'Which visa applications is your insurance accepted for?',
     answer:
-      'Our services are suitable for a wide range of visa applications, including Schengen, UK, Canada, Australia, Turkey, Thailand, and more.',
+      'Our policies are accepted for a wide range of visa applications, including Schengen, UK, Canada, Australia, Turkey and Thailand. Schengen applications need at least EUR 30,000 of medical cover, and every one of our plans meets that.',
   },
   {
     question: 'What payment methods do you accept?',
     answer:
       "We accept card payments through Stripe's secure checkout. Payment links are also available on request.",
-  },
-  {
-    question: 'Is visa assistance available?',
-    answer:
-      'We are launching a full visa assistance service soon. In the meantime, we can help with all the supporting documents your application needs.',
   },
 ];

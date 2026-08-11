@@ -4,16 +4,12 @@ import { createAuthRouter } from "@travel-suite/auth";
 import { createInsuranceRouter } from "@travel-suite/insurance";
 import { createAdminUsersRouter } from "@travel-suite/admin-users";
 import { createBlogRouter, createBlogTagRouter } from "@travel-suite/blog";
-import { createVisaRouter } from "@travel-suite/visa";
-import { createVisaLeadRouter } from "@travel-suite/visa-leads";
 import { createCurrenciesRouter } from "@travel-suite/currencies";
 import { createFlightRouter, createAirportsRouter } from "@travel-suite/flights";
 import { createAirLabsClient } from "@travel-suite/airlabs";
 import { createSerpApiClient } from "@travel-suite/serpapi";
 import { createLocationsRouter } from "@travel-suite/locations";
 import { createItinerariesRouter } from "@travel-suite/itineraries";
-import { createUsersRouter } from "@travel-suite/users";
-import { createVisaApplicationsRouter } from "@travel-suite/visa-applications";
 import { createNotificationsService } from "@travel-suite/notifications";
 import {
   createStripeClient,
@@ -69,14 +65,6 @@ const imageStorage = createCloudinaryStorage({
 router.use("/blogs", createBlogRouter({ db, auth, imageStorage, anthropicApiKey: config.anthropicApiKey }));
 router.use("/blog-tags", createBlogTagRouter({ db, auth }));
 
-const visaImageStorage = createCloudinaryStorage({
-  cloudName: config.cloudinary.cloudName,
-  apiKey: config.cloudinary.apiKey,
-  apiSecret: config.cloudinary.apiSecret,
-  logger,
-  folder: "travl/visa",
-});
-router.use("/visas", createVisaRouter({ db, auth, imageStorage: visaImageStorage }));
 router.use("/currencies", createCurrenciesRouter({ db, auth }));
 
 const airlabs = createAirLabsClient({ apiKey: config.airlabs.apiKey });
@@ -100,7 +88,6 @@ const notifications = createNotificationsService({
   },
 });
 
-router.use("/visa-leads", createVisaLeadRouter({ db, auth, notificationsService: notifications }));
 
 const stripe = createStripeClient({ secretKey: config.stripe.secretKey });
 
@@ -183,44 +170,5 @@ export const stripeWebhookHandler = createStripeWebhookHandler({
   },
 });
 
-const { router: usersRouter, middleware: userAuth, User } = createUsersRouter({
-  db,
-  jwtSecret: config.userJwtSecret,
-  jwtExpiresIn: config.userJwtExpiresIn,
-  cookieExpiresInDays: config.userCookieExpiresInDays,
-  nodeEnv: config.nodeEnv,
-  notifications,
-  appBaseUrl: config.frontendUrl,
-  apiBaseUrl: config.backendUrl,
-});
-
-router.use("/users", usersRouter);
-
-// -- Schengen visa application system -----------------------------------------
-// Private customer documents (passport/bank statements) go to a SEPARATE
-// authenticated Cloudinary space; reads are always via signed short-lived URLs.
-const visaApplicationStorage = createCloudinaryStorage({
-  cloudName: config.cloudinary.cloudName,
-  apiKey: config.cloudinary.apiKey,
-  apiSecret: config.cloudinary.apiSecret,
-  logger,
-  folder: "travl/visa-applications",
-});
-
-const { router: visaApplicationsRouter, runReminderSweep } = createVisaApplicationsRouter({
-  db,
-  auth,          // admin protect/restrictTo
-  userAuth,      // customer (userJwt) protect
-  User,
-  storage: visaApplicationStorage,
-  notifications,
-  apiBaseUrl: config.backendUrl,
-  appBaseUrl: config.frontendUrl,
-  logger,
-});
-router.use("/visa-applications", visaApplicationsRouter);
-
-// Exposed so server.js can schedule the daily reminder sweep (node-cron).
-export { runReminderSweep as runVisaReminderSweep };
 
 export default router;

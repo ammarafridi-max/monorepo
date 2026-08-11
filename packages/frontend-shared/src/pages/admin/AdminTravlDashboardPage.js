@@ -12,25 +12,14 @@ import {
   ArrowRight,
   CalendarDays,
   DollarSign,
-  Inbox,
-  Stamp,
   Mail,
   ChevronRight,
 } from 'lucide-react';
 import StatCard from '../../components/admin/StatCard';
 import { getInsuranceApplicationsApi, getInsuranceApplicationsSummaryApi } from '../../services/apiInsurance';
-import { getAdminVisaLeadsApi } from '../../services/apiVisaLeads';
 import { getAffiliatesApi } from '../../services/apiAffiliates';
 import { getAllBlogsApi } from '../../services/apiBlog';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
-
-const VISA_LEAD_STATUS_CFG = {
-  new:       { label: 'New',       dot: 'bg-blue-500',   text: 'text-blue-700'   },
-  contacted: { label: 'Contacted', dot: 'bg-amber-500',  text: 'text-amber-700'  },
-  qualified: { label: 'Qualified', dot: 'bg-indigo-500', text: 'text-indigo-700' },
-  converted: { label: 'Converted', dot: 'bg-green-500',  text: 'text-green-700'  },
-  lost:      { label: 'Lost',      dot: 'bg-gray-400',   text: 'text-gray-500'   },
-};
 
 function fmtMoney(amount, currency = 'AED') {
   return `${currency} ${Number(amount).toLocaleString('en-US', {
@@ -123,14 +112,6 @@ function DashboardContent() {
         queryFn: () => getInsuranceApplicationsApi({ limit: 6, page: 1 }),
       },
       {
-        queryKey: ['dashboard-travl', 'visa-leads-new'],
-        queryFn: () => getAdminVisaLeadsApi({ status: 'new', limit: 1 }),
-      },
-      {
-        queryKey: ['dashboard-travl', 'visa-leads-total'],
-        queryFn: () => getAdminVisaLeadsApi({ limit: 1 }),
-      },
-      {
         queryKey: ['dashboard-travl', 'affiliates'],
         queryFn: () => getAffiliatesApi({ limit: 500 }),
       },
@@ -149,12 +130,10 @@ function DashboardContent() {
     ],
   });
 
-  const [summaryQ, recentInsQ, newLeadsQ, totalLeadsQ, affiliatesQ, publishedQ, draftQ, scheduledQ] = results;
+  const [summaryQ, recentInsQ, affiliatesQ, publishedQ, draftQ, scheduledQ] = results;
 
   const summary = summaryQ.data ?? {};
   const recentApplications = recentInsQ.data?.data ?? [];
-  const newLeadsTotal   = newLeadsQ.data?.pagination?.total ?? 0;
-  const totalLeads      = totalLeadsQ.data?.pagination?.total ?? 0;
   const activeAffiliates = (affiliatesQ.data?.affiliates ?? []).filter((a) => a.isActive).length;
 
   const insTotal    = summary.totalApplications ?? 0;
@@ -218,14 +197,6 @@ function DashboardContent() {
               label="Total Applications"
               value={insTotal.toLocaleString()}
               sub="All time"
-            />
-            <StatCard
-              icon={Inbox}
-              iconBg="bg-blue-50"
-              iconColor="text-blue-600"
-              label="New Visa Leads"
-              value={newLeadsTotal.toLocaleString()}
-              sub={`${totalLeads} total leads`}
             />
             {!isAgent && (
               <StatCard
@@ -341,38 +312,6 @@ function DashboardContent() {
             </div>
           </SectionCard>
 
-          <SectionCard
-            title="Visa Leads"
-            subtitle="By status"
-            action={
-              <Link href="/admin/visa-leads" className="flex items-center gap-1 text-xs font-semibold text-primary-700 hover:underline">
-                View all <ArrowRight size={11} />
-              </Link>
-            }
-          >
-            <div className="space-y-2">
-              {Object.entries(VISA_LEAD_STATUS_CFG).map(([status, cfg]) => (
-                <div key={status} className="flex items-center justify-between">
-                  <span className="flex items-center gap-2 text-xs text-gray-500 font-medium">
-                    <span className={`w-2 h-2 rounded-full ${cfg.dot}`} />
-                    {cfg.label}
-                  </span>
-                  <span className="text-xs font-bold text-gray-700">—</span>
-                </div>
-              ))}
-              <div className="pt-2 border-t border-gray-50 flex items-center justify-between">
-                <span className="text-xs text-gray-400 font-medium">Total</span>
-                <span className="text-xs font-bold text-gray-900">{totalLeads}</span>
-              </div>
-            </div>
-            <Link
-              href="/admin/visa-leads"
-              className="mt-4 w-full flex items-center justify-center gap-1.5 border border-dashed border-gray-200 hover:border-primary-300 hover:text-primary-700 text-gray-400 text-xs font-semibold py-2 rounded-xl transition-colors"
-            >
-              <Inbox size={13} />
-              View leads
-            </Link>
-          </SectionCard>
 
           <SectionCard
             title="Blog"
@@ -410,7 +349,6 @@ function DashboardContent() {
           <SectionCard title="Quick Access" subtitle="Jump to a section">
             <div className="space-y-1">
               {[
-                { label: 'Visa Pages',  href: '/admin/visa',        icon: Stamp,           roles: ['admin']          },
                 { label: 'Emails',      href: '/admin/emails',       icon: Mail,            roles: ['admin', 'agent'] },
                 { label: 'Affiliates',  href: '/admin/affiliates',   icon: Handshake,       roles: ['admin', 'agent'] },
                 { label: 'Currencies',  href: '/admin/currencies',   icon: CircleDollarSign, roles: ['admin']          },

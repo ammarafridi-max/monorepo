@@ -1,9 +1,8 @@
 import { SITE_URL } from "@/lib/schema";
 import { getPublishedBlogsApi } from "@travel-suite/frontend-shared/services/apiBlog";
 import { getBlogTagsApi } from "@travel-suite/frontend-shared/services/apiBlogTags";
-import { getPublicVisasApi } from "@travel-suite/frontend-shared/services/apiVisa";
 
-// Regenerate hourly so blog/visa/tag entries appear once the backend is reachable
+// Regenerate hourly so blog/tag entries appear once the backend is reachable
 // at runtime (the build-time Docker container usually can't reach it).
 export const revalidate = 3600;
 const staticPages = [
@@ -141,12 +140,6 @@ const staticPages = [
     lastmod: "2026-07-30",
   },
   {
-    url: "/visa",
-    changeFrequency: "monthly",
-    priority: 0.8,
-    lastmod: "2026-04-28",
-  },
-  {
     url: "/blog",
     changeFrequency: "daily",
     priority: 0.8,
@@ -224,21 +217,6 @@ export default async function sitemap() {
     console.error("[sitemap] fetch failed:", err);
   }
 
-  let visaEntries = [];
-  try {
-    const visas = (await getPublicVisasApi()) || [];
-    visaEntries = visas
-      .filter((visa) => visa?.slug)
-      .map((visa) => ({
-        url: `${SITE_URL}/visa/${visa.slug}`,
-        lastModified: visa.updatedAt || visa.createdAt || now,
-        changeFrequency: "weekly",
-        priority: 0.7,
-      }));
-  } catch (err) {
-    console.error("[sitemap] fetch failed:", err);
-  }
-
   let tagEntries = [];
   try {
     const data = await getBlogTagsApi();
@@ -255,5 +233,5 @@ export default async function sitemap() {
     console.error("[sitemap] fetch failed:", err);
   }
 
-  return [...staticEntries, ...blogEntries, ...tagEntries, ...visaEntries];
+  return [...staticEntries, ...blogEntries, ...tagEntries];
 }

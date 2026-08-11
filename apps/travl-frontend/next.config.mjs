@@ -68,6 +68,14 @@ const nextConfig = {
       })),
       ...LEGACY_REDIRECTS.map(([source, destination]) => ({ source, destination, permanent: true })),
       { source: '/blog/tag/:slug', destination: '/blog/tags/:slug', permanent: true },
+      // Visa assistance moved to VisaWadi. Slugs match one-for-one on both sides.
+      // NOTE: /travel-insurance/*-visa pages are insurance products and stay here.
+      { source: '/visa', destination: 'https://www.visawadi.com/visa', permanent: true },
+      { source: '/visa/:slug', destination: 'https://www.visawadi.com/visa/:slug', permanent: true },
+      // Customer document-upload flow moved with it. Magic links already sent
+      // point here, so keep the path shape.
+      { source: '/apply', destination: 'https://www.visawadi.com/apply', permanent: true },
+      { source: '/apply/:path*', destination: 'https://www.visawadi.com/apply/:path*', permanent: true },
       {
         source: '/:path*',
         has: [{ type: 'host', value: 'travl.ae' }],
