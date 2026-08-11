@@ -44,7 +44,7 @@ async function ensureDocType(sys, key, source, label) {
 // flight-reservation row) so we can prove Track A only ever chases CUSTOMER rows.
 async function seedEligibleApp(sys, opts = {}) {
   const ref = uniqueRef('REM');
-  const email = customerEmail || `${ref.toLowerCase()}@verify.visawadi.ae`;
+  const email = customerEmail || `${ref.toLowerCase()}@verify.visawadi.com`;
   const user = await sys.User.create({ email, firstName: 'Rem', lastName: 'Inder', password: 'x'.repeat(24) });
   const passportType = await ensureDocType(sys, 'PASSPORT', 'CUSTOMER', 'Passport');
   const flightType = opts.withAgent ? await ensureDocType(sys, 'FLIGHT_RESERVATION', 'AGENT', 'Flight reservation') : null;
@@ -88,7 +88,7 @@ try {
 
   // Make it unmistakable where this is pointed BEFORE any write happens.
   r.info(`MongoDB target: ${describeConnection(connA, env.mongoUri)}`);
-  if (!customerEmail) r.info('VERIFY_EMAIL_TO not set — customer reminders go to a synthetic @verify.visawadi.ae address (Brevo will accept then bounce).');
+  if (!customerEmail) r.info('VERIFY_EMAIL_TO not set — customer reminders go to a synthetic @verify.visawadi.com address (Brevo will accept then bounce).');
 
   // ---- 1. sequential double sweep -> exactly one email ------------------------
   {

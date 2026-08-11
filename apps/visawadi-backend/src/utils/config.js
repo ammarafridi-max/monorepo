@@ -21,20 +21,20 @@ export default {
   jwtCookieExpiresInDays: parseNumber(process.env.JWT_COOKIE_EXPIRES_IN, 7),
 
   brevoApiKey: process.env.BREVO_API_KEY,
-  adminEmail: process.env.ADMIN_EMAIL ?? "info@visawadi.ae",
+  adminEmail: process.env.ADMIN_EMAIL ?? "info@visawadi.com",
 
   corsOrigins: parseList(process.env.CORS_ORIGINS, [
     "http://localhost:3000",
-    "https://visawadi.ae",
-    "https://www.visawadi.ae",
+    "https://visawadi.com",
+    "https://www.visawadi.com",
   ]),
 
   // Public site URL, used in outbound email templates.
-  siteUrl: process.env.SITE_URL ?? "https://www.visawadi.ae",
+  siteUrl: process.env.SITE_URL ?? "https://www.visawadi.com",
 
   frontendUrl: process.env.FRONTEND_URL ?? "http://localhost:3000",
   // Public base URL of THIS backend — used to build magic-link sign-in URLs that
-  // the browser hits directly (e.g. https://api.visawadi.ae). Falls back to the local port.
+  // the browser hits directly (e.g. https://api.visawadi.com). Falls back to the local port.
   backendUrl: process.env.BACKEND_URL ?? `http://localhost:${parseNumber(process.env.PORT, 4000)}`,
 
   stripe: {

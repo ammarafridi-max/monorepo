@@ -8,8 +8,7 @@
     "dev": "NODE_ENV=development node --env-file=.env.development --watch src/server.js",
     "start": "node --env-file=.env.production src/server.js",
     "seed-admin:dev": "node --env-file=.env.development scripts/seed-admin.js",
-    "seed-admin:prod": "node --env-file=.env.production scripts/seed-admin.js",
-    "seed:visas": "node --env-file=.env.development src/scripts/seedVisas.js"
+    "seed-admin:prod": "node --env-file=.env.production scripts/seed-admin.js"
   },
   "dependencies": {
     "@travel-suite/admin-users": "workspace:*",
@@ -20,10 +19,10 @@
     "@travel-suite/notifications": "workspace:*",
     "@travel-suite/payments": "workspace:*",
     "@travel-suite/users": "workspace:*",
+    "@travel-suite/utils": "workspace:*",
     "@travel-suite/visa": "workspace:*",
     "@travel-suite/visa-applications": "workspace:*",
     "@travel-suite/visa-leads": "workspace:*",
-    "@travel-suite/utils": "workspace:*",
     "compression": "^1.8.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -35,7 +34,9 @@
     "mongoose": "^9.0.2",
     "node-cron": "^3.0.3"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "cloudinary": "^2.9.0"
+  },
   "engines": {
     "node": "22.x"
   }

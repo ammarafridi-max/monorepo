@@ -864,6 +864,10 @@ importers:
       node-cron:
         specifier: ^3.0.3
         version: 3.0.3
+    devDependencies:
+      cloudinary:
+        specifier: ^2.9.0
+        version: 2.9.0
 
   apps/visawadi-frontend:
     dependencies:
