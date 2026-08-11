@@ -38,7 +38,7 @@ const SCALARS = [
   'processingTime',
 ];
 
-const WHOLE_LISTS = ['packages', 'pricingBreakdown', 'faqs', 'testimonials'];
+const WHOLE_LISTS = ['packages', 'pricingBreakdown', 'faqs', 'testimonials', 'whyUs'];
 
 /**
  * @param {object} base     a Visa document (plain object)

@@ -56,6 +56,25 @@ export function getPublicVisasApi() {
   return apiFetchPublic(`${URL}`, { next: { revalidate: 300 } });
 }
 
+/**
+ * Visa pages served in one country, each already resolved for it. Returns only
+ * destinations that country has a published overlay for, so a country cannot
+ * accidentally advertise a destination nobody has written local detail for.
+ */
+export function getPublicVisasForResidenceApi(residence) {
+  return apiFetchPublic(`${URL}/residence/${encodeURIComponent(residence)}`, {
+    next: { revalidate: 300 },
+  });
+}
+
+/** One page, resolved for a country when `residence` is given. */
+export function getPublicVisaForResidenceApi(slug, residence) {
+  const qs = residence ? `?residence=${encodeURIComponent(residence)}` : '';
+  return apiFetchPublic(`${URL}/slug/${encodeURIComponent(slug)}${qs}`, {
+    next: { revalidate: 300 },
+  });
+}
+
 export function getPublicVisaBySlugApi(slug) {
   return apiFetchPublic(`${URL}/slug/${encodeURIComponent(slug)}`, {
     next: { revalidate: 300 },

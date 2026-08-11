@@ -85,6 +85,16 @@ const overlayFaqSchema = new mongoose.Schema(
   { _id: false },
 );
 
+/** Trust signals are local — "licensed Dubai office" means nothing in Riyadh. */
+const overlayWhyUsSchema = new mongoose.Schema(
+  {
+    title:       { type: String, required: true, trim: true },
+    description: { type: String, trim: true },
+    icon:        { type: String, trim: true },
+  },
+  { _id: false },
+);
+
 const VisaOverlaySchema = new mongoose.Schema(
   {
     /** ISO 3166-1 alpha-2 of where the applicant lives, e.g. AE, SA. */
@@ -108,6 +118,7 @@ const VisaOverlaySchema = new mongoose.Schema(
     requirementSections: { type: [overlayRequirementSchema], default: undefined },
     faqs:                { type: [overlayFaqSchema],         default: undefined },
     testimonials:        { type: [overlayTestimonialSchema], default: undefined },
+    whyUs:               { type: [overlayWhyUsSchema],        default: undefined },
 
     /** Where applicants actually go. The most commonly asked local question. */
     visaCentre: {
