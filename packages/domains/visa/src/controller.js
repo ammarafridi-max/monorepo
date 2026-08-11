@@ -9,9 +9,42 @@ export function createVisaController({ service }) {
   });
 
   const getPublicVisaBySlug = catchAsync(async (req, res, next) => {
-    const visa = await service.getPublicVisaBySlug(req.params.slug);
+    // ?residence=AE resolves the page for that country. Omitted, the base page
+    // is returned, which is what this route did before country segmentation.
+    const visa = await service.getPublicVisaBySlugForResidence(req.params.slug, req.query.residence);
     if (!visa) return next(new AppError('Visa not found', 404));
     res.status(200).json({ status: 'success', data: visa });
+  });
+
+  const getPublicVisasForResidence = catchAsync(async (req, res) => {
+    const visas = await service.getPublicVisasForResidence(req.params.residence);
+    res.status(200).json({ status: 'success', results: visas.length, data: visas });
+  });
+
+  // ─── Residence overlays (admin) ──────────────────────────────────────────────
+
+  const listOverlays = catchAsync(async (req, res) => {
+    const filter = {};
+    if (req.query.residence) filter.residence = String(req.query.residence).toUpperCase();
+    if (req.query.visaSlug) filter.visaSlug = req.query.visaSlug;
+    const overlays = await service.listOverlays(filter);
+    res.status(200).json({ status: 'success', results: overlays.length, data: overlays });
+  });
+
+  const getOverlay = catchAsync(async (req, res, next) => {
+    const overlay = await service.getOverlay(req.params.residence, req.params.visaSlug);
+    if (!overlay) return next(new AppError('No overlay for that country and visa', 404));
+    res.status(200).json({ status: 'success', data: overlay });
+  });
+
+  const upsertOverlay = catchAsync(async (req, res) => {
+    const overlay = await service.upsertOverlay(req.body);
+    res.status(200).json({ status: 'success', data: overlay });
+  });
+
+  const deleteOverlay = catchAsync(async (req, res) => {
+    await service.deleteOverlay(req.params.residence, req.params.visaSlug);
+    res.status(204).send();
   });
 
   // ─── Admin ───────────────────────────────────────────────────────────────────
@@ -61,6 +94,11 @@ export function createVisaController({ service }) {
   return {
     getPublicVisas,
     getPublicVisaBySlug,
+    getPublicVisasForResidence,
+    listOverlays,
+    getOverlay,
+    upsertOverlay,
+    deleteOverlay,
     getAdminVisas,
     getVisaById,
     createVisa,

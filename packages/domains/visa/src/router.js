@@ -10,11 +10,21 @@ export function createVisaRouterFromParts({ controller, auth }) {
   // ─── Public routes ───────────────────────────────────────────────────────────
   router.get('/', controller.getPublicVisas);
   router.get('/slug/:slug', controller.getPublicVisaBySlug);
+  // Every destination served in one country, each already resolved for it.
+  router.get('/residence/:residence', controller.getPublicVisasForResidence);
 
   // ─── Admin routes (require auth) ─────────────────────────────────────────────
   router.use(protect, restrictTo('admin'));
 
   router.get('/admin/list', controller.getAdminVisas);
+
+  // Residence overlays. MUST stay above /:id — Express matches in order, and
+  // '/:id' would otherwise swallow '/overlays/all' with id="overlays".
+  router.get('/overlays/all', controller.listOverlays);
+  router.post('/overlays', controller.upsertOverlay);
+  router.get('/overlays/:residence/:visaSlug', controller.getOverlay);
+  router.delete('/overlays/:residence/:visaSlug', controller.deleteOverlay);
+
   router.post('/', upload.single('heroImage'), controller.createVisa);
   router.get('/:id', controller.getVisaById);
   router.patch('/:id', upload.single('newHeroImage'), controller.updateVisa);

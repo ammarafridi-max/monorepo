@@ -1,5 +1,6 @@
 import slugify from 'slugify';
 import { AppError } from '@travel-suite/utils';
+import { resolveVisaForResidence } from './resolveForResidence.js';
 
 function escapeRegex(value = '') {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -53,7 +54,7 @@ function isValidSlug(slug) {
   return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug);
 }
 
-export function createVisaService({ Visa, imageStorage }) {
+export function createVisaService({ Visa, VisaOverlay, imageStorage }) {
   // ─── Slug helpers ────────────────────────────────────────────────────────────
 
   const generateBaseSlug = (input) => slugify(input, { lower: true, strict: true });
@@ -136,6 +137,56 @@ export function createVisaService({ Visa, imageStorage }) {
     path: `sectionGuides.${key}`,
     select: 'title slug status',
   }));
+
+  /**
+   * Public page for one destination, optionally resolved for where the
+   * applicant lives. Without a residence the base page is returned unchanged,
+   * which is what /visa/<slug> served before country segmentation existed.
+   */
+  const getPublicVisaBySlugForResidence = async (slug, residence) => {
+    const base = await getPublicVisaBySlug(slug);
+    if (!base) return null;
+    if (!residence || !VisaOverlay) return base;
+    const overlay = await VisaOverlay.findOne({
+      visaSlug: slug,
+      residence: String(residence).toUpperCase(),
+      isPublished: true,
+    }).lean();
+    return resolveVisaForResidence(base, overlay);
+  };
+
+  /** Every destination we have a published overlay for in this country. */
+  const getPublicVisasForResidence = async (residence) => {
+    const visas = await getPublicVisas();
+    if (!residence || !VisaOverlay) return visas;
+    const res = String(residence).toUpperCase();
+    const overlays = await VisaOverlay.find({ residence: res, isPublished: true }).lean();
+    const bySlug = new Map(overlays.map((o) => [o.visaSlug, o]));
+    return visas
+      .filter((v) => bySlug.has(v.slug))
+      .map((v) => resolveVisaForResidence(v, bySlug.get(v.slug)));
+  };
+
+  // ---- overlay admin ----
+  const listOverlays = (filter = {}) => VisaOverlay.find(filter).sort({ residence: 1, visaSlug: 1 }).lean();
+  const getOverlay = (residence, visaSlug) =>
+    VisaOverlay.findOne({ residence: String(residence).toUpperCase(), visaSlug }).lean();
+  const upsertOverlay = async (payload) => {
+    const residence = String(payload.residence || '').toUpperCase();
+    if (!/^[A-Z]{2}$/.test(residence)) throw new AppError('residence must be a 2-letter country code', 400);
+    if (!payload.visaSlug) throw new AppError('visaSlug is required', 400);
+    if (!payload.residenceSlug) throw new AppError('residenceSlug is required (the URL segment, e.g. "uae")', 400);
+    const existing = await VisaOverlay.findOne({ residence, visaSlug: payload.visaSlug });
+    const doc = existing || new VisaOverlay({ residence, visaSlug: payload.visaSlug });
+    Object.assign(doc, payload, { residence });
+    await doc.save();
+    return doc.toObject();
+  };
+  const deleteOverlay = async (residence, visaSlug) => {
+    const r = await VisaOverlay.deleteOne({ residence: String(residence).toUpperCase(), visaSlug });
+    if (!r.deletedCount) throw new AppError('No overlay for that country and visa', 404);
+    return true;
+  };
 
   const getPublicVisaBySlug = async (slug) => {
     try {
@@ -305,6 +356,12 @@ export function createVisaService({ Visa, imageStorage }) {
   return {
     getPublicVisas,
     getPublicVisaBySlug,
+    getPublicVisaBySlugForResidence,
+    getPublicVisasForResidence,
+    listOverlays,
+    getOverlay,
+    upsertOverlay,
+    deleteOverlay,
     getAdminVisas,
     getVisaById,
     createVisa,

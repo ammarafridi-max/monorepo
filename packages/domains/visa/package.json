@@ -5,8 +5,9 @@
   "type": "module",
   "main": "./src/index.js",
   "exports": {
-    ".":        "./src/index.js",
-    "./schema": "./src/schemas/visa.schema.js"
+    ".": "./src/index.js",
+    "./schema": "./src/schemas/visa.schema.js",
+    "./overlay-schema": "./src/schemas/visaOverlay.schema.js"
   },
   "scripts": {},
   "dependencies": {
