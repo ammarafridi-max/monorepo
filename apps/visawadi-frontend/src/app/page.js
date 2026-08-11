@@ -139,7 +139,7 @@ function VisaDestinations({ visas }) {
   if (!visas.length) return null;
 
   return (
-    <PrimarySection className="py-14 md:py-20">
+    <PrimarySection className="py-14 md:py-25">
       <Container>
         <div className="mb-10 max-w-2xl">
           <h2 className="text-3xl font-bold text-gray-900 md:text-4xl">
