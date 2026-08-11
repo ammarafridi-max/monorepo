@@ -24,7 +24,10 @@ function StarRow({ count = 5 }) {
   );
 }
 
-export default function VisaTestimonials({ testimonials = [] }) {
+export default function VisaTestimonials({
+  testimonials = [],
+  subtitle = "Real feedback from UAE residents who applied for their visas with us.",
+}) {
   const featured = (testimonials || []).filter((t) => t.isFeatured).slice(0, 3);
   if (!featured.length) return null;
 
@@ -33,7 +36,7 @@ export default function VisaTestimonials({ testimonials = [] }) {
       <Container>
         <SectionHead
           title="What Our Clients Say"
-          subtitle="Real feedback from UAE residents who applied for their visas with Travl."
+          subtitle={subtitle}
         />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {featured.map((t, i) => {

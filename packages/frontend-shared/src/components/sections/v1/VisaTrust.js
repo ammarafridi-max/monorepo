@@ -24,12 +24,12 @@ const TRUST_STATS = [
   { value: "2024", label: "UAE Licensed", caption: "DAFZ-registered office" },
 ];
 
-export default function VisaTrust({ items = [] }) {
+export default function VisaTrust({ items = [], title = "Why UAE Residents Trust Us" }) {
   return (
     <section className="py-12 md:py-16 bg-gray-50">
       <Container>
         <SectionHead
-          title="Why UAE Residents Trust Travl"
+          title={title}
           subtitle="A licensed Dubai team with a track record UAE residents rely on for their visa applications."
         />
 

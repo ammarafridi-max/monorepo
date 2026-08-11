@@ -291,7 +291,7 @@ export default function ApplyDetailPage() {
             </div>
             <span className="text-[12px] font-semibold text-gray-600">{completeness}%</span>
           </div>
-          <p className="mt-2 text-[12px] text-gray-400">Our team prepares your flight reservation, insurance and forms separately — you only handle your own documents here.</p>
+          <p className="mt-2 text-[12px] text-gray-400">Our team prepares your application forms separately. You only handle your own documents here.</p>
         </div>
 
         {application.accommodationQuestionNeeded && <AccommodationCard application={application} />}

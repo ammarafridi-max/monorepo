@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { X, Loader2, CheckCircle2 } from 'lucide-react';
 import { useCreateVisaLead } from '../../../hooks/visa-leads/useCreateVisaLead.js';
-import { useGetNationalities } from '../../../hooks/insurance/useGetNationalities.js';
+import { NATIONALITIES } from '../../../data/nationalities.js';
 import { trackVisaLeadSubmit } from '../../../utils/analytics.js';
 import NationalitySelect from '../../form-elements/v1/NationalitySelect.js';
 import PhoneInput from '../../form-elements/v1/PhoneInput.js';
@@ -60,7 +60,7 @@ export default function LeadFormModal({ isOpen, onClose, visa, defaultPackage = 
   const [serverError, setServerError] = useState(null);
 
   const { createVisaLeadAsync, isSubmittingLead } = useCreateVisaLead();
-  const { nationalities = [], isLoadingNationalities } = useGetNationalities();
+  const nationalities = NATIONALITIES;
 
   const packages = visa?.packages ?? [];
 
@@ -266,7 +266,7 @@ export default function LeadFormModal({ isOpen, onClose, visa, defaultPackage = 
                   <NationalitySelect
                     value={nationalityValue}
                     onChange={(nat) => setValue('nationality', nat, { shouldDirty: true, shouldValidate: true })}
-                    nationalities={isLoadingNationalities ? [] : nationalities}
+                    nationalities={nationalities}
                     inputClassName={INPUT_CLS}
                     required
                   />

@@ -18,7 +18,7 @@ function CtaButton({ children, onClick, href, size = "md" }) {
   );
 }
 
-export default function VisaFinalCta({ headline, ctaText, onCtaClick }) {
+export default function VisaFinalCta({ headline, ctaText, onCtaClick, whatsappUrl }) {
   if (!headline && !ctaText) return null;
   return (
     <section className="py-12 md:py-16">
@@ -44,12 +44,14 @@ export default function VisaFinalCta({ headline, ctaText, onCtaClick }) {
             <CtaButton onClick={onCtaClick} size="lg">
               {ctaText || "Apply now"}
             </CtaButton>
-            <a
-              href="https://wa.me/971000000000"
-              className="inline-flex items-center justify-center gap-2 text-[14px] font-outfit font-semibold py-3 px-5 rounded-full border border-white/25 text-white hover:bg-white/10 transition-colors duration-200 whitespace-nowrap"
-            >
-              Chat on WhatsApp
-            </a>
+            {whatsappUrl && (
+              <a
+                href={whatsappUrl}
+                className="inline-flex items-center justify-center gap-2 text-[14px] font-outfit font-semibold py-3 px-5 rounded-full border border-white/25 text-white hover:bg-white/10 transition-colors duration-200 whitespace-nowrap"
+              >
+                Chat on WhatsApp
+              </a>
+            )}
           </div>
         </div>
       </Container>

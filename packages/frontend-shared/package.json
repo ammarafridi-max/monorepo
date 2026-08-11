@@ -8,6 +8,7 @@
     "./hooks/*/*": "./src/hooks/*/*.js",
     "./contexts/*": "./src/contexts/*.js",
     "./utils/*": "./src/utils/*.js",
+    "./data/*": "./src/data/*.js",
     "./components/shared/*": "./src/components/shared/*.js",
     "./components/shared/layout/*": "./src/components/shared/layout/*.js",
     "./components/shared/flight/*": "./src/components/shared/flight/*.js",

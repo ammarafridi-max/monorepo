@@ -6,7 +6,7 @@ import { ArrowRight, Check, Clock } from "lucide-react";
 const DEFAULT_FEATURES = [
   "Full document review and file preparation",
   "VFS or embassy appointment booking",
-  "Cover letter, itinerary, and flight reservation",
+  "Cover letter and financial summary written for you",
 ];
 
 /**

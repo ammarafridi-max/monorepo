@@ -13,7 +13,7 @@ import {
   useAdminUploadDocument, useAdminMarkInPerson, useAdminLinkSatisfiedBy, useAdminAddDocumentRow, useAdminRemoveDocumentRow,
 } from '../../hooks/visa-applications/useVisaAppMutations.js';
 import { useDocumentTypes } from '../../hooks/visa-applications/useRegistry.js';
-import { useGetNationalities } from '../../hooks/insurance/useGetNationalities.js';
+import { NATIONALITIES } from '../../data/nationalities.js';
 import { adminGetDocumentStreamBlobApi } from '../../services/apiVisaApplications.js';
 import DatePicker from '../../components/form-elements/v1/DatePicker.js';
 import NationalitySelect from '../../components/form-elements/v2/NationalitySelect.js';
@@ -323,8 +323,7 @@ function ApplicantModal({ applicationId, applicant, onClose }) {
   const inputCls = 'w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500';
   const name = `${applicant.firstName || ''} ${applicant.lastName || ''}`.trim() || 'Applicant';
 
-  const { nationalities } = useGetNationalities();
-  const natList = nationalities || [];
+  const natList = NATIONALITIES;
   const natValue = natList.find((n) => n.nationality === form.nationality) || (form.nationality ? { id: form.nationality, nationality: form.nationality } : null);
 
   function submit(e) {

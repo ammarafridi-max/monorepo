@@ -82,7 +82,7 @@ const FAQS = [
   {
     question: "What documents do I need for a Schengen visa?",
     answer:
-      "Core requirements are: a valid passport (min. 3 months validity beyond travel date), Emirates ID, UAE residence visa, 3 months of bank statements, a salary certificate or NOC from your employer, hotel bookings, and a flight reservation. Travl provides the flight reservation and compiles your full document file on your behalf.",
+      "Core requirements are: a valid passport (min. 3 months validity beyond travel date), Emirates ID, UAE residence visa, 3 months of bank statements, a salary certificate or NOC from your employer, hotel bookings, and a flight reservation. We review every document and compile your full file on your behalf.",
   },
   {
     question: "How long does the process take?",
@@ -102,11 +102,11 @@ const FAQS = [
   {
     question: "What is included in the service fee?",
     answer:
-      "Your Travl fee covers: full document review and compilation, a GDS flight reservation, cover letter preparation, a day-by-day itinerary, VFS or embassy appointment guidance, and WhatsApp support throughout processing. Embassy and VFS fees are shown separately and passed through at cost, never marked up.",
+      "Your fee covers full document review and compilation, cover letter preparation, VFS or embassy appointment guidance, and WhatsApp support throughout processing. Embassy and VFS fees are shown separately and passed through at cost, never marked up.",
   },
 ];
 
-function ConsultationCard() {
+function ConsultationCard({ contactHref }) {
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -123,7 +123,7 @@ function ConsultationCard() {
         </p>
       </div>
       <Link
-        href="mailto:info@travl.ae"
+        href={contactHref}
         className="inline-flex items-center justify-center gap-2 bg-accent-500 hover:bg-accent-600 text-white font-semibold text-sm py-3.5 px-6 rounded-xl transition-colors"
       >
         Get free consultation <ArrowRight size={16} />
@@ -154,7 +154,14 @@ function VisaCardSkeleton() {
   );
 }
 
-export default function VisaPage({ schema, breadcrumbJsonLd }) {
+export default function VisaPage({
+  schema,
+  breadcrumbJsonLd,
+  // Brand-supplied. Shared code must not name or email a specific brand, so the
+  // consuming app passes its own contact target and may override the copy.
+  contactHref = "#",
+  faqs = FAQS,
+}) {
   const { visas, isLoadingVisas } = useGetPublicVisas();
 
   return (
@@ -184,7 +191,7 @@ export default function VisaPage({ schema, breadcrumbJsonLd }) {
           { label: "Home", path: "/" },
           { label: "Visa", path: "/visa" },
         ]}
-        form={<ConsultationCard />}
+        form={<ConsultationCard contactHref={contactHref} />}
       />
 
       <PrimarySection className="bg-white py-20">
@@ -227,7 +234,7 @@ export default function VisaPage({ schema, breadcrumbJsonLd }) {
       <Faqs
         title="Frequently Asked Questions"
         subtitle="Everything UAE residents ask us before starting a visa application."
-        faqs={FAQS}
+        faqs={faqs}
       />
 
       <PrimarySection className="bg-primary-700 text-white py-20">
@@ -242,7 +249,7 @@ export default function VisaPage({ schema, breadcrumbJsonLd }) {
           </p>
           <div className="mt-8 flex justify-center">
             <Link
-              href="mailto:info@travl.ae"
+              href={contactHref}
               className="inline-flex items-center gap-2 bg-white text-primary-700 hover:bg-primary-50 font-bold px-8 py-4 rounded-full text-sm transition-colors"
             >
               Ask About Another Country <ArrowRight size={15} />

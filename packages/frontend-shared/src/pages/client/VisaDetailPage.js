@@ -13,7 +13,7 @@ import VisaTestimonials from "../../components/sections/v1/VisaTestimonials.js";
 import VisaFaqSection from "../../components/sections/v1/VisaFaqSection.js";
 import VisaFinalCta from "../../components/sections/v1/VisaFinalCta.js";
 
-export default function VisaDetailPage({ visa, schema, breadcrumbJsonLd }) {
+export default function VisaDetailPage({ visa, schema, breadcrumbJsonLd, whatsappUrl }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalPackage, setModalPackage] = useState("undecided");
   const [modalSource, setModalSource] = useState("hero_cta");
@@ -84,6 +84,7 @@ export default function VisaDetailPage({ visa, schema, breadcrumbJsonLd }) {
         guide={guides.faqs}
       />
       <VisaFinalCta
+        whatsappUrl={whatsappUrl}
         headline={visa.finalCtaHeadline}
         ctaText={visa.finalCtaText}
         onCtaClick={() => openModal("undecided", "final_cta")}
