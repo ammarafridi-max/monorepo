@@ -34,7 +34,7 @@ export async function generateMetadata({ params }) {
     return { title: 'Blog Tag Not Found', robots: { index: false, follow: false } };
   }
 
-  const title = tag.metaTitle || `${tag.name} | Blog Tag | VisaWadi`;
+  const title = tag.metaTitle || `${tag.name} | Blog Tag`;
   const description =
     tag.metaDescription ||
     tag.description ||
@@ -68,7 +68,7 @@ export default async function Page({ params, searchParams }) {
   const blogs = data?.blogs || [];
   const pagination = data?.pagination || null;
 
-  const title = tag.metaTitle || `${tag.name} | Blog Tag | VisaWadi`;
+  const title = tag.metaTitle || `${tag.name} | Blog Tag`;
   const description =
     tag.metaDescription ||
     tag.description ||

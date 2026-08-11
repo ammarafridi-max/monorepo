@@ -3,7 +3,7 @@ import Container from '@travel-suite/frontend-shared/components/shared/layout/Co
 import PrimarySection from '@travel-suite/frontend-shared/components/shared/layout/PrimarySection';
 
 export const metadata = {
-  title: 'About VisaWadi — Visa Assistance for UAE Residents',
+  title: 'About Us — Visa Assistance for UAE Residents',
   description:
     'VisaWadi is a Dubai-based team that prepares visa applications for UAE residents. Document review, file preparation and appointment booking, tracked to a decision.',
   alternates: { canonical: 'https://www.visawadi.com/about' },

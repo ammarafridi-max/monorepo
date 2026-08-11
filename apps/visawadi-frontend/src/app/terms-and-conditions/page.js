@@ -7,7 +7,7 @@ import { buildMetadata } from '@/lib/schema';
 
 export const pageData = {
   meta: {
-    title: 'Terms & Conditions - VisaWadi',
+    title: 'Terms & Conditions',
     description:
       'Read the official Terms & Conditions of VisaWadi to understand service usage, refunds, legal responsibility, and policies.',
     canonical: 'https://www.visawadi.com/terms-and-conditions',

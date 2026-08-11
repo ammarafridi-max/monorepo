@@ -4,7 +4,7 @@ import SocialLinks from '@travel-suite/frontend-shared/components/ui/v2/SocialLi
 import { EMAIL, WHATSAPP_URL, ADDRESS, GMB_URL, SOCIALS } from '@/config/contact';
 
 export const metadata = {
-  title: 'Contact VisaWadi — Email, WhatsApp or Visit Our Dubai Office',
+  title: 'Contact Us — Email, WhatsApp or Visit Our Dubai Office',
   description:
     'Get in touch with VisaWadi. Email info@visawadi.com, WhatsApp our team, or find us at Regus, DAFZ, Dubai for help with your insurance policy or visa documentation.',
   alternates: { canonical: 'https://www.visawadi.com/contact' },

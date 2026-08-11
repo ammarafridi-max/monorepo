@@ -14,7 +14,7 @@ import {
 
 export const faqPageData = {
   meta: {
-    title: 'Visa Assistance FAQ | Common Questions Answered | VisaWadi',
+    title: 'Visa Assistance FAQ | Common Questions Answered',
     description:
       'Clear answers on visa requirements, processing times, refusals, embassy fees and what our service covers for UAE residents.',
     canonical: 'https://www.visawadi.com/faq',

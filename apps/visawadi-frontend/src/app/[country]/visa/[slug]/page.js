@@ -44,7 +44,7 @@ async function load(countrySlug, slug) {
 }
 
 function copyFor(c, visa, slug) {
-  const title = visa.metaTitle || `${visa.countryName} visa for ${c.residents} | VisaWadi`;
+  const title = visa.metaTitle || `${visa.countryName} visa for ${c.residents}`;
   const description =
     visa.metaDescription ||
     visa.heroSubheadline ||

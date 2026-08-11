@@ -10,7 +10,7 @@ import {
 import BlogTagsPage from '@travel-suite/frontend-shared/pages/client/BlogTagsPage';
 
 const meta = {
-  title: 'Blog Tags | VisaWadi',
+  title: 'Blog Tags',
   description:
     'Browse blog categories to find published posts about visas, travel insurance, flight reservations, and related topics.',
   canonical: `${SITE_URL}/blog/tags`,

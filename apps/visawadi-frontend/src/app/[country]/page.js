@@ -36,7 +36,7 @@ export function generateStaticParams() {
 
 function metaFor(c) {
   return {
-    title: `Visa Assistance for ${c.residents} | VisaWadi`,
+    title: `Visa Assistance for ${c.residents}`,
     description: `Visa application support for ${c.residents}. We review every document against current embassy requirements, prepare the file and book your appointment in ${c.hub}.`,
     canonical: `${SITE_URL}/${c.slug}`,
   };

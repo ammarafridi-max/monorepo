@@ -6,7 +6,7 @@ import { buildMetadata } from '@/lib/schema';
 
 export const pageData = {
   meta: {
-    title: 'Privacy Policy - VisaWadi',
+    title: 'Privacy Policy',
     description:
       'Read the official Privacy Policy of VisaWadi to understand how we collect, protect, and use your personal data.',
     canonical: 'https://www.visawadi.com/privacy-policy',

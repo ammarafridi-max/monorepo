@@ -11,7 +11,7 @@ import {
 import BlogPage from '@travel-suite/frontend-shared/pages/client/BlogPage';
 
 const meta = {
-  title: 'Travel Insurance & Visa Travel Blog | Tips, Guides & Updates',
+  title: 'Visa Guides for UAE Residents | Tips, Requirements & Updates',
   description:
     'Read practical visa travel guides, travel insurance tips, and updates to help you prepare stronger documentation for your next application.',
   canonical: `${SITE_URL}/blog`,
