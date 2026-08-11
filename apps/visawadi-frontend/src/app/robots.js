@@ -5,6 +5,6 @@ export default function robots() {
       allow: "/",
       disallow: ["/admin", "/apply"],
     },
-    sitemap: "https://www.visawadi.ae/sitemap.xml",
+    sitemap: "https://www.visawadi.com/sitemap.xml",
   };
 }

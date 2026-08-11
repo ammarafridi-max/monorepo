@@ -36,3 +36,6 @@ apps/emirateslimo-frontend/.env.build
 
 # Local blog-migration content backups (rollback artifacts, not source)
 travl-blog-backups/
+
+# Blog/asset migration dumps (rollback artifacts, not source)
+migration-output/

@@ -20,7 +20,7 @@ export const viewport = {
 };
 
 export const metadata = {
-  metadataBase: new URL('https://www.visawadi.ae'),
+  metadataBase: new URL('https://www.visawadi.com'),
   title: {
     default: 'VisaWadi — Visa Assistance for UAE Residents',
     template: '%s | VisaWadi',
@@ -35,7 +35,7 @@ export const metadata = {
     title: 'VisaWadi — Visa Assistance for UAE Residents',
     description:
       'Visa application support for UAE residents. Schengen, UK, US and Canada.',
-    url: 'https://www.visawadi.ae',
+    url: 'https://www.visawadi.com',
     siteName: 'VisaWadi',
   },
 };

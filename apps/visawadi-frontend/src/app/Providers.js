@@ -12,7 +12,7 @@ import { UserAuthProvider } from '@travel-suite/frontend-shared/contexts/UserAut
 import Footer from '@travel-suite/frontend-shared/components/sections/v2/Footer';
 import StickyWhatsApp from '@travel-suite/frontend-shared/components/ui/v2/StickyWhatsApp';
 import AnalyticsInit from '@travel-suite/frontend-shared/components/shared/AnalyticsInit';
-import HotjarInit from '@travel-suite/frontend-shared/components/shared/HotjarInit';
+import ClarityInit from '@travel-suite/frontend-shared/components/shared/ClarityInit';
 import {
   EMAIL,
   WHATSAPP_NUMBER,
@@ -133,7 +133,7 @@ export default function Providers({ children }) {
   return (
     <>
       <AnalyticsInit />
-      <HotjarInit />
+      <ClarityInit />
       <Toaster />
       <QueryClientProvider client={queryClient}>
         <AuthProvider>

@@ -6,7 +6,9 @@ VisaWadi handles visa applications and nothing else — no travel insurance, tra
 
 ## Status
 
-**Admin only so far.** `src/app/admin` is built out. The public marketing site does not exist yet, and neither does the root `src/app/layout.js` or a `globals.css`, so the app will not build until those are added.
+Public site and admin are both built. Live domain is **`https://www.visawadi.com`**, backend at `https://api.visawadi.com`.
+
+Outstanding before launch: brand logo and favicon (still the other brand's files), an `og-image.png`, a legal review of `/privacy-policy` and `/terms-and-conditions`, and real values for `ADDRESS` / `GMB_URL` / `SOCIALS` in `src/config/contact.js`.
 
 ## Running it
 
@@ -38,6 +40,20 @@ Pages are thin re-exports of shared `pages/admin/*` components. Change behaviour
 
 `NEXT_PUBLIC_BACKEND_URL`, `NEXT_PUBLIC_GA4_MEASUREMENT_ID`, `NEXT_PUBLIC_TINYMCE_API_KEY`.
 
+## Public routes
+
+| Route | Purpose |
+|---|---|
+| `/` | Visa-led homepage |
+| `/visa`, `/visa/[slug]` | Visa listing and detail pages (ISR) |
+| `/blog`, `/blog/[slug]`, `/blog/tags`, `/blog/tags/[slug]` | Blog |
+| `/about`, `/contact`, `/faq`, `/privacy-policy`, `/terms-and-conditions` | Static pages |
+| `/apply`, `/apply/login`, `/apply/[applicationRef]` | Customer document upload (`noindex`, reached via emailed magic link) |
+
 ## Deployment
 
-Fly.io, built from `apps/visawadi-frontend/Dockerfile` with a repo-root build context. A `fly.visawadi-frontend.toml` at the repo root still needs to be created.
+Fly.io, built from `apps/visawadi-frontend/Dockerfile` with a repo-root build context:
+
+```bash
+flyctl deploy -c fly.visawadi-frontend.toml --remote-only
+```

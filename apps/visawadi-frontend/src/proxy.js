@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const SITE = "https://www.visawadi.ae";
+const SITE = "https://www.visawadi.com";
 
 export function proxy(req) {
   const host = req.headers.get("host") || "";
@@ -8,7 +8,7 @@ export function proxy(req) {
 
   // Apex to www. No legacy-path redirects yet: this is a new site with no old
   // URLs to preserve. Add them here as they appear.
-  if (host === "visawadi.ae") {
+  if (host === "visawadi.com") {
     return NextResponse.redirect(`${SITE}${pathname}${search}`, 308);
   }
 }

@@ -7,7 +7,7 @@ import {
 import { buildMetadata as _buildMetadata } from '@travel-suite/frontend-shared/utils/publicMetadata';
 import { EMAIL } from '@/config/contact';
 
-export const SITE_URL = 'https://www.visawadi.ae';
+export const SITE_URL = 'https://www.visawadi.com';
 
 export const {
   buildOrganization,
