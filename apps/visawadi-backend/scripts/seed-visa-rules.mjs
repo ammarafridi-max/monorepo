@@ -13,14 +13,21 @@
  * safe direction to be wrong in.
  *
  * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/seed-visa-rules.mjs          # dry run
+ *   node --env-file=.env.production scripts/seed-visa-rules.mjs            # dry run
  *   node --env-file=.env.production scripts/seed-visa-rules.mjs --apply
+ *   node --env-file=.env.production scripts/seed-visa-rules.mjs --apply --publish
+ *
+ * --publish makes the rules visible to the checker. They keep lastVerifiedAt
+ * null, and the UI shows an explicit "not verified by our team yet" warning on
+ * every answer until a human sets that date. So the tool works end to end
+ * without pretending the data has been checked.
  */
 
 import mongoose from 'mongoose';
 import VisaRuleSchema from '@travel-suite/visa-requirements/schema';
 
 const APPLY = process.argv.includes('--apply');
+const PUBLISH = process.argv.includes('--publish');
 
 // Nationalities that hold a UAE residence permit and are common in this market.
 // Residence changes the answer for several destinations, and it is the thing
@@ -168,6 +175,16 @@ for (const d of DESTINATIONS) {
   console.log(`  ${d.destination} ${d.destinationName}: created unpublished (${counts})`);
 }
 
-console.log(`\ncreated=${created} skipped=${skipped}`);
-console.log('All rules are UNPUBLISHED. The checker will not serve them until each is verified and published.');
+let published = 0;
+if (APPLY && PUBLISH) {
+  const res = await VisaRule.updateMany({ isPublished: false }, { $set: { isPublished: true } });
+  published = res.modifiedCount || 0;
+}
+
+console.log(`\ncreated=${created} skipped=${skipped} published=${published}`);
+if (PUBLISH) {
+  console.log('Rules are LIVE but unverified — every answer carries a warning until lastVerifiedAt is set.');
+} else {
+  console.log('All rules are UNPUBLISHED. The checker will not serve them until each is verified and published.');
+}
 await mongoose.disconnect();

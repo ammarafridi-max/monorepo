@@ -47,3 +47,4 @@ The sidebar nav and brand mark are configured in `src/app/admin/(dashboard)/layo
 - `public/logo.webp` and `favicon.png` are still the other brand's files.
 - No `og-image.png`, though page metadata references one.
 - `packages/shared/config/src/brands/` has no `visawadi.js`. Nothing calls `getBrand` here yet, but it would throw if anything started to.
+

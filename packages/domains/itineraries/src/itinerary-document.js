@@ -81,10 +81,13 @@ function dayDescription(day) {
   return '';
 }
 
+// Brand-neutral fallback. The composition root injects the real values; these
+// exist only so a missing `brand` renders rather than throwing. A named brand
+// here would print another company's details on a PDF.
 const DEFAULT_BRAND = {
-  name: 'Travl',
-  companyName: 'TRAVL Technologies',
-  domain: 'travl.ae',
+  name: '',
+  companyName: '',
+  domain: '',
   primaryColor: '#0d6a66',
   accentColor: '#ff603a',
 };

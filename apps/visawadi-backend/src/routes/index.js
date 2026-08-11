@@ -75,10 +75,10 @@ const notifications = createNotificationsService({
 
 router.use("/visa-leads", createVisaLeadRouter({ db, auth, notificationsService: notifications }));
 
-// Visa requirement checker. Runs entirely on our own curated rules; a paid
-// provider can be added later by setting SHERPA_API_KEY, without touching the
-// tool or the frontend. servicedSlugs decides which answers push the
-// consultation CTA rather than just informing.
+// Visa requirement checker. Runs on our own curated rules. The service takes an
+// ordered provider list, so a third-party source can be added later without
+// touching the tool. servicedSlugs decides which answers push the consultation
+// CTA rather than just informing.
 const { router: visaRequirementsRouter } = createVisaRequirementsRouter({
   db,
   auth,
@@ -86,7 +86,6 @@ const { router: visaRequirementsRouter } = createVisaRequirementsRouter({
     "schengen", "united-kingdom", "usa", "canada",
     "france-visa", "germany-visa", "italy-visa", "spain-visa",
   ],
-  sherpaApiKey: config.sherpaApiKey,
   logger,
 });
 router.use("/visa-requirements", visaRequirementsRouter);

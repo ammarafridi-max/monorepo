@@ -83,8 +83,12 @@ export function createVisaService({ Visa, imageStorage }) {
   };
 
   const deleteVisaFolder = async (visaId) => {
-    if (!imageStorage?.deleteFolder) return;
-    try { await imageStorage.deleteFolder(`travl/visa/${visaId}`); } catch { /* non-fatal */ }
+    // deleteSubfolder prefixes the storage's own configured folder. The old code
+    // called deleteFolder('travl/visa/<id>') directly, which reached into Travl's
+    // namespace no matter which brand was running — wrong for every brand but
+    // Travl, and actively wrong now that VisaWadi owns visas under visawadi/.
+    if (!imageStorage?.deleteSubfolder) return;
+    try { await imageStorage.deleteSubfolder(visaId); } catch { /* non-fatal */ }
   };
 
   // ─── Field parsers ───────────────────────────────────────────────────────────

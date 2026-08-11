@@ -9,7 +9,6 @@ export const revalidate = 3600;
 const staticPages = [
   { url: "/", changeFrequency: "weekly", priority: 1.0, lastmod: "2026-08-09" },
   { url: "/visa", changeFrequency: "weekly", priority: 0.9, lastmod: "2026-08-09" },
-  { url: "/visa-checker", changeFrequency: "weekly", priority: 0.9, lastmod: "2026-08-11" },
   { url: "/blog", changeFrequency: "daily", priority: 0.8, lastmod: "2026-08-09" },
   { url: "/blog/tags", changeFrequency: "weekly", priority: 0.5, lastmod: "2026-08-09" },
   { url: "/about", changeFrequency: "monthly", priority: 0.5, lastmod: "2026-08-09" },

@@ -1,7 +1,6 @@
 import VisaRuleSchema, { OUTCOMES } from './schemas/visaRule.schema.js';
 import VisaQuerySchema from './schemas/visaQuery.schema.js';
 import { createCuratedProvider } from './providers/curated.js';
-import { createSherpaProvider } from './providers/sherpa.js';
 import { createVisaRequirementsService } from './service.js';
 import { createVisaRequirementsController } from './controller.js';
 import { createVisaRequirementsRouterFromParts } from './router.js';
@@ -13,19 +12,17 @@ function getOrRegisterModel(conn, name, schema) {
 /**
  * @param servicedSlugs visa page slugs the brand actually sells, used to decide
  *        whether a "visa required" answer should push the consultation CTA.
- * @param sherpaApiKey  optional. When absent the Sherpa provider is not built,
- *        so the tool runs entirely on curated rules and costs nothing.
+ *
+ * Providers are an ordered list so a third-party source can be added later
+ * without touching the service, the router or the frontend. Nothing is wired to
+ * one today: we ran the numbers on Sherpa and it was $1,500/month with no
+ * residence field, which is the one thing this tool needs to get right.
  */
-export function createVisaRequirementsRouter({ db, auth, servicedSlugs = [], sherpaApiKey = null, logger }) {
+export function createVisaRequirementsRouter({ db, auth, servicedSlugs = [], logger }) {
   const VisaRule = getOrRegisterModel(db, 'visa-rule', VisaRuleSchema);
   const VisaQuery = getOrRegisterModel(db, 'visa-query', VisaQuerySchema);
 
-  // Order matters: our own rules answer first. They are the only source that
-  // understands residence, which is the whole point of asking for it.
-  const providers = [
-    createCuratedProvider({ VisaRule }),
-    createSherpaProvider({ apiKey: sherpaApiKey, logger }),
-  ].filter(Boolean);
+  const providers = [createCuratedProvider({ VisaRule })];
 
   const service = createVisaRequirementsService({ VisaRule, VisaQuery, providers, servicedSlugs });
   const controller = createVisaRequirementsController({ service });

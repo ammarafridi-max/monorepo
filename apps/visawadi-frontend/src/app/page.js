@@ -7,6 +7,7 @@ import Faqs from "@travel-suite/frontend-shared/components/sections/v2/Faqs";
 import Contact from "@travel-suite/frontend-shared/components/sections/v2/Contact";
 import BlogPosts from "@travel-suite/frontend-shared/components/sections/v2/BlogPosts";
 import VisaCard from "@travel-suite/frontend-shared/components/cards/VisaCard";
+import VisaCheckerInline from "@travel-suite/frontend-shared/components/ui/v2/VisaCheckerInline";
 import Container from "@travel-suite/frontend-shared/components/shared/layout/Container";
 import PrimarySection from "@travel-suite/frontend-shared/components/shared/layout/PrimarySection";
 import { getPublicVisasApi } from "@travel-suite/frontend-shared/services/apiVisa";
@@ -28,7 +29,6 @@ import {
   Headphones,
   Banknote,
   Stamp,
-  Check,
 } from "lucide-react";
 import { MdOutlineTravelExplore, MdOutlineFactCheck } from "react-icons/md";
 
@@ -135,62 +135,6 @@ function orderDestinations(visas) {
   );
 }
 
-/** Hero panel. Replaces the insurance quote form the shared Hero defaults to. */
-function VisaConsultCard() {
-  const included = [
-    "Document review against current embassy rules",
-    "Cover letter and financial summary written for you",
-    "VFS or BLS appointment booked on your behalf",
-    "Tracked until your passport comes back",
-  ];
-
-  return (
-    <div>
-      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary-700">
-        Free consultation
-      </p>
-      <p className="mt-2 text-xl font-bold leading-snug text-gray-900">
-        Find out what your application needs
-      </p>
-      <p className="mt-2 text-sm leading-relaxed text-gray-500">
-        Tell us where you are going and we will tell you exactly what to prepare.
-        No obligation.
-      </p>
-
-      <ul className="mt-5 flex flex-col gap-2.5">
-        {included.map((item) => (
-          <li
-            key={item}
-            className="flex items-start gap-2.5 text-[13px] leading-snug text-gray-600"
-          >
-            <Check size={14} className="mt-0.5 shrink-0 text-primary-600" />
-            <span>{item}</span>
-          </li>
-        ))}
-      </ul>
-
-      <div className="mt-6 flex flex-col gap-2.5">
-        <Link
-          href="/visa"
-          className="inline-flex items-center justify-center gap-2 rounded-full bg-primary-700 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-800"
-        >
-          Get free consultation <ArrowRight size={15} />
-        </Link>
-        <a
-          href={`mailto:${EMAIL}`}
-          className="inline-flex items-center justify-center rounded-full border border-gray-200 px-5 py-3 text-sm font-semibold text-gray-700 transition-colors hover:border-primary-300 hover:text-primary-700"
-        >
-          Email us
-        </a>
-      </div>
-
-      <p className="mt-4 text-center text-xs text-gray-400">
-        Packages from AED 299. Embassy fees passed through at cost.
-      </p>
-    </div>
-  );
-}
-
 function VisaDestinations({ visas }) {
   if (!visas.length) return null;
 
@@ -265,7 +209,9 @@ export default async function HomePage() {
         title={pageData.hero.title}
         text={pageData.hero.text}
         pills={pageData.hero.pills}
-        form={<VisaConsultCard />}
+        layout="centered"
+        dark
+        below={<VisaCheckerInline />}
       />
       <VisaDestinations visas={list} />
       <HowItWorks
