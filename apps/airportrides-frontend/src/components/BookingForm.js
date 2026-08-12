@@ -2,6 +2,7 @@
 
 import { useContext, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import DatePicker from './DatePicker';
 import TimePicker from './TimePicker';
@@ -21,6 +22,30 @@ function Field({ label, className = '', children }) {
 
 const selectCls =
   'w-full rounded-xl border border-sand-300 bg-white px-4 py-3 text-[15px] text-ink focus:border-clay-500 focus:outline-none focus:ring-2 focus:ring-clay-500/20 transition-colors';
+
+// The largest vehicle we quote is the People Carrier: 7 seats, 6 bags. Anything
+// above that can't be served by a single transfer, so instead of quietly capping
+// the party we send those enquiries to a human for a multi-vehicle quote.
+const MAX_PASSENGERS = 7;
+const MAX_LUGGAGE    = 6;
+const OVER_CAPACITY  = 'over';
+
+const PASSENGER_OPTIONS = [
+  ...Array.from({ length: MAX_PASSENGERS }, (_, i) => ({
+    value: String(i + 1),
+    label: `${i + 1} ${i === 0 ? 'passenger' : 'passengers'}`,
+  })),
+  { value: OVER_CAPACITY, label: `More than ${MAX_PASSENGERS} passengers` },
+];
+
+const LUGGAGE_OPTIONS = [
+  { value: '0', label: 'No checked bags' },
+  ...Array.from({ length: MAX_LUGGAGE }, (_, i) => ({
+    value: String(i + 1),
+    label: `${i + 1} ${i === 0 ? 'bag' : 'bags'}`,
+  })),
+  { value: OVER_CAPACITY, label: `More than ${MAX_LUGGAGE} bags` },
+];
 
 function todayStr() {
   const now = new Date();
@@ -83,7 +108,15 @@ export default function BookingForm({ onSubmit, className = '' }) {
     setBooking((prev) => ({ ...prev, time: timeStr }));
   }
 
-  const isValid = !!(booking.pickup && booking.dropoff && booking.date && booking.time);
+  // A party over vehicle capacity can't be priced by the standard flow, so the
+  // form stays blocked and points at the group quote instead of submitting a
+  // number we'd have to invent.
+  const needsGroupQuote =
+    booking.passengers === OVER_CAPACITY || booking.luggage === OVER_CAPACITY;
+
+  const isValid = !!(
+    booking.pickup && booking.dropoff && booking.date && booking.time && !needsGroupQuote
+  );
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -151,9 +184,9 @@ export default function BookingForm({ onSubmit, className = '' }) {
             onChange={set('passengers')}
             className={selectCls}
           >
-            {['1', '2', '3', '4', '5', '6', '7+'].map((n) => (
-              <option key={n} value={n}>
-                {n} {n === '1' ? 'passenger' : 'passengers'}
+            {PASSENGER_OPTIONS.map(({ value, label }) => (
+              <option key={value} value={value}>
+                {label}
               </option>
             ))}
           </select>
@@ -165,14 +198,7 @@ export default function BookingForm({ onSubmit, className = '' }) {
             onChange={set('luggage')}
             className={selectCls}
           >
-            {[
-              { value: '0',  label: 'No checked bags' },
-              { value: '1',  label: '1 bag'           },
-              { value: '2',  label: '2 bags'          },
-              { value: '3',  label: '3 bags'          },
-              { value: '4',  label: '4 bags'          },
-              { value: '5+', label: '5+ bags'         },
-            ].map(({ value, label }) => (
+            {LUGGAGE_OPTIONS.map(({ value, label }) => (
               <option key={value} value={value}>
                 {label}
               </option>
@@ -181,6 +207,17 @@ export default function BookingForm({ onSubmit, className = '' }) {
         </Field>
 
       </div>
+
+      {needsGroupQuote && (
+        <div className="mt-5 rounded-xl border border-clay-200 bg-clay-50 px-4 py-3 text-sm text-clay-800">
+          Our largest vehicle seats {MAX_PASSENGERS} with room for {MAX_LUGGAGE} bags, so a group
+          this size needs more than one car. Tell us the exact numbers and we&apos;ll put a group
+          quote together.{' '}
+          <Link href="/contact" className="font-semibold underline underline-offset-2">
+            Get a group quote
+          </Link>
+        </div>
+      )}
 
       <button
         type="submit"

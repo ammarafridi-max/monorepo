@@ -15,7 +15,9 @@ import {
   Phone,
   Mail,
   MessageSquare,
+  AlertTriangle,
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { TransferBookingContext } from '@travel-suite/frontend-shared/contexts/TransferBookingContext';
 import { createBookingCheckoutApi } from '@travel-suite/frontend-shared/services/apiBookings';
 
@@ -87,22 +89,36 @@ export default function ReviewPage() {
   const actionRef = useRef(null);
   actionRef.current = async () => {
     setError(null);
+
+    // Hard stop: no stored booking, no payment. The webhook that confirms the
+    // booking and emails the customer only runs off the bookingId in the Stripe
+    // session metadata, so opening checkout without one can only ever produce a
+    // charge with nothing behind it.
+    if (!bookingId) {
+      const message = 'We could not find your saved booking. Please go back to passenger details and continue again.';
+      setError(message);
+      toast.error(message);
+      return false;
+    }
+
     const origin = window.location.origin;
-    const bid = bookingId || '';
-    const successUrl = `${origin}/transfer-booking/payment?status=success&bookingId=${bid}&sessionId={CHECKOUT_SESSION_ID}`;
+    const successUrl = `${origin}/transfer-booking/payment?status=success&bookingId=${bookingId}&sessionId={CHECKOUT_SESSION_ID}`;
     const cancelUrl  = `${origin}/transfer-booking/review`;
     try {
       const result = await createBookingCheckoutApi({
         vehicle:   selectedVehicle,
         passenger: passengerDetails,
-        bookingId: bid || undefined,
+        bookingId,
         successUrl,
         cancelUrl,
       });
+      if (!result?.url) throw new Error('Checkout did not return a payment link.');
       window.location.href = result.url;
       return false;
-    } catch {
-      setError('Unable to start checkout. Please try again.');
+    } catch (err) {
+      const message = err.message || 'Unable to start checkout. Please try again.';
+      setError(message);
+      toast.error(message);
       return false;
     }
   };
@@ -147,6 +163,30 @@ export default function ReviewPage() {
           className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-clay-600 hover:text-clay-700"
         >
           <ArrowLeft size={14} /> Enter passenger details
+        </Link>
+      </div>
+    );
+  }
+
+  // Details were entered but nothing came back from the booking API, so there is
+  // no record for the payment webhook to attach to. Send them back rather than
+  // showing a payable summary.
+  if (!bookingId) {
+    return (
+      <div className="py-20 text-center">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-sand-200">
+          <AlertTriangle size={28} className="text-ink-mute" />
+        </div>
+        <h2 className="text-xl font-semibold text-ink">Your booking wasn&apos;t saved</h2>
+        <p className="mx-auto mt-2 max-w-sm text-sm font-light leading-relaxed text-ink-soft">
+          We couldn&apos;t save your booking, so we can&apos;t take payment for it yet. Go back to
+          passenger details and continue again. Nothing has been charged.
+        </p>
+        <Link
+          href="/transfer-booking/details"
+          className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-clay-600 hover:text-clay-700"
+        >
+          <ArrowLeft size={14} /> Back to passenger details
         </Link>
       </div>
     );

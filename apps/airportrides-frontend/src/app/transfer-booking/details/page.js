@@ -3,6 +3,7 @@
 import { useContext, useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Car, Info } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { TransferBookingContext } from '@travel-suite/frontend-shared/contexts/TransferBookingContext';
 import { createBookingApi } from '@travel-suite/frontend-shared/services/apiBookings';
 
@@ -96,7 +97,7 @@ export default function DetailsPage() {
     pickup, dropoff, date, time, passengers, luggage,
     selectedVehicle,
     passengerDetails, setPassengerDetails,
-    setBookingId,
+    bookingId, setBookingId,
     registerPageAction, unregisterPageAction,
   } = useContext(TransferBookingContext);
 
@@ -105,6 +106,11 @@ export default function DetailsPage() {
 
   const formRef = useRef(form);
   useEffect(() => { formRef.current = form; }, [form]);
+
+  // Signature of the payload behind the booking we already created, so coming
+  // back to this step and continuing again doesn't leave a trail of orphan
+  // pending_payment bookings. Any edit changes the signature and forces a new one.
+  const savedSigRef = useRef(null);
 
   const actionRef = useRef(null);
   actionRef.current = async () => {
@@ -116,14 +122,29 @@ export default function DetailsPage() {
     }
     setErrors({});
     setPassengerDetails(data);
-    createBookingApi({
+
+    const payload = {
       trip:      { pickup, dropoff, date, time, passengers, luggage },
       vehicle:   selectedVehicle,
       passenger: data,
-    })
-      .then((result) => { if (result?._id) setBookingId(result._id); })
-      .catch((err)   => { console.error('[booking] Save failed:', err); });
-    return true;
+    };
+    const sig = JSON.stringify(payload);
+    if (bookingId && savedSigRef.current === sig) return true;
+
+    // This must be awaited. The Stripe session carries the booking id in its
+    // metadata and the payment webhook keys off it, so advancing to payment
+    // without a stored booking means the customer gets charged for a booking
+    // that is never saved or confirmed.
+    try {
+      const result = await createBookingApi(payload);
+      if (!result?._id) throw new Error('Your booking could not be saved.');
+      setBookingId(result._id);
+      savedSigRef.current = sig;
+      return true;
+    } catch (err) {
+      toast.error(err.message || 'We could not save your booking. Please try again.');
+      return false;
+    }
   };
 
   useEffect(() => {
