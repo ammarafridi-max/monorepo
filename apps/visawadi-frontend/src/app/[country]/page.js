@@ -18,6 +18,10 @@ import {
 import { LIVE_COUNTRIES, countryBySlug } from '@/config/countries';
 import { EMAIL } from '@/config/contact';
 
+// Nothing on this route's ancestor chain (including app/loading.js) may define a
+// loading.js. A loading.js opens a Suspense boundary, so Next flushes the HTML
+// shell with a 200 before this component runs and notFound() can no longer set
+// the status — that is what turned bad slugs into indexable soft 404s.
 export const revalidate = 300;
 
 /**

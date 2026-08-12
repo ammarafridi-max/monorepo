@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { nullOn404 } from '@travel-suite/frontend-shared/services/apiClient';
 import {
   getPublicVisasForResidenceApi,
   getPublicVisaForResidenceApi,
@@ -17,6 +18,10 @@ import VisaDetailPage from '@travel-suite/frontend-shared/pages/client/VisaDetai
 import { LIVE_COUNTRIES, countryBySlug } from '@/config/countries';
 import { WHATSAPP_URL } from '@/config/contact';
 
+// Nothing on this route's ancestor chain (including app/loading.js) may define a
+// loading.js. A loading.js opens a Suspense boundary, so Next flushes the HTML
+// shell with a 200 before this component runs and notFound() can no longer set
+// the status — that is what turned bad slugs into indexable soft 404s.
 export const revalidate = 300;
 
 /** Every live country crossed with the destinations it actually serves. A
@@ -38,7 +43,7 @@ export async function generateStaticParams() {
 async function load(countrySlug, slug) {
   const c = countryBySlug(countrySlug);
   if (!c?.isLive) return { c: null, visa: null };
-  const res = await getPublicVisaForResidenceApi(slug, c.code).catch(() => null);
+  const res = await getPublicVisaForResidenceApi(slug, c.code).catch(nullOn404);
   const visa = res?.data ?? res ?? null;
   return { c, visa };
 }

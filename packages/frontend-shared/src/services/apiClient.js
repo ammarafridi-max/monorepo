@@ -9,8 +9,25 @@ async function checkError(res) {
     } catch (error) {
       void error;
     }
-    throw new Error(message);
+    const error = new Error(message);
+    // Callers need to tell "this record does not exist" apart from "the backend
+    // is having a bad day". Without the status they look identical and a blip
+    // gets treated as a deletion.
+    error.status = res.status;
+    throw error;
   }
+}
+
+// Turns a genuine 404 into `null` and lets every other failure keep throwing.
+//
+// Server components use this to decide between notFound() and letting the
+// render fail. It matters because a 404 on an ISR route is cached for the
+// route's `revalidate` window: swallowing all errors means one brief backend
+// outage takes a live, ranking URL out of the index for minutes at a time. A
+// thrown error is not cached, so the next request retries.
+export function nullOn404(error) {
+  if (error?.status === 404) return null;
+  throw error;
 }
 
 async function returnData(res) {

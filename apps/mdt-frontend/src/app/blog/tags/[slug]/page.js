@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { nullOn404 } from '@travel-suite/frontend-shared/services/apiClient';
 import { getPublishedBlogsApi } from '@travel-suite/frontend-shared/services/apiBlog';
 import { getBlogTagBySlugApi, getBlogTagsApi } from '@travel-suite/frontend-shared/services/apiBlogTags';
 import {
@@ -12,6 +13,10 @@ import {
 } from '@/lib/schema';
 import BlogTagDetailPage from '@travel-suite/frontend-shared/pages/client/BlogTagDetailPage';
 
+// Nothing on this route's ancestor chain (including app/loading.js) may define a
+// loading.js. A loading.js opens a Suspense boundary, so Next flushes the HTML
+// shell with a 200 before this component runs and notFound() can no longer set
+// the status — that is what turned bad slugs into indexable soft 404s.
 export const revalidate = 300;
 
 export async function generateStaticParams() {
@@ -28,7 +33,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  const tag = await getBlogTagBySlugApi(slug).catch(() => null);
+  const tag = await getBlogTagBySlugApi(slug).catch(nullOn404);
 
   if (!tag) {
     return { title: 'Blog Tag Not Found', robots: { index: false, follow: false } };
@@ -56,7 +61,7 @@ export default async function Page({ params, searchParams }) {
   const resolvedSearchParams = await searchParams;
   const currentPage = Math.max(1, Number(resolvedSearchParams?.page || 1) || 1);
 
-  const tag = await getBlogTagBySlugApi(slug).catch(() => null);
+  const tag = await getBlogTagBySlugApi(slug).catch(nullOn404);
   if (!tag) notFound();
 
   const data = await getPublishedBlogsApi({
