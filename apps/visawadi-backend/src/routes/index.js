@@ -69,7 +69,9 @@ const notifications = createNotificationsService({
     paymentsSenderName: "VisaWadi Payments",
     deliverySenderName: "VisaWadi Delivery",
     customerSenderName: "VisaWadi",
-    theme: { primaryColor: "#1a1a2e", accentColor: "#e94560", linkColor: "#0f3460" },
+    // Cobalt & Stone, matching the site. An email that looks nothing like the
+    // page the customer just came from reads as a phishing attempt.
+    theme: { primaryColor: "#254b8e", accentColor: "#F26B4E", linkColor: "#2b5cb0" },
   },
 });
 

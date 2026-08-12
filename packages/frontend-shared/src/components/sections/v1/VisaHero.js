@@ -86,7 +86,7 @@ export default function VisaHero({
             <button
               type="button"
               onClick={onCtaClick}
-              className="inline-flex items-center gap-2 font-outfit font-semibold text-[16px] py-3.5 px-7 rounded-full bg-primary-700 hover:bg-primary-800 text-white shadow-sm hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+              className="inline-flex items-center gap-2 font-outfit font-semibold text-[16px] py-3.5 px-7 rounded-full bg-accent-500 hover:bg-accent-600 text-gray-900 shadow-sm hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
             >
               {ctaText}
             </button>

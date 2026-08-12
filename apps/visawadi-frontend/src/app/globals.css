@@ -10,29 +10,36 @@
 }
 
 @theme inline {
-  --color-primary-50:  #dbeff1;
-  --color-primary-100: #b8e0e2;
-  --color-primary-200: #8eced0;
-  --color-primary-300: #5dbbbd;
-  --color-primary-400: #34a8a9;
-  --color-primary-500: #14948f;
-  --color-primary-600: #117f7a;
-  --color-primary-700: #0d6a66;
-  --color-primary-800: #0a5552;
-  --color-primary-900: #073f3d;
-  --color-primary-950: #041f1e;
+  /* Cobalt & Stone. Replaced the teal inherited from Travl when the brands
+     split — a visa brand should not look like the insurance one.
+     Deep blue reads institutional and document-adjacent, and its hue sits well
+     clear of the visa checker's green / amber / red result states, so the brand
+     never competes with the answer on screen.
+     White on primary-700 measures 8.48:1, comfortably past AA. */
+  --color-primary-50:  #f3f4f7;
+  --color-primary-100: #e1e6ef;
+  --color-primary-200: #becce4;
+  --color-primary-300: #8fabdb;
+  --color-primary-400: #5e89d4;
+  --color-primary-500: #356dd0;
+  --color-primary-600: #2b5cb0;
+  --color-primary-700: #254b8e;
+  --color-primary-800: #203d6f;
+  --color-primary-900: #182c4e;
+  --color-primary-950: #0f1b2e;
 
-  --color-accent-50:  #fff5f2;
-  --color-accent-100: #ffece8;
-  --color-accent-200: #ffd0c5;
-  --color-accent-300: #ffb3a1;
-  --color-accent-400: #ff8f75;
-  --color-accent-500: #ff603a;
-  --color-accent-600: #e7441d;
-  --color-accent-700: #c42700;
-  --color-accent-800: #a12000;
-  --color-accent-900: #701700;
-  --color-accent-950: #3d0d00;
+
+  --color-accent-50:  #fff3f0;
+  --color-accent-100: #fee7e1;
+  --color-accent-200: #fccdbf;
+  --color-accent-300: #faae99;
+  --color-accent-400: #f68c6f;
+  --color-accent-500: #F26B4E;
+  --color-accent-600: #e85830;
+  --color-accent-700: #cc4019;
+  --color-accent-800: #a63617;
+  --color-accent-900: #762913;
+  --color-accent-950: #441a0e;
 
   /* VisaWadi uses Geist (UI/body) + Geist Mono (reference codes). The historical
      --font-outfit / --font-nunito / --font-merriweather aliases are repointed to

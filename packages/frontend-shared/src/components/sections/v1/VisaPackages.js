@@ -42,7 +42,7 @@ function PackageCard({ pkg, onCtaClick }) {
   const cardCls = {
     standard: "border-gray-100 bg-white shadow-sm",
     express:
-      "border-primary-300 bg-white shadow-[0_16px_48px_rgba(13,106,102,0.12)]",
+      "border-primary-300 bg-white shadow-[0_16px_48px_--theme(--color-primary-700/12%)]",
     concierge: "border-gray-100 bg-white shadow-sm",
   }[tier];
 

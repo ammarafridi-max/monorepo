@@ -59,7 +59,7 @@ export default function VisaSearchBar({
         <button
           type="submit"
           disabled={loading}
-          className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary-700 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-800 disabled:opacity-60"
+          className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full bg-accent-500 px-5 py-3 text-sm font-semibold text-gray-900 transition-colors hover:bg-accent-600 disabled:opacity-60"
         >
           {loading ? <Loader2 size={15} className="animate-spin" /> : <Search size={15} />}
           {loading ? 'Checking' : 'Check now'}
@@ -101,7 +101,7 @@ export default function VisaSearchBar({
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-primary-700 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-800 disabled:opacity-60 md:w-auto"
+          className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-accent-500 px-6 py-3 text-sm font-semibold text-gray-900 transition-colors hover:bg-accent-600 disabled:opacity-60 md:w-auto"
         >
           {loading ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
           <span className="md:hidden lg:inline">{loading ? 'Checking' : 'Check'}</span>
