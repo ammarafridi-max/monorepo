@@ -16,6 +16,7 @@ COPY packages/domains/currencies/package.json      packages/domains/currencies/p
 COPY packages/domains/flights/package.json         packages/domains/flights/package.json
 COPY packages/integrations/airlabs/package.json    packages/integrations/airlabs/package.json
 COPY packages/integrations/serpapi/package.json    packages/integrations/serpapi/package.json
+COPY packages/integrations/paypal/package.json     packages/integrations/paypal/package.json
 COPY packages/shared/notifications/package.json   packages/shared/notifications/package.json
 COPY packages/domains/payments/package.json        packages/domains/payments/package.json
 COPY packages/domains/tickets/package.json         packages/domains/tickets/package.json

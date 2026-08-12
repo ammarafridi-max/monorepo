@@ -51,9 +51,6 @@ importers:
       '@travel-suite/payments':
         specifier: workspace:*
         version: link:../../packages/domains/payments
-      '@travel-suite/paypal':
-        specifier: workspace:*
-        version: link:../../packages/integrations/paypal
       '@travel-suite/tickets':
         specifier: workspace:*
         version: link:../../packages/domains/tickets
@@ -522,115 +519,6 @@ importers:
       next:
         specifier: latest
         version: 16.3.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
-      react:
-        specifier: 19.2.5
-        version: 19.2.5
-      react-dom:
-        specifier: 19.2.5
-        version: 19.2.5(react@19.2.5)
-      react-ga4:
-        specifier: ^3.0.1
-        version: 3.0.1
-      react-hot-toast:
-        specifier: ^2.6.0
-        version: 2.6.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
-      react-icons:
-        specifier: ^5.6.0
-        version: 5.6.0(react@19.2.5)
-    devDependencies:
-      '@tailwindcss/postcss':
-        specifier: ^4
-        version: 4.2.2
-      eslint:
-        specifier: ^9
-        version: 9.39.4(jiti@2.6.1)
-      tailwindcss:
-        specifier: ^4
-        version: 4.2.2
-
-  apps/travelshield-backend:
-    dependencies:
-      '@travel-suite/admin-users':
-        specifier: workspace:*
-        version: link:../../packages/domains/admin-users
-      '@travel-suite/affiliates':
-        specifier: workspace:*
-        version: link:../../packages/domains/affiliates
-      '@travel-suite/auth':
-        specifier: workspace:*
-        version: link:../../packages/domains/auth
-      '@travel-suite/blog':
-        specifier: workspace:*
-        version: link:../../packages/domains/blog
-      '@travel-suite/cloudinary':
-        specifier: workspace:*
-        version: link:../../packages/integrations/cloudinary
-      '@travel-suite/currencies':
-        specifier: workspace:*
-        version: link:../../packages/domains/currencies
-      '@travel-suite/insurance':
-        specifier: workspace:*
-        version: link:../../packages/domains/insurance
-      '@travel-suite/notifications':
-        specifier: workspace:*
-        version: link:../../packages/shared/notifications
-      '@travel-suite/users':
-        specifier: workspace:*
-        version: link:../../packages/domains/users
-      '@travel-suite/utils':
-        specifier: workspace:*
-        version: link:../../packages/shared/utils
-      '@travel-suite/wis':
-        specifier: workspace:*
-        version: link:../../packages/integrations/wis
-      compression:
-        specifier: ^1.8.1
-        version: 1.8.1
-      cookie-parser:
-        specifier: ^1.4.7
-        version: 1.4.7
-      cors:
-        specifier: ^2.8.5
-        version: 2.8.6
-      express:
-        specifier: ^5.2.1
-        version: 5.2.1
-      express-rate-limit:
-        specifier: ^8.2.1
-        version: 8.3.2(express@5.2.1)
-      helmet:
-        specifier: '8.1'
-        version: 8.1.0
-      mongoose:
-        specifier: ^9.0.2
-        version: 9.4.1(socks@2.8.9)
-
-  apps/travelshield-frontend:
-    dependencies:
-      '@tanstack/react-query':
-        specifier: ^5.95.2
-        version: 5.99.2(react@19.2.5)
-      '@travel-suite/config':
-        specifier: workspace:*
-        version: link:../../packages/shared/config
-      '@travel-suite/frontend-shared':
-        specifier: workspace:*
-        version: link:../../packages/frontend-shared
-      '@travel-suite/utils':
-        specifier: workspace:*
-        version: link:../../packages/shared/utils
-      jose:
-        specifier: ^5.0.0
-        version: 5.10.0
-      lucide-react:
-        specifier: ^0.511.0
-        version: 0.511.0(react@19.2.5)
-      next:
-        specifier: latest
-        version: 16.3.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
-      next-auth:
-        specifier: ^4.24.13
-        version: 4.24.14(next@16.3.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       react:
         specifier: 19.2.5
         version: 19.2.5
@@ -3792,9 +3680,6 @@ packages:
 
   jose@4.15.9:
     resolution: {integrity: sha512-1vUQX+IdDMVPj4k8kOxgUqlcK518yluMuGZwqlr44FS1ppZB/5GWh4rZG89erpOBOJjU/OBsnCVFfapsRz6nEA==}
-
-  jose@5.10.0:
-    resolution: {integrity: sha512-s+3Al/p9g32Iq+oqXxkW//7jk2Vig6FF1CFqzVXoTUXt2qz89YWbL+OwS17NFYEvxC35n0FKeGO2LGYSxeM2Gg==}
 
   js-md5@0.8.3:
     resolution: {integrity: sha512-qR0HB5uP6wCuRMrWPTrkMaev7MJZwJuuw4fnwAzRgP4J4/F8RwtodOKpGp4XpqsLBFzzgqIO42efFAyz2Et6KQ==}
@@ -7605,8 +7490,6 @@ snapshots:
 
   jose@4.15.9: {}
 
-  jose@5.10.0: {}
-
   js-md5@0.8.3: {}
 
   js-tokens@4.0.0: {}
@@ -7949,21 +7832,6 @@ snapshots:
       cookie: 0.7.2
       jose: 4.15.9
       next: 16.2.9(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
-      oauth: 0.9.15
-      openid-client: 5.7.1
-      preact: 10.29.1
-      preact-render-to-string: 5.2.6(preact@10.29.1)
-      react: 19.2.5
-      react-dom: 19.2.5(react@19.2.5)
-      uuid: 8.3.2
-
-  next-auth@4.24.14(next@16.3.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react@19.2.5):
-    dependencies:
-      '@babel/runtime': 7.29.2
-      '@panva/hkdf': 1.2.1
-      cookie: 0.7.2
-      jose: 4.15.9
-      next: 16.3.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       oauth: 0.9.15
       openid-client: 5.7.1
       preact: 10.29.1

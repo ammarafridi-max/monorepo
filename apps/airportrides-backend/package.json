@@ -21,7 +21,6 @@
     "@travel-suite/bookings": "workspace:*",
     "@travel-suite/locations": "workspace:*",
     "@travel-suite/notifications": "workspace:*",
-    "@travel-suite/paypal": "workspace:*",
     "@travel-suite/payments": "workspace:*",
     "@travel-suite/tickets": "workspace:*",
     "@travel-suite/users": "workspace:*",
