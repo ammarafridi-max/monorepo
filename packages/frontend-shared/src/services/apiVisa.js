@@ -127,3 +127,36 @@ export function duplicateVisaApi(id) {
     headers: { 'Content-Type': 'application/json' },
   });
 }
+
+// ─── Residence overlays ───────────────────────────────────────────────────────
+// The country-specific half of a visa page. `null` on any field means "inherit
+// from the base" — see the backend's upsertOverlay for why null and not omission.
+
+export function getOverlaysApi({ visaSlug, residence } = {}) {
+  const params = new URLSearchParams();
+  if (visaSlug) params.append('visaSlug', visaSlug);
+  if (residence) params.append('residence', residence);
+  const qs = params.toString();
+  return apiFetch(`${URL}/overlays/all${qs ? `?${qs}` : ''}`);
+}
+
+export function getOverlayApi({ residence, visaSlug }) {
+  return apiFetch(
+    `${URL}/overlays/${encodeURIComponent(residence)}/${encodeURIComponent(visaSlug)}`,
+  );
+}
+
+export function upsertOverlayApi(payload) {
+  return apiFetch(`${URL}/overlays`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+}
+
+export function deleteOverlayApi({ residence, visaSlug }) {
+  return apiFetch(
+    `${URL}/overlays/${encodeURIComponent(residence)}/${encodeURIComponent(visaSlug)}`,
+    { method: 'DELETE' },
+  );
+}

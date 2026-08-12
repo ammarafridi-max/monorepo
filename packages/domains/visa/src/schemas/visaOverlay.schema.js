@@ -63,6 +63,17 @@ const overlayRequirementSchema = new mongoose.Schema(
   { _id: false },
 );
 
+/** The "how it works" strip. Filing steps genuinely differ by country: a
+ *  biometrics appointment in Dubai is not the same errand as one in Riyadh. */
+const overlayProcessStepSchema = new mongoose.Schema(
+  {
+    title:       { type: String, required: true, trim: true },
+    description: { type: String, trim: true },
+    icon:        { type: String, trim: true },
+  },
+  { _id: false },
+);
+
 const overlayTestimonialSchema = new mongoose.Schema(
   {
     name:        { type: String, required: true, trim: true, maxlength: 100 },
@@ -114,6 +125,7 @@ const VisaOverlaySchema = new mongoose.Schema(
     excerpt:          { type: String, trim: true, maxlength: 200 },
 
     packages:            { type: [overlayPackageSchema],     default: undefined },
+    processSteps:        { type: [overlayProcessStepSchema], default: undefined },
     pricingBreakdown:    { type: [overlayPricingSchema],     default: undefined },
     requirementSections: { type: [overlayRequirementSchema], default: undefined },
     faqs:                { type: [overlayFaqSchema],         default: undefined },

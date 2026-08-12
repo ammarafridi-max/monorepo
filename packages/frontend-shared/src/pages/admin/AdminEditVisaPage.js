@@ -1,28 +1,46 @@
 'use client';
 
+import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertCircle, Layers, MapPin } from 'lucide-react';
 import Link from 'next/link';
-import VisaForm       from '../../components/admin/VisaForm.js';
-import { useGetVisa }      from '../../hooks/visa/useGetVisa.js';
-import { useUpdateVisa }   from '../../hooks/visa/useUpdateVisa.js';
-import { usePublishVisa }  from '../../hooks/visa/usePublishVisa.js';
+import VisaForm        from '../../components/admin/VisaForm.js';
+import VisaOverlayForm from '../../components/admin/VisaOverlayForm.js';
+import { useGetVisa }       from '../../hooks/visa/useGetVisa.js';
+import { useUpdateVisa }    from '../../hooks/visa/useUpdateVisa.js';
+import { usePublishVisa }   from '../../hooks/visa/usePublishVisa.js';
 import { useUnpublishVisa } from '../../hooks/visa/useUnpublishVisa.js';
+import { useVisaOverlays }  from '../../hooks/visa/useVisaOverlays.js';
+import { useUpsertOverlay } from '../../hooks/visa/useUpsertOverlay.js';
+import { useDeleteOverlay } from '../../hooks/visa/useDeleteOverlay.js';
 
-export default function AdminEditVisaPage() {
+/**
+ * One visa page, edited as a base plus one tab per country.
+ *
+ * Tabs at the top of the whole screen rather than inside each section: the
+ * country you are writing for is the single most important piece of context on
+ * this form, and a per-section switch would let you edit UAE requirements and
+ * Saudi pricing on the same screen without noticing.
+ *
+ * `countries` is a prop because the country list is a per-brand decision and
+ * lives in the app, not in shared code.
+ */
+export default function AdminEditVisaPage({ countries = [], siteUrl = '' }) {
   const { id } = useParams();
   const router = useRouter();
+  const [tab, setTab] = useState('base');
 
   const { visa, isLoadingVisa, isErrorVisa } = useGetVisa(id);
-  const { updateVisa,   isUpdatingVisa    } = useUpdateVisa();
-  const { publishVisa,  isPublishingVisa  } = usePublishVisa();
+  const { updateVisa,    isUpdatingVisa     } = useUpdateVisa();
+  const { publishVisa,   isPublishingVisa   } = usePublishVisa();
   const { unpublishVisa, isUnpublishingVisa } = useUnpublishVisa();
 
+  const { byResidence, isLoadingOverlays } = useVisaOverlays(visa?.slug);
+  const { upsertOverlay, isSavingOverlay } = useUpsertOverlay();
+  const { deleteOverlay, isDeletingOverlay } = useDeleteOverlay();
+
   function handleSubmit({ data, file }) {
-    updateVisa(
-      { id, data, file },
-      { onSuccess: () => router.push('/admin/visa') },
-    );
+    updateVisa({ id, data, file }, { onSuccess: () => router.push('/admin/visa') });
   }
 
   if (isLoadingVisa) {
@@ -49,10 +67,7 @@ export default function AdminEditVisaPage() {
               This page may have been deleted or the ID is incorrect.
             </p>
           </div>
-          <Link
-            href="/admin/visa"
-            className="flex items-center gap-1.5 text-xs font-semibold text-primary-700 hover:underline"
-          >
+          <Link href="/admin/visa" className="flex items-center gap-1.5 text-xs font-semibold text-primary-700 hover:underline">
             <ArrowLeft size={13} /> Back to visa pages
           </Link>
         </div>
@@ -60,7 +75,7 @@ export default function AdminEditVisaPage() {
     );
   }
 
-  return (
+  const baseForm = (
     <VisaForm
       initialData={visa}
       onSubmit={handleSubmit}
@@ -70,5 +85,103 @@ export default function AdminEditVisaPage() {
       isPublishing={isPublishingVisa}
       isUnpublishing={isUnpublishingVisa}
     />
+  );
+
+  // No country list configured: this brand doesn't do country pages, so the
+  // form behaves exactly as it did before overlays existed.
+  if (!countries.length) return baseForm;
+
+  const active = countries.find((c) => c.slug === tab) || null;
+
+  return (
+    <div>
+      <div className="max-w-4xl mx-auto px-5 pt-5">
+        <div className="flex items-center gap-1 p-1 rounded-2xl bg-gray-100 overflow-x-auto">
+          <TabButton
+            active={tab === 'base'}
+            onClick={() => setTab('base')}
+            icon={<Layers size={13} />}
+            label="Base"
+            sub="all countries"
+          />
+          {countries.map((c) => {
+            const o = byResidence[c.code];
+            return (
+              <TabButton
+                key={c.slug}
+                active={tab === c.slug}
+                onClick={() => setTab(c.slug)}
+                icon={<MapPin size={13} />}
+                label={c.short || c.name}
+                sub={o ? (o.isPublished ? 'live' : 'draft') : 'not set up'}
+                dot={o ? (o.isPublished ? 'bg-green-500' : 'bg-amber-400') : null}
+              />
+            );
+          })}
+        </div>
+
+        <p className="mt-2.5 text-[11px] text-gray-400">
+          {tab === 'base'
+            ? 'Shared content. Changes here reach every country that has not overridden them.'
+            : `Only what is different in ${active?.name}. Everything else comes from the base tab.`}
+        </p>
+      </div>
+
+      {tab === 'base' && <div className="mt-1">{baseForm}</div>}
+
+      {active && (
+        isLoadingOverlays ? (
+          <div className="flex items-center justify-center py-20 text-gray-400">
+            <Loader2 size={22} className="animate-spin" />
+          </div>
+        ) : (
+          <div className="max-w-4xl mx-auto px-5 py-5">
+            <VisaOverlayForm
+              // Remount on tab change so each country gets its own form state
+              // rather than inheriting the previous country's dirty fields.
+              key={active.slug}
+              base={visa}
+              country={active}
+              overlay={byResidence[active.code] || null}
+              siteUrl={siteUrl}
+              isSaving={isSavingOverlay}
+              isRemoving={isDeletingOverlay}
+              onSave={(payload, markClean) =>
+                upsertOverlay(payload, { onSuccess: () => markClean?.() })
+              }
+              onRemove={() => {
+                if (!confirm(`Remove the ${active.name} version? The base page stays untouched.`)) return;
+                deleteOverlay({
+                  residence: active.code,
+                  visaSlug: visa.slug,
+                  residenceName: active.name,
+                });
+              }}
+            />
+          </div>
+        )
+      )}
+    </div>
+  );
+}
+
+function TabButton({ active, onClick, icon, label, sub, dot }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-left whitespace-nowrap transition cursor-pointer ${
+        active ? 'bg-white shadow-sm' : 'hover:bg-gray-200/60'
+      }`}
+    >
+      <span className={active ? 'text-primary-700' : 'text-gray-400'}>{icon}</span>
+      <span className="min-w-0">
+        <span className={`block text-xs font-bold ${active ? 'text-gray-900' : 'text-gray-600'}`}>{label}</span>
+        <span className="flex items-center gap-1 text-[10px] text-gray-400">
+          {dot && <span className={`w-1.5 h-1.5 rounded-full ${dot}`} />}
+          {sub}
+        </span>
+      </span>
+    </button>
   );
 }

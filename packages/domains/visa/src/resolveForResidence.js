@@ -7,7 +7,7 @@
  *      Overlay wins when it has a value. Empty string and null count as "no
  *      value" — an admin clearing a field means "inherit", not "blank the page".
  *
- *  Lists (packages, pricingBreakdown, faqs, testimonials)
+ *  Lists (packages, processSteps, pricingBreakdown, faqs, testimonials)
  *      Whole-list replacement. Merging item by item needs rules for ordering,
  *      for removing a base item that doesn't apply locally, and for what
  *      happens when the base list changes underneath. Every one of those is a
@@ -38,7 +38,14 @@ const SCALARS = [
   'processingTime',
 ];
 
-const WHOLE_LISTS = ['packages', 'pricingBreakdown', 'faqs', 'testimonials', 'whyUs'];
+const WHOLE_LISTS = [
+  'packages',
+  'processSteps',
+  'pricingBreakdown',
+  'faqs',
+  'testimonials',
+  'whyUs',
+];
 
 /**
  * @param {object} base     a Visa document (plain object)

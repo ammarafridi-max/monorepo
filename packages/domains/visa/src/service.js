@@ -178,7 +178,16 @@ export function createVisaService({ Visa, VisaOverlay, imageStorage }) {
     if (!payload.residenceSlug) throw new AppError('residenceSlug is required (the URL segment, e.g. "uae")', 400);
     const existing = await VisaOverlay.findOne({ residence, visaSlug: payload.visaSlug });
     const doc = existing || new VisaOverlay({ residence, visaSlug: payload.visaSlug });
-    Object.assign(doc, payload, { residence });
+
+    // null means "inherit from the base", and has to unset the path rather than
+    // store an empty value. JSON has no undefined, so the admin sends null and
+    // this is where it turns back into "field absent". Without this, switching a
+    // section back to inherited would save [] and render an empty section.
+    for (const [key, value] of Object.entries({ ...payload, residence })) {
+      if (value === null) doc.set(key, undefined);
+      else doc.set(key, value);
+    }
+
     await doc.save();
     return doc.toObject();
   };
