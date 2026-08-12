@@ -1,4 +1,4 @@
-import { AppError, logger } from "@travel-suite/utils";
+import { logger } from "@travel-suite/utils";
 import config from "./config.js";
 
 const BREVO_URL = "https://api.brevo.com/v3/smtp/email";
@@ -10,6 +10,18 @@ const getHeaders = () => ({
   "api-key": config.brevoApiKey,
 });
 
+/**
+ * Sends one transactional email.
+ *
+ * Returns a result instead of throwing, and returns the SAME result shape in
+ * every environment. It used to throw in development and return false in
+ * production, which meant the one failure path that matters (a paid booking
+ * whose confirmation never sent) behaved differently in the environment where
+ * you would actually test it. Callers must inspect `ok`; the caller decides
+ * what a failed send means, this function never decides for them.
+ *
+ * @returns {Promise<{ ok: boolean, error?: string }>}
+ */
 export async function sendEmail({
   email,
   name,
@@ -23,7 +35,7 @@ export async function sendEmail({
         email,
         subject,
       });
-      return false;
+      return { ok: false, error: "BREVO_API_KEY is not configured" };
     }
 
     const res = await fetch(BREVO_URL, {
@@ -45,11 +57,10 @@ export async function sendEmail({
       );
     }
 
-    return true;
+    return { ok: true };
   } catch (err) {
-    logger.error("Email sending failed", { email, subject, error: err });
-    if (config.nodeEnv === "development")
-      throw new AppError("Could not send email", 400);
-    return false;
+    const error = err?.message ? String(err.message) : String(err);
+    logger.error("Email sending failed", { email, subject, error });
+    return { ok: false, error };
   }
 }

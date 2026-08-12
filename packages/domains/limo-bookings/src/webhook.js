@@ -1,5 +1,6 @@
 import { logger } from '@travel-suite/utils';
 import BookingSchema from './schema.js';
+import { deliverPaymentConfirmations } from './confirmation-delivery.js';
 
 function getOrRegisterModel(conn, name, schema) {
   try {
@@ -42,11 +43,11 @@ export function createBookingPaymentHandler({ db, notifications }) {
     booking.status = 'pending';
     await booking.save();
 
-    if (notifications?.sendPaymentConfirmationEmailAdmin) {
-      await notifications.sendPaymentConfirmationEmailAdmin({ booking });
-    }
-    if (notifications?.sendPaymentConfirmationEmailCustomer) {
-      await notifications.sendPaymentConfirmationEmailCustomer({ booking });
-    }
+    // The payment is now persisted. Everything below is best-effort: a mail
+    // provider outage must not bubble up, because the dispatcher would answer
+    // 500, Stripe would redeliver, and this paid session would be reprocessed.
+    // deliverPaymentConfirmations() is contractually non-throwing and records
+    // the outcome on the booking so a silent failure stays findable.
+    await deliverPaymentConfirmations({ Booking, booking, notifications });
   };
 }

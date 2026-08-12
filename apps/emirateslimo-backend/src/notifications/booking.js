@@ -3,6 +3,12 @@
  * notification.service.js). Returns the handler pair consumed by the
  * limo-bookings Stripe webhook handler.
  *
+ * Both handlers return sendEmail's `{ ok, error }` result verbatim. They used
+ * to await and discard it, so a rejected send (a dead API key, say) looked
+ * exactly like a delivered one to the caller and the paid booking went out
+ * unannounced with nothing recorded. The webhook writes this result onto the
+ * booking, so returning it truthfully is the whole point.
+ *
  * @param {{ sendEmail: Function, config: { contactEmail: string, adminUrl: string } }} deps
  */
 export function createBookingNotifications({ sendEmail, config }) {
@@ -14,7 +20,11 @@ export function createBookingNotifications({ sendEmail, config }) {
     const url = `${config.adminUrl}/bookings/${booking?._id}`;
     const textContent = `Hi Admin, \n\nA new payment of ${amount} has been received from ${name} with booking reference ${bookingRef}. More details can be found on ${url}.`;
 
-    await sendEmail({ email: config.contactEmail, name: "Emirates Limo", subject, textContent });
+    if (!config.contactEmail) {
+      return { ok: false, error: "No operator contact email configured" };
+    }
+
+    return sendEmail({ email: config.contactEmail, name: "Emirates Limo", subject, textContent });
   };
 
   const sendPaymentConfirmationEmailCustomer = async ({ booking }) => {
@@ -96,7 +106,11 @@ export function createBookingNotifications({ sendEmail, config }) {
     </html>
   `;
 
-    await sendEmail({ email, name, subject, htmlContent });
+    if (!email) {
+      return { ok: false, error: "Booking has no customer email address" };
+    }
+
+    return sendEmail({ email, name, subject, htmlContent });
   };
 
   return { sendPaymentConfirmationEmailAdmin, sendPaymentConfirmationEmailCustomer };

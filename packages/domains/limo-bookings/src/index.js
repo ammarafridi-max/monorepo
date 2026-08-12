@@ -36,4 +36,5 @@ export function createBookingsRouter({ db, auth, stripe, frontendUrl }) {
 }
 
 export { createBookingPaymentHandler } from './webhook.js';
+export { deliverPaymentConfirmations } from './confirmation-delivery.js';
 export { BookingSchema };

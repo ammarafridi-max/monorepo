@@ -8,7 +8,9 @@
     "dev": "NODE_ENV=development node --env-file=.env.development --watch src/server.js",
     "start": "node --env-file=.env.production src/server.js",
     "migrate-admin-users:dev": "node --env-file=.env.development scripts/migrate-admin-users.js",
-    "migrate-admin-users:prod": "node --env-file=.env.production scripts/migrate-admin-users.js"
+    "migrate-admin-users:prod": "node --env-file=.env.production scripts/migrate-admin-users.js",
+    "resend-confirmations:dev": "node --env-file=.env.development scripts/resend-booking-confirmations.js",
+    "resend-confirmations:prod": "node --env-file=.env.production scripts/resend-booking-confirmations.js"
   },
   "dependencies": {
     "@travel-suite/admin-users": "workspace:*",
