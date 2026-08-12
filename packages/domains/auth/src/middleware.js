@@ -3,7 +3,7 @@ import { AppError, catchAsync } from '@travel-suite/utils';
 /**
  * Creates admin auth middleware with injected dependencies.
  * @param {{ AdminUser: import('mongoose').Model, verifyToken: Function }} deps
- * @returns {{ protect: Function, restrictTo: Function }}
+ * @returns {{ protect: Function, identify: Function, restrictTo: Function }}
  */
 export function createAdminAuthMiddleware({ AdminUser, verifyToken }) {
   const protect = catchAsync(async (req, res, next) => {
@@ -42,6 +42,42 @@ export function createAdminAuthMiddleware({ AdminUser, verifyToken }) {
     next();
   });
 
+  /**
+   * Soft authentication: sets `req.user` when a valid admin session is present
+   * and otherwise continues anonymously. Never rejects.
+   *
+   * For routes a customer must reach without logging in but which return more
+   * to staff than to the public — a booking receipt is the case this exists
+   * for. `protect` cannot serve those: it would lock the customer out of their
+   * own confirmation page.
+   *
+   * The handler is then responsible for redacting when `req.user` is absent.
+   * Adding this middleware alone changes nothing.
+   */
+  const identify = async (req, res, next) => {
+    const token = req.cookies?.jwt;
+    if (!token || token === 'loggedout') return next();
+
+    try {
+      const decoded = verifyToken(token);
+      if (decoded.type && decoded.type !== 'admin') return next();
+
+      const currentUser = await AdminUser.findById(decoded.id).select('+passwordChangedAt');
+      if (!currentUser || currentUser.status === 'INACTIVE') return next();
+
+      if (currentUser.passwordChangedAt) {
+        const changedAt = Math.floor(currentUser.passwordChangedAt.getTime() / 1000);
+        if (decoded.iat < changedAt) return next();
+      }
+
+      req.user = currentUser;
+      res.locals.user = currentUser;
+    } catch {
+      // A bad or expired token is simply an anonymous caller here, not an error.
+    }
+    return next();
+  };
+
   const restrictTo = (...roles) => (req, res, next) => {
     if (!req.user || !roles.includes(req.user.role)) {
       return next(new AppError('You do not have permission to perform this action', 403));
@@ -49,5 +85,5 @@ export function createAdminAuthMiddleware({ AdminUser, verifyToken }) {
     next();
   };
 
-  return { protect, restrictTo };
+  return { protect, identify, restrictTo };
 }

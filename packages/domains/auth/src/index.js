@@ -19,7 +19,7 @@ function getOrRegisterModel(conn, name, schema) {
  * then pass the result into every feature package that needs route protection.
  *
  * @param {{ db: import('mongoose').Connection, jwtSecret: string }} deps
- * @returns {{ protect: Function, restrictTo: Function }}
+ * @returns {{ protect: Function, identify: Function, restrictTo: Function }}
  */
 export function createAdminAuthMiddlewareFromDb({ db, jwtSecret }) {
   const AdminUser  = getOrRegisterModel(db, 'admin-user', AdminUserSchema);
@@ -30,7 +30,7 @@ export function createAdminAuthMiddlewareFromDb({ db, jwtSecret }) {
 /**
  * Full auth factory — registers the AdminUser model, wires all layers,
  * and returns both the router (login/logout/me/update-password) and the
- * middleware object ({ protect, restrictTo }) for use in other feature packages.
+ * middleware object ({ protect, identify, restrictTo }) for use in other feature packages.
  *
  * @param {{
  *   db: import('mongoose').Connection,
@@ -39,7 +39,7 @@ export function createAdminAuthMiddlewareFromDb({ db, jwtSecret }) {
  *   cookieExpiresInDays?: number,
  *   nodeEnv?: string,
  * }} deps
- * @returns {{ router: import('express').Router, middleware: { protect: Function, restrictTo: Function } }}
+ * @returns {{ router: import('express').Router, middleware: { protect: Function, identify: Function, restrictTo: Function } }}
  */
 export function createAuthRouter({ db, jwtSecret, jwtExpiresIn = '7d', cookieExpiresInDays = 7, nodeEnv = 'production' }) {
   const AdminUser  = getOrRegisterModel(db, 'admin-user', AdminUserSchema);

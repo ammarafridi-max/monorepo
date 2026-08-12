@@ -45,5 +45,13 @@ fly.*.toml
 README.md
 **/*.md
 
+# Migration exports. Gitignored, so they never reach GitHub — but a Dockerfile
+# that copies a whole app directory will happily bake them into the image and
+# ship real customer records to production. Keep this rule even when the folder
+# is empty locally.
+**/migration-output
+**/*-export.json
+**/*-backup.json
+
 # Test coverage
 **/coverage

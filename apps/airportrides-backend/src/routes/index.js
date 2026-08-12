@@ -102,8 +102,24 @@ const {
   controller: bookingController,
 } = createBookingsRouter({ db, stripe });
 router.use("/bookings", bookingsRouter);
-router.get("/bookings", bookingController.list);
-router.patch("/bookings/:id/status", bookingController.updateStatus);
+
+// Admin surfaces, mounted here rather than inside the shared bookings router
+// because only this brand has them. They MUST carry the same guards as every
+// other admin route in this file — without them the list hands the entire
+// booking table (names, emails, phones, addresses) to anonymous callers, and
+// the status route lets anyone mark a ride paid or cancelled.
+router.get(
+  "/bookings",
+  auth.protect,
+  auth.restrictTo("admin", "agent"),
+  bookingController.list,
+);
+router.patch(
+  "/bookings/:id/status",
+  auth.protect,
+  auth.restrictTo("admin", "agent"),
+  bookingController.updateStatus,
+);
 
 // -- Contact form --------------------------------------------------------------
 router.post('/contact', async (req, res, next) => {
