@@ -100,7 +100,7 @@ const {
   router: bookingsRouter,
   service: bookingService,
   controller: bookingController,
-} = createBookingsRouter({ db, stripe });
+} = createBookingsRouter({ db, stripe, auth });
 router.use("/bookings", bookingsRouter);
 
 // Admin surfaces, mounted here rather than inside the shared bookings router

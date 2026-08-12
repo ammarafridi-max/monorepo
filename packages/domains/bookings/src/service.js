@@ -49,13 +49,20 @@ export function createBookingService({ Booking, stripe }) {
     // pay an amount of their choosing.
     const resolved = resolveVehicle(vehicle);
     if (!resolved) throw new AppError('Unknown vehicle selection', 400);
+
+    // Confirm the booking exists before anything payable is created. A session
+    // for an unknown id would take the customer's money and leave the webhook
+    // with no record to mark paid.
+    const booking = await Booking.findById(bookingId).catch(() => null);
+    if (!booking) throw new AppError('Booking not found', 404);
+
     const { amount, currency } = resolved.price;
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
       customer_email: passenger.email,
       invoice_creation: { enabled: true },
-      metadata: { productType: 'booking', ...(bookingId ? { bookingId: String(bookingId) } : {}) },
+      metadata: { productType: 'booking', bookingId: String(bookingId) },
       line_items: [
         {
           price_data: {
@@ -70,13 +77,12 @@ export function createBookingService({ Booking, stripe }) {
       cancel_url: cancelUrl,
     });
 
-    if (bookingId) {
-      const bookingRef = generateBookingRef();
-      await Booking.findByIdAndUpdate(bookingId, {
-        stripeSessionId: session.id,
-        bookingRef,
-      });
-    }
+    // Keep any reference already issued, so a customer who abandons checkout
+    // and comes back does not end up with a second reference for one booking.
+    await Booking.findByIdAndUpdate(bookingId, {
+      stripeSessionId: session.id,
+      bookingRef: booking.bookingRef || generateBookingRef(),
+    });
 
     return session.url;
   }

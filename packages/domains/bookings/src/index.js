@@ -11,10 +11,10 @@ function getOrRegisterModel(conn, name, schema) {
   }
 }
 
-export function createBookingsRouter({ db, stripe }) {
+export function createBookingsRouter({ db, stripe, auth }) {
   const Booking    = getOrRegisterModel(db, 'Booking', BookingSchema);
   const service    = createBookingService({ Booking, stripe });
   const controller = createBookingController({ service });
-  const router     = createBookingRouter({ controller });
+  const router     = createBookingRouter({ controller, auth });
   return { router, service, controller };
 }
