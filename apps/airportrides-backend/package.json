@@ -6,9 +6,7 @@
   "main": "src/server.js",
   "scripts": {
     "dev": "NODE_ENV=development node --env-file=.env.development --watch src/server.js",
-    "start": "node --env-file=.env.production src/server.js",
-    "seed-admin:dev": "node --env-file=.env.development scripts/seed-admin.js",
-    "seed-admin:prod": "node --env-file=.env.production scripts/seed-admin.js"
+    "start": "node --env-file=.env.production src/server.js"
   },
   "dependencies": {
     "@travel-suite/admin-users": "workspace:*",
