@@ -8,7 +8,13 @@ import { useAuth } from "../../../contexts/AuthContextBase.js";
 import { logoutUserSessionApi } from "../../../services/apiAuth.js";
 import Currency from "../../ui/v2/Currency.js";
 
-export default function MobileNavigation({ pages = [] }) {
+export default function MobileNavigation({
+  pages = [],
+  // Brands without prices (visa assistance, for example) pass showCurrency={false}
+  // and loginHref={null} to drop the switcher and the auth link from the menu.
+  showCurrency = true,
+  loginHref = "/login",
+}) {
   const { user, isAuthenticated } = useAuth();
 
   const [open, setOpen] = useState(false);
@@ -17,7 +23,7 @@ export default function MobileNavigation({ pages = [] }) {
   return (
     <>
       <div className="lg:hidden flex items-center gap-1">
-        <Currency className="block" />
+        {showCurrency && <Currency className="block" />}
         <button
           onClick={() => setOpen((p) => !p)}
           className="p-2 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
@@ -120,15 +126,15 @@ export default function MobileNavigation({ pages = [] }) {
                   <LogOut size={14} /> Sign out
                 </button>
               </>
-            ) : (
+            ) : loginHref ? (
               <Link
-                href="/login"
+                href={loginHref}
                 onClick={() => setOpen(false)}
                 className="py-3 border-b border-gray-100 hover:text-primary-700 transition-colors"
               >
                 Log in
               </Link>
-            )}
+            ) : null}
           </div>
         </div>
       )}

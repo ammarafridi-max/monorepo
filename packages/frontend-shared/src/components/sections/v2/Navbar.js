@@ -25,6 +25,8 @@ export default function Navbar({
   logoAlt = "Logo",
   loginHref = "/login",
   signupHref = "/signup",
+  // Pass showCurrency={false} on brands that never quote a price.
+  showCurrency = true,
 }) {
   const { user, isAuthenticated } = useAuth();
   const pathname = usePathname();
@@ -389,7 +391,7 @@ export default function Navbar({
                 </>
               )}
             </div>
-          ) : (
+          ) : loginHref || signupHref ? (
             <div className="hidden lg:inline-flex items-center gap-2 text-sm font-semibold text-gray-700">
               <User size={16} className="text-primary-700 shrink-0" />
               {signupHref && (
@@ -405,16 +407,22 @@ export default function Navbar({
                   </span>
                 </>
               )}
-              <Link
-                href={loginHref}
-                className="hover:text-primary-700 transition-colors"
-              >
-                Log In
-              </Link>
+              {loginHref && (
+                <Link
+                  href={loginHref}
+                  className="hover:text-primary-700 transition-colors"
+                >
+                  Log In
+                </Link>
+              )}
             </div>
-          )}
+          ) : null}
 
-          <MobileNavigation pages={pages} />
+          <MobileNavigation
+            pages={pages}
+            showCurrency={showCurrency}
+            loginHref={loginHref}
+          />
         </div>
       </Container>
     </header>
