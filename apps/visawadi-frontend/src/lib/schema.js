@@ -20,7 +20,7 @@ export const {
 } = createSchemaBuilders({
   siteUrl: SITE_URL,
   siteName: 'VisaWadi',
-  logoUrl: `${SITE_URL}/logo.webp`,
+  logoUrl: `${SITE_URL}/logo-dark.png`,
   email: EMAIL,
   // TODO: replace with VisaWadi's registered address once confirmed.
   address: {

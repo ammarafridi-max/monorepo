@@ -42,6 +42,8 @@ export default function Footer({
   brand = "",
   logoEmoji = "🛡️",
   logoSrc = null,
+  logoWidth = 110,
+  logoHeight = 32,
   logoAlt = "",
   description = "Protecting travellers worldwide since 2018. Licensed and regulated in 40+ countries.",
   copyright,
@@ -66,8 +68,8 @@ export default function Footer({
               <Image
                 src={logoSrc}
                 alt={logoAlt || brand}
-                width={110}
-                height={32}
+                width={logoWidth}
+                height={logoHeight}
                 className="h-7 w-auto object-contain"
               />
             ) : (

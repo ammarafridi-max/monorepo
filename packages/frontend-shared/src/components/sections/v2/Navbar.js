@@ -5,7 +5,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { ChevronDown, ChevronRight, User, LogOut, ArrowRight } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  User,
+  LogOut,
+  ArrowRight,
+} from "lucide-react";
 import { useAuth } from "../../../contexts/AuthContextBase.js";
 import { logoutUserSessionApi } from "../../../services/apiAuth.js";
 import Container from "../../shared/layout/Container.js";
@@ -29,6 +35,14 @@ import MobileNavigation from "./MobileNavigation.js";
  */
 export default function Navbar({
   pages = [],
+  // Defaults keep every brand already using this component rendering exactly as
+  // before. Width/height only set the intrinsic ratio Next uses to pick a
+  // srcset — the rendered size comes from the CSS below — so a brand whose logo
+  // is a different shape should pass its real pixel dimensions or the optimizer
+  // serves an image sized for the wrong aspect.
+  logoSrc = "/logo.webp",
+  logoWidth = 90,
+  logoHeight = 30,
   logoAlt = "Logo",
   loginHref = "/login",
   signupHref = "/signup",
@@ -64,14 +78,14 @@ export default function Navbar({
 
   return (
     <header className="absolute top-0 left-0 right-0 bg-white border-b border-gray-100 shadow-sm z-50">
-      <Container className="py-3 flex items-center justify-between gap-10">
+      <Container className="py-5 flex items-center justify-between gap-10">
         <Link href="/" className="h-5 lg:h-7 flex items-center shrink-0">
           <Image
-            src="/logo.webp"
+            src={logoSrc}
             alt={logoAlt}
             title={logoAlt}
-            width={90}
-            height={30}
+            width={logoWidth}
+            height={logoHeight}
             priority
             className="w-auto object-contain"
             style={{ height: "100%" }}
@@ -153,7 +167,9 @@ export default function Navbar({
                               <ChevronRight
                                 size={15}
                                 className={
-                                  activeMegaTab === ci ? "opacity-100" : "opacity-30"
+                                  activeMegaTab === ci
+                                    ? "opacity-100"
+                                    : "opacity-30"
                                 }
                               />
                             </button>
@@ -161,132 +177,132 @@ export default function Navbar({
                         </div>
                         <div className="flex-1 min-w-0">
                           <ul className="grid grid-cols-4 gap-x-2 gap-y-1">
-                            {(page.mega.columns[activeMegaTab]?.items ?? []).map(
-                              ({ Icon, flag, label, desc, href }) => (
-                                <li key={label}>
-                                  <Link
-                                    href={href}
-                                    onClick={() => setMegaOpen(null)}
-                                    className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-primary-50 group transition-colors"
-                                  >
-                                    {flag ? (
-                                      <img
-                                        src={`https://cdn.jsdelivr.net/gh/HatScripts/circle-flags@latest/flags/${flag}.svg`}
-                                        alt=""
-                                        aria-hidden="true"
-                                        loading="lazy"
-                                        className="w-8 h-8 rounded-full shrink-0 object-cover"
+                            {(
+                              page.mega.columns[activeMegaTab]?.items ?? []
+                            ).map(({ Icon, flag, label, desc, href }) => (
+                              <li key={label}>
+                                <Link
+                                  href={href}
+                                  onClick={() => setMegaOpen(null)}
+                                  className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-primary-50 group transition-colors"
+                                >
+                                  {flag ? (
+                                    <img
+                                      src={`https://cdn.jsdelivr.net/gh/HatScripts/circle-flags@latest/flags/${flag}.svg`}
+                                      alt=""
+                                      aria-hidden="true"
+                                      loading="lazy"
+                                      className="w-8 h-8 rounded-full shrink-0 object-cover"
+                                    />
+                                  ) : Icon ? (
+                                    <div className="w-8 h-8 rounded-lg bg-primary-100 flex items-center justify-center shrink-0 group-hover:bg-primary-200 transition-colors">
+                                      <Icon
+                                        size={15}
+                                        className="text-primary-700"
                                       />
-                                    ) : Icon ? (
-                                      <div className="w-8 h-8 rounded-lg bg-primary-100 flex items-center justify-center shrink-0 group-hover:bg-primary-200 transition-colors">
-                                        <Icon
-                                          size={15}
-                                          className="text-primary-700"
-                                        />
-                                      </div>
-                                    ) : null}
-                                    <div className="min-w-0">
-                                      <p className="font-semibold text-gray-900 text-sm leading-none mb-0.5">
-                                        {label}
-                                      </p>
-                                      {desc && (
-                                        <p className="text-xs text-gray-400 leading-snug">
-                                          {desc}
-                                        </p>
-                                      )}
                                     </div>
-                                  </Link>
-                                </li>
-                              ),
-                            )}
+                                  ) : null}
+                                  <div className="min-w-0">
+                                    <p className="font-semibold text-gray-900 text-sm leading-none mb-0.5">
+                                      {label}
+                                    </p>
+                                    {desc && (
+                                      <p className="text-xs text-gray-400 leading-snug">
+                                        {desc}
+                                      </p>
+                                    )}
+                                  </div>
+                                </Link>
+                              </li>
+                            ))}
                           </ul>
                         </div>
                       </Container>
                     ) : (
-                    <Container className="py-6 flex gap-6">
-                      {page.mega.columns.map((col, ci) => {
-                        // Columns can opt into a wider footprint via `span: 2`,
-                        // which doubles the column width and lays its items
-                        // out in a 2-per-row grid.
-                        const isWide = (col.span ?? 1) === 2;
-                        return (
-                          <div
-                            key={ci}
-                            className={isWide ? "flex-2" : "flex-1"}
-                          >
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
-                              {col.heading}
-                            </p>
-                            <ul
-                              className={
-                                isWide
-                                  ? "grid grid-cols-2 gap-x-2 gap-y-1"
-                                  : "flex flex-col gap-1"
-                              }
+                      <Container className="py-6 flex gap-6">
+                        {page.mega.columns.map((col, ci) => {
+                          // Columns can opt into a wider footprint via `span: 2`,
+                          // which doubles the column width and lays its items
+                          // out in a 2-per-row grid.
+                          const isWide = (col.span ?? 1) === 2;
+                          return (
+                            <div
+                              key={ci}
+                              className={isWide ? "flex-2" : "flex-1"}
                             >
-                              {col.items.map(
-                                ({ Icon, flag, label, desc, href }) => (
-                                  <li key={label}>
-                                    <Link
-                                      href={href}
-                                      onClick={() => setMegaOpen(null)}
-                                      className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-primary-50 group transition-colors"
-                                    >
-                                      {flag ? (
-                                        <img
-                                          src={`https://cdn.jsdelivr.net/gh/HatScripts/circle-flags@latest/flags/${flag}.svg`}
-                                          alt=""
-                                          aria-hidden="true"
-                                          loading="lazy"
-                                          className="w-8 h-8 rounded-full shrink-0 object-cover"
-                                        />
-                                      ) : Icon ? (
-                                        <div className="w-8 h-8 rounded-lg bg-primary-100 flex items-center justify-center shrink-0 group-hover:bg-primary-200 transition-colors">
-                                          <Icon
-                                            size={15}
-                                            className="text-primary-700"
+                              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+                                {col.heading}
+                              </p>
+                              <ul
+                                className={
+                                  isWide
+                                    ? "grid grid-cols-2 gap-x-2 gap-y-1"
+                                    : "flex flex-col gap-1"
+                                }
+                              >
+                                {col.items.map(
+                                  ({ Icon, flag, label, desc, href }) => (
+                                    <li key={label}>
+                                      <Link
+                                        href={href}
+                                        onClick={() => setMegaOpen(null)}
+                                        className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-primary-50 group transition-colors"
+                                      >
+                                        {flag ? (
+                                          <img
+                                            src={`https://cdn.jsdelivr.net/gh/HatScripts/circle-flags@latest/flags/${flag}.svg`}
+                                            alt=""
+                                            aria-hidden="true"
+                                            loading="lazy"
+                                            className="w-8 h-8 rounded-full shrink-0 object-cover"
                                           />
-                                        </div>
-                                      ) : null}
-                                      <div>
-                                        <p className="font-semibold text-gray-900 text-sm leading-none mb-0.5">
-                                          {label}
-                                        </p>
-                                        {desc && (
-                                          <p className="text-xs text-gray-400">
-                                            {desc}
+                                        ) : Icon ? (
+                                          <div className="w-8 h-8 rounded-lg bg-primary-100 flex items-center justify-center shrink-0 group-hover:bg-primary-200 transition-colors">
+                                            <Icon
+                                              size={15}
+                                              className="text-primary-700"
+                                            />
+                                          </div>
+                                        ) : null}
+                                        <div>
+                                          <p className="font-semibold text-gray-900 text-sm leading-none mb-0.5">
+                                            {label}
                                           </p>
-                                        )}
-                                      </div>
-                                    </Link>
-                                  </li>
-                                ),
-                              )}
-                            </ul>
-                          </div>
-                        );
-                      })}
+                                          {desc && (
+                                            <p className="text-xs text-gray-400">
+                                              {desc}
+                                            </p>
+                                          )}
+                                        </div>
+                                      </Link>
+                                    </li>
+                                  ),
+                                )}
+                              </ul>
+                            </div>
+                          );
+                        })}
 
-                      {page.mega.cta && (
-                        <div className="w-56 shrink-0 flex flex-col">
-                          <div className="mt-auto bg-linear-to-br from-primary-700 to-accent-500 rounded-xl p-4 text-white">
-                            <p className="text-xs font-bold uppercase tracking-wide text-primary-200 mb-1">
-                              {page.mega.cta.eyebrow}
-                            </p>
-                            <p className="font-bold text-sm mb-3">
-                              {page.mega.cta.title}
-                            </p>
-                            <Link
-                              href={page.mega.cta.href}
-                              onClick={() => setMegaOpen(null)}
-                              className="inline-flex items-center gap-1.5 bg-white text-primary-700 font-bold text-xs px-3 py-1.5 rounded-lg hover:bg-primary-50 transition-colors"
-                            >
-                              {page.mega.cta.label} <ArrowRight size={12} />
-                            </Link>
+                        {page.mega.cta && (
+                          <div className="w-56 shrink-0 flex flex-col">
+                            <div className="mt-auto bg-linear-to-br from-primary-700 to-accent-500 rounded-xl p-4 text-white">
+                              <p className="text-xs font-bold uppercase tracking-wide text-primary-200 mb-1">
+                                {page.mega.cta.eyebrow}
+                              </p>
+                              <p className="font-bold text-sm mb-3">
+                                {page.mega.cta.title}
+                              </p>
+                              <Link
+                                href={page.mega.cta.href}
+                                onClick={() => setMegaOpen(null)}
+                                className="inline-flex items-center gap-1.5 bg-white text-primary-700 font-bold text-xs px-3 py-1.5 rounded-lg hover:bg-primary-50 transition-colors"
+                              >
+                                {page.mega.cta.label} <ArrowRight size={12} />
+                              </Link>
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </Container>
+                        )}
+                      </Container>
                     )}
                   </div>
                 )}

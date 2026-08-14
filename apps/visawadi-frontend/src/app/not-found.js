@@ -85,7 +85,9 @@ export default function NotFound() {
 
       <Footer
         brand="VisaWadi"
-        logoSrc="/logo.webp"
+        logoSrc="/logo-light.png"
+        logoWidth={1000}
+        logoHeight={179}
         logoAlt="VisaWadi"
         description="Visa application support for UAE residents."
         copyright={`© ${new Date().getFullYear()} VisaWadi. All rights reserved.`}
