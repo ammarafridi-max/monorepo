@@ -1,12 +1,12 @@
-import Link from 'next/link';
-import Container from '@travel-suite/frontend-shared/components/shared/layout/Container';
-import PrimarySection from '@travel-suite/frontend-shared/components/shared/layout/PrimarySection';
+import Link from "next/link";
+import Container from "@travel-suite/frontend-shared/components/shared/layout/Container";
+import PrimarySection from "@travel-suite/frontend-shared/components/shared/layout/PrimarySection";
 
 export const metadata = {
-  title: 'About Us — Visa Assistance for UAE Residents',
+  title: "About Us",
   description:
-    'VisaWadi is a Dubai-based team that prepares visa applications for UAE residents. Document review, file preparation and appointment booking, tracked to a decision.',
-  alternates: { canonical: 'https://www.visawadi.com/about' },
+    "VisaWadi is a Dubai-based team that prepares visa applications for UAE residents. Document review, file preparation and appointment booking, tracked to a decision.",
+  alternates: { canonical: "https://www.visawadi.com/about" },
 };
 
 export default function AboutPage() {
