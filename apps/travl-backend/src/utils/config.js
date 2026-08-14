@@ -40,6 +40,10 @@ export default {
   // the browser hits directly (e.g. https://api.travl.ae). Falls back to the local port.
   backendUrl: process.env.BACKEND_URL ?? `http://localhost:${parseNumber(process.env.PORT, 4000)}`,
 
+  airlabs: {
+    apiKey: process.env.AIRLABS_API_KEY,
+  },
+
   stripe: {
     secretKey: process.env.STRIPE_SECRET_KEY,
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
