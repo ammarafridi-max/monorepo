@@ -1,26 +1,4 @@
 /**
- * Remove Travl's name from the visa pages imported into VisaWadi.
- *
- * The visa documents were copied across from Travl's database with their copy
- * intact, so the live pages still name Travl 46 times — in meta titles, the
- * pricing table, FAQ answers, package features and testimonials.
- *
- * Two kinds of change, kept separate on purpose:
- *
- *  1. RENAME — statements that are equally true of VisaWadi. "Travl service
- *     fee" is VisaWadi's fee now; "not Travl" in an FAQ about embassy refunds
- *     is about whoever you paid. Straight swap.
- *
- *  2. REWRITE — sentences claiming the brand supplies flight reservations or
- *     hotel bookings. Renaming those would just move a false claim onto
- *     VisaWadi, which sells visa assistance only. They are reworded to say the
- *     document is required, not that we provide it.
- *
- * Testimonials are renamed but flagged in the output: a quote saying "Travl
- * reviewed my file" becomes "VisaWadi reviewed my file", which changes which
- * brand a named customer says they used. Same team and same service, but worth
- * your eyes before it stays live.
- *
  * Usage, from apps/visawadi-backend:
  *   node --env-file=.env.production scripts/rebrand-visa-pages.mjs          # dry run + diff
  *   node --env-file=.env.production scripts/rebrand-visa-pages.mjs --apply
@@ -34,9 +12,7 @@ import VisaSchema from '@travel-suite/visa/schema';
 const APPLY = process.argv.includes('--apply');
 const OUT = path.join(process.cwd(), 'migration-output', 'visa-pages-pre-rebrand.json');
 
-/** Applied in order. Longest and most specific first. */
 const REWRITES = [
-  // --- claims about services VisaWadi does not sell -------------------------
   [/Travl provides the flight reservation and hotel booking\./gi,
    'You will need a flight reservation and a hotel booking; we tell you exactly what format the embassy expects.'],
   [/We supply the flight reservation and the hotel booking\./gi,
@@ -44,11 +20,9 @@ const REWRITES = [
   [/GDS flight reservation, which we provide and which Schengen embassies accept/gi,
    'Flight reservation in a format Schengen embassies accept'],
 
-  // --- straight renames ------------------------------------------------------
   [/\bTravl\b/g, 'VisaWadi'],
 ];
 
-/** Fields whose changes are reported separately for review. */
 const SENSITIVE = new Set(['testimonials']);
 
 function rewrite(value) {
@@ -57,7 +31,6 @@ function rewrite(value) {
   return out;
 }
 
-/** Walk any nested value, rewriting strings. Returns [newValue, changes]. */
 function walk(value, pathStr, changes) {
   if (typeof value === 'string') {
     const next = rewrite(value);

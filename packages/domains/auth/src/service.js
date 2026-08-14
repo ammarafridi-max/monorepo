@@ -8,10 +8,6 @@ function normalizeName(value) {
   return String(value || '').trim();
 }
 
-/**
- * Creates the auth service with injected AdminUser model.
- * @param {{ AdminUser: import('mongoose').Model }} deps
- */
 export function createAuthService({ AdminUser }) {
   const login = async ({ email, password }) => {
     if (!email || !password) throw new AppError('Email and password are required', 400);

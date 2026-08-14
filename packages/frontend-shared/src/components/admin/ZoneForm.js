@@ -72,9 +72,8 @@ export default function ZoneForm({ initialData = null, onSubmit, isPending }) {
   const isEdit = !!initialData;
 
   const [zoneName, setZoneName] = useState(initialData?.name || '');
-  const [partCount, setPartCount] = useState(0); // number of areas (Polygon features) in the zone
+  const [partCount, setPartCount] = useState(0);
 
-  // Boundary search (OpenStreetMap / Nominatim)
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
@@ -84,8 +83,6 @@ export default function ZoneForm({ initialData = null, onSubmit, isPending }) {
   const mapRef = useRef(null);
   const drawRef = useRef(null);
 
-  // Add a Polygon/MultiPolygon to the draw layer, splitting MultiPolygon into
-  // editable Polygon parts. Returns nothing; call refreshCount() after.
   function addGeometry(draw, geom) {
     if (!geom) return;
     if (geom.type === 'MultiPolygon') {
@@ -114,7 +111,6 @@ export default function ZoneForm({ initialData = null, onSubmit, isPending }) {
     if (!bounds.isEmpty()) map.fitBounds(bounds, { padding: 40, duration: 800 });
   }
 
-  // Initialize map + draw (once). Loads existing geometry on map load.
   useEffect(() => {
     if (!HAS_TOKEN || mapRef.current || !mapContainer.current) return;
 
@@ -181,7 +177,6 @@ export default function ZoneForm({ initialData = null, onSubmit, isPending }) {
     }
   }
 
-  // Add a searched area to the zone (accumulates — does not replace).
   function handlePickResult(r) {
     const draw = drawRef.current;
     if (!draw) return;
@@ -193,8 +188,6 @@ export default function ZoneForm({ initialData = null, onSubmit, isPending }) {
     setSearchMsg('Area added. Add more areas or draw them — all parts are saved as one zone.');
   }
 
-  // Cut holes: subtract shapes that are FULLY INSIDE the largest shape; leave any
-  // separate (disjoint) areas as their own parts.
   function handleCutHoles() {
     const draw = drawRef.current;
     if (!draw) return;
@@ -223,15 +216,12 @@ export default function ZoneForm({ initialData = null, onSubmit, isPending }) {
       result = diff;
     }
 
-    // Rebuild: the donut + any untouched separate areas.
     draw.deleteAll();
     addGeometry(draw, rewind(result).geometry);
     others.forEach((o) => draw.add(o));
     refreshCount();
   }
 
-  // Merge overlapping/touching areas into one connected polygon. To join two
-  // separate areas, drag a vertex of one so it overlaps the other, then merge.
   function handleMerge() {
     const draw = drawRef.current;
     if (!draw) return;
@@ -279,8 +269,6 @@ export default function ZoneForm({ initialData = null, onSubmit, isPending }) {
       return;
     }
 
-    // Combine all parts: union merges overlapping/adjacent areas and yields a
-    // MultiPolygon for disjoint ones. Single part stays a Polygon.
     let combined;
     try {
       combined = polys.length === 1 ? polys[0] : union(featureCollection(polys));

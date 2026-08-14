@@ -1,8 +1,6 @@
 import { Router } from 'express';
 import { availabilityRuleSchema } from './validators.js';
 
-// Mirrors the source middleware/validate.js: parses into req.validatedBody and
-// responds 400 directly (does not delegate to the global error handler).
 function validate(schema) {
   return (req, res, next) => {
     try {

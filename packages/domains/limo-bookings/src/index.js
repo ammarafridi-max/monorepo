@@ -16,12 +16,6 @@ function getOrRegisterModel(conn, name, schema) {
   }
 }
 
-/**
- * @param db          Mongoose connection
- * @param auth        { protect, identify, restrictTo } from @travel-suite/auth
- * @param stripe      Stripe client from @travel-suite/payments createStripeClient
- * @param frontendUrl Public site origin used for Stripe success/cancel URLs
- */
 export function createBookingsRouter({ db, auth, stripe, frontendUrl }) {
   getOrRegisterModel(db, 'Vehicle', VehicleSchema);
   getOrRegisterModel(db, 'Zone', ZoneSchema);

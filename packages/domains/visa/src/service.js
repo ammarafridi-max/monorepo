@@ -30,8 +30,6 @@ export const SECTION_GUIDE_KEYS = ['packages', 'process', 'requirements', 'prici
 
 const isObjectId = (v) => /^[a-f0-9]{24}$/i.test(String(v));
 
-// Keeps only known section keys and valid blog ids; anything else becomes null
-// so clearing a link in the admin form actually clears it.
 function parseSectionGuides(value) {
   if (value === undefined) return undefined;
   let raw = value;
@@ -55,7 +53,6 @@ function isValidSlug(slug) {
 }
 
 export function createVisaService({ Visa, VisaOverlay, imageStorage }) {
-  // ─── Slug helpers ────────────────────────────────────────────────────────────
 
   const generateBaseSlug = (input) => slugify(input, { lower: true, strict: true });
 
@@ -72,27 +69,20 @@ export function createVisaService({ Visa, VisaOverlay, imageStorage }) {
     }
   };
 
-  // ─── Image helpers ───────────────────────────────────────────────────────────
-
   const saveHeroImage = async (file, visaId, existingUrl = null) => {
     if (!file) return existingUrl;
     if (!imageStorage) throw new AppError('Image storage is not configured', 500);
     if (existingUrl) {
-      try { await imageStorage.deleteImage(existingUrl); } catch { /* non-fatal */ }
+      try { await imageStorage.deleteImage(existingUrl); } catch { }
     }
     return imageStorage.saveImage(file.buffer, visaId);
   };
 
   const deleteVisaFolder = async (visaId) => {
-    // deleteSubfolder prefixes the storage's own configured folder. The old code
-    // called deleteFolder('travl/visa/<id>') directly, which reached into Travl's
-    // namespace no matter which brand was running — wrong for every brand but
-    // Travl, and actively wrong now that VisaWadi owns visas under visawadi/.
+    // deleteSubfolder scopes to the running brand's storage folder; deleteFolder does not.
     if (!imageStorage?.deleteSubfolder) return;
-    try { await imageStorage.deleteSubfolder(visaId); } catch { /* non-fatal */ }
+    try { await imageStorage.deleteSubfolder(visaId); } catch { }
   };
-
-  // ─── Field parsers ───────────────────────────────────────────────────────────
 
   const parseFields = (body) => ({
     qualifierItems:      parseStringArray(body.qualifierItems),
@@ -105,8 +95,6 @@ export function createVisaService({ Visa, VisaOverlay, imageStorage }) {
     faqs:                parseJsonField(body.faqs,                'faqs'),
     sectionGuides:       parseSectionGuides(body.sectionGuides),
   });
-
-  // ─── Publish-time validation ─────────────────────────────────────────────────
 
   const validateForPublish = async (visa) => {
     if (!visa.slug || !isValidSlug(visa.slug)) {
@@ -127,8 +115,6 @@ export function createVisaService({ Visa, VisaOverlay, imageStorage }) {
     }
   };
 
-  // ─── Query helpers ───────────────────────────────────────────────────────────
-
   const getPublicVisas = async () => {
     return Visa.find({ status: 'published' }).sort({ countryName: 1 }).lean();
   };
@@ -138,11 +124,6 @@ export function createVisaService({ Visa, VisaOverlay, imageStorage }) {
     select: 'title slug status',
   }));
 
-  /**
-   * Public page for one destination, optionally resolved for where the
-   * applicant lives. Without a residence the base page is returned unchanged,
-   * which is what /visa/<slug> served before country segmentation existed.
-   */
   const getPublicVisaBySlugForResidence = async (slug, residence) => {
     const base = await getPublicVisaBySlug(slug);
     if (!base) return null;
@@ -155,7 +136,6 @@ export function createVisaService({ Visa, VisaOverlay, imageStorage }) {
     return resolveVisaForResidence(base, overlay);
   };
 
-  /** Every destination we have a published overlay for in this country. */
   const getPublicVisasForResidence = async (residence) => {
     const visas = await getPublicVisas();
     if (!residence || !VisaOverlay) return visas;
@@ -167,7 +147,6 @@ export function createVisaService({ Visa, VisaOverlay, imageStorage }) {
       .map((v) => resolveVisaForResidence(v, bySlug.get(v.slug)));
   };
 
-  // ---- overlay admin ----
   const listOverlays = (filter = {}) => VisaOverlay.find(filter).sort({ residence: 1, visaSlug: 1 }).lean();
   const getOverlay = (residence, visaSlug) =>
     VisaOverlay.findOne({ residence: String(residence).toUpperCase(), visaSlug }).lean();
@@ -179,10 +158,7 @@ export function createVisaService({ Visa, VisaOverlay, imageStorage }) {
     const existing = await VisaOverlay.findOne({ residence, visaSlug: payload.visaSlug });
     const doc = existing || new VisaOverlay({ residence, visaSlug: payload.visaSlug });
 
-    // null means "inherit from the base", and has to unset the path rather than
-    // store an empty value. JSON has no undefined, so the admin sends null and
-    // this is where it turns back into "field absent". Without this, switching a
-    // section back to inherited would save [] and render an empty section.
+    // null means "inherit": unset the path rather than storing an empty value.
     for (const [key, value] of Object.entries({ ...payload, residence })) {
       if (value === null) doc.set(key, undefined);
       else doc.set(key, value);
@@ -201,8 +177,6 @@ export function createVisaService({ Visa, VisaOverlay, imageStorage }) {
     try {
       return await Visa.findOne({ slug, status: 'published' }).populate(guidePopulate).lean();
     } catch (err) {
-      // A brand that mounts visas without the blog domain has no Blog model to
-      // populate against — serve the page rather than 500 on a missing guide.
       if (err?.name === 'MissingSchemaError') {
         return Visa.findOne({ slug, status: 'published' }).lean();
       }
@@ -241,8 +215,6 @@ export function createVisaService({ Visa, VisaOverlay, imageStorage }) {
     return Visa.findById(id);
   };
 
-  // ─── Mutations ───────────────────────────────────────────────────────────────
-
   const createVisa = async ({ body, file, userId }) => {
     if (!body.countryName) throw new AppError('Country name is required', 400);
 
@@ -254,7 +226,6 @@ export function createVisaService({ Visa, VisaOverlay, imageStorage }) {
 
     const parsed = parseFields(body);
 
-    // Create the document first (without image) to get the _id
     const visa = await Visa.create({
       countryName:         body.countryName,
       slug:                uniqueSlug,
@@ -270,7 +241,6 @@ export function createVisaService({ Visa, VisaOverlay, imageStorage }) {
       ...parsed,
     });
 
-    // Upload image using the real _id as folder
     if (file) {
       const heroImageUrl = await saveHeroImage(file, visa._id);
       visa.heroImageUrl = heroImageUrl;
@@ -286,7 +256,6 @@ export function createVisaService({ Visa, VisaOverlay, imageStorage }) {
 
     const parsed = parseFields(body);
 
-    // Handle slug update
     if (body.slug !== undefined) {
       const rawSlug = slugify(String(body.slug || '').trim(), { lower: true, strict: true });
       if (!rawSlug) throw new AppError('Slug cannot be empty', 400);
@@ -355,7 +324,6 @@ export function createVisaService({ Visa, VisaOverlay, imageStorage }) {
     obj.countryName = `${obj.countryName} Copy`;
     obj.status = 'draft';
     obj.publishedAt = null;
-    // Do NOT copy the hero image — leave heroImageUrl empty
     obj.heroImageUrl = null;
 
     const duplicated = await Visa.create(obj);

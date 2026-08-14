@@ -1,23 +1,9 @@
 /**
- * Re-home VisaWadi's Cloudinary assets from the travl/ folder into visawadi/.
- *
- * The visa documents were imported from Travl's database and kept their original
- * image URLs, so VisaWadi currently serves hero images out of `travl/visa/...`.
- * Both brands point at the *same* Cloudinary assets, which means:
- *
- *   COPY, NEVER MOVE. A Cloudinary rename would 404 every Travl visa page.
- *
- * So this uploads each asset to a new public_id under visawadi/ (Cloudinary can
- * fetch from a remote URL, and the existing secure_url is one), verifies the copy
- * is fetchable, then repoints the database. Travl's originals are left untouched.
- *
- * Idempotent: an asset already present at the target public_id is reused rather
- * than re-uploaded, and a visa whose heroImageUrl is already under visawadi/ is
- * skipped entirely. Safe to re-run.
- *
  * Usage, from apps/visawadi-backend:
  *   node --env-file=.env.production scripts/migrate-cloudinary-to-visawadi.mjs          # dry run
- *   node --env-file=.env.production scripts/migrate-cloudinary-to-visawadi.mjs --apply  # execute
+ *   node --env-file=.env.production scripts/migrate-cloudinary-to-visawadi.mjs --apply
+ *
+ * Copies, never renames: a Cloudinary rename would 404 every Travl visa page.
  */
 
 import mongoose from 'mongoose';
@@ -41,12 +27,6 @@ cloudinary.config({
   secure: true,
 });
 
-/**
- * Pull the public_id out of a Cloudinary delivery URL.
- * .../upload/v1784810874/travl/visa/<id>/<name>.png -> travl/visa/<id>/<name>
- * The version segment and the file extension are both dropped, which is what
- * the Admin API and uploader expect.
- */
 function publicIdFromUrl(url) {
   const m = String(url).match(/\/upload\/(?:v\d+\/)?(.+)$/);
   if (!m) return null;

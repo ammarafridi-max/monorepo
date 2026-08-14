@@ -1,6 +1,5 @@
 import { AppError } from '@travel-suite/utils';
 
-// Static logo files bundled with each backend at /airlines/{IATA_CODE}.{ext}
 const AIRLINE_LOGO_EXT = {
   A3:'png', AA:'jpg', AF:'png', AI:'jpg', AT:'png', AY:'png', AZ:'png',
   BA:'jpg', EI:'jpg', EK:'png', ET:'png', EY:'png', FZ:'png', G9:'png',
@@ -27,16 +26,6 @@ function minutesToISO(min) {
   return `PT${Math.floor(total / 60)}H${total % 60}M`;
 }
 
-// ---------------------------------------------------------------------------
-// SerpApi Google Flights -> flight-offers shape adapter
-// ---------------------------------------------------------------------------
-// Google Flights returns full itineraries (nonstop / 1-stop / 2-stop) with a
-// segment array, so there's no stitching to do. We only reshape into the
-// flight-offer contract the frontend consumes (itineraries[].segments[]
-// with `.at` datetimes, ISO `duration`, `number`, `carrierCode`). Fares are
-// ignored — the ticket is priced by validity, not the flight.
-
-// "EK 1" -> { carrierCode: 'EK', number: '1' }
 function splitFlightNumber(fn) {
   const m = String(fn || '').trim().match(/^([A-Z0-9]{2,3})\s*(.*)$/);
   return m
@@ -44,8 +33,7 @@ function splitFlightNumber(fn) {
     : { carrierCode: '', number: String(fn || '').trim() };
 }
 
-// SerpApi times are "YYYY-MM-DD HH:MM" (local). transformItinerary splits on
-// 'T' and `new Date(at)` must parse it, so normalise to "YYYY-MM-DDTHH:MM:00".
+// SerpApi returns "YYYY-MM-DD HH:MM"; transformItinerary splits on 'T'.
 function serpTimeToISO(t) {
   const s = String(t || '').trim();
   if (!s) return s;
@@ -62,16 +50,11 @@ function segmentFromSerp(f) {
     carrierCode,
     number,
     ...(f.airplane ? { aircraft: { code: f.airplane } } : {}),
-    // Google's marketing airline name — authoritative for the flight shown, and
-    // avoids ambiguous IATA-code lookups (e.g. AirLabs maps "PC" to a cargo firm
-    // instead of Pegasus). Consumed by attachAirlines, then stripped.
+    // Consumed by attachAirlines, then stripped. IATA-code lookups are ambiguous, so prefer this.
     airlineName: f.airline || null,
   };
 }
 
-// Attach airline display data using SerpApi's per-segment airline name (source
-// of truth) and the bundled local logo map. Pure/sync — no DB or AirLabs round
-// trips. Nonstop itineraries sort first (fewest segments).
 function attachAirlines(flights) {
   const detailFor = (code, nameByCode) => ({
     iataCode: code,
@@ -119,8 +102,6 @@ function wrapFlight(itineraries) {
   return { itineraries, validatingAirlineCodes };
 }
 
-// Flight search is served by SerpApi (Google Flights). AirLabs supplies airport
-// and airline reference data.
 export function createFlightService({ Airline, airlabs, serpapi }) {
   function requireAirLabs() {
     if (!airlabs) throw new AppError('Airport search is not configured on this server', 503);
@@ -143,9 +124,7 @@ export function createFlightService({ Airline, airlabs, serpapi }) {
     });
   };
 
-  // SerpApi flight builder. Returns unenriched flights in the flight-offer
-  // shape the frontend consumes. Return trips are two one-way searches, zipped
-  // into out+return pairs (frontend reads itineraries[0]=outbound, itineraries[1]=return).
+  // Frontend contract: itineraries[0] is the outbound, itineraries[1] the return.
   const buildSerpApiFlights = async ({ type, origin, dest, departureDate, returnDate }) => {
     const outboundOffers = await serpapi.searchOneWay({
       departureId: origin,
@@ -193,7 +172,6 @@ export function createFlightService({ Airline, airlabs, serpapi }) {
       throw new AppError('Total passengers must be between 1 and 9, with at least 1 adult', 400);
     }
 
-    // SerpApi carries airline names inline, so results enrich synchronously.
     try {
       const serpFlights = await buildSerpApiFlights({ type, origin, dest, departureDate, returnDate });
       if (serpFlights.length) return attachAirlines(serpFlights);
@@ -204,12 +182,6 @@ export function createFlightService({ Airline, airlabs, serpapi }) {
     throw new AppError('No flights available', 404);
   };
 
-  // Live airport search via AirLabs /suggest. One endpoint handles both
-  // IATA codes ("DXB") and freeform text ("dubai"). We keep only entries
-  // whose `type === 'airport'` (drops airbases, heliports, seaplane bases),
-  // sort by popularity, and map to the airport shape
-  // ({ iataCode, address: { cityName } }) so existing callers and the
-  // frontend dropdown work unchanged.
   function validateKeyword(keyword, label) {
     const kw = (keyword || '').trim();
     if (!kw || kw.length < 3) {
@@ -236,8 +208,6 @@ export function createFlightService({ Airline, airlabs, serpapi }) {
       }));
   };
 
-  // Same /suggest endpoint, different bucket. Returned shape mirrors the
-  // airport contract so callers can render either in the same dropdown.
   const fetchCities = async (keyword) => {
     requireAirLabs();
     const kw = validateKeyword(keyword, 'City');

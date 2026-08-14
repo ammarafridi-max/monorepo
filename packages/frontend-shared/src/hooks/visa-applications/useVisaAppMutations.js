@@ -19,7 +19,6 @@ import {
   adminRemoveDocumentRowApi,
 } from '../../services/apiVisaApplications.js';
 
-// ---- Customer ----
 export function useRequestMagicLink() {
   return useMutation({
     mutationFn: (email) => requestMagicLinkApi(email),
@@ -52,7 +51,6 @@ export function useUpdateApplicant(applicationRef) {
   });
 }
 
-// Customer sets application-level answers (accommodation type).
 export function useUpdateApplicationProfile(applicationRef) {
   const qc = useQueryClient();
   return useMutation({
@@ -65,7 +63,6 @@ export function useUpdateApplicationProfile(applicationRef) {
   });
 }
 
-// ---- Admin ----
 export function useReviewDocument(applicationId) {
   const qc = useQueryClient();
   return useMutation({
@@ -138,7 +135,6 @@ export function useCreateApplication() {
   });
 }
 
-// ---- Admin document-level actions (all invalidate the application detail) ----
 function useAdminDocAction(applicationId, fn, successMsg) {
   const qc = useQueryClient();
   return useMutation({
@@ -167,7 +163,6 @@ export function useAdminRemoveDocumentRow(applicationId) {
   return useAdminDocAction(applicationId, ({ documentId }) => adminRemoveDocumentRowApi({ documentId }), 'Removed');
 }
 
-// Pause / resume reminders from the work-queue list (invalidates the list only).
 export function useToggleReminders() {
   const qc = useQueryClient();
   return useMutation({

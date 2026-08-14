@@ -57,12 +57,12 @@ const testimonialSchema = new mongoose.Schema(
   {
     name:        { type: String, required: true, trim: true, maxlength: 100 },
     nationality: { type: String, trim: true, maxlength: 100 },
-    visaType:    { type: String, trim: true, maxlength: 100 }, // e.g. "Schengen visa", "UK Standard Visitor"
+    visaType:    { type: String, trim: true, maxlength: 100 },
     quote:       { type: String, required: true, trim: true, maxlength: 600 },
     rating:      { type: Number, default: 5, min: 1, max: 5 },
-    imageUrl:    { type: String, trim: true }, // Optional Cloudinary URL for customer photo
-    initials:    { type: String, trim: true, maxlength: 4 }, // Fallback when no photo, e.g. "AR"
-    isFeatured:  { type: Boolean, default: false }, // Whether to show in the trust section
+    imageUrl:    { type: String, trim: true },
+    initials:    { type: String, trim: true, maxlength: 4 },
+    isFeatured:  { type: Boolean, default: false },
   },
   { _id: false },
 );
@@ -75,8 +75,6 @@ const faqSchema = new mongoose.Schema(
   { _id: false },
 );
 
-// A section can deep-link to a blog post. We store the blog _id rather than its
-// slug so renaming a post never breaks the link on a published visa page.
 const guideRef = () => ({ type: mongoose.Schema.Types.ObjectId, ref: 'Blog', default: null });
 
 const sectionGuidesSchema = new mongoose.Schema(
@@ -96,8 +94,6 @@ const VisaSchema = new mongoose.Schema(
     slug:        { type: String, required: [true, 'Slug is required'], unique: true, lowercase: true, trim: true, index: true },
     status:      { type: String, enum: ['draft', 'published'], default: 'draft', index: true },
 
-    // Short summary for the /visa listing card. Kept separate from
-    // metaDescription, which is written for search results.
     excerpt:           { type: String, trim: true, maxlength: 200 },
 
     heroImageUrl:      { type: String },

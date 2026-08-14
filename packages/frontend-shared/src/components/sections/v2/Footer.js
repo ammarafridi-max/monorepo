@@ -34,10 +34,6 @@ const DEFAULT_COLUMNS = [
   },
 ];
 
-/**
- * Site footer. All branding is parameterized so each app supplies its own.
- * Defaults preserve the original look for any caller that doesn't pass props.
- */
 export default function Footer({
   brand = "",
   logoEmoji = "🛡️",
@@ -106,7 +102,6 @@ export default function Footer({
             <p className="font-semibold text-white mb-4">{heading}</p>
             <ul className="space-y-2">
               {links.map((link) => {
-                // Accept either string (legacy) or { label, href } objects.
                 const label = typeof link === "string" ? link : link.label;
                 const href = typeof link === "string" ? "#" : link.href;
                 return (

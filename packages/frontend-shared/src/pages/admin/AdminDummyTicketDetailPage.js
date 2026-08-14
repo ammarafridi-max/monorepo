@@ -79,14 +79,12 @@ function InfoRow({ label, value, mono }) {
   );
 }
 
-// Travelport availability command, e.g. "A28MAYDXBCDG"
 function buildAvailabilityCommand(dateString, fromIata, toIata) {
   const date = formatTravelportDate(dateString);
   if (!date || !fromIata || !toIata) return '';
   return `A${date}${fromIata}${toIata}`;
 }
 
-// Travelport name command, e.g. "N.SMITH/JOHN MR"
 function buildPassengerCommand(p) {
   const last = (p?.lastName || '').trim().toUpperCase();
   const first = (p?.firstName || '').trim().toUpperCase();
@@ -200,10 +198,6 @@ function DeleteSection({ sessionId, disabled, disabledReason }) {
   );
 }
 
-// Delivery row with an inline editor. For a scheduled ticket whose customer
-// changed their mind, the agent can either set a new date or hit "Deliver now"
-// (flips it to immediate). Rescheduling recomputes the delivery gate upstream,
-// unlocking Send / Mark Progress once the chosen day is today or past.
 function DeliverySection({ ticket, canEdit }) {
   const [editing, setEditing] = useState(false);
   const [date, setDate] = useState('');
@@ -292,17 +286,12 @@ export default function AdminDummyTicketDetailPage() {
   const [reservationOpen, setReservationOpen] = useState(false);
 
   const { dummyTicket: ticket, isLoadingDummyTicket } = useGetDummyTicket(sessionId);
-  // Scheduled (non-immediate) deliveries shouldn't be markable as Progress
-  // or Delivered until the scheduled day arrives. Delivery dates are stored
-  // as YYYY-MM-DD-prefixed strings; today is formatted the same way in
-  // Dubai time so lexical comparison works regardless of browser locale.
+  // Delivery dates are YYYY-MM-DD-prefixed and compared lexically against today in Dubai time.
   const todayDubai = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Dubai' }).format(new Date());
   const scheduledDate = ticket?.ticketDelivery?.immediate
     ? null
     : ticket?.ticketDelivery?.deliveryDate?.slice(0, 10) || null;
   const deliveryDayReached = !scheduledDate || todayDubai >= scheduledDate;
-  // Admins and agents may reschedule, and only for paid tickets that aren't
-  // already delivered/refunded — the window where the delivery gate still matters.
   const canEditDelivery = ticket?.paymentStatus === 'PAID'
     && !['DELIVERED', 'REFUNDED'].includes(ticket?.orderStatus);
   const { updateDummyTicket, isUpdating }              = useUpdateDummyTicket();
@@ -374,12 +363,6 @@ export default function AdminDummyTicketDetailPage() {
   const retFlight = ticket?.flightDetails?.returnFlight?.segments?.[0];
   const isReturn  = ticket?.type?.toLowerCase() === 'return';
 
-  // Shape the ticket into the order contract the floating PiP panel expects.
-  // Read-only — the panel renders whatever is here whenever `ticket` updates.
-  // Collapse a flight leg (which may include connecting hops) into a single
-  // origin -> final-destination row for the pop-out overview. Intermediate
-  // arrival airports become the "stops" list; the leg's flight numbers are
-  // joined so no booking detail is lost.
   const legToPanel = (segments = []) => {
     if (!segments.length) return null;
     const first = segments[0];
@@ -397,8 +380,6 @@ export default function AdminDummyTicketDetailPage() {
     };
   };
 
-  // Travelport availability commands: A{DD}{MMM}{FROM}{TO} for departure,
-  // AR{DD}{MMM} for the return (AR inherits the previous availability's pair).
   const fromIata = extractIataCode(ticket?.from);
   const toIata   = extractIataCode(ticket?.to);
   const depAvail = buildAvailabilityCommand(ticket?.departureDate, fromIata, toIata);
@@ -406,7 +387,6 @@ export default function AdminDummyTicketDetailPage() {
     ? `AR${formatTravelportDate(ticket.returnDate)}`
     : '';
 
-  // QEB queue placement command varies by ticket validity.
   const QEB_BY_VALIDITY = { '2 Days': '76', '7 Days': '77', '14 Days': '78' };
   const qebCode = QEB_BY_VALIDITY[ticket?.ticketValidity];
 

@@ -2,13 +2,8 @@ import Anthropic from '@anthropic-ai/sdk';
 import { logger } from '@travel-suite/utils';
 import { inclusiveDayCount, buildExpectedDates } from './dates.js';
 
-// Server-side only. The model produces the day-by-day plan as strict JSON.
-// Our code owns the template, the validation, and the final file. The model
-// never invents flights, hotels, prices, or booking references — it only
-// references the cities and dates it is given.
 const MODEL = 'claude-sonnet-4-6';
-// Headroom for long trips: a full 60-day plan is ~4-5k output tokens of JSON, so
-// 4096 truncated it mid-object (→ parse failure → FAILED). 8192 covers the max.
+// 8192 max_tokens: 4096 truncated 60-day plans mid-object and broke the JSON parse.
 const MAX_TOKENS = 8192;
 
 function buildSystemPrompt({ visaCountry, purpose }) {
@@ -71,7 +66,6 @@ function buildUserMessage({ input, validationFeedback }) {
 }
 
 function extractJson(text) {
-  // Tolerate accidental code fences or stray prose around the object.
   const match = text.match(/\{[\s\S]*\}/);
   if (!match) return null;
   try {
@@ -103,13 +97,6 @@ export function createItineraryGenerator({ anthropicApiKey }) {
     return extractJson(text);
   }
 
-  /**
-   * Generates the itinerary JSON. On a parse failure, retries exactly once.
-   * Validation (and the validation-driven regenerate) is handled by the caller.
-   *
-   * @param {{ input: object, validationFeedback?: string }} args
-   * @returns {Promise<{ summary: string, days: Array }>}
-   */
   async function generate({ input, validationFeedback = null }) {
     let parsed = await callModel({ input, validationFeedback });
     if (!parsed || !Array.isArray(parsed.days)) {
@@ -124,8 +111,6 @@ export function createItineraryGenerator({ anthropicApiKey }) {
       days: parsed.days,
     };
   }
-
-  // -- Conversational edit ---------------------------------------------------
 
   function buildChatSystemPrompt() {
     return [
@@ -179,12 +164,6 @@ export function createItineraryGenerator({ anthropicApiKey }) {
     return extractJson(text);
   }
 
-  /**
-   * Applies one conversational edit. Retries once on parse failure. Validation
-   * of the returned itinerary against updatedInput is the caller's job.
-   *
-   * @returns {Promise<{ updatedInput: object, itinerary: object, reply: string }>}
-   */
   async function chat({ input, itineraryData, history = [], message, validationFeedback = null }) {
     let parsed = await callChat({ input, itineraryData, history, message, validationFeedback });
     if (!parsed || !parsed.itinerary || !Array.isArray(parsed.itinerary.days) || !parsed.updatedInput) {
@@ -204,8 +183,6 @@ export function createItineraryGenerator({ anthropicApiKey }) {
     };
   }
 
-  // -- Document parsing (auto-fill the form from uploaded reservations) -------
-
   function buildParseSystemPrompt() {
     return [
       'You extract travel details from uploaded documents (flight tickets, e-tickets, hotel bookings, itineraries).',
@@ -224,11 +201,6 @@ export function createItineraryGenerator({ anthropicApiKey }) {
     ].join('\n');
   }
 
-  /**
-   * Reads uploaded documents and extracts travel segments + reservation status.
-   * @param {{ files: Array<{ buffer: Buffer, mimetype: string }> }} args
-   * @returns {Promise<{ segments: Array, flightReservation: string, hotelReservation: string }>}
-   */
   async function parseDocuments({ files }) {
     const content = [];
     for (const f of files || []) {

@@ -1,22 +1,10 @@
 /**
- * Migrate the 30 visa-intent blog posts from Travl to VisaWadi.
- *
- * SAFETY MODEL
- *   - Source is read over Travl's PUBLIC API. No Travl credentials, no write
- *     path back to Travl, physically incapable of mutating the source.
- *   - Posts land as status:'draft'. Nothing is publicly served until you flip
- *     them, so Travl and VisaWadi never serve the same post at the same time
- *     and there is no cross-domain duplicate-content window.
- *   - Cover images are COPIED into visawadi/blog/. Travl's originals are shared
- *     with its own posts, so a Cloudinary rename would 404 them.
- *   - _id and slug are preserved, which makes re-runs idempotent and keeps each
- *     post traceable to its source.
- *   - A snapshot of every source document is written before anything else.
- *   - Rollback is deleting these 30 _ids from the visawadi database.
- *
  * Usage, from apps/visawadi-backend:
  *   node --env-file=.env.production scripts/migrate-blog-from-travl.mjs          # dry run + diff report
- *   node --env-file=.env.production scripts/migrate-blog-from-travl.mjs --apply  # execute
+ *   node --env-file=.env.production scripts/migrate-blog-from-travl.mjs --apply
+ *
+ * Cover images are copied, never renamed: a Cloudinary rename would 404 Travl's
+ * own posts. Rollback is deleting these _ids from the visawadi database.
  */
 
 import fs from 'node:fs';
@@ -30,15 +18,6 @@ const TRAVL_SITE = 'https://www.travl.ae';
 const VISAWADI_ADMIN_ID = '6a78c1d960de0e013f68b097';
 const OUT_DIR = path.join(process.cwd(), 'migration-output');
 
-/**
- * Unpublished posts moving to VisaWadi. Travl's public API only serves
- * published posts, so these arrive via the read-only export produced by
- * apps/travl-backend/scripts/export-posts-for-visawadi.mjs.
- *
- * NOTE: three of these are still SCHEDULED on Travl and will auto-publish
- * there (publishDueScheduledBlogs runs on any blog read). Unschedule them on
- * Travl or both sites end up serving the same post.
- */
 const MOVING_UNPUBLISHED = [
   'what-is-a-dummy-ticket-and-when-do-you-need-one',
   'dummy-ticket-vs-real-flight-booking-which-one-does-your-visa-need',
@@ -49,7 +28,6 @@ const MOVING_UNPUBLISHED = [
 
 const EXTRA_SOURCE = path.join(process.cwd(), 'migration-output', 'travl-unpublished-export.json');
 
-/** The published posts moving. Everything else stays on Travl. */
 const MOVING = [
   'schengen-visa-fees-in-2026-complete-cost-breakdown-for-uae-applicants',
   'how-to-apply-for-a-schengen-visa-from-the-uae-complete-2026-guide',
@@ -101,7 +79,6 @@ cloudinary.config({
   secure: true,
 });
 
-// ---------------------------------------------------------------- helpers
 
 async function apiGet(pathname) {
   const res = await fetch(`${TRAVL_API}${pathname}`);
@@ -128,19 +105,10 @@ async function resourceExists(publicId) {
   }
 }
 
-/**
- * Split HTML into block-level chunks so brand replacement can be decided per
- * block rather than across the whole document. Delimiters are kept.
- */
 function splitBlocks(html) {
   return String(html).split(/(<\/(?:p|li|h[1-6]|td|th|blockquote|div)>)/i).filter((s) => s !== '');
 }
 
-/**
- * Find the sentence surrounding a position. Sentence enders and HTML tag edges
- * both count as boundaries, so a mention is never judged using text from a
- * neighbouring sentence or a different element.
- */
 function sentenceAround(text, idx) {
   const before = text.slice(0, idx);
   const after = text.slice(idx);
@@ -151,17 +119,6 @@ function sentenceAround(text, idx) {
   return text.slice(start, end);
 }
 
-/**
- * Decide each "Travl" mention individually.
- *
- * Keep it when the sentence is about Travl's insurance product — VisaWadi does
- * not sell insurance, so renaming those would make the sentence false. Replace
- * it everywhere else.
- *
- * Two phrases are always replaced regardless of sentence: "Travl FAQ" and
- * "Travl blog". Their links get rewritten to VisaWadi-relative URLs, so leaving
- * the label as Travl would point a reader at VisaWadi's page under Travl's name.
- */
 function rewriteBrand(s, stats) {
   s = s.replace(/\bTravl(?='s)?(?=\s+(?:FAQ|blog)\b)/g, () => { stats.brand++; return 'VisaWadi'; });
 
@@ -172,53 +129,40 @@ function rewriteBrand(s, stats) {
   });
 }
 
-/** Rewrite one text/HTML field. Returns { value, stats }. */
 function rewriteField(value, { isHtml }) {
   if (typeof value !== 'string' || !value) return { value, stats: {} };
 
   const stats = { blogRel: 0, visaRel: 0, faqRel: 0, insuranceKept: 0, blogKept: 0, brand: 0, brandKept: 0, unhandled: [] };
 
   const rewriteLinks = (s) => {
-    // Some stored HTML uses "../../../x" instead of an absolute URL. A browser
-    // clamps that at the site root, so it happens to work on Travl. On VisaWadi
-    // the same href would resolve to routes that do not exist. Normalise to a
-    // root-relative path first, then let the rules below route it properly.
     s = s.replace(/href="(?:\.\.\/)+([^"]*)"/g, (_m, rest) => {
       stats.relNormalised = (stats.relNormalised || 0) + 1;
       return `href="${TRAVL_SITE}/${rest}"`;
     });
-    // Travl-only products keep pointing at Travl.
     s = s.replace(new RegExp(`${TRAVL_SITE}/travel-itinerary`, 'gi'), () => {
       stats.itineraryKept = (stats.itineraryKept || 0) + 1;
       return `${TRAVL_SITE}/travel-itinerary`;
     });
-    // Co-moving posts become site-relative so they stay internal on VisaWadi.
     s = s.replace(new RegExp(`${TRAVL_SITE}/blog/([a-z0-9-]+)`, 'gi'), (full, slug) => {
       if (MOVING_SET.has(slug)) { stats.blogRel++; return `/blog/${slug}`; }
-      stats.blogKept++; return full;          // stays on Travl, keep absolute
+      stats.blogKept++; return full;
     });
-    // Travl is deleting /visa/*, and VisaWadi uses the same slugs.
     s = s.replace(new RegExp(`${TRAVL_SITE}/visa(/[a-z0-9-]+)?`, 'gi'), (_full, rest) => {
       stats.visaRel++; return `/visa${rest || ''}`;
     });
     s = s.replace(new RegExp(`${TRAVL_SITE}/faq`, 'gi'), () => { stats.faqRel++; return '/faq'; });
-    // VisaWadi has its own contact page; readers should reach VisaWadi, not Travl.
     s = s.replace(new RegExp(`${TRAVL_SITE}/contact`, 'gi'), () => {
       stats.contactRel = (stats.contactRel || 0) + 1;
       return '/contact';
     });
-    // /claims is an insurance-policy page. It stays on Travl with the product.
     const claims = s.match(new RegExp(`${TRAVL_SITE}/claims`, 'gi'));
     if (claims) stats.claimsKept = (stats.claimsKept || 0) + claims.length;
-    // A Travl mailbox must never be published as VisaWadi's contact address.
     s = s.replace(/info@travl\.ae/gi, () => {
       stats.emailSwapped = (stats.emailSwapped || 0) + 1;
       return 'info@visawadi.com';
     });
-    // Insurance stays on Travl by decision, so these remain absolute.
     const insuranceHits = s.match(new RegExp(`${TRAVL_SITE}/travel-insurance`, 'gi'));
     if (insuranceHits) stats.insuranceKept += insuranceHits.length;
-    // Anything still pointing at travl.ae is unaccounted for.
     for (const m of s.matchAll(new RegExp(`${TRAVL_SITE}(/[^"'\\s)<]*)?`, 'gi'))) {
       const p = m[1] || '/';
       if (!/^\/(travel-insurance|travel-itinerary|claims|blog)/i.test(p)) stats.unhandled.push(p);
@@ -231,14 +175,12 @@ function rewriteField(value, { isHtml }) {
   let out;
   if (isHtml) {
     out = splitBlocks(value).map((chunk) => applyBrand(rewriteLinks(chunk))).join('');
-    // One qualifier per post, right after the first block carrying an insurance link.
     if (stats.insuranceKept > 0 && !/UAE residents and citizens/i.test(out)) {
       const blocks = splitBlocks(out);
       let injected = false;
       out = blocks
         .map((chunk, i) => {
           if (injected || !/travl\.ae\/travel-insurance/i.test(chunk)) return chunk;
-          // Append after the block's closing tag, which is the next element.
           injected = true;
           const closer = blocks[i + 1] && /^<\//.test(blocks[i + 1]) ? '' : '';
           return chunk + closer;
@@ -287,7 +229,7 @@ function transformPost(src) {
 
   out.author = new mongoose.Types.ObjectId(VISAWADI_ADMIN_ID);
   out.publisher = new mongoose.Types.ObjectId(VISAWADI_ADMIN_ID);
-  out.status = 'draft';           // flipped to published at cutover
+  out.status = 'draft';
   delete out.id;
   delete out.__v;
   out._id = new mongoose.Types.ObjectId(String(src._id));
@@ -299,7 +241,6 @@ function transformPost(src) {
   return { doc: out, stats };
 }
 
-// ---------------------------------------------------------------- main
 
 async function main() {
   console.log(APPLY ? '=== APPLY ===' : '=== DRY RUN (pass --apply to execute) ===');
@@ -338,7 +279,6 @@ async function main() {
   if (db.databaseName !== 'visawadi') throw new Error(`Refusing to write to "${db.databaseName}"`);
   console.log(`  target database: ${db.databaseName}`);
 
-  // ---- tags first: posts reference them by name, tag pages need the docs
   const tagCol = db.collection('blog-tags');
   let tagsWritten = 0;
   for (const t of tags) {
@@ -354,7 +294,6 @@ async function main() {
   }
   console.log(`\ntags: ${tagsWritten} to create, ${tags.length - tagsWritten} already present`);
 
-  // ---- posts
   const blogCol = db.collection('blogs');
   const report = [];
   const totals = {};
@@ -367,7 +306,6 @@ async function main() {
     const already = await blogCol.findOne({ _id: doc._id });
     if (already) { skipped++; console.log(`  ${src.slug}: already migrated, skipping`); continue; }
 
-    // cover image
     const oldId = publicIdFromUrl(src.coverImageUrl);
     if (oldId && oldId.startsWith('travl/')) {
       const newId = 'visawadi/' + oldId.slice('travl/'.length);

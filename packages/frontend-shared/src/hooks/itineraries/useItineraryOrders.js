@@ -3,8 +3,6 @@ import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { getItineraryOrdersApi } from '../../services/apiItineraries.js';
 
-// Admin list of itinerary orders, driven by the URL search params (search,
-// filters, page) — mirrors useDummyTickets.
 export function useItineraryOrders() {
   const searchParams = useSearchParams();
   const params = Object.fromEntries([...searchParams]);

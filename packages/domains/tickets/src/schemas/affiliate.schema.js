@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
 
-// Minimal schema for ref integrity — full CRUD lives in @travel-suite/affiliates (future)
 const AffiliateSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },

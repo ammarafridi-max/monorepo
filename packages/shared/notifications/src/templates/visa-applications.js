@@ -1,5 +1,3 @@
-// Pure functions — brand + data → HTML string. No imports, no side effects.
-
 function shell({ brand, heading, eyebrow, bodyHtml }) {
   const primary = brand?.theme?.primaryColor || '#14948f';
   const website = brand?.website || 'https://www.travl.ae';
@@ -95,9 +93,6 @@ export function renderChecklistCompleteAdmin({ brand, applicationRef, destinatio
   });
 }
 
-// ---- reminder engine emails -------------------------------------------------
-
-// A small "who → what's missing" block, grouped by traveller name.
 function missingGroupsHtml(missing = []) {
   return (missing || []).map((g) => `
     <p style="margin:14px 0 4px;font-weight:600;color:#0f172a;">${g.traveller}</p>

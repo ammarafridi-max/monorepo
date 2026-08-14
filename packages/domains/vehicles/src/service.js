@@ -1,10 +1,7 @@
 import mongoose from 'mongoose';
 import { AppError } from '@travel-suite/utils';
 
-// Cloudinary sub-folder for a vehicle's images, keyed by the document id, e.g.
-// "vehicles/507f1f77bcf86cd799439011". Keying by _id (not brand_model) guarantees
-// each vehicle owns a private folder, so deleting one can never wipe another
-// vehicle that happens to share the same brand + model.
+// Keyed by _id, not brand_model, so deleting one vehicle can never wipe another that shares a brand + model.
 function vehicleFolder(id) {
   return `vehicles/${id}`;
 }
@@ -22,12 +19,6 @@ function parsePricing(pricing) {
   return undefined;
 }
 
-/**
- * @param images Image-store adapter (DI):
- *   uploadImage(buffer, folder) -> Promise<secureUrl>
- *   deleteImage(url)            -> Promise<boolean>
- *   deleteFolder(folder)        -> Promise<boolean>
- */
 export function createVehicleService({ Vehicle, images }) {
   const getAllVehicles = async () => {
     const vehicles = await Vehicle.find().select('-__v').sort({ brand: 1 });
@@ -44,8 +35,6 @@ export function createVehicleService({ Vehicle, images }) {
   const createVehicle = async ({ body, files }) => {
     if (!files?.featuredImage?.[0]) throw new AppError('Featured image is required', 400);
 
-    // Pre-generate the _id so image uploads land in this vehicle's own per-id
-    // folder before the document exists.
     const _id = new mongoose.Types.ObjectId();
     const folder = vehicleFolder(_id);
     const pricing = parsePricing(body.pricing);
@@ -76,7 +65,6 @@ export function createVehicleService({ Vehicle, images }) {
         pricing,
       });
     } catch (err) {
-      // Roll back any uploaded assets so we don't orphan files in Cloudinary.
       await images.deleteFolder(folder);
       if (err instanceof AppError) throw err;
       throw new AppError('Failed to create vehicle. Uploads rolled back.', 500);
@@ -146,9 +134,6 @@ export function createVehicleService({ Vehicle, images }) {
     delete vehicleObj.updatedAt;
     delete vehicleObj.__v;
     vehicleObj.model = `${vehicleObj.model} Copy`;
-    // Start the copy with no images. The source's image URLs live in the source's
-    // per-id Cloudinary folder; reusing them would make deleting the original wipe
-    // the copy's images too. The admin re-uploads images for the duplicate.
     vehicleObj.featuredImage = undefined;
     vehicleObj.images = [];
 
@@ -162,17 +147,12 @@ export function createVehicleService({ Vehicle, images }) {
     const vehicle = await Vehicle.findById(id);
     if (!vehicle) throw new AppError('Vehicle not found', 404);
 
-    // The URL arrives in the request body, so "this vehicle exists" is not
-    // authorisation to delete it — without this you can pass any vehicle's (or
-    // any brand's) image URL to any vehicle id and it would be destroyed. The
-    // storage layer refuses across brands; this refuses across records.
+    // The URL comes from the request body, so verify it belongs to THIS vehicle before deleting it.
     const ownsImage =
       vehicle.featuredImage === imageUrl || (vehicle.images || []).includes(imageUrl);
     if (!ownsImage) throw new AppError('That image does not belong to this vehicle', 400);
 
     const removed = await images.deleteImage(imageUrl);
-    // A false here is usually the storage layer refusing a cross-brand delete,
-    // which is a rejected request rather than a server fault.
     if (!removed) throw new AppError('Image could not be deleted. It may belong to another brand.', 400);
 
     if (vehicle.featuredImage === imageUrl) {

@@ -3,11 +3,6 @@
 import { useEffect, useState } from "react";
 
 /**
- * Tracks which article heading is currently nearest the top of the viewport.
- *
- * Shared by every table of contents on the page so they can never disagree
- * about the active section.
- *
  * @param {{id: string}[]} headings in document order
  * @returns {string|null} id of the active heading
  */
@@ -23,8 +18,6 @@ export function useActiveHeading(headings = []) {
       .filter(Boolean);
     if (!nodes.length) return undefined;
 
-    // The bottom margin stops a heading staying active once it has scrolled
-    // well past; the top margin accounts for the fixed navbar.
     const onScreen = new Set();
     const observer = new IntersectionObserver(
       (entries) => {

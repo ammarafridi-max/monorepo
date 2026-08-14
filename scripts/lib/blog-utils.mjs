@@ -1,40 +1,19 @@
-/**
- * blog-utils.mjs
- *
- * Shared helpers for the Travl blog automation scripts:
- *   - generate-blog-draft.mjs (daily cron)
- *   - expand-blog-post.mjs    (on-demand expansion)
- *
- * Anything used by both scripts lives here so the prompt rules, link logic,
- * validation, and API wrappers stay in lockstep.
- */
-
-// ── Config ────────────────────────────────────────────────────────────────────
-
 export const BACKEND_URL = "https://api.travl.ae";
 
 const RECRAFT_API_KEY = process.env.RECRAFT_API_KEY;
 
-// ── Length tiers ──────────────────────────────────────────────────────────────
-
-// Word-count and max_tokens budget per length tier.
 export const LENGTH_TIERS = {
   short: { wordRange: "700–1000 words", maxTokens: 4000 },
   medium: { wordRange: "1200–1800 words", maxTokens: 6000 },
   long: { wordRange: "2500–3500 words", maxTokens: 8000 },
 };
 
-// Minimum acceptable word count per tier — looser than the prompt's wordRange
-// so the model gets some slack before we hard-fail the run.
 export const MIN_WORD_COUNT = {
   short: 600,
   medium: 1000,
   long: 2000,
 };
 
-// Allowed URL prefixes for <a href> attributes in generated content. Anything
-// outside this list (and relative paths starting with "/") is treated as a
-// forbidden external link.
 export const ALLOWED_LINK_PREFIXES = [
   "https://www.travl.ae",
   "https://travl.ae",
@@ -42,8 +21,6 @@ export const ALLOWED_LINK_PREFIXES = [
   "https://dummyticket365.com",
 ];
 
-// Words the prompt asks the model to avoid. Matches trigger a soft warning
-// only — they're style preferences, not deal-breakers.
 export const BANNED_WORDS = [
   "utilize",
   "utilise",
@@ -58,9 +35,6 @@ export const BANNED_WORDS = [
   "unlock",
 ];
 
-// ── API helpers ───────────────────────────────────────────────────────────────
-
-/** Fetches with error handling. Returns parsed JSON or throws. */
 export async function apiFetch(path, options = {}) {
   const res = await fetch(`${BACKEND_URL}${path}`, {
     headers: { "Content-Type": "application/json", ...options.headers },
@@ -75,9 +49,6 @@ export async function apiFetch(path, options = {}) {
   return body;
 }
 
-/**
- * Like apiFetch but also returns the raw response (so callers can read headers).
- */
 export async function apiFetchRaw(path, options = {}) {
   const res = await fetch(`${BACKEND_URL}${path}`, {
     headers: { "Content-Type": "application/json", ...options.headers },
@@ -92,7 +63,6 @@ export async function apiFetchRaw(path, options = {}) {
   return { res, body };
 }
 
-/** Extracts the `jwt=...` value from one or more Set-Cookie headers. */
 export function extractJwtCookie(res) {
   let cookies = [];
   if (typeof res.headers.getSetCookie === "function") {
@@ -108,7 +78,6 @@ export function extractJwtCookie(res) {
   return null;
 }
 
-/** Logs in with TRAVL_ADMIN_EMAIL / TRAVL_ADMIN_PASSWORD and returns a JWT. */
 export async function login() {
   const ADMIN_EMAIL = process.env.TRAVL_ADMIN_EMAIL;
   const ADMIN_PASSWORD = process.env.TRAVL_ADMIN_PASSWORD;
@@ -132,7 +101,6 @@ export async function login() {
   return token;
 }
 
-/** Returns the list of tag names available in the admin panel. */
 export async function fetchBlogTags(token) {
   const data = await apiFetch("/api/blog-tags", {
     headers: { Cookie: `jwt=${token}` },
@@ -141,13 +109,6 @@ export async function fetchBlogTags(token) {
   return tags.map((t) => t.name);
 }
 
-// ── Required internal links ──────────────────────────────────────────────────
-
-/**
- * Returns the set of internal links Claude MUST include in the body, based on
- * keywords in the topic title. Each entry is { url, anchor_hint, context,
- * required: true } so the prompt can render a clear, structured block.
- */
 export function getRequiredLinks(topic) {
   const title = topic.title;
   const lower = title.toLowerCase();
@@ -156,7 +117,6 @@ export function getRequiredLinks(topic) {
   const has = (sub) => lower.includes(sub.toLowerCase());
   const hasWord = (w) => new RegExp(`\\b${w}\\b`, "i").test(title);
 
-  // 1. Dummy Ticket 365: any visa / embassy / proof-of-onward-travel topic.
   const dummyKeywords = [
     "visa",
     "schengen",
@@ -179,7 +139,6 @@ export function getRequiredLinks(topic) {
     });
   }
 
-  // 2. Visa assistance — Schengen.
   const schengenCountries = [
     "Schengen",
     "France",
@@ -201,7 +160,6 @@ export function getRequiredLinks(topic) {
     });
   }
 
-  // 3. Visa assistance — UK.
   if (hasWord("UK") || has("United Kingdom") || has("Britain")) {
     links.push({
       url: "https://www.travl.ae/visa/united-kingdom",
@@ -213,9 +171,6 @@ export function getRequiredLinks(topic) {
     });
   }
 
-  // 4. Visa assistance — USA. Strict matches only: "USA" (whole word),
-  // "United States", or "B1/B2". Bare "US" is excluded to avoid false
-  // positives on incidental two-letter occurrences.
   if (hasWord("USA") || has("United States") || has("B1/B2")) {
     links.push({
       url: "https://www.travl.ae/visa/usa",
@@ -227,7 +182,6 @@ export function getRequiredLinks(topic) {
     });
   }
 
-  // 5. Visa assistance — Canada.
   if (has("Canada")) {
     links.push({
       url: "https://www.travl.ae/visa/canada",
@@ -239,7 +193,6 @@ export function getRequiredLinks(topic) {
     });
   }
 
-  // 6. Travel insurance — pick the most specific match available.
   const mentionsSchengen = has("Schengen");
   const mentionsAnnual = has("annual") || has("multi-trip") || has("multi trip");
   const mentionsMedical =
@@ -312,10 +265,6 @@ export function getRequiredLinks(topic) {
   return links;
 }
 
-/**
- * Renders the required-links list as a prompt block. Returns an empty string
- * if there are none, so the prompt stays clean for non-matching topics.
- */
 export function formatRequiredLinksBlock(links) {
   if (links.length === 0) return "";
 
@@ -337,10 +286,6 @@ ${items}
 If you cannot work a link in naturally, write an extra sentence that creates the opening. Do not omit it.`;
 }
 
-/**
- * Hard-fails if any required link URL is missing from both parsed.content
- * and parsed.ctaBlock. Logs each missing URL via console.error and throws.
- */
 export function validateRequiredLinks(parsed, requiredLinks) {
   const missing = requiredLinks.filter(
     (link) =>
@@ -358,9 +303,6 @@ export function validateRequiredLinks(parsed, requiredLinks) {
   }
 }
 
-// ── HTML / text utilities ────────────────────────────────────────────────────
-
-/** Strips HTML tags and collapses whitespace. Returns visible text only. */
 export function stripHtmlToText(html) {
   return html
     .replace(/<[^>]*>/g, " ")
@@ -368,29 +310,15 @@ export function stripHtmlToText(html) {
     .trim();
 }
 
-/** Word count of HTML body content (strips tags first). */
 export function countWords(html) {
   const text = stripHtmlToText(html);
   return text ? text.split(/\s+/).length : 0;
 }
 
-// ── Content-quality validation ───────────────────────────────────────────────
-
-/**
- * Runs four quality checks against generated content.
- *
- *   1. Min word count for the tier (hard fail)
- *   2. No external links in the HTML body (hard fail)
- *   3. Em dash usage (soft warn)
- *   4. Banned words (soft warn)
- *
- * Hard failures throw; soft failures log via console.warn and return.
- */
 export function validateContentQuality(parsed, lengthTier) {
   const content = parsed.content;
   const text = stripHtmlToText(content);
 
-  // 1. Hard: minimum word count.
   const wordCount = text ? text.split(/\s+/).length : 0;
   const minWords = MIN_WORD_COUNT[lengthTier];
   if (wordCount < minWords) {
@@ -402,7 +330,6 @@ export function validateContentQuality(parsed, lengthTier) {
     );
   }
 
-  // 2. Hard: no external links.
   const hrefRegex = /<a\s+[^>]*?href\s*=\s*["']([^"']+)["']/gi;
   const externalLinks = [];
   let m;
@@ -423,7 +350,6 @@ export function validateContentQuality(parsed, lengthTier) {
     );
   }
 
-  // 3. Soft: em dash count.
   const emDashCount = (content.match(/—/g) || []).length;
   if (emDashCount > 0) {
     console.warn(
@@ -431,7 +357,6 @@ export function validateContentQuality(parsed, lengthTier) {
     );
   }
 
-  // 4. Soft: banned words.
   const foundBanned = BANNED_WORDS.filter((word) =>
     new RegExp(`\\b${word}\\b`, "i").test(text),
   );
@@ -442,13 +367,6 @@ export function validateContentQuality(parsed, lengthTier) {
   }
 }
 
-// ── Cover image helpers ──────────────────────────────────────────────────────
-
-/**
- * Builds a Recraft AI image prompt from a blog topic title.
- * Strips stop words, years, and blog-meta words so the prompt describes
- * a visual subject rather than an article structure.
- */
 function buildImagePrompt(title) {
   const skip = new Set([
     "a", "an", "the", "and", "or", "but", "in", "on", "at", "to", "for",
@@ -460,7 +378,6 @@ function buildImagePrompt(title) {
     "if", "than", "as", "up", "out", "about", "into", "before", "after",
     "between", "each", "more", "most", "other", "some", "such", "only",
     "too", "very", "just",
-    // blog meta words that describe article structure, not visuals
     "guide", "complete", "explained", "tips", "checklist", "step", "steps",
     "vs", "comparison", "best", "top", "get", "know", "actually",
     "practical", "residents", "expats", "applicants",
@@ -476,10 +393,6 @@ function buildImagePrompt(title) {
   return `Professional travel photography, ${subject}, editorial style, soft natural light, wide shot, no text, no words, no letters, no watermarks, no labels`;
 }
 
-/**
- * Generates a cover image for the blog topic using Recraft AI.
- * Falls back to a picsum placeholder if the API key is missing or the call fails.
- */
 export async function fetchCoverImage(topicTitle) {
   if (!RECRAFT_API_KEY) {
     console.warn("⚠  RECRAFT_API_KEY not set — using picsum placeholder");
@@ -527,7 +440,6 @@ export async function fetchCoverImage(topicTitle) {
   }
 }
 
-/** Picsum fallback — random travel-ish landscape image. */
 export async function fetchPlaceholderCoverImage() {
   const seed = `travl-${Date.now()}`;
   const url = `https://picsum.photos/seed/${seed}/1200/630.jpg`;

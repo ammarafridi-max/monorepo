@@ -1,8 +1,6 @@
 import { randomBytes } from 'crypto';
 import { AppError } from '@travel-suite/utils';
 
-// Normalise a Mongoose ref that may be a populated doc or a raw ObjectId/string
-// down to its id string (or undefined).
 function idOf(ref) {
   const id = ref?._id ?? ref;
   return id ? String(id) : undefined;
@@ -14,18 +12,9 @@ function resolveServiceName(booking) {
   return 'Chauffeur Service';
 }
 
-/**
- * @param Booking      Mongoose model
- * @param stripe       Stripe client (from @travel-suite/payments createStripeClient)
- * @param frontendUrl  Public site origin (replaces source EL_FRONTEND), e.g. https://www.emirateslimo.com
- * @param pricing      Pricing service exposing getVehiclesForTrip
- */
 export function createBookingService({ Booking, stripe, frontendUrl, pricing }) {
   const getVehiclesForTrip = (query) => pricing.getVehiclesForTrip(query);
 
-  // Recompute the price server-side from the persisted booking so checkout never
-  // trusts the client-supplied orderSummary.total. Zones/vehicle may be populated
-  // documents (pre-find hook) or raw ids — normalise to an id string either way.
   const authoritativeTotal = (booking) =>
     pricing.getAuthoritativeVehiclePrice({
       pickupZone: idOf(booking?.pickup?.zone),
@@ -79,9 +68,6 @@ export function createBookingService({ Booking, stripe, frontendUrl, pricing }) 
   };
 
   const createCheckoutSession = async (booking) => {
-    // Authoritative, server-recomputed total (fails closed if it can't be verified
-    // from the booking's zones + vehicle). The client-supplied orderSummary.total is
-    // never charged.
     const total = Number(await authoritativeTotal(booking));
     if (!Number.isFinite(total) || total <= 0) {
       throw new AppError('Booking total could not be verified', 400);

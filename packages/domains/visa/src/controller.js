@@ -1,7 +1,6 @@
 import { catchAsync, AppError } from '@travel-suite/utils';
 
 export function createVisaController({ service }) {
-  // ─── Public ──────────────────────────────────────────────────────────────────
 
   const getPublicVisas = catchAsync(async (req, res) => {
     const visas = await service.getPublicVisas();
@@ -9,8 +8,6 @@ export function createVisaController({ service }) {
   });
 
   const getPublicVisaBySlug = catchAsync(async (req, res, next) => {
-    // ?residence=AE resolves the page for that country. Omitted, the base page
-    // is returned, which is what this route did before country segmentation.
     const visa = await service.getPublicVisaBySlugForResidence(req.params.slug, req.query.residence);
     if (!visa) return next(new AppError('Visa not found', 404));
     res.status(200).json({ status: 'success', data: visa });
@@ -20,8 +17,6 @@ export function createVisaController({ service }) {
     const visas = await service.getPublicVisasForResidence(req.params.residence);
     res.status(200).json({ status: 'success', results: visas.length, data: visas });
   });
-
-  // ─── Residence overlays (admin) ──────────────────────────────────────────────
 
   const listOverlays = catchAsync(async (req, res) => {
     const filter = {};
@@ -46,8 +41,6 @@ export function createVisaController({ service }) {
     await service.deleteOverlay(req.params.residence, req.params.visaSlug);
     res.status(204).send();
   });
-
-  // ─── Admin ───────────────────────────────────────────────────────────────────
 
   const getAdminVisas = catchAsync(async (req, res) => {
     const { page = 1, limit = 20, status, search } = req.query;

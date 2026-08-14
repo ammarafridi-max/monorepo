@@ -98,14 +98,6 @@ export function trackFlightFormSubmission({
   }
 }
 
-// Visa lead form submission (Travl). Uses GA4's recommended "generate_lead"
-// event so it can be marked a Key Event and imported into Google Ads as a
-// conversion. Deliberately PII-free — no name / email / phone / nationality.
-// Fires once, only after the lead is successfully created (see LeadFormModal).
-//
-// PHASE 1 (now): valueless — a lead is not revenue, and only a fraction close
-// (offline). PHASE 2 (future): attribute real revenue when a lead is marked
-// "converted" in admin. See docs/analytics-visa-lead-tracking.md.
 export function trackVisaLeadSubmit({ visaSlug, packageRequested, applicantCount, source }) {
   if (shouldTrackAnalytics()) {
     ReactGA.event('generate_lead', {
@@ -327,7 +319,6 @@ export function trackPurchase({
   markPurchaseTracked(transactionId, dedupeKey);
 }
 
-// -- Travel itinerary funnel -------------------------------------------------
 
 function itineraryItem({ value = 49, currency = 'AED' } = {}) {
   return {
@@ -369,7 +360,6 @@ export function trackItineraryBeginCheckout({ value = 49, currency = 'AED' } = {
   });
 }
 
-// Fires once per session (deduped via localStorage) — the success page polls.
 export function trackItineraryPurchase({ sessionId, value = 49, currency = 'AED' } = {}) {
   if (!shouldTrackAnalytics() || !sessionId || hasTrackedPurchase(sessionId)) return;
   ReactGA.event('purchase', {

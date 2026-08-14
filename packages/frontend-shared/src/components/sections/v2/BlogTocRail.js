@@ -2,12 +2,6 @@
 
 import { useActiveHeading } from "../../../hooks/blog/useActiveHeading.js";
 
-/**
- * Vertical table of contents for the article rail.
- *
- * Desktop only — on narrow screens the rail collapses and BlogChipNav carries
- * the same headings as a horizontal strip.
- */
 export default function BlogTocRail({ headings = [], heading = "On this page" }) {
   const activeId = useActiveHeading(headings);
 

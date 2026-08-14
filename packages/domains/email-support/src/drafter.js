@@ -52,7 +52,6 @@ ${bodyText}
         .map((block) => block.text)
         .join('');
 
-      // Extract JSON from response (handle potential markdown code fences)
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
         return { isSupport: false, draft: null };
@@ -64,7 +63,6 @@ ${bodyText}
         draft: parsed.draft || null,
       };
     } catch (err) {
-      // If Claude returns invalid JSON or any other error, default to not support
       return { isSupport: false, draft: null };
     }
   }

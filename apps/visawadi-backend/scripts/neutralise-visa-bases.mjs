@@ -1,24 +1,4 @@
 /**
- * Move the last UAE-specific content out of the base visa pages.
- *
- * backfill-uae-overlays.mjs lifted prices, fees, testimonials and the local
- * requirement lines. Three things stayed behind because they're prose rather
- * than structured fields:
- *
- *   whyUs           "Licensed Dubai office", DAFZ, walk-in
- *   faqs            "approval rate for UAE residents", "from the UAE"
- *   metaDescription "for UAE residents… From AED 499"
- *
- * Harmless while the UAE is the only country. The day Saudi Arabia goes live,
- * any of these that Saudi doesn't override shows a Riyadh applicant a Dubai
- * office and a UAE approval rate. That is the failure this whole model exists
- * to prevent, so it gets fixed before the second country, not after.
- *
- * For each affected field: copy the current value into the UAE overlay, then
- * replace the base with a country-neutral version. The UAE page renders
- * identically because the overlay wins; every other country inherits something
- * true.
- *
  * Usage, from apps/visawadi-backend:
  *   node --env-file=.env.production scripts/neutralise-visa-bases.mjs          # dry run
  *   node --env-file=.env.production scripts/neutralise-visa-bases.mjs --apply
@@ -33,7 +13,6 @@ import VisaOverlaySchema from '@travel-suite/visa/overlay-schema';
 const APPLY = process.argv.includes('--apply');
 const OUT = path.join(process.cwd(), 'migration-output', 'visa-bases-pre-neutralise.json');
 
-/** Text that only makes sense to someone living in the UAE. */
 const LOCAL = /Emirates ID|UAE Residence Visa|UAE residents?|\bUAE\b|Dubai|DAFZ|\bAED\b/i;
 
 if (!process.env.MONGO_URI) {
@@ -59,7 +38,6 @@ if (APPLY) {
   console.log(`  backup -> ${path.relative(process.cwd(), OUT)}\n`);
 }
 
-/** Rewrite a base string so it reads true from anywhere. */
 function neutraliseText(s, countryName) {
   return s
     .replace(/\bfor UAE residents\b/gi, 'for applicants')
@@ -88,16 +66,14 @@ for (const v of visas) {
   const overlayUpdate = {};
   const notes = [];
 
-  // --- whyUs: local trust signals belong to the country ---------------------
   const whyUs = v.whyUs || [];
   const localWhyUs = whyUs.filter((w) => LOCAL.test(`${w.title} ${w.description || ''}`));
   if (localWhyUs.length) {
-    if (!overlay.whyUs?.length) overlayUpdate.whyUs = strip(whyUs); // UAE keeps the full list
+    if (!overlay.whyUs?.length) overlayUpdate.whyUs = strip(whyUs);
     baseUpdate.whyUs = strip(whyUs.filter((w) => !LOCAL.test(`${w.title} ${w.description || ''}`)));
     notes.push(`whyUs: ${localWhyUs.length} local entr${localWhyUs.length === 1 ? 'y' : 'ies'} → overlay`);
   }
 
-  // --- faqs: a UAE approval rate is not a universal fact --------------------
   const faqs = v.faqs || [];
   const localFaqs = faqs.filter((f) => LOCAL.test(`${f.question} ${f.answer}`));
   if (localFaqs.length) {
@@ -110,14 +86,12 @@ for (const v of visas) {
     notes.push(`faqs: ${localFaqs.length} rewritten neutral in base, UAE originals → overlay`);
   }
 
-  // --- metaDescription ------------------------------------------------------
   if (v.metaDescription && LOCAL.test(v.metaDescription)) {
     if (!overlay.metaDescription) overlayUpdate.metaDescription = v.metaDescription;
     baseUpdate.metaDescription = neutraliseText(v.metaDescription, v.countryName);
     notes.push('metaDescription → overlay, base neutralised');
   }
 
-  // --- metaTitle ------------------------------------------------------------
   if (v.metaTitle && LOCAL.test(v.metaTitle)) {
     if (!overlay.metaTitle) overlayUpdate.metaTitle = v.metaTitle;
     baseUpdate.metaTitle = neutraliseText(v.metaTitle, v.countryName);

@@ -22,10 +22,6 @@ const loginLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-/**
- * Creates the auth Express router.
- * @param {{ controller, middleware: { protect }, validators: { loginSchema, updatePasswordSchema, updateCurrentAdminSchema } }} deps
- */
 export function createAuthRouterFromParts({ controller, middleware, validators }) {
   const { protect } = middleware;
   const { loginSchema, updatePasswordSchema, updateCurrentAdminSchema } = validators;

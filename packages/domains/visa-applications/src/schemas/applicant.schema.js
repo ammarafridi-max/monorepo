@@ -3,9 +3,6 @@ import { FINANCIAL_SUPPORT, MINOR_TRAVELLING_WITH } from './checklistTemplate.sc
 
 const { Schema, Types: { ObjectId } } = mongoose;
 
-// Employment is no longer a checklist driver by enum alone — the template rules
-// reference these values. MINOR is NOT an employment status any more (age is derived
-// from dateOfBirth); it is kept out of this list.
 export const EMPLOYMENT_STATUSES = [
   'EMPLOYED',
   'SELF_EMPLOYED',
@@ -29,11 +26,8 @@ const applicantSchema = new Schema(
 
     relationshipToPrimary: { type: String, trim: true, maxlength: 60, default: '' },
 
-    // ---- profile answers that drive the template rules ---------------------
-    // ageGroup (ADULT/MINOR) is DERIVED from dateOfBirth, never stored.
     employmentStatus: { type: String, enum: [...EMPLOYMENT_STATUSES, null], default: null },
     financialSupport: { type: String, enum: [...FINANCIAL_SUPPORT, null], default: null },
-    // Set when financialSupport is SPONSORED — points at the applicant who funds them.
     sponsorApplicant: { type: ObjectId, ref: 'applicant', default: null },
     minorTravellingWith: { type: String, enum: [...MINOR_TRAVELLING_WITH, null], default: null },
   },

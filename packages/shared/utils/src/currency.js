@@ -14,7 +14,6 @@ export function formatAmount(value) {
   return normalizeAmount(value).toFixed(2);
 }
 
-/** "AED 49.00" */
 export function formatCurrencyAmount(value, code = 'AED') {
   return `${code} ${formatAmount(value)}`;
 }

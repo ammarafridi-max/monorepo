@@ -6,8 +6,6 @@ import { useSendReservation } from '../../hooks/dummy-tickets/useSendReservation
 
 const BRAND = process.env.NEXT_PUBLIC_BRAND;
 
-// Brand-specific template strings. Keeping them in one place so the
-// template author can see both variants side-by-side.
 const BRANDS = {
   mdt: {
     label: 'MyDummyTicket',
@@ -41,11 +39,6 @@ function escapeHtml(s) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-// Convert the edited plain-text body to HTML: escape user content,
-// preserve blank lines, then upgrade the website line to a real anchor
-// tag → brand homepage. If the agent edits that phrase away, the
-// replacement becomes a no-op; the email still sends fine as plain
-// text with line breaks.
 function bodyToHtml(text) {
   const safe = escapeHtml(text);
   const withBreaks = safe.split('\n').map((l) => l || '&nbsp;').join('<br>');
@@ -71,8 +64,6 @@ export default function SendReservationModal({ open, onClose, ticket, agentName 
 
   const { sendReservationAsync, isSending } = useSendReservation();
 
-  // Re-seed when the modal opens with a different ticket (e.g. agent
-  // navigates between tickets without unmounting the modal).
   useEffect(() => {
     if (open) {
       setSubject(`Your Flight Reservation — ${brand.label}`);
@@ -100,7 +91,6 @@ export default function SendReservationModal({ open, onClose, ticket, agentName 
       });
       onClose();
     } catch {
-      // Toast handled in the hook.
     }
   }
 

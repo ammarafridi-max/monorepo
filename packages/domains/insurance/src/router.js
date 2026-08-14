@@ -1,9 +1,5 @@
 import { Router } from 'express';
 
-/**
- * Creates and returns the insurance Express router.
- * @param {{ controller, auth: { protect, restrictTo } }} deps
- */
 export function createInsuranceRouterFromController({ controller, auth }) {
   const { protect, restrictTo } = auth;
   const router = Router();

@@ -1,8 +1,7 @@
 import { catchAsync, AppError } from '@travel-suite/utils';
 
 export function createAvailabilityRuleController({ service }) {
-  // Faithful to source: create persists req.body directly (NOT the zod-parsed body)
-  // and returns the raw, unformatted document.
+  // Deliberate: persists raw req.body, not the zod-parsed body.
   const createAvailabilityRule = catchAsync(async (req, res) => {
     const rule = await service.createRuleRaw(req.body);
     res.status(201).json({ status: 'success', message: 'Availability rule created successfully', data: rule });

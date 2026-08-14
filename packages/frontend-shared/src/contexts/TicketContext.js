@@ -68,9 +68,7 @@ export function TicketProvider({ children }) {
       for (let i = 0; i < count; i++) {
         newPassengers.push({
           type,
-          // Intentionally empty: forces the customer to choose a title rather
-          // than silently inheriting "Mr." Submission is gated on this in
-          // FlightForm (`!p.title` disables the button).
+          // Intentionally empty: submission is gated on the customer picking a title.
           title: '',
           firstName: '',
           lastName: '',

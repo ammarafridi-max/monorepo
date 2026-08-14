@@ -10,18 +10,10 @@ const shouldTrackClarity = () => isProduction && !isAdminPath();
 
 let initialized = false;
 
-/**
- * Microsoft Clarity, loaded by hand rather than via a package.
- *
- * Clarity ships no maintained npm client, so this is the official snippet
- * rewritten readably. Same guards as the Hotjar util it replaces: production
- * only, never on the admin dashboards, and never twice.
- */
 export function initializeClarity() {
   if (initialized || !CLARITY_PROJECT_ID || !shouldTrackClarity()) return;
   if (typeof window === "undefined" || typeof document === "undefined") return;
 
-  // Queue calls made before the tag finishes loading; Clarity drains this itself.
   window.clarity =
     window.clarity ||
     function (...args) {

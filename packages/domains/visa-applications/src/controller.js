@@ -1,7 +1,6 @@
 import { Readable } from 'node:stream';
 import { catchAsync, AppError } from '@travel-suite/utils';
 
-// Pipe a resolved document straight to the response — inline, no disk write.
 function pipeInline(res, { body, mimeType, filename }) {
   res.setHeader('Content-Type', mimeType);
   res.setHeader('Content-Disposition', `inline; filename="${String(filename).replace(/["\r\n]/g, '')}"`);

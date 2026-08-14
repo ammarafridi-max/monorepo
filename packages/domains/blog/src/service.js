@@ -54,9 +54,6 @@ export function createBlogService({ Blog, BlogTag, imageStorage }) {
     const totalPages = Math.max(1, Math.ceil(total / pageSize));
     if (currentPage > totalPages) currentPage = totalPages;
 
-    // Published listings order by when a post went live (newest published first),
-    // falling back to createdAt for any legacy post missing publishedAt. Other
-    // listings (drafts, scheduled, all) stay ordered by creation date.
     const sort =
       status === 'published'
         ? { publishedAt: -1, createdAt: -1 }

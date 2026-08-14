@@ -35,8 +35,6 @@ function ChatPanel({ sessionId, chatsRemaining, mismatch, returnCheck, onApplyFi
 
   const exhausted = chatsRemaining <= 0;
 
-  // Advisory one-click fixes — each runs through the normal AI edit (and therefore
-  // re-validates and re-renders): a main-destination rebalance and a return flight.
   const fixSuggestions = [
     ...(mismatch?.hasMismatch
       ? [
@@ -49,9 +47,7 @@ function ChatPanel({ sessionId, chatsRemaining, mismatch, returnCheck, onApplyFi
       : []),
   ];
 
-  // Pin the chat to its latest message WITHOUT scrolling the page — scroll only the
-  // messages container. (scrollIntoView scrolls every ancestor incl. the window, so
-  // the page jumped down each time the itinerary preview refreshed after an edit.)
+  // Scroll only the messages container; scrollIntoView would scroll the page too.
   useEffect(() => {
     const el = scrollRef.current;
     if (el) el.scrollTop = el.scrollHeight;
@@ -95,7 +91,7 @@ function ChatPanel({ sessionId, chatsRemaining, mismatch, returnCheck, onApplyFi
                 key={s.text}
                 type="button"
                 onClick={() => {
-                  onApplyFix?.(s.key); // hide this advisory + suggestion immediately
+                  onApplyFix?.(s.key);
                   submit(s.text);
                 }}
                 disabled={exhausted}
@@ -186,19 +182,12 @@ function Bubble({ role, text }) {
   );
 }
 
-// Cap how long we spin on a GENERATING/DRAFT order. If the background job was lost
-// (e.g. a server restart mid-generation) the order never settles, so instead of an
-// endless spinner we stop polling after this and show a retryable error.
-// TODO(server): pair this with a server-side watchdog that fails stale GENERATING
-// orders (TTL/cron sweeper) — this client-side cap is only half the fix.
 const POLL_TIMEOUT_MS = 3 * 60 * 1000;
 
 export default function ItineraryPreviewPage({ sessionId }) {
   const [pollTimedOut, setPollTimedOut] = useState(false);
   const generatingSinceRef = useRef(null);
 
-  // Generation runs in the background server-side; poll until it settles (or we
-  // reach the elapsed-time cap, after which the watchdog effect stops us).
   const { order, isLoadingOrder, isErrorOrder, refetchOrder } = useItineraryOrder(sessionId, {
     refetchInterval: (query) => {
       if (pollTimedOut) return false;
@@ -209,7 +198,6 @@ export default function ItineraryPreviewPage({ sessionId }) {
   const { regenerateItinerary, isRegeneratingItinerary } = useRegenerateItinerary(sessionId);
   const { startItineraryCheckout, isStartingCheckout } = useItineraryCheckout();
 
-  // GA4 view_item — once, when the (unpaid) preview is shown.
   const viewedRef = useRef(false);
   useEffect(() => {
     if (!viewedRef.current && order?.status === 'GENERATED' && order.paymentStatus !== 'PAID') {
@@ -218,11 +206,6 @@ export default function ItineraryPreviewPage({ sessionId }) {
     }
   }, [order]);
 
-  // Advisories the user has applied a fix for — hide the banner + suggestion at once,
-  // without waiting for the (slow, background) re-validation. Main-destination is
-  // recomputed server-side, so we drop it from the applied set when it genuinely
-  // clears, letting a real recurrence re-surface. The return-trip check is
-  // segment-based (chat doesn't edit segments), so once applied it stays cleared.
   const [appliedFixes, setAppliedFixes] = useState(() => new Set());
   useEffect(() => {
     setAppliedFixes((prev) => {
@@ -234,9 +217,6 @@ export default function ItineraryPreviewPage({ sessionId }) {
     });
   }, [order]);
 
-  // Watchdog for the poll: once the order has been GENERATING/DRAFT for
-  // POLL_TIMEOUT_MS, flip pollTimedOut so the refetchInterval stops and we show a
-  // retryable error. Resets whenever the status settles or a fresh generation starts.
   useEffect(() => {
     const s = order?.status;
     const generating = s === 'GENERATING' || s === 'DRAFT';
@@ -255,8 +235,6 @@ export default function ItineraryPreviewPage({ sessionId }) {
     return () => clearTimeout(timer);
   }, [order?.status, pollTimedOut]);
 
-  // Retry after a poll timeout: restart the clock and resume polling in case the
-  // order still settles.
   function retryGeneration() {
     generatingSinceRef.current = null;
     setPollTimedOut(false);
@@ -322,8 +300,6 @@ export default function ItineraryPreviewPage({ sessionId }) {
   const isGenerating = order.status === 'GENERATING' || order.status === 'DRAFT';
   const hasPreview = order.previewVersion > 0;
 
-  // First generation — no preview rendered yet. Show a building state; the poll
-  // above flips this to the real preview (or FAILED) when the server finishes.
   if (isGenerating && !hasPreview) {
     return (
       <div className="max-w-3xl mx-auto px-6 py-24 flex flex-col items-center gap-4 text-center">
@@ -359,7 +335,6 @@ export default function ItineraryPreviewPage({ sessionId }) {
     </div>
   );
 
-  // Paid: no chat — preview takes the full width + a fixed download bar.
   if (isPaid) {
     return (
       <>
@@ -384,7 +359,6 @@ export default function ItineraryPreviewPage({ sessionId }) {
     );
   }
 
-  // Pre-payment: Chat (left) | Preview (wider). Price/actions in a fixed bottom bar.
   return (
     <>
       <div className="flex flex-col lg:flex-row gap-6 items-start">

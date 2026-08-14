@@ -21,14 +21,11 @@ export function createAdminUsersRouterFromParts({ controller, auth }) {
   const router = Router();
   const { protect, restrictTo } = auth;
 
-  // Any authenticated admin (any role) can manage their own profile
   router.get("/me", protect, controller.getMe);
   router.patch("/me", protect, controller.updateMe);
   router.patch("/me/password", protect, controller.updateMyPassword);
 
-  // Everything below requires an authenticated admin. Without this guard the
-  // CRUD routes (including createAdminUser, which accepts `role`) are a public
-  // account-creation / privilege-escalation endpoint.
+  // Must precede the CRUD routes: without it createAdminUser is a public privilege-escalation endpoint.
   router.use(protect, restrictTo("admin"));
 
   router
@@ -42,7 +39,6 @@ export function createAdminUsersRouterFromParts({ controller, auth }) {
     .patch(validate(updateAdminUserSchema), controller.updateAdminUser)
     .delete(controller.deleteAdminUser);
 
-  // Admin-only: reset any user's password (does not require the target's current password)
   router.patch(
     "/:username/password",
     protect,

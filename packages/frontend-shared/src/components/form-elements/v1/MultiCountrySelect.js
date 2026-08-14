@@ -4,8 +4,6 @@ import { useState, useRef } from 'react';
 import { ChevronDown, X } from 'lucide-react';
 import { useOutsideClick } from '../../../hooks/general/useOutsideClick';
 
-// Searchable multi-select over a list of string options (e.g. countries).
-// value/onChange work with an array of strings.
 export default function MultiCountrySelect({
   value = [],
   onChange,

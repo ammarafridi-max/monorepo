@@ -13,7 +13,6 @@ const upload = multer({
   },
 });
 
-// Wrap multer so its errors (oversized file, wrong type) become clean 400s.
 function uploadSingleDocument(req, res, next) {
   upload.single('document')(req, res, (err) => {
     if (!err) return next();
@@ -23,10 +22,6 @@ function uploadSingleDocument(req, res, next) {
   });
 }
 
-/**
- * @param {{ controller, auth: { protect, restrictTo }, userAuth: { protect } }} deps
- * `auth` is the ADMIN middleware; `userAuth` is the customer (userJwt) middleware.
- */
 export function createVisaApplicationRouterFromParts({ controller, auth, userAuth }) {
   const router = Router();
   const { protect: adminProtect, restrictTo } = auth;
@@ -34,8 +29,7 @@ export function createVisaApplicationRouterFromParts({ controller, auth, userAut
   const adminOnly = [adminProtect, restrictTo('admin', 'agent')];
   const adminSuper = [adminProtect, restrictTo('admin')];
 
-  // ---- ADMIN — registry CRUD (registered FIRST so their paths aren't shadowed
-  //      by /admin/:id). Admin-only. ----
+  // Registered before /admin/:id so these literal paths are not shadowed by it.
   router.get('/admin/document-types', ...adminOnly, controller.listDocumentTypes);
   router.post('/admin/document-types', ...adminSuper, controller.createDocumentType);
   router.patch('/admin/document-types/:id', ...adminSuper, controller.updateDocumentType);
@@ -45,7 +39,6 @@ export function createVisaApplicationRouterFromParts({ controller, auth, userAut
   router.get('/admin/templates/:id', ...adminOnly, controller.getTemplate);
   router.patch('/admin/templates/:id', ...adminSuper, controller.updateTemplate);
 
-  // ---- ADMIN — reminders + document-level actions ----
   router.get('/admin/list', ...adminOnly, controller.adminList);
   router.post('/admin/reminders/run', ...adminSuper, controller.adminRunReminders);
   router.post('/admin', ...adminOnly, controller.adminCreate);
@@ -57,7 +50,6 @@ export function createVisaApplicationRouterFromParts({ controller, auth, userAut
   router.post('/admin/documents/:documentId/satisfied-by', ...adminOnly, controller.adminLinkSatisfiedBy);
   router.delete('/admin/documents/:documentId', ...adminOnly, controller.adminRemoveDocumentRow);
 
-  // ---- ADMIN — application + applicant ----
   router.get('/admin/:id', ...adminOnly, controller.adminGetById);
   router.patch('/admin/:id', ...adminOnly, controller.adminUpdate);
   router.post('/admin/:id/applicants', ...adminOnly, controller.adminAddApplicant);
@@ -65,7 +57,6 @@ export function createVisaApplicationRouterFromParts({ controller, auth, userAut
   router.post('/admin/:id/applicants/:applicantId/documents', ...adminOnly, controller.adminAddDocumentRow);
   router.post('/admin/:id/notes', ...adminOnly, controller.adminAddNote);
 
-  // ---- CUSTOMER (userJwt) ----
   router.get('/mine', userProtect, controller.listMine);
   router.get('/documents/:documentId/view', userProtect, controller.viewDocument);
   router.get('/documents/:documentId/stream', userProtect, controller.streamDocument);

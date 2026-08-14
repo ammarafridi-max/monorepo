@@ -17,26 +17,8 @@ import {
 } from './templates/visa-applications.js';
 import { formatDate, formatToDDMMM, formatToDDMMMYYYYMixed, extractIataCode } from './helpers.js';
 
-/**
- * @param {{
- *   sendEmail: (args: { email: string, name: string, subject: string, htmlContent?: string, textContent?: string }) => Promise<any>,
- *   logger?: { error: Function },
- *   brand: {
- *     name: string,
- *     teamName: string,
- *     adminEmail: string,
- *     website: string,
- *     paymentsSenderName: string,
- *     deliverySenderName: string,
- *     customerSenderName: string,
- *     theme: { primaryColor: string, accentColor: string, linkColor: string },
- *   }
- * }} deps
- */
 export function createNotificationsService({ sendEmail, logger, brand }) {
   const log = logger?.error?.bind(logger) ?? console.error;
-
-  // -- 1. Insurance form submission ------------------------------------------
 
   async function sendInsuranceFormSubmission({ passengers }) {
     try {
@@ -52,8 +34,6 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
       log('[notifications] sendInsuranceFormSubmission failed', { err: err.message });
     }
   }
-
-  // -- 2. Insurance payment (admin) ------------------------------------------
 
   async function sendInsurancePaymentToAdmin(data) {
     try {
@@ -71,8 +51,6 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
       });
     }
   }
-
-  // -- 3. Ticket payment (admin) ---------------------------------------------
 
   async function sendTicketPaymentToAdmin(data) {
     try {
@@ -99,15 +77,6 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
       });
     }
   }
-
-  // -- 3b. Ticket payment (customer) ----------------------------------------
-  //
-  // Sent to the customer right after the admin notification on PAID. Plain
-  // text only (renders identically across every mail client, looks personal,
-  // no broken templates). Two copy variants:
-  //   - immediate delivery: "we're preparing your ticket"
-  //   - scheduled delivery: "your ticket is scheduled for <date>"
-  // Best-effort — wrapped in try/catch so a send failure never breaks payment.
 
   async function sendTicketPaymentToCustomer(data) {
     try {
@@ -176,8 +145,6 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
     }
   }
 
-  // -- 4. Custom payment link paid (admin) -----------------------------------
-
   async function sendPaymentLinkPaidToAdmin(data) {
     try {
       const currency = String(data.currency || '').toUpperCase();
@@ -210,8 +177,6 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
     }
   }
 
-  // -- 5. Booking payment (admin) --------------------------------------------
-
   async function sendBookingPaymentToAdmin(data) {
     try {
       const htmlContent = renderBookingPaymentAdminTemplate({ brand, ...data });
@@ -232,8 +197,6 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
     }
   }
 
-  // -- 6. Booking payment (customer) -----------------------------------------
-
   async function sendBookingConfirmationToCustomer(data) {
     try {
       if (!data?.email) return false;
@@ -253,8 +216,6 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
       return false;
     }
   }
-
-  // -- 7. Contact form (admin) -----------------------------------------------
 
   async function sendContactFormToAdmin({ name, email, subject, message }) {
     try {
@@ -279,8 +240,6 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
     }
   }
 
-  // -- 8. Visa lead (admin) ---------------------------------------------------
-
   async function sendVisaLeadToAdmin(data) {
     try {
       const htmlContent = renderVisaLeadTemplate({ brand, ...data });
@@ -298,8 +257,6 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
       });
     }
   }
-
-  // -- 9. Visa applications ---------------------------------------------------
 
   async function sendMagicLink({ email, magicLinkUrl }) {
     try {
@@ -379,8 +336,6 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
       return false;
     }
   }
-
-  // -- 10. Visa reminder engine ----------------------------------------------
 
   async function sendDocumentsStillNeeded({ email, applicationRef, destinationCountry, missing, link }) {
     try {

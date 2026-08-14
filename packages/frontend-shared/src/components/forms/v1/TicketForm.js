@@ -19,7 +19,6 @@ export default function TicketForm() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [errors, setErrors] = useState({});
-  // Field refs used to focus the first invalid input on submit.
   const fromRef = useRef(null);
   const toRef = useRef(null);
   const departureRef = useRef(null);
@@ -40,10 +39,6 @@ export default function TicketForm() {
     setQuantity,
   } = useContext(TicketContext);
 
-  // Build the errors map without firing toasts or side-effects. The set of
-  // required fields here matches what the old `disabled` prop was checking:
-  // from, to, departureDate, and returnDate (when Return). Passenger-count
-  // bounds are enforced separately inside handleQuantityChange.
   function buildErrors() {
     const next = {};
     if (!from) next.from = 'Select a departure airport';
@@ -75,7 +70,6 @@ export default function TicketForm() {
     if (field === 'to') setTo(value);
     if (field === 'departureDate') setDepartureDate(value);
     if (field === 'returnDate') setReturnDate(value);
-    // Clear that field's error the moment the user fills it.
     if (value && errors[field]) {
       setErrors((prev) => {
         const { [field]: _removed, ...rest } = prev;

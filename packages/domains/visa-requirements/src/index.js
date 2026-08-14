@@ -9,15 +9,6 @@ function getOrRegisterModel(conn, name, schema) {
   try { return conn.model(name); } catch { return conn.model(name, schema); }
 }
 
-/**
- * @param servicedSlugs visa page slugs the brand actually sells, used to decide
- *        whether a "visa required" answer should push the consultation CTA.
- *
- * Providers are an ordered list so a third-party source can be added later
- * without touching the service, the router or the frontend. Nothing is wired to
- * one today: we ran the numbers on Sherpa and it was $1,500/month with no
- * residence field, which is the one thing this tool needs to get right.
- */
 export function createVisaRequirementsRouter({ db, auth, servicedSlugs = [], logger }) {
   const VisaRule = getOrRegisterModel(db, 'visa-rule', VisaRuleSchema);
   const VisaQuery = getOrRegisterModel(db, 'visa-query', VisaQuerySchema);

@@ -2,12 +2,6 @@
 
 import { useActiveHeading } from "../../../hooks/blog/useActiveHeading.js";
 
-/**
- * Horizontal table of contents, built from the article's <h2> headings.
- *
- * Carries the contents on screens too narrow for the rail; BlogTocRail takes
- * over from `lg` up, both driven by the same active-heading hook.
- */
 export default function BlogChipNav({ headings = [], className = "" }) {
   const activeId = useActiveHeading(headings);
 

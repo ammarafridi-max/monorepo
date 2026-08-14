@@ -1,15 +1,3 @@
-/**
- * Static nationality list, shared by every brand.
- *
- * This used to come from GET /api/insurance/nationalities. That meant any brand
- * which does not mount the insurance domain (VisaWadi) received an empty list,
- * and because the visa lead form marks nationality as required, the form could
- * not be submitted at all. The list is fixed reference data rather than
- * per-brand data, so it belongs here instead of behind an endpoint.
- *
- * `id` is the insurance underwriter nationality code, kept so the shape matches
- * the old API response exactly. Visa forms only read `nationality`.
- */
 export const NATIONALITIES = [
   {
     "id": "1",

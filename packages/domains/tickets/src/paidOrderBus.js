@@ -1,9 +1,4 @@
-// In-memory broadcaster for "a ticket was just paid" SSE events.
-//
-// Caveat: this only reaches admins connected to the SAME backend instance
-// that processed the payment webhook. If the apps ever scale beyond a
-// single Fly machine (or split webhook handling across regions), upgrade
-// to a Redis pub/sub channel — same subscribe/publish API.
+// In-memory bus: only reaches admins on the SAME backend instance. Scaling past one machine needs Redis pub/sub.
 export function createPaidOrderBus() {
   const subscribers = new Set();
 

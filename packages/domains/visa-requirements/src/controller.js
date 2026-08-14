@@ -2,7 +2,6 @@ export function createVisaRequirementsController({ service }) {
   const ok = (res, data, status = 200) => res.status(status).json({ status: 'success', data });
 
   return {
-    // Public
     check: async (req, res, next) => {
       try {
         const { nationality, residence, destination } = { ...req.query, ...req.body };
@@ -10,7 +9,6 @@ export function createVisaRequirementsController({ service }) {
       } catch (err) { next(err); }
     },
 
-    // Admin
     listRules: async (req, res, next) => {
       try {
         const published = req.query.published === undefined ? undefined : req.query.published === 'true';

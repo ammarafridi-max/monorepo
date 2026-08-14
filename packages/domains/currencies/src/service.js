@@ -17,10 +17,7 @@ function buildSort(sort = 'base_first') {
   return map[sort] || map.base_first;
 }
 
-// Demote every base currency except `keepId` (pass null to demote all). Run this
-// BEFORE persisting a new base, never after: the partial unique index only allows
-// one isBaseCurrency:true doc, so writing a second base first throws E11000 and
-// leaves the switch half-applied.
+// Must run BEFORE persisting a new base: the partial unique index rejects a second isBaseCurrency:true doc.
 async function demoteOtherBases(Currency, keepId) {
   const filter = { isBaseCurrency: true };
   if (keepId) filter._id = { $ne: keepId };
@@ -56,8 +53,6 @@ export function createCurrencyService({ Currency }) {
     const hasBase = await Currency.exists({ isBaseCurrency: true });
     const shouldBeBase = hasBase ? !!isBaseCurrency : true;
 
-    // Demote the existing base first so inserting this one doesn't collide with
-    // the single-base partial unique index.
     if (shouldBeBase) await demoteOtherBases(Currency, null);
 
     const currency = await Currency.create({
@@ -94,8 +89,6 @@ export function createCurrencyService({ Currency }) {
     if (currency.isBaseCurrency) currency.rate = 1;
     currency.lastUpdated = Date.now();
 
-    // Demote the previous base BEFORE saving this one, otherwise the two-bases-at-once
-    // state trips the partial unique index and the switch fails half-applied.
     if (currency.isBaseCurrency) await demoteOtherBases(Currency, currency._id);
     await currency.save();
     return currency;

@@ -17,8 +17,6 @@ export function createBookingService({ Booking, stripe }) {
   }
 
   async function createBooking({ trip, vehicle, passenger }) {
-    // Never persist a client-supplied price. Resolve the vehicle (and its price)
-    // from the server-side catalogue so the stored record is trustworthy.
     const resolved = resolveVehicle(vehicle);
     if (!resolved) throw new AppError('Unknown vehicle selection', 400);
     const trustedVehicle = {
@@ -44,15 +42,9 @@ export function createBookingService({ Booking, stripe }) {
   }
 
   async function createCheckout({ vehicle, passenger, bookingId, successUrl, cancelUrl }) {
-    // Authoritative price comes from the server-side catalogue, keyed by the
-    // vehicle id — the client-supplied `vehicle.price` is ignored so a caller can't
-    // pay an amount of their choosing.
     const resolved = resolveVehicle(vehicle);
     if (!resolved) throw new AppError('Unknown vehicle selection', 400);
 
-    // Confirm the booking exists before anything payable is created. A session
-    // for an unknown id would take the customer's money and leave the webhook
-    // with no record to mark paid.
     const booking = await Booking.findById(bookingId).catch(() => null);
     if (!booking) throw new AppError('Booking not found', 404);
 
@@ -77,8 +69,7 @@ export function createBookingService({ Booking, stripe }) {
       cancel_url: cancelUrl,
     });
 
-    // Keep any reference already issued, so a customer who abandons checkout
-    // and comes back does not end up with a second reference for one booking.
+    // Reuse any existing bookingRef so an abandoned-then-resumed checkout does not issue a second one.
     await Booking.findByIdAndUpdate(bookingId, {
       stripeSessionId: session.id,
       bookingRef: booking.bookingRef || generateBookingRef(),

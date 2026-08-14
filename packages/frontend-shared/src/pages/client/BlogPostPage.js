@@ -13,8 +13,6 @@ import BlogOfferCard from "../../components/ui/v2/BlogOfferCard";
 import BlogInlineOffer from "../../components/ui/v2/BlogInlineOffer";
 import { prepareArticleHtml } from "../../utils/articleHtml.js";
 
-// The mid-article offer goes after this many headings — a fixed spot rather
-// than a ratio, so it lands once the reader is committed but well before the end.
 const INLINE_OFFER_AFTER_HEADING = 2;
 
 export default function BlogPostPage({
@@ -38,8 +36,6 @@ export default function BlogPostPage({
     { splitAfterHeading: inlineOffer ? INLINE_OFFER_AFTER_HEADING : 0 },
   );
 
-  // On mobile the rail collapses below the article, so the primary offer has to
-  // be reachable from the answer panel instead.
   const primaryOffer = offers[0] ?? null;
 
   return (

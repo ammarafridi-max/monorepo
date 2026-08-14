@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { checkVisaRequirementApi } from '../../services/apiVisaRequirements.js';
 
-/** Form state and submission for the visa checker, shared by every surface. */
 export function useVisaCheck() {
   const [nationality, setNationality] = useState('');
   const [residence, setResidence] = useState('');

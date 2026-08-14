@@ -10,20 +10,6 @@ function getOrRegisterModel(conn, name, schema) {
   }
 }
 
-/**
- * Builds the `booking` product-type handler for the shared Stripe webhook
- * dispatcher (@travel-suite/payments createStripeWebhookHandler). The dispatcher
- * has already verified the signature, enforced idempotency, and confirmed
- * payment_status === 'paid' before this runs.
- *
- * Wire it as:
- *   createStripeWebhookHandler({ stripe, webhookSecret, db, handlers: { booking: handler } })
- *
- * @param {{ db: import('mongoose').Connection, notifications?: {
- *   sendPaymentConfirmationEmailAdmin: Function,
- *   sendPaymentConfirmationEmailCustomer: Function,
- * } }} deps
- */
 export function createBookingPaymentHandler({ db, notifications }) {
   const Booking = getOrRegisterModel(db, 'Booking', BookingSchema);
 
@@ -43,11 +29,6 @@ export function createBookingPaymentHandler({ db, notifications }) {
     booking.status = 'pending';
     await booking.save();
 
-    // The payment is now persisted. Everything below is best-effort: a mail
-    // provider outage must not bubble up, because the dispatcher would answer
-    // 500, Stripe would redeliver, and this paid session would be reprocessed.
-    // deliverPaymentConfirmations() is contractually non-throwing and records
-    // the outcome on the booking so a silent failure stays findable.
     await deliverPaymentConfirmations({ Booking, booking, notifications });
   };
 }

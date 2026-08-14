@@ -21,8 +21,6 @@ import { useGenerateItinerary } from "../../hooks/itineraries/useGenerateItinera
 import { useParseDocuments } from "../../hooks/itineraries/useParseDocuments";
 import { trackItineraryGenerate } from "../../utils/analytics";
 
-// Contact details are shared with the dummy-ticket flow via localStorage
-// (keys: 'email' as a string, 'phoneNumber' as { code, digits } JSON).
 function safeParse(key, fallback) {
   try {
     if (typeof window === "undefined") return fallback;
@@ -87,7 +85,6 @@ function SectionCard({ step, title, subtitle, children }) {
   );
 }
 
-// Reusable controlled country dropdown (stores the country name as a string).
 function CountrySelect({ control, name, rules, countryItems, placeholder }) {
   return (
     <Controller
@@ -113,7 +110,7 @@ export default function ItineraryGeneratorPage({
   const { generateItinerary, isGeneratingItinerary } = useGenerateItinerary({
     onAnalytics,
   });
-  const [docs, setDocs] = useState([]); // optional supporting docs (auto-fill: coming soon)
+  const [docs, setDocs] = useState([]);
 
   const {
     register,
@@ -146,20 +143,15 @@ export default function ItineraryGeneratorPage({
     name: "segments",
   });
   const { parseDocuments, isParsing } = useParseDocuments();
-  const watchedSegments = watch("segments"); // live values, for chronological date limits
+  const watchedSegments = watch("segments");
   const countryItems = countries.map((c) => ({ id: c, name: c }));
 
-  // The first segment can't start before tomorrow; later segments are bounded
-  // by the previous segment's date (which is itself already >= tomorrow).
   const tomorrow = (() => {
     const d = new Date();
     d.setDate(d.getDate() + 1);
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   })();
 
-  // Prefill contact details from localStorage if present (shared with the
-  // dummy-ticket flow); otherwise the fields stay empty for fresh entry. Run
-  // after mount to avoid a hydration mismatch.
   useEffect(() => {
     const storedEmail = safeGetItem("email", "");
     const storedPhone = safeParse("phoneNumber", null);
@@ -172,7 +164,6 @@ export default function ItineraryGeneratorPage({
     }
   }, [setValue]);
 
-  // Upload supporting documents -> AI extracts segments + reservations -> prefill.
   function handleDocs(e) {
     const files = Array.from(e.target.files || []);
     setDocs(files);
@@ -221,7 +212,6 @@ export default function ItineraryGeneratorPage({
   }
 
   function onSubmit(values) {
-    // Persist contact details for next time / the dummy-ticket flow.
     if (typeof window !== "undefined") {
       try {
         localStorage.setItem("email", values.traveller.email.trim());
@@ -255,7 +245,6 @@ export default function ItineraryGeneratorPage({
           date: s.date,
         })),
       },
-      // Optional supporting documents — archived with the order in Cloudinary.
       files: docs,
     });
   }

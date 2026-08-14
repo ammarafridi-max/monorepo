@@ -5,12 +5,6 @@ function escapeRegex(value = '') {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-/**
- * Builds the Mongo filter shared by the applications list and the summary
- * aggregation, so the stats cards always reflect exactly the same rows the
- * table shows. Consumes the same query params the admin UI sets
- * (paymentStatus, journeyType, createdAt, search); ignores pagination keys.
- */
 function buildApplicationsFilter(query = {}) {
   const queryObj = { ...query };
   const { createdAt, search } = queryObj;
@@ -43,10 +37,6 @@ function buildApplicationsFilter(query = {}) {
   return filter;
 }
 
-/**
- * Creates insurance controller handlers with injected dependencies.
- * @param {{ service, wis, Nationality, InsuranceApplication, logger, brevo }} deps
- */
 export function createInsuranceController({ service, wis, Nationality, InsuranceApplication, logger, brevo }) {
   const getAllApplications = catchAsync(async (req, res) => {
     const page  = Math.max(1, parseInt(req.query.page,  10) || 1);

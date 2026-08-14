@@ -3,8 +3,6 @@ import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { checkoutItineraryApi } from '../../services/apiItineraries.js';
 
-// Creates a Stripe checkout session and redirects to the hosted page.
-// Mirrors the dummy-ticket payment flow (redirect, not Stripe Elements).
 export function useItineraryCheckout() {
   const {
     mutate: startItineraryCheckout,

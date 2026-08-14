@@ -1,20 +1,12 @@
 import Link from "next/link";
 import { ArrowRight, Check, Clock } from "lucide-react";
 
-// What every package includes, shown on the card so the grid reads as a
-// consistent offer rather than a list of countries.
 const DEFAULT_FEATURES = [
   "Full document review and file preparation",
   "VFS or embassy appointment booking",
   "Cover letter and financial summary written for you",
 ];
 
-/**
- * Visa destination card. Used on the /visa listing and on the homepage.
- *
- * `fallbackTagline` covers pages written before the admin excerpt field
- * existed; the excerpt wins whenever an editor has set one.
- */
 export default function VisaCard({ visa, fallbackTagline = "", features = DEFAULT_FEATURES, href }) {
   if (!visa?.slug) return null;
 
@@ -30,8 +22,6 @@ export default function VisaCard({ visa, fallbackTagline = "", features = DEFAUL
 
   return (
     <Link
-      // Country-segmented sites pass an explicit href; the default keeps the
-      // pre-segmentation path working for anything still on /visa/*.
       href={href || `/visa/${visa.slug}`}
       className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-[0_4px_20px_rgba(16,24,40,0.06)] hover:-translate-y-1 hover:shadow-[0_12px_36px_rgba(16,24,40,0.12)] transition-all duration-300"
     >

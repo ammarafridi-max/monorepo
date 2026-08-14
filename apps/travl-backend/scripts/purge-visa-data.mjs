@@ -1,24 +1,10 @@
 /**
- * Remove the leftover visa data from Travl after the split.
- *
- * Backs everything up to migration-output/travl-visa-data-backup.json first,
- * including the collections it does NOT touch, so the whole pre-purge state is
- * recoverable from one file.
- *
- * WHAT IT DELETES
- *   visa-applications, applicants, application-documents  (test records: every
- *     applicant has a blank name and no document reached Cloudinary)
- *   users            (one account, the owner's own address, created by testing
- *                     the /apply magic-link flow)
- *   visas            (all 9 already live on VisaWadi, and /visa now redirects)
- *   document-types   (checklist reference data, VisaWadi has its own)
- *
- *   visa-leads       (real prospects — deleted ONLY after confirming each one
- *                     is present on VisaWadi, see the check below)
- *
  * Usage, from apps/travl-backend:
  *   node --env-file=.env.production scripts/purge-visa-data.mjs          # dry run
  *   node --env-file=.env.production scripts/purge-visa-data.mjs --apply
+ *
+ * --apply permanently deletes these collections; a full backup is written to
+ * migration-output/travl-visa-data-backup.json first.
  */
 
 import fs from 'node:fs';
@@ -31,8 +17,6 @@ const OUT = path.join(process.cwd(), 'migration-output', 'travl-visa-data-backup
 const PURGE = ['application-documents', 'applicants', 'visa-applications', 'users', 'visas', 'document-types', 'visa-leads'];
 const KEEP = [];
 
-// visa-leads are real prospects, so they are only safe to delete once VisaWadi
-// holds them. Verified against the live VisaWadi API before anything is removed.
 const VISAWADI_API = 'https://api.visawadi.com';
 
 if (!process.env.MONGO_URI) {
@@ -49,7 +33,6 @@ if (db.databaseName !== 'travl') {
 
 console.log(APPLY ? '=== APPLY ===' : '=== DRY RUN (pass --apply to execute) ===');
 
-// Refuse if any application looks like a real customer file rather than a test.
 const apps = await db.collection('visa-applications').find({}).toArray();
 const applicants = await db.collection('applicants').find({}).toArray();
 const named = applicants.filter((a) => (a.firstName || '').trim() || (a.lastName || '').trim());
@@ -65,7 +48,6 @@ if (uploaded.length) {
 }
 console.log(`  safety checks passed: ${apps.length} applications, all applicants unnamed, no uploaded documents`);
 
-// Never delete a lead Travl still owns exclusively.
 const leads = await db.collection('visa-leads').find({}, { projection: { _id: 1, email: 1 } }).toArray();
 if (leads.length) {
   const res = await fetch(`${VISAWADI_API}/health`);

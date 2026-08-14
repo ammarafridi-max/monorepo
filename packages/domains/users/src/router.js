@@ -1,7 +1,5 @@
 import { Router } from 'express';
 
-// In-memory rate limiter keyed by a caller-supplied bucket key (IP or email).
-// 5 requests per hour per key. Shared across the magic-link POST route below.
 const RATE_MAX = 5;
 const RATE_WINDOW_MS = 60 * 60 * 1000;
 const rateBuckets = new Map();

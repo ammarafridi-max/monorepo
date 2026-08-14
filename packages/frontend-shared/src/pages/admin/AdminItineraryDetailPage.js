@@ -59,7 +59,6 @@ function InfoRow({ label, value, mono }) {
   );
 }
 
-// A single Cloudinary document link.
 function DocLink({ icon: Icon, label, href }) {
   return (
     <a

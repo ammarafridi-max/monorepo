@@ -15,13 +15,6 @@ import { adminListApplicationsApi } from '../../services/apiVisaApplications';
 import { getAllBlogsApi } from '../../services/apiBlog';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 
-/**
- * Dashboard for a visa-only brand.
- *
- * Deliberately brand-neutral: it reads only the visa and blog domains, so any
- * app that mounts those can use it. Nothing here assumes insurance,
- * itineraries or a particular company name.
- */
 
 const STATUS_STYLES = {
   new: 'bg-accent-50 text-accent-700 border-accent-200',

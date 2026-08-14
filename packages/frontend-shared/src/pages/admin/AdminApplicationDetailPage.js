@@ -101,8 +101,6 @@ function todayStr() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-// One document row in the admin file view. Handles review, staff upload (AGENT/
-// customer-on-behalf), mark-in-person, satisfied-by linking, and waive/remove.
 function DocRow({ doc, applicantName, actions, allDocs, onView }) {
   const [rejecting, setRejecting] = useState(false);
   const [reason, setReason] = useState('');
@@ -122,7 +120,6 @@ function DocRow({ doc, applicantName, actions, allDocs, onView }) {
   ].sort((a, b) => b.version - a.version);
   const [selectedVersion, setSelectedVersion] = useState(doc.version);
 
-  // Candidates for satisfied-by: any uploaded, non-satisfied doc elsewhere in the app.
   const candidates = (allDocs || []).filter((d) => d.cloudinaryPublicId && !d.satisfiedBy && String(d._id) !== String(doc._id));
 
   return (
@@ -263,8 +260,6 @@ function Field({ label, children }) {
   );
 }
 
-// A searchable dropdown over a fixed list of string options, with a "use custom"
-// affordance — same UX family as the insurance NationalitySelect.
 function ComboSelect({ value, onChange, options = [], placeholder = 'Search…', inputClassName }) {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
@@ -306,7 +301,6 @@ function ComboSelect({ value, onChange, options = [], placeholder = 'Search…',
   );
 }
 
-// Edit-applicant modal — profile fields that drive the checklist.
 function ApplicantModal({ applicationId, applicant, onClose }) {
   const { mutate, isPending } = useAdminUpdateApplicant(applicationId);
   const [form, setForm] = useState({
@@ -370,7 +364,6 @@ function ApplicantModal({ applicationId, applicant, onClose }) {
   );
 }
 
-// Full-screen document viewer with Approve / Reject / Replace.
 function DocViewerModal({ viewer, actions, onClose }) {
   const replaceRef = useRef(null);
   const [rejecting, setRejecting] = useState(false);
@@ -479,7 +472,6 @@ export default function AdminApplicationDetailPage() {
 
   const applicants = application.applicants || [];
   const nameById = new Map(applicants.map((a) => [String(a._id), `${a.firstName || ''} ${a.lastName || ''}`.trim() || 'Applicant']));
-  // Flatten all document rows with their applicant name attached.
   const allDocs = applicants.flatMap((a) => (a.documents || []).map((d) => ({ ...d, __applicantName: nameById.get(String(a._id)) })));
   const bySource = { CUSTOMER: [], AGENT: [], IN_PERSON: [] };
   for (const d of allDocs) if (d.status !== 'NOT_APPLICABLE') (bySource[d.source] || (bySource[d.source] = [])).push(d);

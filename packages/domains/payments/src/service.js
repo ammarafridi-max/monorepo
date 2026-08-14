@@ -4,14 +4,6 @@ function getOrRegisterModel(conn, name, schema) {
   try { return conn.model(name); } catch { return conn.model(name, schema); }
 }
 
-/**
- * @param {{
- *   stripe: import('stripe').Stripe,
- *   db?: import('mongoose').Connection,
- *   PaymentLinkSchema?: import('mongoose').Schema,
- *   ProductSchema?: import('mongoose').Schema,
- * }} deps
- */
 export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSchema }) {
   const PaymentLink =
     db && PaymentLinkSchema
@@ -21,8 +13,6 @@ export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSch
     db && ProductSchema
       ? getOrRegisterModel(db, 'Product', ProductSchema)
       : null;
-
-  // -- Checkout session (existing) ------------------------------------------
 
   const createCheckoutSession = async ({
     amount,
@@ -63,8 +53,6 @@ export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSch
     );
   };
 
-  // -- Products (reusable catalog) -----------------------------------------
-
   const createProduct = async ({ name, unitAmount, currency = 'aed', description, createdBy }) => {
     if (!Product) {
       throw new AppError('Product store not configured', 500);
@@ -79,7 +67,6 @@ export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSch
 
     const normalizedCurrency = String(currency || 'aed').toLowerCase().trim();
 
-    // Create a reusable Stripe Price that can be referenced by many Payment Links
     const price = await stripe.prices.create({
       currency: normalizedCurrency,
       unit_amount: Math.round(unit * 100),
@@ -154,16 +141,6 @@ export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSch
     return record;
   };
 
-  /**
-   * Update a Product. Handles:
-   *   - name change: updates the Stripe Product name (customer-facing)
-   *   - description change: DB-only
-   *   - unitAmount/currency change: Stripe Prices are immutable, so we archive
-   *     the old Price and create a new one attached to the same Stripe Product.
-   *     Existing PaymentLinks that already reference the old Price keep working
-   *     at the old price; only new links spawned from this product use the new
-   *     price.
-   */
   const updateProduct = async ({ id, name, description, unitAmount, currency }) => {
     if (!Product) {
       throw new AppError('Product store not configured', 500);
@@ -180,7 +157,6 @@ export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSch
       if (!trimmed) throw new AppError('Product name cannot be empty', 400);
       if (trimmed !== product.name) {
         update.name = trimmed;
-        // Sync customer-facing name on Stripe.
         if (product.stripeProductId) {
           try {
             await stripe.products.update(product.stripeProductId, { name: trimmed.slice(0, 250) });
@@ -195,7 +171,6 @@ export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSch
       update.description = description.trim();
     }
 
-    // Price/currency change → create a new Stripe Price.
     let newUnit = product.unitAmount;
     let newCurrency = product.currency;
     let priceChanging = false;
@@ -223,17 +198,14 @@ export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSch
       if (!product.stripeProductId) {
         throw new AppError('Cannot change price — product is missing a Stripe Product reference', 500);
       }
-      // Create new Price attached to the same Stripe Product.
       const newPrice = await stripe.prices.create({
         product: product.stripeProductId,
         currency: newCurrency,
         unit_amount: Math.round(newUnit * 100),
       });
-      // Archive the old Price (best effort).
       try {
         await stripe.prices.update(product.stripePriceId, { active: false });
       } catch {
-        // Already inactive or unreachable — continue.
       }
       update.stripePriceId = newPrice.id;
       update.unitAmount = newUnit;
@@ -252,11 +224,6 @@ export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSch
     return updated;
   };
 
-  /**
-   * Delete a Product. Allowed only if no Payment Link (any status) references
-   * it via top-level productId or lineItems[].productId. Archives the Stripe
-   * Price + Product (Stripe doesn't allow hard delete once a Price is created).
-   */
   const deleteProduct = async ({ id }) => {
     if (!Product) {
       throw new AppError('Product store not configured', 500);
@@ -265,7 +232,6 @@ export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSch
     const product = await Product.findById(id);
     if (!product) throw new AppError('Product not found', 404);
 
-    // Block delete if any Payment Link references this product.
     if (PaymentLink) {
       const usageCount = await PaymentLink.countDocuments({
         $or: [{ productId: product._id }, { 'lineItems.productId': product._id }],
@@ -278,41 +244,23 @@ export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSch
       }
     }
 
-    // Archive on Stripe (best effort — don't block delete if Stripe fails).
     try {
       if (product.stripePriceId) {
         await stripe.prices.update(product.stripePriceId, { active: false });
       }
     } catch {
-      // Stripe Price already inactive or unreachable — continue.
     }
     try {
       if (product.stripeProductId) {
         await stripe.products.update(product.stripeProductId, { active: false });
       }
     } catch {
-      // Stripe Product already inactive or unreachable — continue.
     }
 
     await Product.deleteOne({ _id: product._id });
     return { _id: product._id };
   };
 
-  // -- Payment links --------------------------------------------------------
-
-  /**
-   * Create a Payment Link with one or more line items.
-   *
-   * Accepts an `items` array (preferred). Each item is either:
-   *   - { productId, quantity }                — references a catalog Product (Stripe Price reused)
-   *   - { productName, amount, currency, quantity } — ad-hoc inline item (creates a fresh Stripe Price)
-   *
-   * Or legacy single-item shape (back-compat):
-   *   - { productId, quantity }
-   *   - { amount, productName, currency }
-   *
-   * All items must share the same currency (Stripe constraint).
-   */
   const createPaymentLink = async ({
     items,
     productId,
@@ -328,7 +276,6 @@ export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSch
       throw new AppError('Payment link store not configured', 500);
     }
 
-    // Normalise inputs to a single items[] array.
     let inputItems;
     if (Array.isArray(items) && items.length > 0) {
       inputItems = items;
@@ -340,7 +287,6 @@ export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSch
       throw new AppError('Either items, productId, or amount is required', 400);
     }
 
-    // Resolve each item: catalog lookup or fresh Stripe Price.
     const resolved = [];
     for (const item of inputItems) {
       const qty = Math.max(1, Math.floor(Number(item.quantity ?? 1)));
@@ -367,7 +313,6 @@ export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSch
           stripeProductId: product.stripeProductId,
         });
       } else {
-        // Ad-hoc inline item — create a one-shot Stripe Price.
         const itemAmount = Number(item.amount);
         if (!itemAmount || itemAmount <= 0 || Number.isNaN(itemAmount)) {
           throw new AppError('Invalid item amount', 400);
@@ -394,7 +339,6 @@ export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSch
       }
     }
 
-    // Currency must match across all items (Stripe constraint).
     const currencies = new Set(resolved.map((r) => r.currency));
     if (currencies.size > 1) {
       throw new AppError(
@@ -404,15 +348,12 @@ export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSch
     }
     const sharedCurrency = [...currencies][0];
 
-    // Total amount across all line items.
     const total = resolved.reduce((sum, r) => sum + r.unitAmount * r.quantity, 0);
 
-    // Customer-facing summary name (shown only on legacy lists; Stripe shows per-line).
     const summaryName = resolved.length === 1
       ? resolved[0].productName
       : `${resolved.length} items`;
 
-    // One Stripe Payment Link with N line_items.
     const link = await stripe.paymentLinks.create({
       line_items: resolved.map((r) => ({ price: r.stripePriceId, quantity: r.quantity })),
       metadata: { productType: 'payment-link' },
@@ -425,7 +366,6 @@ export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSch
     const isSingle = resolved.length === 1;
     const record = await PaymentLink.create({
       stripePaymentLinkId: link.id,
-      // First line's Stripe references kept at top level for legacy display code.
       stripePriceId: resolved[0].stripePriceId,
       stripeProductId: resolved[0].stripeProductId,
       url: link.url,
@@ -440,7 +380,6 @@ export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSch
         quantity: r.quantity,
         stripePriceId: r.stripePriceId,
       })),
-      // Legacy single-product fields populated only when there's exactly one line.
       productId: isSingle ? resolved[0].productId : null,
       unitAmount: isSingle ? resolved[0].unitAmount : null,
       quantity: isSingle ? resolved[0].quantity : 1,
@@ -453,15 +392,6 @@ export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSch
     return record;
   };
 
-  /**
-   * Update a Payment Link. Supports:
-   *   - active: boolean → toggles status on Stripe + DB. Refused for paid links.
-   *   - description: string → DB-only (internal admin note)
-   *
-   * Substantive edits (line items, products, quantities) are NOT supported —
-   * Stripe Payment Links don't allow swapping prices post-creation. For those
-   * cases, delete the link and create a new one.
-   */
   const updatePaymentLink = async ({ id, active, description }) => {
     if (!PaymentLink) {
       throw new AppError('Payment link store not configured', 500);
@@ -480,7 +410,6 @@ export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSch
       if (record.status === 'paid') {
         throw new AppError('Cannot change status of a paid link', 400);
       }
-      // Stripe is the source of truth — flip there first.
       await stripe.paymentLinks.update(record.stripePaymentLinkId, { active });
       record.status = active ? 'active' : 'inactive';
       mutated = true;
@@ -499,7 +428,6 @@ export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSch
     return record.toObject();
   };
 
-  // Back-compat thin wrapper.
   const setPaymentLinkActive = ({ id, active }) =>
     updatePaymentLink({ id, active });
 
@@ -545,11 +473,6 @@ export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSch
     };
   };
 
-  /**
-   * Delete a Payment Link. Allowed only if not paid. Deactivates on Stripe
-   * (Stripe Payment Links can be deactivated but not deleted) before removing
-   * the DB record.
-   */
   const deletePaymentLink = async ({ id }) => {
     if (!PaymentLink) {
       throw new AppError('Payment link store not configured', 500);
@@ -562,21 +485,15 @@ export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSch
       throw new AppError('Cannot delete a paid payment link', 400);
     }
 
-    // Deactivate on Stripe first (best effort — never blocks delete).
     try {
       await stripe.paymentLinks.update(record.stripePaymentLinkId, { active: false });
     } catch {
-      // Already inactive or unreachable — continue with DB delete.
     }
 
     await PaymentLink.deleteOne({ _id: record._id });
     return { _id: record._id };
   };
 
-  /**
-   * Marks a payment link record as paid based on a webhook session payload.
-   * Returns the updated record (or null if no link is associated with the session).
-   */
   const markPaymentLinkPaid = async ({ session }) => {
     if (!PaymentLink) return null;
     const stripePaymentLinkId =
@@ -604,13 +521,6 @@ export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSch
     );
   };
 
-  // -- Revenue analytics (live from Stripe) ---------------------------------
-
-  /**
-   * Returns aggregated revenue between two unix timestamps (seconds).
-   * Uses balance transactions so amounts are net of refunds and reflect what
-   * actually settled. Currency-bucketed because Stripe doesn't auto-convert.
-   */
   const getRevenue = async ({ from, to }) => {
     const fromTs = Number(from);
     const toTs = Number(to);
@@ -618,8 +528,8 @@ export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSch
       throw new AppError('Invalid date range', 400);
     }
 
-    const byCurrency = {}; // { aed: { gross: 0, net: 0, count: 0 } }
-    const byDayByCurrency = {}; // { aed: { '2026-04-28': 5000, ... } }
+    const byCurrency = {};
+    const byDayByCurrency = {};
 
     for await (const txn of stripe.balanceTransactions.list({
       type: 'charge',
@@ -637,7 +547,6 @@ export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSch
       byDayByCurrency[cur][day] = (byDayByCurrency[cur][day] || 0) + txn.amount;
     }
 
-    // Convert to major units and shape byDay as sorted arrays
     const result = {};
     for (const [cur, totals] of Object.entries(byCurrency)) {
       const days = Object.entries(byDayByCurrency[cur] || {})
@@ -656,9 +565,6 @@ export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSch
     return { from: fromTs, to: toTs, byCurrency: result };
   };
 
-  /**
-   * Lists recent charges for the orders table. Returns lightweight projections.
-   */
   const listCharges = async ({ from, to, limit = 25, startingAfter } = {}) => {
     const params = { limit: Math.min(Number(limit) || 25, 100) };
     if (from && to) {

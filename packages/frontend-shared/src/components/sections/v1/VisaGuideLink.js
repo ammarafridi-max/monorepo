@@ -3,13 +3,6 @@
 import Link from "next/link";
 import { ArrowRight, BookOpen } from "lucide-react";
 
-/**
- * Deep-link from a page section to the blog post that covers it in full.
- *
- * `guide` is the populated blog ref off `visa.sectionGuides.<section>` — the
- * link is built from the post's current slug, so renaming it can't break here.
- * Drafts and scheduled posts are skipped rather than linked to a 404.
- */
 export default function VisaGuideLink({ guide, label }) {
   if (!guide?.slug || guide.status !== "published") return null;
 

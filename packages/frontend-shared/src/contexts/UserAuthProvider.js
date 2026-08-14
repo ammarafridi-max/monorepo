@@ -4,11 +4,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { UserAuthContext } from './AuthContextBase.js';
 import { getCurrentUserApi, logoutUserApi } from '../services/apiVisaApplications.js';
 
-/**
- * Real customer auth provider (userJwt cookie). Fetches the logged-in user from
- * GET /api/users/me on mount and exposes the same context shape the app already
- * uses for the guest value: { user, isAuthenticated, isLoadingAuth, setUser, refreshUser, logout }.
- */
 export function UserAuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);

@@ -1,19 +1,4 @@
 /**
- * Stop the visa pages claiming VisaWadi supplies flight reservations.
- *
- * The pages were imported from Travl, which did sell them. VisaWadi sells visa
- * assistance only — dummy tickets and flight reservations go to Dummy Ticket
- * 365 — so twenty places on the live site advertised something we don't do,
- * including a UK package listing a reservation as an included feature.
- *
- * Every replacement below is an exact string, not a pattern. Visa copy is
- * commercial and legal-adjacent; a loose regex rewriting it in bulk is how you
- * end up with a sentence that reads fine and says the wrong thing. Anything not
- * matched exactly is reported as a miss rather than silently skipped.
- *
- * The line taken throughout: the document is required, the embassy accepts this
- * format, we tell you what it needs to look like, you arrange it yourself.
- *
  * Usage, from apps/visawadi-backend:
  *   node --env-file=.env.production scripts/fix-flight-reservation-claims.mjs          # dry run
  *   node --env-file=.env.production scripts/fix-flight-reservation-claims.mjs --apply
@@ -30,9 +15,7 @@ const OUT = path.join(process.cwd(), 'migration-output', 'visa-pages-pre-flight-
 const GUIDANCE_TAIL =
   'We tell you exactly what format your embassy expects, though you arrange the reservation itself separately.';
 
-/** [exact find, replace]. Applied to every string field on every visa page. */
 const EDITS = [
-  // --- requirement checklists: drop "(we provide this)" -----------------------
   ['Flight itinerary / reservation (we provide this — accepted by IRCC)',
    'Flight itinerary or reservation, in a format IRCC accepts'],
   ['GDS flight reservation / itinerary (we provide this — accepted by all Schengen embassies)',
@@ -42,7 +25,6 @@ const EDITS = [
   ['Flight itinerary (we provide this — accepted by US consular officers)',
    'Flight itinerary, in a format US consular officers accept'],
 
-  // --- package features: these claimed the reservation was included -----------
   ['GDS flight reservation included',
    'Guidance on the flight reservation the Home Office expects'],
   ['Flight itinerary for your application',
@@ -50,11 +32,9 @@ const EDITS = [
   ['Flight itinerary for the interview',
    'Guidance on the flight itinerary for your interview'],
 
-  // --- process step: we do not prepare the itinerary --------------------------
   ['We prepare your supporting file: financial evidence, employment documents, cover letter, flight itinerary, and any additional documents specific to your profile.',
    'We prepare your supporting file: financial evidence, employment documents, cover letter, and any additional documents specific to your profile.'],
 
-  // --- FAQ questions: "GDS" is a supplier term, not the applicant's ----------
   ['Will the France embassy accept a GDS flight reservation?', 'Will the France embassy accept a flight reservation?'],
   ['Will the Germany embassy accept a GDS flight reservation?', 'Will the Germany embassy accept a flight reservation?'],
   ['Will the Italy embassy accept a GDS flight reservation?', 'Will the Italy embassy accept a flight reservation?'],
@@ -63,7 +43,6 @@ const EDITS = [
   ['Is a GDS flight reservation accepted by the UK Home Office?', 'Is a flight reservation accepted by the UK Home Office?'],
   ['Is a GDS flight reservation accepted for a US visa interview?', 'Is a flight reservation accepted for a US visa interview?'],
 
-  // --- FAQ answers: keep the useful fact, drop the provision claim ------------
   ["The reservations we provide are GDS-based and carry a real booking reference you can look up on the airline's own website.",
    `What matters is that it carries a real booking reference you can look up on the airline's own website. ${GUIDANCE_TAIL}`],
   ["VisaWadi's reservations are GDS-based, hold a real booking reference, and can be looked up on the airline's website — they are specifically designed and widely accepted for visa applications.",
@@ -155,8 +134,6 @@ for (const doc of docs) {
 
 console.log(`\npages touched=${touched} changes=${total}`);
 
-// An exact-match rule that never fires means the copy moved on and the rule is
-// stale — worth knowing rather than assuming full coverage.
 const missed = [...applied.entries()].filter(([, n]) => n === 0).map(([f]) => f);
 if (missed.length) {
   console.log(`\n${missed.length} rule(s) matched nothing:`);

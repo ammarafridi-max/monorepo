@@ -6,7 +6,6 @@ import {
   listTemplatesApi, getTemplateApi, upsertTemplateApi, previewTemplateApi,
 } from '../../services/apiVisaApplications.js';
 
-// ---- Document types ---------------------------------------------------------
 export function useDocumentTypes() {
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['document-types'],
@@ -33,7 +32,6 @@ export function useUpdateDocumentType() {
   });
 }
 
-// ---- Templates --------------------------------------------------------------
 export function useTemplates() {
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['checklist-templates'],
@@ -64,7 +62,6 @@ export function useUpsertTemplate() {
   });
 }
 
-// Read-only preview: returns { samples, warnings } for the given (unsaved) rules.
 export function usePreviewTemplate() {
   return useMutation({ mutationFn: (rules) => previewTemplateApi(rules) });
 }

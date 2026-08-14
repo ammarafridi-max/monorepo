@@ -5,10 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL;
 
-// Two-tone "ding" via Web Audio API — avoids shipping an mp3 and works
-// in any modern browser. Browsers block audio until the user has
-// interacted with the page at least once, so on a freshly-loaded tab
-// the first ping after sign-in may be silent.
+// Browsers block audio until the user has interacted with the page, so the first ping may be silent.
 function playPing() {
   if (typeof window === 'undefined') return;
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -37,15 +34,6 @@ function playPing() {
   }
 }
 
-// Holds a single Server-Sent Events connection to /api/tickets/events
-// for the lifetime of the admin shell. The server pushes a `paid-order`
-// event the instant a payment is confirmed — no polling, no 30s window.
-//
-// EventSource auto-reconnects with a 5s back-off (set server-side via
-// `retry:`) and keeps working across tab visibility changes, so a
-// payment that happens while the admin is on another tab still fires
-// the ping the moment focus returns the AudioContext to a runnable
-// state (or immediately, if it's still runnable).
 export function useNewPaidOrderPing({ enabled = true } = {}) {
   const queryClient = useQueryClient();
 
@@ -61,9 +49,7 @@ export function useNewPaidOrderPing({ enabled = true } = {}) {
       queryClient.invalidateQueries({ queryKey: ['dummytickets'] });
     });
 
-    // EventSource auto-reconnects on error; log once for visibility.
     es.addEventListener('error', () => {
-      // No console noise — reconnect is automatic. Surface only if needed.
     });
 
     return () => es.close();

@@ -1,5 +1,3 @@
-// Pure function — no imports, no side effects. brand + data → HTML string.
-
 function row(label, value, i) {
   const border = i > 0 ? 'border-top:1px solid #e2e8f0;' : '';
   return `

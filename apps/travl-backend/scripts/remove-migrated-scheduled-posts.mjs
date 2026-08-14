@@ -1,18 +1,10 @@
 /**
- * Remove the three dummy-ticket posts that moved to VisaWadi.
- *
- * They are still SCHEDULED on Travl for 19-21 Aug. publishDueScheduledBlogs()
- * runs on any blog read, so they will publish themselves with no cron involved.
- * Since VisaWadi now holds these posts, letting them publish here would put the
- * same article on both domains.
- *
- * Safety: refuses unless each post is still scheduled and has never been
- * published, and refuses unless a copy already exists in the export file. They
- * were never public, so there are no rankings or inbound links to preserve.
- *
  * Usage, from apps/travl-backend:
  *   node --env-file=.env.production scripts/remove-migrated-scheduled-posts.mjs          # dry run
  *   node --env-file=.env.production scripts/remove-migrated-scheduled-posts.mjs --apply
+ *
+ * --apply deletes the posts; it refuses unless each is still scheduled, never
+ * published, and already present in the export file.
  */
 
 import fs from 'node:fs';

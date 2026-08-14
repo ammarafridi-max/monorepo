@@ -42,7 +42,6 @@ export async function duplicateZoneApi(id) {
   return data?.zone || null;
 }
 
-// Resolve a lat/lng to the zone that contains it. Throws (404) if no zone covers it.
 export async function getZoneByPointApi({ lat, lng }) {
   return await apiFetch(`${URL}/find/by-point?lat=${lat}&lng=${lng}`);
 }

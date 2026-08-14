@@ -1,25 +1,4 @@
 /**
- * Remove the brand from stored meta titles.
- *
- * The root layout sets `title.template = '%s | VisaWadi'`, which Next appends to
- * every nested page. Any title that already ends in the brand therefore renders
- * it twice:
- *
- *   "Canada Visa from UAE | TRV Visa Assistance | VisaWadi | VisaWadi"
- *
- * The template is the right pattern — one place owns the suffix — so the fix is
- * to stop the stored titles repeating it. Two shapes to deal with:
- *
- *   "… | VisaWadi"                 trailing brand, drop it
- *   "… | VisaWadi Visa Assistance" brand used as an adjective, drop just the word
- *
- * Worth knowing why the homepage looked fine: Next applies the template to child
- * segments only, and app/page.js shares a segment with app/layout.js. So `/` was
- * never templated and every nested page was.
- *
- * Applies to base visa pages and to residence overlays, since either can supply
- * the rendered title.
- *
  * Usage, from apps/visawadi-backend:
  *   node --env-file=.env.production scripts/fix-duplicate-brand-in-titles.mjs          # dry run
  *   node --env-file=.env.production scripts/fix-duplicate-brand-in-titles.mjs --apply
@@ -35,9 +14,7 @@ const BRAND = 'VisaWadi';
 function stripBrand(title) {
   if (!title) return title;
   let out = title;
-  // "… | VisaWadi Visa Assistance" -> "… | Visa Assistance"
   out = out.replace(new RegExp(`\\|\\s*${BRAND}\\s+(?=\\S)`, 'g'), '| ');
-  // trailing "| VisaWadi" or "- VisaWadi"
   out = out.replace(new RegExp(`\\s*[|\\-—]\\s*${BRAND}\\s*$`), '');
   return out.replace(/\s{2,}/g, ' ').trim();
 }

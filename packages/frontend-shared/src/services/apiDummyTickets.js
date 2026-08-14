@@ -33,10 +33,6 @@ export async function getLatestPaidTicketApi() {
   return await apiFetch(`${URL}/latest-paid`);
 }
 
-// Multipart upload: PDF + subject + body. Backend uploads to Cloudinary,
-// emails the customer with the attached file, and flips the ticket to
-// DELIVERED. Don't set Content-Type — the browser must set the multipart
-// boundary header itself.
 export async function sendReservationApi({ sessionId, subject, body, bodyHtml, file }) {
   const fd = new FormData();
   fd.append('subject', subject);
@@ -61,8 +57,6 @@ export async function updateDummyTicketApi({ sessionId, orderStatus }) {
   return result;
 }
 
-// Reschedule (or bring forward) a ticket's delivery. Pass `immediate: true`
-// to deliver now, or a `deliveryDate` string (YYYY-MM-DD) to set a date.
 export async function updateDeliveryDateApi({ sessionId, deliveryDate, immediate }) {
   const result = await apiFetch(`${URL}/${sessionId}/delivery`, {
     method: 'PATCH',

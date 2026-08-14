@@ -2,14 +2,6 @@ import { logger } from '@travel-suite/utils';
 
 const BASE = 'notifications.paymentConfirmation';
 
-/**
- * Run one notifier and normalise whatever it does into a delivery result.
- *
- * Notifiers are injected by the brand app, so this must survive all three of
- * the shapes they can produce: a `{ ok, error }` result, a bare return (the
- * older contract, where "it didn't throw" was the only success signal), and a
- * thrown error. Nothing here rethrows — the caller is inside a Stripe webhook.
- */
 async function attempt(notify, booking) {
   if (typeof notify !== 'function') return null;
   try {
@@ -35,27 +27,7 @@ function updateFor(key, result, now) {
   return set;
 }
 
-/**
- * Send the payment-confirmation emails for a paid booking and record on the
- * booking whether each one actually went out.
- *
- * Contract: this NEVER throws and NEVER rejects. It is called from the Stripe
- * webhook after the payment has already been persisted, and a rejection there
- * would make the dispatcher return 500, Stripe retry the event, and the
- * payment be reprocessed — a far worse failure than an unsent email. Every
- * failure path (send, persist) degrades to a log line plus a recorded status.
- *
- * The record is written with updateOne + dotted paths rather than
- * booking.save() so it touches only these fields: the in-memory doc is stale
- * the moment an admin edits the booking concurrently, and a full save would
- * also re-run validation on unrelated legacy fields.
- *
- * @param {{ Booking: import('mongoose').Model, booking: object, notifications?: {
- *   sendPaymentConfirmationEmailAdmin?: Function,
- *   sendPaymentConfirmationEmailCustomer?: Function,
- * } }} deps
- * @returns {Promise<{ admin: {ok: boolean, error?: string}|null, customer: {ok: boolean, error?: string}|null }>}
- */
+// Never throws: a rejection would 500 the Stripe webhook and get the payment reprocessed. Writes via updateOne + dotted paths, not save().
 export async function deliverPaymentConfirmations({ Booking, booking, notifications }) {
   const results = { admin: null, customer: null };
 
@@ -86,7 +58,6 @@ export async function deliverPaymentConfirmations({ Booking, booking, notificati
       });
     }
   } catch (err) {
-    // Recording the failure must not itself become a webhook failure.
     logger.error('[limo-bookings] Could not record confirmation delivery state', {
       bookingId: String(booking?._id),
       error: err?.message,

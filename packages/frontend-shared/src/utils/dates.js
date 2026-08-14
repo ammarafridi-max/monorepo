@@ -55,8 +55,6 @@ export function formatDate(dateString) {
   });
 }
 
-// Travelport-style date token, e.g. "28MAY". Uses the same parsing as formatDate
-// so the command matches the displayed date exactly.
 export function formatTravelportDate(dateString) {
   if (!dateString) return "";
   const date = isDateOnlyString(dateString)

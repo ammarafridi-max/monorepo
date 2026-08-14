@@ -157,8 +157,6 @@ function VisaCardSkeleton() {
 export default function VisaPage({
   schema,
   breadcrumbJsonLd,
-  // Brand-supplied. Shared code must not name or email a specific brand, so the
-  // consuming app passes its own contact target and may override the copy.
   contactHref = "#",
   faqs = FAQS,
 }) {

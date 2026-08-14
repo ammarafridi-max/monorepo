@@ -15,15 +15,6 @@ function getOrRegisterModel(conn, name, schema) {
   }
 }
 
-/**
- * @param {{
- *   db: import('mongoose').Connection,
- *   auth: { protect: Function, restrictTo: Function },
- *   imageStorage?: { saveImage(buffer: Buffer, blogId: string): Promise<string>, deleteImage(url: string): Promise<void> },
- *   anthropicApiKey?: string
- * }} deps
- * @returns {import('express').Router}
- */
 export function createBlogRouter({ db, auth, imageStorage, anthropicApiKey }) {
   const Blog = getOrRegisterModel(db, 'Blog', BlogSchema);
   const BlogTag = getOrRegisterModel(db, 'blog-tag', BlogTagSchema);
@@ -32,13 +23,6 @@ export function createBlogRouter({ db, auth, imageStorage, anthropicApiKey }) {
   return createBlogRouterFromParts({ controller, auth });
 }
 
-/**
- * @param {{
- *   db: import('mongoose').Connection,
- *   auth: { protect: Function, restrictTo: Function }
- * }} deps
- * @returns {import('express').Router}
- */
 export function createBlogTagRouter({ db, auth }) {
   const Blog = getOrRegisterModel(db, 'Blog', BlogSchema);
   const BlogTag = getOrRegisterModel(db, 'blog-tag', BlogTagSchema);
@@ -47,13 +31,6 @@ export function createBlogTagRouter({ db, auth }) {
   return createBlogTagRouterFromParts({ controller, auth });
 }
 
-/**
- * One-shot function to auto-publish any scheduled blogs that are past due.
- * Safe to call from a cron job — pass the db connection to get the Blog model.
- *
- * @param {import('mongoose').Connection} db
- * @returns {Promise<number>} count of blogs published
- */
 export async function publishDueScheduledBlogs(db) {
   const Blog = getOrRegisterModel(db, 'Blog', BlogSchema);
   const now = new Date();

@@ -1,5 +1,3 @@
-// --- Date-only helpers --------------------------------------------------------
-
 function pad2(value) {
   return String(value).padStart(2, '0');
 }
@@ -37,9 +35,6 @@ export function dateOnlyToLocalDate(value) {
   return new Date(year, month - 1, day);
 }
 
-// --- Formatting ---------------------------------------------------------------
-
-/** "January 1, 2025" */
 export function formatDate(dateString) {
   if (!dateString) return '';
   const date = isDateOnlyString(dateString)
@@ -49,14 +44,12 @@ export function formatDate(dateString) {
   return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
-/** "01 Jan, 2025" */
 export function formatDateShort(inputDate) {
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const [year, month, day] = inputDate.split('-');
   return `${day} ${months[parseInt(month, 10) - 1]}, ${year}`;
 }
 
-/** { date: "January 1", time: "14:30" } from an ISO string */
 export function formatISOTime(isoString) {
   const d = new Date(isoString);
   const monthNames = [
@@ -69,7 +62,6 @@ export function formatISOTime(isoString) {
   };
 }
 
-/** "2h 30m" from an ISO 8601 duration string like "PT2H30M" */
 export function formatISODuration(duration) {
   const match = duration.match(/PT(\d+H)?(\d+M)?/);
   if (!match) return 'Invalid duration format';
@@ -78,15 +70,12 @@ export function formatISODuration(duration) {
   return `${hours}h ${minutes}m`;
 }
 
-// --- Dubai timezone helpers ---------------------------------------------------
-
 function toDubaiDate(dateInput) {
   return new Date(
     new Date(dateInput).toLocaleString('en-US', { timeZone: 'Asia/Dubai' }),
   );
 }
 
-/** "5 Jan" or "5 January, 2025" depending on format */
 export function convertToDubaiDate(dateInput, format = 'short') {
   const d     = toDubaiDate(dateInput);
   const day   = d.getDate();
@@ -95,7 +84,6 @@ export function convertToDubaiDate(dateInput, format = 'short') {
   return format === 'long' ? `${day} ${month}, ${year}` : `${day} ${month}`;
 }
 
-/** "2:30 PM" in Dubai time */
 export function convertToDubaiTime(dateInput) {
   const d       = toDubaiDate(dateInput);
   const hours24 = d.getHours();
@@ -105,7 +93,6 @@ export function convertToDubaiTime(dateInput) {
   return `${hour12}:${minutes} ${amOrPm}`;
 }
 
-/** "02:30 PM" in Dubai time — Intl-formatted, used in backend email/log contexts */
 export function formatDubaiTime(date) {
   return new Intl.DateTimeFormat('en-US', {
     timeZone: 'Asia/Dubai',
@@ -115,7 +102,6 @@ export function formatDubaiTime(date) {
   }).format(new Date(date));
 }
 
-/** "2:30 PM (5 January, 2025)" — combines time + full date in Dubai TZ */
 export function formatMongoDBDate(dateInput) {
   return `${convertToDubaiTime(dateInput)} (${convertToDubaiDate(dateInput, 'long')})`;
 }

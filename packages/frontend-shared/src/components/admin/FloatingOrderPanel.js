@@ -1,32 +1,5 @@
 'use client';
 
-/**
- * FloatingOrderPanel.js
- * -------------------------------------------------------------------
- * Always-on-top order overview for the dummy-ticket admin, built on
- * the Document Picture-in-Picture API. Pops a compact panel out of
- * the order page that floats over the TTS Webagent tab so agents
- * stop tab-switching to copy passenger / locator details.
- *
- * Shared between mdt-frontend and dt365-frontend.
- *
- * Drop-in usage (on the order detail page):
- *
- *   import OrderPiPButton from '@travel-suite/frontend-shared/components/admin/FloatingOrderPanel';
- *
- *   // If the page already has the order in state, pass it in.
- *   // The panel re-renders live whenever that object changes.
- *   <OrderPiPButton order={order} />
- *
- *   // Or let the panel fetch by session id on its own:
- *   <OrderPiPButton sessionId={sessionId} apiBase="/api/admin" />
- *
- * Requires: react >= 18, react-dom >= 18, lucide-react.
- * Browser: Chromium-only (Chrome/Edge/Arc/Brave). Falls back to a
- * disabled button with a tooltip on Firefox/Safari.
- * -------------------------------------------------------------------
- */
-
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Copy, Check, Plane, Pin, X, RefreshCw, ArrowRight, AlertTriangle } from 'lucide-react';
@@ -34,15 +7,6 @@ import { Copy, Check, Plane, Pin, X, RefreshCw, ArrowRight, AlertTriangle } from
 const isPiPSupported =
   typeof window !== 'undefined' && 'documentPictureInPicture' in window;
 
-/* -------------------------------------------------------------------
- * Helpers
- * ----------------------------------------------------------------- */
-
-/**
- * Build the Travelport name string: N.{LASTNAME}/{FIRSTNAMES} {TITLE}
- * e.g. ("Phyo", "Ei Ei", "MS") -> "N.PHYO/EI EI MS"
- * Use only if your API does not already return a preformatted value.
- */
 export function formatTravelportName(lastName, firstNames, title = '') {
   const last = String(lastName || '').trim().toUpperCase();
   const first = String(firstNames || '').trim().toUpperCase();
@@ -50,16 +14,10 @@ export function formatTravelportName(lastName, firstNames, title = '') {
   return `N.${last}/${first}${ttl ? ' ' + ttl : ''}`;
 }
 
-/**
- * Map raw API order data into the shape the panel expects.
- * Adjust the field names on the right to match your backend.
- */
 export function normalizeOrder(raw) {
   if (!raw) return null;
   return {
     customerName: raw.customerName ?? raw.name ?? '—',
-    // Customer's request note. Rendered as a loud banner at the top of the
-    // panel so agents read it before touching the reservation.
     message: raw.message ?? '',
     status: raw.status ?? [],
     paymentMethod: raw.paymentMethod ?? raw.method ?? '—',
@@ -74,8 +32,6 @@ export function normalizeOrder(raw) {
       flight: s.flight,
       stops: s.stops ?? [],
     })),
-    // Travelport availability commands (rendered above passenger rows).
-    // Each entry: { label, value } — e.g. { label: 'AVAILABILITY · DEP', value: 'A24JUNBERSAW' }
     availabilityCommands: (raw.availabilityCommands ?? []).filter((c) => c?.value),
     passengers: (raw.passengers ?? []).map((p) => ({
       name: p.name,
@@ -83,15 +39,10 @@ export function normalizeOrder(raw) {
         p.travelport ??
         formatTravelportName(p.lastName, p.firstNames, p.title),
     })),
-    // Travelport booking commands run after the name (rendered below passenger rows).
-    // Each entry: { label, value } — e.g. { label: 'PHONE', value: 'P.T*' }
     bookingCommands: (raw.bookingCommands ?? []).filter((c) => c?.value),
   };
 }
 
-/* -------------------------------------------------------------------
- * PiP styles — injected into the PiP document (it inherits nothing).
- * ----------------------------------------------------------------- */
 const PIP_CSS = `
   *{box-sizing:border-box;margin:0;padding:0;}
   body{
@@ -172,9 +123,6 @@ const pillStyle = (text) => {
   return { background: c.bg, color: c.fg };
 };
 
-/* -------------------------------------------------------------------
- * Copyable row — drops the formatted string straight on the clipboard
- * ----------------------------------------------------------------- */
 function CopyRow({ label, value, highlight }) {
   const [copied, setCopied] = useState(false);
   const onCopy = useCallback(async () => {
@@ -206,9 +154,6 @@ function CopyRow({ label, value, highlight }) {
   );
 }
 
-/* -------------------------------------------------------------------
- * Panel body — pure presentation, re-renders live as `order` changes
- * ----------------------------------------------------------------- */
 function OrderPanel({ order, onRefresh, onClose }) {
   if (!order) return <div className="mdt-empty">No order loaded.</div>;
 
@@ -314,9 +259,6 @@ function OrderPanel({ order, onRefresh, onClose }) {
   );
 }
 
-/* -------------------------------------------------------------------
- * Hook: owns the PiP window lifecycle + style injection
- * ----------------------------------------------------------------- */
 function useDocumentPiP({ width = 340, height = 480 } = {}) {
   const [pipWindow, setPipWindow] = useState(null);
   const closingRef = useRef(false);
@@ -350,7 +292,6 @@ function useDocumentPiP({ width = 340, height = 480 } = {}) {
     setPipWindow(null);
   }, [pipWindow]);
 
-  // close the PiP if the host page unmounts/navigates away
   useEffect(() => {
     return () => {
       if (pipWindow && !closingRef.current) pipWindow.close();
@@ -360,9 +301,6 @@ function useDocumentPiP({ width = 340, height = 480 } = {}) {
   return { pipWindow, open, close, isSupported: isPiPSupported };
 }
 
-/* -------------------------------------------------------------------
- * Public component: the launcher button + the portalled panel
- * ----------------------------------------------------------------- */
 export function OrderPiPButton({
   order: orderProp,
   sessionId,
@@ -374,7 +312,6 @@ export function OrderPiPButton({
   const [fetched, setFetched] = useState(null);
   const [, setLoading] = useState(false);
 
-  // self-fetch only when no order is passed in
   const refresh = useCallback(async () => {
     if (!sessionId) return;
     setLoading(true);
@@ -391,12 +328,10 @@ export function OrderPiPButton({
     }
   }, [sessionId, apiBase]);
 
-  // pull once when the panel opens in fetch mode
   useEffect(() => {
     if (pipWindow && !orderProp && sessionId) refresh();
   }, [pipWindow, orderProp, sessionId, refresh]);
 
-  // re-sync on focus so an edit in the main tab reflects in the panel
   useEffect(() => {
     if (!pipWindow || orderProp || !sessionId) return;
     const onFocus = () => refresh();

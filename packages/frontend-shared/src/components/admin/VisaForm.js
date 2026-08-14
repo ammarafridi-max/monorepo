@@ -9,14 +9,12 @@ import {
   DeleteButton, AddButton, ItemBox, StatusBadge,
 } from './visaFormKit.js';
 
-// A guide arrives as a raw ObjectId from the admin endpoint, or as a populated
-// object from the public one. Normalise both to the id string the <select> uses.
 function guideId(value) {
   if (!value) return '';
   return typeof value === 'object' ? String(value._id || '') : String(value);
 }
 
-// Stores the blog _id, never the slug, so renaming a post can't break the link.
+// Stores the blog _id, never the slug.
 function GuideSelect({ blogs, isLoading, ...props }) {
   return (
     <select

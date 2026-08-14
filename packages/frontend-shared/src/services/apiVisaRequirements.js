@@ -2,14 +2,12 @@ import { apiFetchPublic, apiFetch } from './apiClient.js';
 
 const URL = `/api/visa-requirements`;
 
-/** Public checker. residence is optional. */
 export async function checkVisaRequirementApi({ nationality, residence, destination }) {
   const params = new URLSearchParams({ nationality, destination });
   if (residence) params.append('residence', residence);
   return apiFetchPublic(`${URL}/check?${params.toString()}`, { cache: 'no-store' });
 }
 
-// Admin
 export const getVisaRulesApi = (opts = {}) => {
   const params = new URLSearchParams();
   if (opts.published !== undefined) params.append('published', String(opts.published));

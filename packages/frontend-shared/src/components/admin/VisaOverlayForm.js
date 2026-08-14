@@ -1,23 +1,6 @@
 'use client';
 
-/**
- * The per-country half of a visa page.
- *
- * A visa page is two things mixed together: what is true of the visa (Schengen
- * covers 29 countries, your passport needs 3 months validity) and what is true
- * of applying from somewhere (Emirates ID vs Iqama, AED vs SAR, VFS Dubai vs
- * VFS Riyadh). The base form owns the first. This owns the second.
- *
- * The rule the whole screen is built around: EMPTY MEANS INHERIT. A blank field
- * is not a blank page, it is "use whatever the base says". So every input shows
- * the inherited value as its placeholder, and every list has an explicit
- * inherit/customise switch rather than being silently empty.
- *
- * Lists switch as a whole rather than item by item, because the resolver
- * replaces them as a whole. Requirements are the exception, matched per section
- * by title, because a checklist is usually mostly shared with two or three
- * local lines.
- */
+// Empty field means inherit from the base visa page.
 
 import { useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
@@ -29,15 +12,8 @@ import {
 const clone = (v) => JSON.parse(JSON.stringify(v ?? []));
 const norm = (s) => String(s ?? '').trim().toLowerCase();
 
-/** Lists that replace wholesale. Order here is the order of the cards. */
 const LIST_KEYS = ['packages', 'processSteps', 'pricingBreakdown', 'faqs', 'whyUs', 'testimonials'];
 
-/**
- * Seed a customised list from the base, so "customise" starts from something
- * real rather than an empty box. Money is re-denominated on the way, because a
- * price copied from another country in the wrong currency is the single easiest
- * mistake to make here and the hardest to notice.
- */
 function seedFromBase(key, base, country) {
   const rows = clone(base?.[key]);
   if (key === 'packages' || key === 'pricingBreakdown') {
@@ -64,7 +40,6 @@ function toDefaults(base, overlay, country) {
     };
   });
 
-  // A section only this country has. Order is append, matching the resolver.
   for (const extra of patches.values()) {
     requirementSections.push({
       title: extra.title,
@@ -90,8 +65,6 @@ function toDefaults(base, overlay, country) {
       note: o.visaCentre?.note || '',
     },
     requirementSections,
-    // A list the overlay doesn't own shows the base's rows, greyed out, so the
-    // card is never an empty box you have to imagine the contents of.
     packages: o.packages ? clone(o.packages) : seedFromBase('packages', base, country),
     processSteps: o.processSteps ? clone(o.processSteps) : clone(base?.processSteps),
     pricingBreakdown: o.pricingBreakdown ? clone(o.pricingBreakdown) : seedFromBase('pricingBreakdown', base, country),
@@ -101,7 +74,6 @@ function toDefaults(base, overlay, country) {
   };
 }
 
-/** Header strip that turns a card between inherited and locally owned. */
 function OverrideSwitch({ on, onChange, countryShort }) {
   return (
     <div className="flex items-center justify-between gap-3 mb-4 px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-100">
@@ -125,7 +97,6 @@ function OverrideSwitch({ on, onChange, countryShort }) {
   );
 }
 
-/** Editable list of plain strings, the shape used by requirement items. */
 function StringList({ values, onChange, placeholder, max = 15 }) {
   return (
     <div className="space-y-2">
@@ -169,9 +140,6 @@ export default function VisaOverlayForm({
     formState: { isDirty },
   } = useForm({ defaultValues: toDefaults(base, overlay, country) });
 
-  // Which lists this country owns. Seeded from the saved overlay, then held
-  // locally — a card can be switched on, filled in, and switched off again
-  // before saving without the draft content being thrown away.
   const [custom, setCustom] = useState(() =>
     Object.fromEntries(LIST_KEYS.map((k) => [k, !!overlay?.[k]])),
   );
@@ -195,9 +163,7 @@ export default function VisaOverlayForm({
   function onFormSubmit(data) {
     const blank = (v) => (String(v ?? '').trim() === '' ? null : String(v).trim());
 
-    // Only the sections this country actually touched. Untouched base sections
-    // must not be written, or the overlay pins a copy of them and they stop
-    // tracking the base.
+    // Untouched base sections must not be written, or the overlay stops tracking the base.
     const requirementSections = (data.requirementSections || [])
       .filter((s) => s._custom && String(s.title || '').trim())
       .map((s) => ({
@@ -240,7 +206,6 @@ export default function VisaOverlayForm({
       payload[key] = custom[key] && rows.length ? rows : null;
     }
 
-    // Numbers arrive as strings from number inputs.
     for (const p of payload.packages || []) p.price = Number(p.price) || 0;
     for (const p of payload.pricingBreakdown || []) p.amount = Number(p.amount) || 0;
 
@@ -625,8 +590,6 @@ export default function VisaOverlayForm({
   );
 }
 
-/** What the base supplies, when a card is inherited. Read-only on purpose:
- *  editing here would silently create an override you didn't ask for. */
 function InheritedPreview({ rows }) {
   if (!rows.length) {
     return <p className="text-xs text-gray-400 text-center py-3">The base page has nothing here either.</p>;

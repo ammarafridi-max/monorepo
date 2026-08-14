@@ -10,7 +10,6 @@ import {
 const SOURCE_BADGE = {
   CUSTOMER: 'bg-primary-50 text-primary-700', AGENT: 'bg-indigo-50 text-indigo-600', IN_PERSON: 'bg-amber-50 text-amber-700',
 };
-// "To Be Submitted By" — human label for the document source.
 const SUBMITTER = { CUSTOMER: 'Customer', AGENT: 'Team', IN_PERSON: 'In person' };
 
 const SOURCES = ['CUSTOMER', 'AGENT', 'IN_PERSON'];
@@ -75,7 +74,7 @@ function DocumentTypeModal({ initial, onClose }) {
 
 function DocumentTypesTab() {
   const { documentTypes, isLoading } = useDocumentTypes();
-  const [editing, setEditing] = useState(null); // object or 'new'
+  const [editing, setEditing] = useState(null);
 
   return (
     <div className="space-y-4">
@@ -179,7 +178,7 @@ function TemplatesTab() {
 
   const runPreview = (rulesText) => {
     let rules;
-    try { rules = JSON.parse(rulesText); } catch { return; } // parse errors shown on save
+    try { rules = JSON.parse(rulesText); } catch { return; }
     if (!Array.isArray(rules)) return;
     previewMut.mutate(rules, { onSuccess: (data) => setPreview(data) });
   };

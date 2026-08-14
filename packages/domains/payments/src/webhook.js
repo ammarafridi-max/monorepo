@@ -5,22 +5,7 @@ function getOrRegisterModel(conn, name, schema) {
   try { return conn.model(name); } catch { return conn.model(name, schema); }
 }
 
-/**
- * Returns an Express request handler for Stripe webhooks.
- * Mount it with express.raw() BEFORE json middleware in the brand app:
- *   app.post('/api/webhook', express.raw({ type: 'application/json' }), webhookHandler)
- *
- * @param {{
- *   stripe: import('stripe').Stripe,
- *   webhookSecret: string,
- *   db: import('mongoose').Connection,
- *   handlers: {
- *     ticket?: (session: object) => Promise<void>,
- *     insurance?: (session: object) => Promise<void>,
- *   }
- * }} deps
- * @returns {import('express').RequestHandler}
- */
+// Must be mounted with express.raw() BEFORE the JSON body parser.
 export function createStripeWebhookHandler({ stripe, webhookSecret, db, handlers = {} }) {
   const StripeWebhookEvent = getOrRegisterModel(db, 'stripe-webhook-event', StripeWebhookEventSchema);
 
@@ -49,19 +34,12 @@ export function createStripeWebhookHandler({ stripe, webhookSecret, db, handlers
     const sessionId = session.metadata?.sessionId;
 
     try {
-      // Fast path: an event we already fully processed is a true duplicate.
       const existing = await StripeWebhookEvent.findOne({ eventId: event.id });
       if (existing?.handlerSucceeded) {
         return res.json({ received: true, duplicate: true });
       }
 
-      // Atomically CLAIM the event before doing any work. Stripe delivers the same
-      // event concurrently and re-sends on timeout, so a plain findOne→create is
-      // not enough — two deliveries would both run the handler and double-send
-      // emails / double-issue. The unique index on eventId is the mutex: exactly
-      // one caller wins this upsert; a concurrent caller fails the filter, hits the
-      // duplicate-key error, and defers (409). A claim older than STALE_MS is
-      // reclaimable so a crash mid-handler self-heals on the next Stripe retry.
+      // Atomic claim on the unique eventId index: exactly one of Stripe's duplicate deliveries runs the handler; a claim older than STALE_MS is reclaimable.
       const STALE_MS = 5 * 60 * 1000;
       const staleBefore = new Date(Date.now() - STALE_MS);
       try {
@@ -89,7 +67,6 @@ export function createStripeWebhookHandler({ stripe, webhookSecret, db, handlers
         );
       } catch (err) {
         if (err?.code === 11000) {
-          // Another delivery holds a fresh claim — let Stripe retry later.
           logger.warn('[payments] Webhook event already being processed, deferring', { eventId: event.id });
           return res.status(409).send('Webhook already being processed');
         }
@@ -97,15 +74,13 @@ export function createStripeWebhookHandler({ stripe, webhookSecret, db, handlers
       }
 
       if (session.payment_status !== 'paid') {
-        // Not payable (yet). Release the claim so a later paid event can proceed.
         await StripeWebhookEvent.updateOne({ eventId: event.id }, { $set: { processingAt: null } });
         return res.json({ received: true, unpaid: true });
       }
 
       const handler = handlers[productType];
       if (!handler) {
-        // Never mark an unhandled event as succeeded — that would permanently
-        // swallow a real payment. Release the claim and surface it loudly.
+        // Never mark an unhandled event as succeeded — that would permanently swallow a real payment.
         await StripeWebhookEvent.updateOne({ eventId: event.id }, { $set: { processingAt: null } });
         logger.error('[payments] No handler for productType', { productType, sessionId, eventId: event.id });
         return res.json({ received: true, unhandled: true });
@@ -113,7 +88,6 @@ export function createStripeWebhookHandler({ stripe, webhookSecret, db, handlers
 
       await handler(session);
 
-      // Mark as successfully handled so future deliveries short-circuit as duplicates.
       await StripeWebhookEvent.updateOne(
         { eventId: event.id },
         { $set: { handlerSucceeded: true, processingAt: null } },
@@ -122,11 +96,9 @@ export function createStripeWebhookHandler({ stripe, webhookSecret, db, handlers
       return res.json({ received: true });
     } catch (err) {
       logger.error('[payments] Webhook processing failed', { eventId: event.id, error: err.message });
-      // Release the claim so the next Stripe retry can reprocess immediately.
       try {
         await StripeWebhookEvent.updateOne({ eventId: event.id }, { $set: { processingAt: null } });
       } catch {
-        /* best-effort claim release */
       }
       return res.status(500).send('Webhook handler failed');
     }

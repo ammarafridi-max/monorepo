@@ -6,13 +6,6 @@ import VisaSearchBar, { SCHENGEN_OPTION } from './VisaSearchBar.js';
 import { useVisaCheck } from '../../../hooks/visa/useVisaCheck.js';
 import { outcomeUi, OUTCOME_TONE, NEEDS_ACTION, isUnverified } from '../../../utils/visaOutcomes.js';
 
-/**
- * The visa checker with no page chrome: search bar plus result, nothing else.
- *
- * Kept separate from the /visa-checker page section so the homepage hero and
- * the dedicated page render the exact same thing. Wording and the decision of
- * when to sell live in utils/visaOutcomes, shared with both.
- */
 
 const OUTCOME_ICON = {
   VISA_FREE: Check,
@@ -26,7 +19,6 @@ const OUTCOME_ICON = {
 export default function VisaCheckerInline({
   consultHref = '/visa',
   extraDestinations = [SCHENGEN_OPTION],
-  /** Results read left-aligned even when the hero text above them is centred. */
   className = '',
 }) {
   const v = useVisaCheck();

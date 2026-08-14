@@ -1,12 +1,5 @@
 'use client';
 
-/**
- * The shared furniture of the visa admin forms.
- *
- * Pulled out of VisaForm so the base page and the per-country overlay editor
- * are visibly the same product. They sit side by side as tabs on one screen, so
- * any drift between them would read as a bug.
- */
 
 import { useState } from 'react';
 import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react';
@@ -97,7 +90,6 @@ export function AddButton({ onClick, label, disabled }) {
 export function ItemBox({ label, onRemove, actions, children, defaultOpen = false }) {
   const [open, setOpen] = useState(defaultOpen);
 
-  // Unlabelled boxes stay as plain grey containers (nothing to collapse against).
   if (!label) {
     return <div className="border border-gray-100 bg-gray-50 rounded-xl p-4 space-y-3">{children}</div>;
   }

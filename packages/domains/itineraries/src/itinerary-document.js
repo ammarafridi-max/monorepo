@@ -4,7 +4,6 @@ import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer';
 // Buildless ESM package → no JSX. `h` keeps the tree readable.
 const h = React.createElement;
 
-// -- Config / helpers (ported from the old HTML template) --------------------
 const PURPOSE_PROFILES = {
   tourism: { label: 'Tourism' },
   business: { label: 'Business' },
@@ -43,7 +42,6 @@ function fmtDayNum(dateStr) {
   return d ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }) : '';
 }
 
-// Semantic colours for the activity-type pill: [background, text].
 const BADGE_COLORS = {
   arrival: ['#eaf2fb', '#1d4ed8'],
   departure: ['#eef2f7', '#475569'],
@@ -81,9 +79,7 @@ function dayDescription(day) {
   return '';
 }
 
-// Brand-neutral fallback. The composition root injects the real values; these
-// exist only so a missing `brand` renders rather than throwing. A named brand
-// here would print another company's details on a PDF.
+// Brand-neutral fallback only; the composition root injects the real brand.
 const DEFAULT_BRAND = {
   name: '',
   companyName: '',
@@ -94,7 +90,6 @@ const DEFAULT_BRAND = {
 
 function buildStyles(b) {
   return StyleSheet.create({
-    // 12mm ≈ 34pt vertical, 13mm ≈ 37pt horizontal.
     page: { paddingVertical: 34, paddingHorizontal: 37, fontFamily: 'Helvetica', fontSize: 9, color: '#0f172a' },
 
     head: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
@@ -133,8 +128,6 @@ function buildStyles(b) {
   });
 }
 
-// Diagonal repeating watermark (preview only). A grid of low-opacity rotated
-// labels covering the whole A4 page; `fixed` repeats it on every page.
 function watermarkLayer(s, b) {
   const label = `${b.name.toUpperCase()} · PREVIEW ONLY`;
   const tiles = [];
@@ -152,11 +145,6 @@ function watermarkLayer(s, b) {
   return h(View, { key: 'wm', fixed: true, style: s.watermarkLayer }, tiles);
 }
 
-/**
- * Builds the @react-pdf <Document> for an itinerary order.
- * @param {{ order: object, watermark?: boolean, brand?: object }} args
- * @returns {React.ReactElement}
- */
 export function buildItineraryDocument({ order, watermark = false, brand = {} }) {
   const b = { ...DEFAULT_BRAND, ...brand };
   const s = buildStyles(b);

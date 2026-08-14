@@ -45,10 +45,7 @@ export function createUserController({ service, cookieExpiresInDays, nodeEnv, ap
 
   const forgotPassword = async (req, res, next) => {
     try {
-      // Build the reset link from a server-trusted base URL, NOT the client-supplied
-      // Host header. Trusting req.get('host') lets an attacker set Host to their own
-      // domain and receive a reset link carrying the victim's token (host-header
-      // injection → account takeover).
+      // Build the reset link from a server-trusted base URL, never req.get('host') (host-header injection -> account takeover).
       const base = String(appBaseUrl || '').replace(/\/+$/, '');
       const resetUrl = `${base}/api/users/reset-password`;
       await service.forgotPassword({ email: req.body.email, resetUrl });
@@ -71,10 +68,8 @@ export function createUserController({ service, cookieExpiresInDays, nodeEnv, ap
   const requestMagicLink = async (req, res, next) => {
     try {
       await service.requestMagicLink({ email: req.body.email });
-      // Always 200 — never reveal whether the email exists.
       res.json({ status: 'success', message: 'If that email is valid, a sign-in link has been sent.' });
     } catch {
-      // Even on unexpected error we return 200 to avoid enumeration; the failure is logged upstream.
       res.json({ status: 'success', message: 'If that email is valid, a sign-in link has been sent.' });
     }
   };
@@ -86,7 +81,6 @@ export function createUserController({ service, cookieExpiresInDays, nodeEnv, ap
       const base = String(appBaseUrl || '').replace(/\/+$/, '');
       res.redirect(`${base}/apply`);
     } catch (err) {
-      // Send the user to the login page with an error flag rather than a JSON 400.
       const base = String(appBaseUrl || '').replace(/\/+$/, '');
       res.redirect(`${base}/apply/login?error=expired`);
     }

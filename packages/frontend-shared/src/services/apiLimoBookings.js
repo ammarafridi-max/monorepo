@@ -33,7 +33,6 @@ export async function refundBookingApi(transactionId) {
   });
 }
 
-// -- Public (client booking flow) --------------------------------------------
 
 export async function getAvailableVehiclesApi(params) {
   const query = new URLSearchParams(

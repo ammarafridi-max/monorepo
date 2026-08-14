@@ -16,7 +16,6 @@ CurrencySchema.pre('save', function () {
   if (this.isBaseCurrency) this.rate = 1;
 });
 
-// Enforce only one base currency at the DB level
 CurrencySchema.index(
   { isBaseCurrency: 1 },
   { unique: true, partialFilterExpression: { isBaseCurrency: true } },

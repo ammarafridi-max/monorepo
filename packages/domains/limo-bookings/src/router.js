@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { createBookingSchema } from './validators.js';
 
-// Mirrors source middleware/validate.js: parses into req.validatedBody, responds 400 directly.
 function validate(schema) {
   return (req, res, next) => {
     try {
@@ -25,17 +24,11 @@ export function createBookingRouterFromParts({ controller, auth }) {
 
   router.route('/available-vehicles').get(controller.getVehicles);
 
-  // Staff only. A booking reference is short and human-readable, so an open
-  // endpoint keyed on it can be walked in order to harvest every customer's
-  // contact and journey details. Nothing in any frontend calls this.
+  // Staff only: booking refs are short and sequential, so an open endpoint could be walked to harvest customer data.
   router.route('/reference/:ref').get(protect, restrictTo('admin', 'agent'), controller.getBookingByReference);
 
   router
     .route('/:id')
-    // Deliberately reachable without logging in: this is the customer's own
-    // payment-confirmation page, reached from the Stripe redirect. `identify`
-    // is the soft variant, so staff still get the full record and the public
-    // gets a redacted one (see controller.getBookingById).
     .get(identify, controller.getBookingById)
     .patch(protect, restrictTo('admin', 'agent'), controller.updateBooking)
     .delete(protect, restrictTo('admin'), controller.deleteBooking);

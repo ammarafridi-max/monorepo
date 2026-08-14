@@ -11,11 +11,6 @@ function getOrRegisterModel(conn, name, schema) {
   }
 }
 
-/**
- * @param db      Mongoose connection
- * @param auth    { protect, restrictTo } middleware (from @travel-suite/auth)
- * @param images  Image-store adapter — see createVehicleService for the contract.
- */
 export function createVehiclesRouter({ db, auth, images }) {
   const Vehicle = getOrRegisterModel(db, 'Vehicle', VehicleSchema);
   const service = createVehicleService({ Vehicle, images });

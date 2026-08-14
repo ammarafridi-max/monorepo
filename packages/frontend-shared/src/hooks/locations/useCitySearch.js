@@ -3,7 +3,6 @@ import { useQuery } from '@tanstack/react-query';
 import { useDebounce } from '../general/useDebounce.js';
 import { searchCitiesApi } from '../../services/apiLocations.js';
 
-// Debounced city autocomplete. Returns [{ name, countryCode }].
 export function useCitySearch(query) {
   const debouncedQuery = useDebounce(query, 300);
 

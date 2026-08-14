@@ -1,31 +1,10 @@
 /* eslint-disable no-console */
 /**
- * Finds paid bookings whose confirmation email never went out, and optionally
- * re-sends it.
- *
- * Background: when the mail provider is down (or its key is dead) the Stripe
- * webhook still marks the booking paid and still returns 200 — by design, since
- * throwing would make Stripe redeliver and reprocess the payment. The booking
- * instead carries notifications.paymentConfirmation.{customer,admin}.status,
- * which is what this script reads. Bookings taken before that field existed
- * simply have no value, and a missing value counts as "not sent" here, so the
- * backlog from the outage is picked up too.
- *
- * Dry run by default — it prints what it WOULD send and sends nothing. Add
- * --apply to actually send. Sending updates the same delivery record, so a
- * re-run only ever picks up what is still outstanding.
- *
- * Run:
+ * Usage:
  *   node --env-file=apps/emirateslimo-backend/.env.production \
- *        apps/emirateslimo-backend/scripts/resend-booking-confirmations.js --db=<dbname>
- *   ...add --apply to send.
+ *        apps/emirateslimo-backend/scripts/resend-booking-confirmations.js --db=<dbname> [--apply] [--limit=N] [--since=YYYY-MM-DD] [--recipient=customer|admin|both]
  *
- * Flags:
- *   --db=<name>   REQUIRED. Must equal the database the MONGO_URI resolves to.
- *   --apply       Actually send. Without it, nothing leaves the machine.
- *   --limit=N     Cap how many bookings are processed (default 50).
- *   --since=YYYY-MM-DD  Only bookings created on/after this date.
- *   --recipient=customer|admin|both   Default both.
+ * --apply sends real email to real customers; without it nothing leaves the machine.
  */
 import mongoose from "mongoose";
 
@@ -90,9 +69,7 @@ async function run() {
   await mongoose.connect(config.mongoUri);
   const conn = mongoose.connection;
 
-  // Wrong-database guard. Connection strings get pasted between environments;
-  // re-sending months-old confirmations from the wrong DB would email real
-  // customers. Bail before reading anything if the names disagree.
+  // Wrong-database guard: bail before reading anything if the names disagree.
   if (conn.name !== EXPECTED_DB) {
     await mongoose.disconnect();
     throw new Error(
@@ -100,9 +77,6 @@ async function run() {
     );
   }
 
-  // BookingSchema's pre-find hook populates vehicle/zones/handledBy, so those
-  // models must exist on this connection. handledBy is only decoration here, so
-  // a permissive stub avoids importing the auth package's internals.
   model(conn, "Vehicle", VehicleSchema);
   model(conn, "Zone", ZoneSchema);
   model(conn, "admin-user", new mongoose.Schema({}, { strict: false, collection: "admin-users" }));
@@ -138,8 +112,6 @@ async function run() {
   }
 
   const notifications = createBookingNotifications({ sendEmail, config });
-  // Only re-send what is actually outstanding: a booking whose customer email
-  // landed but whose admin copy failed must not email the customer twice.
   const wanted = (booking, key) => {
     if (RECIPIENT !== "both" && RECIPIENT !== key) return false;
     return booking.notifications?.paymentConfirmation?.[key]?.status !== "sent";

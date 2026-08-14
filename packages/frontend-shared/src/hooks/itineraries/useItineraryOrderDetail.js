@@ -2,7 +2,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { getItineraryOrderDetailApi } from '../../services/apiItineraries.js';
 
-// Admin: full itinerary order detail (incl. Cloudinary document URLs).
 export function useItineraryOrderDetail(sessionId) {
   const { data, isLoading, isError } = useQuery({
     queryKey: ['itinerary-order-detail', sessionId],

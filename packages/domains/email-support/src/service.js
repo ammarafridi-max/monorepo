@@ -8,7 +8,6 @@ export function createEmailSupportService({ EmailSupport, gmail, drafter, logger
     }
 
     try {
-      // Get all already-processed message IDs from DB
       const existing = await EmailSupport.find({}, { gmailMessageId: 1, _id: 0 }).lean();
       const processedIds = new Set(existing.map((e) => e.gmailMessageId));
 

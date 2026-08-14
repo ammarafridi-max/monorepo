@@ -52,11 +52,6 @@ function getDubaiDateString() {
   return `${y}-${m}-${d}`;
 }
 
-// Whether a ticket's scheduled delivery day has arrived, in Dubai time.
-// Immediate deliveries and tickets with no scheduled date are always ready.
-// Delivery dates are stored as YYYY-MM-DD-prefixed strings, so a lexical
-// compare against today's Dubai date is correct regardless of server locale.
-// Mirrors the gate the admin UI applies before showing Send / Mark Progress.
 function isDeliveryDayReached(ticket) {
   if (ticket?.ticketDelivery?.immediate) return true;
   const scheduled = ticket?.ticketDelivery?.deliveryDate?.slice(0, 10);
@@ -69,7 +64,6 @@ function applyDeliveryDateFilter(queryObj, deliveryDate) {
   const dateStr = deliveryDate === 'today' ? getDubaiDateString() : deliveryDate;
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return;
   queryObj['ticketDelivery.deliveryDate'] = { $regex: new RegExp(`^${dateStr}`) };
-  // Delivery views only concern paid tickets — never show unpaid ones.
   queryObj.paymentStatus = 'PAID';
 }
 
@@ -102,18 +96,12 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       .populate('handledBy')
       .populate('affiliate', 'name email affiliateId commissionPercent isActive');
 
-  // Lightweight "is there a new paid order?" probe for admin ping polling.
-  // Returns only the fields the client needs to dedupe — no payload bloat.
   const getLatestPaidTicket = () =>
     Ticket.findOne({ paymentStatus: 'PAID' })
       .sort({ updatedAt: -1 })
       .select('sessionId updatedAt')
       .lean();
 
-  // Upload the reservation PDF to Cloudinary at a deterministic path
-  // (overwrites prior versions if the agent re-sends), email the customer
-  // with the PDF as an attachment, and flip the ticket to DELIVERED.
-  // The agent's user id is stored on `handledBy` so attribution sticks.
   const sendReservation = async ({ sessionId, agentId, subject, body, bodyHtml, file }) => {
     if (!reservationStorage || !sendEmail) {
       throw new AppError('Reservation sending is not configured on this server', 500);
@@ -128,33 +116,19 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       throw new AppError('This ticket is scheduled for a later delivery date. Bring the delivery date forward before sending.', 409);
     }
 
-    // 'image' (not 'raw') so Cloudinary treats the PDF as a renderable
-    // multi-page asset — gives us console previews, page thumbnails, and
-    // delivery transformations. 'raw' uploads succeed but show as
-    // "show_original_unsupported_file_format" in the Cloudinary dashboard.
-    // Requires "PDF and ZIP files delivery" to be enabled in Cloudinary's
-    // security settings; until then the saved URL won't be publicly
-    // fetchable (which is fine — we attach the bytes inline to the email).
+    // 'image' (not 'raw') so Cloudinary treats the PDF as a renderable asset.
     const url = await reservationStorage.saveFile(
       file.buffer,
       `${sessionId}/reservation-file.pdf`,
       { resourceType: 'image' },
     );
 
-    // Inline attachment via base64. We previously passed the Cloudinary
-    // URL to Brevo, but Cloudinary blocks PDF delivery by default for new
-    // accounts ("Customer is marked as untrusted"), causing Brevo to fail
-    // to fetch and bounce the email with a misleading 20MB-size error.
-    // Sending the bytes inline removes the dependency on Cloudinary being
-    // reachable. Cloudinary upload still happens for archival.
+    // Attach the bytes inline: Cloudinary blocks PDF delivery by default, so handing Brevo a URL bounces the email.
     const ok = await sendEmail({
       email: ticket.email,
       name: ticket.leadPassenger || '',
       subject: subject.trim(),
       textContent: body,
-      // Frontend builds the HTML with proper anchor tags (brand-aware
-      // links to Trustpilot + website). Fall back to a plain
-      // line-break conversion if the client didn't send one.
       htmlContent: bodyHtml || body.split('\n').map((l) => l || '&nbsp;').join('<br>'),
       attachment: [{
         name: 'reservation-file.pdf',
@@ -184,9 +158,6 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     if (!allowed.includes(orderStatus)) throw new AppError('Invalid order status', 400);
     if (!mongoose.Types.ObjectId.isValid(userId)) throw new AppError('Invalid user ID', 400);
 
-    // Scheduled deliveries can't be advanced to PROGRESS/DELIVERED before the
-    // delivery day arrives — the agent must bring the delivery date forward
-    // first (see updateDeliveryDate). PENDING/REFUNDED transitions aren't gated.
     if (orderStatus === 'PROGRESS' || orderStatus === 'DELIVERED') {
       const existing = await Ticket.findOne({ sessionId });
       if (!existing) throw new AppError('Ticket not found', 404);
@@ -205,10 +176,6 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     return updated;
   };
 
-  // Reschedule (or bring forward) a ticket's delivery. Agents use this when a
-  // customer who picked a later date changes their mind. Either flip it to
-  // immediate delivery, or set a specific YYYY-MM-DD date. Stamps handledBy
-  // with the acting agent, consistent with the other admin mutations.
   const updateDeliveryDate = async (sessionId, userId, { deliveryDate, immediate } = {}) => {
     if (!mongoose.Types.ObjectId.isValid(userId)) throw new AppError('Invalid user ID', 400);
 
@@ -329,7 +296,6 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       throw new Error(`[tickets] Ticket not found for sessionId: ${sessionId}`);
     }
 
-    // Re-validate affiliate attribution at payment time
     let shouldClearAffiliate = false;
     if (existing.affiliate || existing.affiliateId) {
       const activeAffiliate = existing.affiliate
@@ -364,7 +330,6 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       { new: true },
     );
 
-    // Push real-time ping to any connected admin SSE clients on this instance.
     paidOrderBus?.publish({ sessionId: ticket.sessionId, paidAt: ticket.updatedAt });
 
     await notifications.sendTicketPaymentToAdmin({
@@ -386,8 +351,6 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       message: ticket.message,
     });
 
-    // Customer confirmation — plain-text "we have your order" email.
-    // Plays the immediate-vs-scheduled variant inside the notification.
     await notifications.sendTicketPaymentToCustomer?.({
       email: ticket.email,
       leadPassenger: ticket.leadPassenger,
@@ -400,8 +363,6 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       ticketDelivery: ticket.ticketDelivery,
     });
 
-    // Review collection (MDT only): no-op where brevo is not injected
-    // (e.g. dt365). Best-effort — must never break a confirmed payment.
     try {
       await brevo?.addContactToReviewList?.({
         email: ticket.email,
@@ -416,13 +377,6 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     }
   };
 
-  // -- PayPal ---------------------------------------------------------------
-
-  /**
-   * Creates a PayPal order for a ticket.
-   * Always charges in USD (PayPal does not support AED).
-   * Returns { orderId, approveUrl } — frontend redirects to approveUrl.
-   */
   const createPayPalOrder = async (formData) => {
     if (!paypal) throw new AppError('PayPal is not configured', 503);
 
@@ -439,7 +393,6 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     const { currency: baseCurrency, unitPrice } = await pricingService.getUnitPrice(ticket.ticketValidity);
     const baseTotalAmount = Number((unitPrice * (adults + children)).toFixed(2));
 
-    // PayPal doesn't support AED — always charge in USD.
     const { amount: totalAmount, currencyCode } = await currencyService.convertFromBase({
       amount: baseTotalAmount,
       targetCode: 'USD',
@@ -457,10 +410,6 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     });
   };
 
-  /**
-   * Captures an approved PayPal order and marks the ticket as PAID.
-   * Called from the frontend after PayPal redirects back with ?token=<orderId>.
-   */
   const capturePayPalOrder = async ({ sessionId, orderId }) => {
     if (!paypal) throw new AppError('PayPal is not configured', 503);
     if (!sessionId) throw new AppError('Session ID is required', 400);
@@ -469,7 +418,6 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     const existing = await Ticket.findOne({ sessionId });
     if (!existing) throw new AppError('Ticket not found', 404);
 
-    // Idempotency — already paid (e.g. user refreshed the page)
     if (existing.paymentStatus === 'PAID') return existing;
 
     const captureData = await paypal.captureOrder(orderId);
@@ -482,9 +430,8 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     const capture = captureUnit?.payments?.captures?.[0];
     const amount = parseFloat(capture?.amount?.value ?? existing.totalAmount ?? 0);
     const currency = (capture?.amount?.currency_code ?? existing.currency ?? 'USD').toUpperCase();
-    const transactionId = captureData.id; // PayPal Order ID
+    const transactionId = captureData.id;
 
-    // Re-validate affiliate attribution at payment time (same logic as Stripe)
     let shouldClearAffiliate = false;
     if (existing.affiliate || existing.affiliateId) {
       const activeAffiliate = existing.affiliate
@@ -522,7 +469,6 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       { new: true },
     );
 
-    // Push real-time ping to any connected admin SSE clients on this instance.
     paidOrderBus?.publish({ sessionId: ticket.sessionId, paidAt: ticket.updatedAt });
 
     await notifications.sendTicketPaymentToAdmin({
@@ -545,8 +491,6 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       message: ticket.message,
     });
 
-    // Customer confirmation — plain-text "we have your order" email.
-    // Plays the immediate-vs-scheduled variant inside the notification.
     await notifications.sendTicketPaymentToCustomer?.({
       email: ticket.email,
       leadPassenger: ticket.leadPassenger,

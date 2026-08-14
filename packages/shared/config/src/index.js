@@ -7,7 +7,6 @@ import emirateslimo from './brands/emirateslimo.js';
 
 const brands = { mdt, dt365, travelshield, travl, emirateslimo };
 
-// Validate every brand at module load time — misconfigured brands fail at startup, not at runtime
 for (const config of Object.values(brands)) {
   validateBrand(config);
 }

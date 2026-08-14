@@ -167,8 +167,7 @@ export function createAdminUsersService({ AdminUser }) {
       throw new AppError('Use the change-my-password flow to update your own password.', 400);
     }
 
-    // Assigning + save() triggers the schema pre-save hook: hashes the password
-    // and stamps passwordChangedAt, which invalidates the target user's existing sessions.
+    // Must be save(), not updateOne: the pre-save hook hashes and stamps passwordChangedAt.
     user.password = password;
     await user.save();
     return user;

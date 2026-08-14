@@ -1,9 +1,5 @@
 import { catchAsync } from '@travel-suite/utils';
 
-/**
- * Creates auth controller handlers with injected dependencies.
- * @param {{ service, jwtUtils: { signToken, createCookieOptions } }} deps
- */
 export function createAuthController({ service, jwtUtils }) {
   const { signToken, createCookieOptions } = jwtUtils;
 

@@ -1,9 +1,5 @@
 import jwt from 'jsonwebtoken';
 
-/**
- * Creates JWT utilities bound to injected config.
- * @param {{ jwtSecret: string, jwtExpiresIn: string, cookieExpiresInDays: number, nodeEnv: string }} config
- */
 export function createJwtUtils({ jwtSecret, jwtExpiresIn, cookieExpiresInDays, nodeEnv }) {
   const signToken = (id, role) =>
     jwt.sign({ id, role, type: 'admin' }, jwtSecret, { expiresIn: jwtExpiresIn });

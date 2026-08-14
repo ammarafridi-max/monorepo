@@ -23,7 +23,6 @@ const STATUS_CFG = {
   CANCELLED: { dot: 'bg-gray-400', cls: 'bg-gray-100 text-gray-400 border-gray-200' },
 };
 
-// Work-queue filter chips → the backend `queue` param.
 const QUEUES = [
   { key: 'needs_review', label: 'Needs review' },
   { key: 'your_turn', label: 'Your turn' },
@@ -100,7 +99,6 @@ function CreateModal({ onClose }) {
   );
 }
 
-// Days-quiet cell — reddens as silence grows.
 function QuietCell({ days }) {
   if (days == null) return <span className="text-gray-300">—</span>;
   const tone = days >= 5 ? 'text-red-600 font-bold' : days >= 3 ? 'text-amber-600 font-semibold' : 'text-gray-500';

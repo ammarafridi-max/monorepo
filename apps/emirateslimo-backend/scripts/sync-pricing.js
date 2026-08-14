@@ -1,17 +1,8 @@
-// apps/emirateslimo-backend/scripts/sync-pricing.js
+// Usage:
+//   node --env-file=apps/emirateslimo-backend/.env.production apps/emirateslimo-backend/scripts/sync-pricing.js
+//   node --env-file=apps/emirateslimo-backend/.env.production apps/emirateslimo-backend/scripts/sync-pricing.js --dry
 //
-// Reads the pricing Google Sheet and creates/updates pricing rules directly on
-// the PricingRule model. The "Vehicle Group" cell holds vehicle names in
-// "Brand Model / Brand Model" format (one rule can cover several vehicles); each
-// name is resolved against the Vehicle collection. Replicates the package's
-// createRuleName() so synced rules read identically to admin-made ones.
-// On success it ticks the row's "Added" checkbox, which is also the dedupe key:
-// only un-ticked rows are processed, so re-runs never duplicate.
-//
-// Run:  node --env-file=apps/emirateslimo-backend/.env.production apps/emirateslimo-backend/scripts/sync-pricing.js
-//       add --dry to resolve + report without writing anything.
-//
-// Service account needs EDITOR access on the sheet (it writes the Added column).
+// The Google service account needs EDITOR access on the sheet (it writes the Added column).
 
 import mongoose from "mongoose";
 import { google } from "googleapis";
@@ -20,12 +11,10 @@ import { PricingRuleSchema } from "@travel-suite/pricing-rules";
 import { ZoneSchema } from "@travel-suite/zones";
 import { VehicleSchema } from "@travel-suite/vehicles";
 
-// ───────────────────────── CONFIG (review this block) ─────────────────────────
 const CONFIG = {
   sheetId: process.env.PRICING_SHEET_ID,
   sheetTab: process.env.PRICING_SHEET_TAB || "Sheet1",
 
-  // Header names as they appear in row 1 of the sheet (matched case-insensitively).
   columns: {
     from: "From",
     vehicleGroup: "Vehicle Group",
@@ -34,18 +23,11 @@ const CONFIG = {
     added: "Added",
   },
 
-  // return is required by the schema but your sheet has no round-trip price and
-  // the quote engine ignores it today. 'same' => return = oneWay. 'double' => 2x.
   returnStrategy: "double",
 };
-// Vehicle names are matched against the DB by "<brand> <model>", split on "/".
-// No mapping table needed — but the names in the sheet must match your Vehicle
-// records. Mismatches are listed (with the full DB vehicle list) on a dry run.
-// ───────────────────────────────────────────────────────────────────────────────
 
 const DRY = process.argv.includes("--dry");
 
-// Verbatim from packages/domains/pricing-rules/src/service.js so the name matches.
 function createRuleName(vehicles, pickupZones, dropoffZones) {
   return `${vehicles.map((veh) => `${veh.brand} ${veh.model}`).join(" / ")} - ${pickupZones
     .map((zone) => `${zone.name}`)
@@ -105,7 +87,7 @@ async function getSheetsClient() {
   const credentials = JSON.parse(raw);
   const auth = new google.auth.GoogleAuth({
     credentials,
-    scopes: ["https://www.googleapis.com/auth/spreadsheets"], // read-write: ticks Added
+    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
   });
   return google.sheets({ version: "v4", auth });
 }
@@ -119,7 +101,6 @@ async function resolveOneZone(Zone, text) {
   );
 }
 
-// A "From"/"Zone" cell can list several zones separated by "/". Resolve each.
 async function resolveZoneCell(Zone, text) {
   const tokens = String(text)
     .split("/")
@@ -141,7 +122,6 @@ async function main() {
 
   const sheets = await getSheetsClient();
 
-  // 1. Read the sheet
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: CONFIG.sheetId,
     range: `${CONFIG.sheetTab}!A1:Z100000`,
@@ -153,7 +133,6 @@ async function main() {
     return;
   }
 
-  // 2. Map headers -> column indexes
   const header = rows[0].map((h) =>
     String(h || "")
       .trim()
@@ -168,14 +147,12 @@ async function main() {
   }
   const addedColLetter = colLetter(colIdx.added);
 
-  // 3. Connect DB + register models on this connection
   await mongoose.connect(process.env.MONGO_URI);
   const conn = mongoose.connection;
   const PricingRule = model(conn, "PricingRule", PricingRuleSchema);
   const Zone = model(conn, "Zone", ZoneSchema);
   const Vehicle = model(conn, "Vehicle", VehicleSchema);
 
-  // Preload the fleet and index it by "<brand> <model>" for name matching.
   const allVehicles = await Vehicle.find().select("_id brand model");
   const byName = new Map();
   const byTight = new Map();
@@ -198,12 +175,11 @@ async function main() {
     errors: [],
   };
   const ticks = [];
-  const xMarks = []; // rows skipped because a vehicle/zone isn't in the DB yet
+  const xMarks = [];
 
-  // 4. Process rows
   for (let i = 1; i < rows.length; i++) {
     const row = rows[i];
-    const sheetRow = i + 1; // 1-indexed; header is row 1
+    const sheetRow = i + 1;
 
     if (isTicked(row[colIdx.added])) {
       stats.alreadyAdded++;
@@ -225,7 +201,6 @@ async function main() {
     }
 
     try {
-      // Resolve every vehicle named in the cell (split on "/").
       const tokens = groupText
         .split("/")
         .map((s) => s.trim())
@@ -265,8 +240,6 @@ async function main() {
         pricing: { oneWay, return: returnPrice },
       };
 
-      // Dedupe guard: a rule with the exact same pickup set, dropoff set, and
-      // vehicle set already exists -> update its price instead of duplicating.
       const candidates = await PricingRule.find({
         pickupZones: { $all: pickupIds },
         dropoffZones: { $all: dropoffIds },
@@ -300,7 +273,6 @@ async function main() {
     }
   }
 
-  // 5. Write back: TRUE on synced rows, "x" on rows missing a car/zone (batch)
   if (!DRY && (ticks.length || xMarks.length)) {
     await sheets.spreadsheets.values.batchUpdate({
       spreadsheetId: CONFIG.sheetId,
@@ -322,7 +294,6 @@ async function main() {
 
   await mongoose.disconnect();
 
-  // 6. Report
   const m = stats.missing;
   console.log(`\n[sync] ${DRY ? "(dry run) " : ""}done`);
   console.log(`  created:           ${stats.created}`);

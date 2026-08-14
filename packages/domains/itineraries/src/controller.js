@@ -3,8 +3,6 @@ import { AppError } from '@travel-suite/utils';
 export function createItineraryController({ service }) {
   const createOrder = async (req, res, next) => {
     try {
-      // Multipart (with supporting docs) carries the input JSON in a `data` field;
-      // plain JSON requests have it as the body directly.
       const payload = typeof req.body?.data === 'string' ? JSON.parse(req.body.data) : req.body;
       const order = await service.createOrder(payload, req.ip, req.files);
       const meta = await service.getOrderMeta(order.sessionId);
@@ -24,7 +22,6 @@ export function createItineraryController({ service }) {
     }
   };
 
-  // Admin: list all itineraries (paginated, searchable, filterable).
   const listOrders = async (req, res, next) => {
     try {
       const { data, pagination } = await service.listOrders(req.query);
@@ -34,7 +31,6 @@ export function createItineraryController({ service }) {
     }
   };
 
-  // Admin: full order detail incl. Cloudinary document URLs.
   const getOrderDetail = async (req, res, next) => {
     try {
       const order = await service.getOrderDetail(req.params.sessionId);
@@ -45,7 +41,6 @@ export function createItineraryController({ service }) {
     }
   };
 
-  // Admin: delete an itinerary (+ its Cloudinary assets).
   const deleteOrder = async (req, res, next) => {
     try {
       await service.deleteOrder(req.params.sessionId);
@@ -65,16 +60,10 @@ export function createItineraryController({ service }) {
     }
   };
 
-  // Watermarked flat image — the only itinerary content a client can read
-  // before payment. Never returns the JSON or clean text.
-  // Watermarked preview lives in Cloudinary. The client loads previewUrl (from
-  // the order meta) directly; this endpoint stays as a convenience redirect.
   const getPreview = async (req, res, next) => {
     try {
       const url = await service.getPreviewUrl(req.params.sessionId);
       res.setHeader('Cache-Control', 'no-store, max-age=0');
-      // helmet defaults CORP to same-origin; allow cross-origin embedding in case
-      // this redirect is used by an <img> directly.
       res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
       res.redirect(302, url);
     } catch (err) {
@@ -91,10 +80,7 @@ export function createItineraryController({ service }) {
     }
   };
 
-  // Clean, watermark-free, print-ready PDF — gated behind payment in the service.
-  // The bytes live in Cloudinary; we proxy them (rather than redirect) so the
-  // payment gate can't be bypassed by sharing a public URL, and so we control the
-  // download filename/content-type.
+  // Proxied, not redirected, so the payment gate cannot be bypassed with the public Cloudinary URL.
   const getDocument = async (req, res, next) => {
     try {
       const url = await service.getCleanPdfUrl(req.params.sessionId);
@@ -121,9 +107,6 @@ export function createItineraryController({ service }) {
     }
   };
 
-  // Conversational AI edit (async). Records the user message, kicks off the edit
-  // in the background, and returns { messages, meta } immediately with status
-  // GENERATING — the client polls until the reply + re-render settle.
   const chat = async (req, res, next) => {
     try {
       const result = await service.chatEdit(
@@ -145,8 +128,6 @@ export function createItineraryController({ service }) {
     }
   };
 
-  // Reads uploaded supporting documents and returns segments + reservation flags
-  // to prefill the form (no order created).
   const parseDocuments = async (req, res, next) => {
     try {
       const result = await service.parseDocuments(req.files);

@@ -13,13 +13,6 @@ function formatDate(value) {
   }).format(new Date(value));
 }
 
-/**
- * Sticky column beside an article.
- *
- * Renders whichever surfaces the app supplies, in priority order: contents,
- * then offers, then — for a brand that configured neither — the recent-posts
- * list, so nothing regresses. Share always sits at the bottom.
- */
 export default function BlogOfferRail({
   headings = [],
   offers = [],

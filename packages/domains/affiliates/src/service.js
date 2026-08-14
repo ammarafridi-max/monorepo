@@ -142,13 +142,11 @@ export function createAffiliateService({ Affiliate, Ticket, InsuranceApplication
     if (Ticket) commissionableTypes.push('ticket');
     if (InsuranceApplication) commissionableTypes.push('insurance');
 
-    // Ticket aggregation
     let ticketStats = null;
     if (Ticket) {
       ticketStats = await aggregateStats(Ticket, match);
     }
 
-    // Insurance aggregation
     let insuranceStats = null;
     if (InsuranceApplication) {
       insuranceStats = await aggregateStats(InsuranceApplication, match);

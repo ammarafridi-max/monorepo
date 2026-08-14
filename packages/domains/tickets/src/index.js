@@ -20,12 +20,8 @@ function getOrRegisterModel(conn, name, schema) {
 }
 
 export function createTicketsRouter({ db, auth, stripe, paypal, notifications, frontendUrl, AffiliateModel, brevo, reviewListId, reservationStorage, sendEmail }) {
-  // 'dummy-ticket' maps to the 'dummy-tickets' collection.
   const Ticket = getOrRegisterModel(db, 'dummy-ticket', TicketSchema);
-  // Use the pre-registered full Affiliate model if provided (has generateUniqueAffiliateId statics).
-  // Falls back to registering the stub schema when used standalone (e.g. travelshield).
   const Affiliate = AffiliateModel ?? getOrRegisterModel(db, 'Affiliate', AffiliateSchema);
-  // 'dummy-ticket-pricing' maps to the 'dummy-ticket-pricings' collection.
   const TicketPricing = getOrRegisterModel(db, 'dummy-ticket-pricing', TicketPricingSchema);
   const Currency = getOrRegisterModel(db, 'Currency', CurrencySchema);
 

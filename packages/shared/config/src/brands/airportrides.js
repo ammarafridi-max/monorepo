@@ -17,7 +17,7 @@ const airportrides = {
   },
   features: {
     dummyTickets: true,
-    insurance: false, // implemented — pending international supplier integration
+    insurance: false,
     hotelVouchers: false,
   },
   seo: {

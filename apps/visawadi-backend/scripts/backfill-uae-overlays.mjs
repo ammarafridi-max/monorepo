@@ -1,22 +1,4 @@
 /**
- * Create the UAE residence overlay for every visa page.
- *
- * Today's visa documents ARE the UAE version — they were written for UAE
- * residents and carry AED prices, Emirates ID, VFS Dubai. This lifts the
- * country-specific half into an overlay so a second country becomes a small
- * file rather than a duplicated page.
- *
- * NON-DESTRUCTIVE. The base documents are not touched. The overlay holds a copy
- * of the UAE values, and since the overlay wins at render time, /uae/visa/x
- * looks identical to /visa/x does today. Nothing changes for a visitor.
- *
- * That leaves the base still UAE-flavoured, which matters only when a second
- * country arrives: a KSA overlay that forgets to override "Personal Documents"
- * would inherit Emirates ID. So the script reports exactly which base fields
- * still contain UAE-specific text — that report is the to-do list for
- * neutralising the base, which is a separate, riskier edit best done when the
- * routes exist and can be eyeballed.
- *
  * Usage, from apps/visawadi-backend:
  *   node --env-file=.env.production scripts/backfill-uae-overlays.mjs          # dry run
  *   node --env-file=.env.production scripts/backfill-uae-overlays.mjs --apply
@@ -32,7 +14,6 @@ const RESIDENCE = 'AE';
 const RESIDENCE_NAME = 'United Arab Emirates';
 const RESIDENCE_SLUG = 'uae';
 
-/** Text that only makes sense for a UAE applicant. */
 const UAE_MARKERS = /Emirates ID|UAE Residence Visa|UAE residence|VFS Global Dubai|Dubai|AED|BLS.*(Dubai|UAE)/i;
 
 const VISA_CENTRES = {
@@ -79,9 +60,6 @@ for (const v of visas) {
     continue;
   }
 
-  // Only requirement sections that actually contain UAE-specific lines need an
-  // override. A section of universal items stays shared, which is the whole
-  // point — a second country inherits it instead of restating it.
   const localSections = (v.requirementSections || [])
     .filter((s) => (s.items || []).some((i) => UAE_MARKERS.test(i)))
     .map((s) => ({ title: s.title, items: s.items }));
@@ -99,7 +77,6 @@ for (const v of visas) {
     isPublished: v.status === 'published',
   };
 
-  // Which base fields would leak UAE detail into another country later.
   const leaks = [];
   for (const [field, value] of Object.entries(v)) {
     if (['packages', 'pricingBreakdown', 'testimonials', 'requirementSections'].includes(field)) continue;

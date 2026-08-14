@@ -1,14 +1,5 @@
 import Link from "next/link";
 
-/**
- * A single product card for the article rail.
- *
- * Offers are supplied by the consuming app, never defined here — a brand that
- * passes none simply gets no cards. `tone: "brand"` is the filled treatment
- * reserved for the brand's own product; partners use the plain treatment.
- *
- * offer: { id, eyebrow, price, note, href, cta, tone?, external? }
- */
 export default function BlogOfferCard({ offer, compact = false }) {
   if (!offer?.href || !offer?.cta) return null;
 

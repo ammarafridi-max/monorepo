@@ -1,18 +1,10 @@
 /**
- * Delete the visa leads that came across from Travl.
- *
- * They were migrated here so the cleanup would not destroy a live enquiry, but
- * the decision afterwards was to delete them outright. This removes exactly the
- * 5 that came from Travl, matched by _id, and nothing else — any lead VisaWadi
- * captures on its own is untouched.
- *
- * The full records remain in two backup files:
- *   apps/travl-backend/migration-output/travl-visa-leads-export.json
- *   apps/travl-backend/migration-output/travl-visa-data-backup.json
- *
  * Usage, from apps/visawadi-backend:
  *   node --env-file=.env.production scripts/delete-migrated-travl-leads.mjs          # dry run
  *   node --env-file=.env.production scripts/delete-migrated-travl-leads.mjs --apply
+ *
+ * --apply permanently deletes the Travl-sourced leads; it refuses to run without
+ * the backup file at migration-output/travl-visa-leads-export.json.
  */
 
 import fs from 'node:fs';

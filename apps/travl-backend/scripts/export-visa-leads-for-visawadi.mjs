@@ -1,14 +1,4 @@
 /**
- * Read-only export of Travl's visa leads so they can move to VisaWadi.
- *
- * These are NOT test records. Real prospects are in here, including at least
- * one with status "new" that nobody has replied to yet. Visa enquiries belong
- * to VisaWadi now, so they get migrated rather than deleted.
- *
- * Read only. Nothing in the travl database is modified by this script; the
- * deletion happens separately in purge-visa-data.mjs, after the import is
- * verified.
- *
  * Usage, from apps/travl-backend:
  *   node --env-file=.env.production scripts/export-visa-leads-for-visawadi.mjs
  */

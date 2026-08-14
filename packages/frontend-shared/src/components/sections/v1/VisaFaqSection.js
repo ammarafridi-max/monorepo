@@ -3,10 +3,6 @@ import SectionHead from "./VisaSectionHead.js";
 import VisaGuideLink from "./VisaGuideLink.js";
 import FaqAccordion from "../../ui/v2/FaqAccordion.js";
 
-/**
- * FAQ section for a visa detail page. The accordion itself is the shared
- * FaqAccordion — this only supplies the section chrome and copy.
- */
 export default function VisaFaqSection({ faqs = [], countryName, guide }) {
   if (!faqs.length) return null;
   const subject = countryName ? `${countryName} visa` : "visa";

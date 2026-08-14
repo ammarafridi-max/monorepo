@@ -24,8 +24,6 @@ export function createAvailabilityRuleService({ AvailabilityRule }) {
       .populate('dropoffZones', 'name')
       .populate('vehicles.vehicle', VEHICLE_SELECT);
 
-  // Raw create — returns the unformatted document (mirrors the source controller,
-  // which created directly on the model rather than through the formatting service).
   const createRuleRaw = async (data) => AvailabilityRule.create(data);
 
   const getAllRules = async () => {

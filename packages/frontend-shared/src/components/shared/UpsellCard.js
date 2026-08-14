@@ -1,10 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-// Cross-sell card surfaced on payment-success pages. Tuned for prominence:
-// gradient background, primary-tinted border, large icon badge, big CTA.
-// Optional `badge` prop renders a small tag in the top-right corner
-// (e.g. "Recommended", "Most popular") — omit for none.
 export default function UpsellCard({
   icon,
   title,

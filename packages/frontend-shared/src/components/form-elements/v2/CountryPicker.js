@@ -3,22 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Search, X } from 'lucide-react';
 
-/**
- * Searchable country dropdown with flags.
- *
- * Same interaction as the v2 PhoneInput country selector — trigger button,
- * panel with a search box pinned to the top, scrollable filtered list — pulled
- * out so both can use it. Takes its options as a prop rather than owning a
- * country list, because the visa checker needs entries that are not countries
- * (the Schengen Area) alongside the ISO list.
- */
-
-/**
- * Flags are emoji built from the ISO 3166-1 alpha-2 code: no image assets, no
- * network requests, and they inherit font size. `flagCode` lets an option
- * override it, which is how the Schengen Area borrows the EU flag despite
- * having no country code of its own.
- */
+// Flags are emoji derived from the ISO alpha-2 code; `flagCode` overrides it for non-countries.
 function Flag({ code, className = 'text-base' }) {
   const cc = String(code || '').toUpperCase();
   if (!/^[A-Z]{2}$/.test(cc)) return <span className={className}>🏳️</span>;

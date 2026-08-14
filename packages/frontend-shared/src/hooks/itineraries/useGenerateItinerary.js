@@ -4,9 +4,6 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { createItineraryApi } from '../../services/apiItineraries.js';
 
-// Generates the first itinerary for a new order, then routes to the preview/pay
-// page. Call with { input, files } — files are optional supporting documents
-// archived with the order. Pass `onAnalytics` to fire tracking on success.
 export function useGenerateItinerary({ onAnalytics } = {}) {
   const router = useRouter();
 

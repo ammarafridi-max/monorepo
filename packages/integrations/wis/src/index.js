@@ -15,10 +15,6 @@ const addDays = (dateStr, days) => {
   return d.toISOString().slice(0, 10);
 };
 
-/**
- * Creates a WIS API client bound to specific credentials.
- * @param {{ url: string, agencyId: string, agencyCode: string, frontendUrl: string }} config
- */
 export function createWisClient({ url, agencyId, agencyCode, frontendUrl }) {
   async function fetchWIS(slug, data = {}) {
     const res = await fetch(`${url}/${slug}`, {
@@ -43,9 +39,6 @@ export function createWisClient({ url, agencyId, agencyCode, frontendUrl }) {
 
   const fetchWISInsuranceQuotes = async (data) => {
     const { quotes, quote_id } = await fetchWIS('quote/outbound/premium', data);
-    // Tag every quote with its supplier. WIS issues AXA-underwritten policies
-    // exclusively today; tagging at the client boundary means downstream code
-    // (frontend display, persisted application record) never has to assume.
     const taggedQuotes = quotes && typeof quotes === 'object'
       ? Object.fromEntries(
           Object.entries(quotes).map(([key, q]) => [key, { ...q, supplier: 'AXA' }]),

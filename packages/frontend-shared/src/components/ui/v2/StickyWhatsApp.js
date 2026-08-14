@@ -3,16 +3,6 @@
 import { usePathname } from 'next/navigation';
 import { FaWhatsapp } from 'react-icons/fa';
 
-/**
- * Floating WhatsApp button, bottom-right, sitewide.
- *
- * @param {object}   props
- * @param {string}   props.phoneNumber       E.g. "+971569964924". Non-digits are stripped for wa.me.
- * @param {string}  [props.label]            Accessible label (also the link's title).
- * @param {string[]}[props.hidePathPrefixes] Path prefixes where the bubble must not render
- *                                           (e.g. ["/insurance-booking"] to avoid colliding with
- *                                           the fixed booking footer CTA).
- */
 export default function StickyWhatsApp({
   phoneNumber,
   label = 'Chat with us on WhatsApp',

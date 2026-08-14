@@ -3,13 +3,7 @@ import { pdf as pdfToImages } from 'pdf-to-img';
 import { createCanvas, loadImage } from '@napi-rs/canvas';
 import { buildItineraryDocument } from './itinerary-document.js';
 
-// Pure-Node rendering — NO headless browser. @react-pdf generates the PDF; the
-// watermarked preview is the same PDF rasterised to a flat PNG (so its text can't
-// be copied pre-payment). This removes Chromium/Puppeteer and the whole class of
-// container/version failures ("Network.enable timed out"), and runs in-process.
-
-// Stack page PNGs into one tall image (preserves the old full-document preview
-// for itineraries that span more than one page).
+// Pure-Node rendering via @react-pdf. Do not reintroduce a headless browser.
 async function stitchVertically(pngBuffers) {
   if (pngBuffers.length === 1) return pngBuffers[0];
   const images = await Promise.all(pngBuffers.map((buf) => loadImage(buf)));
@@ -28,11 +22,6 @@ async function stitchVertically(pngBuffers) {
 }
 
 export function createPdfRenderer({ brand } = {}) {
-  /**
-   * Watermarked preview as a flat PNG. Rasterised, so the itinerary text never
-   * exists in client-readable form pre-payment.
-   * @returns {Promise<Buffer>}
-   */
   async function renderPreviewImage(order) {
     const pdfBuffer = await renderToBuffer(buildItineraryDocument({ order, watermark: true, brand }));
     const document = await pdfToImages(pdfBuffer, { scale: 2 });
@@ -41,10 +30,6 @@ export function createPdfRenderer({ brand } = {}) {
     return stitchVertically(pages);
   }
 
-  /**
-   * Clean, watermark-free, print-ready A4 PDF. Only ever served after payment.
-   * @returns {Promise<Buffer>}
-   */
   async function renderCleanPdf(order) {
     return renderToBuffer(buildItineraryDocument({ order, watermark: false, brand }));
   }

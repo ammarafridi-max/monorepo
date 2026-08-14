@@ -11,7 +11,6 @@ import UpsellCard from '../../components/shared/UpsellCard.js';
 export default function ItinerarySuccessPage({ sessionId, upsells = [] }) {
   const [slow, setSlow] = useState(false);
 
-  // Poll while the Stripe webhook settles; stop once paid.
   const { order, refetchOrder } = useItineraryOrder(sessionId, {
     refetchInterval: (query) => (query.state.data?.paymentStatus === 'PAID' ? false : 2500),
   });
@@ -24,7 +23,6 @@ export default function ItinerarySuccessPage({ sessionId, upsells = [] }) {
     return () => clearTimeout(t);
   }, [isPaid]);
 
-  // GA4 purchase — fires once when payment is confirmed (deduped by sessionId).
   useEffect(() => {
     if (isPaid && order) {
       trackItineraryPurchase({ sessionId, value: order.price, currency: order.currency });

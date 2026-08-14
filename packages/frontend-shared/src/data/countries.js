@@ -1,13 +1,3 @@
-/**
- * ISO 3166-1 alpha-2 country list, shared by every brand.
- *
- * Used by the visa checker for the nationality, residence and destination
- * pickers. Alpha-2 rather than alpha-3 because the same codes drive the flag
- * icons already used in the navigation.
- *
- * Antarctica is excluded; it is in the source list but is not a travel
- * destination anyone needs a visa answer for.
- */
 export const COUNTRIES = [
   {
     "name": "Afghanistan",

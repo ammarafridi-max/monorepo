@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from 'react';
 import { MapPin, Loader2, ChevronDown } from 'lucide-react';
 import { useCitySearch } from '../../../hooks/locations/useCitySearch.js';
 
-// Resolve ISO-2 country codes to display names without bundling a country list.
 const regionNames =
   typeof Intl !== 'undefined' && Intl.DisplayNames
     ? new Intl.DisplayNames(['en'], { type: 'region' })
@@ -19,11 +18,6 @@ function countryName(code) {
   }
 }
 
-/**
- * City autocomplete (AirLabs-backed). A selection commits both the city and its
- * country; the closed input shows "City - Country" (e.g. "Dubai - United Arab
- * Emirates"). `onChange` fires only on selection, with `{ city, country, countryCode }`.
- */
 export default function CitySearch({ city = '', country = '', onChange, placeholder = 'Search city…', inputClassName }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');

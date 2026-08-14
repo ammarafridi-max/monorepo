@@ -19,7 +19,6 @@ export function createFlightRouter({ db, airlabs, serpapi, auth }) {
 }
 
 export function createAirportsRouter({ airlabs }) {
-  // Airport search is stateless — no DB model needed. Live AirLabs lookups.
   const service = createFlightService({ Airline: null, airlabs });
   const controller = createFlightController({ service });
   return createAirportRouterFromParts({ controller });

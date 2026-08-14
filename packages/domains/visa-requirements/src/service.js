@@ -8,13 +8,6 @@ export function createVisaRequirementsService({ VisaRule, VisaQuery, providers =
 
   const norm = (v) => (v ? String(v).toUpperCase().trim() : null);
 
-  /**
-   * Answer one check.
-   *
-   * Providers are tried in order and the first non-null answer wins, so the
-   * curated rules always beat a third party. Logging is fire-and-forget: a
-   * failure to record analytics must never break the answer the user asked for.
-   */
   async function check({ nationality, residence, destination }) {
     const nat = norm(nationality);
     const res = norm(residence);
@@ -32,8 +25,6 @@ export function createVisaRequirementsService({ VisaRule, VisaQuery, providers =
     }
 
     if (!answer) {
-      // No provider covers this destination. Say so plainly rather than
-      // guessing — a wrong "no visa needed" can cost somebody a flight.
       answer = {
         outcome: 'UNKNOWN',
         basis: 'none',
@@ -59,8 +50,6 @@ export function createVisaRequirementsService({ VisaRule, VisaQuery, providers =
 
     return { ...answer, nationality: nat, residence: res, isServiced };
   }
-
-  // ---- admin CRUD ----
 
   async function listRules({ published } = {}) {
     const filter = {};
@@ -94,7 +83,6 @@ export function createVisaRequirementsService({ VisaRule, VisaQuery, providers =
     const existing = await VisaRule.findOne({ destination });
     const doc = existing || new VisaRule({ destination });
     Object.assign(doc, payload, { destination });
-    // Any edit is a fresh verification; the displayed date should reflect that.
     doc.lastVerifiedAt = payload.lastVerifiedAt || new Date();
     await doc.save();
     return doc;
@@ -106,10 +94,6 @@ export function createVisaRequirementsService({ VisaRule, VisaQuery, providers =
     return true;
   }
 
-  /**
-   * What people actually searched for. Drives which destinations to add next
-   * and which landing pages are worth writing.
-   */
   async function queryStats({ days = 30, limit = 50 } = {}) {
     const since = new Date(Date.now() - days * 86400_000);
     const [corridors, gaps, totals] = await Promise.all([

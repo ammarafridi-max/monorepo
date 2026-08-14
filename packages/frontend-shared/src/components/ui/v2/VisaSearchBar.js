@@ -4,16 +4,7 @@ import { Search, Loader2 } from 'lucide-react';
 import CountryPicker from '../../form-elements/v2/CountryPicker.js';
 import { COUNTRIES } from '../../../data/countries.js';
 
-/**
- * The visa checker input, shaped like a flight search bar.
- *
- * `stacked` rather than a CSS breakpoint because the two places this appears
- * differ by container width, not viewport width: the homepage hero panel is a
- * narrow column even on a wide screen, so a media query would put three
- * segments side by side in a space that cannot hold them.
- */
 
-/** Schengen is sold as one product but is not a country, so it rides along. */
 export const SCHENGEN_OPTION = {
   code: 'XS',
   name: 'Schengen Area',

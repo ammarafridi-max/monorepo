@@ -1,12 +1,8 @@
 /**
- * generate-blog-draft.mjs
+ * Usage:
+ *   node generate-blog-draft.mjs
  *
- * Daily automation: picks today's topic from topics.json (by UAE date UTC+4),
- * generates a full blog post using Claude, and POSTs it as a published post to
- * the Travl backend at https://api.travl.ae.
- *
- * Run:  node generate-blog-draft.mjs
- * Env:  ANTHROPIC_API_KEY, TRAVL_ADMIN_EMAIL, TRAVL_ADMIN_PASSWORD
+ * Env: ANTHROPIC_API_KEY, TRAVL_ADMIN_EMAIL, TRAVL_ADMIN_PASSWORD
  */
 
 import Anthropic from "@anthropic-ai/sdk";
@@ -31,17 +27,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-/** Returns today's date in YYYY-MM-DD format using UAE timezone (UTC+4). */
 function getTodayUAE() {
   const now = new Date();
   const uaeOffset = 4 * 60 * 60 * 1000;
   const uaeNow = new Date(now.getTime() + uaeOffset);
   return uaeNow.toISOString().slice(0, 10);
 }
-
-// ── Step 1: Resolve today's topic ─────────────────────────────────────────────
 
 function getTodaysTopic() {
   const topics = JSON.parse(
@@ -55,8 +46,6 @@ function getTodaysTopic() {
   return entry;
 }
 
-// ── Step 3: Fetch context data ────────────────────────────────────────────────
-
 async function fetchPublishedPosts(token) {
   const data = await apiFetch("/api/blogs?limit=50&page=1", {
     headers: { Cookie: `jwt=${token}` },
@@ -65,10 +54,7 @@ async function fetchPublishedPosts(token) {
   return posts.map((p) => ({ title: p.title, slug: p.slug }));
 }
 
-// ── Step 3b: Check if title already exists ────────────────────────────────────
-
 async function checkTitleExists(token, title) {
-  // Fetch all blogs including drafts via the admin list endpoint
   const data = await apiFetch(`/api/blogs/admin/list?page=1&limit=1000`, {
     headers: { Cookie: `jwt=${token}` },
   });
@@ -76,8 +62,6 @@ async function checkTitleExists(token, title) {
   const normalise = (s) => s.trim().toLowerCase();
   return posts.some((p) => normalise(p.title) === normalise(title));
 }
-
-// ── Step 4: Generate blog content with Claude ─────────────────────────────────
 
 async function generateBlogContent({
   topic,
@@ -91,7 +75,6 @@ async function generateBlogContent({
 
   const client = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
 
-  // Resolve length tier with a safe default.
   const lengthTier = LENGTH_TIERS[topic.length] ? topic.length : "medium";
   const { wordRange, maxTokens } = LENGTH_TIERS[lengthTier];
   if (!LENGTH_TIERS[topic.length]) {
@@ -100,7 +83,6 @@ async function generateBlogContent({
     );
   }
 
-  // Required internal links for this topic.
   const requiredLinks = getRequiredLinks(topic);
   const requiredLinksBlock = formatRequiredLinksBlock(requiredLinks);
 
@@ -219,7 +201,6 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
     .map((b) => b.text)
     .join("");
 
-  // Strip any accidental markdown code fences
   const cleaned = rawText
     .replace(/^```json\s*/i, "")
     .replace(/^```\s*/i, "")
@@ -234,7 +215,6 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
     throw new Error(`Claude returned invalid JSON: ${err.message}`);
   }
 
-  // Validate required fields
   const required = [
     "metaTitle",
     "metaDescription",
@@ -249,21 +229,15 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
     if (!parsed[key]) throw new Error(`Claude response missing field: ${key}`);
   }
 
-  // Required-links validator — fail loudly if Claude dropped a mandated link.
   validateRequiredLinks(parsed, requiredLinks);
 
-  // Content-quality checks (word count floor, no external links, soft style
-  // warnings). Hard failures throw; soft failures only warn.
   validateContentQuality(parsed, lengthTier);
 
   console.log("✓ Blog content generated");
   return parsed;
 }
 
-// ── Step 5: Post draft to backend ─────────────────────────────────────────────
-
 async function postDraft({ token, topic, content, availableTags }) {
-  // Validate tags exist (case-insensitive match to be safe)
   const lowerAvailable = availableTags.map((t) => t.toLowerCase());
   const validatedTags = content.tags.filter((t) => {
     const isValid = lowerAvailable.includes(t.toLowerCase());
@@ -272,15 +246,11 @@ async function postDraft({ token, topic, content, availableTags }) {
     return isValid;
   });
 
-  // Generate a cover image with Recraft AI (falls back to picsum if unconfigured).
   const coverImageBlob = await fetchCoverImage(topic.title);
 
-  // Append the CTA block to the body so it appears at the bottom of every
-  // published article. The backend stores `content` as a single HTML string.
   const finalContent = `${content.content}\n${content.ctaBlock}`;
   console.log("✓ Appended ctaBlock to article body");
 
-  // Build multipart/form-data manually using FormData (Node 22 built-in)
   const form = new FormData();
   form.append("title", topic.title);
   form.append("content", finalContent);
@@ -292,7 +262,6 @@ async function postDraft({ token, topic, content, availableTags }) {
   form.append("faqs", JSON.stringify(content.faqs));
   form.append("coverImage", coverImageBlob, "cover-placeholder.jpg");
 
-  // Tags: append each as a separate entry (array)
   for (const tag of validatedTags) {
     form.append("tags[]", tag);
   }
@@ -316,27 +285,21 @@ async function postDraft({ token, topic, content, availableTags }) {
   return body.data;
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────────
-
 async function main() {
   console.log(`\n=== Travl Blog Draft Generator ===`);
   console.log(`Date (UAE): ${getTodayUAE()}\n`);
 
-  // 1. Resolve today's topic
   const topic = getTodaysTopic();
   console.log(`Topic: ${topic.title}`);
 
-  // 2. Login
   const token = await login();
 
-  // 3. Check if title already exists — skip if so
   const alreadyExists = await checkTitleExists(token, topic.title);
   if (alreadyExists) {
     console.log(`⏭  Post "${topic.title}" already exists — skipping.`);
     return;
   }
 
-  // 4. Fetch context
   const [publishedPosts, availableTags] = await Promise.all([
     fetchPublishedPosts(token),
     fetchBlogTags(token),
@@ -345,10 +308,8 @@ async function main() {
     `✓ Fetched ${publishedPosts.length} published posts, ${availableTags.length} tags`,
   );
 
-  // 5. Load site context
   const siteContext = readFileSync(join(__dirname, "site-context.md"), "utf8");
 
-  // 6. Generate content
   const content = await generateBlogContent({
     topic,
     siteContext,
@@ -356,7 +317,6 @@ async function main() {
     availableTags,
   });
 
-  // 7. Post and publish
   const draft = await postDraft({ token, topic, content, availableTags });
 
   console.log(`\n✅ Done! Published "${draft?.title}" — now live.`);

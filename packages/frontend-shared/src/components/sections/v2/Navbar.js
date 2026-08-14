@@ -17,29 +17,8 @@ import { logoutUserSessionApi } from "../../../services/apiAuth.js";
 import Container from "../../shared/layout/Container.js";
 import MobileNavigation from "./MobileNavigation.js";
 
-/**
- * pages: Array of nav items. Each item is one of:
- *
- *  Simple link:
- *    { name, links: [href] }
- *
- *  Simple dropdown (small panel):
- *    { name, links: [activeHref], subpages: [{ name, link, description? }] }
- *
- *  Mega menu (full-width panel):
- *    { name, links: [activeHref], mega: {
- *        columns: [{ heading, items: [{ Icon, label, desc, href }] }],
- *        cta?: { eyebrow, title, href, label }
- *      }
- *    }
- */
 export default function Navbar({
   pages = [],
-  // Defaults keep every brand already using this component rendering exactly as
-  // before. Width/height only set the intrinsic ratio Next uses to pick a
-  // srcset — the rendered size comes from the CSS below — so a brand whose logo
-  // is a different shape should pass its real pixel dimensions or the optimizer
-  // serves an image sized for the wrong aspect.
   logoSrc = "/logo.webp",
   logoWidth = 90,
   logoHeight = 30,
@@ -60,8 +39,7 @@ export default function Navbar({
 
   function openMega(i) {
     clearTimeout(megaTimer.current);
-    // megaTab is shared across menus — a menu with fewer tabs than the last one
-    // would otherwise open on an index it doesn't have.
+    // megaTab is shared across menus, so reset it when switching menu.
     if (megaOpen !== i) setMegaTab(0);
     setMegaOpen(i);
   }
@@ -147,8 +125,6 @@ export default function Navbar({
                     className="absolute left-0 right-0 top-full bg-white border-b border-gray-200 shadow-2xl"
                   >
                     {page.mega.layout === "tabs" ? (
-                      /* Tabbed layout (opt-in): heading tabs on the left, the
-                         active tab's items in a 4-per-row grid on the right. */
                       <Container className="py-6 flex gap-8">
                         <div className="w-56 shrink-0 flex flex-col gap-1 border-r border-gray-100 pr-4">
                           {page.mega.columns.map((col, ci) => (
@@ -221,9 +197,6 @@ export default function Navbar({
                     ) : (
                       <Container className="py-6 flex gap-6">
                         {page.mega.columns.map((col, ci) => {
-                          // Columns can opt into a wider footprint via `span: 2`,
-                          // which doubles the column width and lays its items
-                          // out in a 2-per-row grid.
                           const isWide = (col.span ?? 1) === 2;
                           return (
                             <div

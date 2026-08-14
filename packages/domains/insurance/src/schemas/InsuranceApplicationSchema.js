@@ -62,9 +62,6 @@ const InsuranceApplicationSchema = new mongoose.Schema(
     quoteId:   { type: String, trim: true },
     policyId:  { type: String, trim: true },
     policyNumber: { type: String, trim: true },
-    // Underwriter / insurance supplier that issued this policy (e.g. "AXA").
-    // Captured at create time from the selected quote so future multi-supplier
-    // setups can tell which insurer is on the hook for a given application.
     supplier: { type: String, trim: true },
 
     paymentStatus: {

@@ -18,35 +18,30 @@ export function formatDubaiTime(d) {
   }).format(new Date(d));
 }
 
-// Expects "YYYY-MM-DD" — produces "1JAN"
 export function formatToDDMMM(dateStr) {
   if (!dateStr) return '';
   const [, month, day] = String(dateStr).split('-');
   return `${Number(day)}${MONTHS[Number(month) - 1]}`;
 }
 
-// Expects "YYYY-MM-DD" — produces "1 JAN 2026"
 export function formatToDDMMMYYYY(dateStr) {
   if (!dateStr) return '';
   const [year, month, day] = String(dateStr).split('-');
   return `${Number(day)} ${MONTHS[Number(month) - 1]} ${year}`;
 }
 
-// Expects "YYYY-MM-DD" — produces "11 Apr 2026"
 export function formatToDDMMMYYYYMixed(dateStr) {
   if (!dateStr) return '';
   const [year, month, day] = String(dateStr).split('-');
   return `${Number(day)} ${MONTHS_MMM[Number(month) - 1]} ${year}`;
 }
 
-// Extracts "DXB" from "Dubai International Airport (DXB)"
 export function extractIataCode(locationString = '') {
   const start = String(locationString).indexOf('(') + 1;
   const end = String(locationString).indexOf(')');
   return start > 0 && end > start ? locationString.slice(start, end) : null;
 }
 
-// Normalises passenger type label from model values like "Adult (12+)", "Child (2-11)", "Infant (<2)"
 export function paxType(t = '') {
   const s = String(t).toLowerCase();
   if (s.includes('child')) return 'Child';

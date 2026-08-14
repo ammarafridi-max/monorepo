@@ -16,7 +16,6 @@ const AIRPORT_NAMES = [
 ];
 
 export function createLocationService({ googleMapsApiKey, ipInfoApiKey, airlabs }) {
-  // City search backed by the AirLabs integration (injected client).
   async function searchCities(query) {
     if (!airlabs) {
       throw new AppError('City search is not configured on this server', 503);

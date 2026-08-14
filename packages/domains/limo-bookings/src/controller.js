@@ -1,17 +1,5 @@
 import { catchAsync } from '@travel-suite/utils';
 
-/**
- * Strip the contact details from a booking for an anonymous caller.
- *
- * `GET /:id` has to stay open — it is the page a customer lands on after
- * paying, and they are not logged in. But the id alone should not hand over a
- * stranger's email, phone and surname, so the anonymous view keeps only what
- * the receipt actually renders: the journey, the vehicle, the amount, and the
- * first name it greets them by.
- *
- * `transactionId` goes too. It is an internal Stripe reference with no purpose
- * on the page.
- */
 function redactForPublic(booking) {
   if (!booking) return booking;
   const b = typeof booking.toObject === 'function' ? booking.toObject() : { ...booking };
@@ -39,8 +27,6 @@ export function createBookingController({ service }) {
     res.status(200).json({ status: 'success', results: bookings.length, page, data: bookings });
   });
 
-  // `req.user` is set by the soft `identify` middleware — staff see the whole
-  // record, everyone else sees the receipt view.
   const getBookingById = catchAsync(async (req, res) => {
     const booking = await service.getBookingById(req.params.id);
     const data = req.user ? booking : redactForPublic(booking);

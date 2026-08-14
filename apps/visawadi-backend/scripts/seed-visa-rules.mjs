@@ -1,26 +1,11 @@
 /**
- * Seed starter visa rules for the destinations VisaWadi sells.
- *
- * IMPORTANT: everything is seeded UNPUBLISHED. The checker only reads published
- * rules, so nothing here reaches a user until a human opens it, checks it
- * against the official source linked on the record, and publishes it.
- *
- * That is deliberate. A wrong "no visa needed" can cost somebody a flight, and
- * seeded data is a starting point, not a source of truth. The lists below cover
- * the nationalities most common among UAE residents plus the obvious visa-free
- * blocs; they are not exhaustive, and anything not listed correctly falls
- * through to the destination's defaultOutcome of VISA_REQUIRED, which is the
- * safe direction to be wrong in.
- *
  * Usage, from apps/visawadi-backend:
  *   node --env-file=.env.production scripts/seed-visa-rules.mjs            # dry run
  *   node --env-file=.env.production scripts/seed-visa-rules.mjs --apply
  *   node --env-file=.env.production scripts/seed-visa-rules.mjs --apply --publish
  *
- * --publish makes the rules visible to the checker. They keep lastVerifiedAt
- * null, and the UI shows an explicit "not verified by our team yet" warning on
- * every answer until a human sets that date. So the tool works end to end
- * without pretending the data has been checked.
+ * Rules seed UNPUBLISHED unless --publish is passed; --publish makes unverified
+ * data visible to the visa checker.
  */
 
 import mongoose from 'mongoose';
@@ -29,19 +14,13 @@ import VisaRuleSchema from '@travel-suite/visa-requirements/schema';
 const APPLY = process.argv.includes('--apply');
 const PUBLISH = process.argv.includes('--publish');
 
-// Nationalities that hold a UAE residence permit and are common in this market.
-// Residence changes the answer for several destinations, and it is the thing
-// generic providers cannot express.
 const GCC_COMMON = ['IN', 'PK', 'BD', 'PH', 'EG', 'LK', 'NP', 'JO', 'LB', 'SY'];
 
-// EU/EEA + Schengen members, who move visa-free within the area.
 const EU_EEA = [
   'AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT',
   'NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','CH',
 ];
 
-// Widely recognised Schengen visa-free (Annex II) third countries. Trimmed to
-// the ones that actually come up for this audience.
 const SCHENGEN_VISA_FREE = [
   ...EU_EEA,
   'GB','US','CA','AU','NZ','JP','KR','SG','MY','AE','SA','QA','KW','BH','OM',
@@ -108,11 +87,6 @@ const DESTINATIONS = [
   },
 ];
 
-/**
- * Schengen is sold as one product but is not a country, so it gets its own
- * pseudo-destination. Uses the reserved code XS: any real ISO2 would collide
- * with a member state.
- */
 DESTINATIONS.push({
   destination: 'XS', destinationName: 'Schengen Area', visaSlug: 'schengen',
   groups: [{ outcome: 'VISA_FREE', nationalities: SCHENGEN_VISA_FREE, maxStayDays: 90,
@@ -121,8 +95,6 @@ DESTINATIONS.push({
   officialSourceUrl: 'https://home-affairs.ec.europa.eu/policies/schengen-borders-and-visa_en',
 });
 
-// Residence exceptions. These are the cases a nationality-only checker gets
-// wrong, so each one is worth its own line and its own verification.
 const RESIDENCE_NOTE =
   'Based on UAE residence. Confirm your permit has enough validity remaining before you travel.';
 for (const d of DESTINATIONS) {
@@ -160,7 +132,6 @@ let skipped = 0;
 for (const d of DESTINATIONS) {
   const existing = await VisaRule.findOne({ destination: d.destination });
   if (existing) {
-    // Never clobber a rule a human has already reviewed.
     skipped++;
     console.log(`  ${d.destination} ${d.destinationName}: exists, left alone`);
     continue;

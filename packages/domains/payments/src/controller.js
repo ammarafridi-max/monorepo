@@ -1,10 +1,6 @@
 import { catchAsync, AppError } from '@travel-suite/utils';
 
-/**
- * @param {{ service: ReturnType<typeof import('./service.js').createPaymentService>, notifications?: { sendPaymentLinkPaidToAdmin?: Function } }} deps
- */
 export function createPaymentsController({ service }) {
-  // -- Revenue dashboard (admin only) ---------------------------------------
 
   const getRevenue = catchAsync(async (req, res) => {
     const { from, to } = req.query;
@@ -18,12 +14,9 @@ export function createPaymentsController({ service }) {
     res.status(200).json({ status: 'success', data });
   });
 
-  // -- Payment links (admin + agent) ----------------------------------------
-
   const createPaymentLink = catchAsync(async (req, res) => {
     const { items, productId, quantity, amount, currency, description, productName, successUrl } = req.body;
 
-    // Need at least one input shape: items[], productId, or amount.
     const hasItems = Array.isArray(items) && items.length > 0;
     const hasAmount = amount !== undefined && amount !== null && amount !== '';
     if (!hasItems && !productId && !hasAmount) {
@@ -68,8 +61,6 @@ export function createPaymentsController({ service }) {
     res.status(200).json({ status: 'success', data });
   });
 
-  // -- Products (admin + agent) ---------------------------------------------
-
   const createProduct = catchAsync(async (req, res) => {
     const { name, unitAmount, currency, description } = req.body;
 
@@ -108,11 +99,6 @@ export function createPaymentsController({ service }) {
     res.status(200).json({ status: 'success', data });
   });
 
-  /**
-   * Two PATCH shapes on /admin/products/:id —
-   *   { active: boolean }                                  → toggle isActive
-   *   { name?, description?, unitAmount?, currency? }      → full edit
-   */
   const updateProduct = catchAsync(async (req, res) => {
     const { active, name, description, unitAmount, currency } = req.body;
 

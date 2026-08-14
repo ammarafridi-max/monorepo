@@ -7,9 +7,7 @@ import { useOutsideClick } from '../../../hooks/general/useOutsideClick';
 export default function SelectAirport({ value, onChange, id, icon, error, inputRef }) {
   const [query, setQuery] = useState(value || '');
   const [isOpen, setIsOpen] = useState(false);
-  // Only search while the dropdown is open (i.e. actively typing). Once an
-  // airport is selected the dropdown closes and the input holds a display
-  // string like "Dubai (DXB)" — searching that would hit AirLabs and 502.
+  // Only search while the dropdown is open; the closed input holds a display string AirLabs 502s on.
   const { airports, isLoadingAirports } = useAirports(isOpen ? query : '');
   const containerRef = useRef();
 

@@ -31,9 +31,6 @@ function validateParams({ pickupZone, dropoffZone, tripType, distance, hoursBook
   return { pickupZoneId, dropoffZoneId };
 }
 
-// Zone validation without the distance requirement — used when we re-derive an
-// authoritative price at checkout from a persisted booking (which stores zones +
-// vehicle but not the trip distance).
 function validateZones({ pickupZone, dropoffZone, tripType }) {
   if (!pickupZone) throw new AppError('Pickup zone is required.', 400);
   if (tripType === 'distance' && !dropoffZone) {
@@ -152,12 +149,7 @@ export function createBookingPricingService({ AvailabilityRule, PricingRule }) {
     return vehiclesWithPrices.sort((a, b) => a.totalPrice - b.totalPrice);
   };
 
-  // Re-derive the authoritative price for ONE already-selected vehicle from a
-  // persisted booking, so checkout never trusts a client-supplied total. Uses only
-  // what the booking stores (zones + vehicle + tripType + hoursBooked) — it does
-  // NOT have the trip distance, so a distance trip is only priceable when a zone
-  // PricingRule covers it. If it isn't (the per-km distance fallback would be
-  // needed), we fail closed rather than guess or trust the client.
+  // Fails closed when a distance trip has no zone PricingRule: never trust a client total.
   const getAuthoritativeVehiclePrice = async ({ pickupZone, dropoffZone, tripType, hoursBooked, vehicleId }) => {
     if (!vehicleId) throw new AppError('Vehicle is required to price this booking.', 400);
     const { pickupZoneId, dropoffZoneId } = validateZones({ pickupZone, dropoffZone, tripType });

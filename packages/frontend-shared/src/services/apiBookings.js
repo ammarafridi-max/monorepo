@@ -10,12 +10,7 @@ export async function createBookingApi({ trip, vehicle, passenger }) {
   });
 }
 
-// Both reads are public — a customer lands on their receipt straight from the
-// Stripe redirect with no account. But the backend now redacts contact details
-// for anonymous callers, so an admin viewing the same endpoint has to arrive
-// WITH their session cookie or the admin page silently loses email, phone and
-// surname. `credentials: 'include'` costs an anonymous caller nothing (there is
-// no cookie to send) and is what separates the staff view from the public one.
+// `credentials: include` is what lets an admin see the unredacted booking; anonymous callers send no cookie.
 export async function getBookingApi(id) {
   return await apiFetchPublic(`${BASE}/${id}`, { credentials: 'include' });
 }

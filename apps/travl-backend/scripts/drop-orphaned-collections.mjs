@@ -1,22 +1,9 @@
 /**
- * Drop the collections left behind by domains Travl no longer mounts.
- *
- * All of these are empty. The visa ones were emptied by purge-visa-data.mjs
- * after the brand split; affiliates and airlines are older leftovers from
- * domains that were removed earlier.
- *
- * NOT dropped, even though it is also empty:
- *   products — the payments domain still registers this model and /admin/products
- *   is a live page, so the collection is expected to fill up later.
- *
- * Safety: re-counts every collection immediately before dropping and refuses if
- * anything is non-empty, so a document written between the survey and the run
- * cannot be destroyed. Nothing here holds data, so there is no backup step; the
- * visa records were already dumped by purge-visa-data.mjs.
- *
  * Usage, from apps/travl-backend:
  *   node --env-file=.env.production scripts/drop-orphaned-collections.mjs          # dry run
  *   node --env-file=.env.production scripts/drop-orphaned-collections.mjs --apply
+ *
+ * --apply drops collections irreversibly; it refuses if any of them is non-empty.
  */
 
 import mongoose from 'mongoose';
@@ -24,7 +11,6 @@ import mongoose from 'mongoose';
 const APPLY = process.argv.includes('--apply');
 
 const DROP = [
-  // visa assistance — moved to VisaWadi
   'visas',
   'visa-leads',
   'visa-applications',
@@ -32,8 +18,7 @@ const DROP = [
   'application-documents',
   'document-types',
   'checklist-templates',
-  'users', // customer accounts existed only for the /apply magic-link flow
-  // older removals
+  'users',
   'affiliates',
   'airlines',
 ];

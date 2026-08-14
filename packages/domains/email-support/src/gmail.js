@@ -1,19 +1,13 @@
 import { google } from 'googleapis';
 
-/**
- * Recursively walk MIME parts to extract body text.
- * Prefers text/plain; falls back to stripping HTML from text/html.
- */
 function extractBody(payload) {
   if (!payload) return '';
 
-  // Leaf node with data
   if (payload.body?.data) {
     const mimeType = payload.mimeType || '';
     const decoded = Buffer.from(payload.body.data, 'base64url').toString('utf-8');
     if (mimeType === 'text/plain') return decoded;
     if (mimeType === 'text/html') {
-      // Strip HTML tags
       return decoded
         .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
         .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
@@ -29,30 +23,25 @@ function extractBody(payload) {
     return decoded;
   }
 
-  // Multipart — search parts
   if (payload.parts && payload.parts.length > 0) {
-    // Try text/plain first
     for (const part of payload.parts) {
       if (part.mimeType === 'text/plain') {
         const text = extractBody(part);
         if (text) return text;
       }
     }
-    // Then multipart children (e.g. multipart/alternative)
     for (const part of payload.parts) {
       if (part.mimeType?.startsWith('multipart/')) {
         const text = extractBody(part);
         if (text) return text;
       }
     }
-    // Fallback to HTML
     for (const part of payload.parts) {
       if (part.mimeType === 'text/html') {
         const text = extractBody(part);
         if (text) return text;
       }
     }
-    // Last resort: any part
     for (const part of payload.parts) {
       const text = extractBody(part);
       if (text) return text;
@@ -64,7 +53,6 @@ function extractBody(payload) {
 
 function parseFrom(fromHeader) {
   if (!fromHeader) return { fromEmail: '', fromName: '' };
-  // "Name <email@domain.com>"
   const match = fromHeader.match(/^(.*?)\s*<([^>]+)>\s*$/);
   if (match) {
     return {
@@ -72,7 +60,6 @@ function parseFrom(fromHeader) {
       fromEmail: match[2].trim(),
     };
   }
-  // Just an email
   return { fromEmail: fromHeader.trim(), fromName: '' };
 }
 

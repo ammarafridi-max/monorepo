@@ -17,17 +17,6 @@ function getOrRegisterModel(conn, name, schema) {
   }
 }
 
-/**
- * @param {{
- *   db: import('mongoose').Connection,
- *   auth: { protect, restrictTo },        // admin auth
- *   userAuth: { protect },                // customer (userJwt) auth
- *   User: import('mongoose').Model,       // customer model (from the users domain)
- *   storage,                              // cloudinary storage with authenticated helpers
- *   notifications,
- *   apiBaseUrl?: string, appBaseUrl?: string,
- * }} deps
- */
 export function createVisaApplicationsRouter({ db, auth, userAuth, User, storage, notifications, apiBaseUrl, appBaseUrl, logger }) {
   const VisaApplication = getOrRegisterModel(db, 'visa-application', VisaApplicationSchema);
   const Applicant = getOrRegisterModel(db, 'applicant', ApplicantSchema);
@@ -50,7 +39,6 @@ export function createVisaApplicationsRouter({ db, auth, userAuth, User, storage
 
   const registry = createRegistryService({ DocumentType, ChecklistTemplate });
 
-  // Reminder engine — same models. Track A/B only chase CUSTOMER-source rows.
   const reminders = createReminderEngine({
     VisaApplication,
     Applicant,

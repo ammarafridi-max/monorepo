@@ -6,12 +6,6 @@ const locationType = {
   default: 'location',
 };
 
-// Delivery record for one transactional email. Kept per-recipient because the
-// customer send and the operator send fail independently: when the mail
-// provider is half-broken (or the customer address bounces) the operator still
-// needs to know exactly which of the two to re-send. `attempts` + `lastError`
-// exist so a re-send run is auditable rather than fire-and-forget, and so the
-// reason a paid booking went unannounced survives past the log retention.
 const emailDelivery = () => ({
   status: { type: String, enum: ['pending', 'sent', 'failed'], default: 'pending' },
   attempts: { type: Number, default: 0 },
@@ -79,16 +73,12 @@ const BookingSchema = new mongoose.Schema(
       enum: ['pending', 'confirmed', 'assigned', 'in-progress', 'completed', 'cancelled'],
       default: 'pending',
     },
-    // Did anyone actually get told about this booking? A paid booking whose
-    // confirmation never left the building is invisible otherwise: the payment
-    // succeeds, the webhook returns 200, and only the logs (briefly) know.
     notifications: {
       paymentConfirmation: {
         customer: emailDelivery(),
         admin: emailDelivery(),
       },
     },
-    // Shared admin user model (registered as 'admin-user' by @travel-suite/auth).
     handledBy: { type: mongoose.Schema.Types.ObjectId, ref: 'admin-user' },
   },
   {
@@ -115,8 +105,7 @@ BookingSchema.index({ pickupTime: 1 });
 BookingSchema.index({ status: 1 });
 BookingSchema.index({ 'payment.status': 1 });
 BookingSchema.index({ createdAt: -1 });
-// Answers "which paid bookings never got a confirmation?" — the recovery query
-// used by scripts/resend-booking-confirmations.js in the brand app.
+// Recovery query used by scripts/resend-booking-confirmations.js in the brand app.
 BookingSchema.index({ 'payment.status': 1, 'notifications.paymentConfirmation.customer.status': 1 });
 BookingSchema.index({ handledBy: 1 });
 

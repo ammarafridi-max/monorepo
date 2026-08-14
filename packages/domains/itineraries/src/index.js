@@ -13,24 +13,6 @@ function getOrRegisterModel(conn, name, schema) {
   }
 }
 
-/**
- * Assembles the travel-itinerary feature.
- *
- * @param {{
- *   db: import('mongoose').Connection,
- *   stripe: import('stripe').Stripe,
- *   anthropicApiKey: string,
- *   frontendUrl: string,
- *   brand?: object,            // { name, companyName, domain, primaryColor, accentColor }
- *   price?: number,            // default 49
- *   currency?: string,         // default 'AED'
- *   freeRegenLimit?: number,   // pre-payment, default 2
- *   postPaymentEditLimit?: number, // default 2
- *   editWindowDays?: number,   // default 7
- *   generateLimiter?: import('express').RequestHandler, // per-IP limiter for generation routes
- * }} deps
- * @returns {{ router: import('express').Router, handleStripeSuccess: (session: object) => Promise<void> }}
- */
 export function createItinerariesRouter({
   db,
   stripe,

@@ -53,7 +53,6 @@ async function openDocument(documentId) {
   } catch { /* toast handled elsewhere */ }
 }
 
-// A single CUSTOMER-source checklist row.
 function DocRow({ doc, applicantId, applicationRef }) {
   const inputRef = useRef(null);
   const { mutate, isPending } = useUploadDocument(applicationRef);
@@ -104,9 +103,6 @@ function DocRow({ doc, applicantId, applicationRef }) {
   );
 }
 
-// The profile questions shown before the checklist. Only the fields the active
-// template actually needs (from the server) are shown; employment vs "who is the
-// minor travelling with" is chosen from the entered date of birth.
 function ProfileQuestions({ applicant, applicationRef }) {
   const { mutate: save, isPending } = useUpdateApplicant(applicationRef);
   const needed = new Set(applicant.neededProfileFields || []);
@@ -219,7 +215,6 @@ function ApplicantPanel({ applicant, applicationRef, open, onToggle }) {
   );
 }
 
-// Application-level accommodation question (drives HOTEL vs HOST document rules).
 function AccommodationCard({ application }) {
   const { mutate, isPending } = useUpdateApplicationProfile(application.applicationRef);
   const value = application.accommodationType || 'HOTEL';

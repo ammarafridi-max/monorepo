@@ -106,7 +106,6 @@ function PackageCard({ pkg, onCtaClick }) {
     concierge: "text-gray-700",
   }[tier];
 
-  // Exclusions read like features; only the icon carries the negative colour.
   const exclusionXCls = "text-red-500";
   const exclusionTxtCls = featureCls;
 

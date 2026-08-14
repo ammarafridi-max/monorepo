@@ -1,10 +1,3 @@
-/**
- * Lightweight PayPal REST API v2 client.
- * Uses Node's built-in fetch — no extra dependencies.
- *
- * Supported currencies: USD, EUR, GBP, AUD, CAD, etc.
- * AED is NOT supported by PayPal; callers should convert to USD first.
- */
 export function createPayPalClient({ clientId, clientSecret, mode = 'sandbox' }) {
   if (!clientId || !clientSecret) throw new Error('PayPal clientId and clientSecret are required');
 
@@ -13,7 +6,6 @@ export function createPayPalClient({ clientId, clientSecret, mode = 'sandbox' })
       ? 'https://api-m.paypal.com'
       : 'https://api-m.sandbox.paypal.com';
 
-  // -- Token cache ----------------------------------------------------------
   let _cachedToken = null;
   let _tokenExpiresAt = 0;
 
@@ -43,22 +35,6 @@ export function createPayPalClient({ clientId, clientSecret, mode = 'sandbox' })
     return _cachedToken;
   }
 
-  // -- Create order ---------------------------------------------------------
-
-  /**
-   * Creates a PayPal order and returns the approval URL to redirect the customer to.
-   *
-   * @param {{
-   *   amount: string|number,  e.g. "25.00"
-   *   currency: string,       ISO-4217, must be PayPal-supported (e.g. "USD")
-   *   returnUrl: string,      PayPal redirects here after customer approves
-   *   cancelUrl: string,      PayPal redirects here if customer cancels
-   *   sessionId: string,      stored as custom_id on the purchase unit
-   *   description?: string,
-   *   brandName?: string,
-   * }}
-   * @returns {{ orderId: string, approveUrl: string }}
-   */
   async function createOrder({ amount, currency, returnUrl, cancelUrl, sessionId, description, brandName }) {
     const token = await getAccessToken();
 
@@ -67,7 +43,7 @@ export function createPayPalClient({ clientId, clientSecret, mode = 'sandbox' })
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
-        'PayPal-Request-Id': sessionId, // idempotency key
+        'PayPal-Request-Id': sessionId,
       },
       body: JSON.stringify({
         intent: 'CAPTURE',
@@ -106,15 +82,6 @@ export function createPayPalClient({ clientId, clientSecret, mode = 'sandbox' })
     return { orderId: data.id, approveUrl: approveLink.href };
   }
 
-  // -- Capture order --------------------------------------------------------
-
-  /**
-   * Captures an approved PayPal order. Call this after the customer returns
-   * from PayPal with the `token` (orderId) query parameter.
-   *
-   * @param {string} orderId
-   * @returns {object} PayPal capture response
-   */
   async function captureOrder(orderId) {
     const token = await getAccessToken();
 
@@ -123,8 +90,6 @@ export function createPayPalClient({ clientId, clientSecret, mode = 'sandbox' })
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
-        // Idempotency key: a retried capture (e.g. network blip after PayPal
-        // committed) is deduplicated by PayPal instead of attempting a second capture.
         'PayPal-Request-Id': `capture-${orderId}`,
       },
     });
@@ -136,9 +101,6 @@ export function createPayPalClient({ clientId, clientSecret, mode = 'sandbox' })
 
     const data = await res.json();
 
-    // A 2xx does NOT mean the money moved — the capture can come back DECLINED or
-    // PENDING. Only COMPLETED means paid; anything else must not be treated as success
-    // (otherwise the caller mis-issues a ticket for an uncaptured payment).
     const captureStatus =
       data?.purchase_units?.[0]?.payments?.captures?.[0]?.status || data?.status;
     if (captureStatus !== 'COMPLETED') {

@@ -1,10 +1,5 @@
 import Link from "next/link";
 
-/**
- * The single mid-article call to action, placed at a fixed position rather than
- * every N paragraphs. Two rail cards plus this one unit is the ceiling before a
- * guide starts reading like a landing page.
- */
 export default function BlogInlineOffer({ offer }) {
   if (!offer?.href || !offer?.cta) return null;
 

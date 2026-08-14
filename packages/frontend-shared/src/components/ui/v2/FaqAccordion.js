@@ -2,13 +2,6 @@
 
 import { useState } from "react";
 
-/**
- * The site's single FAQ accordion.
- *
- * The answer is always rendered and collapsed with CSS rather than being
- * conditionally mounted, so it stays in the DOM for crawlers, in-page search
- * and assistive tech even while hidden.
- */
 export default function FaqAccordion({ question, children, defaultOpen = false }) {
   const [open, setOpen] = useState(defaultOpen);
 

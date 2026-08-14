@@ -1,17 +1,12 @@
 import { Router } from 'express';
 
-/**
- * @param {{ controller: ReturnType<typeof import('./controller.js').createPaymentsController>, auth: { protect: Function, restrictTo: Function } }} deps
- */
 export function createPaymentsAdminRouter({ controller, auth }) {
   const router = Router();
   const { protect, restrictTo } = auth;
 
-  // Revenue dashboard — admin only
   router.get('/admin/revenue', protect, restrictTo('admin'), controller.getRevenue);
   router.get('/admin/charges', protect, restrictTo('admin'), controller.listCharges);
 
-  // Payment links — admin + agent
   router
     .route('/admin/payment-links')
     .post(protect, restrictTo('admin', 'agent'), controller.createPaymentLink)
@@ -23,7 +18,6 @@ export function createPaymentsAdminRouter({ controller, auth }) {
     .patch(protect, restrictTo('admin', 'agent'), controller.updatePaymentLink)
     .delete(protect, restrictTo('admin'), controller.deletePaymentLink);
 
-  // Products (catalog of reusable Stripe Prices) — admin + agent
   router
     .route('/admin/products')
     .post(protect, restrictTo('admin', 'agent'), controller.createProduct)

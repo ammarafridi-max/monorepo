@@ -6,9 +6,7 @@ import { ACCOMMODATION_TYPES } from './schemas/checklistTemplate.schema.js';
 import { deriveAgeGroup, evaluateTemplate, neededProfileFields, templateReferencesCondition } from './matcher.js';
 
 const MAX_BYTES = 15 * 1024 * 1024;
-// mimeType -> file extension, used when signing/serving Cloudinary authenticated assets.
 const MIME_EXT = { 'application/pdf': 'pdf', 'image/jpeg': 'jpg', 'image/png': 'png' };
-// Unambiguous alphabet (no 0/O/1/I) for the human-readable ref suffix.
 const REF_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
 function randomSuffix(len = 4) {
@@ -24,8 +22,6 @@ function escapeRegex(value = '') {
 
 const humanize = (k) => String(k || '').replace(/_/g, ' ').toLowerCase().replace(/^\w/, (c) => c.toUpperCase());
 
-// The effective status of a row. A satisfied-by row derives its status from the
-// document that fulfils it (in the same application).
 function effectiveStatus(doc, byId) {
   if (doc.satisfiedBy) {
     const src = byId.get(String(doc.satisfiedBy));
@@ -34,9 +30,6 @@ function effectiveStatus(doc, byId) {
   return doc.status;
 }
 
-// Completeness ignores NOT_APPLICABLE rows in the denominator. A regular row is
-// "done" once UPLOADED or APPROVED; a satisfied-by row is done only when its source
-// row is APPROVED. `onlyCustomer` restricts to source CUSTOMER rows.
 function completeness(documents = [], { onlyCustomer = false } = {}) {
   const byId = new Map(documents.map((d) => [String(d._id), d]));
   const applicable = documents.filter((d) => d.status !== 'NOT_APPLICABLE' && (!onlyCustomer || d.source === 'CUSTOMER'));
@@ -50,9 +43,6 @@ function completeness(documents = [], { onlyCustomer = false } = {}) {
   return Math.round((done / applicable.length) * 100);
 }
 
-// Ready to submit = the whole file is done (fileCompleteness 100) AND every
-// non-optional applicable row is effectively APPROVED (an IN_PERSON "marked done"
-// and a satisfied-by row whose source is APPROVED both read as APPROVED).
 function computeReadyToSubmit(documents = []) {
   const byId = new Map(documents.map((d) => [String(d._id), d]));
   const applicable = documents.filter((d) => d.status !== 'NOT_APPLICABLE');
@@ -73,7 +63,6 @@ export function createVisaApplicationService({
   apiBaseUrl = '',
   appBaseUrl = '',
 }) {
-  // ---- ref generation --------------------------------------------------------
   async function generateApplicationRef() {
     const now = new Date();
     const yy = String(now.getFullYear()).slice(-2);
@@ -86,7 +75,6 @@ export function createVisaApplicationService({
     throw new AppError('Could not allocate an application reference, please retry', 500);
   }
 
-  // ---- magic link (reuses the User model's token method) ---------------------
   async function buildMagicLink(user) {
     const rawToken = user.createMagicLinkToken();
     await user.save({ validateBeforeSave: false });
@@ -94,9 +82,6 @@ export function createVisaApplicationService({
     return `${base}/api/users/magic-link/${rawToken}`;
   }
 
-  // ==========================================================================
-  // TEMPLATE + CHECKLIST (data-driven)
-  // ==========================================================================
   async function loadActiveTemplate(visaTypeKey) {
     const key = String(visaTypeKey || 'SCHENGEN').toUpperCase();
     return ChecklistTemplate.findOne({ visaTypeKey: key, isActive: true }).lean();
@@ -114,28 +99,22 @@ export function createVisaApplicationService({
     };
   }
 
-  // Which profile questions this applicant must still answer before we can seed.
-  // accommodationType is application-level (has a default) so it never blocks here.
   function neededFieldsForApplicant(template, applicant, application) {
     if (!template) return [];
     const ctx = applicantContext(applicant, application);
     return neededProfileFields(template.rules || [], ctx).filter((f) => f !== 'accommodationType');
   }
 
-  // Reconcile an applicant's checklist rows against the active template's rules.
-  // SAFETY (unchanged from Phase 2): never delete or alter an UPLOADED / APPROVED /
-  // REJECTED row, and never touch a manually-added row. Rows that no longer apply
-  // become NOT_APPLICABLE. Seeding is BLOCKED until every referenced profile question
-  // is answered.
+  // Never delete or alter an UPLOADED / APPROVED / REJECTED row, or a manually-added one.
   async function reconcileChecklistForApplicant(applicant, application) {
     const app = application || (await VisaApplication.findById(applicant.application));
     if (!app) return false;
     const template = await loadActiveTemplate(app.visaTypeKey);
     if (!template) return false;
-    if (neededFieldsForApplicant(template, applicant, app).length) return false; // profile incomplete
+    if (neededFieldsForApplicant(template, applicant, app).length) return false;
 
     const ctx = applicantContext(applicant, app);
-    const desired = evaluateTemplate(template.rules || [], ctx); // [{ documentTypeKey, isOptional }]
+    const desired = evaluateTemplate(template.rules || [], ctx);
     const desiredByKey = new Map(desired.map((d) => [d.documentTypeKey, d]));
     const types = await DocumentType.find({ key: { $in: desired.map((d) => d.documentTypeKey) } }).lean();
     const typeByKey = new Map(types.map((t) => [t.key, t]));
@@ -146,7 +125,7 @@ export function createVisaApplicationService({
 
     for (const d of desired) {
       const type = typeByKey.get(d.documentTypeKey);
-      if (!type || !type.isActive) continue; // rule references a missing/inactive type — skip safely
+      if (!type || !type.isActive) continue;
       const row = byKey.get(d.documentTypeKey);
       if (!row) {
         await ApplicationDocument.create({
@@ -185,24 +164,20 @@ export function createVisaApplicationService({
     for (const a of applicants) await reconcileChecklistForApplicant(a, application);
   }
 
-  // One-shot staff email when a file first becomes the STAFF's turn (customer done).
-  // Atomically claimed the same way reminder sends are, so it fires exactly once.
+  // Atomically claimed so this staff email fires exactly once per application.
   async function notifyStaffFileReady(application) {
     const claimed = await VisaApplication.findOneAndUpdate(
       { _id: application._id, $or: [{ customerCompleteNotifiedAt: null }, { customerCompleteNotifiedAt: { $exists: false } }] },
       { $set: { customerCompleteNotifiedAt: new Date() } },
       { new: false },
     );
-    if (!claimed || claimed.customerCompleteNotifiedAt) return; // already notified
+    if (!claimed || claimed.customerCompleteNotifiedAt) return;
     notifications?.sendFileReadyForStaff?.({
       applicationRef: application.applicationRef,
       destinationCountry: application.destinationCountry,
     }).catch?.(() => {});
   }
 
-  // Recompute and persist BOTH completeness numbers, the readyToSubmit flag, and the
-  // customer-completed timestamp. Sends the staff "your turn" email on the first
-  // transition to customer-complete.
   async function recalcCompleteness(application) {
     const docs = await ApplicationDocument.find({ application: application._id })
       .select('status source satisfiedBy isOptional').lean();
@@ -215,7 +190,6 @@ export function createVisaApplicationService({
     if (application.customerCompletenessPercent !== customer) { application.customerCompletenessPercent = customer; dirty = true; }
     if (application.fileCompletenessPercent !== file) { application.fileCompletenessPercent = file; dirty = true; }
     if (application.readyToSubmit !== ready) { application.readyToSubmit = ready; dirty = true; }
-    // "customer completed" timestamp: set when they first hit 100, clear if it drops.
     if (customer === 100 && !application.customerCompletedAt) { application.customerCompletedAt = new Date(); dirty = true; }
     if (customer < 100 && application.customerCompletedAt) { application.customerCompletedAt = null; dirty = true; }
     if (dirty) await application.save();
@@ -239,12 +213,10 @@ export function createVisaApplicationService({
       financialSupport: data.financialSupport || null,
       minorTravellingWith: data.minorTravellingWith || null,
     });
-    // Only seeds rows once the applicant's profile is complete for the template.
     await reconcileChecklistForApplicant(applicant, application);
     return applicant;
   }
 
-  // ---- ownership -------------------------------------------------------------
   async function loadOwnedApplication(userId, applicationRef) {
     const application = await VisaApplication.findOne({ applicationRef: String(applicationRef).toUpperCase() });
     if (!application) throw new AppError('Application not found', 404);
@@ -252,8 +224,6 @@ export function createVisaApplicationService({
     return application;
   }
 
-  // Enrich documents + applicants for display. Adds label/help/source from the
-  // DocumentType, resolves satisfied-by rows, and computes needed profile questions.
   async function hydrate(application) {
     const app = application.toObject ? application.toObject() : application;
     const applicants = await Applicant.find({ application: app._id }).sort({ isPrimary: -1, createdAt: 1 }).lean();
@@ -308,11 +278,9 @@ export function createVisaApplicationService({
     };
   }
 
-  // ---- status automation -----------------------------------------------------
   async function maybeMarkDocsReady(application, performedBy) {
     const all = await ApplicationDocument.find({ application: application._id }).select('status source satisfiedBy').lean();
     const byId = new Map(all.map((d) => [String(d._id), d]));
-    // "Ready" is driven by the CUSTOMER's part of the file being fully submitted.
     const customerDocs = all.filter((d) => d.source === 'CUSTOMER' && d.status !== 'NOT_APPLICABLE');
     if (!customerDocs.length) return application;
     const allSubmitted = customerDocs.every((d) => effectiveStatus(d, byId) !== 'REQUIRED');
@@ -330,7 +298,6 @@ export function createVisaApplicationService({
     return application;
   }
 
-  // ---- shared file upload (customer OR staff) --------------------------------
   function validateFile(file, doc) {
     if (!file) throw new AppError('No file received', 400);
     const accepted = (doc.acceptedMimeTypes && doc.acceptedMimeTypes.length) ? doc.acceptedMimeTypes : Object.keys(MIME_EXT);
@@ -368,9 +335,6 @@ export function createVisaApplicationService({
     return { wasRejected, version: nextVersion };
   }
 
-  // ==========================================================================
-  // CUSTOMER
-  // ==========================================================================
   async function listMine(userId) {
     const applications = await VisaApplication.find({ user: userId }).sort({ updatedAt: -1 });
     return applications.map((app) => ({
@@ -399,7 +363,7 @@ export function createVisaApplicationService({
     for (const key of CUSTOMER_EDITABLE) {
       if (patch[key] !== undefined) applicant[key] = patch[key];
     }
-    for (const key of ENUM_FIELDS) if (applicant[key] === '') applicant[key] = null; // '' is not a valid enum value
+    for (const key of ENUM_FIELDS) if (applicant[key] === '') applicant[key] = null;
     if (patch.sponsorApplicant === '' || patch.sponsorApplicant === null) applicant.sponsorApplicant = null;
   }
 
@@ -411,7 +375,6 @@ export function createVisaApplicationService({
     applyApplicantPatch(applicant, patch);
     await applicant.save();
 
-    // Answering any rule-driving profile question can (re)seed/reconcile the checklist.
     await reconcileChecklistForApplicant(applicant, application);
 
     application.lastCustomerActionAt = new Date();
@@ -424,7 +387,6 @@ export function createVisaApplicationService({
     return applicant;
   }
 
-  // Customer sets application-level answers (accommodation type) — affects everyone.
   async function updateApplicationAsCustomer({ userId, applicationRef, patch = {} }) {
     const application = await loadOwnedApplication(userId, applicationRef);
     if (patch.accommodationType !== undefined) {
@@ -438,7 +400,6 @@ export function createVisaApplicationService({
     return hydrate(application);
   }
 
-  // Customer uploads a document into one of THEIR CUSTOMER-source checklist rows.
   async function uploadDocument({ userId, applicationRef, applicantId, documentId, file }) {
     const application = await loadOwnedApplication(userId, applicationRef);
     const applicant = await Applicant.findOne({ _id: applicantId, application: application._id });
@@ -462,12 +423,10 @@ export function createVisaApplicationService({
     return doc;
   }
 
-  // ---- signed URL / stream (customer OR admin) ------------------------------
   async function resolveDocumentTarget({ documentId, requester, version }) {
     const doc = await ApplicationDocument.findById(documentId);
     if (!doc) throw new AppError('Document not found', 404);
 
-    // A satisfied row has no file of its own — read the source document instead.
     const fileDoc = doc.satisfiedBy ? await ApplicationDocument.findById(doc.satisfiedBy) : doc;
     if (!fileDoc) throw new AppError('Document not found', 404);
 
@@ -503,9 +462,6 @@ export function createVisaApplicationService({
     return { body: resp.body, mimeType: target.mimeType || 'application/octet-stream', filename: target.originalFilename || 'document', version: target.version };
   }
 
-  // ==========================================================================
-  // ADMIN — application list / detail
-  // ==========================================================================
   const ACTIVE_STATES = ['DRAFT', 'INFO_PENDING', 'INFO_COMPLETE', 'DOCS_READY'];
   const QUEUE_FILTERS = ['all', 'needs_review', 'your_turn', 'gone_quiet', 'escalated', 'rejected_pending', 'ready_to_submit'];
 
@@ -532,7 +488,6 @@ export function createVisaApplicationService({
       baseMatch.$or = [{ applicationRef: regex }, { destinationCountry: regex }];
     }
     if (queue === 'escalated') baseMatch.reminderState = 'ESCALATED';
-    // Stored-field queues (fast — no doc lookup needed).
     if (queue === 'ready_to_submit') baseMatch.readyToSubmit = true;
     if (queue === 'your_turn') { baseMatch.customerCompletenessPercent = 100; baseMatch.fileCompletenessPercent = { $lt: 100 }; }
 
@@ -554,8 +509,6 @@ export function createVisaApplicationService({
     );
     if (queue === 'needs_review') pipeline.push({ $match: { uploadedCount: { $gt: 0 } } });
     if (queue === 'rejected_pending') pipeline.push({ $match: { rejectedCount: { $gt: 0 } } });
-    // "Your turn" apps are sorted by how long the completed customer has been waiting
-    // on staff, NOT by customer silence (which is misleading — they're finished).
     const sortStage = queue === 'your_turn' ? { $sort: { customerCompletedAt: 1 } } : { $sort: { effectiveLastAction: 1 } };
     pipeline.push(
       sortStage,
@@ -797,7 +750,6 @@ export function createVisaApplicationService({
         rejectionReason: doc.rejectionReason, link: `${base}/apply/${application.applicationRef}`,
       }).catch?.(() => {});
     } else {
-      // Every APPLICABLE row effectively APPROVED → tell the customer we're preparing.
       const all = await ApplicationDocument.find({ application: application._id }).select('status satisfiedBy').lean();
       const byId = new Map(all.map((d) => [String(d._id), d]));
       const applicable = all.filter((d) => d.status !== 'NOT_APPLICABLE');
@@ -811,9 +763,6 @@ export function createVisaApplicationService({
     return doc;
   }
 
-  // ==========================================================================
-  // ADMIN — document-level actions
-  // ==========================================================================
   async function loadAdminDoc(documentId) {
     const doc = await ApplicationDocument.findById(documentId);
     if (!doc) throw new AppError('Document not found', 404);
@@ -822,14 +771,12 @@ export function createVisaApplicationService({
     return { doc, application };
   }
 
-  // Staff upload for AGENT (or, on behalf, CUSTOMER) rows — same storage/history path.
   async function adminUploadDocument({ documentId, file, performedBy }) {
     const { doc, application } = await loadAdminDoc(documentId);
     if (doc.source === 'IN_PERSON') throw new AppError('In-person items are marked complete, not uploaded.', 400);
     if (doc.satisfiedBy) throw new AppError('This row is satisfied by another applicant\'s document.', 400);
     const applicant = await Applicant.findById(doc.applicant);
     if (!applicant) throw new AppError('Applicant not found', 404);
-    // Enrich acceptedMimeTypes from the DocumentType for validation.
     const type = await DocumentType.findById(doc.documentType).lean();
     validateFile(file, { acceptedMimeTypes: type?.acceptedMimeTypes });
 
@@ -840,7 +787,6 @@ export function createVisaApplicationService({
     return doc;
   }
 
-  // Mark an IN_PERSON row complete (no file), with an optional note.
   async function adminMarkInPerson({ documentId, note, performedBy }) {
     const { doc, application } = await loadAdminDoc(documentId);
     if (doc.source !== 'IN_PERSON') throw new AppError('Only in-person items can be marked complete this way.', 400);
@@ -855,11 +801,9 @@ export function createVisaApplicationService({
     return doc;
   }
 
-  // Link a row to another applicant's uploaded document in the SAME application.
   async function adminLinkSatisfiedBy({ documentId, sourceDocumentId, performedBy }) {
     const { doc, application } = await loadAdminDoc(documentId);
     if (!sourceDocumentId) {
-      // Unlink.
       doc.satisfiedBy = null;
       doc.status = doc.cloudinaryPublicId ? 'UPLOADED' : 'REQUIRED';
       await doc.save();
@@ -876,8 +820,7 @@ export function createVisaApplicationService({
     if (!source.cloudinaryPublicId) throw new AppError('The source document has no uploaded file yet', 400);
 
     doc.satisfiedBy = source._id;
-    doc.status = 'UPLOADED'; // "provided"; effective status derives from the source
-    // A satisfied row keeps no file of its own.
+    doc.status = 'UPLOADED';
     doc.cloudinaryPublicId = '';
     doc.originalFilename = '';
     doc.mimeType = '';
@@ -890,7 +833,6 @@ export function createVisaApplicationService({
     return doc;
   }
 
-  // Add a manual document row to an applicant (outside the template).
   async function adminAddDocumentRow({ applicationId, applicantId, docTypeKey, performedBy }) {
     const application = await VisaApplication.findById(applicationId);
     if (!application) throw new AppError('Application not found', 404);
@@ -916,8 +858,6 @@ export function createVisaApplicationService({
     return doc;
   }
 
-  // Waive/remove a row. Optional or manual rows can be removed; a template row is
-  // waived to NOT_APPLICABLE, a manually-added row is deleted outright.
   async function adminRemoveDocumentRow({ documentId, performedBy }) {
     const { doc, application } = await loadAdminDoc(documentId);
     if (doc.addedManually) {
@@ -934,7 +874,6 @@ export function createVisaApplicationService({
   }
 
   return {
-    // customer
     listMine,
     getMine,
     updateApplicantAsCustomer,
@@ -942,7 +881,6 @@ export function createVisaApplicationService({
     uploadDocument,
     getSignedDocumentUrl,
     streamDocument,
-    // admin — applications
     adminList,
     adminGetById,
     adminCreate,
@@ -951,7 +889,6 @@ export function createVisaApplicationService({
     adminUpdate,
     adminAddNote,
     adminReviewDocument,
-    // admin — documents
     adminUploadDocument,
     adminMarkInPerson,
     adminLinkSatisfiedBy,

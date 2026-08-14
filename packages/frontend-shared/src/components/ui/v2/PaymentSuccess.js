@@ -172,7 +172,6 @@ function PaymentNotFoundState() {
   );
 }
 
-/* --- Booking not found state -------------------------------------------------- */
 
 function BookingNotFoundState() {
   return (

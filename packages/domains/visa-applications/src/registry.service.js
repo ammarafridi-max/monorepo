@@ -4,8 +4,6 @@ import { AGE_GROUPS, FINANCIAL_SUPPORT, ACCOMMODATION_TYPES, MINOR_TRAVELLING_WI
 import { EMPLOYMENT_STATUSES } from './schemas/applicant.schema.js';
 import { evaluateTemplate } from './matcher.js';
 
-// The allowed values for each rule condition — the matcher itself is enum-agnostic,
-// so validation is enforced here against the schema enums.
 const CONDITION_ENUMS = {
   ageGroup: AGE_GROUPS,
   employmentStatus: EMPLOYMENT_STATUSES,
@@ -15,14 +13,11 @@ const CONDITION_ENUMS = {
   isPrimary: 'boolean',
 };
 
-// Sample applicants used for the read-only preview.
 const PREVIEW_SAMPLES = [
   { label: 'Adult · employed · self-funded · hotel', ctx: { ageGroup: 'ADULT', employmentStatus: 'EMPLOYED', financialSupport: 'SELF', accommodationType: 'HOTEL', minorTravellingWith: null, isPrimary: true } },
   { label: 'Minor · sponsored · one parent · hotel', ctx: { ageGroup: 'MINOR', employmentStatus: null, financialSupport: 'SPONSORED', accommodationType: 'HOTEL', minorTravellingWith: 'ONE_PARENT', isPrimary: false } },
 ];
 
-// Collect every problem in a rule set (non-throwing) — used both to reject a save
-// with a clear message and to warn in the preview.
 function collectRuleErrors(rules, activeKeys) {
   if (!Array.isArray(rules)) return ['Rules must be an array.'];
   const errors = [];
@@ -44,20 +39,16 @@ function collectRuleErrors(rules, activeKeys) {
   return errors;
 }
 
-// Plain CRUD for the document registry (DocumentType records) and the checklist
-// templates (ChecklistTemplate rules). Admin-only; wired behind restrictTo('admin').
 export function createRegistryService({ DocumentType, ChecklistTemplate }) {
   async function activeKeySet() {
     const types = await DocumentType.find({ isActive: true }).select('key').lean();
     return new Set(types.map((t) => t.key));
   }
 
-  // Reject a save that would silently break seeding, naming the bad rule and field.
   async function assertValidRules(rules) {
     const errors = collectRuleErrors(rules, await activeKeySet());
     if (errors.length) throw new AppError(`Cannot save rules — ${errors.length} problem(s): ${errors.join('; ')}`, 400);
   }
-  // ---- DocumentType ---------------------------------------------------------
   async function listDocumentTypes() {
     return DocumentType.find({}).sort({ source: 1, sortOrder: 1, key: 1 }).lean();
   }
@@ -81,7 +72,6 @@ export function createRegistryService({ DocumentType, ChecklistTemplate }) {
   async function updateDocumentType(id, patch = {}) {
     const type = await DocumentType.findById(id);
     if (!type) throw new AppError('Document type not found', 404);
-    // key is stable — not editable (it is referenced by rules and rows).
     if (patch.label !== undefined) type.label = String(patch.label).trim();
     if (patch.customerHelpText !== undefined) type.customerHelpText = String(patch.customerHelpText).trim();
     if (patch.source !== undefined) {
@@ -95,7 +85,6 @@ export function createRegistryService({ DocumentType, ChecklistTemplate }) {
     return type;
   }
 
-  // ---- ChecklistTemplate ----------------------------------------------------
   async function listTemplates() {
     return ChecklistTemplate.find({}).sort({ visaTypeKey: 1 }).lean();
   }
@@ -129,8 +118,6 @@ export function createRegistryService({ DocumentType, ChecklistTemplate }) {
     return template;
   }
 
-  // Read-only preview: which documents two sample applicants would receive under the
-  // given (unsaved) rules, plus non-fatal warnings so a mistake is visible pre-save.
   async function previewTemplate(rules = []) {
     const activeTypes = await DocumentType.find({ isActive: true }).select('key label source').lean();
     const byKey = new Map(activeTypes.map((t) => [t.key, t]));

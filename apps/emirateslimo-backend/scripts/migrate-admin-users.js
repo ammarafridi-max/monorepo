@@ -1,13 +1,7 @@
 /* eslint-disable no-console */
 /**
- * One-time cutover: the standalone backend stored admin/agent accounts in the
- * `users` collection (model "User"). The shared @travel-suite/auth model
- * registers as "admin-user" → collection `admin-users`. This copies each
- * document 1:1 (preserving _id, bcrypt password hash, role, status) so existing
- * logins keep working against the shared model.
- *
- * Idempotent: re-running upserts by _id. Read-only on the source collection.
- * Run with:  pnpm --filter @travel-suite/emirateslimo-backend migrate-admin-users:prod
+ * Usage:
+ *   pnpm --filter @travel-suite/emirateslimo-backend migrate-admin-users:prod
  */
 import mongoose from "mongoose";
 

@@ -14,17 +14,6 @@ import { useVisaOverlays }  from '../../hooks/visa/useVisaOverlays.js';
 import { useUpsertOverlay } from '../../hooks/visa/useUpsertOverlay.js';
 import { useDeleteOverlay } from '../../hooks/visa/useDeleteOverlay.js';
 
-/**
- * One visa page, edited as a base plus one tab per country.
- *
- * Tabs at the top of the whole screen rather than inside each section: the
- * country you are writing for is the single most important piece of context on
- * this form, and a per-section switch would let you edit UAE requirements and
- * Saudi pricing on the same screen without noticing.
- *
- * `countries` is a prop because the country list is a per-brand decision and
- * lives in the app, not in shared code.
- */
 export default function AdminEditVisaPage({ countries = [], siteUrl = '' }) {
   const { id } = useParams();
   const router = useRouter();
@@ -87,8 +76,6 @@ export default function AdminEditVisaPage({ countries = [], siteUrl = '' }) {
     />
   );
 
-  // No country list configured: this brand doesn't do country pages, so the
-  // form behaves exactly as it did before overlays existed.
   if (!countries.length) return baseForm;
 
   const active = countries.find((c) => c.slug === tab) || null;
@@ -137,8 +124,7 @@ export default function AdminEditVisaPage({ countries = [], siteUrl = '' }) {
         ) : (
           <div className="max-w-4xl mx-auto px-5 py-5">
             <VisaOverlayForm
-              // Remount on tab change so each country gets its own form state
-              // rather than inheriting the previous country's dirty fields.
+              // Remount on tab change so each country gets its own form state.
               key={active.slug}
               base={visa}
               country={active}

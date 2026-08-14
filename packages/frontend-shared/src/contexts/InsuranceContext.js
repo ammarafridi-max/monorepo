@@ -86,10 +86,7 @@ const ageCategories = [
 
 export const InsuranceContext = createContext();
 
-// maxStartDays caps how far ahead a policy can start, mirroring the WIS
-// provider's advance-booking window (it rejects start dates beyond it with
-// "Unable to calculate quotes"). Left null by default so brands without the
-// limit are unaffected; brands that use WIS inject their window (e.g. 270).
+// maxStartDays mirrors the WIS advance-booking window; null disables the cap.
 export function InsuranceProvider({ children, maxStartDays = null }) {
   const { updateLocalStorage } = useLocalStorage();
 
@@ -253,9 +250,6 @@ export function InsuranceProvider({ children, maxStartDays = null }) {
     }
   }, [endDate, startDate]);
 
-  // Drop a stored/selected start date that falls beyond the provider's
-  // advance-booking window, so a stale far-future date doesn't reload and
-  // trigger a provider rejection on the next quote.
   useEffect(() => {
     if (!maxStartDate || !startDate) return;
     if (compareDateOnly(startDate, maxStartDate) > 0) {

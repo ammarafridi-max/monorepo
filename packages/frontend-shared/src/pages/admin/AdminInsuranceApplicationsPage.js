@@ -139,23 +139,18 @@ function ApplicationsContent() {
   const totalPages = pagination?.totalPages ?? 1;
   const total = pagination?.total ?? 0;
 
-  // URL-derived filter values (source of truth for the data hooks).
   const urlSearch = searchParams.get("search") ?? "";
   const urlPayment = searchParams.get("paymentStatus") || "";
   const urlJourney = searchParams.get("journeyType") || "";
   const urlCreatedAt = searchParams.get("createdAt") ?? "all_time";
 
-  // Local UI state mirrors the URL but updates eagerly on user input so the
-  // controls never snap back to a stale value while router.push is in flight.
   const [localSearch, setLocalSearch] = useState(urlSearch);
   const [localPayment, setLocalPayment] = useState(urlPayment);
   const [localJourney, setLocalJourney] = useState(urlJourney);
   const [localCreatedAt, setLocalCreatedAt] = useState(urlCreatedAt);
 
-  // Phones hide the inline filter bar behind a modal (see below).
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  // Reconcile local state when the URL changes externally (back/forward).
   useEffect(() => setLocalSearch(urlSearch), [urlSearch]);
   useEffect(() => setLocalPayment(urlPayment), [urlPayment]);
   useEffect(() => setLocalJourney(urlJourney), [urlJourney]);
@@ -173,7 +168,6 @@ function ApplicationsContent() {
     pushParams(p);
   }
 
-  // Debounced sync: local search → URL, so we don't push on every keystroke.
   useEffect(() => {
     if (localSearch === urlSearch) return;
     const t = setTimeout(() => {
@@ -192,16 +186,12 @@ function ApplicationsContent() {
     router.push(`${pathname}?${params.toString()}`);
   }
 
-  // Count of filters narrowed away from their defaults — drives the badge on
-  // the filter button so active filters are visible without opening the modal.
   const activeFilterCount = [
     localPayment !== "",
     localJourney !== "",
     localCreatedAt !== "all_time",
   ].filter(Boolean).length;
 
-  // Filter controls, extracted so the same inputs render in the modal on every
-  // screen size. Width comes from the caller via `className`.
   const selectCls =
     "px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white";
 

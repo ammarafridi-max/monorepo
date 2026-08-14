@@ -1,11 +1,3 @@
-/**
- * Shared presentation for visa-check outcomes, so the hero card and the full
- * checker page can never drift into describing the same answer differently.
- *
- * Tone is deliberate: a visa-required answer is the one worth selling against,
- * a visa-free answer sells nothing. Pushing a service at someone who does not
- * need one is how a tool like this loses the trust that makes it worth using.
- */
 export const OUTCOME_UI = {
   VISA_FREE: {
     label: 'No visa needed',
@@ -46,14 +38,8 @@ export const OUTCOME_TONE = {
   muted: { box: 'border-gray-200 bg-gray-50',   text: 'text-gray-600' },
 };
 
-/** Outcomes where the traveller has to do something before they fly. */
 export const NEEDS_ACTION = ['VISA_REQUIRED', 'EVISA', 'ETA'];
 
 export const outcomeUi = (outcome) => OUTCOME_UI[outcome] ?? OUTCOME_UI.UNKNOWN;
 
-/**
- * A rule with no verification date is seeded starter data that no human has
- * checked yet. Say so rather than presenting it with the same confidence as a
- * verified answer.
- */
 export const isUnverified = (result) => Boolean(result) && result.outcome !== 'UNKNOWN' && !result.lastVerifiedAt;

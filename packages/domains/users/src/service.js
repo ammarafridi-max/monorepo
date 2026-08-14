@@ -49,7 +49,6 @@ export function createUserService({ User, jwtSecret, jwtExpiresIn, notifications
 
   const forgotPassword = async ({ email, resetUrl }) => {
     const user = await User.findOne({ email: email?.toLowerCase()?.trim(), isActive: true });
-    // Always resolve — don't leak whether email exists
     if (!user) return;
 
     const token = user.createPasswordResetToken();
@@ -79,17 +78,12 @@ export function createUserService({ User, jwtSecret, jwtExpiresIn, notifications
     return { token, user: { _id: user._id, firstName: user.firstName, lastName: user.lastName, email: user.email, isVerified: user.isVerified } };
   };
 
-  // ---- Magic link (passwordless) -------------------------------------------
-  // Creates the user if absent, stores a hashed 20-min token, emails the link.
-  // Caller must ALWAYS respond 200 regardless of outcome (no account enumeration).
   const requestMagicLink = async ({ email }) => {
     const normalized = String(email || '').trim().toLowerCase();
     if (!normalized || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) return;
 
     let user = await User.findOne({ email: normalized });
     if (!user) {
-      // Passwordless account: random password purely to satisfy any hashing path;
-      // it is never usable for password login (correctPassword also guards on it).
       user = await User.create({ email: normalized, password: crypto.randomBytes(24).toString('hex') });
     }
     if (!user.isActive) return;
@@ -121,7 +115,7 @@ export function createUserService({ User, jwtSecret, jwtExpiresIn, notifications
 
     user.magicLinkToken = undefined;
     user.magicLinkExpires = undefined;
-    user.isVerified = true; // proving control of the inbox verifies the email
+    user.isVerified = true;
     await user.save({ validateBeforeSave: false });
 
     const token = signToken(user._id);

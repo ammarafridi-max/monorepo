@@ -1,18 +1,3 @@
-/**
- * expand-blog-post.mjs
- *
- * On-demand: takes an existing Travl blog post (by slug or title), asks
- * Claude to expand it to a longer target length, and saves the result as
- * a NEW DRAFT in the admin panel — never overwrites the live post.
- *
- * Usage:
- *   node expand-blog-post.mjs --slug "how-to-apply-schengen-visa-uae"
- *   node expand-blog-post.mjs --title "How to Apply for a Schengen Visa..."
- *   node expand-blog-post.mjs --slug "..." --length long
- *
- * Env:  ANTHROPIC_API_KEY, TRAVL_ADMIN_EMAIL, TRAVL_ADMIN_PASSWORD
- */
-
 import Anthropic from "@anthropic-ai/sdk";
 import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
@@ -36,8 +21,6 @@ import {
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-
-// ── Argument parsing ─────────────────────────────────────────────────────────
 
 function parseArgs(argv) {
   const opts = {};
@@ -65,13 +48,6 @@ function usage() {
 Env: ANTHROPIC_API_KEY, TRAVL_ADMIN_EMAIL, TRAVL_ADMIN_PASSWORD`);
 }
 
-// ── Find the existing post ───────────────────────────────────────────────────
-
-/**
- * Looks up a single post via the admin list endpoint by slug (exact) or title
- * (case-insensitive, trimmed). Returns the post record. Throws on 0 matches;
- * lists candidates and exits on >1 matches.
- */
 async function findPost(token, { slug, title }) {
   const data = await apiFetch("/api/blogs/admin/list?page=1&limit=1000", {
     headers: { Cookie: `jwt=${token}` },
@@ -107,10 +83,6 @@ async function findPost(token, { slug, title }) {
   return matches[0];
 }
 
-/**
- * Looks for a post (draft or published) whose title exactly matches
- * `draftTitle` (case-insensitive, trimmed). Returns the record or null.
- */
 async function findExistingDraft(token, draftTitle) {
   const data = await apiFetch("/api/blogs/admin/list?page=1&limit=1000", {
     headers: { Cookie: `jwt=${token}` },
@@ -125,10 +97,6 @@ async function findExistingDraft(token, draftTitle) {
   );
 }
 
-/**
- * The admin list may return a summary. If the matched record is missing the
- * full body content, fetch the complete record from /api/blogs/:id.
- */
 async function ensureFullPost(token, post) {
   if (post.content && post.content.length > 0) return post;
   const id = post._id || post.id;
@@ -141,14 +109,6 @@ async function ensureFullPost(token, post) {
   return data?.data ?? post;
 }
 
-// ── Cover image: reuse existing if possible ──────────────────────────────────
-
-/**
- * Downloads the existing post's cover image so we can re-upload it with the
- * new draft. Falls back to fetchCoverImage(title) if the existing image
- * can't be fetched, logging a clear warning so the operator knows the cover
- * will need manual replacement.
- */
 async function buildCoverBlob(post) {
   const coverUrl =
     post.coverImage?.url || post.coverImage || post.coverImageUrl || null;
@@ -176,8 +136,6 @@ async function buildCoverBlob(post) {
     return fetchCoverImage(post.title);
   }
 }
-
-// ── Expansion prompt ─────────────────────────────────────────────────────────
 
 async function expandBlogContent({
   post,
@@ -290,7 +248,9 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
       break;
     } catch (err) {
       if (attempt === 3) throw err;
-      console.warn(`⚠  Attempt ${attempt} failed (${err.message}) — retrying in ${attempt * 10}s...`);
+      console.warn(
+        `⚠  Attempt ${attempt} failed (${err.message}) — retrying in ${attempt * 10}s...`,
+      );
       await new Promise((r) => setTimeout(r, attempt * 10_000));
     }
   }
@@ -314,7 +274,6 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
     throw new Error(`Claude returned invalid JSON: ${err.message}`);
   }
 
-  // Validate required fields
   const required = [
     "metaTitle",
     "metaDescription",
@@ -329,21 +288,15 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
     if (!parsed[key]) throw new Error(`Claude response missing field: ${key}`);
   }
 
-  // Required-links validator — fail loudly if Claude dropped a mandated link.
   validateRequiredLinks(parsed, requiredLinks);
 
-  // Content-quality checks (word count floor, no external links, soft style
-  // warnings). Hard failures throw; soft failures only warn.
   validateContentQuality(parsed, targetLength);
 
   console.log("✓ Expanded content generated");
   return parsed;
 }
 
-// ── Save as new draft ────────────────────────────────────────────────────────
-
 async function postExpandedDraft({ token, post, content, availableTags }) {
-  // Validate tags exist (case-insensitive match)
   const lowerAvailable = availableTags.map((t) => t.toLowerCase());
   const validatedTags = content.tags.filter((t) => {
     const isValid = lowerAvailable.includes(t.toLowerCase());
@@ -354,11 +307,9 @@ async function postExpandedDraft({ token, post, content, availableTags }) {
 
   const coverImageBlob = await buildCoverBlob(post);
 
-  // Append CTA block to the body (same pattern as the daily generator).
   const finalContent = `${content.content}\n${content.ctaBlock}`;
   console.log("✓ Appended ctaBlock to expanded article body");
 
-  // Title gets " (expanded draft)" suffix so it's obvious in the admin list.
   const draftTitle = `${post.title} (expanded draft)`;
 
   const form = new FormData();
@@ -394,8 +345,6 @@ async function postExpandedDraft({ token, post, content, availableTags }) {
   return body.data;
 }
 
-// ── Main ─────────────────────────────────────────────────────────────────────
-
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
 
@@ -419,10 +368,8 @@ async function main() {
   );
   console.log(`Target length: ${targetLength}\n`);
 
-  // 1. Login
   const token = await login();
 
-  // 2. Resolve the existing post (and pull full body if needed).
   const summary = await findPost(token, { slug: opts.slug, title: opts.title });
   const post = await ensureFullPost(token, summary);
   const postId = post._id || post.id;
@@ -430,9 +377,6 @@ async function main() {
     `✓ Resolved post — id=${postId}, slug=${post.slug}, title="${post.title}"`,
   );
 
-  // 3. Pre-flight duplicate check — bail out early if an expanded draft for
-  //    this post already exists. Avoids overwriting nothing but also avoids
-  //    burning an API call on a no-op.
   const draftTitle = `${post.title} (expanded draft)`;
   const existing = await findExistingDraft(token, draftTitle);
   if (existing) {
@@ -447,7 +391,6 @@ async function main() {
     return;
   }
 
-  // 4. Word-count gate.
   const currentWords = countWords(post.content || "");
   const floor = MIN_WORD_COUNT[targetLength];
   console.log(`Current word count: ${currentWords} | target floor: ${floor}`);
@@ -459,15 +402,12 @@ async function main() {
     return;
   }
 
-  // 4. Fetch available tags + site context.
   const [availableTags, siteContext] = await Promise.all([
     fetchBlogTags(token),
     Promise.resolve(readFileSync(join(__dirname, "site-context.md"), "utf8")),
   ]);
   console.log(`✓ Fetched ${availableTags.length} available tags`);
 
-  // 5. Expand. Validation happens inside expandBlogContent — anything that
-  // fails will throw here and prevent the POST below.
   const expanded = await expandBlogContent({
     post,
     siteContext,
@@ -480,7 +420,6 @@ async function main() {
     `✓ Expansion complete: ${currentWords} → ${newWordCount} words (target ≥ ${floor})`,
   );
 
-  // 6. Save as a new draft.
   const draft = await postExpandedDraft({
     token,
     post,

@@ -1,12 +1,4 @@
 /**
- * Read-only export of Travl blog posts that VisaWadi needs but cannot fetch.
- *
- * The VisaWadi migration reads Travl over its public API, which by design only
- * returns published posts. Scheduled and draft posts are invisible to it. This
- * script is the one place allowed to touch Travl's database, it is READ ONLY,
- * and it writes a JSON file the migration then consumes. Keeping the two apart
- * means the migration script still holds no Travl credentials.
- *
  * Usage, from apps/travl-backend:
  *   node --env-file=.env.production scripts/export-posts-for-visawadi.mjs
  */
@@ -15,7 +7,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import mongoose from 'mongoose';
 
-/** Unpublished posts moving to VisaWadi. Everything else stays on Travl. */
 const SLUGS = [
   'what-is-a-dummy-ticket-and-when-do-you-need-one',
   'dummy-ticket-vs-real-flight-booking-which-one-does-your-visa-need',

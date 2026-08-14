@@ -3,7 +3,6 @@ import { apiFetch, apiUpload, apiFetchBlob } from './apiClient.js';
 const URL = '/api/visa-applications';
 const USERS = '/api/users';
 
-// ---- Customer auth (magic link) --------------------------------------------
 export function requestMagicLinkApi(email) {
   return apiFetch(`${USERS}/magic-link`, {
     method: 'POST',
@@ -20,7 +19,6 @@ export function logoutUserApi() {
   return apiFetch(`${USERS}/logout`, { method: 'POST' });
 }
 
-// ---- Customer applications --------------------------------------------------
 export function getMyApplicationsApi() {
   return apiFetch(`${URL}/mine`);
 }
@@ -45,7 +43,6 @@ export function updateApplicantApi({ applicationRef, applicantId, patch }) {
   });
 }
 
-// Customer uploads a file into one of THEIR CUSTOMER-source checklist rows (by row id).
 export function uploadDocumentApi({ applicationRef, applicantId, documentId, file }) {
   const fd = new FormData();
   fd.append('documentId', documentId);
@@ -53,14 +50,11 @@ export function uploadDocumentApi({ applicationRef, applicantId, documentId, fil
   return apiUpload(`${URL}/${encodeURIComponent(applicationRef)}/applicants/${applicantId}/documents`, fd, 'POST');
 }
 
-// Returns { url, expiresInSeconds, filename, mimeType, version }
-// `version` (optional) requests a historical version instead of the current file.
 export function getDocumentViewUrlApi(documentId, version) {
   const qs = version != null ? `?version=${encodeURIComponent(version)}` : '';
   return apiFetch(`${URL}/documents/${documentId}/view${qs}`);
 }
 
-// ---- Admin ------------------------------------------------------------------
 export function adminListApplicationsApi({ page = 1, limit = 20, status, assignedTo, search, queue } = {}) {
   const params = new URLSearchParams({ page, limit });
   if (status) params.append('status', status);
@@ -119,14 +113,11 @@ export function adminGetDocumentViewUrlApi(documentId, version) {
   return apiFetch(`${URL}/admin/documents/${documentId}/view${qs}`);
 }
 
-// Streams the document inline (admin) and returns a Blob to render in-place —
-// no download to disk. Optional historical `version`.
 export function adminGetDocumentStreamBlobApi(documentId, version) {
   const qs = version != null ? `?version=${encodeURIComponent(version)}` : '';
   return apiFetchBlob(`${URL}/admin/documents/${documentId}/stream${qs}`);
 }
 
-// Manual reminder sweep (admin). `dryRun` reports without sending.
 export function adminRunRemindersApi({ dryRun = false } = {}) {
   return apiFetch(`${URL}/admin/reminders/run${dryRun ? '?dryRun=1' : ''}`, { method: 'POST' });
 }
@@ -139,7 +130,6 @@ export function adminAddNoteApi({ id, text }) {
   });
 }
 
-// ---- Admin document-level actions -------------------------------------------
 export function adminUploadDocumentApi({ documentId, file }) {
   const fd = new FormData();
   fd.append('document', file);
@@ -168,7 +158,6 @@ export function adminRemoveDocumentRowApi({ documentId }) {
   return apiFetch(`${URL}/admin/documents/${documentId}`, { method: 'DELETE' });
 }
 
-// ---- Admin registry (document types + templates) ----------------------------
 export function listDocumentTypesApi() {
   return apiFetch(`${URL}/admin/document-types`);
 }

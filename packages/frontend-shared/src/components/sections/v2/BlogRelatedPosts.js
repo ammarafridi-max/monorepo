@@ -10,11 +10,6 @@ function formatDate(value) {
   }).format(new Date(value));
 }
 
-/**
- * Closing grid of further reading, matched on the post's own tags by the
- * consuming app. Replaces a date-ordered list: a reader on a Schengen guide
- * should be offered Schengen guides, not whatever was published last.
- */
 export default function BlogRelatedPosts({ posts = [], heading = "Keep reading" }) {
   if (!posts.length) return null;
 

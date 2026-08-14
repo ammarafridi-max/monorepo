@@ -6,14 +6,11 @@ export function createCurrencyService({ Currency }) {
     return base ?? { code: 'AED', rate: 1 };
   };
 
-  // Convert an amount from the base currency into a target currency code.
-  // Returns { amount, currencyCode }.
   const convertFromBase = async ({ amount, targetCode }) => {
     const code = String(targetCode || 'AED').toUpperCase();
     const currency = await Currency.findOne({ code }).lean();
 
     if (!currency) {
-      // Unknown currency — fall back to base
       const base = await getBaseCurrency();
       return { amount: Number(amount.toFixed(2)), currencyCode: base.code };
     }

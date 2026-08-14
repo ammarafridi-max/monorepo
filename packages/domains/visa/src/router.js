@@ -7,19 +7,15 @@ export function createVisaRouterFromParts({ controller, auth }) {
   const router = Router();
   const { protect, restrictTo } = auth;
 
-  // ─── Public routes ───────────────────────────────────────────────────────────
   router.get('/', controller.getPublicVisas);
   router.get('/slug/:slug', controller.getPublicVisaBySlug);
-  // Every destination served in one country, each already resolved for it.
   router.get('/residence/:residence', controller.getPublicVisasForResidence);
 
-  // ─── Admin routes (require auth) ─────────────────────────────────────────────
   router.use(protect, restrictTo('admin'));
 
   router.get('/admin/list', controller.getAdminVisas);
 
-  // Residence overlays. MUST stay above /:id — Express matches in order, and
-  // '/:id' would otherwise swallow '/overlays/all' with id="overlays".
+  // Must stay above /:id — Express matches in order and '/:id' would swallow '/overlays/all'.
   router.get('/overlays/all', controller.listOverlays);
   router.post('/overlays', controller.upsertOverlay);
   router.get('/overlays/:residence/:visaSlug', controller.getOverlay);

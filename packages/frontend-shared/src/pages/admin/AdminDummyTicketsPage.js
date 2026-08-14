@@ -85,52 +85,33 @@ function DummyTicketsContent() {
 
   const page           = Number(searchParams.get('page')          || 1);
 
-  // URL-derived values (source of truth for the data hook).
-  // Default to PAID — unpaid/abandoned carts dominate the table and aren't
-  // actionable. Users opt into "All payments" (URL value 'all', which the
-  // backend treats as no filter).
   const urlPayment      = searchParams.get('paymentStatus')        || 'PAID';
   const urlOrder        = searchParams.get('orderStatus')          || '';
   const urlSearch       = searchParams.get('search')               ?? '';
   const urlDeliveryDate = searchParams.get('deliveryDate')         ?? '';
   const urlCreatedAt    = searchParams.get('createdAt')            ?? 'all_time';
 
-  // Local UI state — mirrors the URL but updates eagerly on user input so
-  // the inputs never snap back while router.push is in flight. Without
-  // this layer, controlled inputs bound directly to searchParams re-render
-  // with the stale URL value between the keystroke and the URL landing,
-  // which is what made the search bar and dropdowns feel frozen.
   const [localSearch,       setLocalSearch]       = useState(urlSearch);
   const [localPayment,      setLocalPayment]      = useState(urlPayment);
   const [localOrder,        setLocalOrder]        = useState(urlOrder);
   const [localCreatedAt,    setLocalCreatedAt]    = useState(urlCreatedAt);
   const [localDeliveryDate, setLocalDeliveryDate] = useState(urlDeliveryDate);
 
-  // Phones hide the inline filter bar behind a modal (see below).
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  // Reconcile local state whenever the URL changes externally (back/forward
-  // buttons, external navigation). If the URL matches local already, these
-  // setters are no-ops (React bails out of same-value setState).
   useEffect(() => { setLocalSearch(urlSearch);             }, [urlSearch]);
   useEffect(() => { setLocalPayment(urlPayment);           }, [urlPayment]);
   useEffect(() => { setLocalOrder(urlOrder);               }, [urlOrder]);
   useEffect(() => { setLocalCreatedAt(urlCreatedAt);       }, [urlCreatedAt]);
   useEffect(() => { setLocalDeliveryDate(urlDeliveryDate); }, [urlDeliveryDate]);
 
-  // Agents are locked to the last 4 hours by default, but not when they are
-  // actively searching — searches may need to pull up an older ticket a
-  // customer just called about. Backend enforces the same rule.
+  // Agents are locked to the last 4 hours unless searching; the backend enforces the same rule.
   const hasSearch       = localSearch.trim().length > 0;
   const agentTimeLocked = isAgent && !hasSearch;
   const createdAt       = agentTimeLocked ? '4_hours' : localCreatedAt;
   const totalPages      = pagination?.totalPages                   ?? 1;
   const total           = pagination?.total                        ?? 0;
 
-  // Default paymentStatus to PAID once, on mount, if the URL didn't provide
-  // one. Empty-deps intentional: running on every searchParams change added
-  // round-trips and could race with typing. Once set (or once the user picks
-  // a value), we leave it alone.
   const didDefaultRef = useRef(false);
   useEffect(() => {
     if (didDefaultRef.current) return;
@@ -142,25 +123,18 @@ function DummyTicketsContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Push a URL change. Explicit pathname avoids the fragile `?...` form
-  // that Next 16 App Router can resolve unexpectedly during transitions.
   function pushParams(nextParams) {
     const p = new URLSearchParams(nextParams);
     p.delete('page');
     router.push(`${pathname}?${p.toString()}`);
   }
 
-  // Update a single URL param. Optimistically updates local state so the
-  // input reflects the change immediately, then syncs to URL.
   function setParam(key, value) {
     const p = new URLSearchParams(searchParams.toString());
     if (value) p.set(key, value); else p.delete(key);
     pushParams(p);
   }
 
-  // Debounced sync: local search → URL. 300ms feels responsive while
-  // preventing a router.push on every keystroke. Local state drives the
-  // input; the URL only catches up after the user pauses.
   useEffect(() => {
     if (localSearch === urlSearch) return;
     const t = setTimeout(() => {
@@ -169,9 +143,6 @@ function DummyTicketsContent() {
       pushParams(p);
     }, 300);
     return () => clearTimeout(t);
-    // pushParams is stable enough for this pattern; searchParams is used
-    // to build the diff. Intentionally not including pushParams to avoid
-    // re-scheduling on every render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [localSearch, urlSearch]);
 
@@ -181,9 +152,6 @@ function DummyTicketsContent() {
     router.push(`${pathname}?${params.toString()}`);
   }
 
-  // Count of filters narrowed away from their defaults — drives the badge on
-  // the mobile filter button so agents can tell filters are active without
-  // opening the modal.
   const activeFilterCount = [
     localPayment !== 'PAID',
     localOrder !== '',
@@ -191,9 +159,6 @@ function DummyTicketsContent() {
     localDeliveryDate !== '',
   ].filter(Boolean).length;
 
-  // Filter controls, extracted so the inline bar (sm+) and the modal (phones)
-  // render the exact same inputs. Width/layout comes from the caller via
-  // `className`; the local-state + URL wiring lives here.
   const selectCls = 'px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white';
 
   const paymentControl = (className = '') => (

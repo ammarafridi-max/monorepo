@@ -1,14 +1,4 @@
 /**
- * Import Travl's visa leads into VisaWadi.
- *
- * Visa enquiries belong to VisaWadi after the split. These are real prospects,
- * not test data, so they are moved rather than dropped.
- *
- * Reads the file produced by apps/travl-backend/scripts/export-visa-leads-for-visawadi.mjs.
- * _id is preserved, which makes re-runs idempotent and keeps each lead traceable
- * to its Travl original. Nothing is deleted from Travl here — that happens in
- * purge-visa-data.mjs once this import is verified.
- *
  * Usage, from apps/visawadi-backend:
  *   node --env-file=.env.production scripts/import-visa-leads-from-travl.mjs          # dry run
  *   node --env-file=.env.production scripts/import-visa-leads-from-travl.mjs --apply
@@ -57,7 +47,6 @@ for (const lead of leads) {
   delete doc.id;
   delete doc.__v;
   for (const d of ['createdAt', 'updatedAt', 'contactedAt']) if (doc[d]) doc[d] = new Date(doc[d]);
-  // Notes carry their own timestamps.
   if (Array.isArray(doc.notes)) {
     doc.notes = doc.notes.map((n) => ({ ...n, createdAt: n.createdAt ? new Date(n.createdAt) : undefined }));
   }

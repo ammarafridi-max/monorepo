@@ -161,8 +161,6 @@ export default function LeadFormModal({ isOpen, onClose, visa, defaultPackage = 
 
     try {
       await createVisaLeadAsync(payload);
-      // GA4 lead conversion — only on a confirmed create, so validation errors,
-      // server errors, and honeypot rejections never fire it.
       trackVisaLeadSubmit({
         visaSlug: visa?.slug || '',
         packageRequested: data.packageRequested,
