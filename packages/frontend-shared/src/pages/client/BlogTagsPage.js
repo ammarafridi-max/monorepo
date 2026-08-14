@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Breadcrumb from '../../components/shared/layout/Breadcrumb';
 import Container from '../../components/shared/layout/Container';
 import PrimarySection from '../../components/shared/layout/PrimarySection';
 
@@ -26,6 +27,12 @@ export default function BlogTagsPage({
 
       <PrimarySection className="bg-linear-to-br from-primary-700 via-primary-600 to-accent-400 text-white py-16">
         <Container>
+          {breadcrumbPaths.length > 0 && (
+            <div className="mb-5">
+              <Breadcrumb paths={breadcrumbPaths} dark includeSchema={false} />
+            </div>
+          )}
+
           <p className="text-xs font-semibold uppercase tracking-widest text-white/60 mb-3">
             {hero?.subtitle ?? 'Blog'}
           </p>
