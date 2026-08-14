@@ -1,15 +1,9 @@
-// Seed the document registry and the Schengen checklist template. Idempotent —
-// safe to run repeatedly; it upserts by key / visaTypeKey.
-//
+// Usage, from apps/visawadi-backend:
 //   node --env-file=.env.development scripts/seed-schengen-checklist.mjs
-//
-// Adding UK/US later is a data change: add DocumentType rows and a new
-// ChecklistTemplate with visaTypeKey UK/US — no code change.
 
 import mongoose from 'mongoose';
 import { DocumentTypeSchema, ChecklistTemplateSchema } from '@travel-suite/visa-applications';
 
-// key -> { label, help (for CUSTOMER items) }
 const CUSTOMER = {
   PASSPORT: ['Passport', 'A clear scan of your passport photo page. Must be valid for at least 3 months after your trip.'],
   EMIRATES_ID: ['Emirates ID', 'Front and back of your Emirates ID.'],
@@ -79,6 +73,11 @@ async function main() {
   const uri = process.env.MONGO_URI;
   if (!uri) throw new Error('MONGO_URI is not set (run with --env-file=.env.<env>)');
   await mongoose.connect(uri);
+  const conn = mongoose.connection;
+  if (conn.db.databaseName !== 'visawadi') {
+    await mongoose.disconnect();
+    throw new Error(`Expected the visawadi database, got "${conn.db.databaseName}"`);
+  }
   const DocumentType = mongoose.model('DocumentType', DocumentTypeSchema);
   const ChecklistTemplate = mongoose.model('ChecklistTemplate', ChecklistTemplateSchema);
 

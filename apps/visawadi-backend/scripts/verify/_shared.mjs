@@ -1,11 +1,7 @@
-// Shared helpers for verify-reminders.mjs (the only remaining verification script).
+// Shared helpers for verify-reminders.mjs.
 //
-// NOTHING HERE IS MOCKED. It connects to the real MongoDB in MONGO_URI, the real
-// Cloudinary account, and the real Brevo API using the credentials in the
-// environment, and composes the domain exactly the way apps/visawadi-backend does.
-//
-// Trimmed to only what verify-reminders.mjs uses — no HTTP app, no login/cookie
-// helpers, no unused sample assets.
+// Nothing here is mocked: it uses the real MongoDB, Cloudinary and Brevo
+// credentials from the environment.
 
 import mongoose from 'mongoose';
 
@@ -18,9 +14,6 @@ import { logger } from '@travel-suite/utils';
 
 import { sendEmail as realSendEmail } from '../../src/utils/email.js';
 
-// ---------------------------------------------------------------------------
-// env
-// ---------------------------------------------------------------------------
 export function readEnv() {
   const e = process.env;
   return {
@@ -40,7 +33,6 @@ export function readEnv() {
   };
 }
 
-// Fail fast with a clear message if a required var is missing.
 export function requireEnv(env, keys) {
   const missing = [];
   const get = (path) => path.split('.').reduce((o, k) => (o == null ? o : o[k]), env);
@@ -52,9 +44,6 @@ export function requireEnv(env, keys) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// reporting
-// ---------------------------------------------------------------------------
 export function Reporter(name) {
   let passes = 0;
   let failures = 0;
@@ -71,16 +60,33 @@ export function Reporter(name) {
   return r;
 }
 
-// ---------------------------------------------------------------------------
-// mongo — a fresh, independent connection each call (the concurrency test opens two)
-// ---------------------------------------------------------------------------
+export function requireDbArg(argv = process.argv.slice(2)) {
+  const hit = argv.find((a) => a.startsWith('--db='));
+  const name = hit ? hit.slice('--db='.length).trim() : '';
+  if (!name) {
+    console.log('FAIL  --db=<name> is required. It names the database you INTEND to touch and is checked against the one MONGO_URI actually opens.');
+    console.log('      This script writes real records and sends real email. Point it at staging.');
+    process.exit(2);
+  }
+  return name;
+}
+
+export async function assertDb(conn, expected) {
+  // Wrong-database guard: bail before reading or writing anything if the names disagree.
+  if (conn.name !== expected) {
+    const actual = conn.name || '(unknown)';
+    await conn.close().catch(() => {});
+    console.log(`FAIL  Refusing to run: MONGO_URI points at database "${actual}" but --db=${expected} was requested.`);
+    process.exit(2);
+  }
+}
+
 export async function connect(uri) {
   const conn = mongoose.createConnection(uri, { serverSelectionTimeoutMS: 8000 });
   await conn.asPromise();
   return conn;
 }
 
-// Human-readable "where is this pointed" line, with credentials stripped.
 export function describeConnection(conn, uri) {
   const db = conn.name || '(unknown db)';
   let host = conn.host ? `${conn.host}${conn.port ? `:${conn.port}` : ''}` : '';
@@ -91,9 +97,6 @@ export function describeConnection(conn, uri) {
   return `db="${db}" host="${host}"`;
 }
 
-// ---------------------------------------------------------------------------
-// system composition — identical wiring to apps/visawadi-backend/src/routes/index.js
-// ---------------------------------------------------------------------------
 export function makeStorage(env) {
   return createCloudinaryStorage({
     cloudName: env.cloudinary.cloudName,
@@ -121,10 +124,6 @@ export function makeNotifications({ sendEmail = realSendEmail, adminEmail } = {}
   });
 }
 
-/**
- * Compose auth + users + visa-applications on a given connection, exactly like the
- * production composition root. Returns the models, service, and reminder sweep.
- */
 export function buildSystem(conn, { env, storage, notifications }) {
   const { middleware: auth } = createAuthRouter({
     db: conn,
@@ -164,10 +163,6 @@ export function buildSystem(conn, { env, storage, notifications }) {
   };
 }
 
-// ---------------------------------------------------------------------------
-// real sample file (valid enough for Cloudinary to accept) — used by the Track B
-// re-upload step
-// ---------------------------------------------------------------------------
 export function makeSamplePdf() {
   const objs = [
     '<</Type/Catalog/Pages 2 0 R>>',
@@ -187,8 +182,6 @@ export function makeSamplePdf() {
   return Buffer.from(pdf, 'latin1');
 }
 
-// Run cleanups in reverse, swallowing individual errors so one failure doesn't
-// strand the rest.
 export async function runCleanups(cleanups) {
   for (const fn of [...cleanups].reverse()) {
     try { await fn(); } catch (err) { console.log(`      (cleanup warning: ${err.message})`); }
