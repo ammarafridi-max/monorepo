@@ -162,8 +162,18 @@ export function createVehicleService({ Vehicle, images }) {
     const vehicle = await Vehicle.findById(id);
     if (!vehicle) throw new AppError('Vehicle not found', 404);
 
+    // The URL arrives in the request body, so "this vehicle exists" is not
+    // authorisation to delete it — without this you can pass any vehicle's (or
+    // any brand's) image URL to any vehicle id and it would be destroyed. The
+    // storage layer refuses across brands; this refuses across records.
+    const ownsImage =
+      vehicle.featuredImage === imageUrl || (vehicle.images || []).includes(imageUrl);
+    if (!ownsImage) throw new AppError('That image does not belong to this vehicle', 400);
+
     const removed = await images.deleteImage(imageUrl);
-    if (!removed) throw new AppError('Failed to delete image from Cloudinary', 500);
+    // A false here is usually the storage layer refusing a cross-brand delete,
+    // which is a rejected request rather than a server fault.
+    if (!removed) throw new AppError('Image could not be deleted. It may belong to another brand.', 400);
 
     if (vehicle.featuredImage === imageUrl) {
       vehicle.featuredImage = undefined;

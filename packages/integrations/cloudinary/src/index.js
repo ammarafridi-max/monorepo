@@ -10,6 +10,28 @@ export function createCloudinaryStorage({ cloudName, apiKey, apiSecret, logger, 
 
   cloudinary.config({ cloud_name: cloudName, api_key: apiKey, api_secret: apiSecret });
 
+  /**
+   * Does this storage instance own the asset at `publicId`?
+   *
+   * All six brands share ONE Cloudinary account. The only thing separating
+   * airportrides' images from emirateslimo's is this `folder` prefix, so a
+   * delete that takes a caller-supplied URL and destroys whatever it points at
+   * is a cross-brand delete waiting to happen — one brand's admin can wipe
+   * another brand's library by pasting its URL.
+   *
+   * Deletes are irreversible, so the check refuses rather than assuming.
+   */
+  const ownsPublicId = (publicId) =>
+    typeof publicId === 'string' && (publicId === folder || publicId.startsWith(`${folder}/`));
+
+  const refuse = (publicId, what) => {
+    logger?.warn(
+      `Refused to delete a Cloudinary ${what} outside this brand's folder`,
+      { folder, publicId },
+    );
+    return false;
+  };
+
   // Low-level stream upload; resolves to the delivered secure_url.
   const uploadBuffer = (buffer, options) =>
     new Promise((resolve, reject) => {
@@ -47,7 +69,9 @@ export function createCloudinaryStorage({ cloudName, apiKey, apiSecret, logger, 
       if (!isConfigured || !imageUrl) return false;
       const match = imageUrl.match(/upload\/(?:v\d+\/)?(.+)\.[a-zA-Z0-9]+$/);
       if (!match?.[1]) return false;
-      await cloudinary.uploader.destroy(match[1], { invalidate: true });
+      const publicId = match[1];
+      if (!ownsPublicId(publicId)) return refuse(publicId, 'asset');
+      await cloudinary.uploader.destroy(publicId, { invalidate: true });
       return true;
     } catch (err) {
       logger?.warn('Failed to delete Cloudinary image', { imageUrl, error: err.message });
@@ -58,6 +82,9 @@ export function createCloudinaryStorage({ cloudName, apiKey, apiSecret, logger, 
   const deleteFolder = async (folderPath) => {
     try {
       if (!isConfigured || !folderPath) return false;
+      // deleteFolder takes an ABSOLUTE prefix (deleteSubfolder is the relative
+      // one), so without this it can be pointed at any brand's tree.
+      if (!ownsPublicId(folderPath)) return refuse(folderPath, 'folder');
       // Delete both image and raw resources under the prefix (PDFs/docs are 'raw').
       for (const resourceType of ['image', 'raw']) {
         const { resources } = await cloudinary.api.resources({
