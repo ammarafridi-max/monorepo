@@ -1,13 +1,19 @@
-import Container from '@travel-suite/frontend-shared/components/shared/layout/Container';
-import PrimarySection from '@travel-suite/frontend-shared/components/shared/layout/PrimarySection';
-import SocialLinks from '@travel-suite/frontend-shared/components/ui/v2/SocialLinks';
-import { EMAIL, WHATSAPP_URL, ADDRESS, GMB_URL, SOCIALS } from '@/config/contact';
+import Container from "@travel-suite/frontend-shared/components/shared/layout/Container";
+import PrimarySection from "@travel-suite/frontend-shared/components/shared/layout/PrimarySection";
+import SocialLinks from "@travel-suite/frontend-shared/components/ui/v2/SocialLinks";
+import {
+  EMAIL,
+  WHATSAPP_URL,
+  ADDRESS,
+  GMB_URL,
+  SOCIALS,
+} from "@/config/contact";
 
 export const metadata = {
-  title: 'Contact Us — Email, WhatsApp or Visit Our Dubai Office',
+  title: "Contact Us",
   description:
-    'Get in touch with VisaWadi. Email info@visawadi.com, WhatsApp our team, or find us at Regus, DAFZ, Dubai for help with your insurance policy or visa documentation.',
-  alternates: { canonical: 'https://www.visawadi.com/contact' },
+    "Get in touch with VisaWadi. Email info@visawadi.com, WhatsApp our team, or find us at Regus, DAFZ, Dubai for help with your insurance policy or visa documentation.",
+  alternates: { canonical: "https://www.visawadi.com/contact" },
 };
 
 export default function ContactPage() {
