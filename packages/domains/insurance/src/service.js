@@ -9,10 +9,6 @@ const addDays = (dateStr, days) => {
   return d.toISOString().slice(0, 10);
 };
 
-/**
- * Creates the insurance service with injected dependencies.
- * @param {{ InsuranceApplication, Affiliate, wis, brevo, logger, notifications }} deps
- */
 export function createInsuranceService({
   InsuranceApplication,
   Affiliate,
@@ -20,7 +16,6 @@ export function createInsuranceService({
   brevo,
   logger,
   notifications,
-  reviewListId,
 }) {
   const validateForm = (body) => {
     const { adults = 0, children = 0, seniors = 0 } = body.quantity || {};
@@ -85,6 +80,13 @@ export function createInsuranceService({
   const resolveAffiliateForApplication = async (affiliateIdInput) => {
     const normalizedAffiliateId = String(affiliateIdInput || "").trim();
     if (!normalizedAffiliateId) return null;
+
+    if (!Affiliate) {
+      logger.warn("Affiliate id supplied but no Affiliate model is wired; ignoring", {
+        affiliateId: normalizedAffiliateId,
+      });
+      return null;
+    }
 
     const affiliate = await Affiliate.findOne({
       affiliateId: normalizedAffiliateId,
@@ -332,21 +334,6 @@ export function createInsuranceService({
       });
     } catch (err) {
       logger.warn("Brevo updateContactAttribute failed", {
-        email: updated.email,
-        error: err,
-      });
-    }
-
-    // Review collection (MDT only): no-op where brevo lacks this method.
-    // Best-effort — must never break a confirmed payment.
-    try {
-      await brevo.addContactToReviewList?.({
-        email: updated.email,
-        firstName: updated.passengers?.[0]?.firstName ?? undefined,
-        listId: reviewListId,
-      });
-    } catch (err) {
-      logger.warn("Brevo addContactToReviewList failed", {
         email: updated.email,
         error: err,
       });

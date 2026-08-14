@@ -93,6 +93,7 @@ router.use(
     wis,
     brevo,
     auth,
+    Affiliate: AffiliateModel,
     notifications: { insurancePaymentCompletionEmail },
   }),
 );
