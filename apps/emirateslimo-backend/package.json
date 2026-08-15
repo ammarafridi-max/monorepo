@@ -17,6 +17,7 @@
     "@travel-suite/auth": "workspace:*",
     "@travel-suite/availability-rules": "workspace:*",
     "@travel-suite/blog": "workspace:*",
+    "@travel-suite/brevo": "workspace:*",
     "@travel-suite/cloudinary": "workspace:*",
     "@travel-suite/currencies": "workspace:*",
     "@travel-suite/limo-bookings": "workspace:*",

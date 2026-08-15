@@ -187,7 +187,7 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
         subject: `New booking paid — ${fullName} · ${data.bookingRef || ''}`,
         htmlContent,
       });
-      return sent;
+      return sent?.ok ?? false;
     } catch (err) {
       log('[notifications] sendBookingPaymentToAdmin failed', {
         bookingRef: data?.bookingRef,
@@ -207,7 +207,7 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
         subject: `Booking confirmed — Airport Transfer on ${data.date ? new Date(data.date + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}`,
         htmlContent,
       });
-      return sent;
+      return sent?.ok ?? false;
     } catch (err) {
       log('[notifications] sendBookingConfirmationToCustomer failed', {
         email: data?.email,
@@ -233,7 +233,7 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
         subject: `Contact form: ${subject} — ${name}`,
         textContent,
       });
-      return sent;
+      return sent?.ok ?? false;
     } catch (err) {
       log('[notifications] sendContactFormToAdmin failed', { name, err: err.message });
       return false;

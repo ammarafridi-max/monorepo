@@ -135,7 +135,7 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
         content: file.buffer.toString('base64'),
       }],
     });
-    if (!ok) throw new AppError('Could not send reservation email', 502);
+    if (!ok?.ok) throw new AppError('Could not send reservation email', 502);
 
     const updated = await Ticket.findOneAndUpdate(
       { sessionId },

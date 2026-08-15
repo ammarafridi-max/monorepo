@@ -11,6 +11,7 @@ COPY packages/shared/utils/package.json                  packages/shared/utils/p
 COPY packages/domains/auth/package.json                  packages/domains/auth/package.json
 COPY packages/domains/admin-users/package.json           packages/domains/admin-users/package.json
 COPY packages/domains/blog/package.json                  packages/domains/blog/package.json
+COPY packages/integrations/brevo/package.json      packages/integrations/brevo/package.json
 COPY packages/integrations/cloudinary/package.json       packages/integrations/cloudinary/package.json
 COPY packages/domains/currencies/package.json            packages/domains/currencies/package.json
 COPY packages/domains/locations/package.json             packages/domains/locations/package.json

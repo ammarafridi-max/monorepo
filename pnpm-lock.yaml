@@ -266,6 +266,9 @@ importers:
       '@travel-suite/blog':
         specifier: workspace:*
         version: link:../../packages/domains/blog
+      '@travel-suite/brevo':
+        specifier: workspace:*
+        version: link:../../packages/integrations/brevo
       '@travel-suite/cloudinary':
         specifier: workspace:*
         version: link:../../packages/integrations/cloudinary
@@ -689,6 +692,9 @@ importers:
       '@travel-suite/blog':
         specifier: workspace:*
         version: link:../../packages/domains/blog
+      '@travel-suite/brevo':
+        specifier: workspace:*
+        version: link:../../packages/integrations/brevo
       '@travel-suite/cloudinary':
         specifier: workspace:*
         version: link:../../packages/integrations/cloudinary

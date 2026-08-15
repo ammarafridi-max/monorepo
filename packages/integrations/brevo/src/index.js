@@ -85,3 +85,49 @@ export function createBrevoClient({ apiKey, logger } = {}) {
 
   return { createContact, subscribeContact, addContactToReviewList, updateContactAttribute };
 }
+
+const SMTP_URL = 'https://api.brevo.com/v3/smtp/email';
+
+export function createBrevoMailer({ apiKey, sender, logger } = {}) {
+  const sendEmail = async ({ email, name, subject, htmlContent, textContent, attachment }) => {
+    if (!apiKey) {
+      logger?.warn('Email skipped because BREVO_API_KEY is missing', { email, subject });
+      return { ok: false, error: 'BREVO_API_KEY is not configured' };
+    }
+
+    // Callers pass either a Brevo attachment array or nothing; an empty array
+    // must be omitted or Brevo rejects the payload.
+    const hasAttachment = Array.isArray(attachment) ? attachment.length > 0 : Boolean(attachment);
+
+    try {
+      const res = await fetch(SMTP_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          'api-key': apiKey,
+        },
+        body: JSON.stringify({
+          sender,
+          to: [{ email, name }],
+          subject,
+          textContent,
+          htmlContent,
+          ...(hasAttachment ? { attachment } : {}),
+        }),
+      });
+
+      if (!res.ok) {
+        const body = await res.text();
+        throw new Error(`Brevo email request failed (${res.status}): ${body || 'No response body'}`);
+      }
+
+      return { ok: true };
+    } catch (err) {
+      logger?.error('Email sending failed', { email, subject, error: err });
+      return { ok: false, error: err?.message ? String(err.message) : String(err) };
+    }
+  };
+
+  return { sendEmail };
+}
