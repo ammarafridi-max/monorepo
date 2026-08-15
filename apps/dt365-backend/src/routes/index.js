@@ -28,7 +28,7 @@ import {
 } from "@travel-suite/payments";
 import { createPayPalClient } from "@travel-suite/paypal";
 import { db } from "../utils/db.js";
-import * as brevo from "../utils/brevo.js";
+import { createBrevoClient } from "@travel-suite/brevo";
 import { sendEmail } from "../utils/email.js";
 import config from "../utils/config.js";
 import { logger } from "@travel-suite/utils";
@@ -44,6 +44,8 @@ function getOrRegisterModel(conn, name, schema) {
 const AffiliateModel = getOrRegisterModel(db, "Affiliate", AffiliateSchema);
 
 const router = Router();
+const brevo = createBrevoClient({ apiKey: config.brevoApiKey, logger });
+
 
 // -- Auth ----------------------------------------------------------------------
 const {

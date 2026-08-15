@@ -14,6 +14,7 @@
     "@travel-suite/airlabs": "workspace:*",
     "@travel-suite/auth": "workspace:*",
     "@travel-suite/blog": "workspace:*",
+    "@travel-suite/brevo": "workspace:*",
     "@travel-suite/cloudinary": "workspace:*",
     "@travel-suite/currencies": "workspace:*",
     "@travel-suite/flights": "workspace:*",

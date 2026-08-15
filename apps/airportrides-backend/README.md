@@ -102,7 +102,7 @@ Middleware order matters here:
 - **[config.js](src/utils/config.js)** — the single env → config map, with `parseList`/`parseNumber` helpers.
 - **[db.js](src/utils/db.js)** — `connectDB()` + the shared `db` (`mongoose.connection`) injected into every factory.
 - **[email.js](src/utils/email.js)** — low-level `sendEmail({ email, name, subject, htmlContent, textContent })` posting to the Brevo SMTP API. Skips (returns `false`) when `BREVO_API_KEY` is missing; throws in development, swallows-and-logs in production. This function is injected into `@travel-suite/notifications`.
-- **[brevo.js](src/utils/brevo.js)** — Brevo *contacts* helpers (`createContact`, `subscribeContact`, `updateContactAttribute`) for marketing/CRM sync. `subscribeContact` backs the `/api/subscribe` launch-notify capture.
+- **Brevo contacts** — `createBrevoClient` from `@travel-suite/brevo`, built in `src/routes/index.js`. `subscribeContact` backs the `/api/subscribe` launch-notify capture.
 
 `logger`, `AppError`, and `catchAsync` come from `@travel-suite/utils`.
 

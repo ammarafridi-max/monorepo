@@ -29,7 +29,7 @@ import {
 } from "@travel-suite/payments";
 import { db } from "../utils/db.js";
 import { wis } from "../utils/wis.js";
-import * as brevo from "../utils/brevo.js";
+import { createBrevoClient } from "@travel-suite/brevo";
 import { sendEmail } from "../utils/email.js";
 import { insurancePaymentCompletionEmail } from "../notifications/insurance.js";
 import config from "../utils/config.js";
@@ -46,6 +46,8 @@ function getOrRegisterModel(conn, name, schema) {
 const AffiliateModel = getOrRegisterModel(db, "Affiliate", AffiliateSchema);
 
 const router = Router();
+const brevo = createBrevoClient({ apiKey: config.brevoApiKey, logger });
+
 
 // -- Auth ----------------------------------------------------------------------
 const {

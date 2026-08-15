@@ -18,6 +18,7 @@ COPY packages/domains/payments/package.json        packages/domains/payments/pac
 COPY packages/domains/tickets/package.json         packages/domains/tickets/package.json
 COPY packages/domains/users/package.json           packages/domains/users/package.json
 COPY packages/integrations/airlabs/package.json   packages/integrations/airlabs/package.json
+COPY packages/integrations/brevo/package.json      packages/integrations/brevo/package.json
 COPY packages/integrations/cloudinary/package.json packages/integrations/cloudinary/package.json
 COPY packages/shared/notifications/package.json   packages/shared/notifications/package.json
 COPY packages/shared/utils/package.json           packages/shared/utils/package.json

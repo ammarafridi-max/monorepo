@@ -21,11 +21,13 @@ import {
 } from "@travel-suite/payments";
 import { db } from "../utils/db.js";
 import { sendEmail } from "../utils/email.js";
-import { subscribeContact } from "../utils/brevo.js";
+import { createBrevoClient } from "@travel-suite/brevo";
 import { logger } from "@travel-suite/utils";
 import config from "../utils/config.js";
 
 const router = Router();
+const brevo = createBrevoClient({ apiKey: config.brevoApiKey, logger });
+
 
 // -- Auth ----------------------------------------------------------------------
 const {
@@ -142,7 +144,7 @@ router.post('/subscribe', async (req, res, next) => {
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({ error: 'A valid email address is required' });
     }
-    await subscribeContact({ email, attributes: { SOURCE: 'launch-notify' } });
+    await brevo.subscribeContact({ email, attributes: { SOURCE: 'launch-notify' } });
     res.json({ ok: true });
   } catch (err) {
     next(err);

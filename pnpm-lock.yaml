@@ -33,6 +33,9 @@ importers:
       '@travel-suite/bookings':
         specifier: workspace:*
         version: link:../../packages/domains/bookings
+      '@travel-suite/brevo':
+        specifier: workspace:*
+        version: link:../../packages/integrations/brevo
       '@travel-suite/cloudinary':
         specifier: workspace:*
         version: link:../../packages/integrations/cloudinary
@@ -148,6 +151,9 @@ importers:
       '@travel-suite/blog':
         specifier: workspace:*
         version: link:../../packages/domains/blog
+      '@travel-suite/brevo':
+        specifier: workspace:*
+        version: link:../../packages/integrations/brevo
       '@travel-suite/cloudinary':
         specifier: workspace:*
         version: link:../../packages/integrations/cloudinary
@@ -444,6 +450,9 @@ importers:
       '@travel-suite/blog':
         specifier: workspace:*
         version: link:../../packages/domains/blog
+      '@travel-suite/brevo':
+        specifier: workspace:*
+        version: link:../../packages/integrations/brevo
       '@travel-suite/cloudinary':
         specifier: workspace:*
         version: link:../../packages/integrations/cloudinary
@@ -559,6 +568,9 @@ importers:
       '@travel-suite/blog':
         specifier: workspace:*
         version: link:../../packages/domains/blog
+      '@travel-suite/brevo':
+        specifier: workspace:*
+        version: link:../../packages/integrations/brevo
       '@travel-suite/cloudinary':
         specifier: workspace:*
         version: link:../../packages/integrations/cloudinary
@@ -1290,11 +1302,7 @@ importers:
         specifier: workspace:*
         version: link:../../shared/utils
 
-  packages/integrations/brevo:
-    dependencies:
-      '@travel-suite/utils':
-        specifier: workspace:*
-        version: link:../../shared/utils
+  packages/integrations/brevo: {}
 
   packages/integrations/cloudinary:
     dependencies:

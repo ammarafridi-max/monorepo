@@ -22,13 +22,15 @@ import { createCloudinaryStorage } from "@travel-suite/cloudinary";
 import { logger } from "@travel-suite/utils";
 import { db } from "../utils/db.js";
 import { wis } from "../utils/wis.js";
-import * as brevo from "../utils/brevo.js";
+import { createBrevoClient } from "@travel-suite/brevo";
 import { sendEmail } from "../utils/email.js";
 import { insurancePaymentCompletionEmail } from "../notifications/insurance.js";
 import { itineraryPaymentCustomerEmail } from "../notifications/itinerary.js";
 import config from "../utils/config.js";
 
 const router = Router();
+const brevo = createBrevoClient({ apiKey: config.brevoApiKey, logger });
+
 
 const { router: authRouter, middleware: auth, AdminUser } = createAuthRouter({
   db,

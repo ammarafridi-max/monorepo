@@ -8,8 +8,6 @@
     ".": "./src/index.js"
   },
   "scripts": {},
-  "dependencies": {
-    "@travel-suite/utils": "workspace:*"
-  },
+  "dependencies": {},
   "peerDependencies": {}
 }
