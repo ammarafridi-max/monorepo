@@ -26,6 +26,9 @@ export const metadata = {
     index: true,
     follow: true,
   },
+  icons: {
+    icon: '/favicon.png',
+  },
   openGraph: {
     siteName: 'Emirates Limo',
     locale: 'en_AE',
