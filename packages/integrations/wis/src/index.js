@@ -15,7 +15,30 @@ const addDays = (dateStr, days) => {
   return d.toISOString().slice(0, 10);
 };
 
+export class WISError extends AppError {
+  constructor(message, { providerStatus, slug } = {}) {
+    super(message, 502);
+    this.name = 'WISError';
+    this.providerStatus = providerStatus;
+    this.slug = slug;
+  }
+}
+
 export function createWisClient({ url, agencyId, agencyCode, frontendUrl }) {
+  const secrets = [agencyId, agencyCode].filter(Boolean).map(String);
+
+  const redact = (value) => {
+    const text = String(value ?? '').slice(0, 300);
+    return secrets.reduce((acc, secret) => acc.split(secret).join('[redacted]'), text);
+  };
+
+  const firstError = (json) => {
+    const candidate = Array.isArray(json?.errors) ? json.errors[0] : json?.errors || json?.message;
+    if (!candidate) return null;
+    const text = typeof candidate === 'string' ? candidate : JSON.stringify(candidate);
+    return redact(text);
+  };
+
   async function fetchWIS(slug, data = {}) {
     const res = await fetch(`${url}/${slug}`, {
       method: 'POST',
@@ -23,10 +46,36 @@ export function createWisClient({ url, agencyId, agencyCode, frontendUrl }) {
       body: JSON.stringify({ agency_id: agencyId, agency_code: agencyCode, ...data }),
     });
 
-    const json = await res.json();
+    const meta = { providerStatus: res.status, slug };
+    const raw = await res.text();
+
+    let json = null;
+    try {
+      json = raw ? JSON.parse(raw) : null;
+    } catch {
+      json = null;
+    }
+
+    if (!res.ok) {
+      const detail = firstError(json);
+      throw new WISError(
+        detail
+          ? `Insurance provider error (HTTP ${res.status}): ${detail}`
+          : `Insurance provider returned HTTP ${res.status}`,
+        meta,
+      );
+    }
+
+    if (!json) {
+      throw new WISError('Insurance provider returned an unreadable response', meta);
+    }
 
     if (json.status === 'failed') {
-      throw new AppError(json?.errors?.[0] || 'Insurance provider error', 502);
+      throw new WISError(firstError(json) || 'Insurance provider error', meta);
+    }
+
+    if (!json.result || typeof json.result !== 'object') {
+      throw new WISError('Insurance provider returned an incomplete response', meta);
     }
 
     return json.result;

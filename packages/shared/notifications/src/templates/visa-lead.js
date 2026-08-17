@@ -45,8 +45,9 @@ export function renderVisaLeadTemplate({
   submittedAt,
 }) {
   const primary  = brand?.theme?.primaryColor || '#1a1a2e';
-  const website  = brand?.website || 'https://travl.ae';
-  const teamName = brand?.teamName || 'Travl Team';
+  const brandName = brand?.name?.trim() || '';
+  const website  = brand?.website || '';
+  const teamName = brand?.teamName || (brandName ? `${brandName} Team` : 'Operations Team');
   const crmUrl   = `${website}/admin/visa-leads/${leadId}`;
   const fullName = `${firstName || ''} ${lastName || ''}`.trim();
 
@@ -66,7 +67,7 @@ export function renderVisaLeadTemplate({
           <!-- HEADER -->
           <tr>
             <td style="padding:24px 28px;background:${primary};">
-              <p style="margin:0;color:rgba(255,255,255,0.7);font-size:11px;letter-spacing:1.6px;text-transform:uppercase;">New visa lead from Travl</p>
+              <p style="margin:0;color:rgba(255,255,255,0.7);font-size:11px;letter-spacing:1.6px;text-transform:uppercase;">${brandName ? `New visa lead from ${brandName}` : 'New visa lead'}</p>
               <h1 style="margin:6px 0 4px;color:#ffffff;font-size:22px;font-weight:600;letter-spacing:-0.2px;">${fullName}</h1>
               <p style="margin:0;color:rgba(255,255,255,0.7);font-size:13px;">${visaCountryName || '—'} Visa · ${formatSource(source)}</p>
             </td>
@@ -107,7 +108,7 @@ export function renderVisaLeadTemplate({
           <tr>
             <td style="padding:14px 28px;background:#f8fafc;border-top:1px solid #e2e8f0;">
               <p style="margin:0;color:#94a3b8;font-size:11px;line-height:1.6;">
-                ${teamName} · <a href="${website}" style="color:#94a3b8;">${website}</a><br />
+                ${teamName}${website ? ` · <a href="${website}" style="color:#94a3b8;">${website}</a>` : ''}<br />
                 This notification was sent automatically. Do not reply to this email.
               </p>
             </td>

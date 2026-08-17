@@ -1,7 +1,7 @@
 function shell({ brand, heading, eyebrow, bodyHtml }) {
   const primary = brand?.theme?.primaryColor || '#14948f';
-  const website = brand?.website || 'https://www.travl.ae';
-  const teamName = brand?.teamName || `${brand?.name || 'Travl'} Team`;
+  const website = brand?.website || '';
+  const teamName = brand?.teamName || (brand?.name ? `${brand.name} Team` : 'Support Team');
   return `<!doctype html>
 <html lang="en">
 <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" /><title>${heading}</title></head>
@@ -14,7 +14,7 @@ function shell({ brand, heading, eyebrow, bodyHtml }) {
       </td></tr>
       <tr><td style="padding:28px;color:#0f172a;font-size:14px;line-height:1.7;">${bodyHtml}</td></tr>
       <tr><td style="padding:14px 28px;background:#f8fafc;border-top:1px solid #e2e8f0;">
-        <p style="margin:0;color:#94a3b8;font-size:11px;line-height:1.6;">${teamName} · <a href="${website}" style="color:#94a3b8;">${website}</a></p>
+        <p style="margin:0;color:#94a3b8;font-size:11px;line-height:1.6;">${teamName}${website ? ` · <a href="${website}" style="color:#94a3b8;">${website}</a>` : ''}</p>
       </td></tr>
     </table>
   </td></tr></table>
@@ -32,10 +32,10 @@ function button({ brand, href, label }) {
 export function renderMagicLink({ brand, magicLinkUrl }) {
   return shell({
     brand,
-    eyebrow: `${brand?.name || 'Travl'} sign in`,
+    eyebrow: brand?.name ? `${brand.name} sign in` : 'Sign in',
     heading: 'Your sign-in link',
     bodyHtml: `
-      <p style="margin:0 0 8px;">Click the button below to sign in to your ${brand?.name || 'Travl'} visa account. This link is valid for 20 minutes and can only be used once.</p>
+      <p style="margin:0 0 8px;">Click the button below to sign in to your ${brand?.name ? `${brand.name} ` : ''}visa account. This link is valid for 20 minutes and can only be used once.</p>
       ${button({ brand, href: magicLinkUrl, label: 'Sign in →' })}
       <p style="margin:0;color:#64748b;font-size:12px;">If you didn't request this, you can safely ignore this email.</p>`,
   });
@@ -82,7 +82,7 @@ export function renderAllApproved({ brand, applicationRef, destinationCountry, l
 }
 
 export function renderChecklistCompleteAdmin({ brand, applicationRef, destinationCountry }) {
-  const website = brand?.website || 'https://www.travl.ae';
+  const website = brand?.website || '';
   return shell({
     brand,
     eyebrow: 'Ready for review',
@@ -138,7 +138,7 @@ export function renderRejectionReminder({ brand, applicationRef, rejected, link 
 }
 
 export function renderFileReadyForStaff({ brand, applicationRef, destinationCountry }) {
-  const website = brand?.website || 'https://www.travl.ae';
+  const website = brand?.website || '';
   return shell({
     brand,
     eyebrow: 'Your turn',
@@ -150,7 +150,7 @@ export function renderFileReadyForStaff({ brand, applicationRef, destinationCoun
 }
 
 export function renderApplicationEscalated({ brand, applicationRef, destinationCountry, customerEmail, reminderCount, link }) {
-  const website = brand?.website || 'https://www.travl.ae';
+  const website = brand?.website || '';
   return shell({
     brand,
     eyebrow: 'Gone quiet — needs a call',
