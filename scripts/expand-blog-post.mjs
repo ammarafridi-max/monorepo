@@ -4,13 +4,10 @@ import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
 import {
-  BACKEND_URL,
   LENGTH_TIERS,
   MIN_WORD_COUNT,
-  apiFetch,
-  login,
-  fetchBlogTags,
-  getRequiredLinks,
+  loadBrand,
+  createApiClient,
   formatRequiredLinksBlock,
   validateRequiredLinks,
   validateContentQuality,
@@ -23,11 +20,11 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 
 function parseArgs(argv) {
-  const opts = {};
+  const opts = { brand: "travl" };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (
-      (arg === "--slug" || arg === "--title" || arg === "--length") &&
+      (arg === "--slug" || arg === "--title" || arg === "--length" || arg === "--brand") &&
       argv[i + 1]
     ) {
       opts[arg.slice(2)] = argv[i + 1];
@@ -44,12 +41,14 @@ function usage() {
   node expand-blog-post.mjs --slug <slug>            # find by exact slug
   node expand-blog-post.mjs --title "<title>"        # find by exact title (case-insensitive)
   node expand-blog-post.mjs --slug ... --length long # override target length (short|medium|long, default: long)
+  node expand-blog-post.mjs --slug ... --brand visawadi  # which brand's backend (default: travl)
 
-Env: ANTHROPIC_API_KEY, TRAVL_ADMIN_EMAIL, TRAVL_ADMIN_PASSWORD`);
+Env: ANTHROPIC_API_KEY, plus the brand's admin credentials
+     (TRAVL_ADMIN_EMAIL / TRAVL_ADMIN_PASSWORD, VISAWADI_ADMIN_EMAIL / ...)`);
 }
 
-async function findPost(token, { slug, title }) {
-  const data = await apiFetch("/api/blogs/admin/list?page=1&limit=1000", {
+async function findPost(api, token, { slug, title }) {
+  const data = await api.apiFetch("/api/blogs/admin/list?page=1&limit=1000", {
     headers: { Cookie: `jwt=${token}` },
   });
   const posts = data?.data?.blogs ?? [];
@@ -83,8 +82,8 @@ async function findPost(token, { slug, title }) {
   return matches[0];
 }
 
-async function findExistingDraft(token, draftTitle) {
-  const data = await apiFetch("/api/blogs/admin/list?page=1&limit=1000", {
+async function findExistingDraft(api, token, draftTitle) {
+  const data = await api.apiFetch("/api/blogs/admin/list?page=1&limit=1000", {
     headers: { Cookie: `jwt=${token}` },
   });
   const posts = data?.data?.blogs ?? [];
@@ -97,19 +96,19 @@ async function findExistingDraft(token, draftTitle) {
   );
 }
 
-async function ensureFullPost(token, post) {
+async function ensureFullPost(api, token, post) {
   if (post.content && post.content.length > 0) return post;
   const id = post._id || post.id;
   console.log(
     `Post summary missing 'content' — fetching full record /api/blogs/${id}`,
   );
-  const data = await apiFetch(`/api/blogs/${id}`, {
+  const data = await api.apiFetch(`/api/blogs/${id}`, {
     headers: { Cookie: `jwt=${token}` },
   });
   return data?.data ?? post;
 }
 
-async function buildCoverBlob(post) {
+async function buildCoverBlob(brand, post) {
   const coverUrl =
     post.coverImage?.url || post.coverImage || post.coverImageUrl || null;
 
@@ -117,7 +116,7 @@ async function buildCoverBlob(post) {
     console.warn(
       "⚠  Existing post has no cover image URL — generating fresh Recraft image",
     );
-    return fetchCoverImage(post.title);
+    return fetchCoverImage(post.title, brand);
   }
 
   try {
@@ -133,11 +132,12 @@ async function buildCoverBlob(post) {
     console.warn(
       `⚠  Could not download existing cover (${err.message}) — fetching a fresh one. The new draft will have a DIFFERENT cover image and may need manual fixing.`,
     );
-    return fetchCoverImage(post.title);
+    return fetchCoverImage(post.title, brand);
   }
 }
 
 async function expandBlogContent({
+  brand,
   post,
   siteContext,
   availableTags,
@@ -149,7 +149,7 @@ async function expandBlogContent({
 
   const { wordRange, maxTokens } = LENGTH_TIERS[targetLength];
 
-  const requiredLinks = getRequiredLinks({ title: post.title });
+  const requiredLinks = brand.getRequiredLinks({ title: post.title });
   const requiredLinksBlock = formatRequiredLinksBlock(requiredLinks);
 
   console.log(
@@ -157,7 +157,7 @@ async function expandBlogContent({
   );
   console.log(`Required internal links: ${requiredLinks.length}`);
 
-  const systemPrompt = `You are an expert travel content writer for Travl.ae, a UAE-based travel services platform. You write SEO-optimised blog posts targeting UAE residents and expats.
+  const systemPrompt = `${brand.writerIdentity}
 
 ${siteContext}
 
@@ -166,11 +166,11 @@ ${requiredLinksBlock}
 ## Writing Rules
 - British English spelling (traveller, colour, recognise, etc.)
 - Practical, actionable content — readers want real information
-- Naturally weave in links to Travl's own pages (see Internal Linking Priority in the context)
 - Do NOT invent specific statistics, prices (unless they match what's in the site context), or policy names
 - Expanded content must be substantive: ${wordRange} of HTML body content
 - Use proper HTML: <h2>, <h3>, <p>, <ul>/<li>, <strong>, <a href="..."> tags
-- Internal links: use full URL (https://www.travl.ae/... or https://www.dummyticket365.com) in <a href> attributes
+${brand.internalLinkingRule}
+${brand.linkFormatRule}
 - External links: DO NOT add external links — internal only
 - The HTML content must NOT include <html>, <head>, <body>, or <title> tags — just body content starting with an introductory <p>
 - NO em dashes (—) anywhere in the content. Replace with a comma, a colon, or split into a separate sentence.
@@ -179,13 +179,7 @@ ${requiredLinksBlock}
 
 ## CTA Block (REQUIRED OUTPUT FIELD: ctaBlock)
 You must also return a "ctaBlock" field — a self-contained HTML callout that will be appended to the bottom of the article. Rules:
-- Outer element must be <div class="travl-cta">
-- Must contain an <h3> headline and at least one <p> with a clear next-step link
-- Use plain HTML only — no inline styles, no <script>, no <style>
-- Match the article's primary intent:
-  * Visa-application topics → CTA leads with Dummy Ticket 365 (https://www.dummyticket365.com) for the required flight reservation, mentions the hotel reservation service if accommodation is relevant to the topic, and briefly mentions the matching Travl visa assistance page (Schengen / UK / USA / Canada)
-  * Insurance topics → CTA promotes the most relevant Travl travel insurance page
-  * Generic travel topics → CTA promotes Travl travel insurance (https://www.travl.ae/travel-insurance)`;
+${brand.ctaRules}`;
 
   const userPrompt = `Write an EXPANDED version of an existing blog post.
 
@@ -219,7 +213,7 @@ Respond with a single valid JSON object (no markdown code fences, no extra text)
   "excerpt": "2–3 sentence plain-text summary for blog listing, no HTML",
   "quickAnswer": "1–2 sentence plain-text direct answer to the question in the title",
   "content": "Expanded HTML body content, ${wordRange}, with proper headings, paragraphs, and internal links. Must open with an introductory <p>, not an <h2>. Keep every <p> to 2–3 sentences maximum — split any longer paragraphs from the original. Must include every link listed under 'Required Internal Links' in the system prompt AND every <a href> that was in the existing content.",
-  "ctaBlock": "Self-contained HTML callout starting with <div class=\\"travl-cta\\">, matching the CTA Block rules in the system prompt.",
+  "ctaBlock": "Self-contained HTML callout starting with <div class=\\"${brand.ctaClass}\\">, matching the CTA Block rules in the system prompt.",
   "faqs": [
     { "question": "...", "answer": "..." },
     { "question": "...", "answer": "..." },
@@ -290,13 +284,13 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
 
   validateRequiredLinks(parsed, requiredLinks);
 
-  validateContentQuality(parsed, targetLength);
+  validateContentQuality(parsed, targetLength, brand);
 
   console.log("✓ Expanded content generated");
   return parsed;
 }
 
-async function postExpandedDraft({ token, post, content, availableTags }) {
+async function postExpandedDraft({ brand, api, token, post, content, availableTags }) {
   const lowerAvailable = availableTags.map((t) => t.toLowerCase());
   const validatedTags = content.tags.filter((t) => {
     const isValid = lowerAvailable.includes(t.toLowerCase());
@@ -305,7 +299,7 @@ async function postExpandedDraft({ token, post, content, availableTags }) {
     return isValid;
   });
 
-  const coverImageBlob = await buildCoverBlob(post);
+  const coverImageBlob = await buildCoverBlob(brand, post);
 
   const finalContent = `${content.content}\n${content.ctaBlock}`;
   console.log("✓ Appended ctaBlock to expanded article body");
@@ -326,7 +320,7 @@ async function postExpandedDraft({ token, post, content, availableTags }) {
     form.append("tags[]", tag);
   }
 
-  const res = await fetch(`${BACKEND_URL}/api/blogs`, {
+  const res = await fetch(`${api.BACKEND_URL}/api/blogs`, {
     method: "POST",
     headers: { Cookie: `jwt=${token}` },
     body: form,
@@ -362,29 +356,31 @@ async function main() {
 
   const targetLength = opts.length || "long";
 
-  console.log(`\n=== Travl Blog Post Expander ===`);
+  console.log(`\n=== Blog Post Expander ===`);
   console.log(
     `Lookup: ${opts.slug ? `slug="${opts.slug}"` : `title="${opts.title}"`}`,
   );
   console.log(`Target length: ${targetLength}\n`);
 
-  const token = await login();
+  const brand = await loadBrand(opts.brand);
+  const api = createApiClient(brand);
+  const token = await api.login();
 
-  const summary = await findPost(token, { slug: opts.slug, title: opts.title });
-  const post = await ensureFullPost(token, summary);
+  const summary = await findPost(api, token, { slug: opts.slug, title: opts.title });
+  const post = await ensureFullPost(api, token, summary);
   const postId = post._id || post.id;
   console.log(
     `✓ Resolved post — id=${postId}, slug=${post.slug}, title="${post.title}"`,
   );
 
   const draftTitle = `${post.title} (expanded draft)`;
-  const existing = await findExistingDraft(token, draftTitle);
+  const existing = await findExistingDraft(api, token, draftTitle);
   if (existing) {
     const existingId = existing._id || existing.id;
     console.log(`⏭  An expanded draft already exists for this post:`);
     console.log(`     id:    ${existingId}`);
     console.log(`     slug:  ${existing.slug}`);
-    console.log(`     admin: https://www.travl.ae/admin/blogs/${existingId}`);
+    console.log(`     admin: ${brand.adminBlogUrl(existingId)}`);
     console.log(
       `An expanded draft already exists for this post. Delete it via the admin panel first, then re-run.`,
     );
@@ -403,12 +399,13 @@ async function main() {
   }
 
   const [availableTags, siteContext] = await Promise.all([
-    fetchBlogTags(token),
+    api.fetchBlogTags(token),
     Promise.resolve(readFileSync(join(__dirname, "site-context.md"), "utf8")),
   ]);
   console.log(`✓ Fetched ${availableTags.length} available tags`);
 
   const expanded = await expandBlogContent({
+    brand,
     post,
     siteContext,
     availableTags,
@@ -421,6 +418,8 @@ async function main() {
   );
 
   const draft = await postExpandedDraft({
+    brand,
+    api,
     token,
     post,
     content: expanded,
@@ -431,7 +430,7 @@ async function main() {
   console.log(`\n✅ Done! Draft "${draft?.title}" saved.`);
   console.log(`   Original post id: ${postId}`);
   console.log(
-    `   Review the expanded draft at: https://www.travl.ae/admin/blogs/${draftId}`,
+    `   Review the expanded draft at: ${brand.adminBlogUrl(draftId)}`,
   );
 }
 

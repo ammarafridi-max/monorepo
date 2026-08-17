@@ -1,12 +1,14 @@
 {
-  "name": "travl-scripts",
+  "name": "blog-scripts",
   "version": "1.0.0",
   "type": "module",
   "private": true,
   "scripts": {
-    "generate-blog": "node generate-blog-draft.mjs"
+    "generate-blog": "node generate-blog-draft.mjs",
+    "generate-blog:travl": "node generate-blog-draft.mjs --brand travl",
+    "dry-run": "node generate-blog-draft.mjs --dry-run"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.39.0"
+    "@anthropic-ai/sdk": "^0.117.1"
   }
 }

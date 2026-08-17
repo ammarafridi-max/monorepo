@@ -10,7 +10,19 @@ It does **not** sell travel insurance, travel itineraries, dummy/verifiable flig
 
 One distinction to keep straight: a **travel insurance policy** and a **day-by-day itinerary** are documents an applicant supplies as part of a visa file, and they appear in checklists and requirement lists. That is not the same as VisaWadi selling those products.
 
-The one intentional outbound reference is **Dummy Ticket 365** for proof of onward travel. We don't sell it, applicants need it, so `src/config/blogOffers.js` links out to `dummyticket365.com` on onward-travel posts. That is a deliberate exception to the brand-neutrality rule and it belongs in app config, never in `frontend-shared`.
+### Who owns which product (blog content)
+
+Two outbound references are deliberate. Both are exceptions to the brand-neutrality rule, both belong in app config or post content, never in `frontend-shared`:
+
+| Brand | Product | Pricing | Linking |
+|---|---|---|---|
+| **VisaWadi** | visa assistance in the UAE, nothing else | | `/uae/visa/<slug>` |
+| **Travl** | travel insurance, travel itineraries | insurance from AED 30 | insurance may be linked; **the itinerary must never be linked** |
+| **Dummy Ticket 365** | flight reservations, aka flight itineraries, aka dummy tickets | USD 13 / 20 / 23 for 2 / 7 / 14 days validity, **never in dirhams** | `dummyticket365.com` |
+
+`src/config/blogOffers.js` links out to `dummyticket365.com` on onward-travel posts.
+
+The 35 posts migrated from Travl originally violated all of this: they sold Travl's insurance as VisaWadi's, quoted Dummy Ticket 365 in dirhams, and recommended a competitor. `apps/visawadi-backend/scripts/fix-cross-brand-blog-content.mjs` fixed them on 2026-08-16 and encodes the rules above. Do not "correct" Travl links back out as a brand-neutrality breach: they are intentional.
 
 ## Domain
 
@@ -37,7 +49,7 @@ The sidebar nav and brand mark are configured in `src/app/admin/(dashboard)/layo
 - Data fetching goes through `@travel-suite/frontend-shared/services/*` against `NEXT_PUBLIC_BACKEND_URL`. Don't hand-roll fetches to the backend.
 - Admin pages are thin re-exports of shared `pages/admin/*` components. Keep them that way; put real changes in the shared component so every brand benefits.
 - The dashboard uses `AdminVisaDashboardPage` — brand-neutral, reads only the visa and blog domains. Do not switch it to `AdminTravlDashboardPage`, which fetches insurance data and links to routes that do not exist here.
-- Contact details live in `src/config/contact.js` and nowhere else. `ADDRESS`, `GMB_URL` and `SOCIALS` are still null/empty, so the footer address block and social row don't render yet.
+- Contact details live in `src/config/contact.js` and nowhere else. `ADDRESS` and `GMB_URL` are still null, so the footer address block doesn't render yet. `SOCIALS` is populated (Facebook, Instagram, TikTok) and shows in the footer and on `/contact`.
 - Nationalities come from `frontend-shared/data/nationalities.js`, a static list. Do **not** switch back to `useGetNationalities` — that hits the insurance domain, which this backend does not mount, and it silently produces an unsubmittable form.
 - Copy follows the house style (conversational, no em dashes, GEO-structured, natural CTA) and **names only VisaWadi**.
 

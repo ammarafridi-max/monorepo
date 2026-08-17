@@ -1,8 +1,13 @@
 /**
- * Usage:
- *   node generate-blog-draft.mjs
+ * Generates and publishes one blog post for a brand, from that brand's topic
+ * schedule. Everything brand-specific lives in lib/brands/<key>.mjs.
  *
- * Env: ANTHROPIC_API_KEY, TRAVL_ADMIN_EMAIL, TRAVL_ADMIN_PASSWORD
+ * Usage:
+ *   node generate-blog-draft.mjs                    # defaults to travl
+ *   node generate-blog-draft.mjs --brand visawadi
+ *
+ * Env: ANTHROPIC_API_KEY, RECRAFT_API_KEY, and the brand's admin credentials
+ * (TRAVL_ADMIN_EMAIL / TRAVL_ADMIN_PASSWORD, VISAWADI_ADMIN_EMAIL / ...).
  */
 
 import Anthropic from "@anthropic-ai/sdk";
@@ -11,21 +16,41 @@ import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
 import {
-  BACKEND_URL,
   LENGTH_TIERS,
-  apiFetch,
-  login,
-  fetchBlogTags,
-  getRequiredLinks,
+  loadBrand,
+  validateCitations,
+  createApiClient,
   formatRequiredLinksBlock,
   validateRequiredLinks,
   validateContentQuality,
   fetchCoverImage,
 } from "./lib/blog-utils.mjs";
+import { resolveFormat } from "./lib/formats.mjs";
+import { verifyDraft, assertVerification } from "./lib/verify.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+const MODEL = "claude-sonnet-4-6";
+
+/** Publish immediately by default; --status draft stages it for review instead. */
+function parseStatusArg(argv) {
+  const i = argv.indexOf("--status");
+  const v = i !== -1 && argv[i + 1] ? argv[i + 1] : "published";
+  if (!["published", "draft"].includes(v)) {
+    throw new Error(`--status must be "published" or "draft", got "${v}"`);
+  }
+  return v;
+}
+
+const DRY_RUN = process.argv.includes("--dry-run");
+
+function parseBrandArg(argv) {
+  const i = argv.indexOf("--brand");
+  if (i !== -1 && argv[i + 1]) return argv[i + 1];
+  const inline = argv.find((a) => a.startsWith("--brand="));
+  return inline ? inline.split("=")[1] : "travl";
+}
 
 function getTodayUAE() {
   const now = new Date();
@@ -34,72 +59,125 @@ function getTodayUAE() {
   return uaeNow.toISOString().slice(0, 10);
 }
 
-function getTodaysTopic() {
+function parseDateArg(argv) {
+  const i = argv.indexOf("--date");
+  if (i !== -1 && argv[i + 1]) return argv[i + 1];
+  const inline = argv.find((a) => a.startsWith("--date="));
+  return inline ? inline.split("=")[1] : null;
+}
+
+function getTodaysTopic(brand, dateOverride) {
   const topics = JSON.parse(
-    readFileSync(join(__dirname, "topics.json"), "utf8"),
+    readFileSync(join(__dirname, brand.topicsFile), "utf8"),
   );
-  const today = getTodayUAE();
+  const today = dateOverride || getTodayUAE();
   const entry = topics.find((t) => t.date === today);
   if (!entry) {
-    throw new Error(`No topic scheduled for ${today}. Check topics.json.`);
+    throw new Error(`No topic scheduled for ${today}. Check ${brand.topicsFile}.`);
   }
   return entry;
 }
 
-async function fetchPublishedPosts(token) {
-  const data = await apiFetch("/api/blogs?limit=50&page=1", {
-    headers: { Cookie: `jwt=${token}` },
-  });
-  const posts = data?.data?.blogs ?? [];
-  return posts.map((p) => ({ title: p.title, slug: p.slug }));
-}
-
-async function checkTitleExists(token, title) {
-  const data = await apiFetch(`/api/blogs/admin/list?page=1&limit=1000`, {
-    headers: { Cookie: `jwt=${token}` },
-  });
-  const posts = data?.data?.blogs ?? [];
-  const normalise = (s) => s.trim().toLowerCase();
-  return posts.some((p) => normalise(p.title) === normalise(title));
-}
-
 async function generateBlogContent({
+  brand,
   topic,
   siteContext,
   publishedPosts,
   availableTags,
 }) {
-  if (!ANTHROPIC_API_KEY) {
+  if (!ANTHROPIC_API_KEY && !DRY_RUN) {
     throw new Error("ANTHROPIC_API_KEY env var is required.");
   }
 
-  const client = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
+  const client = DRY_RUN ? null : new Anthropic({ apiKey: ANTHROPIC_API_KEY });
 
   const lengthTier = LENGTH_TIERS[topic.length] ? topic.length : "medium";
-  const { wordRange, maxTokens } = LENGTH_TIERS[lengthTier];
   if (!LENGTH_TIERS[topic.length]) {
     console.warn(
       `⚠  Topic "${topic.title}" has no/invalid length (${topic.length}) — defaulting to medium`,
     );
   }
+  const format = resolveFormat(brand, lengthTier);
+  const { wordRange, maxTokens } = format ?? LENGTH_TIERS[lengthTier];
 
-  const requiredLinks = getRequiredLinks(topic);
+  if (format?.requiresFieldData && !brand.fieldData) {
+    throw new Error(
+      `Format "${format.name}" reports first-party data, but brand "${brand.key}" supplies none. ` +
+        `Add fieldData to the brand, or map this tier to a format that does not require it.`,
+    );
+  }
+
+  const requiredLinks = brand.getRequiredLinks(topic);
   const requiredLinksBlock = formatRequiredLinksBlock(requiredLinks);
 
   console.log(
-    `Length tier: ${lengthTier} (${wordRange}, max_tokens=${maxTokens})`,
+    format
+      ? `Format: ${format.name} — ${lengthTier} tier (${wordRange}, max_tokens=${maxTokens})`
+      : `Length tier: ${lengthTier} (${wordRange}, max_tokens=${maxTokens})`,
   );
+
+  const faqCount = format?.faqCount ?? 5;
+
+  const POST_SCHEMA = {
+    type: "object",
+    properties: {
+      metaTitle: { type: "string" },
+      metaDescription: { type: "string" },
+      excerpt: { type: "string" },
+      quickAnswer: { type: "string" },
+      content: { type: "string" },
+      ctaBlock: { type: "string" },
+      faqs: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: { question: { type: "string" }, answer: { type: "string" } },
+          required: ["question", "answer"],
+          additionalProperties: false,
+        },
+      },
+      tags: { type: "array", items: { type: "string" } },
+    },
+    required: [
+      "metaTitle", "metaDescription", "excerpt", "quickAnswer",
+      "content", "ctaBlock", "faqs", "tags",
+    ],
+    additionalProperties: false,
+  };
+  const faqExamples = [
+    '    { "question": "Phrase exactly as a user would type/ask it", "answer": "Self-contained answer, 30–60 words, verdict-first, with a specific detail. No references to other parts of the article." }',
+    ...Array.from({ length: faqCount - 1 }, () => '    { "question": "...", "answer": "..." }'),
+  ].join(",\n");
+
+  const formatBlock = format
+    ? `\n## Article Format: ${format.name}\n\nStructure the article exactly like this:\n\n${format.skeleton}\n`
+    : "";
+
+  const sourcingBlock = format
+    ? `\n## Sourcing Rules (CRITICAL — this is YMYL content)
+
+Every fee, processing time, validity period, document requirement, eligibility rule and named form MUST be attributed to an official source, linked inline at the point the fact is stated.
+
+- You may ONLY cite these domains: ${(brand.citationDomains ?? []).join(", ")}
+- Never cite a blog, a forum, a news site, or an aggregator. A visa claim sourced to a blog is worth nothing.
+- Link the specific page that states the fact, not a site's home page.
+- Minimum ${format.minCitations} official sources in the article.
+- End the article with a "Sources" section: an <h2>Sources</h2> followed by a <ul> listing each source as a link, naming the publisher.
+- If you are not certain of a figure and cannot point to an official page for it, do not state it. Describe it in general terms instead, or leave it out. A missing number is recoverable; a wrong one is not.
+- Do not attach a source link to a claim that source does not make. Every claim you link will be re-checked against the page it cites, and the post is rejected if the page does not support it.
+`
+    : "";
   console.log(`Required internal links: ${requiredLinks.length}`);
 
   const relatedPostsText =
     publishedPosts.length > 0
       ? publishedPosts
           .slice(0, 20)
-          .map((p) => `- ${p.title} → https://www.travl.ae/blog/${p.slug}`)
+          .map((p) => `- ${p.title} → ${brand.blogUrl(p.slug)}`)
           .join("\n")
       : "None yet.";
 
-  const systemPrompt = `You are an expert travel content writer for Travl.ae, a UAE-based travel services platform. You write SEO-optimised blog posts targeting UAE residents and expats.
+  const systemPrompt = `${brand.writerIdentity}
 
 ${siteContext}
 
@@ -107,17 +185,16 @@ ${siteContext}
 ${relatedPostsText}
 
 ${requiredLinksBlock}
-
+${formatBlock}${sourcingBlock}
 ## Writing Rules
 - British English spelling (traveller, colour, recognise, etc.)
 - Practical, actionable content — readers want real information
-- Naturally weave in links to Travl's own pages (see Internal Linking Priority in the context)
+${brand.internalLinkingRule}
 - Do NOT invent specific statistics, prices (unless they match what's in the site context), or policy names
 - Content must be substantive: ${wordRange} of HTML body content
 - Use proper HTML: <h2>, <h3>, <p>, <ul>/<li>, <strong>, <a href="..."> tags
-- Internal links: use full URL (https://www.travl.ae/... or https://www.dummyticket365.com) in <a href> attributes
-- External links: DO NOT add external links — internal only
-- The HTML content must NOT include <html>, <head>, <body>, or <title> tags — just body content starting with an introductory <p>
+${brand.linkFormatRule}
+${format ? "" : "- External links: DO NOT add external links — internal only\n"}- The HTML content must NOT include <html>, <head>, <body>, or <title> tags — just body content starting with an introductory <p>
 - NO em dashes (—) anywhere in the content. Replace with a comma, a colon, or split into a separate sentence.
 - Paragraph length: MAXIMUM 2–3 sentences per <p> tag. If a thought runs longer, break it into two <p> tags. Never write a wall-of-text paragraph.
 - Forbidden words — never use any of these: utilize, delve, leverage, furthermore, navigate, crucial, seamlessly, robust, streamline, unlock, moreover, therefore, additionally, notably, importantly, comprehensive, transformative, pivotal, paramount, multifaceted, nuanced, groundbreaking, cutting-edge, game-changing, in today's world, when it comes to, rest assured, certainly, absolutely, of course, it is worth noting, it is important to note, in conclusion, in summary
@@ -132,20 +209,7 @@ ${requiredLinksBlock}
 
 ## CTA Block (REQUIRED OUTPUT FIELD: ctaBlock)
 You must also return a "ctaBlock" field — a self-contained HTML callout that will be appended to the bottom of the article. Rules:
-- Outer element must be <div class="travl-cta">
-- Must contain an <h3> headline and at least one <p> with a clear next-step link
-- Use plain HTML only — no inline styles, no <script>, no <style>
-- Match the article's primary intent:
-  * Visa-application topics → CTA leads with Dummy Ticket 365 (https://www.dummyticket365.com) for the required flight reservation, mentions the hotel reservation service if accommodation is relevant to the topic, and briefly mentions the matching Travl visa assistance page (Schengen / UK / USA / Canada)
-  * Insurance topics → CTA promotes the most relevant Travl travel insurance page
-  * Generic travel topics → CTA promotes Travl travel insurance (https://www.travl.ae/travel-insurance)
-
-Example shape (write your own copy, do not reuse this wording verbatim):
-
-<div class="travl-cta">
-  <h3>Need a flight reservation for your visa?</h3>
-  <p>Get an embassy-accepted reservation from <a href="https://www.dummyticket365.com">Dummy Ticket 365</a> starting at USD 13, delivered to your inbox in minutes. Dummy Ticket 365 also issues verified hotel reservations if you need proof of accommodation. Travl also offers full <a href="https://www.travl.ae/visa/schengen">Schengen visa assistance</a> for end-to-end support.</p>
-</div>`;
+${brand.ctaRules}`;
 
   const userPrompt = `Write a complete blog post for the following topic:
 
@@ -164,29 +228,44 @@ Respond with a single valid JSON object (no markdown code fences, no extra text)
   "excerpt": "2–3 sentence plain-text summary for blog listing, no HTML",
   "quickAnswer": "Plain-text direct answer to the title question, 40–80 words. MUST lead with a definitive verdict in the first sentence (e.g. 'Yes,', 'No,', 'You need...'). MUST include at least one concrete, verifiable detail (a number, named requirement, or specific term). MUST be fully self-contained. Avoid hedging words like 'most', 'generally', 'typically'. This is the single most-cited block by AI search engines, so make it specific and quotable.",
   "content": "Full HTML body content, ${wordRange}, with proper headings, paragraphs, and internal links. MUST open with a short introductory <p> (2–3 sentences) that directly answers the title question — do NOT start with an <h2>. The first <h2> comes after the opening paragraph. Each <h2> should match a question a user would actually ask. Lead each section with its core claim. Keep every <p> to 2–3 sentences maximum. Must include every link listed under 'Required Internal Links' in the system prompt.",
-  "ctaBlock": "Self-contained HTML callout starting with <div class=\\"travl-cta\\">, matching the CTA Block rules in the system prompt.",
+  "ctaBlock": "Self-contained HTML callout starting with <div class=\\"${brand.ctaClass}\\">, matching the CTA Block rules in the system prompt.",
   "faqs": [
-    { "question": "Phrase exactly as a user would type/ask it", "answer": "Self-contained answer, 30–60 words, verdict-first, with a specific detail. No references to other parts of the article." },
-    { "question": "...", "answer": "..." },
-    { "question": "...", "answer": "..." },
-    { "question": "...", "answer": "..." },
-    { "question": "...", "answer": "..." }
+${faqExamples}
   ],
   "tags": ["tag name 1", "tag name 2", "tag name 3"]
 }
 
-All values must be strings or arrays of strings/objects as shown. The "content" and "ctaBlock" fields must each be a single string of HTML. The "faqs" field must be an array of exactly 5 objects each with "question" and "answer" string fields.`;
+All values must be strings or arrays of strings/objects as shown. The "content" and "ctaBlock" fields must each be a single string of HTML. The "faqs" field must be an array of exactly ${faqCount} objects each with "question" and "answer" string fields.`;
+
+  if (DRY_RUN) {
+    // Prints the exact prompt the model would receive, so a brand pack can be
+    // reviewed without spending a generation or publishing anything.
+    console.log("=== SYSTEM PROMPT ===");
+    console.log(systemPrompt);
+    console.log("=== USER PROMPT ===");
+    console.log(userPrompt);
+    process.exit(0);
+  }
 
   console.log(`Generating content for: ${topic.title}`);
+
+  let feedback = "";
+  let lastValidationError;
+
+  for (let round = 1; round <= 3; round++) {
+    if (feedback) {
+      console.log(`\n↻ Retry ${round - 1}/2 — feeding the failure back to the model`);
+    }
 
   let message;
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       message = await client.messages.create({
-        model: "claude-sonnet-4-6",
+        model: MODEL,
         max_tokens: maxTokens,
         system: systemPrompt,
-        messages: [{ role: "user", content: userPrompt }],
+        output_config: { format: { type: "json_schema", schema: POST_SCHEMA } },
+        messages: [{ role: "user", content: userPrompt + feedback }],
       });
       break;
     } catch (err) {
@@ -229,15 +308,28 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
     if (!parsed[key]) throw new Error(`Claude response missing field: ${key}`);
   }
 
-  validateRequiredLinks(parsed, requiredLinks);
-
-  validateContentQuality(parsed, lengthTier);
+  try {
+    validateRequiredLinks(parsed, requiredLinks);
+    validateContentQuality(parsed, lengthTier, brand, { minWords: format?.minWords });
+    if (format) {
+      parsed.__citations = validateCitations(parsed, brand, {
+        minCitations: format.minCitations,
+      });
+    }
+  } catch (err) {
+    lastValidationError = err;
+    feedback = `\n\n## Your previous attempt was rejected\n\nReason: ${err.message}\n\nWrite the article again, fixing exactly that. Everything else about the brief still applies.`;
+    continue;
+  }
 
   console.log("✓ Blog content generated");
   return parsed;
+  }
+
+  throw lastValidationError;
 }
 
-async function postDraft({ token, topic, content, availableTags }) {
+async function postDraft({ brand, api, token, topic, content, availableTags, status }) {
   const lowerAvailable = availableTags.map((t) => t.toLowerCase());
   const validatedTags = content.tags.filter((t) => {
     const isValid = lowerAvailable.includes(t.toLowerCase());
@@ -246,7 +338,7 @@ async function postDraft({ token, topic, content, availableTags }) {
     return isValid;
   });
 
-  const coverImageBlob = await fetchCoverImage(topic.title);
+  const coverImageBlob = await fetchCoverImage(topic.title, brand);
 
   const finalContent = `${content.content}\n${content.ctaBlock}`;
   console.log("✓ Appended ctaBlock to article body");
@@ -258,7 +350,7 @@ async function postDraft({ token, topic, content, availableTags }) {
   form.append("quickAnswer", content.quickAnswer);
   form.append("metaTitle", content.metaTitle);
   form.append("metaDescription", content.metaDescription);
-  form.append("status", "published");
+  form.append("status", status);
   form.append("faqs", JSON.stringify(content.faqs));
   form.append("coverImage", coverImageBlob, "cover-placeholder.jpg");
 
@@ -266,7 +358,7 @@ async function postDraft({ token, topic, content, availableTags }) {
     form.append("tags[]", tag);
   }
 
-  const res = await fetch(`${BACKEND_URL}/api/blogs`, {
+  const res = await fetch(`${api.BACKEND_URL}/api/blogs`, {
     method: "POST",
     headers: { Cookie: `jwt=${token}` },
     body: form,
@@ -281,46 +373,77 @@ async function postDraft({ token, topic, content, availableTags }) {
 
   const blogId = body?.data?._id || body?.data?.id;
   const slug = body?.data?.slug;
-  console.log(`✓ Published — ID: ${blogId}, slug: ${slug}`);
+  console.log(`✓ Saved as ${status} — ID: ${blogId}, slug: ${slug}`);
   return body.data;
 }
 
 async function main() {
-  console.log(`\n=== Travl Blog Draft Generator ===`);
+  const brand = await loadBrand(parseBrandArg(process.argv.slice(2)));
+  const api = createApiClient(brand);
+
+  console.log(`\n=== ${brand.name} Blog Draft Generator ===`);
   console.log(`Date (UAE): ${getTodayUAE()}\n`);
 
-  const topic = getTodaysTopic();
+  const topic = getTodaysTopic(brand, parseDateArg(process.argv.slice(2)));
   console.log(`Topic: ${topic.title}`);
 
-  const token = await login();
+  // A dry run renders the prompt and exits, so it needs no credentials and
+  // never touches the backend.
+  if (DRY_RUN) {
+    await generateBlogContent({
+      brand,
+      topic,
+      siteContext: readFileSync(join(__dirname, brand.siteContextFile), "utf8"),
+      publishedPosts: [],
+      availableTags: ["Example Tag"],
+    });
+    return;
+  }
 
-  const alreadyExists = await checkTitleExists(token, topic.title);
+  const token = await api.login();
+
+  const alreadyExists = await api.checkTitleExists(token, topic.title);
   if (alreadyExists) {
     console.log(`⏭  Post "${topic.title}" already exists — skipping.`);
     return;
   }
 
   const [publishedPosts, availableTags] = await Promise.all([
-    fetchPublishedPosts(token),
-    fetchBlogTags(token),
+    api.fetchPublishedPosts(token),
+    api.fetchBlogTags(token),
   ]);
   console.log(
     `✓ Fetched ${publishedPosts.length} published posts, ${availableTags.length} tags`,
   );
 
-  const siteContext = readFileSync(join(__dirname, "site-context.md"), "utf8");
+  const siteContext = readFileSync(join(__dirname, brand.siteContextFile), "utf8");
 
   const content = await generateBlogContent({
+    brand,
     topic,
     siteContext,
     publishedPosts,
     availableTags,
   });
 
-  const draft = await postDraft({ token, topic, content, availableTags });
+  // Fact-check before anything is published. A contradicted claim stops the run.
+  if (content.__citations?.length) {
+    console.log("\nFact-checking against the cited official sources...");
+    const verification = await verifyDraft({
+      apiKey: ANTHROPIC_API_KEY,
+      model: MODEL,
+      title: topic.title,
+      content: content.content,
+      citations: content.__citations,
+    });
+    assertVerification(verification);
+  }
+
+  const status = parseStatusArg(process.argv.slice(2));
+  const draft = await postDraft({ brand, api, token, topic, content, availableTags, status });
 
   console.log(`\n✅ Done! Published "${draft?.title}" — now live.`);
-  console.log(`   Live at: https://www.travl.ae/blog/${draft?.slug}`);
+  console.log(`   Live at: ${brand.blogUrl(draft?.slug)}`);
 }
 
 main().catch((err) => {

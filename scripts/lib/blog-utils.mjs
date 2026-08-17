@@ -1,4 +1,10 @@
-export const BACKEND_URL = "https://api.travl.ae";
+/**
+ * Brand-neutral helpers for the blog generators.
+ *
+ * Everything brand-specific — backend URL, admin credential env vars, internal
+ * link rules, CTA wording — lives in ./brands/<key>.mjs. Nothing in this file
+ * may name a brand.
+ */
 
 const RECRAFT_API_KEY = process.env.RECRAFT_API_KEY;
 
@@ -14,13 +20,6 @@ export const MIN_WORD_COUNT = {
   long: 2000,
 };
 
-export const ALLOWED_LINK_PREFIXES = [
-  "https://www.travl.ae",
-  "https://travl.ae",
-  "https://www.dummyticket365.com",
-  "https://dummyticket365.com",
-];
-
 export const BANNED_WORDS = [
   "utilize",
   "utilise",
@@ -35,32 +34,108 @@ export const BANNED_WORDS = [
   "unlock",
 ];
 
-export async function apiFetch(path, options = {}) {
-  const res = await fetch(`${BACKEND_URL}${path}`, {
-    headers: { "Content-Type": "application/json", ...options.headers },
-    ...options,
-  });
-  const body = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    throw new Error(
-      `API ${options.method || "GET"} ${path} → ${res.status}: ${JSON.stringify(body)}`,
-    );
+/** Resolve a brand pack by key. Throws with the valid keys if it doesn't exist. */
+export async function loadBrand(key) {
+  try {
+    const mod = await import(`./brands/${key}.mjs`);
+    return mod.BRAND ?? mod.default;
+  } catch (err) {
+    if (err?.code === "ERR_MODULE_NOT_FOUND") {
+      throw new Error(
+        `Unknown brand "${key}". Add scripts/lib/brands/${key}.mjs to support it.`,
+      );
+    }
+    throw err;
   }
-  return body;
 }
 
-export async function apiFetchRaw(path, options = {}) {
-  const res = await fetch(`${BACKEND_URL}${path}`, {
-    headers: { "Content-Type": "application/json", ...options.headers },
-    ...options,
-  });
-  const body = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    throw new Error(
-      `API ${options.method || "GET"} ${path} → ${res.status}: ${JSON.stringify(body)}`,
-    );
+/**
+ * Everything that talks to a brand's backend. The brand supplies the base URL
+ * and the names of its admin credential env vars, so two brands never share a
+ * login by accident.
+ */
+export function createApiClient(brand) {
+  const BACKEND_URL = brand.backendUrl;
+
+  async function apiFetch(path, options = {}) {
+    const res = await fetch(`${BACKEND_URL}${path}`, {
+      headers: { "Content-Type": "application/json", ...options.headers },
+      ...options,
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(
+        `API ${options.method || "GET"} ${path} → ${res.status}: ${JSON.stringify(body)}`,
+      );
+    }
+    return body;
   }
-  return { res, body };
+
+  async function apiFetchRaw(path, options = {}) {
+    const res = await fetch(`${BACKEND_URL}${path}`, {
+      headers: { "Content-Type": "application/json", ...options.headers },
+      ...options,
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(
+        `API ${options.method || "GET"} ${path} → ${res.status}: ${JSON.stringify(body)}`,
+      );
+    }
+    return { res, body };
+  }
+
+  async function login() {
+    const email = process.env[brand.adminEmailEnv];
+    const password = process.env[brand.adminPasswordEnv];
+    if (!email || !password) {
+      throw new Error(
+        `${brand.adminEmailEnv} and ${brand.adminPasswordEnv} env vars are required.`,
+      );
+    }
+    const { res, body } = await apiFetchRaw("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    });
+    const token =
+      extractJwtCookie(res) || body?.data?.token || body?.token || null;
+    if (!token) {
+      throw new Error(
+        `Login succeeded but no token returned: ${JSON.stringify(body)}`,
+      );
+    }
+    console.log("✓ Logged in");
+    return token;
+  }
+
+  async function fetchBlogTags(token) {
+    const data = await apiFetch("/api/blog-tags", {
+      headers: { Cookie: `jwt=${token}` },
+    });
+    const tags = data?.data ?? [];
+    return tags.map((t) => t.name);
+  }
+
+  /** Published posts, for the internal-linking section of the prompt. */
+  async function fetchPublishedPosts(token) {
+    const data = await apiFetch("/api/blogs?limit=50&page=1", {
+      headers: { Cookie: `jwt=${token}` },
+    });
+    const posts = data?.data?.blogs ?? [];
+    return posts.map((p) => ({ title: p.title, slug: p.slug }));
+  }
+
+  /** Draft and scheduled posts count too, so a re-run never double-publishes. */
+  async function checkTitleExists(token, title) {
+    const data = await apiFetch("/api/blogs/admin/list?page=1&limit=1000", {
+      headers: { Cookie: `jwt=${token}` },
+    });
+    const posts = data?.data?.blogs ?? [];
+    const normalise = (s) => s.trim().toLowerCase();
+    return posts.some((p) => normalise(p.title) === normalise(title));
+  }
+
+  return { BACKEND_URL, apiFetch, apiFetchRaw, login, fetchBlogTags, fetchPublishedPosts, checkTitleExists };
 }
 
 export function extractJwtCookie(res) {
@@ -76,193 +151,6 @@ export function extractJwtCookie(res) {
     if (match && match[1] && match[1] !== "loggedout") return match[1];
   }
   return null;
-}
-
-export async function login() {
-  const ADMIN_EMAIL = process.env.TRAVL_ADMIN_EMAIL;
-  const ADMIN_PASSWORD = process.env.TRAVL_ADMIN_PASSWORD;
-  if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
-    throw new Error(
-      "TRAVL_ADMIN_EMAIL and TRAVL_ADMIN_PASSWORD env vars are required.",
-    );
-  }
-  const { res, body } = await apiFetchRaw("/api/auth/login", {
-    method: "POST",
-    body: JSON.stringify({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD }),
-  });
-  const token =
-    extractJwtCookie(res) || body?.data?.token || body?.token || null;
-  if (!token) {
-    throw new Error(
-      `Login succeeded but no token returned: ${JSON.stringify(body)}`,
-    );
-  }
-  console.log("✓ Logged in");
-  return token;
-}
-
-export async function fetchBlogTags(token) {
-  const data = await apiFetch("/api/blog-tags", {
-    headers: { Cookie: `jwt=${token}` },
-  });
-  const tags = data?.data ?? [];
-  return tags.map((t) => t.name);
-}
-
-export function getRequiredLinks(topic) {
-  const title = topic.title;
-  const lower = title.toLowerCase();
-  const links = [];
-
-  const has = (sub) => lower.includes(sub.toLowerCase());
-  const hasWord = (w) => new RegExp(`\\b${w}\\b`, "i").test(title);
-
-  const dummyKeywords = [
-    "visa",
-    "schengen",
-    "embassy",
-    "vfs",
-    "bls",
-    "onward travel",
-    "dummy ticket",
-    "flight reservation",
-    "pnr",
-  ];
-  if (dummyKeywords.some(has)) {
-    links.push({
-      url: "https://www.dummyticket365.com",
-      anchor_hint:
-        "varied: e.g. 'Dummy Ticket 365', 'verified flight reservation from Dummy Ticket 365', 'a dummy ticket from Dummy Ticket 365'. Never use 'dummyticket365.com' as anchor text — always 'Dummy Ticket 365'.",
-      context:
-        "Mention that visa applicants typically need proof of onward travel / a flight reservation, and link to Dummy Ticket 365 as a legitimate dummy ticket service starting from USD 13 with valid PNR codes. Where the article topic also involves accommodation (Schengen visa, proof of accommodation, hotel bookings), also mention that Dummy Ticket 365 issues verified hotel reservations by email accepted by embassies as proof of accommodation.",
-      required: true,
-    });
-  }
-
-  const schengenCountries = [
-    "Schengen",
-    "France",
-    "Germany",
-    "Italy",
-    "Spain",
-    "Netherlands",
-    "Greece",
-    "Switzerland",
-  ];
-  if (schengenCountries.some(has)) {
-    links.push({
-      url: "https://www.travl.ae/visa/schengen",
-      anchor_hint:
-        "varied: e.g. 'Schengen visa assistance', 'Travl's Schengen visa service', 'help with your Schengen application'",
-      context:
-        "Mention that Travl offers visa assistance for this destination — handling documentation, appointment booking, and application review for UAE residents. Link naturally where it adds value.",
-      required: true,
-    });
-  }
-
-  if (hasWord("UK") || has("United Kingdom") || has("Britain")) {
-    links.push({
-      url: "https://www.travl.ae/visa/united-kingdom",
-      anchor_hint:
-        "varied: e.g. 'UK visa assistance', 'Travl's UK visa service', 'help with your UK Standard Visitor Visa'",
-      context:
-        "Mention that Travl offers UK visa assistance — handling documentation, appointment booking, and application review for UAE residents. Link naturally where it adds value.",
-      required: true,
-    });
-  }
-
-  if (hasWord("USA") || has("United States") || has("B1/B2")) {
-    links.push({
-      url: "https://www.travl.ae/visa/usa",
-      anchor_hint:
-        "varied: e.g. 'USA visa assistance', 'Travl's US visa service', 'help with your B1/B2 application'",
-      context:
-        "Mention that Travl offers USA visa assistance — handling documentation, DS-160 form review, and Dubai embassy appointment booking for UAE residents. Link naturally where it adds value.",
-      required: true,
-    });
-  }
-
-  if (has("Canada")) {
-    links.push({
-      url: "https://www.travl.ae/visa/canada",
-      anchor_hint:
-        "varied: e.g. 'Canada visa assistance', 'Travl's Canada visa service', 'help with your Canadian visitor visa'",
-      context:
-        "Mention that Travl offers Canada visa assistance — handling documentation, biometrics scheduling, and application review for UAE residents. Link naturally where it adds value.",
-      required: true,
-    });
-  }
-
-  const mentionsSchengen = has("Schengen");
-  const mentionsAnnual = has("annual") || has("multi-trip") || has("multi trip");
-  const mentionsMedical =
-    has("medical") && (has("insurance") || has("cover") || has("evacuation"));
-  const mentionsInternational = has("international") && has("insurance");
-  const mentionsSingleTrip = has("single trip") || has("single-trip");
-  const mentionsInsuranceTopic =
-    has("insurance") ||
-    has("coverage") ||
-    has("policy") ||
-    has("claim") ||
-    has("cover");
-
-  if (mentionsSchengen && mentionsInsuranceTopic) {
-    links.push({
-      url: "https://www.travl.ae/travel-insurance/schengen-visa",
-      anchor_hint:
-        "varied: e.g. 'Schengen-compliant travel insurance', 'embassy-accepted Schengen insurance from AED 30', 'Travl's Schengen insurance plan'",
-      context:
-        "Link to Travl's Schengen-compliant travel insurance (EUR 30,000 medical cover, accepted by VFS Global and BLS International, issued by AXA, from AED 30).",
-      required: true,
-    });
-  } else if (mentionsAnnual) {
-    links.push({
-      url: "https://www.travl.ae/travel-insurance/annual-multi-trip",
-      anchor_hint:
-        "varied: e.g. 'annual multi-trip insurance', 'yearly travel cover from AED 245', 'Travl's annual plan'",
-      context:
-        "Link to Travl's annual multi-trip travel insurance (12-month policy, unlimited trips, from AED 245, ideal for frequent travellers).",
-      required: true,
-    });
-  } else if (mentionsMedical) {
-    links.push({
-      url: "https://www.travl.ae/travel-insurance/medical",
-      anchor_hint:
-        "varied: e.g. 'travel medical insurance', 'medical cover abroad', 'Travl's medical travel plan'",
-      context:
-        "Link to Travl's travel medical insurance — emergency medical, hospitalisation, repatriation, and COVID-19 cover.",
-      required: true,
-    });
-  } else if (mentionsInternational) {
-    links.push({
-      url: "https://www.travl.ae/travel-insurance/international",
-      anchor_hint:
-        "varied: e.g. 'international travel insurance', 'worldwide cover from AED 70', 'Travl's international plan'",
-      context:
-        "Link to Travl's international travel insurance (worldwide coverage with EUR 80,000+ medical, trip cancellation, baggage and flight-delay cover, from AED 70).",
-      required: true,
-    });
-  } else if (mentionsSingleTrip) {
-    links.push({
-      url: "https://www.travl.ae/travel-insurance/single-trip",
-      anchor_hint:
-        "varied: e.g. 'single-trip travel insurance', 'one-trip cover for your journey'",
-      context:
-        "Link to Travl's single-trip travel insurance — coverage for one journey between specific travel dates, Schengen-compliant, issued by AXA.",
-      required: true,
-    });
-  } else if (mentionsInsuranceTopic) {
-    links.push({
-      url: "https://www.travl.ae/travel-insurance",
-      anchor_hint:
-        "varied: e.g. 'Travl travel insurance', 'AXA-issued travel cover', 'travel insurance plans for UAE residents'",
-      context:
-        "Link to the Travl travel insurance hub — overview of all plans, booking form, and comparison.",
-      required: true,
-    });
-  }
-
-  return links;
 }
 
 export function formatRequiredLinksBlock(links) {
@@ -289,8 +177,7 @@ If you cannot work a link in naturally, write an extra sentence that creates the
 export function validateRequiredLinks(parsed, requiredLinks) {
   const missing = requiredLinks.filter(
     (link) =>
-      !parsed.content.includes(link.url) &&
-      !parsed.ctaBlock.includes(link.url),
+      !parsed.content.includes(link.url) && !parsed.ctaBlock.includes(link.url),
   );
   if (missing.length > 0) {
     console.error(
@@ -301,6 +188,44 @@ export function validateRequiredLinks(parsed, requiredLinks) {
       `Claude omitted ${missing.length} required link(s): ${missing.map((l) => l.url).join(", ")}`,
     );
   }
+}
+
+/** True when a URL points at one of the brand's approved official sources. */
+export function isCitationUrl(url, brand) {
+  let host;
+  try {
+    host = new URL(url).hostname.toLowerCase();
+  } catch {
+    return false;
+  }
+  return (brand.citationDomains ?? []).some(
+    (d) => host === d.toLowerCase() || host.endsWith(`.${d.toLowerCase()}`),
+  );
+}
+
+/** Every official-source link in the post, deduplicated, in document order. */
+export function extractCitations(html, brand) {
+  const urls = [...(html || "").matchAll(/href\s*=\s*["']([^"']+)["']/gi)].map((m) => m[1]);
+  return [...new Set(urls.filter((u) => isCitationUrl(u, brand)))];
+}
+
+/**
+ * A YMYL post with no attributed sources is the failure mode we are trying to
+ * prevent, so too few citations is a hard failure rather than a warning.
+ */
+export function validateCitations(parsed, brand, { minCitations }) {
+  const citations = extractCitations(parsed.content, brand);
+  if (citations.length < minCitations) {
+    throw new Error(
+      `Only ${citations.length} official source(s) cited, minimum is ${minCitations}. ` +
+        `Approved domains: ${(brand.citationDomains ?? []).slice(0, 6).join(", ")}…`,
+    );
+  }
+  if (!/id=["']sources["']|>\s*Sources\s*</i.test(parsed.content)) {
+    throw new Error('Post is missing its "Sources" section.');
+  }
+  console.log(`✓ ${citations.length} official sources cited`);
+  return citations;
 }
 
 export function stripHtmlToText(html) {
@@ -315,18 +240,23 @@ export function countWords(html) {
   return text ? text.split(/\s+/).length : 0;
 }
 
-export function validateContentQuality(parsed, lengthTier) {
+/**
+ * `minWords` overrides the tier default. A brand using formats sets its own
+ * floor from the format, which may not match the tier it is mapped from — a
+ * Sourced Guide on a `long` topic targets 1400–2500, not the tier's 2000.
+ */
+export function validateContentQuality(parsed, lengthTier, brand, { minWords: floor } = {}) {
   const content = parsed.content;
   const text = stripHtmlToText(content);
 
   const wordCount = text ? text.split(/\s+/).length : 0;
-  const minWords = MIN_WORD_COUNT[lengthTier];
+  const minWords = floor ?? MIN_WORD_COUNT[lengthTier];
   if (wordCount < minWords) {
     console.error(
-      `❌ Content under minimum length: ${wordCount} words (${lengthTier} tier requires ≥ ${minWords})`,
+      `❌ Content under minimum length: ${wordCount} words (requires ≥ ${minWords})`,
     );
     throw new Error(
-      `Content too short: ${wordCount} words, ${lengthTier} tier requires ≥ ${minWords}`,
+      `Content too short: ${wordCount} words, requires ≥ ${minWords}`,
     );
   }
 
@@ -337,7 +267,8 @@ export function validateContentQuality(parsed, lengthTier) {
     const url = m[1];
     const allowed =
       url.startsWith("/") ||
-      ALLOWED_LINK_PREFIXES.some((prefix) => url.startsWith(prefix));
+      brand.allowedLinkPrefixes.some((prefix) => url.startsWith(prefix)) ||
+      isCitationUrl(url, brand);
     if (!allowed) externalLinks.push(url);
   }
   if (externalLinks.length > 0) {
@@ -348,6 +279,33 @@ export function validateContentQuality(parsed, lengthTier) {
     throw new Error(
       `Content contains ${externalLinks.length} forbidden external link(s): ${externalLinks.join(", ")}`,
     );
+  }
+
+  // Brands can forbid specific link targets outright (a partner product we may
+  // name but not link, a legacy path that only redirects).
+  for (const rule of brand.forbiddenLinkPatterns ?? []) {
+    const offenders = (content.match(/href\s*=\s*["']([^"']+)["']/gi) || []).filter((h) =>
+      rule.pattern.test(h),
+    );
+    if (offenders.length) {
+      console.error(`❌ Forbidden link (${offenders.length}): ${rule.message}`);
+      for (const o of offenders) console.error(`   - ${o}`);
+      throw new Error(`Forbidden link in content: ${rule.message}`);
+    }
+  }
+
+  // Brands can forbid specific claims in the prose — a partner's product
+  // attributed to the wrong brand, or priced in the wrong currency.
+  const faqText = stripHtmlToText(
+    (parsed.faqs ?? []).map((f) => `${f.question} ${f.answer}`).join(" "),
+  );
+  for (const check of brand.contentChecks ?? []) {
+    const hit = `${text} ${faqText}`.match(check.pattern);
+    if (hit) {
+      console.error(`❌ ${check.message}`);
+      console.error(`   offending text: "${hit[0].slice(0, 120)}"`);
+      throw new Error(check.message);
+    }
   }
 
   const emDashCount = (content.match(/—/g) || []).length;
@@ -393,10 +351,10 @@ function buildImagePrompt(title) {
   return `Professional travel photography, ${subject}, editorial style, soft natural light, wide shot, no text, no words, no letters, no watermarks, no labels`;
 }
 
-export async function fetchCoverImage(topicTitle) {
+export async function fetchCoverImage(topicTitle, brand) {
   if (!RECRAFT_API_KEY) {
     console.warn("⚠  RECRAFT_API_KEY not set — using picsum placeholder");
-    return fetchPlaceholderCoverImage();
+    return fetchPlaceholderCoverImage(brand);
   }
 
   const prompt = buildImagePrompt(topicTitle);
@@ -436,12 +394,12 @@ export async function fetchCoverImage(topicTitle) {
     return blob;
   } catch (err) {
     console.warn(`⚠  Recraft generation failed (${err.message}) — falling back to picsum`);
-    return fetchPlaceholderCoverImage();
+    return fetchPlaceholderCoverImage(brand);
   }
 }
 
-export async function fetchPlaceholderCoverImage() {
-  const seed = `travl-${Date.now()}`;
+export async function fetchPlaceholderCoverImage(brand) {
+  const seed = `${brand?.key ?? "blog"}-${Date.now()}`;
   const url = `https://picsum.photos/seed/${seed}/1200/630.jpg`;
   const res = await fetch(url);
   if (!res.ok) {

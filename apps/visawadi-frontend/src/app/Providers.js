@@ -6,7 +6,6 @@ import { Toaster } from "react-hot-toast";
 import { usePathname } from "next/navigation";
 import { Globe } from "lucide-react";
 import { UserAuthContext } from "@travel-suite/frontend-shared/contexts/AuthContextBase";
-import { CurrencyProvider } from "@travel-suite/frontend-shared/contexts/CurrencyContext";
 import AppMegaLayout from "@travel-suite/frontend-shared/layouts/AppMegaLayout";
 import { UserAuthProvider } from "@travel-suite/frontend-shared/contexts/UserAuthProvider";
 import Footer from "@travel-suite/frontend-shared/components/sections/v2/Footer";
@@ -77,7 +76,7 @@ const defaultPages = [
       layout: "tabs",
       columns: [
         {
-          heading: "By Country",
+          heading: "For UAE Residents",
           items: [
             {
               Icon: Globe,
@@ -191,24 +190,30 @@ export default function Providers({ children }) {
       <Toaster />
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <CurrencyProvider>
-            <AppMegaLayout
-              pages={defaultPages}
-              logoSrc="/logo-dark.png"
-              logoWidth={1000}
-              logoHeight={176}
-              logoAlt={BRAND}
-              footer={visawadiFooter}
-            >
-              <main>{children}</main>
-            </AppMegaLayout>
-            {WHATSAPP_NUMBER && (
-              <StickyWhatsApp
-                phoneNumber={WHATSAPP_NUMBER}
-                hidePathPrefixes={["/apply"]}
-              />
-            )}
-          </CurrencyProvider>
+          <AppMegaLayout
+            pages={defaultPages}
+            logoSrc="/logo-dark.png"
+            logoWidth={1000}
+            logoHeight={176}
+            logoAlt={BRAND}
+            footer={visawadiFooter}
+            // We never quote a converted price, so the currency switcher has no
+            // job here and the currencies fetch it triggers is dead weight.
+            showCurrency={false}
+            // Sign Up / Log In are hidden for now. Customers reach their
+            // application through the emailed link, not a public account area.
+            // Restore by pointing these at "/apply/signup" and "/apply/login".
+            loginHref={null}
+            signupHref={null}
+          >
+            <main>{children}</main>
+          </AppMegaLayout>
+          {WHATSAPP_NUMBER && (
+            <StickyWhatsApp
+              phoneNumber={WHATSAPP_NUMBER}
+              hidePathPrefixes={["/apply"]}
+            />
+          )}
         </AuthProvider>
       </QueryClientProvider>
     </>
