@@ -285,8 +285,6 @@ export function createInsuranceService({
       };
     }
 
-    await wis.sendWISEmail(application.policyId);
-
     const updated = await InsuranceApplication.findOneAndUpdate(
       { sessionId },
       {
@@ -306,6 +304,16 @@ export function createInsuranceService({
       },
       { new: true },
     );
+
+    try {
+      await wis.sendWISEmail(application.policyId);
+    } catch (err) {
+      logger.warn("WIS policy email failed after issuance", {
+        sessionId,
+        policyId: application.policyId,
+        error: err,
+      });
+    }
 
     await notifications.insurancePaymentCompletionEmail({
       leadTraveler: updated?.leadPassenger,
