@@ -238,7 +238,7 @@ function TodayDeliveriesContent() {
                       </td>
 
                       <td className="px-4 py-3 text-sm text-gray-400 whitespace-nowrap">
-                        {convertToDubaiDate(item?.updatedAt)}
+                        {convertToDubaiDate(item?.paidAt || item?.createdAt)}
                       </td>
 
                       <td className="px-4 py-3 w-20">

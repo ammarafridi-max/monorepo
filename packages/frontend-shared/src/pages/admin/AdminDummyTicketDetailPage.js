@@ -634,6 +634,9 @@ export default function AdminDummyTicketDetailPage() {
           <Card title="Record" icon={Hash}>
             <InfoRow label="Handled By"  value={ticket?.handledBy?.name} />
             <InfoRow label="Submitted"   value={`${convertToDubaiDate(ticket?.createdAt)} ${convertToDubaiTime(ticket?.createdAt)}`} />
+            {ticket?.paidAt && (
+              <InfoRow label="Paid"        value={`${convertToDubaiDate(ticket.paidAt)} ${convertToDubaiTime(ticket.paidAt)}`} />
+            )}
             <InfoRow label="Updated"     value={`${convertToDubaiDate(ticket?.updatedAt)} ${convertToDubaiTime(ticket?.updatedAt)}`} />
             <InfoRow label="Session"     value={ticket?.sessionId} mono />
           </Card>

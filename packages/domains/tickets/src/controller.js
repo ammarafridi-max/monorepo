@@ -3,8 +3,8 @@ export function createTicketController({ service, paidOrderBus }) {
     try {
       const isAgent = req.user?.role === 'agent';
       const hasSearch = typeof req.query.search === 'string' && req.query.search.trim().length > 0;
-      const agentNeedsCreatedAtOverride = isAgent && !req.query.deliveryDate && !hasSearch;
-      const query = agentNeedsCreatedAtOverride ? { ...req.query, createdAt: '4_hours' } : req.query;
+      const agentNeedsRecencyOverride = isAgent && !req.query.deliveryDate && !hasSearch;
+      const query = agentNeedsRecencyOverride ? { ...req.query, createdAt: '4_hours' } : req.query;
       let result = await service.getAllTickets(query);
 
       if (isAgent) {
@@ -70,7 +70,7 @@ export function createTicketController({ service, paidOrderBus }) {
       res.json({
         status: 'success',
         data: ticket
-          ? { sessionId: ticket.sessionId, paidAt: ticket.paidAt || ticket.updatedAt }
+          ? { sessionId: ticket.sessionId, paidAt: ticket.paidAt }
           : null,
       });
     } catch (err) {

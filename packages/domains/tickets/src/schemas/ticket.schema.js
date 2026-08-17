@@ -39,6 +39,8 @@ const TicketSchema = new mongoose.Schema(
     },
     message: { type: String },
     paymentStatus: { type: String, enum: ['UNPAID', 'PAID', 'REFUNDED'], default: 'UNPAID' },
+    // Claimed once at the payment transition, never rewritten: a resent webhook must not move a ticket up the admin list.
+    paidAt: { type: Date, default: null },
     ticketValidity: { type: String, enum: ['2 Days', '7 Days', '14 Days'], default: '2 Days' },
     ticketDelivery: { immediate: { type: Boolean }, deliveryDate: { type: String } },
     adminDeliveryEmailSent: { type: Boolean, default: false },
@@ -74,6 +76,7 @@ TicketSchema.index({ createdAt: -1 });
 TicketSchema.index({ email: 1 });
 TicketSchema.index({ orderStatus: 1 });
 TicketSchema.index({ paymentStatus: 1 });
+TicketSchema.index({ paymentStatus: 1, paidAt: -1 });
 TicketSchema.index({ affiliateId: 1 });
 TicketSchema.index({ affiliate: 1 });
 TicketSchema.index({ affiliateCapturedAt: 1 });

@@ -37,11 +37,15 @@ function buildSearchFilter(search) {
   };
 }
 
-function applyCreatedAtFilter(queryObj, createdAt) {
-  if (!createdAt) return;
-  const hours = { '4_hours': 4, '6_hours': 6, '12_hours': 12, '24_hours': 24, '7_days': 168, '14_days': 336, '30_days': 720, '90_days': 2160 };
-  if (!hours[createdAt]) return;
-  queryObj.createdAt = { $gte: new Date(Date.now() - hours[createdAt] * 3_600_000) };
+const RECENCY_HOURS = { '4_hours': 4, '6_hours': 6, '12_hours': 12, '24_hours': 24, '7_days': 168, '14_days': 336, '30_days': 720, '90_days': 2160 };
+
+function buildRecencyFilter(window, paidOnly) {
+  const hours = RECENCY_HOURS[window];
+  if (!hours) return null;
+  const since = new Date(Date.now() - hours * 3_600_000);
+  if (paidOnly) return { paidAt: { $gte: since } };
+  // A ticket created at 1pm and paid at 6pm is recent either way, so a mixed list must not hide it.
+  return { $or: [{ createdAt: { $gte: since } }, { paidAt: { $gte: since } }] };
 }
 
 function getDubaiDateString() {
@@ -72,9 +76,16 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     const queryObj = { ...query };
     ['page', 'limit', 'search', 'createdAt', 'deliveryDate'].forEach((f) => delete queryObj[f]);
     Object.keys(queryObj).forEach((k) => queryObj[k] === 'all' && delete queryObj[k]);
-    applyCreatedAtFilter(queryObj, query.createdAt);
     applyDeliveryDateFilter(queryObj, query.deliveryDate);
-    const finalQuery = { ...queryObj, ...buildSearchFilter(query.search) };
+    // On a paid-only list, "recent" means recently paid, not recently created: someone can start an order at 1pm and pay at 6pm.
+    const paidOnly = queryObj.paymentStatus === 'PAID';
+    const recency = buildRecencyFilter(query.createdAt, paidOnly);
+    // $and, because both the recency and search filters can carry their own $or.
+    const finalQuery = {
+      ...queryObj,
+      ...buildSearchFilter(query.search),
+      ...(recency ? { $and: [recency] } : {}),
+    };
 
     let page = Math.max(1, parseInt(query.page, 10) || 1);
     const limit = Math.max(1, parseInt(query.limit, 10) || 100);
@@ -83,7 +94,7 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     if (page > totalPages) page = totalPages;
 
     const data = await Ticket.find(finalQuery)
-      .sort({ createdAt: -1 })
+      .sort(paidOnly ? { paidAt: -1 } : { createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
       .populate('handledBy');
@@ -97,9 +108,9 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       .populate('affiliate', 'name email affiliateId commissionPercent isActive');
 
   const getLatestPaidTicket = () =>
-    Ticket.findOne({ paymentStatus: 'PAID' })
-      .sort({ updatedAt: -1 })
-      .select('sessionId updatedAt')
+    Ticket.findOne({ paymentStatus: 'PAID', paidAt: { $ne: null } })
+      .sort({ paidAt: -1 })
+      .select('sessionId paidAt')
       .lean();
 
   const sendReservation = async ({ sessionId, agentId, subject, body, bodyHtml, file }) => {
@@ -316,6 +327,9 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       }
     }
 
+    // Only matches while paidAt is unset, so a resent webhook or a duplicate capture cannot rewrite it.
+    await Ticket.updateOne({ sessionId, paidAt: null }, { $set: { paidAt: new Date() } });
+
     const ticket = await Ticket.findOneAndUpdate(
       { sessionId },
       {
@@ -330,7 +344,7 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       { new: true },
     );
 
-    paidOrderBus?.publish({ sessionId: ticket.sessionId, paidAt: ticket.updatedAt });
+    paidOrderBus?.publish({ sessionId: ticket.sessionId, paidAt: ticket.paidAt });
 
     await notifications.sendTicketPaymentToAdmin({
       createdAt: ticket.createdAt,
@@ -454,6 +468,9 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       }
     }
 
+    // Only matches while paidAt is unset, so a resent webhook or a duplicate capture cannot rewrite it.
+    await Ticket.updateOne({ sessionId, paidAt: null }, { $set: { paidAt: new Date() } });
+
     const ticket = await Ticket.findOneAndUpdate(
       { sessionId },
       {
@@ -469,7 +486,7 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       { new: true },
     );
 
-    paidOrderBus?.publish({ sessionId: ticket.sessionId, paidAt: ticket.updatedAt });
+    paidOrderBus?.publish({ sessionId: ticket.sessionId, paidAt: ticket.paidAt });
 
     await notifications.sendTicketPaymentToAdmin({
       createdAt: ticket.createdAt,
