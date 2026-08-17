@@ -58,10 +58,4 @@ export default {
   enableReminderCron: ['1', 'true', 'yes'].includes(String(process.env.ENABLE_REMINDER_CRON ?? '').toLowerCase()),
 
   anthropicApiKey: process.env.ANTHROPIC_API_KEY,
-  gmail: {
-    clientId: process.env.GMAIL_CLIENT_ID,
-    clientSecret: process.env.GMAIL_CLIENT_SECRET,
-    refreshToken: process.env.GMAIL_REFRESH_TOKEN,
-    user: process.env.GMAIL_USER,
-  },
 };

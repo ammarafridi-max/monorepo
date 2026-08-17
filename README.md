@@ -31,7 +31,7 @@ Everything is ESM (`"type": "module"`), Node 22, React 19, Tailwind v4.
 ├── packages/
 │   ├── domains/          # one self-contained package per business domain
 │   │   ├── auth, admin-users, users
-│   │   ├── blog, currencies, payments, tickets, email-support
+│   │   ├── blog, currencies, payments, tickets
 │   │   ├── insurance, itineraries                      (travl)
 │   │   ├── visa, visa-leads, visa-applications,
 │   │   │   visa-requirements                           (visawadi)

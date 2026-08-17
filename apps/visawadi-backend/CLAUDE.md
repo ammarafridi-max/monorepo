@@ -16,7 +16,7 @@ The composition root wires these domains — the set is brand-specific, so don't
 
 `auth`, `admin-users`, `blog` (+ blog-tags), `visa`, `visa-leads`, `visa-applications`, `currencies`, `payments`, `users`.
 
-Deliberately **not** mounted, and their packages are not dependencies: `insurance` (which also owns the `Nationality` model), `itineraries`, `email-support`, `flights`/`airports`/`locations` (and the `airlabs` + `serpapi` clients that fed them), `tickets`, `bookings`, `affiliates`.
+Deliberately **not** mounted, and their packages are not dependencies: `insurance` (which also owns the `Nationality` model), `itineraries`, `flights`/`airports`/`locations` (and the `airlabs` + `serpapi` clients that fed them), `tickets`, `bookings`, `affiliates`.
 
 The airline logos still bundled at `src/public/airlines/` and served from `/airlines` belong to the removed flights domain. They are harmless but unused; delete them if they are still there when you next touch this app.
 

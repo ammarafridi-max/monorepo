@@ -17,7 +17,7 @@ pnpm + Turborepo monorepo (`package.json` name `travel-suite`). ESM, Node 22, pn
 | App | Purpose | File |
 |---|---|---|
 | `apps/travl-frontend` | Travl storefront: visas, travel itinerary, travel insurance, blog, admin | `apps/travl-frontend/package.json` |
-| `apps/travl-backend` | Travl API (largest surface: insurance, itineraries, visas, visa-leads, blog, payments, email-support, users) | `apps/travl-backend/src/routes/index.js` |
+| `apps/travl-backend` | Travl API (largest surface: insurance, itineraries, visas, visa-leads, blog, payments, users) | `apps/travl-backend/src/routes/index.js` |
 | `apps/dt365-{frontend,backend}` | DummyTicket365: dummy flight tickets | `apps/dt365-backend/src/routes/index.js` |
 | `apps/mdt-{frontend,backend}` | MyDummyTicket: dummy tickets + insurance | `apps/mdt-backend/src/routes/index.js` |
 | `apps/airportrides-{frontend,backend}` | Airport transfers/bookings | `apps/airportrides-backend/src/routes/index.js` |
@@ -31,7 +31,7 @@ Backends run `node --env-file=.env.<env> src/server.js` (`apps/*/package.json`).
 - **`packages/shared/config`** (`@travel-suite/config`) — per-brand config registry, `getBrand(key)` validated at load (`packages/shared/config/src/index.js`, `src/schema.js`, `src/brands/*.js`). Note: `src/brands/airportrides.js` exists but is **not registered** in `src/index.js` (`getBrand('airportrides')` would throw) — flagged.
 - **`packages/shared/utils`** (`@travel-suite/utils`) — dates, currency, errors (`AppError`, `catchAsync`), logger, iata, itinerary helpers (`packages/shared/utils/src/index.js`).
 - **`packages/shared/notifications`** (`@travel-suite/notifications`) — Brevo email templates + `createNotificationsService` (`packages/shared/notifications/src/index.js`, `src/templates/*`).
-- **`packages/domains/*`** — self-contained factories (`schema→service→controller→router`, stitched by `index.js`). Present: `admin-users, affiliates, auth, availability-rules, blog, bookings, currencies, email-support, flights, insurance, itineraries, limo-bookings, locations, payments, pricing-rules, tickets, users, vehicles, visa, visa-leads, zones` (dir listing under `packages/domains/`). Peer-deps `express`/`mongoose`.
+- **`packages/domains/*`** — self-contained factories (`schema→service→controller→router`, stitched by `index.js`). Present: `admin-users, affiliates, auth, availability-rules, blog, bookings, currencies, flights, insurance, itineraries, limo-bookings, locations, payments, pricing-rules, tickets, users, vehicles, visa, visa-leads, zones` (dir listing under `packages/domains/`). Peer-deps `express`/`mongoose`.
 - **`packages/integrations/*`** — thin API clients: `airlabs, brevo, cloudinary, paypal, serpapi, transferz, wis` (dir listing under `packages/integrations/`).
 - **`packages/frontend-shared`** (`@travel-suite/frontend-shared`) — the shared React layer consumed by all frontends (see §14).
 
@@ -131,16 +131,15 @@ All `/admin/**` are ADMIN (client guard `AdminShell` + backend `restrictTo`). Tr
 | GET | `/api/itineraries/:sessionId`, `/preview`, `/chat`, `/document` | public | `itineraries/src/router.js:28-43` |
 | GET/DELETE | `/api/itineraries/:sessionId/detail`, `DELETE /:sessionId` | `restrictTo('admin','agent')` / `('admin')` | `itineraries/src/router.js:34,37` |
 | GET/POST/PATCH/DELETE | `/api/payments/admin/*` (revenue, charges, payment-links, products) | `restrictTo('admin'\|'agent')` | `packages/domains/payments/src/router.js:11-36` |
-| GET/PATCH/POST | `/api/email-support/*` (list, draft, send, skip) | `restrictTo('admin','agent')` | `packages/domains/email-support/src/router.js:7-12` |
 | POST | `/api/users/{register,login,logout,forgot-password,reset-password/:token}`, GET `/verify-email/:token` | public (customer) | `packages/domains/users/src/router.js:7-12` |
 | GET/PATCH/DELETE | `/api/users/me` (+`/me/password`) | **customer** `protect` (userJwt) | `users/src/router.js:14-18` |
 
-**Mount map** (`apps/travl-backend/src/routes/index.js`): `/auth`(47), `/admin-users`(49), `/insurance`(51), `/blogs`(69), `/blog-tags`(70), `/visas`(79), `/currencies`(80), `/flights`(84), `/airports`(85), `/locations`(86), `/visa-leads`(103), `/itineraries`(145), `/payments`(149), `/email-support`(183), `/users`(206). Static: `/airlines` (`app.js:44`).
+**Mount map** (`apps/travl-backend/src/routes/index.js`): `/auth`(47), `/admin-users`(49), `/insurance`(51), `/blogs`(69), `/blog-tags`(70), `/visas`(79), `/currencies`(80), `/flights`(84), `/airports`(85), `/locations`(86), `/visa-leads`(103), `/itineraries`(145), `/payments`(149), `/users`(206). Static: `/airlines` (`app.js:44`).
 
-**Other backends** all compose the same shared domain routers, differing by which they include: airportrides adds `bookings`; dt365/mdt add `tickets`+`affiliates`; emirateslimo adds `vehicles/zones/pricing-rules/availability-rules/limo-bookings`; travelshield is insurance-only. **Only travl-backend mounts `visas`, `visa-leads`, `itineraries`, `email-support`** (`apps/<brand>-backend/src/routes/index.js`).
+**Other backends** all compose the same shared domain routers, differing by which they include: airportrides adds `bookings`; dt365/mdt add `tickets`+`affiliates`; emirateslimo adds `vehicles/zones/pricing-rules/availability-rules/limo-bookings`; travelshield is insurance-only. **Only travl-backend mounts `visas`, `visa-leads`, `itineraries`** (`apps/<brand>-backend/src/routes/index.js`).
 
 ### URL prefixes already TAKEN (unsafe to reuse) — travl-frontend
-`/` · `/travel-itinerary` · `/travel-insurance` (+ all `*-visa` children) · `/insurance-booking` · `/itinerary-booking` · `/visa` · `/visa/[slug]` · `/blog` · `/claims` · `/contact` · `/about` · `/faq` · `/privacy-policy` · `/terms-and-conditions` · `/admin` · `/sitemap.xml` · `/robots.txt` · `/flight-itinerary` (301 source only). Backend API prefixes taken: `/api/{auth,admin-users,insurance,blogs,blog-tags,visas,currencies,flights,airports,locations,visa-leads,itineraries,payments,email-support,users,webhook}` (`routes/index.js`).
+`/` · `/travel-itinerary` · `/travel-insurance` (+ all `*-visa` children) · `/insurance-booking` · `/itinerary-booking` · `/visa` · `/visa/[slug]` · `/blog` · `/claims` · `/contact` · `/about` · `/faq` · `/privacy-policy` · `/terms-and-conditions` · `/admin` · `/sitemap.xml` · `/robots.txt` · `/flight-itinerary` (301 source only). Backend API prefixes taken: `/api/{auth,admin-users,insurance,blogs,blog-tags,visas,currencies,flights,airports,locations,visa-leads,itineraries,payments,users,webhook}` (`routes/index.js`).
 
 **Notably, `/visa` and `/api/visas` and `/api/visa-leads` are already occupied** — `/visa/*` is marketing/landing content + a lead CRM, not a customer application system (see §3, §15).
 
@@ -173,7 +172,6 @@ All `/admin/**` are ADMIN (client guard `AdminShell` + backend `restrictTo`). Tr
 | `payment-link` | `packages/domains/payments/src/schemas/payment-link.schema.js` | stripePaymentLinkId(unique), amount, status enum, lineItems[]→ref `Product`, **createdBy → ref `admin-user`** |
 | `Product` | `packages/domains/payments/src/schemas/product.schema.js` | name, unitAmount, stripePriceId(unique), **createdBy → ref `admin-user`** |
 | `stripe-webhook-event` | `packages/domains/payments/src/schemas/webhook-event.schema.js` | eventId(unique), type, productType, handlerSucceeded, processingAt (idempotency lock) |
-| `support-email` | `packages/domains/email-support/src/schema.js` | gmailMessageId(unique), from, subject, bodyText, status enum(`pending`/`sent`/`skipped`), draft |
 
 ### Flagged names (relevant to a visa product)
 - **application** → `insurance-application` only (an insurance policy purchase). No generic/visa application entity.
@@ -202,7 +200,7 @@ The only app with live customer login is **travelshield** (NextAuth Google/Faceb
 
 **Exists**, at `/admin` in `apps/travl-frontend`. Login `apps/travl-frontend/src/app/admin/login/page.js`; dashboard route group `apps/travl-frontend/src/app/admin/(dashboard)/`.
 
-Manages: Insurance applications, Itineraries, Visa Leads (order/lead queues); Email Support; Blog, Blog Tags, Visa Pages (content); Revenue, Payment Links, Products, Pricing, Currencies (finance); Admin Users; My Account (nav in `apps/travl-frontend/src/app/admin/(dashboard)/layout.js`).
+Manages: Insurance applications, Itineraries, Visa Leads (order/lead queues); Blog, Blog Tags, Visa Pages (content); Revenue, Payment Links, Products, Pricing, Currencies (finance); Admin Users; My Account (nav in `apps/travl-frontend/src/app/admin/(dashboard)/layout.js`).
 
 **Protection (three layers):** (1) client guard — `AdminShell` (`packages/frontend-shared/src/components/admin/v1/AdminShell.js:56-78`) redirects unauthenticated to `/admin/login`, enforces per-route role rules (`ROLE_ROUTE_RULES`, lines 14-31); hydrates via `AdminAuthContext` → `GET /api/admin-users/me`. (2) **No Next middleware** guards `/admin` — guard is client-side + backend. `robots: noindex` (`layout.js`). (3) backend `restrictTo` on every admin API (e.g. `packages/domains/visa/src/router.js:15`, `visa-leads/src/router.js:43`). Note leftover: `AdminShell` default path for `agent` = `/admin/dummy-tickets`, a route absent in Travl (`AdminShell.js:10`) — harmless shared-component残留.
 
@@ -239,7 +237,6 @@ Manages: Insurance applications, Itineraries, Visa Leads (order/lead queues); Em
 
 - **Visa leads (structured, primary):** from `/visa` + `/visa/[slug]` (`VisaDetailPage` → `LeadFormModal`, `packages/frontend-shared/src/components/forms/v1/LeadFormModal.js`), CTAs tagged `source` ∈ `hero_cta`/`package_card`/`final_cta`. Fields: firstName, lastName, nationality, email, phone(E.164), packageRequested, applicantCount, visaSlug (`packages/domains/visa-leads/src/service.js:27-72`). Endpoint `POST /api/visa-leads` (public, 5/hr) → `VisaLead` model. After capture: admin email (`notificationsService.sendVisaLeadToAdmin`, template `packages/shared/notifications/src/templates/visa-lead.js`) + admin CRM (`/admin/visa-leads`, status/assign/notes). **MANUAL STEP: yes** — leads are a human sales queue; nothing auto-fulfilled.
 - **Contact / claims (unstructured):** `contact/page.js` and `claims/page.js` are `mailto:info@travl.ae` + WhatsApp only, no DB write, no form; insurance claims are entirely manual ("no online portal", `claims/page.js:19-38`).
-- **Inbound email:** the `email-support` domain (AI-drafted replies via Gmail) handles inbound mail (`routes/index.js:175-183`) — not a lead form.
 
 ---
 
@@ -268,7 +265,7 @@ Manages: Insurance applications, Itineraries, Visa Leads (order/lead queues); Em
 
 - **Service: Brevo (Sendinblue) HTTP API** via raw `fetch` (no nodemailer). Send: `apps/travl-backend/src/utils/email.js` → `POST https://api.brevo.com/v3/smtp/email`, key `BREVO_API_KEY`, sender `Travl <ADMIN_EMAIL>`; supports base64 attachments. Contacts: `apps/travl-backend/src/utils/brevo.js`. Package client also exists: `packages/integrations/brevo/src/index.js`.
 - **Templates:** shared HTML renderers `packages/shared/notifications/src/templates/*` (insurance-payment, payment-link-paid, visa-lead, ticket/booking variants); Travl-local inline templates `apps/travl-backend/src/notifications/{itinerary,insurance}.js`.
-- **Emails sent + triggers:** itinerary-ready PDF → customer (Stripe itinerary webhook); insurance payment received → admin; payment-link paid → admin (Stripe payment-link webhook); visa lead → admin (lead submit); email-support AI draft (Gmail poll). (`apps/travl-backend/src/notifications/*`, `packages/shared/notifications/src/index.js`, wiring in `routes/index.js`.)
+- **Emails sent + triggers:** itinerary-ready PDF → customer (Stripe itinerary webhook); insurance payment received → admin; payment-link paid → admin (Stripe payment-link webhook); visa lead → admin (lead submit). (`apps/travl-backend/src/notifications/*`, `packages/shared/notifications/src/index.js`, wiring in `routes/index.js`.)
 - **Gap:** customer **password-reset email is a no-op** in Travl — `users` service calls `notifications?.sendPasswordReset(...)` only if defined, and Travl's notifications service does not implement it (`packages/domains/users/src/service.js`; `apps/travl-backend/src/routes/index.js` notifications wiring). Email-verification email similarly unclear/likely unwired. No customer-facing transactional emails are configured in Travl beyond the itinerary receipt.
 
 ---
@@ -283,7 +280,6 @@ All Anthropic calls use **`claude-sonnet-4-6`**, key `ANTHROPIC_API_KEY`.
 | same `chat()` | Conversational itinerary edit | "itinerary editor"; returns `{updatedInput,itinerary,reply}` | re-rendered order |
 | same `parseDocuments()` | Extract flight segments from **customer-uploaded** PDFs/images | "extract travel details…resolve codes…never invent" | prefill form; files archived Cloudinary |
 | `packages/domains/blog/src/controller.js:350` `improveContent` | Rewrite blog HTML to sound human | "professional editor…no em dashes…forbidden words…British English" (raw `fetch api.anthropic.com`) | back to admin editor |
-| `packages/domains/email-support/src/drafter.js` `draftReply` | Classify + draft support reply | "friendly support agent…never say fake, never promise refunds" | `support-email.draft` |
 | `scripts/generate-blog-draft.mjs:204` | Daily blog generation | large SEO/GEO Travl system prompt; JSON post | POST `/api/blogs` status `published` |
 | `scripts/expand-blog-post.mjs` | Blog expansion utility (unclear exact use — not fully read) | — | likely blog API |
 
@@ -304,7 +300,6 @@ All Anthropic calls use **`claude-sonnet-4-6`**, key `ANTHROPIC_API_KEY`.
 | WIS (AXA) | Insurance quotes/policies | `packages/integrations/wis`; `apps/travl-backend/src/utils/wis.js` | `WIS_URL`, `WIS_AGENCY_ID`, `WIS_AGENCY_CODE` |
 | AirLabs | Airport/airline lookup | `packages/integrations/airlabs` | `AIRLABS_API_KEY` |
 | SerpApi | Google Flights search | `packages/integrations/serpapi` | `SERPAPI_API_KEY` |
-| Gmail API | Email-support poll/draft | `packages/domains/email-support` | `GMAIL_CLIENT_ID/SECRET/REFRESH_TOKEN/USER` |
 | MongoDB | Datastore | `apps/travl-backend/src/utils/db.js` | `MONGO_URI` |
 | GA4 / Hotjar / TinyMCE | analytics / heatmaps / admin editor | `frontend-shared` shared components | `NEXT_PUBLIC_GA4_MEASUREMENT_ID`, `NEXT_PUBLIC_HOTJAR_ID`, `NEXT_PUBLIC_TINYMCE_API_KEY` |
 | circle-flags CDN | flag SVGs (mega menu) | `packages/frontend-shared/src/components/sections/v2/Navbar.js` | none |
@@ -354,7 +349,7 @@ Target: customers **log in**, **upload passport scans and bank statements**, and
 
 6. **No payment path for a visa service.** Visa is currently lead-gen only (consultation via `mailto`/`LeadFormModal`); there is no checkout for visa. Stripe infrastructure (Checkout Sessions, Payment Links, webhook, idempotency) exists and is reusable (`packages/domains/payments`, §8), but no visa product/price or webhook `productType` is defined.
 
-7. **No secure document delivery/notification loop.** No signed URLs, no "your document was approved/rejected" customer emails, no secure-message channel between staff and customer (email-support is inbound Gmail triage, not per-application messaging).
+7. **No secure document delivery/notification loop.** No signed URLs, no "your document was approved/rejected" customer emails, no secure-message channel between staff and customer.
 
 8. **Operational/compliance gaps for PII at rest.** In-memory multer + public Cloudinary URLs + no retention/deletion policy + no encryption-at-rest guarantees documented (§9) are inadequate for passport/bank-statement handling; there is no existing pattern in the repo for private, access-scoped document storage.
 

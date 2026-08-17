@@ -16,7 +16,7 @@ This is *not* a ride/transfer brand — **there is no `bookings` domain here.** 
 
 The composition root wires these domains — the set is brand-specific, so don't assume a domain exists just because another brand mounts it:
 
-`auth`, `admin-users`, `blog` (+ blog-tags), `currencies`, `flights`, `airports`, `locations`, `itineraries`, `insurance`, `payments`, `email-support`.
+`auth`, `admin-users`, `blog` (+ blog-tags), `currencies`, `flights`, `airports`, `locations`, `itineraries`, `insurance`, `payments`.
 
 The `flights`/`airports`/`locations` stack is mounted but **nothing calls it** — travl-frontend has no consumer. It still costs an AirLabs and a SerpApi key. Worth removing.
 
