@@ -31,6 +31,7 @@ import {
   buildWebPage,
   buildWebsite,
 } from "@/lib/schema";
+import { DUMMY_TICKET_365 } from '@/config/partners';
 
 export const processSteps = [
   {
@@ -66,7 +67,7 @@ const testimonials = [
   },
   {
     quote:
-      "Booked a last-minute Bali getaway. I needed travel insurance and proof of onward travel for the visa on arrival, and got both from Travl in one sitting. Immigration in Denpasar was quick and easy.",
+      "Booked a last-minute Bali getaway. I needed travel insurance for the visa on arrival and Travl had the certificate in my inbox in minutes. Immigration in Denpasar was quick and easy.",
     name: "Mohammed H.",
     location: "Sharjah, UAE",
     stars: 5,
@@ -151,7 +152,7 @@ export const faqs = [
   {
     question: "Do I need proof of onward travel for a Bali visa on arrival?",
     answer:
-      "Indonesian immigration can ask to see proof of onward or return travel and accommodation. A verified flight reservation and a hotel booking cover this, and you can arrange both here alongside your travel insurance.",
+      `Indonesian immigration can ask to see proof of onward or return travel and accommodation. A verified flight reservation and a hotel booking cover this. We handle your travel insurance, and ${DUMMY_TICKET_365.name} issues the flight and hotel reservations.`,
   },
 ];
 
@@ -193,13 +194,13 @@ export const pageData = {
           icon: <MdOutlineAirplaneTicket />,
           title: "Flight Reservation",
           description:
-            "A verified flight reservation with a real PNR code, useful as proof of onward travel if immigration asks at your Bali visa on arrival.",
+            `A verified flight reservation with a real PNR code, useful as proof of onward travel if immigration asks at your Bali visa on arrival. From USD 13 via ${DUMMY_TICKET_365.name}.`,
         },
         {
           icon: <MdOutlineHotel />,
           title: "Hotel Reservation",
           description:
-            "Proof of accommodation helps you clear immigration smoothly in Indonesia. We provide hotel reservations by email for your visa on arrival or arrival check.",
+            `Proof of accommodation helps you clear immigration smoothly in Indonesia. ${DUMMY_TICKET_365.name} issues hotel reservations by email for your visa on arrival or arrival check.`,
         },
       ],
     },

@@ -31,6 +31,7 @@ import {
   buildWebPage,
   buildWebsite,
 } from "@/lib/schema";
+import { DUMMY_TICKET_365 } from '@/config/partners';
 
 export const processSteps = [
   {
@@ -58,7 +59,7 @@ const testimonials = [
   },
   {
     quote:
-      "Vienna for the Christmas markets. Sorted the insurance and a flight reservation the same night and had my VFS appointment two days later. The whole file was ready in one go.",
+      "Vienna for the Christmas markets. Sorted the insurance the same night and had my VFS appointment two days later. The certificate was in my inbox before I finished packing the rest of the file.",
     name: "Elena V.",
     location: "Abu Dhabi, UAE",
     stars: 5,
@@ -188,13 +189,13 @@ export const pageData = {
           icon: <MdOutlineAirplaneTicket />,
           title: "Flight Itinerary for Austria Visa",
           description:
-            "A verified flight reservation with a real PNR code, the proof of onward travel VFS Austria expects alongside your insurance. From USD 13 via Dummy Ticket 365.",
+            `A verified flight reservation with a real PNR code, the proof of onward travel VFS Austria expects alongside your insurance. From USD 13 via ${DUMMY_TICKET_365.name}.`,
         },
         {
           icon: <MdOutlineHotel />,
           title: "Hotel Reservations",
           description:
-            "Proof of accommodation in Austria is part of a complete visa file. We provide hotel reservations by email, formatted the way the consulate expects.",
+            `Proof of accommodation in Austria is part of a complete visa file. ${DUMMY_TICKET_365.name} issues these hotel reservations by email, formatted the way the consulate expects.`,
         },
       ],
     },

@@ -31,6 +31,7 @@ import {
   buildWebPage,
   buildWebsite,
 } from "@/lib/schema";
+import { DUMMY_TICKET_365 } from '@/config/partners';
 
 export const processSteps = [
   {
@@ -188,13 +189,13 @@ export const pageData = {
           icon: <MdOutlineAirplaneTicket />,
           title: "Flight Itinerary for US Visa",
           description:
-            "Verifiable flight itinerary with a real PNR — useful as proof of onward travel for your B1/B2 interview file. From AED 49.",
+            `A verified flight reservation with a real PNR code, useful as proof of onward travel for your B1/B2 interview file. From USD 13 via ${DUMMY_TICKET_365.name}.`,
         },
         {
           icon: <MdOutlineHotel />,
           title: "Hotel Reservations",
           description:
-            "Hotel reservations by email, formatted to interview-ready standards — handy for showing planned accommodation at your US visa appointment.",
+            `Planned accommodation to show at your US visa appointment. ${DUMMY_TICKET_365.name} issues hotel reservations by email, formatted to interview-ready standards.`,
         },
       ],
     },

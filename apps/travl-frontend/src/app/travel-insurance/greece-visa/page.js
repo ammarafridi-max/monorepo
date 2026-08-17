@@ -31,6 +31,7 @@ import {
   buildWebPage,
   buildWebsite,
 } from "@/lib/schema";
+import { DUMMY_TICKET_365 } from '@/config/partners';
 
 export const processSteps = [
   {
@@ -188,13 +189,13 @@ export const pageData = {
           icon: <MdOutlineAirplaneTicket />,
           title: "Flight Itinerary for Greece Visa",
           description:
-            "A verified flight reservation with a real PNR code, the proof of onward travel VFS Greece expects alongside your insurance. From USD 13 via Dummy Ticket 365.",
+            `A verified flight reservation with a real PNR code, the proof of onward travel VFS Greece expects alongside your insurance. From USD 13 via ${DUMMY_TICKET_365.name}.`,
         },
         {
           icon: <MdOutlineHotel />,
           title: "Hotel Reservations",
           description:
-            "Proof of accommodation in Greece is part of a complete visa file. We provide hotel reservations by email, formatted the way the consulate expects.",
+            `Proof of accommodation in Greece is part of a complete visa file. ${DUMMY_TICKET_365.name} issues these hotel reservations by email, formatted the way the consulate expects.`,
         },
       ],
     },

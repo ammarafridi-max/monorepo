@@ -12,7 +12,9 @@
  * pages, never a 404.
  */
 
-const DUMMY_TICKET_URL = 'https://www.dummyticket365.com';
+import { DUMMY_TICKET_365 } from './partners.js';
+
+const DUMMY_TICKET_URL = DUMMY_TICKET_365.url;
 
 // Only routes that exist under /travel-insurance. Order matters: the first
 // token found in the slug wins, so put the specific ones first.
@@ -109,10 +111,10 @@ export function getBlogOffers(blog) {
       id: 'dummy-ticket',
       tone: 'plain',
       eyebrow: 'Dummy ticket',
-      price: 'From AED 49',
-      note: 'A real flight reservation with a verifiable PNR, delivered by email in minutes.',
+      price: `From ${DUMMY_TICKET_365.fromPrice}`,
+      note: `A real flight reservation with a verifiable PNR, issued by ${DUMMY_TICKET_365.name} and delivered by email in minutes.`,
       href: DUMMY_TICKET_URL,
-      cta: 'Dummy Ticket 365',
+      cta: DUMMY_TICKET_365.name,
       external: true,
     },
   ];
@@ -133,7 +135,7 @@ export function getBlogInlineOffer(blog) {
   if (isTicketPost) {
     return {
       headline: 'Need proof of onward travel?',
-      note: 'A real PNR you can show the embassy, from AED 49, without buying a ticket.',
+      note: `A real PNR you can show the embassy, from ${DUMMY_TICKET_365.fromPrice} via ${DUMMY_TICKET_365.name}, without buying a ticket.`,
       href: DUMMY_TICKET_URL,
       cta: 'Order one',
       external: true,

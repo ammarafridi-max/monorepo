@@ -31,6 +31,7 @@ import {
   buildWebPage,
   buildWebsite,
 } from "@/lib/schema";
+import { DUMMY_TICKET_365 } from '@/config/partners';
 
 export const processSteps = [
   {
@@ -183,13 +184,13 @@ export const pageData = {
           icon: <MdOutlineAirplaneTicket />,
           title: "Flight Itinerary for Schengen Visa",
           description:
-            "Verifiable flight itinerary with a real PNR code — the proof of onward travel required alongside insurance for a Schengen visa application. From AED 49.",
+            `A verified flight reservation with a real PNR code, the proof of onward travel required alongside insurance for a Schengen visa application. From USD 13 via ${DUMMY_TICKET_365.name}.`,
         },
         {
           icon: <MdOutlineHotel />,
           title: "Hotel Reservations",
           description:
-            "Proof of accommodation is a Schengen visa requirement. We provide hotel reservations by email, formatted to meet embassy and consulate standards.",
+            `Proof of accommodation is a Schengen visa requirement. ${DUMMY_TICKET_365.name} issues these hotel reservations by email, formatted to meet embassy and consulate standards.`,
         },
       ],
     },

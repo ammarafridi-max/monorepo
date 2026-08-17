@@ -31,6 +31,7 @@ import {
   buildWebPage,
   buildWebsite,
 } from "@/lib/schema";
+import { DUMMY_TICKET_365 } from '@/config/partners';
 
 export const processSteps = [
   {
@@ -188,13 +189,13 @@ export const pageData = {
           icon: <MdOutlineAirplaneTicket />,
           title: "Flight Itinerary for Australia Visa",
           description:
-            "Verifiable flight itinerary with a real PNR — onward travel proof that pairs naturally with your insurance in the visa file. From AED 49.",
+            `A verified flight reservation with a real PNR code, the onward travel proof that pairs with your insurance in the visa file. From USD 13 via ${DUMMY_TICKET_365.name}.`,
         },
         {
           icon: <MdOutlineHotel />,
           title: "Hotel Reservations",
           description:
-            "Hotel reservations by email, formatted to officer-friendly standards — useful for showing planned accommodation in your Australia visa file.",
+            `Planned accommodation for your Australia visa file. ${DUMMY_TICKET_365.name} issues hotel reservations by email, formatted to officer-friendly standards.`,
         },
       ],
     },

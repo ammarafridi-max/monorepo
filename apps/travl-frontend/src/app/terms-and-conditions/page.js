@@ -44,9 +44,9 @@ export default function Page() {
 
           <ul className="text-md font-extralight flex flex-col gap-3 list-decimal pl-5">
             <li className="pl-2">
-              Travl provides travel-related services including dummy flight tickets,
-              travel itineraries, and supporting travel documentation for visa applications and
-              travel planning purposes.
+              Travl provides travel insurance and day-by-day travel itineraries for visa
+              applications and travel planning. We do not issue dummy flight tickets or hotel
+              reservations, and we do not handle visa applications.
             </li>
             <li className="pl-2">
               Our services are intended for legitimate use only. Misuse for fraudulent or illegal
@@ -66,10 +66,6 @@ export default function Page() {
             </li>
             <li className="pl-2">
               You agree to use our services only for lawful and legitimate purposes.
-            </li>
-            <li className="pl-2">
-              You acknowledge that flight reservations are not confirmed airline tickets and cannot be used for
-              boarding or actual air travel.
             </li>
             <li className="pl-2">
               Travl reserves the right to refuse service to users engaging in fraudulent,
@@ -105,8 +101,8 @@ export default function Page() {
               incomplete user information.
             </li>
             <li className="pl-2">
-              You agree not to misuse flight reservations for illegal or fraudulent purposes under any
-              circumstances.
+              You acknowledge that a travel itinerary is a planning document, not a booking. It does
+              not reserve flights or hotels and must not be presented as one.
             </li>
           </ul>
 

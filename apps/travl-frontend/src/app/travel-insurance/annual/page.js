@@ -31,6 +31,7 @@ import {
   buildWebPage,
   buildWebsite,
 } from "@/lib/schema";
+import { DUMMY_TICKET_365 } from '@/config/partners';
 
 export const processSteps = [
   {
@@ -199,7 +200,7 @@ export const pageData = {
           icon: <MdOutlineAirplaneTicket />,
           title: "Flight Reservation",
           description:
-            "A verified flight reservation with a real PNR code, useful as proof of onward travel if immigration asks on arrival.",
+            `A verified flight reservation with a real PNR code, useful as proof of onward travel if immigration asks on arrival. From USD 13 via ${DUMMY_TICKET_365.name}.`,
         },
       ],
     },

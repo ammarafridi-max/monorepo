@@ -31,6 +31,7 @@ import {
   buildWebPage,
   buildWebsite,
 } from "@/lib/schema";
+import { DUMMY_TICKET_365 } from '@/config/partners';
 
 export const processSteps = [
   {
@@ -58,7 +59,7 @@ const testimonials = [
   },
   {
     quote:
-      "Business trip to Munich, two weeks notice. Got everything sorted online in one evening — insurance, flight reservation, hotel booking. Visa came back in eleven days.",
+      "Business trip to Munich, two weeks notice. Bought the insurance online in one evening and had the certificate straight away, so the rest of the file came together fast. Visa came back in eleven days.",
     name: "Aditya M.",
     location: "Abu Dhabi, UAE",
     stars: 5,
@@ -188,13 +189,13 @@ export const pageData = {
           icon: <MdOutlineAirplaneTicket />,
           title: "Flight Itinerary for Germany Visa",
           description:
-            "A verified flight reservation with a real PNR code, the proof of onward travel VFS Germany expects alongside your insurance. From USD 13 via Dummy Ticket 365.",
+            `A verified flight reservation with a real PNR code, the proof of onward travel VFS Germany expects alongside your insurance. From USD 13 via ${DUMMY_TICKET_365.name}.`,
         },
         {
           icon: <MdOutlineHotel />,
           title: "Hotel Reservations",
           description:
-            "Proof of accommodation in Germany is part of a complete visa file. We provide hotel reservations by email, formatted the way the consulate expects.",
+            `Proof of accommodation in Germany is part of a complete visa file. ${DUMMY_TICKET_365.name} issues these hotel reservations by email, formatted the way the consulate expects.`,
         },
       ],
     },

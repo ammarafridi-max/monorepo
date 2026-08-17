@@ -1,6 +1,7 @@
 import ItineraryLayout from '@travel-suite/frontend-shared/layouts/ItineraryLayout';
 import ItinerarySuccessPage from '@travel-suite/frontend-shared/pages/client/ItinerarySuccessPage';
 import { ShieldCheck, Ticket } from 'lucide-react';
+import { DUMMY_TICKET_365 } from '@/config/partners';
 
 export const metadata = {
   title: 'Itinerary Ready | Travl',
@@ -22,8 +23,8 @@ const upsells = [
     description:
       'Get a verifiable flight reservation accepted by embassies and visa centers for your application.',
     priceCaption: 'from',
-    price: 'AED 49',
-    href: 'https://www.dummyticket365.com',
+    price: 'USD 13',
+    href: DUMMY_TICKET_365.url,
     external: true,
   },
 ];

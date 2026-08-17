@@ -31,6 +31,7 @@ import {
   buildWebPage,
   buildWebsite,
 } from "@/lib/schema";
+import { DUMMY_TICKET_365 } from '@/config/partners';
 
 export const processSteps = [
   {
@@ -188,13 +189,13 @@ export const pageData = {
           icon: <MdOutlineAirplaneTicket />,
           title: "Flight Itinerary for Canada Visa",
           description:
-            "Verifiable flight itinerary with a real PNR — the onward travel proof IRCC expects alongside your insurance. From AED 49.",
+            `A verified flight reservation with a real PNR code, the proof of onward travel IRCC expects alongside your insurance. From USD 13 via ${DUMMY_TICKET_365.name}.`,
         },
         {
           icon: <MdOutlineHotel />,
           title: "Hotel Reservations",
           description:
-            "Proof of accommodation is part of a strong Canada visa file. We issue hotel reservations by email, formatted to officer-friendly standards.",
+            `Proof of accommodation is part of a strong Canada visa file. ${DUMMY_TICKET_365.name} issues these hotel reservations by email, formatted to officer-friendly standards.`,
         },
       ],
     },

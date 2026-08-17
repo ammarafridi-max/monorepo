@@ -31,6 +31,7 @@ import {
   buildWebPage,
   buildWebsite,
 } from "@/lib/schema";
+import { DUMMY_TICKET_365 } from '@/config/partners';
 
 export const processSteps = [
   {
@@ -50,7 +51,7 @@ export const processSteps = [
 const testimonials = [
   {
     quote:
-      "Amsterdam trip in tulip season, appointments were tight. Having the insurance and flight reservation ready in one evening meant I grabbed the first VFS slot I could. Approved in ten days.",
+      "Amsterdam trip in tulip season, appointments were tight. Having the insurance certificate ready the same evening meant I grabbed the first VFS slot I could. Approved in ten days.",
     name: "Bilal S.",
     location: "Dubai, UAE",
     stars: 5,
@@ -188,13 +189,13 @@ export const pageData = {
           icon: <MdOutlineAirplaneTicket />,
           title: "Flight Itinerary for Netherlands Visa",
           description:
-            "A verified flight reservation with a real PNR code, the proof of onward travel VFS Netherlands expects alongside your insurance. From USD 13 via Dummy Ticket 365.",
+            `A verified flight reservation with a real PNR code, the proof of onward travel VFS Netherlands expects alongside your insurance. From USD 13 via ${DUMMY_TICKET_365.name}.`,
         },
         {
           icon: <MdOutlineHotel />,
           title: "Hotel Reservations",
           description:
-            "Proof of accommodation in the Netherlands is part of a complete visa file. We provide hotel reservations by email, formatted the way the consulate expects.",
+            `Proof of accommodation in the Netherlands is part of a complete visa file. ${DUMMY_TICKET_365.name} issues these hotel reservations by email, formatted the way the consulate expects.`,
         },
       ],
     },

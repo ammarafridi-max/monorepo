@@ -19,6 +19,7 @@ import {
   buildWebPage,
   buildWebsite,
 } from '@/lib/schema';
+import { DUMMY_TICKET_365 } from '@/config/partners';
 
 export const processSteps = [
   {
@@ -153,13 +154,13 @@ export const pageData = {
           icon: <MdOutlineAirplaneTicket />,
           title: 'Flight Itineraries',
           description:
-            'Verifiable flight reservations with a real PNR code. Accepted by VFS, BLS, and embassies — the ideal companion to your single trip insurance for a visa application. From AED 49.',
+            `Verifiable flight reservations with a real PNR code, accepted by VFS, BLS, and embassies. The ideal companion to your single trip insurance for a visa application. From USD 13 via ${DUMMY_TICKET_365.name}.`,
         },
         {
           icon: <MdOutlineHotel />,
           title: 'Hotel Reservations',
           description:
-            'We provide hotel reservations by email, formatted to meet embassy requirements. A quick and easy way to complete your visa documentation.',
+            `${DUMMY_TICKET_365.name} issues hotel reservations by email, formatted to meet embassy requirements. A quick and easy way to complete your visa documentation.`,
         },
       ],
     },
