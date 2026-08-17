@@ -159,9 +159,6 @@ async function handlePaymentLinkSuccess(session) {
   });
 }
 
-// Email support is temporarily unmounted for Travl. The feature package is
-// untouched; re-enable by restoring the createEmailSupportFeature block.
-
 export const stripeWebhookHandler = createStripeWebhookHandler({
   stripe,
   webhookSecret: config.stripe.webhookSecret,
