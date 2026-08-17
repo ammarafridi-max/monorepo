@@ -106,7 +106,7 @@ importers:
         specifier: ^0.511.0
         version: 0.511.0(react@19.2.5)
       next:
-        specifier: latest
+        specifier: 16.3.0
         version: 16.3.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       react:
         specifier: 19.2.5
@@ -224,7 +224,7 @@ importers:
         specifier: ^0.511.0
         version: 0.511.0(react@19.2.5)
       next:
-        specifier: latest
+        specifier: 16.3.0
         version: 16.3.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       react:
         specifier: 19.2.5
@@ -529,7 +529,7 @@ importers:
         specifier: ^0.511.0
         version: 0.511.0(react@19.2.5)
       next:
-        specifier: latest
+        specifier: 16.3.0
         version: 16.3.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       react:
         specifier: 19.2.5
@@ -580,9 +580,6 @@ importers:
       '@travel-suite/currencies':
         specifier: workspace:*
         version: link:../../packages/domains/currencies
-      '@travel-suite/email-support':
-        specifier: workspace:*
-        version: link:../../packages/domains/email-support
       '@travel-suite/insurance':
         specifier: workspace:*
         version: link:../../packages/domains/insurance
@@ -653,7 +650,7 @@ importers:
         specifier: ^0.511.0
         version: 0.511.0(react@19.2.5)
       next:
-        specifier: latest
+        specifier: 16.3.0
         version: 16.3.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       react:
         specifier: 19.2.5
@@ -778,7 +775,7 @@ importers:
         specifier: ^0.511.0
         version: 0.511.0(react@19.2.5)
       next:
-        specifier: latest
+        specifier: 16.3.0
         version: 16.3.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       react:
         specifier: 19.2.5
@@ -926,27 +923,6 @@ importers:
       express:
         specifier: ^5.2.1
         version: 5.2.1
-      mongoose:
-        specifier: ^9.0.2
-        version: 9.4.1(socks@2.8.9)
-
-  packages/domains/email-support:
-    dependencies:
-      '@anthropic-ai/sdk':
-        specifier: ^0.55.0
-        version: 0.55.1
-      '@travel-suite/auth':
-        specifier: workspace:*
-        version: link:../auth
-      '@travel-suite/utils':
-        specifier: workspace:*
-        version: link:../../shared/utils
-      express:
-        specifier: ^5.2.1
-        version: 5.2.1
-      googleapis:
-        specifier: ^144.0.0
-        version: 144.0.0
       mongoose:
         specifier: ^9.0.2
         version: 9.4.1(socks@2.8.9)

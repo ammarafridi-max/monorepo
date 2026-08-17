@@ -7,6 +7,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const nextConfig = {
   async redirects() {
     return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'visawadi.com' }],
+        destination: 'https://www.visawadi.com/:path*',
+        permanent: true,
+      },
       // Country segmentation. /visa/* predates it and is only days old, so this
       // is the cheapest moment to move it. Anything already linked or crawled
       // lands on the country URL in one hop.

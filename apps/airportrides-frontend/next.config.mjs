@@ -6,6 +6,21 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
+  async redirects() {
+    return [
+      {
+        source: "/blog/tag/:slug",
+        destination: "https://www.airportrides.com/blog/tags/:slug",
+        permanent: true,
+      },
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "airportrides.com" }],
+        destination: "https://www.airportrides.com/:path*",
+        permanent: true,
+      },
+    ];
+  },
   outputFileTracingRoot: join(__dirname, "../../"),
   transpilePackages: ["@travel-suite/frontend-shared"],
   images: {
