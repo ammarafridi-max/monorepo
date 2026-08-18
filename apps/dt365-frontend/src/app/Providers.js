@@ -11,9 +11,11 @@ import { InsuranceProvider } from '@travel-suite/frontend-shared/contexts/Insura
 import AppLayout from '@travel-suite/frontend-shared/layouts/AppLayout';
 import AnalyticsInit from '@travel-suite/frontend-shared/components/shared/AnalyticsInit';
 import HotjarInit from '@travel-suite/frontend-shared/components/shared/HotjarInit';
+import StickyWhatsApp from '@travel-suite/frontend-shared/components/ui/v2/StickyWhatsApp';
 
 const LOGO_ALT = 'DT365 Logo';
 const EMAIL = 'info@dummyticket365.com';
+const WHATSAPP_NUMBER = '+971527237088';
 
 const defaultPages = [
   {
@@ -82,6 +84,7 @@ export default function Providers({ children }) {
                 <AppLayout pages={flightItineraryPages} logoAlt={LOGO_ALT} email={EMAIL}>
                   <main>{children}</main>
                 </AppLayout>
+                <StickyWhatsApp phoneNumber={WHATSAPP_NUMBER} />
               </InsuranceProvider>
             </TicketProvider>
           </CurrencyProvider>
@@ -102,6 +105,7 @@ export default function Providers({ children }) {
               <AppLayout pages={defaultPages} logoAlt={LOGO_ALT} email={EMAIL}>
                 <main>{children}</main>
               </AppLayout>
+              <StickyWhatsApp phoneNumber={WHATSAPP_NUMBER} />
             </InsuranceProvider>
           </TicketProvider>
         </CurrencyProvider>
