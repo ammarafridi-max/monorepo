@@ -23,6 +23,12 @@ const nav = [
     ],
   },
   {
+    section: 'Support',
+    items: [
+      { label: 'Chat', href: '/admin/chat', icon: 'MessageSquare', roles: ['admin', 'agent'] },
+    ],
+  },
+  {
     section: 'Content',
     items: [
       { label: 'Blog', href: '/admin/blog', icon: 'BookOpen', roles: ['admin', 'blog-manager'] },

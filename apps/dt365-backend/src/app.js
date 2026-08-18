@@ -9,7 +9,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { logger, AppError } from '@travel-suite/utils';
 import config from './utils/config.js';
-import indexRouter, { stripeWebhookHandler } from './routes/index.js';
+import indexRouter, { stripeWebhookHandler, whatsappWebhookHandlers } from './routes/index.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -33,6 +33,12 @@ app.use((req, res, next) => {
 
 // -- Stripe webhook (raw body required — must be before express.json) ----------
 app.post('/api/webhook', express.raw({ type: 'application/json' }), stripeWebhookHandler);
+
+// -- WhatsApp webhook (raw body required for signature check — before express.json) --
+if (whatsappWebhookHandlers) {
+  app.get('/api/whatsapp/webhook', whatsappWebhookHandlers.verify);
+  app.post('/api/whatsapp/webhook', express.raw({ type: 'application/json' }), whatsappWebhookHandlers.receive);
+}
 
 // -- Security & parsing --------------------------------------------------------
 app.use(helmet());

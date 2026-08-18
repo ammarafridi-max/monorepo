@@ -35,6 +35,14 @@ export default {
     apiKey: process.env.SERPAPI_API_KEY,
   },
 
+  whatsapp: {
+    accessToken: process.env.WHATSAPP_ACCESS_TOKEN,
+    appSecret: process.env.WHATSAPP_APP_SECRET,
+    phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID,
+    wabaId: process.env.WHATSAPP_WABA_ID,
+    webhookVerifyToken: process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN,
+  },
+
   cloudinary: {
     cloudName: process.env.CLOUDINARY_CLOUD_NAME,
     apiKey: process.env.CLOUDINARY_API_KEY,

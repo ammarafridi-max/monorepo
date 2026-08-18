@@ -15,6 +15,8 @@ import {
 import { createAirLabsClient } from "@travel-suite/airlabs";
 import { createSerpApiClient } from "@travel-suite/serpapi";
 import { createTicketsRouter } from "@travel-suite/tickets";
+import { createConversationsRouter } from "@travel-suite/conversations";
+import { createWhatsAppClient } from "@travel-suite/whatsapp";
 import { createUsersRouter } from "@travel-suite/users";
 import { createNotificationsService } from "@travel-suite/notifications";
 import {
@@ -196,6 +198,35 @@ async function handlePaymentLinkSuccess(session) {
     paidAt: updated.paidAt,
   });
 }
+
+// -- Conversations (WhatsApp inbox) -------------------------------------------
+const whatsappConfigured = Boolean(
+  config.whatsapp.appSecret && config.whatsapp.webhookVerifyToken,
+);
+
+let whatsappWebhook = null;
+
+if (whatsappConfigured) {
+  const whatsapp = createWhatsAppClient({
+    accessToken: config.whatsapp.accessToken,
+    phoneNumberId: config.whatsapp.phoneNumberId,
+    logger,
+  });
+  const { router: conversationsRouter, webhook } = createConversationsRouter({
+    db,
+    auth,
+    whatsapp,
+    appSecret: config.whatsapp.appSecret,
+    verifyToken: config.whatsapp.webhookVerifyToken,
+  });
+  router.use("/conversations", conversationsRouter);
+  whatsappWebhook = webhook;
+} else {
+  logger.warn("[whatsapp] Credentials not configured — chat inbox disabled");
+}
+
+// -- WhatsApp webhook (raw body required — mounted in app.js before JSON middleware) --
+export const whatsappWebhookHandlers = whatsappWebhook;
 
 // -- Stripe webhook handler (exported for mounting in app.js before JSON middleware) --
 export const stripeWebhookHandler = createStripeWebhookHandler({

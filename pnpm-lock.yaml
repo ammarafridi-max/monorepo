@@ -157,6 +157,9 @@ importers:
       '@travel-suite/cloudinary':
         specifier: workspace:*
         version: link:../../packages/integrations/cloudinary
+      '@travel-suite/conversations':
+        specifier: workspace:*
+        version: link:../../packages/domains/conversations
       '@travel-suite/currencies':
         specifier: workspace:*
         version: link:../../packages/domains/currencies
@@ -184,6 +187,9 @@ importers:
       '@travel-suite/utils':
         specifier: workspace:*
         version: link:../../packages/shared/utils
+      '@travel-suite/whatsapp':
+        specifier: workspace:*
+        version: link:../../packages/integrations/whatsapp
       compression:
         specifier: ^1.8.1
         version: 1.8.1
@@ -914,6 +920,22 @@ importers:
         specifier: ^9.0.2
         version: 9.4.1(socks@2.8.9)
 
+  packages/domains/conversations:
+    dependencies:
+      '@travel-suite/utils':
+        specifier: workspace:*
+        version: link:../../shared/utils
+      multer:
+        specifier: ^1.4.5-lts.1
+        version: 1.4.5-lts.2
+    devDependencies:
+      express:
+        specifier: ^5.2.1
+        version: 5.2.1
+      mongoose:
+        specifier: ^9.0.2
+        version: 9.4.1(socks@2.8.9)
+
   packages/domains/currencies:
     dependencies:
       '@travel-suite/utils':
@@ -1308,6 +1330,8 @@ importers:
       '@travel-suite/utils':
         specifier: workspace:*
         version: link:../../shared/utils
+
+  packages/integrations/whatsapp: {}
 
   packages/integrations/wis:
     dependencies:
