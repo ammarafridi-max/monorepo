@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   AlertCircle,
@@ -18,8 +17,8 @@ import {
   User,
   Users,
 } from 'lucide-react';
-import { getBookingApi } from '@travel-suite/frontend-shared/services/apiBookings';
-import { updateBookingStatusApi } from '@travel-suite/frontend-shared/services/apiBookings';
+import { useGetBooking } from '@travel-suite/frontend-shared/hooks/bookings/useGetBooking';
+import { useUpdateBookingStatus } from '@travel-suite/frontend-shared/hooks/bookings/useUpdateBookingStatus';
 
 const STATUSES = ['pending_payment', 'paid', 'confirmed', 'completed', 'cancelled'];
 
@@ -91,33 +90,16 @@ export default function AdminBookingDetailPage() {
   const { id } = useParams();
   const router  = useRouter();
 
-  const [booking, setBooking]     = useState(null);
-  const [loading, setLoading]     = useState(true);
-  const [error, setError]         = useState(false);
-  const [updating, setUpdating]   = useState(false);
+  const { booking, isLoadingBooking, isErrorBooking } = useGetBooking(id);
+  const { updateBookingStatus, isUpdatingStatus } = useUpdateBookingStatus();
 
-  useEffect(() => {
-    if (!id) return;
-    getBookingApi(id)
-      .then((data) => setBooking(data))
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
-  }, [id]);
-
-  async function handleStatusChange(e) {
+  function handleStatusChange(e) {
     const status = e.target.value;
     if (status === booking?.status) return;
-    setUpdating(true);
-    try {
-      const updated = await updateBookingStatusApi(id, status);
-      setBooking(updated);
-    } catch {
-    } finally {
-      setUpdating(false);
-    }
+    updateBookingStatus({ id, status });
   }
 
-  if (loading) {
+  if (isLoadingBooking) {
     return (
       <div className="flex items-center justify-center py-24">
         <Loader2 size={22} className="animate-spin text-gray-300" />
@@ -125,7 +107,7 @@ export default function AdminBookingDetailPage() {
     );
   }
 
-  if (error || !booking) {
+  if (isErrorBooking || !booking) {
     return (
       <div className="mx-auto max-w-3xl">
         <div className="flex flex-col items-center justify-center gap-3 py-20 text-center">
@@ -169,7 +151,7 @@ export default function AdminBookingDetailPage() {
           <select
             value={status || 'pending_payment'}
             onChange={handleStatusChange}
-            disabled={updating}
+            disabled={isUpdatingStatus}
             className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm capitalize focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50"
           >
             {STATUSES.map((s) => (
@@ -178,7 +160,7 @@ export default function AdminBookingDetailPage() {
               </option>
             ))}
           </select>
-          {updating && <Loader2 size={16} className="animate-spin text-gray-400" />}
+          {isUpdatingStatus && <Loader2 size={16} className="animate-spin text-gray-400" />}
         </div>
       </div>
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import {
   Car,
@@ -9,7 +9,7 @@ import {
   Loader2,
   MapPin,
 } from 'lucide-react';
-import { listBookingsApi } from '@travel-suite/frontend-shared/services/apiBookings';
+import { useGetBookings } from '@travel-suite/frontend-shared/hooks/bookings/useGetBookings';
 
 const STATUSES = ['all', 'pending_payment', 'paid', 'confirmed', 'completed', 'cancelled'];
 
@@ -46,24 +46,14 @@ function fmtDateTime(iso) {
 const LIMIT = 20;
 
 export default function AdminBookingsPage() {
-  const [page, setPage]         = useState(1);
-  const [filter, setFilter]     = useState('all');
-  const [bookings, setBookings] = useState([]);
-  const [total, setTotal]       = useState(0);
-  const [loading, setLoading]   = useState(true);
+  const [page, setPage]     = useState(1);
+  const [filter, setFilter] = useState('all');
 
-  const load = useCallback(() => {
-    setLoading(true);
-    listBookingsApi({ page, limit: LIMIT, status: filter === 'all' ? undefined : filter })
-      .then((data) => {
-        setBookings(data?.bookings ?? []);
-        setTotal(data?.total ?? 0);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [page, filter]);
-
-  useEffect(() => { load(); }, [load]);
+  const { bookings, total, isLoadingBookings } = useGetBookings({
+    page,
+    limit: LIMIT,
+    status: filter === 'all' ? undefined : filter,
+  });
 
   function handleFilter(s) {
     setFilter(s);
@@ -99,7 +89,7 @@ export default function AdminBookingsPage() {
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
-        {loading ? (
+        {isLoadingBookings ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 size={22} className="animate-spin text-gray-300" />
           </div>
@@ -193,14 +183,14 @@ export default function AdminBookingsPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page <= 1 || loading}
+            disabled={page <= 1 || isLoadingBookings}
             className="flex items-center gap-1 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-600 transition hover:bg-gray-50 disabled:pointer-events-none disabled:opacity-40"
           >
             <ChevronLeft size={14} /> Prev
           </button>
           <button
             onClick={() => setPage((p) => p + 1)}
-            disabled={page >= totalPages || loading}
+            disabled={page >= totalPages || isLoadingBookings}
             className="flex items-center gap-1 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-600 transition hover:bg-gray-50 disabled:pointer-events-none disabled:opacity-40"
           >
             Next <ChevronRight size={14} />

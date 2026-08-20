@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -12,7 +11,7 @@ import {
   Loader2,
   MapPin,
 } from 'lucide-react';
-import { listBookingsApi } from '@travel-suite/frontend-shared/services/apiBookings';
+import { useGetBookings } from '@travel-suite/frontend-shared/hooks/bookings/useGetBookings';
 
 const STATUS_CFG = {
   pending_payment: { label: 'Pending payment', cls: 'bg-amber-50 text-amber-700 border-amber-200' },
@@ -56,23 +55,11 @@ function fmtTime(iso) {
 }
 
 export default function AdminDashboardPage() {
-  const [bookings, setBookings] = useState([]);
-  const [total, setTotal]       = useState(null);
-  const [loading, setLoading]   = useState(true);
+  const { bookings, total, isLoadingBookings } = useGetBookings({ limit: 10 });
 
   const today = new Date().toLocaleDateString('en-GB', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   });
-
-  useEffect(() => {
-    listBookingsApi({ limit: 10 })
-      .then((data) => {
-        setBookings(data?.bookings ?? []);
-        setTotal(data?.total ?? 0);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
 
   const paid      = bookings.filter((b) => b.status === 'paid').length;
   const confirmed = bookings.filter((b) => b.status === 'confirmed').length;
@@ -97,7 +84,7 @@ export default function AdminDashboardPage() {
       </div>
 
       <div className="flex gap-4 overflow-x-auto pb-1 [&>*]:min-w-[160px] [&>*]:shrink-0 xl:[&>*]:min-w-0 xl:[&>*]:flex-1">
-        {loading ? (
+        {isLoadingBookings ? (
           Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="min-w-[160px] animate-pulse rounded-2xl border border-gray-200 bg-white p-5">
               <div className="mb-3 h-10 w-10 rounded-xl bg-gray-100" />
@@ -119,7 +106,7 @@ export default function AdminDashboardPage() {
         <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
           <div>
             <p className="text-sm font-bold text-gray-900">Recent bookings</p>
-            {total !== null && (
+            {!isLoadingBookings && (
               <p className="mt-0.5 text-xs text-gray-400">{total} total</p>
             )}
           </div>
@@ -131,7 +118,7 @@ export default function AdminDashboardPage() {
           </Link>
         </div>
 
-        {loading ? (
+        {isLoadingBookings ? (
           <div className="flex items-center justify-center py-16">
             <Loader2 size={20} className="animate-spin text-gray-300" />
           </div>
