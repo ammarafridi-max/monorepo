@@ -21,35 +21,27 @@ export default function StatCard({
         : 'text-gray-400';
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col gap-4">
-
-      <div className="flex items-start justify-between">
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>
-          <Icon size={18} className={iconColor} />
-        </div>
-
-        {trend !== null && (
-          <div className={`flex items-center gap-1 text-xs font-semibold ${trendColor}`}>
-            <TrendIcon size={13} />
-            {trendLabel && (
-              <span className="text-gray-400 font-normal">{trendLabel}</span>
-            )}
-          </div>
-        )}
+    <div className="bg-white border border-gray-200 rounded-xl p-3 flex items-center gap-3">
+      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${iconBg}`}>
+        <Icon size={15} className={iconColor} />
       </div>
 
-      <div>
-        <p className="text-2xl font-extrabold text-gray-900 leading-none">
+      <div className="min-w-0 flex-1">
+        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide truncate">
+          {label}
+        </p>
+        <p className="text-lg font-extrabold text-gray-900 leading-tight truncate">
           {value}
         </p>
-        {sub && (
-          <p className="text-xs text-gray-400 mt-1">{sub}</p>
-        )}
+        {sub && <p className="text-[11px] text-gray-400 truncate">{sub}</p>}
       </div>
 
-      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-        {label}
-      </p>
+      {trend !== null && (
+        <div className={`flex items-center gap-1 text-xs font-semibold shrink-0 ${trendColor}`}>
+          <TrendIcon size={13} />
+          {trendLabel && <span className="text-gray-400 font-normal">{trendLabel}</span>}
+        </div>
+      )}
     </div>
   );
 }

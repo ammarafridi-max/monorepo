@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Search, X, Loader2 } from 'lucide-react';
@@ -194,7 +194,7 @@ function GlobalSearch() {
   }
 
   return (
-    <div ref={containerRef} className="relative flex-1 sm:max-w-md">
+    <div ref={containerRef} className="relative flex-1 max-w-md">
 
       <div className="relative">
         <Search
@@ -207,7 +207,7 @@ function GlobalSearch() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => { if (searched) setOpen(true); }}
-          placeholder="Search tickets, insurance, leads, users, posts…"
+          placeholder="Search tickets, insurance, leads…"
           className="w-full h-9 pl-8 pr-8 rounded-lg border border-gray-200 bg-transparent text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-300 focus:bg-white transition"
         />
 
@@ -292,7 +292,7 @@ export default function AdminHeader() {
     : '?';
 
   return (
-    <header className="h-14 bg-white border-b border-gray-100 flex items-center gap-4 px-6 shrink-0 pl-16 lg:pl-6">
+    <header className="hidden lg:flex h-14 bg-white border-b border-gray-100 shrink-0 items-center gap-4 px-6">
       <GlobalSearch />
 
       <div className="flex-1" />
@@ -302,7 +302,7 @@ export default function AdminHeader() {
           href="/admin/account"
           className="flex items-center gap-2.5 hover:opacity-80 transition shrink-0"
         >
-          <div className="text-right hidden sm:block">
+          <div className="text-right">
             <p className="text-xs font-semibold text-gray-800 leading-none">
               {adminUser.name}
             </p>

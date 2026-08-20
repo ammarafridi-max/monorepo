@@ -8,6 +8,11 @@ export async function checkVisaRequirementApi({ nationality, residence, destinat
   return apiFetchPublic(`${URL}/check?${params.toString()}`, { cache: 'no-store' });
 }
 
+/** Public: only the destinations that have a published rule behind them. */
+export async function getVisaDestinationsApi() {
+  return apiFetchPublic(`${URL}/destinations`);
+}
+
 export const getVisaRulesApi = (opts = {}) => {
   const params = new URLSearchParams();
   if (opts.published !== undefined) params.append('published', String(opts.published));

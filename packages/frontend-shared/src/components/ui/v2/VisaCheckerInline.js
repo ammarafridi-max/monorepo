@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ArrowRight, Check, AlertCircle, Info, ShieldQuestion, AlertTriangle } from 'lucide-react';
 import VisaSearchBar, { SCHENGEN_OPTION } from './VisaSearchBar.js';
 import { useVisaCheck } from '../../../hooks/visa/useVisaCheck.js';
+import { useVisaDestinations } from '../../../hooks/visa/useVisaDestinations.js';
 import { outcomeUi, OUTCOME_TONE, NEEDS_ACTION, isUnverified } from '../../../utils/visaOutcomes.js';
 
 
@@ -22,6 +23,7 @@ export default function VisaCheckerInline({
   className = '',
 }) {
   const v = useVisaCheck();
+  const { destinations, loading: destinationsLoading } = useVisaDestinations();
 
   const ui = v.result ? outcomeUi(v.result.outcome) : null;
   const tone = ui ? OUTCOME_TONE[ui.tone] : null;
@@ -35,8 +37,9 @@ export default function VisaCheckerInline({
         nationality={v.nationality} setNationality={v.setNationality}
         residence={v.residence} setResidence={v.setResidence}
         destination={v.destination} setDestination={v.setDestination}
+        destinations={destinations.length ? destinations : null}
         onSubmit={v.submit}
-        loading={v.loading}
+        loading={v.loading || destinationsLoading}
         error={v.error}
         extraDestinations={extraDestinations}
       />

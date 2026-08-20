@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 import { useQueries } from '@tanstack/react-query';
 import {
-  Ticket,
   CircleDollarSign,
   Handshake,
   BookOpen,
@@ -31,10 +30,12 @@ function fmtRevenue(amount) {
 
 function StatSkeleton() {
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col gap-4 animate-pulse">
-      <div className="w-10 h-10 rounded-xl bg-gray-100" />
-      <div className="h-7 w-20 bg-gray-100 rounded-lg" />
-      <div className="h-3 w-28 bg-gray-100 rounded" />
+    <div className="bg-white border border-gray-200 rounded-xl p-3 flex items-center gap-3 animate-pulse">
+      <div className="w-8 h-8 rounded-lg bg-gray-100 shrink-0" />
+      <div className="flex-1 space-y-1.5">
+        <div className="h-2 w-16 bg-gray-100 rounded" />
+        <div className="h-4 w-20 bg-gray-100 rounded" />
+      </div>
     </div>
   );
 }
@@ -142,24 +143,15 @@ function DashboardContent() {
   return (
     <div className="max-w-7xl mx-auto space-y-6">
 
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-extrabold text-gray-900">Dashboard</h2>
-          <p className="text-sm text-gray-400 mt-0.5 flex items-center gap-1.5">
-            <CalendarDays size={13} />
-            {today}
-          </p>
-        </div>
-        <Link
-          href="/admin/dummy-tickets"
-          className="shrink-0 flex items-center gap-2 bg-primary-700 hover:bg-primary-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors"
-        >
-          <Ticket size={14} />
-          View Tickets
-        </Link>
+      <div>
+        <h2 className="text-2xl font-extrabold text-gray-900">Dashboard</h2>
+        <p className="text-sm text-gray-400 mt-0.5 flex items-center gap-1.5">
+          <CalendarDays size={13} />
+          {today}
+        </p>
       </div>
 
-      <div className="flex gap-4 overflow-x-auto pb-1 [&>*]:min-w-[180px] [&>*]:shrink-0 xl:[&>*]:flex-1 xl:[&>*]:min-w-0">
+      <div className="flex flex-wrap gap-3 [&>*]:flex-1 [&>*]:min-w-[150px]">
         {statsLoading ? (
           <>
             <StatSkeleton />
