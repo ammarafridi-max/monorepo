@@ -2,7 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { getAllBlogsApi } from '../../services/apiBlog.js';
 
-export function useGetBlogs({ page = 1, limit = 10, status, tag, search, author } = {}) {
+export function useGetBlogs({ page = 1, limit = 10, status, tag, search, author } = {}, options = {}) {
   const {
     data,
     isLoading: isLoadingBlogs,
@@ -10,6 +10,7 @@ export function useGetBlogs({ page = 1, limit = 10, status, tag, search, author 
   } = useQuery({
     queryKey: ['blogs', page, limit, status, tag, search, author],
     queryFn: () => getAllBlogsApi({ page, limit, status, tag, search, author }),
+    ...options,
   });
 
   const blogs = data?.blogs || [];

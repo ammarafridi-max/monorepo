@@ -1,14 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import toast from 'react-hot-toast';
 import { Users, Plus, Pencil, Trash2, X, Loader2, Search, Eye, EyeOff, KeyRound } from 'lucide-react';
 import { useGetAdminUsers } from '../../hooks/admin-users/useGetAdminUsers';
 import { useCreateAdminUser } from '../../hooks/admin-users/useCreateAdminUser';
 import { useUpdateAdminUser } from '../../hooks/admin-users/useUpdateAdminUser';
 import { useSetAdminUserPassword } from '../../hooks/admin-users/useSetAdminUserPassword';
-import { deleteAdminUserApi } from '../../services/apiAdminUsers';
+import { useDeleteAdminUser } from '../../hooks/admin-users/useDeleteAdminUser';
 
 const ROLES = ['admin', 'agent', 'blog-manager'];
 const STATUSES = ['ACTIVE', 'INACTIVE'];
@@ -251,15 +249,7 @@ export default function AdminUsersPage() {
   const { updateUser, isUpdating }     = useUpdateAdminUser();
   const { setPassword, isSettingPassword } = useSetAdminUserPassword();
 
-  const queryClient = useQueryClient();
-  const { mutate: deleteUser, isPending: isDeletingUser } = useMutation({
-    mutationFn: (username) => deleteAdminUserApi(username),
-    onSuccess: () => {
-      toast.success('User deleted successfully');
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-    },
-    onError: () => toast.error('User could not be deleted'),
-  });
+  const { deleteUser, isDeleting: isDeletingUser } = useDeleteAdminUser();
 
   const saving = isCreating || isUpdating;
 

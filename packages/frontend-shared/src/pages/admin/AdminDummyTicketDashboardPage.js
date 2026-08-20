@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { Suspense } from 'react';
-import { useQueries } from '@tanstack/react-query';
 import {
   CircleDollarSign,
   Handshake,
@@ -16,9 +15,9 @@ import {
 } from 'lucide-react';
 import StatCard from '../../components/admin/StatCard';
 import RecentTicketsTable from '../../components/admin/RecentTicketsTable';
-import { getDummyTicketsApi } from '../../services/apiDummyTickets';
-import { getAffiliatesApi } from '../../services/apiAffiliates';
-import { getAllBlogsApi } from '../../services/apiBlog';
+import { useDummyTickets } from '../../hooks/dummy-tickets/useDummyTickets';
+import { useGetAffiliates } from '../../hooks/affiliates/useGetAffiliates';
+import { useGetBlogs } from '../../hooks/blog/useGetBlogs';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 
 function fmtRevenue(amount) {
@@ -69,52 +68,21 @@ function DashboardContent() {
   const isAgent = adminUser?.role === 'agent';
   const ticketTimeFilter = isAgent ? { createdAt: '4_hours' } : {};
 
-  const results = useQueries({
-    queries: [
-      {
-        queryKey: ['dashboard', 'recent-tickets', isAgent],
-        queryFn: () => getDummyTicketsApi({ limit: 5, page: 1, ...ticketTimeFilter }),
-      },
-      {
-        queryKey: ['dashboard', 'all-tickets', isAgent],
-        queryFn: () => getDummyTicketsApi({ limit: 1000, ...ticketTimeFilter }),
-      },
-      {
-        queryKey: ['dashboard', 'today-deliveries'],
-        queryFn: () => getDummyTicketsApi({ deliveryDate: 'today', limit: 1 }),
-      },
-      {
-        queryKey: ['dashboard', 'affiliates'],
-        queryFn: () => getAffiliatesApi({ limit: 500 }),
-      },
-      {
-        queryKey: ['dashboard', 'blogs', 'published'],
-        queryFn: () => getAllBlogsApi({ status: 'published', limit: 1 }),
-      },
-      {
-        queryKey: ['dashboard', 'blogs', 'draft'],
-        queryFn: () => getAllBlogsApi({ status: 'draft', limit: 1 }),
-      },
-      {
-        queryKey: ['dashboard', 'blogs', 'scheduled'],
-        queryFn: () => getAllBlogsApi({ status: 'scheduled', limit: 1 }),
-      },
-    ],
-  });
+  const { dummyTickets: recent } = useDummyTickets({ limit: 5, page: 1, ...ticketTimeFilter }, { staleTime: 300_000, refetchOnWindowFocus: false, refetchOnMount: false });
+  const {
+    dummyTickets: all,
+    pagination: allTicketsPagination,
+    isLoadingDummyTickets,
+  } = useDummyTickets({ limit: 1000, ...ticketTimeFilter }, { staleTime: 300_000, refetchOnWindowFocus: false, refetchOnMount: false });
+  const { pagination: todayPagination } = useDummyTickets({ deliveryDate: 'today', limit: 1 }, { staleTime: 300_000, refetchOnWindowFocus: false, refetchOnMount: false });
+  const { affiliates } = useGetAffiliates({ limit: 500 });
+  const publishedBlogs = useGetBlogs({ status: 'published', limit: 1 });
+  const draftBlogs = useGetBlogs({ status: 'draft', limit: 1 });
+  const scheduledBlogs = useGetBlogs({ status: 'scheduled', limit: 1 });
 
-  const [
-    recentQ,
-    allTicketsQ,
-    todayQ,
-    affiliatesQ,
-    publishedQ,
-    draftQ,
-    scheduledQ,
-  ] = results;
-
-  const recentTickets = recentQ.data?.data ?? [];
-  const allTickets = allTicketsQ.data?.data ?? [];
-  const totalTickets = allTicketsQ.data?.pagination?.total ?? 0;
+  const recentTickets = recent ?? [];
+  const allTickets = all ?? [];
+  const totalTickets = allTicketsPagination?.total ?? 0;
 
   const paidTickets = allTickets.filter((t) => t.paymentStatus === 'PAID').length;
   const unpaidTickets = allTickets.filter((t) => t.paymentStatus === 'UNPAID').length;
@@ -127,18 +95,18 @@ function DashboardContent() {
     .filter((t) => t.paymentStatus === 'PAID')
     .reduce((sum, t) => sum + Number(t.amountPaid?.amount || 0), 0);
 
-  const todayDeliveries = todayQ.data?.pagination?.total ?? 0;
-  const activeAffiliates = (affiliatesQ.data?.affiliates ?? []).filter((a) => a.isActive).length;
+  const todayDeliveries = todayPagination?.total ?? 0;
+  const activeAffiliates = affiliates.filter((a) => a.isActive).length;
 
   const paidRatio = totalTickets > 0 ? Math.round((paidTickets / totalTickets) * 100) : 0;
 
   const blogStats = {
-    published: publishedQ.data?.pagination?.total ?? 0,
-    draft: draftQ.data?.pagination?.total ?? 0,
-    scheduled: scheduledQ.data?.pagination?.total ?? 0,
+    published: publishedBlogs.pagination?.total ?? 0,
+    draft: draftBlogs.pagination?.total ?? 0,
+    scheduled: scheduledBlogs.pagination?.total ?? 0,
   };
 
-  const statsLoading = allTicketsQ.isPending;
+  const statsLoading = isLoadingDummyTickets;
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">

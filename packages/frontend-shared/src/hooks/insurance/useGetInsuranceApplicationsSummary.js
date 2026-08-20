@@ -3,9 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { getInsuranceApplicationsSummaryApi } from '../../services/apiInsurance.js';
 
-export function useGetInsuranceApplicationsSummary() {
+export function useGetInsuranceApplicationsSummary(overrides) {
   const searchParams = useSearchParams();
-  const params = Object.fromEntries([...searchParams]);
+  const params = { ...(overrides ?? Object.fromEntries([...searchParams])) };
   delete params.page;
   delete params.limit;
 

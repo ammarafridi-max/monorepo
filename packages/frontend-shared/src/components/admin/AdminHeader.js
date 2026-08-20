@@ -1,15 +1,16 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Search, X, Loader2 } from 'lucide-react';
 import { useAdminAuth } from '../../contexts/AdminAuthContext.js';
-import { getDummyTicketsApi } from '../../services/apiDummyTickets.js';
-import { getInsuranceApplicationsApi } from '../../services/apiInsurance.js';
-import { getAdminVisaLeadsApi } from '../../services/apiVisaLeads.js';
-import { getAdminUsersApi } from '../../services/apiAdminUsers.js';
-import { getAllBlogsApi } from '../../services/apiBlog.js';
+import { useDebounce } from '../../hooks/general/useDebounce.js';
+import { useDummyTickets } from '../../hooks/dummy-tickets/useDummyTickets.js';
+import { useGetInsuranceApplications } from '../../hooks/insurance/useGetInsuranceApplications.js';
+import { useGetAdminVisaLeads } from '../../hooks/visa-leads/useGetAdminVisaLeads.js';
+import { useGetAdminUsers } from '../../hooks/admin-users/useGetAdminUsers.js';
+import { useGetBlogs } from '../../hooks/blog/useGetBlogs.js';
 
 const ROLE_LABELS = {
   admin: 'Admin',
@@ -33,88 +34,62 @@ const CATEGORY_COLORS = {
   blogs:     'bg-rose-50 text-rose-700',
 };
 
-function normaliseResults(key, raw) {
-  try {
-    if (key === 'tickets') {
-      const items = Array.isArray(raw?.data) ? raw.data : [];
-      return items.slice(0, 4).map((t) => {
-        const p = t.passengers?.[0];
-        const name = p ? `${p.firstName ?? ''} ${p.lastName ?? ''}`.trim() : null;
-        return {
-          id: t.sessionId,
-          primary: name || t.email || t.sessionId,
-          secondary: name ? t.email : `${t.from ?? ''} → ${t.to ?? ''}`,
-          href: `/admin/dummy-tickets/${t.sessionId}`,
-        };
-      });
-    }
-
-    if (key === 'insurance') {
-      const items = Array.isArray(raw?.data) ? raw.data : [];
-      return items.slice(0, 4).map((a) => ({
-        id: a.sessionId || a._id,
-        primary: a.email || a.sessionId,
-        secondary: a.sessionId,
-        href: `/admin/insurance-applications/${a.sessionId}`,
-      }));
-    }
-
-    if (key === 'leads') {
-      const items = Array.isArray(raw?.leads) ? raw.leads : [];
-      return items.slice(0, 4).map((l) => ({
-        id: l._id,
-        primary: `${l.firstName ?? ''} ${l.lastName ?? ''}`.trim() || l.email,
-        secondary: `${l.email}${l.visaCountryName ? ` · ${l.visaCountryName}` : ''}`,
-        href: `/admin/visa-leads/${l._id}`,
-      }));
-    }
-
-    if (key === 'users') {
-      const items = Array.isArray(raw) ? raw : Array.isArray(raw?.users) ? raw.users : [];
-      return items.slice(0, 4).map((u) => ({
-        id: u._id || u.username,
-        primary: u.name || u.username,
-        secondary: `${u.email}${u.role ? ` · ${ROLE_LABELS[u.role] ?? u.role}` : ''}`,
-        href: `/admin/users`,
-      }));
-    }
-
-    if (key === 'blogs') {
-      const items = Array.isArray(raw?.blogs)
-        ? raw.blogs
-        : Array.isArray(raw?.data?.blogs)
-        ? raw.data.blogs
-        : Array.isArray(raw)
-        ? raw
-        : [];
-      return items.slice(0, 4).map((b) => ({
-        id: b._id,
-        primary: b.title || b.slug || b._id,
-        secondary: b.status ?? '',
-        href: `/admin/blog/${b._id}`,
-      }));
-    }
-  } catch {
-
+function normaliseResults(key, items = []) {
+  if (key === 'tickets') {
+    return items.slice(0, 4).map((t) => {
+      const p = t.passengers?.[0];
+      const name = p ? `${p.firstName ?? ''} ${p.lastName ?? ''}`.trim() : null;
+      return {
+        id: t.sessionId,
+        primary: name || t.email || t.sessionId,
+        secondary: name ? t.email : `${t.from ?? ''} → ${t.to ?? ''}`,
+        href: `/admin/dummy-tickets/${t.sessionId}`,
+      };
+    });
   }
-  return [];
-}
 
-function useDebounce(value, delay) {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const t = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(t);
-  }, [value, delay]);
-  return debounced;
+  if (key === 'insurance') {
+    return items.slice(0, 4).map((a) => ({
+      id: a.sessionId || a._id,
+      primary: a.email || a.sessionId,
+      secondary: a.sessionId,
+      href: `/admin/insurance-applications/${a.sessionId}`,
+    }));
+  }
+
+  if (key === 'leads') {
+    return items.slice(0, 4).map((l) => ({
+      id: l._id,
+      primary: `${l.firstName ?? ''} ${l.lastName ?? ''}`.trim() || l.email,
+      secondary: `${l.email}${l.visaCountryName ? ` · ${l.visaCountryName}` : ''}`,
+      href: `/admin/visa-leads/${l._id}`,
+    }));
+  }
+
+  if (key === 'users') {
+    return items.slice(0, 4).map((u) => ({
+      id: u._id || u.username,
+      primary: u.name || u.username,
+      secondary: `${u.email}${u.role ? ` · ${ROLE_LABELS[u.role] ?? u.role}` : ''}`,
+      href: `/admin/users`,
+    }));
+  }
+
+  if (key === 'blogs') {
+    return items.slice(0, 4).map((b) => ({
+      id: b._id,
+      primary: b.title || b.slug || b._id,
+      secondary: b.status ?? '',
+      href: `/admin/blog/${b._id}`,
+    }));
+  }
+
+  return [];
 }
 
 function GlobalSearch() {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState({});
-  const [searched, setSearched] = useState(false);
 
   const debouncedQuery = useDebounce(query.trim(), 300);
   const containerRef = useRef(null);
@@ -141,39 +116,39 @@ function GlobalSearch() {
     return () => document.removeEventListener('keydown', handleKey);
   }, []);
 
+  const enabled = debouncedQuery.length >= 2;
+  const searchFilters = { search: debouncedQuery, limit: 4 };
+
+  // No brand mounts all five domains, so several of these always 404. Retrying
+  // them holds the dropdown on a spinner for seconds.
+  const searchOpts = { enabled, retry: false };
+
+  const { dummyTickets, isLoadingDummyTickets } = useDummyTickets(searchFilters, searchOpts);
+  const { applications, isLoadingApplications } = useGetInsuranceApplications(searchFilters, searchOpts);
+  const { leads, isLoadingLeads } = useGetAdminVisaLeads(searchFilters, { ...searchOpts, refetchInterval: false });
+  const { users, isLoadingUsers } = useGetAdminUsers(searchFilters, searchOpts);
+  const { blogs, isLoadingBlogs } = useGetBlogs(searchFilters, searchOpts);
+
   useEffect(() => {
-    if (debouncedQuery.length < 2) {
-      setResults({});
-      setSearched(false);
-      setOpen(false);
-      return;
-    }
+    if (enabled) setOpen(true);
+  }, [enabled, debouncedQuery]);
 
-    let cancelled = false;
-    setLoading(true);
-    setOpen(true);
+  const loading =
+    enabled &&
+    (isLoadingDummyTickets || isLoadingApplications || isLoadingLeads || isLoadingUsers || isLoadingBlogs);
+  const searched = enabled && !loading;
 
-    Promise.allSettled([
-      getDummyTicketsApi({ search: debouncedQuery, limit: 4 }),
-      getInsuranceApplicationsApi({ search: debouncedQuery, limit: 4 }),
-      getAdminVisaLeadsApi({ search: debouncedQuery, limit: 4 }),
-      getAdminUsersApi({ search: debouncedQuery, limit: 4 }),
-      getAllBlogsApi({ search: debouncedQuery, limit: 4 }),
-    ]).then(([tickets, insurance, leads, users, blogs]) => {
-      if (cancelled) return;
-      setResults({
-        tickets:   normaliseResults('tickets',   tickets.status   === 'fulfilled' ? tickets.value   : null),
-        insurance: normaliseResults('insurance', insurance.status === 'fulfilled' ? insurance.value : null),
-        leads:     normaliseResults('leads',     leads.status     === 'fulfilled' ? leads.value     : null),
-        users:     normaliseResults('users',     users.status     === 'fulfilled' ? users.value     : null),
-        blogs:     normaliseResults('blogs',     blogs.status     === 'fulfilled' ? blogs.value     : null),
-      });
-      setSearched(true);
-      setLoading(false);
-    });
-
-    return () => { cancelled = true; };
-  }, [debouncedQuery]);
+  const results = useMemo(() => {
+    if (!enabled) return {};
+    const userList = Array.isArray(users) ? users : users?.users ?? [];
+    return {
+      tickets: normaliseResults('tickets', dummyTickets ?? []),
+      insurance: normaliseResults('insurance', applications ?? []),
+      leads: normaliseResults('leads', leads ?? []),
+      users: normaliseResults('users', userList),
+      blogs: normaliseResults('blogs', blogs ?? []),
+    };
+  }, [enabled, dummyTickets, applications, leads, users, blogs]);
 
   const totalResults = Object.values(results).reduce((s, arr) => s + arr.length, 0);
   const hasResults = totalResults > 0;
@@ -181,14 +156,10 @@ function GlobalSearch() {
   function handleSelect() {
     setOpen(false);
     setQuery('');
-    setResults({});
-    setSearched(false);
   }
 
   function handleClear() {
     setQuery('');
-    setResults({});
-    setSearched(false);
     setOpen(false);
     inputRef.current?.focus();
   }
@@ -293,7 +264,9 @@ export default function AdminHeader() {
 
   return (
     <header className="hidden lg:flex h-14 bg-white border-b border-gray-100 shrink-0 items-center gap-4 px-6">
-      <GlobalSearch />
+      <Suspense fallback={<div className="flex-1 max-w-md" />}>
+        <GlobalSearch />
+      </Suspense>
 
       <div className="flex-1" />
 

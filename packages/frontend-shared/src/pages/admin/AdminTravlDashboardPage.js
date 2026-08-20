@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { Suspense } from 'react';
-import { useQueries } from '@tanstack/react-query';
 import {
   ShieldCheck,
   CircleDollarSign,
@@ -16,9 +15,10 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import StatCard from '../../components/admin/StatCard';
-import { getInsuranceApplicationsApi, getInsuranceApplicationsSummaryApi } from '../../services/apiInsurance';
-import { getAffiliatesApi } from '../../services/apiAffiliates';
-import { getAllBlogsApi } from '../../services/apiBlog';
+import { useGetInsuranceApplications } from '../../hooks/insurance/useGetInsuranceApplications';
+import { useGetInsuranceApplicationsSummary } from '../../hooks/insurance/useGetInsuranceApplicationsSummary';
+import { useGetAffiliates } from '../../hooks/affiliates/useGetAffiliates';
+import { useGetBlogs } from '../../hooks/blog/useGetBlogs';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 
 function fmtMoney(amount, currency = 'AED') {
@@ -101,40 +101,16 @@ function DashboardContent() {
 
   const isAgent = adminUser?.role === 'agent';
 
-  const results = useQueries({
-    queries: [
-      {
-        queryKey: ['dashboard-travl', 'insurance-summary'],
-        queryFn: getInsuranceApplicationsSummaryApi,
-      },
-      {
-        queryKey: ['dashboard-travl', 'recent-insurance'],
-        queryFn: () => getInsuranceApplicationsApi({ limit: 6, page: 1 }),
-      },
-      {
-        queryKey: ['dashboard-travl', 'affiliates'],
-        queryFn: () => getAffiliatesApi({ limit: 500 }),
-      },
-      {
-        queryKey: ['dashboard-travl', 'blogs', 'published'],
-        queryFn: () => getAllBlogsApi({ status: 'published', limit: 1 }),
-      },
-      {
-        queryKey: ['dashboard-travl', 'blogs', 'draft'],
-        queryFn: () => getAllBlogsApi({ status: 'draft', limit: 1 }),
-      },
-      {
-        queryKey: ['dashboard-travl', 'blogs', 'scheduled'],
-        queryFn: () => getAllBlogsApi({ status: 'scheduled', limit: 1 }),
-      },
-    ],
-  });
+  const { summary: summaryData, isLoadingSummary } = useGetInsuranceApplicationsSummary({});
+  const { applications: recentInsurance } = useGetInsuranceApplications({ limit: 6, page: 1 }, { staleTime: 300_000, refetchOnWindowFocus: false, refetchOnMount: false });
+  const { affiliates } = useGetAffiliates({ limit: 500 });
+  const publishedBlogs = useGetBlogs({ status: 'published', limit: 1 });
+  const draftBlogs = useGetBlogs({ status: 'draft', limit: 1 });
+  const scheduledBlogs = useGetBlogs({ status: 'scheduled', limit: 1 });
 
-  const [summaryQ, recentInsQ, affiliatesQ, publishedQ, draftQ, scheduledQ] = results;
-
-  const summary = summaryQ.data ?? {};
-  const recentApplications = recentInsQ.data?.data ?? [];
-  const activeAffiliates = (affiliatesQ.data?.affiliates ?? []).filter((a) => a.isActive).length;
+  const summary = summaryData ?? {};
+  const recentApplications = recentInsurance ?? [];
+  const activeAffiliates = affiliates.filter((a) => a.isActive).length;
 
   const insTotal    = summary.totalApplications ?? 0;
   const insRevenue  = summary.totalRevenue ?? { amount: 0, currency: 'AED' };
@@ -143,12 +119,12 @@ function DashboardContent() {
   const insPaid     = insTotal - insPending - insFailed;
 
   const blogStats = {
-    published: publishedQ.data?.pagination?.total ?? 0,
-    draft:     draftQ.data?.pagination?.total ?? 0,
-    scheduled: scheduledQ.data?.pagination?.total ?? 0,
+    published: publishedBlogs.pagination?.total ?? 0,
+    draft:     draftBlogs.pagination?.total ?? 0,
+    scheduled: scheduledBlogs.pagination?.total ?? 0,
   };
 
-  const statsLoading = summaryQ.isPending;
+  const statsLoading = isLoadingSummary;
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">

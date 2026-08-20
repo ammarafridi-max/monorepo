@@ -3,9 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { getDummyTicketsApi } from '../../services/apiDummyTickets.js';
 import { useSearchParams } from 'next/navigation';
 
-export function useDummyTickets() {
+export function useDummyTickets(overrides, options = {}) {
   const searchParams = useSearchParams();
-  const params = Object.fromEntries([...searchParams]);
+  const params = overrides ?? Object.fromEntries([...searchParams]);
 
   const {
     data,
@@ -17,6 +17,7 @@ export function useDummyTickets() {
     placeholderData: (prev) => prev,
     refetchOnWindowFocus: true,
     staleTime: 0,
+    ...options,
   });
 
   return {

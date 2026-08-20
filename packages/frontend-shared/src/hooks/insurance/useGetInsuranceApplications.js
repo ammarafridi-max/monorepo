@@ -3,9 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { getInsuranceApplicationsApi } from '../../services/apiInsurance.js';
 
-export function useGetInsuranceApplications() {
+export function useGetInsuranceApplications(overrides, options = {}) {
   const searchParams = useSearchParams();
-  const params = Object.fromEntries([...searchParams]);
+  const params = overrides ?? Object.fromEntries([...searchParams]);
 
   const {
     data,
@@ -16,6 +16,7 @@ export function useGetInsuranceApplications() {
     queryFn: () => getInsuranceApplicationsApi(params),
     refetchOnMount: 'always',
     placeholderData: (prev) => prev,
+    ...options,
   });
 
   return {

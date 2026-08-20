@@ -3,9 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { getAffiliatesApi } from '../../services/apiAffiliates.js';
 
-export function useGetAffiliates() {
+export function useGetAffiliates(overrides) {
   const searchParams = useSearchParams();
-  const params = Object.fromEntries([...searchParams]);
+  const params = overrides ?? Object.fromEntries([...searchParams]);
 
   const {
     data,

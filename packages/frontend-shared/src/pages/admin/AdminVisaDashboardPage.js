@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useQueries } from '@tanstack/react-query';
 import {
   Inbox,
   ClipboardList,
@@ -10,9 +9,9 @@ import {
   ArrowUpRight,
 } from 'lucide-react';
 import StatCard from '../../components/admin/StatCard';
-import { getAdminVisaLeadsApi } from '../../services/apiVisaLeads';
-import { adminListApplicationsApi } from '../../services/apiVisaApplications';
-import { getAllBlogsApi } from '../../services/apiBlog';
+import { useGetAdminVisaLeads } from '../../hooks/visa-leads/useGetAdminVisaLeads';
+import { useAdminApplications } from '../../hooks/visa-applications/useAdminApplications';
+import { useGetBlogs } from '../../hooks/blog/useGetBlogs';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 
 
@@ -72,39 +71,36 @@ function SectionCard({ title, href, linkLabel, children, empty }) {
 }
 
 export default function AdminVisaDashboardPage() {
-  const { admin } = useAdminAuth();
+  const { adminUser } = useAdminAuth();
 
-  const [leadsQ, appsQ, blogsQ] = useQueries({
-    queries: [
-      {
-        queryKey: ['dashboard-visa', 'leads'],
-        queryFn: () => getAdminVisaLeadsApi({ page: 1, limit: 6 }),
-      },
-      {
-        queryKey: ['dashboard-visa', 'applications'],
-        queryFn: () => adminListApplicationsApi({ page: 1, limit: 6 }),
-      },
-      {
-        queryKey: ['dashboard-visa', 'blogs'],
-        queryFn: () => getAllBlogsApi({ page: 1, limit: 1 }),
-      },
-    ],
-  });
+  const {
+    leads,
+    pagination: leadsPagination,
+    isLoadingLeads,
+    isErrorLeads,
+  } = useGetAdminVisaLeads({ page: 1, limit: 6 }, { refetchInterval: false });
 
-  const leads = leadsQ.data?.leads ?? leadsQ.data?.data ?? [];
-  const apps = appsQ.data?.applications ?? appsQ.data?.data ?? [];
-  const leadTotal = leadsQ.data?.pagination?.total ?? leads.length;
-  const appTotal = appsQ.data?.pagination?.total ?? apps.length;
-  const blogTotal = blogsQ.data?.pagination?.total ?? 0;
+  const {
+    applications: apps,
+    pagination: appsPagination,
+    isLoading: isLoadingApps,
+    isError: isErrorApps,
+  } = useAdminApplications({ page: 1, limit: 6 });
+
+  const { pagination: blogsPagination, isLoadingBlogs } = useGetBlogs({ page: 1, limit: 1 });
+
+  const leadTotal = leadsPagination?.total ?? leads.length;
+  const appTotal = appsPagination?.total ?? apps.length;
+  const blogTotal = blogsPagination?.total ?? 0;
   const newLeads = leads.filter((l) => l.status === 'new').length;
 
-  const failed = leadsQ.isError || appsQ.isError;
+  const failed = isErrorLeads || isErrorApps;
 
   return (
     <div className="mx-auto max-w-7xl space-y-5">
       <div>
         <h1 className="text-2xl font-extrabold text-gray-900">
-          {admin?.name ? `Welcome back, ${admin.name.split(' ')[0]}` : 'Dashboard'}
+          {adminUser?.name ? `Welcome back, ${adminUser.name.split(' ')[0]}` : 'Dashboard'}
         </h1>
         <p className="mt-1 text-sm text-gray-400">
           Visa leads and applications at a glance
@@ -124,7 +120,7 @@ export default function AdminVisaDashboardPage() {
           iconColor="text-primary-700"
           iconBg="bg-primary-50"
           label="Visa Leads"
-          value={leadsQ.isLoading ? '—' : leadTotal}
+          value={isLoadingLeads ? '—' : leadTotal}
           sub={newLeads > 0 ? `${newLeads} new and unactioned` : 'No new leads'}
         />
         <StatCard
@@ -132,7 +128,7 @@ export default function AdminVisaDashboardPage() {
           iconColor="text-primary-700"
           iconBg="bg-primary-50"
           label="Visa Applications"
-          value={appsQ.isLoading ? '—' : appTotal}
+          value={isLoadingApps ? '—' : appTotal}
           sub="Across every status"
         />
         <StatCard
@@ -140,7 +136,7 @@ export default function AdminVisaDashboardPage() {
           iconColor="text-primary-700"
           iconBg="bg-primary-50"
           label="Blog Posts"
-          value={blogsQ.isLoading ? '—' : blogTotal}
+          value={isLoadingBlogs ? '—' : blogTotal}
           sub="Published and draft"
         />
       </div>
@@ -150,7 +146,7 @@ export default function AdminVisaDashboardPage() {
           title="Latest Leads"
           href="/admin/visa-leads"
           linkLabel="All leads"
-          empty={!leadsQ.isLoading && leads.length === 0 ? 'No leads yet.' : null}
+          empty={!isLoadingLeads && leads.length === 0 ? 'No leads yet.' : null}
         >
           {leads.map((lead) => (
             <div key={lead._id} className="flex items-center gap-3 px-5 py-3">
@@ -177,7 +173,7 @@ export default function AdminVisaDashboardPage() {
           title="Recent Applications"
           href="/admin/visa-applications"
           linkLabel="All applications"
-          empty={!appsQ.isLoading && apps.length === 0 ? 'No applications yet.' : null}
+          empty={!isLoadingApps && apps.length === 0 ? 'No applications yet.' : null}
         >
           {apps.map((app) => (
             <div key={app._id} className="flex items-center gap-3 px-5 py-3">
