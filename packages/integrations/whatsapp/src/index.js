@@ -30,12 +30,13 @@ export function createWhatsAppClient({ accessToken, phoneNumberId, logger } = {}
     return json;
   };
 
-  const sendText = async ({ to, text }) => {
+  const sendText = async ({ to, text, replyToWamid }) => {
     const json = await post('sendText', {
       recipient_type: 'individual',
       to,
       type: 'text',
       text: { preview_url: false, body: text },
+      ...(replyToWamid ? { context: { message_id: replyToWamid } } : {}),
     });
     return { wamid: json?.messages?.[0]?.id ?? null };
   };
@@ -70,7 +71,7 @@ export function createWhatsAppClient({ accessToken, phoneNumberId, logger } = {}
     return 'document';
   };
 
-  const sendMedia = async ({ to, mediaId, mimeType, filename, caption }) => {
+  const sendMedia = async ({ to, mediaId, mimeType, filename, caption, replyToWamid }) => {
     const kind = mediaKindFor(mimeType);
     const payload = { id: mediaId };
     if (caption && kind !== 'audio') payload.caption = caption;
@@ -81,6 +82,7 @@ export function createWhatsAppClient({ accessToken, phoneNumberId, logger } = {}
       to,
       type: kind,
       [kind]: payload,
+      ...(replyToWamid ? { context: { message_id: replyToWamid } } : {}),
     });
     return { wamid: json?.messages?.[0]?.id ?? null, kind };
   };

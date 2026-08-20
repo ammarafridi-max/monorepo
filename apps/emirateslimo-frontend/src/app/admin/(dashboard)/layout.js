@@ -12,14 +12,14 @@ const nav = [
   {
     section: 'Overview',
     items: [
-      { label: 'Dashboard', href: '/admin', icon: 'LayoutDashboard', exact: true, roles: ['admin', 'agent', 'blog-manager'] },
+      { label: 'Dashboard', href: '/admin', mobile: 1, mobileLabel: 'Home', icon: 'LayoutDashboard', exact: true, roles: ['admin', 'agent', 'blog-manager'] },
     ],
   },
   {
     section: 'Bookings',
     items: [
-      { label: 'Bookings', href: '/admin/bookings', icon: 'Ticket', exact: true, roles: ['admin', 'agent'] },
-      { label: 'Calendar', href: '/admin/bookings/calendar', icon: 'CalendarDays', roles: ['admin', 'agent'] },
+      { label: 'Bookings', href: '/admin/bookings', mobile: 2, icon: 'Ticket', exact: true, roles: ['admin', 'agent'] },
+      { label: 'Calendar', href: '/admin/bookings/calendar', mobile: 3, icon: 'CalendarDays', roles: ['admin', 'agent'] },
     ],
   },
   {
@@ -43,7 +43,7 @@ const nav = [
     items: [
       { label: 'Currencies', href: '/admin/currencies', icon: 'CircleDollarSign', roles: ['admin'] },
       { label: 'Admin Users', href: '/admin/users', icon: 'Users', roles: ['admin'] },
-      { label: 'My Account', href: '/admin/account', icon: 'UserCircle', roles: ['admin', 'agent', 'blog-manager'] },
+      { label: 'My Account', href: '/admin/account', mobile: 4, mobileLabel: 'Account', icon: 'UserCircle', roles: ['admin', 'agent', 'blog-manager'] },
     ],
   },
 ];

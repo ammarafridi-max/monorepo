@@ -42,4 +42,3 @@ export const NEEDS_ACTION = ['VISA_REQUIRED', 'EVISA', 'ETA'];
 
 export const outcomeUi = (outcome) => OUTCOME_UI[outcome] ?? OUTCOME_UI.UNKNOWN;
 
-export const isUnverified = (result) => Boolean(result) && result.outcome !== 'UNKNOWN' && !result.lastVerifiedAt;

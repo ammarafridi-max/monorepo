@@ -12,14 +12,14 @@ const nav = [
   {
     section: 'Overview',
     items: [
-      { label: 'Dashboard', href: '/admin', icon: 'LayoutDashboard', exact: true, roles: ['admin', 'agent'] },
+      { label: 'Dashboard', href: '/admin', mobile: 1, mobileLabel: 'Home', icon: 'LayoutDashboard', exact: true, roles: ['admin', 'agent'] },
     ],
   },
   {
     section: 'Orders',
     items: [
-      { label: 'Insurance', href: '/admin/insurance-applications', icon: 'ShieldCheck', roles: ['admin', 'agent'] },
-      { label: 'Itineraries', href: '/admin/itineraries', icon: 'MapPin', roles: ['admin', 'agent'] },
+      { label: 'Insurance', href: '/admin/insurance-applications', mobile: 2, icon: 'ShieldCheck', roles: ['admin', 'agent'] },
+      { label: 'Itineraries', href: '/admin/itineraries', mobile: 3, mobileLabel: 'Trips', icon: 'MapPin', roles: ['admin', 'agent'] },
     ],
   },
   {
@@ -48,7 +48,7 @@ const nav = [
   {
     section: 'Settings',
     items: [
-      { label: 'My Account', href: '/admin/account', icon: 'UserCircle', roles: ['admin', 'agent', 'blog-manager'] },
+      { label: 'My Account', href: '/admin/account', mobile: 4, mobileLabel: 'Account', icon: 'UserCircle', roles: ['admin', 'agent', 'blog-manager'] },
     ],
   },
 ];

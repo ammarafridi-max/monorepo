@@ -228,6 +228,38 @@ export function validateCitations(parsed, brand, { minCitations }) {
   return citations;
 }
 
+/**
+ * House style forbids em dashes and the model keeps producing them anyway.
+ * Cheaper to fix mechanically than to fail an otherwise good post over
+ * punctuation. A dash between clauses becomes a comma; a dash used as a range
+ * or a bullet marker becomes a plain hyphen.
+ */
+export function stripEmDashes(value) {
+  if (typeof value !== "string") return value;
+  return value
+    .replace(/&mdash;|&#8212;/gi, "—")
+    .replace(/(<\/strong>)\s*—\s+/gi, "$1: ")  // "<strong>Label</strong> — detail" reads as a colon
+    .replace(/\s+—\s+/g, ", ")     // clause break: "the fee — AED 30 — is" → ", "
+    .replace(/—/g, "-")             // anything left is a range or a compound
+    .replace(/,\s*,/g, ",")
+    .replace(/,\s*([.;:!?])/g, "$1")
+    .replace(/\s+,/g, ",")
+    .replace(/,\s*(<\/(?:p|li|h2|h3|td|th)>)/gi, "$1");
+}
+
+/** Applied to every field that reaches a reader. */
+export function stripEmDashesFromPost(parsed) {
+  for (const key of ["metaTitle", "metaDescription", "excerpt", "quickAnswer", "content", "ctaBlock"]) {
+    if (parsed[key]) parsed[key] = stripEmDashes(parsed[key]);
+  }
+  parsed.faqs = (parsed.faqs ?? []).map((f) => ({
+    ...f,
+    question: stripEmDashes(f.question),
+    answer: stripEmDashes(f.answer),
+  }));
+  return parsed;
+}
+
 export function stripHtmlToText(html) {
   return html
     .replace(/<[^>]*>/g, " ")

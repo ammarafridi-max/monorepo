@@ -12,15 +12,15 @@ const nav = [
   {
     section: 'Overview',
     items: [
-      { label: 'Dashboard', href: '/admin', icon: 'LayoutDashboard', exact: true, roles: ['admin', 'agent'] },
+      { label: 'Dashboard', href: '/admin', mobile: 1, mobileLabel: 'Home', icon: 'LayoutDashboard', exact: true, roles: ['admin', 'agent'] },
     ],
   },
   {
     section: 'Orders',
     items: [
-      { label: 'Dummy Tickets', href: '/admin/dummy-tickets', icon: 'Ticket', exact: true, roles: ['admin', 'agent'] },
+      { label: 'Dummy Tickets', href: '/admin/dummy-tickets', mobile: 2, mobileLabel: 'Tickets', icon: 'Ticket', exact: true, roles: ['admin', 'agent'] },
       { label: "Today's Deliveries", href: '/admin/dummy-tickets/today', icon: 'CalendarCheck', roles: ['admin', 'agent', 'blog-manager'] },
-      { label: 'Insurance', href: '/admin/insurance-applications', icon: 'ShieldCheck', roles: ['admin', 'agent'] },
+      { label: 'Insurance', href: '/admin/insurance-applications', mobile: 3, icon: 'ShieldCheck', roles: ['admin', 'agent'] },
     ],
   },
   {
@@ -50,7 +50,7 @@ const nav = [
   {
     section: 'Settings',
     items: [
-      { label: 'My Account', href: '/admin/account', icon: 'UserCircle', roles: ['admin', 'agent', 'blog-manager'] },
+      { label: 'My Account', href: '/admin/account', mobile: 4, mobileLabel: 'Account', icon: 'UserCircle', roles: ['admin', 'agent', 'blog-manager'] },
     ],
   },
 ];

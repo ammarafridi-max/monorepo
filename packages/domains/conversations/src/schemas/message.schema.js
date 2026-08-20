@@ -16,6 +16,7 @@ const MessageSchema = new mongoose.Schema(
       filename: { type: String, default: null },
       caption: { type: String, default: null },
     },
+    replyToWamid: { type: String, default: null },
     status: { type: String, enum: ['RECEIVED', 'SENT', 'DELIVERED', 'READ', 'FAILED'], default: 'RECEIVED' },
     error: { type: String, default: null },
     sentBy: { type: mongoose.Schema.ObjectId, ref: 'admin-user', default: null },

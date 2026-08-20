@@ -2,6 +2,11 @@ export function createVisaRequirementsController({ service }) {
   const ok = (res, data, status = 200) => res.status(status).json({ status: 'success', data });
 
   return {
+    listDestinations: async (req, res, next) => {
+      try {
+        ok(res, await service.listDestinations());
+      } catch (err) { next(err); }
+    },
     check: async (req, res, next) => {
       try {
         const { nationality, residence, destination } = { ...req.query, ...req.body };

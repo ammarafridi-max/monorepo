@@ -18,6 +18,7 @@ function parseInbound(message, contact) {
     type: message.type,
     profileName: contact?.profile?.name ?? null,
     waId: message.from,
+    replyToWamid: message.context?.id ?? null,
   };
 
   if (message.type === 'text') return { ...base, text: message.text?.body ?? '' };

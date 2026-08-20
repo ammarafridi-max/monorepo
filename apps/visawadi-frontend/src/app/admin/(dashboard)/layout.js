@@ -14,7 +14,7 @@ const nav = [
     items: [
       {
         label: "Dashboard",
-        href: "/admin",
+        href: "/admin", mobile: 1, mobileLabel: "Home",
         icon: "LayoutDashboard",
         exact: true,
         roles: ["admin", "agent"],
@@ -26,13 +26,13 @@ const nav = [
     items: [
       {
         label: "Visa Leads",
-        href: "/admin/visa-leads",
+        href: "/admin/visa-leads", mobile: 3, mobileLabel: "Leads",
         icon: "Inbox",
         roles: ["admin"],
       },
       {
         label: "Visa Applications",
-        href: "/admin/visa-applications",
+        href: "/admin/visa-applications", mobile: 2, mobileLabel: "Visas",
         icon: "ClipboardList",
         roles: ["admin", "agent"],
       },
@@ -112,7 +112,7 @@ const nav = [
     items: [
       {
         label: "My Account",
-        href: "/admin/account",
+        href: "/admin/account", mobile: 4, mobileLabel: "Account",
         icon: "UserCircle",
         roles: ["admin", "agent", "blog-manager"],
       },

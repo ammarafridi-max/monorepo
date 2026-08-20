@@ -14,12 +14,12 @@ function getOrRegisterModel(conn, name, schema) {
   }
 }
 
-export function createConversationsRouter({ db, auth, whatsapp, appSecret, verifyToken, onInboundMessage }) {
+export function createConversationsRouter({ db, auth, whatsapp, AdminUser, appSecret, verifyToken, onInboundMessage }) {
   const Conversation = getOrRegisterModel(db, 'conversation', ConversationSchema);
   const Message = getOrRegisterModel(db, 'conversation-message', MessageSchema);
   const SavedReply = getOrRegisterModel(db, 'conversation-saved-reply', SavedReplySchema);
 
-  const service = createConversationService({ Conversation, Message, SavedReply, whatsapp });
+  const service = createConversationService({ Conversation, Message, SavedReply, AdminUser, whatsapp });
   const controller = createConversationController({ service });
   const router = createConversationRouter({ controller, auth });
   const webhook = createWhatsAppWebhookHandlers({ service, appSecret, verifyToken, onInboundMessage });

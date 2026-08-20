@@ -216,6 +216,7 @@ if (whatsappConfigured) {
     db,
     auth,
     whatsapp,
+    AdminUser,
     appSecret: config.whatsapp.appSecret,
     verifyToken: config.whatsapp.webhookVerifyToken,
   });

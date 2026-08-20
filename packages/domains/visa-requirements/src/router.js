@@ -12,6 +12,7 @@ export function createVisaRequirementsRouterFromParts({ controller, auth }) {
   });
 
   router.get('/check', publicLimiter, controller.check);
+  router.get('/destinations', publicLimiter, controller.listDestinations);
 
   router.use(auth.protect, auth.restrictTo('admin'));
   router.get('/rules', controller.listRules);

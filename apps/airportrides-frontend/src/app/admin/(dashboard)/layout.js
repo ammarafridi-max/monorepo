@@ -14,14 +14,14 @@ const nav = [
     items: [
       {
         label: "Dashboard",
-        href: "/admin",
+        href: "/admin", mobile: 1, mobileLabel: "Home",
         icon: "LayoutDashboard",
         exact: true,
         roles: ["admin", "agent"],
       },
       {
         label: "Bookings",
-        href: "/admin/bookings",
+        href: "/admin/bookings", mobile: 2,
         icon: "Car",
         roles: ["admin", "agent"],
       },
@@ -49,7 +49,7 @@ const nav = [
     items: [
       {
         label: "Revenue",
-        href: "/admin/revenue",
+        href: "/admin/revenue", mobile: 3,
         icon: "TrendingUp",
         roles: ["admin"],
       },
@@ -95,7 +95,7 @@ const nav = [
     items: [
       {
         label: "My Account",
-        href: "/admin/account",
+        href: "/admin/account", mobile: 4, mobileLabel: "Account",
         icon: "UserCircle",
         roles: ["admin", "agent", "blog-manager"],
       },

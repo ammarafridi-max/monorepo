@@ -15,9 +15,14 @@ export function createConversationRouter({ controller, auth }) {
   router.patch('/saved-replies/:id', controller.updateSavedReply);
   router.delete('/saved-replies/:id', controller.deleteSavedReply);
 
+  router.get('/agents', controller.listAssignableAgents);
+  router.get('/media/:messageId', controller.getMedia);
+
   router.get('/', controller.listConversations);
   router.get('/:waId', controller.getThread);
   router.patch('/:waId/read', controller.markRead);
+  router.post('/:waId/claim', controller.claimConversation);
+  router.patch('/:waId/assign', controller.assignConversation);
   router.post('/:waId/messages', controller.sendMessage);
   router.post('/:waId/messages/media', upload.single('file'), controller.sendMediaMessage);
 

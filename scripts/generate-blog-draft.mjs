@@ -11,7 +11,7 @@
  */
 
 import Anthropic from "@anthropic-ai/sdk";
-import { readFileSync } from "fs";
+import { readFileSync, writeFileSync, existsSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
@@ -19,6 +19,7 @@ import {
   LENGTH_TIERS,
   loadBrand,
   validateCitations,
+  stripEmDashesFromPost,
   createApiClient,
   formatRequiredLinksBlock,
   validateRequiredLinks,
@@ -26,7 +27,7 @@ import {
   fetchCoverImage,
 } from "./lib/blog-utils.mjs";
 import { resolveFormat } from "./lib/formats.mjs";
-import { verifyDraft, assertVerification } from "./lib/verify.mjs";
+import { verifyDraft, assertVerification, isClean, buildRevisionBrief } from "./lib/verify.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -34,6 +35,13 @@ const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const MODEL = "claude-sonnet-4-6";
 
 /** Publish immediately by default; --status draft stages it for review instead. */
+function parseFlag(argv, name) {
+  const i = argv.indexOf(`--${name}`);
+  if (i !== -1 && argv[i + 1]) return argv[i + 1];
+  const inline = argv.find((a) => a.startsWith(`--${name}=`));
+  return inline ? inline.split("=")[1] : null;
+}
+
 function parseStatusArg(argv) {
   const i = argv.indexOf("--status");
   const v = i !== -1 && argv[i + 1] ? argv[i + 1] : "published";
@@ -84,6 +92,7 @@ async function generateBlogContent({
   siteContext,
   publishedPosts,
   availableTags,
+  revision,
 }) {
   if (!ANTHROPIC_API_KEY && !DRY_RUN) {
     throw new Error("ANTHROPIC_API_KEY env var is required.");
@@ -249,12 +258,15 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
 
   console.log(`Generating content for: ${topic.title}`);
 
-  let feedback = "";
+  // A revision starts from the rejected draft plus the fact-checker's verdict.
+  let feedback = revision
+    ? `\n\n## Revise the draft below\n\nA fact-checker read the official sources you cited and rejected this draft. Rewrite it, fixing every point listed. Keep everything that was fine, keep the same format and required links, and keep the article the same length.\n\n${buildRevisionBrief(revision.verification)}\n\n### The draft to revise\n\n${revision.previous.content}`
+    : "";
   let lastValidationError;
 
   for (let round = 1; round <= 3; round++) {
-    if (feedback) {
-      console.log(`\n↻ Retry ${round - 1}/2 — feeding the failure back to the model`);
+    if (round > 1) {
+      console.log(`\n↻ Retry ${round - 1}/2 — feeding the validation failure back to the model`);
     }
 
   let message;
@@ -274,6 +286,9 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
       await new Promise((r) => setTimeout(r, attempt * 10_000));
     }
   }
+
+  const gu = message.usage ?? {};
+  console.log(`  tokens: ${gu.input_tokens ?? 0} in, ${gu.output_tokens ?? 0} out`);
 
   const rawText = message.content
     .filter((b) => b.type === "text")
@@ -307,6 +322,8 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
   for (const key of required) {
     if (!parsed[key]) throw new Error(`Claude response missing field: ${key}`);
   }
+
+  stripEmDashesFromPost(parsed);
 
   try {
     validateRequiredLinks(parsed, requiredLinks);
@@ -418,25 +435,66 @@ async function main() {
 
   const siteContext = readFileSync(join(__dirname, brand.siteContextFile), "utf8");
 
-  const content = await generateBlogContent({
-    brand,
-    topic,
-    siteContext,
-    publishedPosts,
-    availableTags,
-  });
+  const draftCache = parseFlag(process.argv.slice(2), "draft-file");
+  const reuse = draftCache && existsSync(draftCache);
+  if (reuse) console.log(`Reusing saved draft: ${draftCache}`);
 
-  // Fact-check before anything is published. A contradicted claim stops the run.
+  let content = reuse
+    ? JSON.parse(readFileSync(draftCache, "utf8"))
+    : await generateBlogContent({
+        brand,
+        topic,
+        siteContext,
+        publishedPosts,
+        availableTags,
+      });
+
+  if (draftCache && !reuse) {
+    writeFileSync(draftCache, JSON.stringify(content, null, 2));
+    console.log(`Saved draft to ${draftCache}`);
+  }
+
+  // Fact-check, then revise against the verdict and re-check. Without the
+  // revise step the check can only ever block: a first draft routinely makes
+  // claims that are true but absent from the pages it happened to cite.
+  const MAX_REVISIONS = 2;
+  let verification = null;
+
   if (content.__citations?.length) {
     console.log("\nFact-checking against the cited official sources...");
-    const verification = await verifyDraft({
+    verification = await verifyDraft({
       apiKey: ANTHROPIC_API_KEY,
       model: MODEL,
       title: topic.title,
       content: content.content,
       citations: content.__citations,
     });
-    assertVerification(verification);
+
+    for (let round = 1; round <= MAX_REVISIONS && !isClean(verification); round++) {
+      console.log(
+        `\n↻ Revision ${round}/${MAX_REVISIONS} — ${verification.contradicted.length} contradicted, ${verification.unsupported.length} unsupported`,
+      );
+      content = await generateBlogContent({
+        brand,
+        topic,
+        siteContext,
+        publishedPosts,
+        availableTags,
+        revision: { previous: content, verification },
+      });
+
+      console.log("Re-checking the revised draft...");
+      verification = await verifyDraft({
+        apiKey: ANTHROPIC_API_KEY,
+        model: MODEL,
+        title: topic.title,
+        content: content.content,
+        citations: content.__citations ?? [],
+      });
+    }
+
+    assertVerification(verification, { strict: true });
+    console.log("✓ Every claim is supported by a cited official source");
   }
 
   const status = parseStatusArg(process.argv.slice(2));

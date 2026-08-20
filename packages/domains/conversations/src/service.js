@@ -18,7 +18,7 @@ function previewOf(message) {
   return `[${message.type}]`;
 }
 
-export function createConversationService({ Conversation, Message, SavedReply, whatsapp }) {
+export function createConversationService({ Conversation, Message, SavedReply, AdminUser, whatsapp }) {
   const listConversations = async ({ status, limit = 50 } = {}) => {
     const query = {};
     if (status) query.status = status;
@@ -49,6 +49,52 @@ export function createConversationService({ Conversation, Message, SavedReply, w
       { new: true },
     );
     return conversation;
+  };
+
+  const resolveReplyTarget = async ({ conversation, replyTo }) => {
+    if (!replyTo) return null;
+    const target = await Message.findOne({ wamid: replyTo, conversation: conversation._id }).select('wamid').lean();
+    if (!target) throw new AppError('The message being replied to is not part of this chat', 400);
+    return target.wamid;
+  };
+
+  const listAssignableAgents = () =>
+    AdminUser
+      ? AdminUser.find({ role: { $in: ['admin', 'agent'] } }).select('name email role').sort({ name: 1 }).lean()
+      : [];
+
+  // Atomic: the filter only matches while nobody holds the chat, so two agents
+  // opening the same new conversation cannot both claim it.
+  const claimConversation = async ({ waId, adminUserId }) => {
+    if (!adminUserId) throw new AppError('No agent to assign', 400);
+    const claimed = await Conversation.findOneAndUpdate(
+      { waId, assignedTo: null },
+      { $set: { assignedTo: adminUserId } },
+      { new: true },
+    ).populate('assignedTo', 'name email');
+    if (claimed) return claimed;
+
+    const existing = await Conversation.findOne({ waId }).populate('assignedTo', 'name email');
+    if (!existing) throw new AppError('Conversation not found', 404);
+    return existing;
+  };
+
+  const assignConversation = async ({ waId, adminUserId }) => {
+    const updated = await Conversation.findOneAndUpdate(
+      { waId },
+      { $set: { assignedTo: adminUserId || null } },
+      { new: true },
+    ).populate('assignedTo', 'name email');
+    if (!updated) throw new AppError('Conversation not found', 404);
+    return updated;
+  };
+
+  const assertCanReply = (conversation, sentBy) => {
+    const holder = conversation.assignedTo;
+    if (!holder || !sentBy) return;
+    if (String(holder) !== String(sentBy)) {
+      throw new AppError('This chat is assigned to another agent. Take it over first.', 409);
+    }
   };
 
   const recordInboundMessage = async ({ waId, profileName, wamid, type, text, media, sentAt }) => {
@@ -101,13 +147,14 @@ export function createConversationService({ Conversation, Message, SavedReply, w
     );
   };
 
-  const sendMessage = async ({ waId, text, sentBy }) => {
+  const sendMessage = async ({ waId, text, sentBy, replyTo }) => {
     const body = text?.trim();
     if (!body) throw new AppError('Message cannot be empty', 400);
     if (!whatsapp?.isConfigured()) throw new AppError('WhatsApp sending is not configured', 503);
 
     const conversation = await Conversation.findOne({ waId });
     if (!conversation) throw new AppError('Conversation not found', 404);
+    assertCanReply(conversation, sentBy);
     if (!isWindowOpen(conversation)) {
       throw new AppError(
         'The 24 hour reply window has closed. Only an approved template can reopen this chat.',
@@ -116,7 +163,8 @@ export function createConversationService({ Conversation, Message, SavedReply, w
     }
 
     // Send first: without a wamid from Meta there is nothing to reconcile delivery statuses against.
-    const { wamid } = await whatsapp.sendText({ to: waId, text: body });
+    const replyToWamid = await resolveReplyTarget({ conversation, replyTo });
+    const { wamid } = await whatsapp.sendText({ to: waId, text: body, replyToWamid });
     if (!wamid) throw new AppError('WhatsApp accepted the message but returned no id', 502);
 
     const sentAt = new Date();
@@ -127,6 +175,7 @@ export function createConversationService({ Conversation, Message, SavedReply, w
       direction: 'OUTBOUND',
       type: 'text',
       text: body,
+      replyToWamid,
       status: 'SENT',
       sentBy: sentBy ?? null,
       sentAt,
@@ -140,12 +189,13 @@ export function createConversationService({ Conversation, Message, SavedReply, w
     return message;
   };
 
-  const sendMediaMessage = async ({ waId, file, caption, sentBy }) => {
+  const sendMediaMessage = async ({ waId, file, caption, sentBy, replyTo }) => {
     if (!file?.buffer) throw new AppError('A file is required', 400);
     if (!whatsapp?.isConfigured()) throw new AppError('WhatsApp sending is not configured', 503);
 
     const conversation = await Conversation.findOne({ waId });
     if (!conversation) throw new AppError('Conversation not found', 404);
+    assertCanReply(conversation, sentBy);
     if (!isWindowOpen(conversation)) {
       throw new AppError(
         'The 24 hour reply window has closed. Only an approved template can reopen this chat.',
@@ -160,12 +210,14 @@ export function createConversationService({ Conversation, Message, SavedReply, w
     });
     if (!mediaId) throw new AppError('WhatsApp rejected the upload', 502);
 
+    const replyToWamid = await resolveReplyTarget({ conversation, replyTo });
     const { wamid, kind } = await whatsapp.sendMedia({
       to: waId,
       mediaId,
       mimeType: file.mimetype,
       filename: file.originalname,
       caption,
+      replyToWamid,
     });
     if (!wamid) throw new AppError('WhatsApp accepted the file but returned no id', 502);
 
@@ -183,6 +235,7 @@ export function createConversationService({ Conversation, Message, SavedReply, w
         filename: file.originalname,
         caption: caption?.trim() || null,
       },
+      replyToWamid,
       status: 'SENT',
       sentBy: sentBy ?? null,
       sentAt,
@@ -194,6 +247,28 @@ export function createConversationService({ Conversation, Message, SavedReply, w
     );
 
     return message;
+  };
+
+  // Streamed on demand rather than mirrored to storage: customer documents stay behind
+  // admin auth, and Meta keeps the media for 30 days.
+  const getMedia = async ({ messageId }) => {
+    if (!whatsapp?.isConfigured()) throw new AppError('WhatsApp is not configured', 503);
+
+    const message = await Message.findById(messageId).lean();
+    if (!message) throw new AppError('Message not found', 404);
+    if (!message.media?.id) throw new AppError('This message has no attachment', 404);
+
+    const url = await whatsapp.getMediaUrl(message.media.id);
+    if (!url) throw new AppError('WhatsApp no longer has this file. It expires after 30 days.', 410);
+
+    const buffer = await whatsapp.downloadMedia(url);
+    if (!buffer) throw new AppError('Could not download the file from WhatsApp', 502);
+
+    return {
+      buffer,
+      mimeType: message.media.mimeType || 'application/octet-stream',
+      filename: message.media.filename || `attachment-${messageId}`,
+    };
   };
 
   const listSavedReplies = () => SavedReply.find().sort({ title: 1 }).lean();
@@ -224,7 +299,8 @@ export function createConversationService({ Conversation, Message, SavedReply, w
     Date.now() - new Date(conversation.lastInboundAt).getTime() < WINDOW_MS;
 
   return {
-    listConversations, getThread, markRead, sendMessage, sendMediaMessage,
+    listConversations, getThread, markRead, sendMessage, sendMediaMessage, getMedia,
+    listAssignableAgents, claimConversation, assignConversation,
     listSavedReplies, createSavedReply, updateSavedReply, deleteSavedReply,
     recordInboundMessage, recordStatusUpdate, isWindowOpen,
   };

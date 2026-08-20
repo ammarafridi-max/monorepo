@@ -33,6 +33,7 @@ export function createConversationController({ service }) {
       const message = await service.sendMessage({
         waId: req.params.waId,
         text: req.body?.text,
+        replyTo: req.body?.replyTo ?? null,
         sentBy: req.user?._id ?? null,
       });
       res.status(201).json({ status: 'success', data: message });
@@ -47,9 +48,58 @@ export function createConversationController({ service }) {
         waId: req.params.waId,
         file: req.file,
         caption: req.body?.caption,
+        replyTo: req.body?.replyTo ?? null,
         sentBy: req.user?._id ?? null,
       });
       res.status(201).json({ status: 'success', data: message });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  const listAssignableAgents = async (_req, res, next) => {
+    try {
+      res.json({ status: 'success', data: await service.listAssignableAgents() });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  const claimConversation = async (req, res, next) => {
+    try {
+      const conversation = await service.claimConversation({
+        waId: req.params.waId,
+        adminUserId: req.user?._id,
+      });
+      res.json({ status: 'success', data: conversation });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  const assignConversation = async (req, res, next) => {
+    try {
+      const conversation = await service.assignConversation({
+        waId: req.params.waId,
+        adminUserId: req.body?.adminUserId ?? null,
+      });
+      res.json({ status: 'success', data: conversation });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  const getMedia = async (req, res, next) => {
+    try {
+      const { buffer, mimeType, filename } = await service.getMedia({ messageId: req.params.messageId });
+      const disposition = mimeType.startsWith('image/') ? 'inline' : 'attachment';
+      res.set({
+        'Content-Type': mimeType,
+        'Content-Length': buffer.length,
+        'Content-Disposition': `${disposition}; filename="${encodeURIComponent(filename)}"`,
+        'Cache-Control': 'private, max-age=300',
+      });
+      res.send(buffer);
     } catch (err) {
       next(err);
     }
@@ -99,7 +149,8 @@ export function createConversationController({ service }) {
   };
 
   return {
-    listConversations, getThread, markRead, sendMessage, sendMediaMessage,
+    listConversations, getThread, markRead, sendMessage, sendMediaMessage, getMedia,
+    listAssignableAgents, claimConversation, assignConversation,
     listSavedReplies, createSavedReply, updateSavedReply, deleteSavedReply,
   };
 }

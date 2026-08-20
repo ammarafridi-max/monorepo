@@ -37,7 +37,12 @@ async function withRetry(fn, attempts = 4) {
 const WEB_FETCH_TOOL = {
   type: "web_fetch_20260209",
   name: "web_fetch",
-  max_uses: 12,
+  // Government pages are large. Uncapped, a handful of them blow out the
+  // context and the request runs for tens of minutes.
+  // Was 12000 x 6 = up to 72k tokens of page content per call, re-sent on every
+  // resumed turn. The verifier needs the relevant passage, not the whole page.
+  max_content_tokens: 3000,
+  max_uses: 4,
 };
 
 const SYSTEM = `You are a fact-checker for a visa advice publisher. Visa advice is YMYL content: a wrong fee, timeline, or eligibility rule costs a reader money or a refused application.
@@ -57,6 +62,33 @@ Be strict. If a source does not actually say it, the verdict is "unsupported" ev
 
 Return ONLY a JSON object, no code fences, no commentary:
 {"claims":[{"claim":"...","sourceUrl":"...","verdict":"supported|contradicted|unsupported","evidence":"..."}]}`;
+
+/** The verifier reads claims, not markup. Tags are billable noise. */
+function stripTags(html) {
+  return (html || "")
+    .replace(/<a\s+[^>]*href\s*=\s*["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi, "$2 [$1]")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** Turns a verdict into instructions the writer can act on. */
+export function buildRevisionBrief(result) {
+  const lines = [];
+  if (result.contradicted.length) {
+    lines.push("### Claims the official source CONTRADICTS — these are factually wrong, fix them");
+    for (const c of result.contradicted) {
+      lines.push(`- Claim: ${c.claim}\n  Source says: ${c.evidence}`);
+    }
+  }
+  if (result.unsupported.length) {
+    lines.push(
+      "### Claims no cited source supports — for each, either cite an official page that actually states it, or delete the claim",
+    );
+    for (const c of result.unsupported) lines.push(`- ${c.claim}`);
+  }
+  return lines.join("\n");
+}
 
 /**
  * With server tools the model narrates between fetches, so the response is
@@ -91,14 +123,14 @@ function parseVerdict(blocks) {
 /**
  * @returns {{claims: Array, contradicted: Array, unsupported: Array, supported: Array}}
  */
-export async function verifyDraft({ apiKey, model, title, content, citations, maxTokens = 8000 }) {
+export async function verifyDraft({ apiKey, model, title, content, citations, maxTokens = 6000 }) {
   if (!citations.length) {
     throw new Error("Nothing to verify against: the draft cites no official sources.");
   }
 
   // Reading a dozen government pages routinely runs past the SDK's 10-minute
   // default, and a timeout here throws away a whole generation.
-  const client = new Anthropic({ apiKey, timeout: 20 * 60 * 1000, maxRetries: 3 });
+  const client = new Anthropic({ apiKey, timeout: 15 * 60 * 1000, maxRetries: 1 });
 
   const userPrompt = `Article title: ${title}
 
@@ -106,28 +138,47 @@ Cited official sources (fetch each one):
 ${citations.map((u, i) => `${i + 1}. ${u}`).join("\n")}
 
 --- DRAFT ---
-${content}
+${stripTags(content)}
 --- END DRAFT ---
 
 Fetch the sources above, then return the JSON verdict object.`;
 
-  const messages = [{ role: "user", content: userPrompt }];
+  const messages = [
+    {
+      role: "user",
+      content: [{ type: "text", text: userPrompt, cache_control: { type: "ephemeral" } }],
+    },
+  ];
   let response;
+  // web_fetch_20260209 does its dynamic filtering inside a code-execution
+  // container. Resuming a paused turn without naming that container is a 400.
+  let containerId;
 
   // The server-side tool loop can stop early with pause_turn; re-send to resume.
-  for (let turn = 0; turn < 6; turn++) {
-    response = await withRetry(() =>
-      client.messages.create({
+  for (let turn = 0; turn < 3; turn++) {
+    // Streaming, because a long tool-heavy turn otherwise dies on the HTTP
+    // timeout rather than on anything to do with the work itself.
+    response = await withRetry(async () => {
+      const stream = client.messages.stream({
         model,
         max_tokens: maxTokens,
         system: SYSTEM,
         tools: [WEB_FETCH_TOOL],
         messages,
-      }),
-    );
+        ...(containerId ? { container: containerId } : {}),
+      });
+      return stream.finalMessage();
+    });
+    containerId = response.container?.id ?? containerId;
     if (response.stop_reason !== "pause_turn") break;
     messages.push({ role: "assistant", content: response.content });
   }
+
+  const u = response.usage ?? {};
+  console.log(
+    `  tokens: ${u.input_tokens ?? 0} in, ${u.output_tokens ?? 0} out, ` +
+      `${u.cache_read_input_tokens ?? 0} cached read, ${u.cache_creation_input_tokens ?? 0} cache write`,
+  );
 
   const parsed = parseVerdict(response.content);
 
@@ -146,7 +197,16 @@ Fetch the sources above, then return the JSON verdict object.`;
  * (not everything true is written on a government page), but a draft that is
  * mostly unsupported is one the model made up.
  */
-export function assertVerification(result, { maxUnsupportedRatio = 0.25 } = {}) {
+export function isClean(result) {
+  return result.contradicted.length === 0 && result.unsupported.length === 0;
+}
+
+/**
+ * Strict mode: every claim must end up either supported by a cited source or
+ * removed. That is only reachable because the caller revises and re-verifies
+ * first — as a one-shot gate it would reject almost everything.
+ */
+export function assertVerification(result, { strict = true, maxUnsupportedRatio = 0.25 } = {}) {
   const total = result.claims.length;
   console.log(
     `Fact check: ${result.supported.length} supported, ${result.unsupported.length} unsupported, ${result.contradicted.length} contradicted (${total} claims)`,
@@ -167,6 +227,14 @@ export function assertVerification(result, { maxUnsupportedRatio = 0.25 } = {}) 
   }
   if (total === 0) {
     throw new Error("Fact-checker found no checkable claims — the draft is probably too vague to publish.");
+  }
+  if (strict) {
+    if (result.unsupported.length) {
+      throw new Error(
+        `${result.unsupported.length} claim(s) still unsupported after revision. Every claim must be cited or cut. Not publishing.`,
+      );
+    }
+    return;
   }
   const ratio = result.unsupported.length / total;
   if (ratio > maxUnsupportedRatio) {

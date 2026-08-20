@@ -51,6 +51,24 @@ export function createVisaRequirementsService({ VisaRule, VisaQuery, providers =
     return { ...answer, nationality: nat, residence: res, isServiced };
   }
 
+  /**
+   * Public: the destinations the checker can actually answer for. Offering a
+   * destination with no rule behind it only produces an UNKNOWN result, which
+   * reads to a visitor as the tool being broken.
+   */
+  async function listDestinations() {
+    const rules = await VisaRule.find({ isPublished: true })
+      .select('destination destinationName visaSlug')
+      .sort({ destinationName: 1 })
+      .lean();
+    return rules.map((r) => ({
+      code: r.destination,
+      name: r.destinationName,
+      visaSlug: r.visaSlug || null,
+      isServiced: Boolean(r.visaSlug && serviced.has(r.visaSlug)),
+    }));
+  }
+
   async function listRules({ published } = {}) {
     const filter = {};
     if (published !== undefined) filter.isPublished = published;
@@ -123,5 +141,5 @@ export function createVisaRequirementsService({ VisaRule, VisaQuery, providers =
     };
   }
 
-  return { check, listRules, getRule, upsertRule, deleteRule, queryStats };
+  return { check, listDestinations, listRules, getRule, upsertRule, deleteRule, queryStats };
 }

@@ -1,11 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, Check, AlertCircle, Info, ShieldQuestion, AlertTriangle } from 'lucide-react';
+import { ArrowRight, Check, AlertCircle, Info, ShieldQuestion } from 'lucide-react';
 import VisaSearchBar, { SCHENGEN_OPTION } from './VisaSearchBar.js';
 import { useVisaCheck } from '../../../hooks/visa/useVisaCheck.js';
 import { useVisaDestinations } from '../../../hooks/visa/useVisaDestinations.js';
-import { outcomeUi, OUTCOME_TONE, NEEDS_ACTION, isUnverified } from '../../../utils/visaOutcomes.js';
+import { outcomeUi, OUTCOME_TONE, NEEDS_ACTION } from '../../../utils/visaOutcomes.js';
 
 
 const OUTCOME_ICON = {
@@ -23,13 +23,16 @@ export default function VisaCheckerInline({
   className = '',
 }) {
   const v = useVisaCheck();
-  const { destinations, loading: destinationsLoading } = useVisaDestinations();
+  const {
+    destinations,
+    loading: destinationsLoading,
+    error: destinationsError,
+  } = useVisaDestinations();
 
   const ui = v.result ? outcomeUi(v.result.outcome) : null;
   const tone = ui ? OUTCOME_TONE[ui.tone] : null;
   const Icon = v.result ? OUTCOME_ICON[v.result.outcome] ?? ShieldQuestion : null;
   const needsAction = v.result && NEEDS_ACTION.includes(v.result.outcome);
-  const unverified = isUnverified(v.result);
 
   return (
     <div className={className}>
@@ -37,10 +40,10 @@ export default function VisaCheckerInline({
         nationality={v.nationality} setNationality={v.setNationality}
         residence={v.residence} setResidence={v.setResidence}
         destination={v.destination} setDestination={v.setDestination}
-        destinations={destinations.length ? destinations : null}
+        destinations={destinations}
         onSubmit={v.submit}
         loading={v.loading || destinationsLoading}
-        error={v.error}
+        error={v.error || destinationsError}
         extraDestinations={extraDestinations}
       />
 
@@ -57,16 +60,6 @@ export default function VisaCheckerInline({
             ) : null}
             {v.result.note ? <p className={`mt-2 text-sm ${tone.text}`}>{v.result.note}</p> : null}
           </div>
-
-          {unverified && (
-            <p className="mt-3 flex items-start gap-2 rounded-xl bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-800">
-              <AlertTriangle size={14} className="mt-px shrink-0" />
-              <span>
-                This rule is starter data our team has not verified yet. Treat it as a guide only and confirm with
-                the embassy or the official source before you book anything.
-              </span>
-            </p>
-          )}
 
           {/* Only sell when action is needed and we actually handle it. */}
           {needsAction && v.result.isServiced && (
