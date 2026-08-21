@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useState } from 'react';
-import { Handshake, Plus, Pencil, Trash2, X, Loader2, ChevronLeft, ChevronRight, Eye, Search } from 'lucide-react';
+import { Handshake, Plus, Pencil, Trash2, X, Loader2, ChevronLeft, ChevronRight, Eye, ArrowUpDown } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useGetAffiliates } from '../../hooks/affiliates/useGetAffiliates';
@@ -9,6 +9,9 @@ import { useCreateAffiliate } from '../../hooks/affiliates/useCreateAffiliate';
 import { useUpdateAffiliate } from '../../hooks/affiliates/useUpdateAffiliate';
 import { useDeleteAffiliate } from '../../hooks/affiliates/useDeleteAffiliate';
 import { useToggleAffiliateStatus } from '../../hooks/affiliates/useToggleAffiliateStatus';
+import AdminSearchInput from '../../components/admin/AdminSearchInput';
+import FilterMenu from '../../components/admin/FilterMenu';
+import AdminFab from '../../components/admin/AdminFab';
 
 function fmtDate(iso) {
   if (!iso) return '—';
@@ -197,55 +200,46 @@ function AffiliatesContent() {
 
       <div className="max-w-7xl mx-auto space-y-5">
 
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h2 className="text-2xl font-extrabold text-gray-900">Affiliates</h2>
-            <p className="text-sm text-gray-400 mt-0.5">
-              {pagination?.totalDocs != null ? `${pagination.totalDocs} affiliate${pagination.totalDocs !== 1 ? 's' : ''}` : 'Manage affiliate partners'}
-            </p>
-          </div>
-          <button
-            onClick={() => setModal('new')}
-            className="flex items-center gap-2 bg-primary-700 hover:bg-primary-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors"
-          >
-            <Plus size={14} /> New Affiliate
-          </button>
+        <div>
+          <h2 className="text-2xl font-extrabold text-gray-900">Affiliates</h2>
+          <p className="text-sm text-gray-500 mt-0.5">
+            {pagination?.totalDocs != null ? `${pagination.totalDocs} affiliate${pagination.totalDocs !== 1 ? 's' : ''}` : 'Manage affiliate partners'}
+          </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="relative w-full sm:max-w-sm">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => updateParams({ q: e.target.value })}
-              placeholder="Search affiliates..."
-              className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300"
-            />
-          </div>
+        <AdminFab onClick={() => setModal('new')} label="New affiliate" />
 
-          <select
+        <div className="flex items-center gap-3">
+          <AdminSearchInput
+            value={search}
+            onChange={(value) => updateParams({ q: value })}
+            placeholder="Search affiliates..."
+            className="flex-1"
+          />
+          <FilterMenu
             value={activeFilter}
-            onChange={(e) => updateParams({ isActive: e.target.value })}
-            className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
-          >
-            <option value="all">All statuses</option>
-            <option value="true">Active only</option>
-            <option value="false">Inactive only</option>
-          </select>
-
-          <select
+            onChange={(value) => updateParams({ isActive: value })}
+            options={[
+              { value: 'all', label: 'All statuses' },
+              { value: 'true', label: 'Active only' },
+              { value: 'false', label: 'Inactive only' },
+            ]}
+            label="Filter affiliates"
+          />
+          <FilterMenu
             value={sort}
-            onChange={(e) => updateParams({ sort: e.target.value })}
-            className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
-          >
-            <option value="newest">Newest</option>
-            <option value="oldest">Oldest</option>
-            <option value="name_asc">Name A-Z</option>
-            <option value="name_desc">Name Z-A</option>
-            <option value="commission_desc">Highest commission</option>
-            <option value="commission_asc">Lowest commission</option>
-          </select>
+            onChange={(value) => updateParams({ sort: value })}
+            icon={ArrowUpDown}
+            options={[
+              { value: 'newest', label: 'Newest' },
+              { value: 'oldest', label: 'Oldest' },
+              { value: 'name_asc', label: 'Name A-Z' },
+              { value: 'name_desc', label: 'Name Z-A' },
+              { value: 'commission_desc', label: 'Highest commission' },
+              { value: 'commission_asc', label: 'Lowest commission' },
+            ]}
+            label="Sort affiliates"
+          />
         </div>
 
         <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">

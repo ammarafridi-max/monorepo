@@ -4,11 +4,23 @@ import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
-  ClipboardList, ChevronLeft, ChevronRight, Loader2, ArrowUpRight,
-  Plus, Search, X, AlertTriangle, Bell, BellOff, Clock,
+  ClipboardList,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  ArrowUpRight,
+  Search,
+  X,
+  AlertTriangle,
+  Bell,
+  BellOff,
+  Clock,
 } from 'lucide-react';
 import { useAdminApplications } from '../../hooks/visa-applications/useAdminApplications.js';
 import { useCreateApplication, useToggleReminders } from '../../hooks/visa-applications/useVisaAppMutations.js';
+import AdminSearchInput from '../../components/admin/AdminSearchInput';
+import FilterMenu from '../../components/admin/FilterMenu';
+import AdminFab from '../../components/admin/AdminFab';
 
 const STATUS_CFG = {
   DRAFT: { dot: 'bg-gray-400', cls: 'bg-gray-100 text-gray-600 border-gray-200' },
@@ -179,20 +191,14 @@ function ApplicationsContent() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-5">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-extrabold text-gray-900">Visa Applications</h2>
-          <p className="text-sm text-gray-400 mt-0.5">
-            {isLoading ? 'Loading…' : `${total} in this queue · oldest silence first`}
-          </p>
-        </div>
-        <button
-          onClick={() => setCreating(true)}
-          className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-xl border border-gray-200 bg-white text-gray-600 hover:border-primary-300 hover:text-primary-700 hover:bg-primary-50 transition-colors shrink-0"
-        >
-          <Plus size={14} /> New application
-        </button>
+      <div>
+        <h2 className="text-2xl font-extrabold text-gray-900">Visa Applications</h2>
+        <p className="text-sm text-gray-500 mt-0.5">
+          {isLoading ? 'Loading…' : `${total} in this queue · oldest silence first`}
+        </p>
       </div>
+
+      <AdminFab onClick={() => setCreating(true)} label="New application" />
 
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-4 xl:gap-4">
         {summaryCard('Total Applications', String(summary?.total ?? 0), 'Across all statuses')}
@@ -201,32 +207,19 @@ function ApplicationsContent() {
         {summaryCard('Escalated', String(summary?.escalated ?? 0), 'Gone quiet, need a call', 'text-red-700')}
       </div>
 
-      {/* Filter chips */}
-      <div className="flex flex-wrap items-center gap-2">
-        {QUEUES.map((q) => {
-          const active = urlQueue === q.key || (q.key === 'all' && (!urlQueue || urlQueue === 'all'));
-          return (
-            <button
-              key={q.key}
-              onClick={() => setQueue(q.key)}
-              className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition
-                ${active ? 'bg-primary-600 border-primary-600 text-white' : 'bg-white border-gray-200 text-gray-600 hover:border-primary-300 hover:text-primary-700'}`}
-            >
-              {q.label}
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="w-full sm:max-w-sm">
-        <div className="relative flex-1">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-          <input
-            type="text" value={localSearch} onChange={(e) => setLocalSearch(e.target.value)}
-            placeholder="Search by ref or destination..."
-            className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300"
-          />
-        </div>
+      <div className="flex items-center gap-3">
+        <AdminSearchInput
+          value={localSearch}
+          onChange={setLocalSearch}
+          placeholder="Search by ref or destination..."
+          className="flex-1"
+        />
+        <FilterMenu
+          value={urlQueue || 'all'}
+          onChange={setQueue}
+          options={QUEUES.map((q) => ({ value: q.key, label: q.label }))}
+          label="Filter queue"
+        />
       </div>
 
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">

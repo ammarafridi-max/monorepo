@@ -3,14 +3,25 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import {
-  Layers, Plus, Search, Pencil, Globe, EyeOff,
-  Copy, Trash2, X, ChevronLeft, ChevronRight, Loader2,
+  Layers,
+  Plus,
+  Pencil,
+  Globe,
+  EyeOff,
+  Copy,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
 } from 'lucide-react';
 import { useGetAdminVisas }  from '../../hooks/visa/useGetAdminVisas.js';
 import { useDeleteVisa }     from '../../hooks/visa/useDeleteVisa.js';
 import { useDuplicateVisa }  from '../../hooks/visa/useDuplicateVisa.js';
 import { usePublishVisa }    from '../../hooks/visa/usePublishVisa.js';
 import { useUnpublishVisa }  from '../../hooks/visa/useUnpublishVisa.js';
+import AdminSearchInput from '../../components/admin/AdminSearchInput';
+import FilterMenu from '../../components/admin/FilterMenu';
+import AdminFab from '../../components/admin/AdminFab';
 
 const STATUS_TABS = ['all', 'published', 'draft'];
 
@@ -80,68 +91,33 @@ export default function AdminVisaPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-5">
 
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-extrabold text-gray-900">Visa Pages</h2>
-          <p className="text-sm text-gray-400 mt-0.5">
-            {isLoadingVisas ? 'Loading…' : `${total} visa page${total !== 1 ? 's' : ''}${statusFilter !== 'all' ? ` · ${STATUS_CFG[statusFilter]?.label}` : ' total'}`}
-          </p>
-        </div>
-        <Link
-          href="/admin/visa/new"
-          className="flex items-center gap-2 bg-primary-700 hover:bg-primary-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors"
-        >
-          <Plus size={14} />
-          New Visa Page
-        </Link>
+      <div>
+        <h2 className="text-2xl font-extrabold text-gray-900">Visa Pages</h2>
+        <p className="text-sm text-gray-500 mt-0.5">
+          {isLoadingVisas ? 'Loading…' : `${total} visa page${total !== 1 ? 's' : ''}${statusFilter !== 'all' ? ` · ${STATUS_CFG[statusFilter]?.label}` : ' total'}`}
+        </p>
       </div>
+
+      <AdminFab href="/admin/visa/new" label="New visa page" />
 
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
 
-        <div className="flex items-center gap-0.5 px-4 pt-4 border-b border-gray-100">
-          {STATUS_TABS.map((key) => {
-            const label    = key === 'all' ? 'All' : STATUS_CFG[key]?.label ?? key;
-            const isActive = statusFilter === key;
-            return (
-              <button
-                key={key}
-                onClick={() => { setStatusFilter(key); setPage(1); }}
-                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-t-lg border-b-2 transition-colors -mb-px ${
-                  isActive
-                    ? 'border-primary-700 text-primary-700'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-200'
-                }`}
-              >
-                {label}
-                {isActive && (
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-primary-700 text-white">
-                    {total}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="px-4 py-3 border-b border-gray-100">
-          <div className="relative max-w-sm">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search by country or slug…"
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="w-full pl-9 pr-8 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white placeholder:text-gray-300"
-            />
-            {search && (
-              <button
-                onClick={() => { setSearch(''); setPage(1); }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                <X size={13} />
-              </button>
-            )}
-          </div>
+        <div className="px-4 py-2 border-b border-gray-100 flex items-center gap-3">
+          <AdminSearchInput
+            value={search}
+            onChange={(value) => { setSearch(value); setPage(1); }}
+            placeholder="Search by country or slug…"
+            className="flex-1"
+          />
+          <FilterMenu
+            value={statusFilter}
+            onChange={(value) => { setStatusFilter(value); setPage(1); }}
+            label="Filter visa pages"
+            options={STATUS_TABS.map((key) => ({
+              value: key,
+              label: key === 'all' ? 'All' : STATUS_CFG[key]?.label ?? key,
+            }))}
+          />
         </div>
 
         {isLoadingVisas ? (

@@ -4,13 +4,16 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
-  Plane, ChevronLeft, ChevronRight, Loader2, ArrowUpRight, Download, Search, Trash2,
+  Plane, ChevronLeft, ChevronRight, Loader2, ArrowUpRight, Download, Trash2,
+  ClipboardList, CalendarDays,
 } from 'lucide-react';
 import { useItineraryOrders } from '../../hooks/itineraries/useItineraryOrders';
 import { useDeleteItineraryOrder } from '../../hooks/itineraries/useDeleteItineraryOrder';
 import { itineraryDocumentUrl } from '../../services/apiItineraries';
 import { convertToDubaiDate } from '../../utils/dates';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
+import AdminSearchInput from '../../components/admin/AdminSearchInput';
+import FilterMenu from '../../components/admin/FilterMenu';
 
 const PAYMENT_OPTIONS = [
   { value: '',       label: 'All payments' },
@@ -117,51 +120,33 @@ function ItinerariesContent() {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-4">
-        <div className="relative w-full sm:max-w-sm">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setParam('search', e.target.value)}
-            placeholder="Search by name, email, country, session..."
-            className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300"
-          />
-        </div>
-
-        <select
+      <div className="flex items-center gap-3">
+        <AdminSearchInput
+          value={search}
+          onChange={(value) => setParam('search', value)}
+          placeholder="Search by name, email, country, session..."
+          className="flex-1"
+        />
+        <FilterMenu
           value={paymentFilter}
-          onChange={(e) => setParam('paymentStatus', e.target.value)}
-          className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
-        >
-          {PAYMENT_OPTIONS.map(({ value, label }) => (
-            <option key={value || 'all'} value={value}>{label}</option>
-          ))}
-        </select>
-
-        <div className="w-px h-5 bg-gray-200 hidden sm:block" />
-
-        <select
+          onChange={(value) => setParam('paymentStatus', value)}
+          options={PAYMENT_OPTIONS}
+          label="Filter by payment"
+        />
+        <FilterMenu
           value={statusFilter}
-          onChange={(e) => setParam('status', e.target.value)}
-          className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
-        >
-          {STATUS_OPTIONS.map(({ value, label }) => (
-            <option key={value || 'all'} value={value}>{label}</option>
-          ))}
-        </select>
-
-        <div className="w-px h-5 bg-gray-200 hidden sm:block" />
-
-        <select
+          onChange={(value) => setParam('status', value)}
+          options={STATUS_OPTIONS}
+          label="Filter by status"
+          icon={ClipboardList}
+        />
+        <FilterMenu
           value={createdAt}
-          onChange={(e) => setParam('createdAt', e.target.value)}
-          className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
-        >
-          {TIME_OPTIONS.map(({ value, label }) => (
-            <option key={value} value={value}>{label}</option>
-          ))}
-        </select>
+          onChange={(value) => setParam('createdAt', value)}
+          options={TIME_OPTIONS}
+          label="Filter by date"
+          icon={CalendarDays}
+        />
       </div>
 
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">

@@ -1,12 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { Users, Plus, Pencil, Trash2, X, Loader2, Search, Eye, EyeOff, KeyRound } from 'lucide-react';
+import { Users, Plus, Pencil, Trash2, X, Loader2, Eye, EyeOff, KeyRound } from 'lucide-react';
 import { useGetAdminUsers } from '../../hooks/admin-users/useGetAdminUsers';
 import { useCreateAdminUser } from '../../hooks/admin-users/useCreateAdminUser';
 import { useUpdateAdminUser } from '../../hooks/admin-users/useUpdateAdminUser';
 import { useSetAdminUserPassword } from '../../hooks/admin-users/useSetAdminUserPassword';
 import { useDeleteAdminUser } from '../../hooks/admin-users/useDeleteAdminUser';
+import AdminSearchInput from '../../components/admin/AdminSearchInput';
+import FilterMenu from '../../components/admin/FilterMenu';
+import AdminFab from '../../components/admin/AdminFab';
 
 const ROLES = ['admin', 'agent', 'blog-manager'];
 const STATUSES = ['ACTIVE', 'INACTIVE'];
@@ -297,50 +300,39 @@ export default function AdminUsersPage() {
 
       <div className="max-w-7xl mx-auto space-y-5">
 
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h2 className="text-2xl font-extrabold text-gray-900">Admin Users</h2>
-            <p className="text-sm text-gray-400 mt-0.5">{users.length} user{users.length !== 1 ? 's' : ''} total</p>
-          </div>
-          <button
-            onClick={() => setModal('new')}
-            className="flex items-center gap-2 bg-primary-700 hover:bg-primary-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors"
-          >
-            <Plus size={14} /> New User
-          </button>
+        <div>
+          <h2 className="text-2xl font-extrabold text-gray-900">Admin Users</h2>
+          <p className="text-sm text-gray-500 mt-0.5">{users.length} user{users.length !== 1 ? 's' : ''} total</p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="relative w-full sm:max-w-sm">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by name, username, or email"
-              className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300"
-            />
-          </div>
-          <select
+        <AdminFab onClick={() => setModal('new')} label="New user" />
+
+        <div className="flex items-center gap-3">
+          <AdminSearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Search by name, username, or email"
+            className="flex-1"
+          />
+          <FilterMenu
             value={role}
-            onChange={(e) => setRole(e.target.value)}
-            className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
-          >
-            <option value="">All roles</option>
-            {ROLES.map((item) => (
-              <option key={item} value={item}>{ROLE_CFG[item]?.label ?? item}</option>
-            ))}
-          </select>
-          <select
+            onChange={setRole}
+            icon={Users}
+            label="Filter by role"
+            options={[
+              { value: '', label: 'All roles' },
+              ...ROLES.map((item) => ({ value: item, label: ROLE_CFG[item]?.label ?? item })),
+            ]}
+          />
+          <FilterMenu
             value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
-          >
-            <option value="">All statuses</option>
-            {STATUSES.map((item) => (
-              <option key={item} value={item}>{item}</option>
-            ))}
-          </select>
+            onChange={setStatus}
+            label="Filter by status"
+            options={[
+              { value: '', label: 'All statuses' },
+              ...STATUSES.map((item) => ({ value: item, label: item })),
+            ]}
+          />
         </div>
 
         <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">

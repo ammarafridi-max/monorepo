@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
-import { Copy, ExternalLink, Eye, Plus, Power, PowerOff, Trash2 } from 'lucide-react';
+import { Copy, ExternalLink, Eye, Power, PowerOff, Trash2 } from 'lucide-react';
 import PageLoader from '../../components/ui/v1/PageLoader';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 import {
@@ -14,6 +14,8 @@ import {
   useSetPaymentLinkActive,
 } from '../../hooks/payments/usePaymentLinks';
 import AdminPaymentLinkModal from './AdminPaymentLinkModal';
+import AdminFab from '../../components/admin/AdminFab';
+import FilterMenu from '../../components/admin/FilterMenu';
 
 export default function AdminPaymentLinksPage() {
   const router = useRouter();
@@ -48,36 +50,22 @@ export default function AdminPaymentLinksPage() {
 
   return (
     <>
-      <div className="flex items-start justify-between gap-4">
-        <h2 className="text-2xl font-extrabold text-gray-900">Payment Links</h2>
-        <button
-          type="button"
-          onClick={() => setModalOpen(true)}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-primary-700 px-3.5 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-primary-800"
-        >
-          <Plus size={14} />
-          New payment link
-        </button>
-      </div>
+      <h2 className="text-2xl font-extrabold text-gray-900">Payment Links</h2>
 
-      <div className="mt-6 flex items-center gap-2">
-        {['', 'active', 'paid', 'inactive'].map((s) => (
-          <button
-            key={s || 'all'}
-            type="button"
-            onClick={() => {
-              setStatusFilter(s);
-              setPage(1);
-            }}
-            className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-              statusFilter === s
-                ? 'bg-primary-700 text-white'
-                : 'bg-white text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            {s === '' ? 'All' : s[0].toUpperCase() + s.slice(1)}
-          </button>
-        ))}
+      <AdminFab onClick={() => setModalOpen(true)} label="New payment link" />
+
+      <div className="mt-6 flex items-center justify-end">
+        <FilterMenu
+          value={statusFilter}
+          onChange={(value) => { setStatusFilter(value); setPage(1); }}
+          label="Filter payment links"
+          options={[
+            { value: '', label: 'All' },
+            { value: 'active', label: 'Active' },
+            { value: 'paid', label: 'Paid' },
+            { value: 'inactive', label: 'Inactive' },
+          ]}
+        />
       </div>
 
       <div className="mt-3 rounded-2xl border border-gray-100 bg-white shadow-sm">

@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Search, X, Loader2, Inbox, ChevronLeft, ChevronRight,
+  Loader2, Inbox, ChevronLeft, ChevronRight, Stamp, UserCheck,
 } from 'lucide-react';
 import { useGetAdminVisaLeads } from '../../hooks/visa-leads/useGetAdminVisaLeads.js';
 import { useGetAdminVisas }     from '../../hooks/visa/useGetAdminVisas.js';
 import { useGetAdminUsers }     from '../../hooks/admin-users/useGetAdminUsers.js';
 import Link from 'next/link';
+import AdminSearchInput from '../../components/admin/AdminSearchInput';
+import FilterMenu from '../../components/admin/FilterMenu';
 
 const STATUSES = ['new', 'contacted', 'qualified', 'converted', 'lost'];
 
@@ -47,8 +49,8 @@ function timeAgo(iso) {
   return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-const selectCls =
-  'border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 w-full';
+const dateCls =
+  'border border-gray-300 rounded-lg px-2 py-1 text-xs text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500';
 
 function Filters({ filters, setFilters, visas = [], adminUsers = [] }) {
   function set(key, value) {
@@ -57,55 +59,59 @@ function Filters({ filters, setFilters, visas = [], adminUsers = [] }) {
 
   return (
     <>
-      <select
+      <FilterMenu
         value={filters.status || 'all'}
-        onChange={(e) => set('status', e.target.value)}
-        className={`${selectCls} max-w-[140px]`}
-      >
-        <option value="all">All statuses</option>
-        {STATUSES.map((s) => (
-          <option key={s} value={s}>{STATUS_CFG[s]?.label ?? s}</option>
-        ))}
-      </select>
+        onChange={(value) => set('status', value)}
+        label="Filter by status"
+        options={[
+          { value: 'all', label: 'All statuses' },
+          ...STATUSES.map((s) => ({ value: s, label: STATUS_CFG[s]?.label ?? s })),
+        ]}
+      />
 
-      <select
+      <FilterMenu
         value={filters.visaSlug || 'all'}
-        onChange={(e) => set('visaSlug', e.target.value)}
-        className={`${selectCls} max-w-[160px]`}
-      >
-        <option value="all">All visas</option>
-        {visas.map((v) => (
-          <option key={v._id} value={v.slug}>{v.countryName}</option>
-        ))}
-      </select>
+        onChange={(value) => set('visaSlug', value)}
+        icon={Stamp}
+        label="Filter by visa"
+        options={[
+          { value: 'all', label: 'All visas' },
+          ...visas.map((v) => ({ value: v.slug, label: v.countryName })),
+        ]}
+      />
 
-      <select
+      <FilterMenu
         value={filters.assignedTo || 'all'}
-        onChange={(e) => set('assignedTo', e.target.value)}
-        className={`${selectCls} max-w-[160px]`}
-      >
-        <option value="all">All assignees</option>
-        <option value="unassigned">Unassigned</option>
-        {(Array.isArray(adminUsers) ? adminUsers : []).map((u) => (
-          <option key={u._id} value={u._id}>{u.name || u.email}</option>
-        ))}
-      </select>
-
-      <input
-        type="date"
-        value={filters.dateFrom || ''}
-        onChange={(e) => set('dateFrom', e.target.value)}
-        className={`${selectCls} max-w-[150px]`}
-        placeholder="From date"
+        onChange={(value) => set('assignedTo', value)}
+        icon={UserCheck}
+        label="Filter by assignee"
+        options={[
+          { value: 'all', label: 'All assignees' },
+          { value: 'unassigned', label: 'Unassigned' },
+          ...(Array.isArray(adminUsers) ? adminUsers : []).map((u) => ({
+            value: u._id,
+            label: u.name || u.email,
+          })),
+        ]}
       />
 
-      <input
-        type="date"
-        value={filters.dateTo || ''}
-        onChange={(e) => set('dateTo', e.target.value)}
-        className={`${selectCls} max-w-[150px]`}
-        placeholder="To date"
-      />
+      <div className="flex items-center gap-1.5 shrink-0">
+        <input
+          type="date"
+          value={filters.dateFrom || ''}
+          onChange={(e) => set('dateFrom', e.target.value)}
+          className={dateCls}
+          aria-label="From date"
+        />
+        <span className="text-xs text-gray-500">to</span>
+        <input
+          type="date"
+          value={filters.dateTo || ''}
+          onChange={(e) => set('dateTo', e.target.value)}
+          className={dateCls}
+          aria-label="To date"
+        />
+      </div>
     </>
   );
 }
@@ -147,7 +153,7 @@ export default function AdminVisaLeadsPage() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-extrabold text-gray-900">Visa Leads</h2>
-          <p className="text-sm text-gray-400 mt-0.5">
+          <p className="text-sm text-gray-500 mt-0.5">
             {isLoadingLeads
               ? 'Loading…'
               : `${total} lead${total !== 1 ? 's' : ''} · auto-refreshes every 30 s`}
@@ -156,24 +162,12 @@ export default function AdminVisaLeadsPage() {
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <div className="relative w-full sm:max-w-sm">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Search name, email, phone…"
-            value={filters.search}
-            onChange={(e) => setFilters((p) => ({ ...p, search: e.target.value, page: 1 }))}
-            className="w-full pl-9 pr-8 py-2 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300"
-          />
-          {filters.search && (
-            <button
-              onClick={() => setFilters((p) => ({ ...p, search: '', page: 1 }))}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-            >
-              <X size={13} />
-            </button>
-          )}
-        </div>
+        <AdminSearchInput
+          value={filters.search}
+          onChange={(value) => setFilters((p) => ({ ...p, search: value, page: 1 }))}
+          placeholder="Search name, email, phone…"
+          className="flex-1 min-w-[140px]"
+        />
         <Filters
           filters={filters}
           setFilters={setFilters}

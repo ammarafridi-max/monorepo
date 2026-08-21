@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Loader2, Plus, X, FileText, ListChecks } from 'lucide-react';
+import { Loader2, X, FileText, ListChecks } from 'lucide-react';
 import {
   useDocumentTypes, useCreateDocumentType, useUpdateDocumentType,
   useTemplates, useUpsertTemplate, usePreviewTemplate,
 } from '../../hooks/visa-applications/useRegistry.js';
+import AdminFab from '../../components/admin/AdminFab';
 
 const SOURCE_BADGE = {
   CUSTOMER: 'bg-primary-50 text-primary-700', AGENT: 'bg-indigo-50 text-indigo-600', IN_PERSON: 'bg-amber-50 text-amber-700',
@@ -82,7 +83,7 @@ function DocumentTypesTab() {
         <p className="text-sm text-gray-400">
           {isLoading ? 'Loading…' : `${documentTypes.length} document type${documentTypes.length !== 1 ? 's' : ''}`}
         </p>
-        <button onClick={() => setEditing('new')} className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-xl border border-gray-200 bg-white text-gray-600 hover:border-primary-300 hover:text-primary-700 hover:bg-primary-50 transition-colors shrink-0"><Plus size={14} /> New document type</button>
+        <AdminFab onClick={() => setEditing('new')} label="New document type" />
       </div>
 
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">

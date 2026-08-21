@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Pencil, Plus, Power, PowerOff, Trash2 } from 'lucide-react';
+import { Pencil, Power, PowerOff, Trash2 } from 'lucide-react';
 import PageLoader from '../../components/ui/v1/PageLoader';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 import {
@@ -13,6 +13,7 @@ import {
   useUpdateProduct,
 } from '../../hooks/payments/useProducts';
 import AdminProductModal from './AdminProductModal';
+import AdminFab from '../../components/admin/AdminFab';
 
 function formatMoney(amount, currency) {
   try {
@@ -59,17 +60,9 @@ export default function AdminProductsPage() {
 
   return (
     <>
-      <div className="flex items-start justify-between gap-4">
-        <h2 className="text-2xl font-extrabold text-gray-900">Products</h2>
-        <button
-          type="button"
-          onClick={() => setModalOpen(true)}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-primary-700 px-3.5 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-primary-800"
-        >
-          <Plus size={14} />
-          New product
-        </button>
-      </div>
+      <h2 className="text-2xl font-extrabold text-gray-900">Products</h2>
+
+      <AdminFab onClick={() => setModalOpen(true)} label="New product" />
 
       <p className="mt-3 text-xs text-gray-500">
         Reusable products in your catalog. Create a product once, then spawn payment links

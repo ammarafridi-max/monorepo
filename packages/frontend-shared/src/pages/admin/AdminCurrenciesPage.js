@@ -9,13 +9,16 @@ import {
   Star,
   Loader2,
   RefreshCw,
-  Search,
+  ArrowUpDown,
 } from 'lucide-react';
 import { useGetCurrencies } from '../../hooks/currencies/useGetCurrencies';
 import { useCreateCurrency } from '../../hooks/currencies/useCreateCurrency';
 import { useUpdateCurrency } from '../../hooks/currencies/useUpdateCurrency';
 import { useDeleteCurrency } from '../../hooks/currencies/useDeleteCurrency';
 import AdminCurrencyModal from './AdminCurrencyModal';
+import AdminSearchInput from '../../components/admin/AdminSearchInput';
+import FilterMenu from '../../components/admin/FilterMenu';
+import AdminFab from '../../components/admin/AdminFab';
 
 function fmtDate(iso) {
   if (!iso) return '—';
@@ -84,45 +87,37 @@ export default function AdminCurrenciesPage() {
       )}
 
       <div className="max-w-7xl mx-auto space-y-5">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h2 className="text-2xl font-extrabold text-gray-900">Currencies</h2>
-            <p className="text-sm text-gray-400 mt-0.5">
-              {currencies.length} {currencies.length === 1 ? 'currency' : 'currencies'} configured
-            </p>
-          </div>
-          <button
-            onClick={() => setModal('new')}
-            className="flex items-center gap-2 bg-primary-700 hover:bg-primary-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors"
-          >
-            <Plus size={14} /> Add Currency
-          </button>
+        <div>
+          <h2 className="text-2xl font-extrabold text-gray-900">Currencies</h2>
+          <p className="text-sm text-gray-500 mt-0.5">
+            {currencies.length} {currencies.length === 1 ? 'currency' : 'currencies'} configured
+          </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="relative w-full sm:max-w-sm">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by code, name, or symbol"
-              className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300"
-            />
-          </div>
-          <select
+        <AdminFab onClick={() => setModal('new')} label="Add currency" />
+
+        <div className="flex items-center gap-3">
+          <AdminSearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Search by code, name, or symbol"
+            className="flex-1"
+          />
+          <FilterMenu
             value={sort}
-            onChange={(e) => setSort(e.target.value)}
-            className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
-          >
-            <option value="base_first">Base First</option>
-            <option value="code_asc">Code A-Z</option>
-            <option value="code_desc">Code Z-A</option>
-            <option value="rate_asc">Rate Low-High</option>
-            <option value="rate_desc">Rate High-Low</option>
-            <option value="updated_desc">Recently Updated</option>
-            <option value="updated_asc">Oldest Updated</option>
-          </select>
+            onChange={setSort}
+            icon={ArrowUpDown}
+            options={[
+              { value: 'base_first', label: 'Base First' },
+              { value: 'code_asc', label: 'Code A-Z' },
+              { value: 'code_desc', label: 'Code Z-A' },
+              { value: 'rate_asc', label: 'Rate Low-High' },
+              { value: 'rate_desc', label: 'Rate High-Low' },
+              { value: 'updated_desc', label: 'Recently Updated' },
+              { value: 'updated_asc', label: 'Oldest Updated' },
+            ]}
+            label="Sort currencies"
+          />
         </div>
 
         <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">

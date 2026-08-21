@@ -12,6 +12,7 @@ import {
 import { useGetZones } from '../../hooks/zones/useGetZones';
 import { useDuplicateZone } from '../../hooks/zones/useDuplicateZone';
 import { useDeleteZone } from '../../hooks/zones/useDeleteZone';
+import AdminFab from '../../components/admin/AdminFab';
 
 export default function AdminZonesPage() {
   const [deleteId, setDeleteId] = useState(null);
@@ -26,20 +27,14 @@ export default function AdminZonesPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-5">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-extrabold text-gray-900">Zones</h2>
-          <p className="text-sm text-gray-400 mt-0.5">
-            {zones.length} {zones.length === 1 ? 'zone' : 'zones'} configured
-          </p>
-        </div>
-        <Link
-          href="/admin/zones/new"
-          className="flex items-center gap-2 bg-primary-700 hover:bg-primary-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors"
-        >
-          <Plus size={14} /> Add Zone
-        </Link>
+      <div>
+        <h2 className="text-2xl font-extrabold text-gray-900">Zones</h2>
+        <p className="text-sm text-gray-500 mt-0.5">
+          {zones.length} {zones.length === 1 ? 'zone' : 'zones'} configured
+        </p>
       </div>
+
+      <AdminFab href="/admin/zones/new" label="Add zone" />
 
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
         {isLoadingZones ? (

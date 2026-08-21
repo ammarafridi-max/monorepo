@@ -4,14 +4,27 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
-  BookOpen, Plus, Search, Pencil, Globe, EyeOff,
-  Copy, Trash2, X, Clock, ChevronLeft, ChevronRight, Loader2,
+  BookOpen,
+  Plus,
+  Search,
+  Pencil,
+  Globe,
+  EyeOff,
+  Copy,
+  Trash2,
+  Clock,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
 } from 'lucide-react';
 import { useGetBlogs } from '../../hooks/blog/useGetBlogs';
 import { useDeleteBlog } from '../../hooks/blog/useDeleteBlog';
 import { useDuplicateBlog } from '../../hooks/blog/useDuplicateBlog';
 import { usePublishBlog } from '../../hooks/blog/usePublishBlog';
 import { useUpdateBlog } from '../../hooks/blog/useUpdateBlog';
+import FilterMenu from '../../components/admin/FilterMenu';
+import AdminSearchInput from '../../components/admin/AdminSearchInput';
+import AdminFab from '../../components/admin/AdminFab';
 
 const STATUS_TABS = ['all', 'published', 'draft', 'scheduled'];
 
@@ -96,51 +109,31 @@ export default function AdminBlogPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-5">
 
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-extrabold text-gray-900">Blog</h2>
-          <p className="text-sm text-gray-400 mt-0.5">
-            {totalDocs} post{totalDocs !== 1 ? 's' : ''}{statusFilter !== 'all' ? ` · ${STATUS_CFG[statusFilter]?.label}` : ' total'}
-          </p>
-        </div>
-        <Link
-          href="/admin/blog/new"
-          className="flex items-center gap-2 bg-primary-700 hover:bg-primary-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors"
-        >
-          <Plus size={14} />
-          New Post
-        </Link>
+      <div>
+        <h2 className="text-2xl font-extrabold text-gray-900">Blog</h2>
+        <p className="text-sm text-gray-500 mt-0.5">
+          {totalDocs} post{totalDocs !== 1 ? 's' : ''}{statusFilter !== 'all' ? ` · ${STATUS_CFG[statusFilter]?.label}` : ' total'}
+        </p>
       </div>
 
-      <div className="flex flex-wrap items-center gap-4">
-        <div className="relative w-full sm:max-w-sm">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Search posts…"
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="w-full pl-9 pr-8 py-2 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300"
-          />
-          {search && (
-            <button
-              onClick={() => { setSearch(''); setPage(1); }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-            >
-              <X size={13} />
-            </button>
-          )}
-        </div>
-        <select
+      <div className="flex items-center gap-3">
+        <AdminSearchInput
+          value={search}
+          onChange={(value) => { setSearch(value); setPage(1); }}
+          placeholder="Search posts…"
+          className="flex-1"
+        />
+        <FilterMenu
           value={statusFilter}
-          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-          className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
-        >
-          <option value="all">All statuses</option>
-          <option value="published">Published</option>
-          <option value="draft">Draft</option>
-          <option value="scheduled">Scheduled</option>
-        </select>
+          onChange={(value) => { setStatusFilter(value); setPage(1); }}
+          options={[
+            { value: 'all', label: 'All statuses' },
+            { value: 'published', label: 'Published' },
+            { value: 'draft', label: 'Draft' },
+            { value: 'scheduled', label: 'Scheduled' },
+          ]}
+          label="Filter posts"
+        />
       </div>
 
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
@@ -344,6 +337,8 @@ export default function AdminBlogPage() {
           </div>
         )}
       </div>
+
+      <AdminFab href="/admin/blog/new" label="New post" />
     </div>
   );
 }

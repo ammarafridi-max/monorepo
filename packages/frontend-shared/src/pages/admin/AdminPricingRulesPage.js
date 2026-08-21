@@ -9,13 +9,18 @@ import {
   Trash2,
   Copy,
   Loader2,
-  Search,
+  Car,
+  MapPin,
+  MapPinned,
 } from 'lucide-react';
 import { useGetPricingRules } from '../../hooks/pricing-rules/useGetPricingRules';
 import { useDeletePricingRule } from '../../hooks/pricing-rules/useDeletePricingRule';
 import { useDuplicatePricingRule } from '../../hooks/pricing-rules/useDuplicatePricingRule';
 import { useGetZones } from '../../hooks/zones/useGetZones';
 import { useGetVehicles } from '../../hooks/vehicles/useGetVehicles';
+import AdminSearchInput from '../../components/admin/AdminSearchInput';
+import FilterMenu from '../../components/admin/FilterMenu';
+import AdminFab from '../../components/admin/AdminFab';
 
 export default function AdminPricingRulesPage() {
   const [deleteId, setDeleteId] = useState(null);
@@ -44,70 +49,57 @@ export default function AdminPricingRulesPage() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-extrabold text-gray-900">Pricing Rules</h2>
-          <p className="text-sm text-gray-400 mt-0.5">
+          <p className="text-sm text-gray-500 mt-0.5">
             {pricingRules.length}{' '}
             {pricingRules.length === 1 ? 'rule' : 'rules'} configured
           </p>
         </div>
-        <Link
-          href="/admin/pricing-rules/new"
-          className="flex items-center gap-2 bg-primary-700 hover:bg-primary-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors"
-        >
-          <Plus size={14} /> Add Pricing Rule
-        </Link>
+
       </div>
 
-      <div className="flex flex-wrap items-center gap-4">
-        <div className="relative w-full sm:max-w-xs">
-          <Search
-            size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-          />
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Search by name"
-            className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300"
-          />
-        </div>
-        <select
+      <div className="flex items-center gap-3">
+        <AdminSearchInput
+          value={name}
+          onChange={setName}
+          placeholder="Search by name"
+          className="flex-1"
+        />
+        <FilterMenu
           value={vehicleId}
-          onChange={(e) => setVehicleId(e.target.value)}
-          className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
-        >
-          <option value="">All Vehicles</option>
-          {vehicles.map((vehicle) => (
-            <option key={vehicle._id} value={vehicle._id}>
-              {vehicle.brand} {vehicle.model}
-            </option>
-          ))}
-        </select>
-        <select
+          onChange={setVehicleId}
+          icon={Car}
+          label="Filter by vehicle"
+          options={[
+            { value: '', label: 'All Vehicles' },
+            ...vehicles.map((vehicle) => ({
+              value: vehicle._id,
+              label: `${vehicle.brand} ${vehicle.model}`,
+            })),
+          ]}
+        />
+        <FilterMenu
           value={pickupZoneId}
-          onChange={(e) => setPickupZoneId(e.target.value)}
-          className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
-        >
-          <option value="">All Pickup Zones</option>
-          {zones.map((zone) => (
-            <option key={zone._id} value={zone._id}>
-              {zone.name}
-            </option>
-          ))}
-        </select>
-        <select
+          onChange={setPickupZoneId}
+          icon={MapPin}
+          label="Filter by pickup zone"
+          options={[
+            { value: '', label: 'All Pickup Zones' },
+            ...zones.map((zone) => ({ value: zone._id, label: zone.name })),
+          ]}
+        />
+        <FilterMenu
           value={dropoffZoneId}
-          onChange={(e) => setDropoffZoneId(e.target.value)}
-          className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
-        >
-          <option value="">All Dropoff Zones</option>
-          {zones.map((zone) => (
-            <option key={zone._id} value={zone._id}>
-              {zone.name}
-            </option>
-          ))}
-        </select>
+          onChange={setDropoffZoneId}
+          icon={MapPinned}
+          label="Filter by dropoff zone"
+          options={[
+            { value: '', label: 'All Dropoff Zones' },
+            ...zones.map((zone) => ({ value: zone._id, label: zone.name })),
+          ]}
+        />
       </div>
+
+      <AdminFab href="/admin/pricing-rules/new" label="Add pricing rule" />
 
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
         {isLoadingPricingRules ? (

@@ -11,7 +11,6 @@ import {
   ArrowUpRight,
   Trash2,
   RefreshCw,
-  Search,
   SlidersHorizontal,
   X,
 } from "lucide-react";
@@ -19,6 +18,7 @@ import { useGetInsuranceApplications } from "../../hooks/insurance/useGetInsuran
 import { useDeleteInsuranceApplication } from "../../hooks/insurance/useDeleteInsuranceApplication";
 import { useCreateNationalities } from "../../hooks/insurance/useCreateNationalities";
 import { useGetInsuranceApplicationsSummary } from "../../hooks/insurance/useGetInsuranceApplicationsSummary";
+import AdminSearchInput from '../../components/admin/AdminSearchInput';
 
 const PAYMENT_TABS = [
   { value: "", label: "All" },
@@ -338,28 +338,22 @@ function ApplicationsContent() {
       </div>
 
       {/* Search + filter button, in one row */}
-      <div className="flex items-center gap-2 w-full sm:max-w-sm">
-        <div className="relative flex-1">
-          <Search
-            size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-          />
-          <input
-            type="text"
-            value={localSearch}
-            onChange={(e) => setLocalSearch(e.target.value)}
-            placeholder="Search by email, name, session, policy..."
-            className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300"
-          />
-        </div>
+      <div className="flex items-center gap-3 w-full sm:max-w-sm">
+        <AdminSearchInput
+          value={localSearch}
+          onChange={setLocalSearch}
+          placeholder="Search by email, name, session, policy..."
+          className="flex-1"
+        />
         <button
           onClick={() => setFiltersOpen(true)}
           title="Filters"
-          className="relative shrink-0 inline-flex items-center justify-center p-2.5 border border-gray-200 rounded-xl bg-white text-gray-500 hover:text-gray-700 hover:border-gray-300 transition"
+          aria-label="Filters"
+          className="relative shrink-0 flex items-center text-gray-800 hover:text-black transition-colors"
         >
-          <SlidersHorizontal size={16} />
+          <SlidersHorizontal size={18} />
           {activeFilterCount > 0 && (
-            <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 flex items-center justify-center text-[10px] font-bold text-white bg-primary-600 rounded-full">
+            <span className="absolute -top-1 -right-1 min-w-[15px] h-[15px] px-1 flex items-center justify-center text-[9px] font-bold text-white bg-primary-600 rounded-full">
               {activeFilterCount}
             </span>
           )}
