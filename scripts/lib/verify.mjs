@@ -37,6 +37,13 @@ async function withRetry(fn, attempts = 4) {
 const WEB_FETCH_TOOL = {
   type: "web_fetch_20260209",
   name: "web_fetch",
+  /**
+   * Fetch directly instead of through the dynamic-filtering code-execution
+   * path. That filtering is what made a single verification re-read ~773k
+   * tokens, and it is unsupported on the cheaper models. We only need the page
+   * text back; we do the comparing ourselves.
+   */
+  allowed_callers: ["direct"],
   // Government pages are large. Uncapped, a handful of them blow out the
   // context and the request runs for tens of minutes.
   // Was 12000 x 6 = up to 72k tokens of page content per call, re-sent on every
@@ -206,12 +213,12 @@ export function isClean(result) {
  * removed. That is only reachable because the caller revises and re-verifies
  * first — as a one-shot gate it would reject almost everything.
  */
-export function assertVerification(result, { strict = true, maxUnsupportedRatio = 0.25 } = {}) {
+/** Printing the verdict is separate from enforcing it, so a report-only run still shows it. */
+export function reportVerification(result) {
   const total = result.claims.length;
   console.log(
     `Fact check: ${result.supported.length} supported, ${result.unsupported.length} unsupported, ${result.contradicted.length} contradicted (${total} claims)`,
   );
-
   for (const c of result.contradicted) {
     console.error(`  ✗ CONTRADICTED: ${c.claim}`);
     console.error(`    source says: ${c.evidence}`);
@@ -219,6 +226,11 @@ export function assertVerification(result, { strict = true, maxUnsupportedRatio 
   for (const c of result.unsupported) {
     console.warn(`  ? unsupported: ${c.claim}`);
   }
+}
+
+export function assertVerification(result, { strict = true, maxUnsupportedRatio = 0.25 } = {}) {
+  const total = result.claims.length;
+  reportVerification(result);
 
   if (result.contradicted.length) {
     throw new Error(

@@ -234,6 +234,37 @@ export function validateCitations(parsed, brand, { minCitations }) {
  * punctuation. A dash between clauses becomes a comma; a dash used as a range
  * or a bullet marker becomes a plain hyphen.
  */
+/**
+ * Catches invented citation URLs. Gates on 404/410 only: official sites like
+ * travel.state.gov and uscode.house.gov block automated requests and answer
+ * 403 or nothing at all, so treating any non-200 as broken would reject real
+ * sources. A 404 means the server looked and the page is not there.
+ */
+export async function verifyCitationUrls(urls, { timeoutMs = 15000 } = {}) {
+  const dead = [];
+  await Promise.all(
+    urls.map(async (url) => {
+      try {
+        const res = await fetch(url, {
+          method: 'GET',
+          redirect: 'follow',
+          signal: AbortSignal.timeout(timeoutMs),
+          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; VisaWadiLinkCheck/1.0)' },
+        });
+        if (res.status === 404 || res.status === 410) dead.push({ url, status: res.status });
+      } catch {
+        // Blocked, throttled or timed out. Not evidence the page is missing.
+      }
+    }),
+  );
+  if (dead.length) {
+    throw new Error(
+      `${dead.length} cited source(s) do not exist: ${dead.map((d) => `${d.url} (${d.status})`).join(', ')}`,
+    );
+  }
+  console.log(`✓ ${urls.length} cited URLs checked, none returned 404`);
+}
+
 export function stripEmDashes(value) {
   if (typeof value !== "string") return value;
   return value

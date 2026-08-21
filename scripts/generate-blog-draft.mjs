@@ -19,6 +19,7 @@ import {
   LENGTH_TIERS,
   loadBrand,
   validateCitations,
+  verifyCitationUrls,
   stripEmDashesFromPost,
   createApiClient,
   formatRequiredLinksBlock,
@@ -27,12 +28,16 @@ import {
   fetchCoverImage,
 } from "./lib/blog-utils.mjs";
 import { resolveFormat } from "./lib/formats.mjs";
-import { verifyDraft, assertVerification, isClean, buildRevisionBrief } from "./lib/verify.mjs";
+import { verifyDraft, assertVerification, reportVerification, isClean, buildRevisionBrief } from "./lib/verify.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const MODEL = "claude-sonnet-4-6";
+/** Stop after the draft is written, before any fact-check spend. */
+const GENERATE_ONLY = process.argv.includes("--generate-only");
+/** One fact-check pass, report the verdict, no revision and no publish. */
+const VERIFY_ONLY = process.argv.includes("--verify-only");
 
 /** Publish immediately by default; --status draft stages it for review instead. */
 function parseFlag(argv, name) {
@@ -332,6 +337,7 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
       parsed.__citations = validateCitations(parsed, brand, {
         minCitations: format.minCitations,
       });
+      await verifyCitationUrls(parsed.__citations);
     }
   } catch (err) {
     lastValidationError = err;
@@ -454,6 +460,11 @@ async function main() {
     console.log(`Saved draft to ${draftCache}`);
   }
 
+  if (GENERATE_ONLY) {
+    console.log(`\nStopped after generation (--generate-only). No fact-check, nothing published.`);
+    return;
+  }
+
   // Fact-check, then revise against the verdict and re-check. Without the
   // revise step the check can only ever block: a first draft routinely makes
   // claims that are true but absent from the pages it happened to cite.
@@ -464,11 +475,22 @@ async function main() {
     console.log("\nFact-checking against the cited official sources...");
     verification = await verifyDraft({
       apiKey: ANTHROPIC_API_KEY,
-      model: MODEL,
+      model: parseFlag(process.argv.slice(2), "verify-model") ?? MODEL,
       title: topic.title,
       content: content.content,
       citations: content.__citations,
     });
+
+    if (VERIFY_ONLY) {
+      reportVerification(verification);
+      const out = parseFlag(process.argv.slice(2), "verdict-file");
+      if (out) {
+        writeFileSync(out, JSON.stringify(verification, null, 2));
+        console.log(`Verdict saved to ${out}`);
+      }
+      console.log("\nStopped after one fact-check pass (--verify-only). Nothing revised, nothing published.");
+      return;
+    }
 
     for (let round = 1; round <= MAX_REVISIONS && !isClean(verification); round++) {
       console.log(

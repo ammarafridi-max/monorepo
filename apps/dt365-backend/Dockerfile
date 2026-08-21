@@ -21,6 +21,8 @@ COPY packages/integrations/paypal/package.json     packages/integrations/paypal/
 COPY packages/shared/notifications/package.json   packages/shared/notifications/package.json
 COPY packages/domains/payments/package.json        packages/domains/payments/package.json
 COPY packages/domains/tickets/package.json         packages/domains/tickets/package.json
+COPY packages/domains/conversations/package.json   packages/domains/conversations/package.json
+COPY packages/integrations/whatsapp/package.json   packages/integrations/whatsapp/package.json
 COPY packages/domains/users/package.json           packages/domains/users/package.json
 COPY packages/shared/utils/package.json           packages/shared/utils/package.json
 COPY apps/dt365-backend/package.json       apps/dt365-backend/package.json
