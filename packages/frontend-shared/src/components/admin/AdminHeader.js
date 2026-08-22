@@ -169,8 +169,8 @@ function GlobalSearch() {
 
       <div className="relative">
         <Search
-          size={14}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+          size={15}
+          className="absolute left-1 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
         />
         <input
           ref={inputRef}
@@ -179,17 +179,17 @@ function GlobalSearch() {
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => { if (searched) setOpen(true); }}
           placeholder="Search tickets, insurance, leads…"
-          className="w-full h-9 pl-8 pr-8 rounded-lg border border-gray-200 bg-transparent text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-300 focus:bg-white transition"
+          className="w-full h-9 pl-7 pr-7 bg-transparent text-sm text-gray-900 placeholder:text-gray-500 border-0 rounded-none focus:outline-none"
         />
 
-        <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
+        <div className="absolute right-1 top-1/2 -translate-y-1/2">
           {loading ? (
-            <Loader2 size={13} className="text-gray-400 animate-spin" />
+            <Loader2 size={14} className="text-gray-500 animate-spin" />
           ) : query ? (
             <button
               type="button"
               onClick={handleClear}
-              className="text-gray-400 hover:text-gray-600 transition"
+              className="text-gray-500 hover:text-gray-900 transition"
               aria-label="Clear search"
             >
               <X size={13} />

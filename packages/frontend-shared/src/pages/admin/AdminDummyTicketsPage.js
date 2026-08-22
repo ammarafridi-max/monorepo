@@ -15,6 +15,7 @@ import { extractIataCode } from '../../utils/extractIataCode';
 import { convertToDubaiDate } from '../../utils/dates';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 import AdminSearchInput from '../../components/admin/AdminSearchInput';
+import FilterMenu from '../../components/admin/FilterMenu';
 
 const PAYMENT_TABS = [
   { value: '',       label: 'All'      },
@@ -242,9 +243,9 @@ function DummyTicketsContent() {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
         {/* Search + (phones only) filter button, in one row */}
-        <div className="flex items-center gap-3 w-full sm:w-auto sm:max-w-sm">
+        <div className="flex items-center gap-3 w-full sm:w-auto sm:flex-1 sm:max-w-sm">
           <AdminSearchInput
             value={localSearch}
             onChange={setLocalSearch}
@@ -267,17 +268,61 @@ function DummyTicketsContent() {
         </div>
 
         {/* Inline filter bar — sm and up only */}
-        <div className="hidden sm:flex flex-wrap items-center gap-4">
-          {paymentControl()}
-          <div className="w-px h-5 bg-gray-200" />
-          {orderControl()}
-          <div className="w-px h-5 bg-gray-200" />
-          {timeControl()}
-          <div className="w-px h-5 bg-gray-200" />
+        <div className="hidden sm:flex flex-wrap items-center gap-5">
+          <FilterMenu
+            variant="text"
+            value={localPayment}
+            onChange={(value) => { setLocalPayment(value); setParam('paymentStatus', value); }}
+            label="Filter by payment"
+            options={[
+              { value: 'all', label: 'All payments' },
+              ...PAYMENT_TABS.filter(({ value }) => value !== ''),
+            ]}
+          />
+          <FilterMenu
+            variant="text"
+            value={localOrder}
+            onChange={(value) => { setLocalOrder(value); setParam('orderStatus', value); }}
+            label="Filter by order status"
+            options={[
+              { value: '', label: 'All orders' },
+              ...ORDER_TABS.filter(({ value }) => value !== ''),
+            ]}
+          />
+          {agentTimeLocked ? (
+            <span
+              className="text-sm font-medium text-gray-600"
+              title="Agents see the last 4 hours by default. Type in the search box to look up older tickets."
+            >
+              Last 4 hours
+            </span>
+          ) : (
+            <FilterMenu
+              variant="text"
+              value={createdAt}
+              onChange={(value) => { setLocalCreatedAt(value); setParam('createdAt', value); }}
+              label="Filter by time"
+              options={TIME_OPTIONS}
+            />
+          )}
           <div className="flex items-center gap-2">
-            <CalendarDays size={13} className="text-gray-400 shrink-0" />
-            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Delivery</span>
-            {deliveryControl()}
+            <CalendarDays size={14} className="text-gray-500 shrink-0" />
+            <input
+              type="date"
+              value={localDeliveryDate}
+              onChange={(e) => { setLocalDeliveryDate(e.target.value); setParam('deliveryDate', e.target.value); }}
+              aria-label="Delivery date"
+              className="px-0 py-1 text-sm bg-transparent text-gray-900 border-0 rounded-none focus:outline-none"
+            />
+            {localDeliveryDate && (
+              <button
+                onClick={() => { setLocalDeliveryDate(''); setParam('deliveryDate', ''); }}
+                className="text-gray-500 hover:text-gray-900 transition"
+                title="Clear delivery date filter"
+              >
+                <X size={14} />
+              </button>
+            )}
           </div>
         </div>
       </div>

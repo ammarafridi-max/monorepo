@@ -338,13 +338,14 @@ function ApplicationsContent() {
       </div>
 
       {/* Search + filter button, in one row */}
-      <div className="flex items-center gap-3 w-full sm:max-w-sm">
+      <div className="flex items-center gap-3 w-full">
         <AdminSearchInput
           value={localSearch}
           onChange={setLocalSearch}
           placeholder="Search by email, name, session, policy..."
-          className="flex-1"
+          className="flex-1 sm:max-w-sm"
         />
+        <div className="flex-1" />
         <button
           onClick={() => setFiltersOpen(true)}
           title="Filters"
