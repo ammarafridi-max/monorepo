@@ -2,451 +2,541 @@
   {
     "date": "2026-08-20",
     "title": "US Visa Refusal Under 214(b): What UAE Residents Should Do Next",
-    "length": "long"
+    "length": "long",
+    "slug": "us-visa-refusal-under-214b-uae"
   },
   {
     "date": "2026-08-21",
     "title": "UK Visa Refusal Reasons for UAE Residents and How to Reapply",
-    "length": "long"
+    "length": "long",
+    "slug": "uk-visa-refusal-reasons-uae-reapply"
   },
   {
     "date": "2026-08-22",
     "title": "Which Schengen Country Should You Apply Through? The Main Destination Rule",
-    "length": "long"
+    "length": "long",
+    "slug": "schengen-country-apply-through-main-destination"
   },
   {
     "date": "2026-08-23",
     "title": "Canada Visitor Visa Refusal: Common Reasons for UAE Applicants",
-    "length": "long"
+    "length": "long",
+    "slug": "canada-visitor-visa-refusal-common-reasons"
   },
   {
     "date": "2026-08-24",
     "title": "DS-160 Form Mistakes That Delay US Visa Applications",
-    "length": "medium"
+    "length": "medium",
+    "slug": "ds-160-form-mistakes-delay-us-visa"
   },
   {
     "date": "2026-08-25",
     "title": "UK Standard Visitor Visa Financial Requirements Explained",
-    "length": "medium"
+    "length": "medium",
+    "slug": "uk-standard-visitor-visa-financial-requirements"
   },
   {
     "date": "2026-08-26",
     "title": "Spain Visa from the UAE: The BLS International Process Explained",
-    "length": "long"
+    "length": "long",
+    "slug": "spain-visa-uae-bls-international-process"
   },
   {
     "date": "2026-08-27",
     "title": "Schengen Visa Travel Insurance Requirements: Minimum Cover Explained",
-    "length": "medium"
+    "length": "medium",
+    "slug": "schengen-visa-travel-insurance-requirements-minimum"
   },
   {
     "date": "2026-08-28",
     "title": "Canada Visa Biometrics in the UAE: Where to Give Them and When",
-    "length": "short"
+    "length": "short",
+    "slug": "canada-visa-biometrics-uae"
   },
   {
     "date": "2026-08-29",
     "title": "Visa Photo Requirements Compared: Schengen, UK, US and Canada",
-    "length": "medium"
+    "length": "medium",
+    "slug": "visa-photo-requirements-compared-schengen-uk"
   },
   {
     "date": "2026-08-30",
     "title": "US Visa Appointment Wait Times in Dubai and Abu Dhabi",
-    "length": "short"
+    "length": "short",
+    "slug": "us-visa-appointment-wait-times-dubai"
   },
   {
     "date": "2026-08-31",
     "title": "UK Visa Priority Service from the UAE: Is It Worth Paying For?",
-    "length": "medium"
+    "length": "medium",
+    "slug": "uk-visa-priority-service-uae"
   },
   {
     "date": "2026-09-01",
     "title": "France Visa Appointment at VFS Global Dubai: How to Book",
-    "length": "medium"
+    "length": "medium",
+    "slug": "france-visa-appointment-vfs-global-dubai"
   },
   {
     "date": "2026-09-02",
     "title": "Schengen Visa Cover Letter: How to Write One from the UAE",
-    "length": "medium"
+    "length": "medium",
+    "slug": "schengen-visa-cover-letter-write"
   },
   {
     "date": "2026-09-03",
     "title": "Canada Visitor Visa Financial Requirements for UAE Residents",
-    "length": "medium"
+    "length": "medium",
+    "slug": "canada-visitor-visa-financial-requirements-uae"
   },
   {
     "date": "2026-09-04",
     "title": "Germany Visa Appointment Booking from the UAE: What to Know",
-    "length": "medium"
+    "length": "medium",
+    "slug": "germany-visa-appointment-booking-uae"
   },
   {
     "date": "2026-09-05",
     "title": "US Tourist Visa Bank Statement Requirements for UAE Residents",
-    "length": "medium"
+    "length": "medium",
+    "slug": "us-tourist-visa-bank-statement-requirements"
   },
   {
     "date": "2026-09-06",
     "title": "UK Visa Biometrics Appointment in Dubai: What Actually Happens",
-    "length": "short"
+    "length": "short",
+    "slug": "uk-visa-biometrics-appointment-dubai-happens"
   },
   {
     "date": "2026-09-07",
     "title": "Italy Visa Appointment in Dubai: Booking Through VFS Global",
-    "length": "medium"
+    "length": "medium",
+    "slug": "italy-visa-appointment-dubai-booking-through"
   },
   {
     "date": "2026-09-08",
     "title": "Schengen Visa for Freelancers and Business Owners in the UAE",
-    "length": "medium"
+    "length": "medium",
+    "slug": "schengen-visa-freelancers-business-owners-uae"
   },
   {
     "date": "2026-09-09",
     "title": "IRCC Processing Times for UAE Applicants in 2026",
-    "length": "short"
+    "length": "short",
+    "slug": "ircc-processing-times-uae-2026"
   },
   {
     "date": "2026-09-10",
     "title": "How Long Must Your Passport Be Valid for a Visa Application?",
-    "length": "short"
+    "length": "short",
+    "slug": "long-passport-valid-visa-application"
   },
   {
     "date": "2026-09-11",
     "title": "Can You Apply for a US Visa on a UAE Residence Visa?",
-    "length": "medium"
+    "length": "medium",
+    "slug": "apply-us-visa-uae-residence-visa"
   },
   {
     "date": "2026-09-12",
     "title": "UK Visitor Visa Sponsorship Letter: What It Must Include",
-    "length": "medium"
+    "length": "medium",
+    "slug": "uk-visitor-visa-sponsorship-letter-include"
   },
   {
     "date": "2026-09-13",
     "title": "Spain Visa Appointment in Dubai: How to Book Through BLS",
-    "length": "medium"
+    "length": "medium",
+    "slug": "spain-visa-appointment-dubai-book-through"
   },
   {
     "date": "2026-09-14",
     "title": "Schengen Visa with a New Job: Applying Before Probation Ends",
-    "length": "medium"
+    "length": "medium",
+    "slug": "schengen-visa-new-job-applying-probation"
   },
   {
     "date": "2026-09-15",
     "title": "US Visa Administrative Processing: Why It Happens and How Long It Takes",
-    "length": "medium"
+    "length": "medium",
+    "slug": "us-visa-administrative-processing-happens-long"
   },
   {
     "date": "2026-09-16",
     "title": "How Long Can You Stay in the UK on a Visitor Visa?",
-    "length": "short"
+    "length": "short",
+    "slug": "long-stay-uk-visitor-visa"
   },
   {
     "date": "2026-09-17",
     "title": "Schengen Visa Salary Requirements: How Much Is Enough?",
-    "length": "medium"
+    "length": "medium",
+    "slug": "schengen-visa-salary-requirements-much-enough"
   },
   {
     "date": "2026-09-18",
     "title": "Canada Super Visa vs Visitor Visa: Which One Fits Your Trip?",
-    "length": "medium"
+    "length": "medium",
+    "slug": "canada-super-visa-visitor-visa"
   },
   {
     "date": "2026-09-19",
     "title": "B1 vs B2 Visa: Which One Should You Apply For?",
-    "length": "short"
+    "length": "short",
+    "slug": "b1-b2-visa"
   },
   {
     "date": "2026-09-20",
     "title": "UK Visa for Indian Passport Holders Living in the UAE",
-    "length": "medium"
+    "length": "medium",
+    "slug": "uk-visa-indian-passport-holders-living"
   },
   {
     "date": "2026-09-21",
     "title": "Spain Visa Refusal Reasons and How to Reapply",
-    "length": "medium"
+    "length": "medium",
+    "slug": "spain-visa-refusal-reasons-reapply"
   },
   {
     "date": "2026-09-22",
     "title": "Applying for a Schengen Visa Without a Salary Certificate",
-    "length": "medium"
+    "length": "medium",
+    "slug": "applying-schengen-visa-salary-certificate"
   },
   {
     "date": "2026-09-23",
     "title": "Invitation Letter for a Canada Visitor Visa: What to Include",
-    "length": "medium"
+    "length": "medium",
+    "slug": "invitation-letter-canada-visitor-visa-include"
   },
   {
     "date": "2026-09-24",
     "title": "Hotel Reservations for Visa Applications: What Embassies Accept",
-    "length": "medium"
+    "length": "medium",
+    "slug": "hotel-reservations-visa-applications-embassies"
   },
   {
     "date": "2026-09-25",
     "title": "US Visa Photo Requirements: Exact Specs and Common Rejections",
-    "length": "short"
+    "length": "short",
+    "slug": "us-visa-photo-requirements-exact-specs"
   },
   {
     "date": "2026-09-26",
     "title": "UK Visa for Pakistani Passport Holders Living in the UAE",
-    "length": "medium"
+    "length": "medium",
+    "slug": "uk-visa-pakistani-passport-holders-living"
   },
   {
     "date": "2026-09-27",
     "title": "France Business Visa from the UAE: Documents and Process",
-    "length": "medium"
+    "length": "medium",
+    "slug": "france-business-visa-uae-documents-process"
   },
   {
     "date": "2026-09-28",
     "title": "Schengen Visa Validity vs Duration of Stay: The Difference",
-    "length": "short"
+    "length": "short",
+    "slug": "schengen-visa-validity-duration-stay-difference"
   },
   {
     "date": "2026-09-29",
     "title": "Canada Visa for Indian Passport Holders Living in the UAE",
-    "length": "medium"
+    "length": "medium",
+    "slug": "canada-visa-indian-passport-holders-living"
   },
   {
     "date": "2026-09-30",
     "title": "Germany Business Visa from the UAE: Documents and Process",
-    "length": "medium"
+    "length": "medium",
+    "slug": "germany-business-visa-uae-documents-process"
   },
   {
     "date": "2026-10-01",
     "title": "How to Prove Strong Ties to the UAE at a US Visa Interview",
-    "length": "long"
+    "length": "long",
+    "slug": "prove-strong-ties-uae-us-visa"
   },
   {
     "date": "2026-10-02",
     "title": "Visiting Family in the UK: Which Visa Do You Actually Need?",
-    "length": "medium"
+    "length": "medium",
+    "slug": "visiting-family-uk-visa"
   },
   {
     "date": "2026-10-03",
     "title": "Italy Visa Refusal Reasons for UAE Residents",
-    "length": "medium"
+    "length": "medium",
+    "slug": "italy-visa-refusal-reasons-uae"
   },
   {
     "date": "2026-10-04",
     "title": "The 90/180 Day Schengen Rule Explained for UAE Residents",
-    "length": "medium"
+    "length": "medium",
+    "slug": "90-180-day-schengen-rule-uae"
   },
   {
     "date": "2026-10-05",
     "title": "Canada Visa for Pakistani Passport Holders Living in the UAE",
-    "length": "medium"
+    "length": "medium",
+    "slug": "canada-visa-pakistani-passport-holders-living"
   },
   {
     "date": "2026-10-06",
     "title": "What Happens to Your Application If Your Passport Expires",
-    "length": "short"
+    "length": "short",
+    "slug": "happens-application-passport-expires"
   },
   {
     "date": "2026-10-07",
     "title": "US Visa for Indian Passport Holders Living in the UAE",
-    "length": "medium"
+    "length": "medium",
+    "slug": "us-visa-indian-passport-holders-living"
   },
   {
     "date": "2026-10-08",
     "title": "UK Visa Documents Checklist for UAE Residents",
-    "length": "long"
+    "length": "long",
+    "slug": "uk-visa-documents-uae"
   },
   {
     "date": "2026-10-09",
     "title": "Spain Visa Documents Checklist for UAE Residents",
-    "length": "medium"
+    "length": "medium",
+    "slug": "spain-visa-documents-uae"
   },
   {
     "date": "2026-10-10",
     "title": "Schengen Visa for Children: What Documents Parents Need",
-    "length": "medium"
+    "length": "medium",
+    "slug": "schengen-visa-children-documents-parents"
   },
   {
     "date": "2026-10-11",
     "title": "US Visa for Pakistani Passport Holders Living in the UAE",
-    "length": "medium"
+    "length": "medium",
+    "slug": "us-visa-pakistani-passport-holders-living"
   },
   {
     "date": "2026-10-12",
     "title": "UK Transit Visa: When UAE Residents Need One",
-    "length": "short"
+    "length": "short",
+    "slug": "uk-transit-visa-uae"
   },
   {
     "date": "2026-10-13",
     "title": "Schengen Visa Appeal: How to Challenge a Refusal from the UAE",
-    "length": "long"
+    "length": "long",
+    "slug": "schengen-visa-appeal-challenge-refusal-uae"
   },
   {
     "date": "2026-10-14",
     "title": "Applying for a Canada Visa on a UAE Residence Visa",
-    "length": "medium"
+    "length": "medium",
+    "slug": "applying-canada-visa-uae-residence-visa"
   },
   {
     "date": "2026-10-15",
     "title": "Flying Through the US on a Layover: Do You Need a Transit Visa?",
-    "length": "medium"
+    "length": "medium",
+    "slug": "flying-through-us-layover-transit-visa"
   },
   {
     "date": "2026-10-16",
     "title": "UK Visa Processing Times from the UAE in 2026",
-    "length": "short"
+    "length": "short",
+    "slug": "uk-visa-processing-times-uae-2026"
   },
   {
     "date": "2026-10-17",
     "title": "Visiting Spain for Business: Which Visa Applies?",
-    "length": "short"
+    "length": "short",
+    "slug": "visiting-spain-business-visa-applies"
   },
   {
     "date": "2026-10-18",
     "title": "Visiting Several Schengen Countries on One Visa: How It Works",
-    "length": "medium"
+    "length": "medium",
+    "slug": "visiting-several-schengen-countries-one-visa"
   },
   {
     "date": "2026-10-19",
     "title": "Canada Visitor Visa Photo and Document Specifications",
-    "length": "short"
+    "length": "short",
+    "slug": "canada-visitor-visa-photo-document-specifications"
   },
   {
     "date": "2026-10-20",
     "title": "Applying for Two Visas at the Same Time: Is It Allowed?",
-    "length": "medium"
+    "length": "medium",
+    "slug": "applying-two-visas-same-time-allowed"
   },
   {
     "date": "2026-10-21",
     "title": "US Visa Renewal from the UAE: Dropbox Eligibility Explained",
-    "length": "medium"
+    "length": "medium",
+    "slug": "us-visa-renewal-uae-dropbox-eligibility"
   },
   {
     "date": "2026-10-22",
     "title": "Can You Work Remotely from the UK on a Visitor Visa?",
-    "length": "medium"
+    "length": "medium",
+    "slug": "work-remotely-uk-visitor-visa"
   },
   {
     "date": "2026-10-23",
     "title": "Visiting Paris on a Schengen Visa: What France Asks For",
-    "length": "medium"
+    "length": "medium",
+    "slug": "visiting-paris-schengen-visa-france-asks"
   },
   {
     "date": "2026-10-24",
     "title": "Schengen Visa Sponsorship: Applying When Someone Else Pays",
-    "length": "medium"
+    "length": "medium",
+    "slug": "schengen-visa-sponsorship-applying-someone-else"
   },
   {
     "date": "2026-10-25",
     "title": "Can You Extend Your Stay in Canada as a Visitor?",
-    "length": "medium"
+    "length": "medium",
+    "slug": "extend-stay-canada-visitor"
   },
   {
     "date": "2026-10-26",
     "title": "Germany Visa Refusal: Common Reasons for UAE Applicants",
-    "length": "medium"
+    "length": "medium",
+    "slug": "germany-visa-refusal-common-reasons-uae"
   },
   {
     "date": "2026-10-27",
     "title": "What to Bring to Your US Visa Interview in Dubai",
-    "length": "short"
+    "length": "short",
+    "slug": "bring-us-visa-interview-dubai"
   },
   {
     "date": "2026-10-28",
     "title": "UK Visa Cover Letter: How to Write One That Helps Your Case",
-    "length": "medium"
+    "length": "medium",
+    "slug": "uk-visa-cover-letter-write"
   },
   {
     "date": "2026-10-29",
     "title": "Italy Business Visa from the UAE: What You Need",
-    "length": "medium"
+    "length": "medium",
+    "slug": "italy-business-visa-uae"
   },
   {
     "date": "2026-10-30",
     "title": "Schengen Visa for Housewives and Dependents in the UAE",
-    "length": "medium"
+    "length": "medium",
+    "slug": "schengen-visa-housewives-dependents-uae"
   },
   {
     "date": "2026-10-31",
     "title": "Canada eTA vs Visitor Visa: Which One Applies to You?",
-    "length": "medium"
+    "length": "medium",
+    "slug": "canada-eta-visitor-visa-one-applies"
   },
   {
     "date": "2026-11-01",
     "title": "Visa Application Timeline: When to Start Before Your Trip",
-    "length": "medium"
+    "length": "medium",
+    "slug": "visa-application-timeline-start-trip"
   },
   {
     "date": "2026-11-02",
     "title": "Spain Visa Processing Times from the UAE",
-    "length": "short"
+    "length": "short",
+    "slug": "spain-visa-processing-times-uae"
   },
   {
     "date": "2026-11-03",
     "title": "Do You Need Flight Tickets Before a Schengen Visa Appointment?",
-    "length": "short"
+    "length": "short",
+    "slug": "flight-tickets-schengen-visa-appointment"
   },
   {
     "date": "2026-11-04",
     "title": "Schengen Visa Photo Requirements and Why Photos Get Rejected",
-    "length": "short"
+    "length": "short",
+    "slug": "schengen-visa-photo-requirements-photos-rejected"
   },
   {
     "date": "2026-11-05",
     "title": "Employment Letter for a Visa Application: What It Must Say",
-    "length": "medium"
+    "length": "medium",
+    "slug": "employment-letter-visa-application-say"
   },
   {
     "date": "2026-11-06",
     "title": "France Visa Refusal Reasons and How to Reapply",
-    "length": "medium"
+    "length": "medium",
+    "slug": "france-visa-refusal-reasons-reapply"
   },
   {
     "date": "2026-11-07",
     "title": "Visiting Family in Germany: The Formal Obligation Letter Explained",
-    "length": "medium"
+    "length": "medium",
+    "slug": "visiting-family-germany-formal-obligation-letter"
   },
   {
     "date": "2026-11-08",
     "title": "Applying for an Italy Visa in Peak Season: When to Start",
-    "length": "short"
+    "length": "short",
+    "slug": "applying-italy-visa-peak-season"
   },
   {
     "date": "2026-11-09",
     "title": "Do Visa Refusals Affect Your Future Applications?",
-    "length": "medium"
+    "length": "medium",
+    "slug": "visa-refusals-affect-future-applications"
   },
   {
     "date": "2026-11-10",
     "title": "Changing Jobs Before a Visa Appointment: What to Declare",
-    "length": "medium"
+    "length": "medium",
+    "slug": "changing-jobs-visa-appointment-declare"
   },
   {
     "date": "2026-11-11",
     "title": "France Long-Stay vs Short-Stay Visa: Which Do You Need?",
-    "length": "short"
+    "length": "short",
+    "slug": "france-long-stay-short-stay-visa"
   },
   {
     "date": "2026-11-12",
     "title": "Germany Visa Financial Proof: How Much You Need to Show",
-    "length": "short"
+    "length": "short",
+    "slug": "germany-visa-financial-proof-much-show"
   },
   {
     "date": "2026-11-13",
     "title": "Italy Visa Accommodation Proof: Hotels vs Host Invitation",
-    "length": "medium"
+    "length": "medium",
+    "slug": "italy-visa-accommodation-proof-hotels-host"
   },
   {
     "date": "2026-11-14",
     "title": "Proof of Onward Travel: What Each Destination Accepts",
-    "length": "medium"
+    "length": "medium",
+    "slug": "proof-onward-travel-each-destination-accepts"
   },
   {
     "date": "2026-11-15",
     "title": "France Visa Processing Time from the UAE",
-    "length": "short"
+    "length": "short",
+    "slug": "france-visa-processing-time-uae"
   },
   {
     "date": "2026-11-16",
     "title": "Germany Visa Processing Times from Dubai",
-    "length": "short"
+    "length": "short",
+    "slug": "germany-visa-processing-times-dubai"
   },
   {
     "date": "2026-11-17",
     "title": "Italy Visa Processing Time from the UAE",
-    "length": "short"
+    "length": "short",
+    "slug": "italy-visa-processing-time-uae"
   }
 ]

@@ -25,6 +25,8 @@ export const BRAND = {
 
   ctaClass: 'visawadi-cta',
 
+  excludedTags: ['Flight Itinerary', 'Travel Insurance', 'Visa Tips', 'Europe Travel'],
+
   /**
    * Format per length tier. `long` maps to sourced-guide rather than
    * field-report because field-report requires first-party numbers and the

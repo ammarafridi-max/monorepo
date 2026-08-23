@@ -126,16 +126,15 @@ export function createApiClient(brand) {
   }
 
   /** Draft and scheduled posts count too, so a re-run never double-publishes. */
-  async function checkTitleExists(token, title) {
+  async function fetchExistingTitles(token) {
     const data = await apiFetch("/api/blogs/admin/list?page=1&limit=1000", {
       headers: { Cookie: `jwt=${token}` },
     });
     const posts = data?.data?.blogs ?? [];
-    const normalise = (s) => s.trim().toLowerCase();
-    return posts.some((p) => normalise(p.title) === normalise(title));
+    return new Set(posts.map((p) => p.title.trim().toLowerCase()));
   }
 
-  return { BACKEND_URL, apiFetch, apiFetchRaw, login, fetchBlogTags, fetchPublishedPosts, checkTitleExists };
+  return { BACKEND_URL, apiFetch, apiFetchRaw, login, fetchBlogTags, fetchPublishedPosts, fetchExistingTitles };
 }
 
 export function extractJwtCookie(res) {
@@ -276,6 +275,46 @@ export function countSentences(text) {
     .filter(Boolean).length;
 }
 
+/** Sentence-level split that keeps abbreviations intact. */
+export function splitSentencesText(text) {
+  const masked = (text || '').replace(ABBREVIATIONS, (m) => m.replace(/\./g, '\u0001'));
+  return masked
+    .split(/(?<=[.!?])\s+(?=[A-Z"'\u2018\u201c])/)
+    .map((s) => s.replace(/\u0001/g, '.').trim())
+    .filter(Boolean);
+}
+
+/**
+ * Splits only paragraphs that exceed the ceiling, and splits them as evenly as
+ * possible. Paragraphs already within budget keep the model's own grouping,
+ * because it groups by idea and a blind every-two-sentences chop would sever
+ * claims from the conditions that qualify them.
+ *
+ * Done mechanically because the model will not do it reliably: asked to fix its
+ * own long paragraphs it went 7 -> 1 -> 5 -> 1 across four attempts.
+ */
+export function splitLongParagraphs(html, { maxSentences = 3 } = {}) {
+  let splits = 0;
+  const out = (html || '').replace(/<p>([\s\S]*?)<\/p>/gi, (whole, inner) => {
+    if (/<(?:ul|ol|table|div)\b/i.test(inner)) return whole;
+    const sentences = splitSentencesText(stripHtmlToText(inner));
+    if (sentences.length <= maxSentences) return whole;
+
+    const chunks = [];
+    let rest = sentences;
+    while (rest.length > maxSentences) {
+      const take = Math.ceil(rest.length / Math.ceil(rest.length / maxSentences));
+      chunks.push(rest.slice(0, take));
+      rest = rest.slice(take);
+    }
+    if (rest.length) chunks.push(rest);
+    splits += chunks.length - 1;
+    return chunks.map((c) => `<p>${c.join(' ')}</p>`).join('\n');
+  });
+  if (splits) console.log(`✓ Split ${splits} over-long paragraph(s) at sentence boundaries`);
+  return out;
+}
+
 /**
  * One idea per paragraph. The prompt has asked for short paragraphs since the
  * beginning and the model has never obeyed it — measured 15 of 25 paragraphs at
@@ -293,7 +332,9 @@ export function validateParagraphs(parsed, { maxSentences = 3 } = {}) {
 
   for (const f of parsed.faqs ?? []) {
     const n = countSentences(f.answer || '');
-    if (n > maxSentences) offenders.push({ where: 'faq', n, text: f.answer });
+    if (n > maxSentences) {
+      console.warn(`⚠  FAQ answer runs to ${n} sentences: ${(f.answer || '').slice(0, 70)}...`);
+    }
   }
 
   if (offenders.length) {

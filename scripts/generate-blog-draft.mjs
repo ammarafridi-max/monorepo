@@ -20,6 +20,7 @@ import {
   loadBrand,
   validateCitations,
   validateParagraphs,
+  splitLongParagraphs,
   verifyCitationUrls,
   stripEmDashesFromPost,
   createApiClient,
@@ -80,10 +81,12 @@ function parseDateArg(argv) {
   return inline ? inline.split("=")[1] : null;
 }
 
-function getTodaysTopic(brand, dateOverride) {
-  const topics = JSON.parse(
-    readFileSync(join(__dirname, brand.topicsFile), "utf8"),
-  );
+function loadTopics(brand) {
+  return JSON.parse(readFileSync(join(__dirname, brand.topicsFile), "utf8"));
+}
+
+function getTopicForDate(brand, dateOverride) {
+  const topics = loadTopics(brand);
   const today = dateOverride || getTodayUAE();
   const entry = topics.find((t) => t.date === today);
   if (!entry) {
@@ -271,10 +274,13 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
     ? `\n\n## Revise the draft below\n\nA fact-checker read the official sources you cited and rejected this draft. Rewrite it, fixing every point listed. Keep everything that was fine, keep the same format and required links, and keep the article the same length.\n\n${buildRevisionBrief(revision.verification)}\n\n### The draft to revise\n\n${revision.previous.content}`
     : "";
   let lastValidationError;
+  // Accumulated, not replaced: a retry that fixes the newest complaint while
+  // forgetting the previous one just trades one failure for another.
+  const failures = [];
 
-  for (let round = 1; round <= 3; round++) {
+  for (let round = 1; round <= 4; round++) {
     if (round > 1) {
-      console.log(`\n↻ Retry ${round - 1}/2 — feeding the validation failure back to the model`);
+      console.log(`\n↻ Retry ${round - 1}/3 — feeding the validation failure back to the model`);
     }
 
   let message;
@@ -332,6 +338,7 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
   }
 
   stripEmDashesFromPost(parsed);
+  if (format) parsed.content = splitLongParagraphs(parsed.content);
 
   try {
     validateRequiredLinks(parsed, requiredLinks);
@@ -345,7 +352,11 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
     }
   } catch (err) {
     lastValidationError = err;
-    feedback = `\n\n## Your previous attempt was rejected\n\nReason: ${err.message}\n\nWrite the article again, fixing exactly that. Everything else about the brief still applies.`;
+    failures.push(err.message);
+    feedback =
+      `\n\n## Previous attempts were rejected\n\n` +
+      failures.map((f, i) => `Attempt ${i + 1}: ${f}`).join("\n") +
+      `\n\nWrite the article again. It must satisfy EVERY point above at once, not just the most recent one. Everything else about the brief still applies.`;
     continue;
   }
 
@@ -372,6 +383,7 @@ async function postDraft({ brand, api, token, topic, content, availableTags, sta
 
   const form = new FormData();
   form.append("title", topic.title);
+  if (topic.slug) form.append("slug", topic.slug);
   form.append("content", finalContent);
   form.append("excerpt", content.excerpt);
   form.append("quickAnswer", content.quickAnswer);
@@ -400,6 +412,16 @@ async function postDraft({ brand, api, token, topic, content, availableTags, sta
 
   const blogId = body?.data?._id || body?.data?.id;
   const slug = body?.data?.slug;
+
+  // The backend de-duplicates by appending a suffix. If that happened, the URL
+  // we planned is not the URL we got, and any internal link pointing at it is
+  // already wrong.
+  if (topic.slug && slug !== topic.slug) {
+    throw new Error(
+      `Requested slug "${topic.slug}" but the post was created as "${slug}". ` +
+        `Something already occupies that URL. Post ID ${blogId} needs checking.`,
+    );
+  }
   console.log(`✓ Saved as ${status} — ID: ${blogId}, slug: ${slug}`);
   return body.data;
 }
@@ -411,12 +433,15 @@ async function main() {
   console.log(`\n=== ${brand.name} Blog Draft Generator ===`);
   console.log(`Date (UAE): ${getTodayUAE()}\n`);
 
-  const topic = getTodaysTopic(brand, parseDateArg(process.argv.slice(2)));
-  console.log(`Topic: ${topic.title}`);
+  const dateArg = parseDateArg(process.argv.slice(2));
 
   // A dry run renders the prompt and exits, so it needs no credentials and
   // never touches the backend.
   if (DRY_RUN) {
+    const topic = dateArg
+      ? getTopicForDate(brand, dateArg)
+      : loadTopics(brand)[0];
+    console.log(`Topic: ${topic.title}`);
     await generateBlogContent({
       brand,
       topic,
@@ -428,17 +453,32 @@ async function main() {
   }
 
   const token = await api.login();
+  const existingTitles = await api.fetchExistingTitles(token);
 
-  const alreadyExists = await api.checkTitleExists(token, topic.title);
-  if (alreadyExists) {
-    console.log(`⏭  Post "${topic.title}" already exists — skipping.`);
-    return;
+  let topic;
+  if (dateArg) {
+    topic = getTopicForDate(brand, dateArg);
+    if (existingTitles.has(topic.title.trim().toLowerCase())) {
+      console.log(`⏭  Post "${topic.title}" already exists — skipping.`);
+      return;
+    }
+  } else {
+    topic = loadTopics(brand).find(
+      (t) => !existingTitles.has(t.title.trim().toLowerCase()),
+    );
+    if (!topic) {
+      console.log(`⏭  Every topic in ${brand.topicsFile} is already written.`);
+      return;
+    }
   }
+  console.log(`Topic: ${topic.title}`);
 
-  const [publishedPosts, availableTags] = await Promise.all([
+  const [publishedPosts, allTags] = await Promise.all([
     api.fetchPublishedPosts(token),
     api.fetchBlogTags(token),
   ]);
+  const excluded = new Set(brand.excludedTags ?? []);
+  const availableTags = allTags.filter((t) => !excluded.has(t));
   console.log(
     `✓ Fetched ${publishedPosts.length} published posts, ${availableTags.length} tags`,
   );
