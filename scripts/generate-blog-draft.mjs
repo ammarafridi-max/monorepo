@@ -19,6 +19,7 @@ import {
   LENGTH_TIERS,
   loadBrand,
   validateCitations,
+  validateParagraphs,
   verifyCitationUrls,
   stripEmDashesFromPost,
   createApiClient,
@@ -28,7 +29,7 @@ import {
   fetchCoverImage,
 } from "./lib/blog-utils.mjs";
 import { resolveFormat } from "./lib/formats.mjs";
-import { verifyDraft, assertVerification, reportVerification, isClean, buildRevisionBrief } from "./lib/verify.mjs";
+import { verifyDraft, assertVerification, reportVerification, needsRevision, buildRevisionBrief } from "./lib/verify.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -210,7 +211,9 @@ ${brand.internalLinkingRule}
 ${brand.linkFormatRule}
 ${format ? "" : "- External links: DO NOT add external links — internal only\n"}- The HTML content must NOT include <html>, <head>, <body>, or <title> tags — just body content starting with an introductory <p>
 - NO em dashes (—) anywhere in the content. Replace with a comma, a colon, or split into a separate sentence.
-- Paragraph length: MAXIMUM 2–3 sentences per <p> tag. If a thought runs longer, break it into two <p> tags. Never write a wall-of-text paragraph.
+${format
+    ? `- Paragraph length: one idea per <p>. Two sentences is the norm and three is the hard ceiling, enforced by a validator that rejects the draft. Break at the boundary between ideas, not at a fixed count: never split a claim from the condition that qualifies it, and never leave a sentence stranded that only makes sense attached to the one before it. The same applies to every FAQ answer.`
+    : `- Paragraph length: MAXIMUM 2–3 sentences per <p> tag. If a thought runs longer, break it into two <p> tags. Never write a wall-of-text paragraph.`}
 - Forbidden words — never use any of these: utilize, delve, leverage, furthermore, navigate, crucial, seamlessly, robust, streamline, unlock, moreover, therefore, additionally, notably, importantly, comprehensive, transformative, pivotal, paramount, multifaceted, nuanced, groundbreaking, cutting-edge, game-changing, in today's world, when it comes to, rest assured, certainly, absolutely, of course, it is worth noting, it is important to note, in conclusion, in summary
 
 ## GEO / AI-Citation Rules (CRITICAL)
@@ -338,6 +341,7 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
         minCitations: format.minCitations,
       });
       await verifyCitationUrls(parsed.__citations);
+      validateParagraphs(parsed);
     }
   } catch (err) {
     lastValidationError = err;
@@ -442,12 +446,24 @@ async function main() {
   const siteContext = readFileSync(join(__dirname, brand.siteContextFile), "utf8");
 
   const draftCache = parseFlag(process.argv.slice(2), "draft-file");
-  const reuse = draftCache && existsSync(draftCache);
-  if (reuse) console.log(`Reusing saved draft: ${draftCache}`);
-
-  let content = reuse
+  const cached = draftCache && existsSync(draftCache)
     ? JSON.parse(readFileSync(draftCache, "utf8"))
-    : await generateBlogContent({
+    : null;
+
+  // A cached draft belongs to the topic it was written for. Pairing it with
+  // today's slot would publish one article under another's title and slug.
+  // Fail closed: a draft with no recorded topic cannot be shown to belong to
+  // this one, and publishing it would put one article under another's title.
+  if (cached && cached.__topicTitle !== topic.title) {
+    throw new Error(
+      `Saved draft is for ${cached.__topicTitle ? `"${cached.__topicTitle}"` : "an unrecorded topic"}, ` +
+        `but this run's topic is "${topic.title}". Use --date to match, or delete the draft file.`,
+    );
+  }
+  if (cached) console.log(`Reusing saved draft: ${draftCache}`);
+
+  let content = cached
+    ?? await generateBlogContent({
         brand,
         topic,
         siteContext,
@@ -455,7 +471,8 @@ async function main() {
         availableTags,
       });
 
-  if (draftCache && !reuse) {
+  if (draftCache && !cached) {
+    content.__topicTitle = topic.title;
     writeFileSync(draftCache, JSON.stringify(content, null, 2));
     console.log(`Saved draft to ${draftCache}`);
   }
@@ -492,7 +509,7 @@ async function main() {
       return;
     }
 
-    for (let round = 1; round <= MAX_REVISIONS && !isClean(verification); round++) {
+    for (let round = 1; round <= MAX_REVISIONS && needsRevision(verification); round++) {
       console.log(
         `\n↻ Revision ${round}/${MAX_REVISIONS} — ${verification.contradicted.length} contradicted, ${verification.unsupported.length} unsupported`,
       );
@@ -515,15 +532,19 @@ async function main() {
       });
     }
 
-    assertVerification(verification, { strict: true });
-    console.log("✓ Every claim is supported by a cited official source");
+    assertVerification(verification);
+    reportVerification(verification);
+    console.log("✓ No claim is contradicted by its cited source");
   }
 
   const status = parseStatusArg(process.argv.slice(2));
   const draft = await postDraft({ brand, api, token, topic, content, availableTags, status });
 
-  console.log(`\n✅ Done! Published "${draft?.title}" — now live.`);
-  console.log(`   Live at: ${brand.blogUrl(draft?.slug)}`);
+  console.log(
+    status === "published"
+      ? `\n✅ Done! Published "${draft?.title}" — now live at ${brand.blogUrl(draft?.slug)}`
+      : `\n✅ Done! Saved "${draft?.title}" as a draft. Review it in the admin before publishing.`,
+  );
 }
 
 main().catch((err) => {

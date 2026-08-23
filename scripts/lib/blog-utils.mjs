@@ -265,6 +265,49 @@ export async function verifyCitationUrls(urls, { timeoutMs = 15000 } = {}) {
   console.log(`✓ ${urls.length} cited URLs checked, none returned 404`);
 }
 
+/** Abbreviations that would otherwise be read as sentence ends. */
+const ABBREVIATIONS = /\b(?:U\.S|U\.K|U\.A\.E|e\.g|i\.e|etc|vs|Mr|Mrs|Ms|Dr|No|Approx|Inc|Ltd)\./gi;
+
+export function countSentences(text) {
+  const masked = (text || '').replace(ABBREVIATIONS, (m) => m.replace(/\./g, '\u0001'));
+  return masked
+    .split(/(?<=[.!?])\s+(?=[A-Z"'\u2018\u201c])/)
+    .map((s) => s.trim())
+    .filter(Boolean).length;
+}
+
+/**
+ * One idea per paragraph. The prompt has asked for short paragraphs since the
+ * beginning and the model has never obeyed it — measured 15 of 25 paragraphs at
+ * three sentences and 7 above that. Rules that are not enforced are decoration.
+ */
+export function validateParagraphs(parsed, { maxSentences = 3 } = {}) {
+  const offenders = [];
+
+  for (const [, inner] of (parsed.content || '').matchAll(/<p>([\s\S]*?)<\/p>/gi)) {
+    const text = stripHtmlToText(inner);
+    if (!text) continue;
+    const n = countSentences(text);
+    if (n > maxSentences) offenders.push({ where: 'body', n, text });
+  }
+
+  for (const f of parsed.faqs ?? []) {
+    const n = countSentences(f.answer || '');
+    if (n > maxSentences) offenders.push({ where: 'faq', n, text: f.answer });
+  }
+
+  if (offenders.length) {
+    console.error(`❌ ${offenders.length} paragraph(s) longer than ${maxSentences} sentences:`);
+    for (const o of offenders.slice(0, 5)) {
+      console.error(`   [${o.where}, ${o.n} sentences] ${o.text.slice(0, 90)}...`);
+    }
+    throw new Error(
+      `${offenders.length} paragraph(s) exceed ${maxSentences} sentences. Split each one at its idea boundary.`,
+    );
+  }
+  console.log('✓ No paragraph runs longer than 3 sentences');
+}
+
 export function stripEmDashes(value) {
   if (typeof value !== "string") return value;
   return value
