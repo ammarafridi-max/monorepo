@@ -1,9 +1,9 @@
 # Deploying Picturesk.ai to Fly.io
 
 > Written for the standalone picturesk repo. It now lives in the travel-suite
-> monorepo, so the `pnpm deploy:*` shortcuts are gone (run `fly deploy -c ...`
-> from the monorepo root) and the Dockerfiles still need rewriting for the new
-> layout before a deploy will build.
+> monorepo, so the `pnpm deploy:*` shortcuts are gone: run `fly deploy -c ...`
+> from the monorepo root, which is also the build context every Dockerfile
+> expects.
 
 Three Fly apps, one per service, all built from the monorepo root:
 

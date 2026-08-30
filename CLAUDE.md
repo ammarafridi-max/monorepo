@@ -71,7 +71,7 @@ pnpm dev        # node --env-file=.env.development --watch src/server.js
 node --env-file=.env.development scripts/seed-admin.js   # seed an admin user
 ```
 
-**Testing:** the travel apps have no tests. The only test suites in the repo are Picturesk's (`node --test` in `apps/picturesk-api` and `apps/picturesk-worker`), so a root `pnpm test` runs those and nothing else. One of them, `apps/picturesk-api/test/pricing.test.js`, fails on prices that changed without the test being updated; it failed the same way before Picturesk was imported. **Linting** exists only on frontends (`next lint`); shared packages have no lint/build step (they're consumed as raw source via subpath exports).
+**Testing:** the travel apps have no tests. The only test suites in the repo are Picturesk's (`node --test` in `apps/picturesk-api` and `apps/picturesk-worker`), so a root `pnpm test` runs those and nothing else. They pass. **Linting** exists only on frontends (`next lint`); shared packages have no lint/build step (they're consumed as raw source via subpath exports).
 
 ## Architecture
 

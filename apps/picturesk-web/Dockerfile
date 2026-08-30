@@ -22,7 +22,6 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 # here builds fine and then dies at runtime with ERR_MODULE_NOT_FOUND.
 COPY packages/picturesk-shared/package.json  packages/picturesk-shared/package.json
 COPY packages/frontend-shared/package.json   packages/frontend-shared/package.json
-COPY packages/shared/utils/package.json      packages/shared/utils/package.json
 COPY apps/picturesk-web/package.json         apps/picturesk-web/package.json
 
 RUN pnpm install --frozen-lockfile

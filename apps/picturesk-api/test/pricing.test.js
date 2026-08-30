@@ -9,8 +9,12 @@ test('TIERS is the three one-time tiers, priced low to high', () => {
   );
   assert.deepEqual(
     TIERS.map((t) => t.priceCents),
-    [2900, 4500, 7900]
+    [900, 2900, 4900]
   );
+  // Asserted as an invariant too, so reordering the catalog fails here rather
+  // than only tripping the magic array above.
+  const prices = TIERS.map((t) => t.priceCents);
+  assert.deepEqual(prices, [...prices].sort((a, b) => a - b), 'tiers ascend by price');
   // Every tier must be internally coherent: integer cents, deliver <= generate,
   // a valid BullMQ priority, exactly one "popular" flag.
   for (const t of TIERS) {

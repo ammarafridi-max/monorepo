@@ -1,33 +1,51 @@
 # syntax=docker/dockerfile:1
-# NOT YET MONOREPO-AWARE. Its COPY paths still point at the old standalone
-# picturesk layout (apps/api, apps/web, apps/worker, packages/shared) and at a
-# lockfile that no longer exists here. A deploy will FAIL at build until this is
-# rewritten on the travel-backend pattern. Tracked as Phase 4 of the import.
 #
+# Picturesk worker (BullMQ). Build context = the MONOREPO ROOT so pnpm can resolve
+# the workspace dependencies:
+#   fly deploy -c fly.picturesk-worker.toml     (run from the repo root)
 #
-# Picturesk worker (BullMQ consumer). No HTTP; it drains the order-pipeline queue.
-# Build context = the monorepo root:
-#   fly deploy -c fly.worker.toml
+# No public service: it drains the order-pipeline queue continuously.
 #
-FROM node:20-slim AS base
-ENV PNPM_HOME="/pnpm" PATH="/pnpm:$PATH"
-RUN corepack enable
-WORKDIR /app
+FROM node:22-slim AS base
+RUN npm install -g pnpm@9.15.0
 
-# Install ONLY the worker + shared, production only. --prod is important here: it
-# skips mongodb-memory-server (a test-only devDependency that downloads a Mongo
-# binary), keeping the image small.
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
-COPY packages/shared/package.json packages/shared/
-COPY apps/api/package.json apps/api/
-COPY apps/worker/package.json apps/worker/
-COPY apps/web/package.json apps/web/
-RUN --mount=type=cache,target=/pnpm/store \
-    pnpm install --frozen-lockfile --prod --filter "@travel-suite/picturesk-worker..."
+# ca-certificates for the outbound HTTPS calls to Replicate, R2, Stripe, and Brevo.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates tzdata \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY packages/shared packages/shared
-COPY apps/worker apps/worker
+# ── Install dependencies (cached separately from source) ─────────────────────
+FROM base AS deps
+WORKDIR /repo
+
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+
+# THIS LIST IS LOAD-BEARING — see the api Dockerfile. Add a line whenever the
+# worker gains a workspace dependency.
+COPY packages/picturesk-shared/package.json  packages/picturesk-shared/package.json
+COPY apps/picturesk-worker/package.json      apps/picturesk-worker/package.json
+
+# NOT --prod. pnpm links a workspace package's PEER dependencies through its
+# devDependencies, so --prod leaves @travel-suite/auth without mongoose and the
+# api dies at boot with ERR_MODULE_NOT_FOUND. The travel backends install the
+# same way for the same reason.
+#
+# The one devDependency that matters here is mongodb-memory-server, whose
+# postinstall downloads a ~100MB mongod binary for the test suite. Disable that
+# rather than the install itself.
+ENV MONGOMS_DISABLE_POSTINSTALL=1
+RUN pnpm install --frozen-lockfile
+
+# ── Runtime image ────────────────────────────────────────────────────────────
+FROM deps AS runner
+WORKDIR /repo
+
+COPY packages/ packages/
+COPY apps/picturesk-worker/ apps/picturesk-worker/
 
 ENV NODE_ENV=production
-WORKDIR /app/apps/worker
+
+WORKDIR /repo/apps/picturesk-worker
+# Not `pnpm start`: that script loads .env.production, which does not exist in the
+# image. Config comes from Fly secrets in the environment.
 CMD ["node", "index.js"]
