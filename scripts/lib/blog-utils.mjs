@@ -424,7 +424,9 @@ export function validateContentQuality(parsed, lengthTier, brand, { minWords: fl
     );
     for (const url of externalLinks) console.error(`   - ${url}`);
     throw new Error(
-      `Content contains ${externalLinks.length} forbidden external link(s): ${externalLinks.join(", ")}`,
+      `Content contains ${externalLinks.length} forbidden external link(s): ${externalLinks.join(", ")}. ` +
+        `Only these domains may be linked: ${(brand.citationDomains ?? []).join(", ")}. ` +
+        `Cite the fact to an approved domain instead, or state it without a link.`,
     );
   }
 

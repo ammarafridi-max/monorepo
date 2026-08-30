@@ -54,8 +54,10 @@ export const BRAND = {
     'uscode.house.gov',     // the statute itself, e.g. INA 214(b)
     'govinfo.gov',          // Federal Register, CFR
     'canada.ca',            // ircc.canada.ca
+    'gc.ca',                // laws-lois.justice.gc.ca, ircc.gc.ca, cic.gc.ca
     'europa.eu',            // ec.europa.eu, home-affairs, eur-lex
     'vfsglobal.com',
+    'vfsglobal.ca',         // the Canada visa application centres use the .ca domain
     'blsinternational.com',
     'gov.ae',               // icp.gov.ae
     'u.ae',

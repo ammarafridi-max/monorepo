@@ -178,7 +178,7 @@ Every fee, processing time, validity period, document requirement, eligibility r
 
 - You may ONLY cite these domains: ${(brand.citationDomains ?? []).join(", ")}
 - Never cite a blog, a forum, a news site, or an aggregator. A visa claim sourced to a blog is worth nothing.
-- Link the specific page that states the fact, not a site's home page.
+- Link the specific page that states the fact, not a site's home page. But every URL you write is fetched and checked: a page that returns 404 rejects the whole post. Only use a deep path you are certain exists. If you are not sure of the exact path, link the official section landing page on the same domain instead of guessing at a longer one.
 - Minimum ${format.minCitations} official sources in the article.
 - End the article with a "Sources" section: an <h2>Sources</h2> followed by a <ul> listing each source as a link, naming the publisher.
 - If you are not certain of a figure and cannot point to an official page for it, do not state it. Describe it in general terms instead, or leave it out. A missing number is recoverable; a wrong one is not.
