@@ -2,7 +2,7 @@ import AdminDashboardLayout from '@travel-suite/frontend-shared/pages/admin/Admi
 
 export const metadata = {
   title: {
-    default: 'Admin — Travl',
+    absolute: 'Admin | Travl',
     template: '%s | Travl Admin',
   },
   robots: { index: false, follow: false },

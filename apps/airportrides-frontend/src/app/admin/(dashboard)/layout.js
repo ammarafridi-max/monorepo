@@ -2,7 +2,7 @@ import AdminDashboardLayout from "@travel-suite/frontend-shared/pages/admin/Admi
 
 export const metadata = {
   title: {
-    default: "Admin — Airport Rides",
+    absolute: "Admin | Airport Rides",
     template: "%s | Airport Rides Admin",
   },
   robots: { index: false, follow: false },

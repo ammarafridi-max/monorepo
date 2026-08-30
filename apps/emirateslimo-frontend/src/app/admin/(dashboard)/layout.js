@@ -2,7 +2,7 @@ import AdminDashboardLayout from '@travel-suite/frontend-shared/pages/admin/Admi
 
 export const metadata = {
   title: {
-    default: 'Admin — Emirates Limo',
+    absolute: 'Admin | Emirates Limo',
     template: '%s | Emirates Limo Admin',
   },
   robots: { index: false, follow: false },

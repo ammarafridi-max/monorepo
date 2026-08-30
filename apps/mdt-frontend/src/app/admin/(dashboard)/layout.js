@@ -2,7 +2,7 @@ import AdminDashboardLayout from '@travel-suite/frontend-shared/pages/admin/Admi
 
 export const metadata = {
   title: {
-    default: 'Admin — My Dummy Ticket',
+    absolute: 'Admin | My Dummy Ticket',
     template: '%s | MDT Admin',
   },
   robots: { index: false, follow: false },
