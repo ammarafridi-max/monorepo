@@ -3,7 +3,7 @@ app = "picturesk-web"
 primary_region = "iad"
 
 [build]
-  dockerfile = "apps/picturesk-web/Dockerfile"
+  dockerfile = "apps/picturesk-frontend/Dockerfile"
   # NEXT_PUBLIC_* are inlined at BUILD time, so they live here, not in secrets.
   # Rebuild (redeploy) the web app after changing any of these.
   [build.args]
