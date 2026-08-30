@@ -34,6 +34,19 @@ const nav = [
     ],
   },
   {
+    section: 'Content',
+    items: [
+      { label: 'Blog', href: '/admin/blog', icon: 'BookOpen', roles: ['admin'] },
+      { label: 'Blog Tags', href: '/admin/blog-tags', icon: 'Tag', roles: ['admin'] },
+    ],
+  },
+  {
+    section: 'Partners',
+    items: [
+      { label: 'Affiliates', href: '/admin/affiliates', icon: 'Handshake', roles: ['admin'] },
+    ],
+  },
+  {
     section: 'People',
     items: [
       {
@@ -73,6 +86,9 @@ const brand = { name: 'Picturesk', icon: 'Camera' };
 // dashboard's rules do not apply. Staff CRUD is the only admin-only area.
 const roleRules = [
   { prefix: '/admin/users', roles: ['admin'] },
+  { prefix: '/admin/blog', roles: ['admin'] },
+  { prefix: '/admin/blog-tags', roles: ['admin'] },
+  { prefix: '/admin/affiliates', roles: ['admin'] },
   { prefix: '/admin', roles: ['admin', 'support'] },
 ];
 

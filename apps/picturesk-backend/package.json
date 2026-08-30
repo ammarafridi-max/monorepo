@@ -15,7 +15,9 @@
   "dependencies": {
     "@sentry/node": "^10.64.0",
     "@travel-suite/admin-users": "workspace:*",
+    "@travel-suite/affiliates": "workspace:*",
     "@travel-suite/auth": "workspace:*",
+    "@travel-suite/blog": "workspace:*",
     "@travel-suite/picturesk-shared": "workspace:*",
     "@travel-suite/utils": "workspace:*",
     "archiver": "^8.0.0",

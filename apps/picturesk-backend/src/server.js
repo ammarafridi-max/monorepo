@@ -34,7 +34,10 @@ import { assessPhoto } from './photoGate.js';
 import { moderateImage, MODERATION_REASON } from './contentModerator.js';
 import { QUALITY, evaluateImages, countError } from './uploadGate.js';
 import { RATE_LIMITS, createRateLimiters } from './rateLimit.js';
+import { createBlogRouter, createBlogTagRouter } from '@travel-suite/blog';
+import { createAffiliatesRouter } from '@travel-suite/affiliates';
 import { createAdminSubsystem } from './admin/index.js';
+import { createBlogImageStorage } from './blogImageStorage.js';
 import { createAdminDataRouter } from './admin/adminData.js';
 import { createAdminActionsRouter } from './admin/adminActions.js';
 
@@ -87,6 +90,7 @@ const {
   ADMIN_JWT_EXPIRES_IN = '7d',
   ADMIN_COOKIE_EXPIRES_DAYS = '7',
   NODE_ENV = 'development',
+  ANTHROPIC_API_KEY,
   BREVO_API_KEY,
   BREVO_SENDER = 'Picturesk.ai <hello@picturesk.ai>',
   WEB_BASE_URL = 'http://localhost:3000',
@@ -893,6 +897,39 @@ app.use('/api/admin', adminDataRouter);
 app.use('/admin-users', admin.adminUsersRouter);
 app.use('/api/admin-users', admin.adminUsersRouter);
 
+/**
+ * Content and partners, from the shared travel-suite domains. `guard` is passed
+ * as `protect` so the ADMIN_TOKEN break-glass path reaches these too.
+ *
+ * Blog cover images go to R2 (see blogImageStorage.js) rather than the Cloudinary
+ * client the travel brands inject. With no R2 configured the blog still serves
+ * and edits; only image upload returns a 500 from the domain's own guard.
+ *
+ * The blog's own GET / and GET /slug/:slug are mounted above its protect call,
+ * so a public site can read published posts without a session.
+ */
+const sharedAuth = { protect: adminGuard, restrictTo };
+
+const blogRouter = createBlogRouter({
+  db: mongoose.connection,
+  auth: sharedAuth,
+  imageStorage: createBlogImageStorage({ storage: adminStorage }),
+  anthropicApiKey: ANTHROPIC_API_KEY,
+});
+const blogTagRouter = createBlogTagRouter({ db: mongoose.connection, auth: sharedAuth });
+
+// Picturesk sells one thing and has no tickets or insurance policies, so no
+// commissionable model is injected. Affiliate CRUD works; the per-affiliate
+// ticket/application tables the travel dashboards show stay empty here.
+const affiliatesRouter = createAffiliatesRouter({ db: mongoose.connection, auth: sharedAuth });
+
+app.use('/blogs', blogRouter);
+app.use('/blog-tags', blogTagRouter);
+app.use('/affiliates', affiliatesRouter);
+app.use('/api/blogs', blogRouter);
+app.use('/api/blog-tags', blogTagRouter);
+app.use('/api/affiliates', affiliatesRouter);
+
 // Sentry's Express error handler catches anything the route try/catch blocks miss
 // (e.g. a throw in middleware). Registered after all routes, before listen. No-op
 // when Sentry is disabled, so it is guarded on the DSN being set.
@@ -906,6 +943,17 @@ if (sentryEnabled) {
  * a bug and renders as a generic 500 so internals never leak to a client.
  */
 app.use((err, req, res, _next) => {
+  // A Mongoose ValidationError is the caller sending bad data, not a bug. Without
+  // this it renders as a generic 500 and the admin UI shows "Something went wrong"
+  // instead of which field is wrong.
+  if (err?.name === 'ValidationError' && err.errors) {
+    const message = Object.values(err.errors).map((e) => e.message).join('. ');
+    return res.status(400).json({ status: 'fail', message });
+  }
+  if (err?.name === 'CastError') {
+    return res.status(400).json({ status: 'fail', message: `Invalid ${err.path}` });
+  }
+
   const statusCode = err.isOperational ? err.statusCode : 500;
   const status = err.status || (`${statusCode}`.startsWith('4') ? 'fail' : 'error');
   if (!err.isOperational) {

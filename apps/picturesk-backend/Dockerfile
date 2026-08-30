@@ -35,6 +35,8 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY packages/shared/utils/package.json        packages/shared/utils/package.json
 COPY packages/domains/auth/package.json        packages/domains/auth/package.json
 COPY packages/domains/admin-users/package.json packages/domains/admin-users/package.json
+COPY packages/domains/blog/package.json         packages/domains/blog/package.json
+COPY packages/domains/affiliates/package.json  packages/domains/affiliates/package.json
 COPY packages/picturesk-shared/package.json    packages/picturesk-shared/package.json
 COPY apps/picturesk-backend/package.json       apps/picturesk-backend/package.json
 

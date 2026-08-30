@@ -85,6 +85,24 @@ The admin routes are mounted twice: unprefixed and under `/api`. The shared
 frontend admin services call `/api/*`; the ADMIN_TOKEN scripts and the Postman
 collection still use the unprefixed paths.
 
+## Content and partners
+
+`/blogs`, `/blog-tags`, and `/affiliates` are the shared `@travel-suite/blog` and
+`@travel-suite/affiliates` domains, mounted the same way as auth (unprefixed and
+under `/api`). The blog's `GET /` and `GET /slug/:slug` sit above its own protect
+call, so a public site can read published posts without a session.
+
+Two Picturesk-specific notes:
+
+- Blog cover images go to **R2**, not Cloudinary. `blogImageStorage.js` adapts the
+  bucket to the two methods the blog service calls, sniffing the content type from
+  the buffer because the service hands over bare bytes. With R2 unset the blog
+  still serves and edits; only image upload fails, by design.
+- Affiliates get **no commissionable model**. The shared service computes
+  commission from Tickets and Insurance Applications, neither of which exists
+  here, so CRUD works and the per-affiliate ticket/application tables stay empty.
+  Wiring Picturesk Orders in would mean extending the shared service.
+
 ## Contracts
 
 `@travel-suite/picturesk-shared` is the single source of truth so the two

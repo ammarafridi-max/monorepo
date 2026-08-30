@@ -571,9 +571,15 @@ importers:
       '@travel-suite/admin-users':
         specifier: workspace:*
         version: link:../../packages/domains/admin-users
+      '@travel-suite/affiliates':
+        specifier: workspace:*
+        version: link:../../packages/domains/affiliates
       '@travel-suite/auth':
         specifier: workspace:*
         version: link:../../packages/domains/auth
+      '@travel-suite/blog':
+        specifier: workspace:*
+        version: link:../../packages/domains/blog
       '@travel-suite/picturesk-shared':
         specifier: workspace:*
         version: link:../../packages/picturesk-shared
