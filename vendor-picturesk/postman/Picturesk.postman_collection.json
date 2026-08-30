@@ -1,0 +1,487 @@
+{
+  "info": {
+    "name": "Picturesk",
+    "description": "All Picturesk endpoints: the Express API service (uploads, checkout, orders, Stripe webhook, admin auth + data) and the Next.js web app routes (customer auth, order linking).\n\nSetup:\n1. Set the collection variables `apiBaseUrl` (Express api) and `webBaseUrl` (Next web) under the collection's Variables tab.\n2. Admin data routes accept EITHER a logged-in admin cookie OR the `x-admin-token` break-glass header. To use the cookie: run `Admin auth > Login` first (Postman stores the `picturesk_admin` cookie automatically and sends it on later requests to the same host). To use the token: set the `adminToken` variable.\n3. Set `orderId` from a real order to exercise the order routes.\n\nThe Stripe webhook needs a valid signature, so it cannot be called by hand: use the Stripe CLI (`stripe listen` / `stripe trigger`). It is included for reference only.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "apiBaseUrl", "value": "http://localhost:3001", "type": "string" },
+    { "key": "webBaseUrl", "value": "http://localhost:3000", "type": "string" },
+    { "key": "orderId", "value": "", "type": "string" },
+    { "key": "username", "value": "someadmin1", "type": "string" },
+    { "key": "imageIndex", "value": "0", "type": "string" },
+    { "key": "adminToken", "value": "", "type": "string" },
+    { "key": "adminEmail", "value": "admin@picturesk.ai", "type": "string" },
+    { "key": "adminPassword", "value": "ChangeMe123", "type": "string" },
+    { "key": "provider", "value": "google", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "API - Health & uploads",
+      "description": "Public endpoints on the Express api. Uploads go direct-to-R2 via presigned URLs; the gate screens them.",
+      "item": [
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{apiBaseUrl}}/health", "host": ["{{apiBaseUrl}}"], "path": ["health"] },
+            "description": "Liveness check. Returns { ok: true }."
+          }
+        },
+        {
+          "name": "Presign uploads",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"files\": [\n    { \"filename\": \"selfie1.jpg\", \"contentType\": \"image/jpeg\" },\n    { \"filename\": \"selfie2.jpg\", \"contentType\": \"image/jpeg\" }\n  ]\n}"
+            },
+            "url": { "raw": "{{apiBaseUrl}}/uploads/presign", "host": ["{{apiBaseUrl}}"], "path": ["uploads", "presign"] },
+            "description": "Returns presigned PUT URLs so the browser uploads selfies directly to R2. Body: { files: [{ filename, contentType }] }. Each contentType must be image/*."
+          }
+        },
+        {
+          "name": "Gate uploads",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"uploadedImageUrls\": [\n    \"https://your-r2-bucket.example.com/uploads/uuid/selfie1.jpg\"\n  ]\n}"
+            },
+            "url": { "raw": "{{apiBaseUrl}}/uploads/gate", "host": ["{{apiBaseUrl}}"], "path": ["uploads", "gate"] },
+            "description": "Runs the quality/moderation gate on already-uploaded image URLs without creating an order. Returns { ok: true } on pass, or 422 with per-photo failures. Results are cached so a later /checkout is instant."
+          }
+        }
+      ]
+    },
+    {
+      "name": "API - Checkout & orders",
+      "description": "Create an order + Stripe session, then poll and download the public order.",
+      "item": [
+        {
+          "name": "Create checkout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"email\": \"customer@example.com\",\n  \"selectedLooks\": [\"corporate_studio\"],\n  \"selectedAttire\": [\"business_suit\"],\n  \"gender\": \"man\",\n  \"ageRange\": \"age_25_34\",\n  \"race\": \"south_asian\",\n  \"facialHair\": \"short_beard\",\n  \"uploadedImageUrls\": [\n    \"https://your-r2-bucket.example.com/uploads/uuid/selfie1.jpg\"\n  ]\n}"
+            },
+            "url": { "raw": "{{apiBaseUrl}}/checkout", "host": ["{{apiBaseUrl}}"], "path": ["checkout"] },
+            "description": "Creates the order (selections + uploaded photos) and a Stripe Checkout Session. Re-runs the upload gate before creating the session. Returns { orderId, checkoutUrl }. Look/attire/gender/ageRange/race/facialHair must be valid catalog ids (race and facialHair optional)."
+          }
+        },
+        {
+          "name": "Get order (public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{apiBaseUrl}}/orders/{{orderId}}", "host": ["{{apiBaseUrl}}"], "path": ["orders", "{{orderId}}"] },
+            "description": "Public projection the success page polls. No cost, Stripe, or Replicate internals."
+          }
+        },
+        {
+          "name": "Download one image",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{apiBaseUrl}}/orders/{{orderId}}/download/{{imageIndex}}", "host": ["{{apiBaseUrl}}"], "path": ["orders", "{{orderId}}", "download", "{{imageIndex}}"] },
+            "description": "Streams one delivered headshot as an attachment (index into the delivered set)."
+          }
+        },
+        {
+          "name": "Download all (zip)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{apiBaseUrl}}/orders/{{orderId}}/download-all", "host": ["{{apiBaseUrl}}"], "path": ["orders", "{{orderId}}", "download-all"] },
+            "description": "Bundles every delivered headshot into one picturesk-headshots.zip attachment."
+          }
+        }
+      ]
+    },
+    {
+      "name": "API - Stripe webhook",
+      "description": "Reference only. Cannot be called by hand: it verifies a Stripe signature over the raw body. Use the Stripe CLI (stripe listen / stripe trigger checkout.session.completed).",
+      "item": [
+        {
+          "name": "Stripe webhook (reference)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "stripe-signature", "value": "{{stripeSignature}}", "description": "A real signature from Stripe. Fake values are rejected with 400." }
+            ],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"type\": \"checkout.session.completed\",\n  \"data\": { \"object\": { \"id\": \"cs_test_...\", \"amount_total\": 3500, \"payment_intent\": \"pi_test_...\" } }\n}"
+            },
+            "url": { "raw": "{{apiBaseUrl}}/webhooks/stripe", "host": ["{{apiBaseUrl}}"], "path": ["webhooks", "stripe"] },
+            "description": "AWAITING_PAYMENT -> PAID plus one idempotent enqueue. The idempotency anchor is stripeSessionId."
+          }
+        }
+      ]
+    },
+    {
+      "name": "API - Admin auth",
+      "description": "Staff login. On success the api sets an httpOnly cookie (picturesk_admin); Postman stores and re-sends it automatically, so the Admin data routes then work without the token.",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
+            },
+            "url": { "raw": "{{apiBaseUrl}}/auth/login", "host": ["{{apiBaseUrl}}"], "path": ["auth", "login"] },
+            "description": "Email + password. Sets the picturesk_admin cookie. Returns { status, data: adminUser }."
+          }
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{apiBaseUrl}}/auth/me", "host": ["{{apiBaseUrl}}"], "path": ["auth", "me"] },
+            "description": "Current admin (requires the login cookie)."
+          }
+        },
+        {
+          "name": "Update profile",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"name\": \"Updated Name\",\n  \"email\": \"admin@picturesk.ai\"\n}"
+            },
+            "url": { "raw": "{{apiBaseUrl}}/auth/me", "host": ["{{apiBaseUrl}}"], "path": ["auth", "me"] },
+            "description": "Update own name and/or email (not password)."
+          }
+        },
+        {
+          "name": "Update password",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"passwordCurrent\": \"{{adminPassword}}\",\n  \"password\": \"newpassword123\",\n  \"passwordConfirm\": \"newpassword123\"\n}"
+            },
+            "url": { "raw": "{{apiBaseUrl}}/auth/update-password", "host": ["{{apiBaseUrl}}"], "path": ["auth", "update-password"] },
+            "description": "Change own password. Re-issues the cookie so this device stays logged in."
+          }
+        },
+        {
+          "name": "Logout (POST)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{apiBaseUrl}}/auth/logout", "host": ["{{apiBaseUrl}}"], "path": ["auth", "logout"] },
+            "description": "Clears the picturesk_admin cookie."
+          }
+        },
+        {
+          "name": "Logout (GET alias)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{apiBaseUrl}}/auth/logout", "host": ["{{apiBaseUrl}}"], "path": ["auth", "logout"] },
+            "description": "Same as POST /auth/logout."
+          }
+        }
+      ]
+    },
+    {
+      "name": "API - Admin data (read-only)",
+      "description": "Orders, stats, customers. Auth: either the login cookie (run Admin auth > Login first) OR the x-admin-token header ({{adminToken}}). Both admin and support roles can read.",
+      "item": [
+        {
+          "name": "List orders",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-admin-token", "value": "{{adminToken}}", "description": "Optional break-glass token. Leave the variable empty to use the login cookie instead." }],
+            "url": {
+              "raw": "{{apiBaseUrl}}/admin/orders?status=DELIVERED&limit=200",
+              "host": ["{{apiBaseUrl}}"],
+              "path": ["admin", "orders"],
+              "query": [
+                { "key": "status", "value": "DELIVERED", "description": "Optional. One of AWAITING_PAYMENT, PAID, TRAINING, GENERATING, DELIVERED, FAILED.", "disabled": true },
+                { "key": "limit", "value": "200", "description": "Optional. 1-500, default 200.", "disabled": true }
+              ]
+            },
+            "description": "Operational list, newest first, with stuck flags + per-order margin."
+          }
+        },
+        {
+          "name": "Order detail",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-admin-token", "value": "{{adminToken}}", "description": "Optional break-glass token; or use the login cookie." }],
+            "url": { "raw": "{{apiBaseUrl}}/admin/orders/{{orderId}}", "host": ["{{apiBaseUrl}}"], "path": ["admin", "orders", "{{orderId}}"] },
+            "description": "Full detail: images, replicate ids, candidate scores, costs, error, timestamps."
+          }
+        },
+        {
+          "name": "Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-admin-token", "value": "{{adminToken}}", "description": "Optional break-glass token; or use the login cookie." }],
+            "url": { "raw": "{{apiBaseUrl}}/admin/stats", "host": ["{{apiBaseUrl}}"], "path": ["admin", "stats"] },
+            "description": "Revenue, compute cost, delivered margin, counts by status, refunded + stuck counts."
+          }
+        },
+        {
+          "name": "Customers",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-admin-token", "value": "{{adminToken}}", "description": "Optional break-glass token; or use the login cookie." }],
+            "url": {
+              "raw": "{{apiBaseUrl}}/admin/customers?limit=200",
+              "host": ["{{apiBaseUrl}}"],
+              "path": ["admin", "customers"],
+              "query": [{ "key": "limit", "value": "200", "description": "Optional. 1-500, default 200.", "disabled": true }]
+            },
+            "description": "Per-email rollup: orders, delivered, total spend, last order, account flag."
+          }
+        }
+      ]
+    },
+    {
+      "name": "API - Order actions (admin only)",
+      "description": "Write actions on an order. ADMIN role only. Auth: the login cookie (Admin auth > Login) or the x-admin-token header. Set the orderId variable first.",
+      "item": [
+        {
+          "name": "Refund order",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "x-admin-token", "value": "{{adminToken}}", "description": "Optional break-glass token; or use the login cookie." }],
+            "url": { "raw": "{{apiBaseUrl}}/admin/orders/{{orderId}}/refund", "host": ["{{apiBaseUrl}}"], "path": ["admin", "orders", "{{orderId}}", "refund"] },
+            "description": "Issue a Stripe refund and stamp refundedAt. Idempotent (409 if already refunded). Does not cancel an in-flight pipeline run."
+          }
+        },
+        {
+          "name": "Retry order",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "x-admin-token", "value": "{{adminToken}}", "description": "Optional break-glass token; or use the login cookie." }],
+            "url": { "raw": "{{apiBaseUrl}}/admin/orders/{{orderId}}/retry", "host": ["{{apiBaseUrl}}"], "path": ["admin", "orders", "{{orderId}}", "retry"] },
+            "description": "Re-enqueue the pipeline for a paid, in-progress order (PAID/TRAINING/GENERATING). The worker reattaches idempotently. 400 for terminal/unpaid orders."
+          }
+        },
+        {
+          "name": "Resend delivery email",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "x-admin-token", "value": "{{adminToken}}", "description": "Optional break-glass token; or use the login cookie." }],
+            "url": { "raw": "{{apiBaseUrl}}/admin/orders/{{orderId}}/resend-email", "host": ["{{apiBaseUrl}}"], "path": ["admin", "orders", "{{orderId}}", "resend-email"] },
+            "description": "Re-send the delivery email for a DELIVERED order. 400 if not delivered, 503 if BREVO_API_KEY is unset on the api."
+          }
+        },
+        {
+          "name": "Delete order",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "x-admin-token", "value": "{{adminToken}}", "description": "Optional break-glass token; or use the login cookie." }],
+            "url": { "raw": "{{apiBaseUrl}}/admin/orders/{{orderId}}", "host": ["{{apiBaseUrl}}"], "path": ["admin", "orders", "{{orderId}}"] },
+            "description": "Hard-delete the order and remove the objects we store for it (uploaded selfies + training zip in R2). AI-generated images are Replicate-hosted and expire on their own, so they are skipped. Irreversible; also drops the payment record."
+          }
+        }
+      ]
+    },
+    {
+      "name": "API - Admin users (management)",
+      "description": "Manage staff accounts. ADMIN role only (support gets 403). Auth: the login cookie (run Admin auth > Login) or the x-admin-token header. Guards: at least one active admin must remain; you cannot deactivate/demote/delete yourself.",
+      "item": [
+        {
+          "name": "List admin users",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-admin-token", "value": "{{adminToken}}", "description": "Optional break-glass token; or use the login cookie." }],
+            "url": {
+              "raw": "{{apiBaseUrl}}/admin-users?role=admin&status=ACTIVE&search=",
+              "host": ["{{apiBaseUrl}}"],
+              "path": ["admin-users"],
+              "query": [
+                { "key": "role", "value": "admin", "description": "Optional. admin or support.", "disabled": true },
+                { "key": "status", "value": "ACTIVE", "description": "Optional. ACTIVE or INACTIVE.", "disabled": true },
+                { "key": "search", "value": "", "description": "Optional. Matches name, username, or email.", "disabled": true }
+              ]
+            },
+            "description": "List staff, newest first, with optional filters."
+          }
+        },
+        {
+          "name": "Create admin user",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-admin-token", "value": "{{adminToken}}", "description": "Optional break-glass token; or use the login cookie." }
+            ],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"name\": \"Jane Staff\",\n  \"username\": \"janestaff1\",\n  \"email\": \"jane@picturesk.ai\",\n  \"password\": \"password123\",\n  \"role\": \"support\",\n  \"status\": \"ACTIVE\"\n}"
+            },
+            "url": { "raw": "{{apiBaseUrl}}/admin-users", "host": ["{{apiBaseUrl}}"], "path": ["admin-users"] },
+            "description": "Create a staff account. username 8-50 lowercase; role is admin or support; password min 8."
+          }
+        },
+        {
+          "name": "Get admin user",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-admin-token", "value": "{{adminToken}}", "description": "Optional break-glass token; or use the login cookie." }],
+            "url": { "raw": "{{apiBaseUrl}}/admin-users/{{username}}", "host": ["{{apiBaseUrl}}"], "path": ["admin-users", "{{username}}"] },
+            "description": "Fetch one staff account by username."
+          }
+        },
+        {
+          "name": "Update admin user",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-admin-token", "value": "{{adminToken}}", "description": "Optional break-glass token; or use the login cookie." }
+            ],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"name\": \"Jane Q. Staff\",\n  \"email\": \"jane@picturesk.ai\",\n  \"role\": \"admin\",\n  \"status\": \"ACTIVE\"\n}"
+            },
+            "url": { "raw": "{{apiBaseUrl}}/admin-users/{{username}}", "host": ["{{apiBaseUrl}}"], "path": ["admin-users", "{{username}}"] },
+            "description": "Update name/email/role/status. Username and password are not editable here (use Reset password)."
+          }
+        },
+        {
+          "name": "Reset admin user password",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-admin-token", "value": "{{adminToken}}", "description": "Optional break-glass token; or use the login cookie." }
+            ],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"password\": \"newpassword123\",\n  \"passwordConfirm\": \"newpassword123\"\n}"
+            },
+            "url": { "raw": "{{apiBaseUrl}}/admin-users/{{username}}/password", "host": ["{{apiBaseUrl}}"], "path": ["admin-users", "{{username}}", "password"] },
+            "description": "Set another user's password (no current password needed). Invalidates that user's existing sessions."
+          }
+        },
+        {
+          "name": "Delete admin user",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "x-admin-token", "value": "{{adminToken}}", "description": "Optional break-glass token; or use the login cookie." }],
+            "url": { "raw": "{{apiBaseUrl}}/admin-users/{{username}}", "host": ["{{apiBaseUrl}}"], "path": ["admin-users", "{{username}}"] },
+            "description": "Delete a staff account. Blocked for the last active admin and for your own account."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Web - Auth",
+      "description": "Customer auth on the Next.js app (separate from admin). These set the customer session cookie (picturesk_session).",
+      "item": [
+        {
+          "name": "Sign up",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"email\": \"customer@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{webBaseUrl}}/api/auth/signup", "host": ["{{webBaseUrl}}"], "path": ["api", "auth", "signup"] },
+            "description": "Create a customer account and session; back-links past anonymous orders by email."
+          }
+        },
+        {
+          "name": "Log in",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"email\": \"customer@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{webBaseUrl}}/api/auth/login", "host": ["{{webBaseUrl}}"], "path": ["api", "auth", "login"] },
+            "description": "Verify credentials and set the customer session cookie."
+          }
+        },
+        {
+          "name": "Log out",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{webBaseUrl}}/api/auth/logout", "host": ["{{webBaseUrl}}"], "path": ["api", "auth", "logout"] },
+            "description": "Clear the customer session cookie (redirects to /)."
+          }
+        },
+        {
+          "name": "OAuth start",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{webBaseUrl}}/api/auth/oauth/{{provider}}", "host": ["{{webBaseUrl}}"], "path": ["api", "auth", "oauth", "{{provider}}"] },
+            "description": "Begin social sign-in. provider is one of google, facebook, linkedin (only offered when its CLIENT_ID/SECRET are set). Redirects to the provider."
+          }
+        },
+        {
+          "name": "OAuth callback",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{webBaseUrl}}/api/auth/oauth/{{provider}}/callback?code=AUTH_CODE&state=STATE",
+              "host": ["{{webBaseUrl}}"],
+              "path": ["api", "auth", "oauth", "{{provider}}", "callback"],
+              "query": [
+                { "key": "code", "value": "AUTH_CODE", "description": "Authorization code from the provider." },
+                { "key": "state", "value": "STATE", "description": "Must match the state cookie set at start." }
+              ]
+            },
+            "description": "Provider redirects here. Verifies state, exchanges the code, upserts the user, issues the session. Normally hit by the browser, not by hand."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Web - Orders",
+      "description": "Customer order actions on the Next.js app.",
+      "item": [
+        {
+          "name": "Link order to account",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"orderId\": \"{{orderId}}\"\n}"
+            },
+            "url": { "raw": "{{webBaseUrl}}/api/orders/link", "host": ["{{webBaseUrl}}"], "path": ["api", "orders", "link"] },
+            "description": "Attach an anonymous order to the logged-in customer (requires the customer session cookie, and the order email must match the session)."
+          }
+        }
+      ]
+    }
+  ]
+}

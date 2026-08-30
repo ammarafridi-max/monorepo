@@ -1,0 +1,21 @@
+build:
+  gpu: false
+  python_version: "3.11"
+  system_packages:
+    - "libgl1-mesa-glx"
+    - "libglib2.0-0"
+  python_packages:
+    - "numpy==1.26.4"
+    - "cython==3.0.10"
+    - "onnxruntime==1.17.3"
+    - "opencv-python-headless==4.9.0.80"
+    # Pin albumentations to a version that does NOT pull the albucore/stringzilla
+    # chain (insightface imports it at package load). 1.3.1 is the last such.
+    - "albumentations==1.3.1"
+    - "insightface==0.7.3"
+  run:
+    # Bake the buffalo_l weights into the image at an ABSOLUTE root (/src/models),
+    # not ~/.insightface, so the runtime finds them regardless of $HOME (Replicate's
+    # runtime HOME differs from the build's, which made setup re-download and fail).
+    - "python -c \"from insightface.app import FaceAnalysis; a=FaceAnalysis(name='buffalo_l', root='/src'); a.prepare(ctx_id=-1)\""
+predict: "predict.py:Predictor"

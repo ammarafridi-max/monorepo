@@ -1,0 +1,45 @@
+# Picturesk web (Next.js). Deploy from the repo root:  fly deploy -c fly.web.toml
+app = "picturesk-web"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile.web"
+  # NEXT_PUBLIC_* are inlined at BUILD time, so they live here, not in secrets.
+  # Rebuild (redeploy) the web app after changing any of these.
+  [build.args]
+    # REQUIRED: the deployed API's public origin (the browser calls it directly).
+    NEXT_PUBLIC_API_BASE_URL = "https://api.picturesk.ai"
+    # GA4 measurement ID. Inlined at build; a web redeploy is required to change it.
+    NEXT_PUBLIC_GA_ID = "G-V68VHN1XSX"
+    # Microsoft Clarity project id (session replay + heatmaps). Public client id,
+    # inlined at build; a web redeploy is required to change it. IMPORTANT: Clarity
+    # records session replays, so mask the face photos + email in the Clarity project
+    # privacy settings before relying on it.
+    NEXT_PUBLIC_CLARITY_ID = "xqj0zkf6z3"
+    # Optional (code defaults shown). Keep in sync with the API's UPLOAD_* values.
+    # NEXT_PUBLIC_UPLOAD_MIN_PHOTOS = "5"
+    # NEXT_PUBLIC_UPLOAD_MAX_PHOTOS = "15"
+    # NEXT_PUBLIC_UPLOAD_MIN_FACE_RATIO = "0.15"
+    # Optional analytics + Sentry (leave unset to disable).
+    # NEXT_PUBLIC_ANALYTICS_DOMAIN = "picturesk.ai"
+    # NEXT_PUBLIC_SENTRY_DSN = "https://xxxx@oyyyy.ingest.sentry.io/zzzz"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = "suspend"
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    interval = "15s"
+    timeout = "3s"
+    grace_period = "10s"
+    method = "GET"
+    # "/" now 308-redirects to /ai-headshot-generator, and Fly HTTP checks only pass on
+    # 2xx, so the health check must target a 200 route. robots.txt is static and fast.
+    path = "/robots.txt"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

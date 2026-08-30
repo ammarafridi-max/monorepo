@@ -1,0 +1,3023 @@
+/*
+ * Picturesk brand tokens + base styles. See BRAND.md.
+ * Forest & Gold: warm sand body, deep-green ink, green as the workhorse accent
+ * (CTAs, links, focus) with gold as the second accent. Inter (humanist sans) for
+ * both display and body. Token NAMES kept (--cobalt = green, --serif = sans) to
+ * avoid churn across existing var() refs.
+ */
+
+:root {
+  /* Forest & Gold brand (rebrand). Token names kept so existing var() refs work.
+     --cobalt is now the GREEN workhorse accent; --serif now resolves to the
+     humanist sans display stack (headings are sans in this identity). */
+  --ink: #163a33;
+  --bone: #f5efe2;
+  --cobalt: #0e4a44;
+  --gold: #e7b24c;
+  --ash: #5f6b62;
+  --line: #e4dcc8;
+  --card: #fbf7ec;
+  --ok: #1f9d57;
+  --warn: #c4462b;
+  --serif: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --fg-gold: #e7b24c;
+  --fg-hero-fg: #f4eee1;
+  --fg-hero-muted: #a9c3bd;
+  --fg-hero-ring: rgba(244, 238, 225, 0.16);
+  --fg-body-bg: #f5efe2;
+  --fg-body-bg2: #eee6d3;
+  --fg-ink: #163a33;
+  --fg-muted: #5f6b62;
+  --fg-green: #0e4a44;
+  --fg-line: #e4dcc8;
+  --fg-card: #fbf7ec;
+  --fg-footer: #0a3833;
+  --fg-on-gold: #123f3a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bone);
+  color: var(--ink);
+  font-family: var(--sans);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--cobalt);
+  color: var(--bone);
+}
+
+a {
+  color: var(--cobalt);
+  text-underline-offset: 3px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--cobalt);
+  outline-offset: 2px;
+}
+
+/* Layout ------------------------------------------------------------------ */
+
+.wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 72px 24px 96px;
+}
+
+.wrap--wide {
+  max-width: 960px;
+}
+
+.topbar {
+  /* Match the page .container (max-width + side padding) so the navbar edges line
+     up with the Hero and the rest of the content. */
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 28px clamp(20px, 5vw, 24px) 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 20px;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+/* The wordmark logo in the header. Height-driven so it scales cleanly; width auto
+   keeps the aspect ratio. Slightly smaller on narrow screens. */
+.brand__logo {
+  height: 30px;
+  width: auto;
+  display: block;
+}
+@media (max-width: 560px) {
+  .brand__logo {
+    height: 26px;
+  }
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.navlink {
+  font-size: 14px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.navlink:hover {
+  color: var(--cobalt);
+}
+
+/* A logout button that reads as a link. */
+.navlink--button {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Logged-out nav auth: "[icon] Sign Up / Log in". Inherits the ivory .navlink
+   color; the icon (currentColor) matches the text, the slash is a muted divider. */
+.nav-auth {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.nav-auth .navlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.nav-auth .navlink svg {
+  width: 16px;
+  height: 16px;
+}
+.nav-auth__sep {
+  color: var(--fg-hero-fg);
+  opacity: 0.5;
+  font-weight: 400;
+}
+
+/* Account order list. */
+.orders {
+  list-style: none;
+  margin: 32px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+
+.order {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.order__id {
+  font-size: 15px;
+  word-break: break-all;
+}
+
+.order__date {
+  font-size: 13px;
+}
+
+.order__link {
+  margin-left: auto;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.order .pill {
+  flex: none;
+}
+
+/* Social sign-in ---------------------------------------------------------- */
+
+/* Secondary actions: bordered, ink text. Cobalt stays reserved for the one
+ * primary CTA (the email form's submit), per BRAND's single-accent rule. */
+.social {
+  margin-top: 40px;
+}
+
+.social__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--ink);
+  background: #fffdf9;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 13px 18px;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.social__icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* Cookie-consent banner. Bone surface, hairline border, one cobalt accent (Accept),
+   soft rare shadow (BRAND.md). Fixed to the bottom, centered, out of the way. */
+.consent {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  z-index: 60;
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 18px;
+  background: var(--bone);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px 16px;
+  box-shadow: 0 6px 24px rgba(11, 11, 12, 0.08);
+}
+
+.consent__text {
+  margin: 0;
+  flex: 1 1 260px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.consent__text a {
+  color: var(--cobalt);
+}
+
+.consent__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.social__btn:hover {
+  border-color: var(--ash);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  color: var(--ash);
+  font-size: 13px;
+  margin-top: 18px;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.divider span {
+  padding: 0 12px;
+}
+
+/* When social buttons precede it, the email card's own top margin is too much. */
+.social + .card {
+  margin-top: 18px;
+}
+
+/* Type -------------------------------------------------------------------- */
+
+.display {
+  font-family: var(--serif);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  font-size: clamp(38px, 6vw, 60px);
+  margin: 0 0 20px;
+}
+
+.lede {
+  font-size: 19px;
+  color: var(--ink);
+  max-width: 42ch;
+  margin: 0 0 12px;
+}
+
+.muted {
+  color: var(--ash);
+}
+
+.h2 {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: clamp(26px, 4vw, 34px);
+  letter-spacing: -0.015em;
+  line-height: 1.1;
+  margin: 0 0 10px;
+}
+
+/* Upload form ------------------------------------------------------------- */
+
+.card {
+  margin-top: 40px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fffdf9;
+  padding: 22px;
+}
+
+.dropzone {
+  border: 1.5px dashed var(--line);
+  border-radius: 8px;
+  background: var(--bone);
+  padding: 40px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.dropzone:hover {
+  border-color: var(--ash);
+}
+
+.dropzone--active {
+  border-color: var(--cobalt);
+  background: #e7efe9;
+}
+
+.dropzone__title {
+  font-size: 17px;
+  margin: 0 0 4px;
+}
+
+.dropzone__hint {
+  color: var(--ash);
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Photo requirements: a calm do / avoid box. Good inputs are the biggest lever on
+ * likeness, so this sits up front. Green/warn dots, no second accent (cobalt stays
+ * reserved), no emoji per BRAND. */
+.reqs {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fffdf9;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.reqs li {
+  position: relative;
+  padding-left: 18px;
+  color: var(--ash);
+}
+.reqs li + li {
+  margin-top: 6px;
+}
+.reqs li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+}
+.reqs__good::before {
+  background: var(--ok);
+}
+.reqs__bad::before {
+  background: var(--warn);
+}
+
+/* Photos are the loudest thing on screen: big, edge to edge in a grid. */
+.thumbs {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 8px;
+}
+
+.thumb {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--line);
+}
+
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.thumb__remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(11, 11, 12, 0.72);
+  color: var(--bone);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* A photo that failed the quality check: dim it and show the reason. */
+.thumb--bad {
+  border-color: var(--warn);
+}
+
+.thumb--bad img {
+  opacity: 0.4;
+}
+
+.thumb__reason {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 5px 7px;
+  background: var(--warn);
+  color: var(--bone);
+  font-size: 11px;
+  line-height: 1.25;
+  text-align: left;
+}
+
+/* A photo still being checked in the browser. */
+.thumb--checking::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(250, 249, 246, 0.55);
+}
+
+/* An accepted photo: a small green check, top-left (opposite the remove button). */
+.thumb--ok {
+  border-color: var(--ok);
+}
+.thumb__check {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--ok);
+  color: var(--bone);
+}
+
+.field {
+  margin-top: 22px;
+}
+
+.label {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.input {
+  width: 100%;
+  font: inherit;
+  color: var(--ink);
+  background: var(--bone);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 12px 14px;
+}
+
+.input:focus {
+  border-color: var(--cobalt);
+  outline: none;
+}
+
+/* A white-background input variant, to lift the field off the sand page. */
+.input--onwhite {
+  background: #fff;
+}
+
+/* Wrapper that floats a leading inline-SVG icon over an input. The input gets
+   extra left padding so its text and placeholder clear the icon. */
+.input-icon {
+  position: relative;
+}
+
+.input-icon__mark {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ash);
+  pointer-events: none;
+}
+
+.input-icon .input {
+  padding-left: 44px;
+}
+
+/* The one primary action per screen. Considered: subtle radius, a single soft
+ * cobalt-tinted shadow, and clear hover / active / focus / disabled states. */
+.cta {
+  margin-top: 22px;
+  width: 100%;
+  font: inherit;
+  font-weight: 600;
+  color: var(--bone);
+  background: var(--cobalt);
+  border: none;
+  border-radius: 8px;
+  padding: 15px 20px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(11, 11, 12, 0.08), 0 12px 26px -14px rgba(14, 74, 68, 0.28);
+  transition: background 0.14s ease, box-shadow 0.14s ease, transform 0.14s ease;
+}
+
+.cta:hover:not(:disabled) {
+  background: #12564f;
+  box-shadow: 0 2px 4px rgba(11, 11, 12, 0.1), 0 16px 32px -14px rgba(14, 74, 68, 0.28);
+  transform: translateY(-1px);
+}
+
+.cta:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.cta:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.cta__price {
+  opacity: 0.85;
+  font-weight: 500;
+}
+
+.formnote {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--ash);
+  text-align: center;
+}
+
+.error {
+  margin-top: 16px;
+  color: var(--warn);
+  font-size: 14px;
+}
+
+/* Status stepper ---------------------------------------------------------- */
+
+.steps {
+  list-style: none;
+  margin: 32px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+
+.step {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--ash);
+}
+
+.step__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--line);
+  flex: none;
+  transform: translateY(-1px);
+}
+
+.step--done {
+  color: var(--ink);
+}
+
+.step--done .step__dot {
+  background: var(--ok);
+}
+
+.step--current {
+  color: var(--ink);
+}
+
+/* The in-progress step spins: a hairline ring with a cobalt arc sweeping around
+ * it, so "now" reads as active motion rather than a static dot. `align-self`
+ * centers the (larger) spinner on the row while the other dots stay baseline. */
+.step--current .step__dot {
+  width: 14px;
+  height: 14px;
+  background: transparent;
+  border: 2px solid var(--line);
+  border-top-color: var(--cobalt);
+  border-radius: 999px;
+  transform: none;
+  align-self: center;
+  animation: step-spin 0.7s linear infinite;
+}
+
+@keyframes step-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Respect reduced-motion: fall back to a solid cobalt dot, no spin. */
+@media (prefers-reduced-motion: reduce) {
+  .step--current .step__dot {
+    animation: none;
+    border-color: var(--cobalt);
+  }
+}
+
+.step__label {
+  font-size: 16px;
+}
+
+.step__detail {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--ash);
+}
+
+/* Processing clock: a muted label + a tabular-figure value. Tabular numbers keep
+ * the live "m:ss" from jittering as digits change. */
+.timer {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 14px 0 0;
+  font-size: 14px;
+}
+.timer__label {
+  color: var(--ash);
+}
+.timer__value {
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Generation progress ----------------------------------------------------- */
+
+.progress {
+  margin-top: 28px;
+}
+
+.progress__track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+/* Ink fill on a hairline track: calm, no second accent (cobalt stays reserved
+   for the current-step dot and links). Width animates as more shots land. */
+.progress__fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--ink);
+  transition: width 600ms ease;
+}
+
+/* Indeterminate state, before the first count arrives: a short bar drifting
+   across the track. No spinner, no scary language, just motion. */
+.progress__fill--idle {
+  width: 35%;
+  animation: progress-idle 1.7s ease-in-out infinite;
+}
+
+@keyframes progress-idle {
+  0% {
+    transform: translateX(-110%);
+  }
+  100% {
+    transform: translateX(320%);
+  }
+}
+
+.progress__label {
+  margin-top: 10px;
+  font-size: 14px;
+  color: var(--ash);
+}
+
+/* Results ----------------------------------------------------------------- */
+
+.gallery {
+  margin-top: 28px;
+}
+
+/* Toolbar above the grid: a quiet count on the left, the one primary action
+   (download all) on the right. One accent, one obvious action. */
+.gallery__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.gallery__count {
+  font-size: 15px;
+  color: var(--ash);
+  margin: 0;
+}
+
+.gallery__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 per row on desktop */
+  gap: 14px;
+}
+@media (max-width: 620px) {
+  .gallery__grid {
+    grid-template-columns: repeat(2, 1fr); /* 2 per row on phones */
+  }
+}
+
+/* Let the photo be the loudest thing: the card is just the image, with the
+   download control floating over it. No bar, no chrome stealing height. */
+.shot {
+  position: relative;
+  margin: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--line);
+}
+
+.shot img {
+  width: 100%;
+  display: block;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+}
+
+/* Floating view + download controls, top-right of each shot. Bone discs, ink
+   glyphs, turn cobalt on hover/focus. Understated so the face dominates; always
+   visible so they work on touch (no hover to rely on). */
+.shot__actions {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 8px;
+}
+.shot__dl,
+.shot__view {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  color: var(--ink);
+  background: var(--bone);
+  border: 1px solid var(--line);
+  box-shadow: 0 2px 8px -2px rgba(11, 11, 12, 0.35);
+  cursor: pointer;
+  transition: color 0.14s ease, background 0.14s ease, transform 0.14s ease;
+}
+.shot__dl:hover,
+.shot__dl:focus-visible,
+.shot__view:hover,
+.shot__view:focus-visible {
+  color: var(--cobalt);
+  border-color: var(--cobalt);
+  transform: translateY(-1px);
+}
+
+/* Image lightbox (modal) used by /success and the admin order page. */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(10, 20, 18, 0.82);
+  animation: lightbox-in 0.14s ease;
+}
+@keyframes lightbox-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.lightbox__img {
+  max-width: min(92vw, 900px);
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.6);
+}
+.lightbox__close {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid rgba(244, 238, 225, 0.35);
+  background: rgba(10, 20, 18, 0.5);
+  color: var(--ivory, #f4eee1);
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.14s ease, border-color 0.14s ease;
+}
+.lightbox__close:hover,
+.lightbox__close:focus-visible {
+  background: rgba(10, 20, 18, 0.85);
+  border-color: var(--ivory, #f4eee1);
+  outline: none;
+}
+
+.pill {
+  display: inline-block;
+  font-size: 13px;
+  color: var(--ash);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 12px;
+}
+
+.pill--ok {
+  color: var(--ok);
+  border-color: var(--ok);
+}
+
+.pill--warn {
+  color: var(--warn);
+  border-color: var(--warn);
+}
+
+.center {
+  text-align: center;
+}
+
+/* ========================================================================== *
+ * Landing page. Full-bleed sections with an inner container; the portfolio is
+ * the loudest element, cobalt stays a scalpel (one CTA colour + section ticks).
+ * ========================================================================== */
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+.container {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 clamp(20px, 5vw, 24px);
+}
+
+.container--narrow {
+  max-width: 720px;
+}
+
+.section {
+  padding: clamp(64px, 9vw, 116px) 0;
+  scroll-margin-top: 32px;
+}
+
+/* Section eyebrow: quiet uppercase label with a single short cobalt tick, the
+ * one repeated accent that marks structure. */
+.eyebrow {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ash);
+  margin: 0 0 16px;
+}
+
+.eyebrow::before {
+  content: '';
+  width: 20px;
+  height: 2px;
+  background: var(--cobalt);
+  margin-right: 12px;
+  flex: none;
+}
+
+.section__lede {
+  font-size: 18px;
+  color: var(--ash);
+  max-width: 54ch;
+  margin: 14px 0 0;
+}
+
+/* Buttons (anchor CTAs) ---------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font: inherit;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  padding: 14px 24px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.14s ease, box-shadow 0.14s ease, transform 0.14s ease;
+}
+
+.btn--primary {
+  color: var(--bone);
+  background: var(--cobalt);
+  box-shadow: 0 1px 2px rgba(11, 11, 12, 0.08), 0 12px 26px -14px rgba(14, 74, 68, 0.28);
+}
+
+.btn--primary:hover:not(:disabled) {
+  background: #12564f;
+  box-shadow: 0 2px 4px rgba(11, 11, 12, 0.1), 0 16px 32px -14px rgba(14, 74, 68, 0.28);
+  transform: translateY(-1px);
+}
+
+.btn--primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Disabled buttons (e.g. Continue before a step is complete). */
+.btn:disabled {
+  opacity: 0.5;
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn__price {
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+.btn--link {
+  color: var(--cobalt);
+  background: none;
+  padding: 14px 4px;
+}
+
+.btn--link:hover {
+  text-decoration: underline;
+}
+
+.btn--block {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+/* Portfolio frame: an image, or a labelled placeholder until real URLs land. */
+.frame {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: #efece6;
+}
+
+.frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.frame--empty {
+  display: grid;
+  place-items: center;
+}
+
+.frame__ph {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ash);
+}
+
+/* Hero -------------------------------------------------------------------- */
+
+.hero {
+  padding: clamp(36px, 6vw, 80px) 0 clamp(52px, 8vw, 100px);
+  scroll-margin-top: 32px;
+}
+
+.hero__inner {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: clamp(28px, 6vw, 64px);
+  align-items: center;
+}
+
+.hero__title {
+  margin-top: 6px;
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 6px;
+  margin-top: 28px;
+}
+
+.hero__guarantee {
+  margin: 16px 0 0;
+  font-size: 13px;
+  color: var(--fg-hero-muted);
+}
+
+.hero__meta {
+  margin: 18px 0 0;
+  font-size: 14px;
+  color: var(--ash);
+}
+
+.hero__gallery {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.hero__frame--1 {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+}
+.hero__frame--2 {
+  grid-column: 2;
+  grid-row: 1;
+}
+.hero__frame--3 {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+/* Showcase (the portfolio) ------------------------------------------------ */
+
+.samples {
+  margin-top: 8px;
+}
+
+.sample {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: clamp(20px, 4vw, 40px);
+  align-items: start;
+  padding: clamp(24px, 4vw, 40px) 0;
+  border-top: 1px solid var(--line);
+}
+
+.sample:last-child {
+  border-bottom: 1px solid var(--line);
+}
+
+.sample__label {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ash);
+  margin: 0 0 10px;
+}
+
+.filmstrip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.sample__who {
+  margin: 14px 0 0;
+  font-size: 14px;
+  color: var(--ash);
+}
+
+.sample__name {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.sample__after {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+/* How it works ------------------------------------------------------------ */
+
+.steps-grid {
+  list-style: none;
+  margin: 40px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(20px, 4vw, 36px);
+}
+
+/* Each step reads as an editorial plate: a heavy top rule and a serif numeral. */
+.stepcard {
+  border-top: 2px solid var(--ink);
+  padding-top: 18px;
+}
+
+.stepcard__num {
+  display: block;
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 34px;
+  line-height: 1;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+
+.stepcard__title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+
+.stepcard__body {
+  margin: 0;
+  color: var(--ash);
+  font-size: 15px;
+}
+
+/* What you get ------------------------------------------------------------ */
+
+.get__cols {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: clamp(24px, 5vw, 56px);
+  margin-top: 40px;
+}
+
+.checklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+
+.checklist__item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  font-size: 16px;
+}
+
+.check {
+  color: var(--cobalt);
+  flex: none;
+  margin-top: 4px;
+}
+
+.looks__label {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ash);
+  margin: 0 0 14px;
+}
+
+.looks__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Use-cases grid ("Who it's for"): scannable cards, subtle radius per BRAND. */
+.usecases__grid {
+  list-style: none;
+  margin: 28px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+@media (max-width: 860px) {
+  .usecases__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 480px) {
+  .usecases__grid {
+    grid-template-columns: 1fr;
+  }
+}
+.usecase {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  padding: 18px 18px 20px;
+}
+.usecase__title {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.usecase__body {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ash);
+}
+
+.tag {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 7px 12px;
+  font-size: 14px;
+  background: #fffdf9;
+}
+
+/* Pricing ----------------------------------------------------------------- */
+
+.pricecard {
+  max-width: 460px;
+  margin-top: 32px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fffdf9;
+  padding: clamp(24px, 4vw, 32px);
+  box-shadow: 0 1px 2px rgba(11, 11, 12, 0.04);
+}
+
+.pricecard__head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.pricecard__amount {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 56px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.pricecard__cadence {
+  color: var(--ash);
+  font-size: 16px;
+}
+
+.pricecard__note {
+  margin: 12px 0 22px;
+  color: var(--ash);
+  font-size: 15px;
+}
+
+.checklist--tight {
+  gap: 11px;
+}
+
+.pricecard__fine {
+  margin: 14px 0 0;
+  font-size: 13px;
+  color: var(--ash);
+  text-align: center;
+}
+
+/* FAQ --------------------------------------------------------------------- */
+
+.faq__list {
+  margin-top: 32px;
+}
+
+.qa {
+  border-bottom: 1px solid var(--line);
+}
+
+.qa:first-child {
+  border-top: 1px solid var(--line);
+}
+
+.qa__q {
+  width: 100%;
+  cursor: pointer;
+  padding: 20px 0;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 500;
+  color: inherit;
+  background: none;
+  border: none;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+/* Collapsible answer panel. The answer is always in the DOM; grid-rows animates it
+   from 0 (collapsed) to its natural height (open), so nothing is hidden from crawlers. */
+.qa__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.22s ease;
+}
+.qa--open .qa__panel {
+  grid-template-rows: 1fr;
+}
+.qa__panel > .qa__a {
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Plus that becomes a minus on open. */
+.qa__mark {
+  position: relative;
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+
+.qa__mark::before,
+.qa__mark::after {
+  content: '';
+  position: absolute;
+  background: var(--ash);
+}
+
+.qa__mark::before {
+  top: 6px;
+  left: 0;
+  width: 14px;
+  height: 2px;
+}
+
+.qa__mark::after {
+  left: 6px;
+  top: 0;
+  width: 2px;
+  height: 14px;
+  transition: transform 0.15s ease;
+}
+
+.qa--open .qa__mark::after {
+  transform: scaleY(0);
+}
+
+.qa__a {
+  margin: 0;
+  padding: 0 0 22px;
+  color: var(--ash);
+  max-width: 66ch;
+  font-size: 16px;
+}
+
+/* Start (the one uploader) ------------------------------------------------ */
+
+.start__inner {
+  max-width: 620px;
+}
+
+/* Footer ------------------------------------------------------------------ */
+
+.footer {
+  background: var(--ink);
+  color: var(--bone);
+  padding: 56px 0;
+}
+
+.footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px 56px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.footer__word {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 22px;
+  margin: 0;
+}
+
+.footer__tag {
+  color: #b8b8bd;
+  font-size: 14px;
+  margin: 4px 0 0;
+}
+
+.footer__cols {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px 56px;
+}
+
+.footer__col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer__coltitle {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8a8a90;
+  margin: 0 0 2px;
+}
+
+.footer__col a {
+  color: var(--bone);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.footer__col a:hover {
+  color: var(--cobalt);
+}
+
+.footer__legal {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  justify-content: space-between;
+  color: #8a8a90;
+  font-size: 13px;
+  border-top: 1px solid #23232a;
+  padding-top: 20px;
+  margin: 8px 0 0;
+}
+
+.footer__legal a {
+  color: #8a8a90;
+}
+
+/* Responsive -------------------------------------------------------------- */
+
+@media (max-width: 860px) {
+  .hero__inner,
+  .get__cols {
+    grid-template-columns: 1fr;
+  }
+
+  .hero__gallery {
+    margin-top: 8px;
+  }
+
+  .steps-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .sample {
+    grid-template-columns: 1fr;
+  }
+
+  .filmstrip {
+    max-width: 320px;
+  }
+}
+
+@media (max-width: 560px) {
+  .hero__frame--1 {
+    grid-column: 1 / span 2;
+    grid-row: 1;
+  }
+  .hero__frame--2 {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .hero__frame--3 {
+    grid-column: 2;
+    grid-row: 2;
+  }
+}
+
+/* Multi-step funnel (/generator) ------------------------------------------ */
+
+.generator {
+  padding-top: 40px;
+}
+
+/* The funnel needs more room than the narrow .wrap column so the option-card
+   grids breathe. Override .wrap's 720px with a wider column for all four steps. */
+.wrap.generator {
+  max-width: 900px;
+}
+
+.stepper {
+  margin-bottom: 36px;
+  overflow-x: auto;
+}
+
+.stepper__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.stepper__step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ash);
+  white-space: nowrap;
+}
+
+.stepper__num {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  font-size: 12px;
+  flex: none;
+}
+
+.stepper__step--done {
+  color: var(--ink);
+}
+.stepper__step--done .stepper__num {
+  border-color: var(--ok);
+  color: var(--ok);
+}
+
+.stepper__step--current {
+  color: var(--ink);
+  font-weight: 600;
+}
+.stepper__step--current .stepper__num {
+  border-color: var(--cobalt);
+  background: var(--cobalt);
+  color: var(--bone);
+}
+
+/* Section subheads on the merged select step. */
+.gen-subhead {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 20px;
+  margin: 36px 0 2px;
+}
+.gen-hint {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ash);
+}
+
+/* Sub-label for a single-select group (gender, age, race). */
+.gen-fieldlabel {
+  margin: 18px 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.gen-optional {
+  margin-left: 6px;
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--ash);
+}
+
+/* Info tooltip: a small (i) next to a field label; the hint appears ABOVE the icon
+   on hover or keyboard focus, so the label stays uncluttered. */
+.info-tip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  color: var(--ash);
+  cursor: help;
+  vertical-align: middle;
+}
+.info-tip svg {
+  width: 15px;
+  height: 15px;
+}
+.info-tip:hover,
+.info-tip:focus-visible {
+  color: var(--cobalt);
+  outline: none;
+}
+.info-tip__bubble {
+  position: absolute;
+  bottom: calc(100% + 9px);
+  left: -6px;
+  width: max-content;
+  max-width: 260px;
+  padding: 8px 11px;
+  background: var(--ink);
+  color: var(--bone);
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: left;
+  letter-spacing: 0;
+  border-radius: 6px;
+  box-shadow: 0 8px 20px -8px rgba(11, 11, 12, 0.35);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition: opacity 0.14s ease, transform 0.14s ease;
+  pointer-events: none;
+  z-index: 20;
+}
+/* Little arrow pointing down at the icon. */
+.info-tip__bubble::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 12px;
+  border: 5px solid transparent;
+  border-top-color: var(--ink);
+}
+.info-tip:hover .info-tip__bubble,
+.info-tip:focus-within .info-tip__bubble {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Single-select chips: text-only pills for demographics (no preview image).
+ * Cobalt marks the selected state, one accent only. */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.chip {
+  cursor: pointer;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fffdf9;
+  padding: 8px 14px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  transition: border-color 0.14s ease, box-shadow 0.14s ease;
+}
+.chip:hover {
+  border-color: var(--ash);
+}
+.chip--on {
+  border-color: var(--cobalt);
+  background: var(--cobalt);
+  box-shadow: inset 0 0 0 1px var(--cobalt);
+  color: #fff;
+}
+
+/* Selection cards: each option has a preview image (or a placeholder). The
+ * choices are the visual interest; cobalt marks the selected state. */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+/* On small screens the grid eats too much vertical space, so switch to a horizontal
+   swipe slider that shows ~2.2 cards at a time (the partial third hints there's more
+   to swipe). Scroll-snap keeps it feeling deliberate; no JS/library needed. */
+@media (max-width: 560px) {
+  .cards {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    gap: 10px;
+    /* a touch of end padding so the last card can snap fully into view */
+    scroll-padding-inline: 0;
+    scrollbar-width: none; /* Firefox: hide the bar, the peeking card is the cue */
+  }
+  .cards::-webkit-scrollbar {
+    display: none; /* WebKit */
+  }
+  .cards > * {
+    flex: 0 0 44%; /* ~2.2 cards visible (100 / 44 ≈ 2.27) */
+    scroll-snap-align: start;
+  }
+}
+
+.option-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fffdf9;
+  padding: 0;
+  font: inherit;
+  color: var(--ink);
+  transition: border-color 0.14s ease, box-shadow 0.14s ease;
+}
+
+.option-card:hover {
+  border-color: var(--ash);
+}
+
+.option-card--on {
+  border-color: var(--gold);
+  box-shadow: inset 0 0 0 1px var(--gold);
+  background: rgba(231, 178, 76, 0.1);
+}
+
+/* Preview image / placeholder. */
+.option-card__media {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 5;
+  background: #efece6;
+  overflow: hidden;
+}
+.option-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.option-card__ph {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ash);
+}
+/* Solid-color preview for a background option that has no photo yet: fills the
+   media area with the backdrop's tone. */
+.option-card__swatch {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.option-card__body {
+  padding: 12px 14px 14px;
+}
+.option-card__label {
+  display: block;
+  font-weight: 600;
+  font-size: 15px;
+}
+.option-card__desc {
+  display: block;
+  margin-top: 3px;
+  font-size: 13px;
+  color: var(--ash);
+}
+
+/* Selected tick, top-right over the image. */
+.option-card__check {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+  background: rgba(250, 249, 246, 0.9);
+}
+.option-card--on .option-card__check {
+  border-color: var(--gold);
+  background: var(--gold);
+}
+.option-card--on .option-card__check::after {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 3px;
+  width: 6px;
+  height: 11px;
+  border: solid var(--ink);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Guided camera capture ---------------------------------------------------- */
+
+.capture__prompt {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 22px;
+  margin: 18px 0 2px;
+}
+.capture__hint {
+  margin: 0 0 14px;
+  font-size: 14px;
+  color: var(--ash);
+}
+
+/* The live preview. Mirrored so it feels like looking in a mirror; the captured
+ * frame itself is drawn un-mirrored (natural orientation). */
+.capture__stage {
+  position: relative;
+  max-width: 380px;
+  margin: 0 auto;
+  aspect-ratio: 3 / 4;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--ink);
+}
+.capture__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+  display: block;
+}
+
+/* Centered oval guide: green when the face is well placed, hairline otherwise. */
+.capture__ring {
+  position: absolute;
+  top: 12%;
+  left: 22%;
+  width: 56%;
+  height: 66%;
+  border: 3px solid rgba(250, 249, 246, 0.55);
+  border-radius: 50%;
+  pointer-events: none;
+  transition: border-color 0.2s ease;
+}
+.capture__ring--ok {
+  border-color: var(--ok);
+}
+.capture__ring--none,
+.capture__ring--far,
+.capture__ring--offcenter,
+.capture__ring--multiple {
+  border-color: rgba(250, 249, 246, 0.55);
+}
+
+.capture__status {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(11, 11, 12, 0.66);
+  color: var(--bone);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/* Progress dots for the pose sequence. */
+.capture__dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 16px 0 0;
+}
+.capture__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--line);
+}
+.capture__dot--done {
+  background: var(--ok);
+}
+.capture__dot--now {
+  background: var(--cobalt);
+}
+
+/* A callout on the upload step offering the guided camera path. */
+.capture-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 18px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fffdf9;
+}
+.capture-cta__text {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink);
+}
+.capture-cta__text span {
+  color: var(--ash);
+}
+
+/* Step navigation (back / continue). */
+.gennav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+/* Review summary (details step). */
+.review {
+  margin: 28px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+
+.review__row {
+  display: flex;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.review__k {
+  flex: none;
+  width: 90px;
+  margin: 0;
+  color: var(--ash);
+  font-size: 14px;
+}
+
+.review__v {
+  margin: 0;
+  font-size: 15px;
+}
+
+/* Content pages (privacy, terms, refunds, contact, faq) ------------------- */
+
+.content {
+  padding: clamp(48px, 7vw, 88px) 0 clamp(64px, 9vw, 112px);
+}
+
+/* A narrow reading measure, left-aligned with the rest of the site. */
+.content__inner {
+  max-width: 720px;
+}
+
+.content__title {
+  font-family: var(--serif);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  font-size: clamp(32px, 5vw, 46px);
+  margin: 6px 0 0;
+}
+
+.content__meta {
+  margin: 16px 0 0;
+  font-size: 13px;
+  color: var(--ash);
+}
+
+.content__lede {
+  font-size: 19px;
+  line-height: 1.5;
+  color: var(--ink);
+  margin: 20px 0 0;
+  max-width: 60ch;
+}
+
+.content__note {
+  margin: 40px 0 0;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+  font-size: 15px;
+  color: var(--ash);
+}
+
+/* Prose: the long-form body. Generous line height per BRAND. */
+.prose {
+  margin-top: 8px;
+}
+
+.prose__block {
+  margin-top: 40px;
+}
+
+.prose__h2 {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: clamp(21px, 3vw, 26px);
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  margin: 0 0 12px;
+}
+
+.prose p {
+  margin: 0 0 14px;
+  line-height: 1.65;
+  color: var(--ink);
+  max-width: 68ch;
+}
+
+.prose ul {
+  margin: 0 0 14px;
+  padding-left: 20px;
+  max-width: 68ch;
+}
+
+.prose li {
+  margin: 0 0 8px;
+  line-height: 1.6;
+}
+
+.prose__link {
+  margin-top: 4px;
+}
+
+/* Contact ----------------------------------------------------------------- */
+
+.contactcard {
+  margin-top: 36px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fffdf9;
+  padding: clamp(22px, 4vw, 30px);
+  max-width: 460px;
+}
+
+.contactcard__label {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ash);
+  margin: 0 0 8px;
+}
+
+.contactcard__email {
+  display: inline-block;
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: clamp(22px, 3.5vw, 28px);
+  letter-spacing: -0.01em;
+  word-break: break-all;
+}
+
+.contactcard__btn {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* Small cross-links ------------------------------------------------------- */
+
+.faq__more {
+  margin: 28px 0 0;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.start__agree {
+  margin-top: 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  .cta,
+  .qa__mark::after {
+    transition: none;
+  }
+  .btn--primary:hover,
+  .cta:hover:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* Pricing plans: single-select cards on the pay step. Mirrors .option-card.
+   Cobalt only marks the chosen plan and the "Most popular" badge (single accent). */
+.plans {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 4px 0 22px;
+}
+.plan {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fffdf9;
+  padding: 16px 16px 18px;
+  font: inherit;
+  color: var(--ink);
+  transition: border-color 0.14s ease, box-shadow 0.14s ease;
+}
+.plan:hover {
+  border-color: var(--ash);
+}
+.plan--on {
+  border-color: var(--cobalt);
+  box-shadow: inset 0 0 0 1px var(--cobalt);
+}
+.plan__name {
+  font-weight: 600;
+  font-size: 15px;
+}
+.plan__price {
+  font-family: var(--serif, Georgia, serif);
+  font-size: 30px;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+.plan__meta {
+  font-size: 13px;
+  color: var(--ash);
+}
+.plan__badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--cobalt);
+  border: 1px solid var(--cobalt);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+@media (max-width: 640px) {
+  .plans {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================================== *
+ * Forest & Gold — GLOBAL brand. See BRAND rebrand.
+ *
+ * The "Forest & Gold" direction, applied site-wide: a DARK GREEN hero into a
+ * LIGHT sand body, ivory + gold accents, humanist sans (Inter) headings. The
+ * --fg-* custom props live in :root, and the base body/link rules already theme
+ * via the tokens, so these rules layer the marketing/chrome treatment on top.
+ * `.hero` only affects the home page (only Hero.js renders it).
+ * =========================================================================== */
+
+/* --- Nav: a flat green bar that reads as the top of the hero. Full-bleed
+       colour; the inner <Container> aligns the brand + nav to the 1040 width.
+       The bar uses the hero's DOMINANT tone (#0e4a44, the gradient's 50% stop and
+       --fg-green) rather than its bright top-centre tint. The old #14615a made the
+       bar read as a lighter band sitting above a darker hero; matching the tone the
+       eye reads as "the hero colour" lets the nav and hero look like one continuous
+       dark-green surface on the home page. Solid green on every route (nav is
+       global), so non-home pages keep a clean green bar. -- */
+.topbar {
+  max-width: none;
+  margin: 0;
+  padding: 20px 0;
+  background: #0e4a44;
+  display: block;
+}
+
+.topbar__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  font-family: var(--sans);
+  color: var(--fg-hero-fg);
+}
+
+.brand__word {
+  font-family: var(--sans);
+  font-weight: 800;
+  font-size: 21px;
+  letter-spacing: -0.02em;
+  color: var(--fg-hero-fg);
+}
+
+/* Nav links are ivory white with an explicit, fixed size + weight so every
+   current and future link (Log in, and any added later) renders identically.
+   Hover lifts to full white. */
+.navlink {
+  color: var(--fg-hero-fg);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.navlink:hover {
+  color: #fff;
+}
+
+/* --- Profile menu (authed nav identity) ----------------------------------
+   Avatar (gold circle, dark-green initial) + first name + chevron in a rounded
+   pill trigger; a deep-green dropdown reads on the green chrome. Opens on hover,
+   click, and keyboard focus (see ProfileMenu.js). ------------------------------ */
+.profile {
+  position: relative;
+  display: inline-block;
+}
+
+.profile__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 10px 5px 5px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  color: var(--fg-hero-fg);
+  font: inherit;
+  line-height: 1;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+/* Hover / open: lighten to a translucent-ivory wash over the green. */
+.profile:hover .profile__trigger,
+.profile__trigger:hover,
+.profile__trigger[aria-expanded='true'] {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(244, 238, 225, 0.18);
+}
+
+.profile__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--fg-gold);
+  color: var(--fg-on-gold);
+  font-weight: 800;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.profile__name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--fg-hero-fg);
+}
+
+.profile__chev {
+  color: var(--fg-hero-muted);
+  transition: transform 0.15s ease;
+}
+.profile__chev--open {
+  transform: rotate(180deg);
+}
+
+/* Dropdown panel: a solid deep-green card with a hairline border + soft shadow. */
+.profile__menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 184px;
+  padding: 6px;
+  background: #0a3833;
+  border: 1px solid rgba(244, 238, 225, 0.12);
+  border-radius: 8px;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.3);
+  z-index: 50;
+}
+
+.profile__menu[hidden] {
+  display: none;
+}
+
+/* Transparent bridge across the 8px gap so hovering trigger -> panel never closes. */
+.profile__menu::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 0;
+  right: 0;
+  height: 8px;
+}
+
+.profile__logout {
+  margin: 0;
+}
+
+.profile__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border-radius: 6px;
+  color: var(--fg-hero-fg);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.profile__item svg {
+  flex: none;
+  color: var(--fg-hero-muted);
+}
+
+.profile__item:hover,
+.profile__item:focus-visible {
+  background: rgba(244, 238, 225, 0.1);
+  color: #fff;
+  outline: none;
+}
+
+.profile__item:hover svg,
+.profile__item:focus-visible svg {
+  color: var(--fg-gold);
+}
+
+/* --- Hero: dark radial green, ivory type, gold + ivory actions -------------
+   The gradient now BEGINS at the nav colour (#0e4a44) and holds it across the top
+   before darkening to #0a3833 lower down. So the nav's bottom edge and the hero's
+   top edge are the exact same tone — no brighter band under the bar — and the two
+   read as one continuous dark-green surface, with the falloff giving the hero its
+   depth. (Was #14615a at 0%, which put a lighter tint directly beneath the nav.) */
+.hero {
+  background: radial-gradient(130% 115% at 50% -10%, #0e4a44 0%, #0e4a44 38%, #0a3833 100%);
+  color: var(--fg-hero-fg);
+}
+
+.hero .eyebrow {
+  color: var(--fg-gold);
+  font-weight: 700;
+}
+
+.hero .eyebrow::before {
+  background: var(--fg-gold);
+}
+
+.hero .display {
+  font-family: var(--sans);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--fg-hero-fg);
+}
+
+.hero .lede {
+  color: #cfe0dc;
+}
+
+.hero__meta {
+  color: var(--fg-hero-muted);
+}
+
+/* --- Headings + ledes in the light body ----------------------------------- */
+.h2 {
+  font-family: var(--sans);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--fg-ink);
+}
+
+.section__lede {
+  color: var(--fg-muted);
+}
+
+/* --- Body eyebrows: green label + green tick ------------------------------ */
+.eyebrow {
+  color: var(--fg-green);
+  font-weight: 700;
+}
+
+.eyebrow::before {
+  background: var(--fg-green);
+}
+
+/* --- Home page sections: white background. Hero and footer keep the dark
+   green chrome; every marketing section between them sits on white. ---------- */
+.section.showcase,
+.section.get,
+.section.faq,
+.section.usecases,
+.section.how,
+.section.pricing,
+.section.start {
+  background: #ffffff;
+}
+
+/* --- Buttons: pill shape, no cobalt glow ---------------------------------- */
+.btn {
+  border-radius: 40px;
+}
+
+.btn__price {
+  font-weight: 400;
+  opacity: 0.72;
+}
+
+/* Body/pricing primary = green pill, ivory text. */
+.btn--primary {
+  background: var(--fg-green);
+  color: var(--fg-hero-fg);
+  box-shadow: none;
+}
+
+.btn--primary:hover:not(:disabled) {
+  background: #12564f;
+  box-shadow: none;
+  transform: translateY(-1px);
+}
+
+/* Hero primary = gold pill, dark-green text. */
+.hero .btn--primary {
+  background: var(--fg-gold);
+  color: var(--fg-on-gold);
+  box-shadow: none;
+}
+
+.hero .btn--primary:hover:not(:disabled) {
+  background: #eec06a;
+  box-shadow: none;
+  transform: translateY(-1px);
+}
+
+/* Hero secondary ("See real results") = ivory with a translucent underline. */
+.btn--link {
+  color: var(--fg-hero-fg);
+  background: none;
+  border-radius: 0;
+  padding: 6px 2px;
+  border-bottom: 1.5px solid rgba(244, 238, 225, 0.35);
+}
+
+.btn--link:hover {
+  text-decoration: none;
+  border-bottom-color: rgba(244, 238, 225, 0.7);
+}
+
+/* --- Frames / showcase ---------------------------------------------------- */
+.frame {
+  border-color: var(--fg-line);
+  background: #e7ddc9;
+}
+
+.frame--empty {
+  background: linear-gradient(158deg, #cfe0dc, #8fb0a8);
+}
+
+.frame__ph {
+  color: var(--fg-muted);
+}
+
+.sample,
+.sample:last-child {
+  border-color: var(--fg-line);
+}
+
+.sample__label,
+.sample__who {
+  color: var(--fg-muted);
+}
+
+.sample__name {
+  color: var(--fg-ink);
+}
+
+/* --- How it works: gold numeral in a green circle ------------------------- */
+.stepcard {
+  border-top: none;
+  padding-top: 0;
+}
+
+.stepcard__num {
+  font-family: var(--sans);
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--fg-gold);
+  background: var(--fg-green);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  margin-bottom: 16px;
+}
+
+.stepcard__title {
+  color: var(--fg-ink);
+}
+
+.stepcard__body {
+  color: var(--fg-muted);
+}
+
+/* --- What you get --------------------------------------------------------- */
+.checklist__item {
+  color: var(--fg-ink);
+}
+
+.check {
+  color: var(--fg-green);
+}
+
+.looks__label {
+  color: var(--fg-muted);
+}
+
+.tag {
+  background: var(--fg-card);
+  border-color: var(--fg-line);
+  color: var(--fg-ink);
+}
+
+/* --- Pricing plans -------------------------------------------------------- */
+.plan {
+  background: var(--fg-card);
+  border-color: var(--fg-line);
+  border-radius: 16px;
+}
+
+.plan__name {
+  color: var(--fg-ink);
+}
+
+.plan__price {
+  font-family: var(--sans);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--fg-ink);
+}
+
+.plan__meta {
+  color: var(--fg-muted);
+}
+
+/* The "popular" plan: solid green fill, ivory text, overhanging gold badge. */
+.plan--on {
+  background: var(--fg-green);
+  border-color: var(--fg-green);
+  box-shadow: 0 24px 50px -26px rgba(14, 74, 68, 0.55);
+  color: var(--fg-hero-fg);
+}
+
+.plan--on .plan__name,
+.plan--on .plan__price {
+  color: var(--fg-hero-fg);
+}
+
+.plan--on .plan__meta {
+  color: #d7e4e0;
+}
+
+.plan__badge {
+  top: -11px;
+  left: 16px;
+  right: auto;
+  background: var(--fg-gold);
+  color: var(--fg-on-gold);
+  border: none;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 4px 10px;
+}
+
+.pricecard__fine {
+  color: var(--fg-muted);
+}
+
+.pricecard__fine a {
+  color: var(--fg-green);
+}
+
+/* --- FAQ ------------------------------------------------------------------ */
+.qa,
+.qa:first-child {
+  border-color: var(--fg-line);
+}
+
+.qa__q {
+  color: var(--fg-ink);
+}
+
+.qa__mark::before,
+.qa__mark::after {
+  background: var(--fg-green);
+}
+
+.qa__a {
+  color: var(--fg-muted);
+}
+
+.faq__more a {
+  color: var(--fg-green);
+}
+
+/* --- Footer: deep green, ivory brand, muted teal links -------------------- */
+.footer {
+  background: var(--fg-footer);
+  color: var(--fg-hero-muted);
+}
+
+.footer__word {
+  font-family: var(--sans);
+  font-weight: 800;
+  color: var(--fg-hero-fg);
+}
+
+.footer__tag {
+  color: #9fbdb7;
+}
+
+.footer__coltitle {
+  color: #7fa39c;
+}
+
+.footer__col a {
+  color: var(--fg-hero-fg);
+}
+
+.footer__col a:hover {
+  color: var(--fg-gold);
+}
+
+.footer__legal {
+  color: #9fbdb7;
+  border-top-color: rgba(159, 189, 183, 0.25);
+}
+
+.footer__legal a {
+  color: #9fbdb7;
+}
+
+/* --- Visible focus stays; recolour to gold on the dark/green surfaces ------ */
+a:focus-visible,
+button:focus-visible,
+.btn:focus-visible {
+  outline: 2px solid var(--fg-gold);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn--primary:hover:not(:disabled),
+  .hero .btn--primary:hover:not(:disabled) {
+    transform: none;
+  }
+}
+/* ==== end Forest & Gold — GLOBAL brand ==== */
+
+/* ========================================================================== *
+ * Account dashboard (/account). Current bone/ink/cobalt brand (BRAND.md):
+ * subtle radius, hairline borders, cobalt reserved for the one primary action;
+ * warn (never a second accent) marks the destructive delete zone.
+ * ========================================================================== */
+.acct__head {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 24px;
+}
+.acct__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+}
+.acct__meta .tag {
+  font-size: 12.5px;
+  color: var(--ash);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 12px;
+  background: #fffdf9;
+}
+.acct__signout-form {
+  margin-left: auto;
+}
+.acct__signout {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--bone);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 7px 14px;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--cobalt);
+  cursor: pointer;
+  transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
+}
+.acct__signout svg {
+  width: 15px;
+  height: 15px;
+}
+.acct__signout:hover {
+  background: var(--cobalt);
+  border-color: var(--cobalt);
+  color: var(--bone);
+}
+
+.acct__section {
+  margin-top: 44px;
+}
+.acct__h2 {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+  margin: 0 0 6px;
+}
+.acct__hint {
+  color: var(--ash);
+  font-size: 15px;
+  margin: 0 0 18px;
+  max-width: 60ch;
+}
+.acct__card {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fffdf9;
+  padding: 22px;
+}
+.acct__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+.acct__empty p {
+  margin: 0;
+  color: var(--ash);
+}
+
+/* Order list: a media thumb, the plan + count, a status pill, and actions. */
+.ords {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.ord {
+  display: grid;
+  grid-template-columns: 64px 1fr auto auto;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fffdf9;
+  padding: 12px 16px 12px 12px;
+}
+.ord__media {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #efece6;
+  border: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+}
+.ord__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.ord__ph {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ash);
+}
+.ord__body {
+  min-width: 0;
+}
+.ord__title {
+  margin: 0 0 3px;
+  font-weight: 600;
+  font-size: 15px;
+}
+.ord__sub {
+  margin: 0;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.ord__actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+/* View / Download: real, visible buttons (not the ivory hero link style that
+   leaks onto .btn--link). Outlined green on the near-white row, filling on hover. */
+.ord .btn--link {
+  padding: 8px 14px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--cobalt);
+  background: var(--bone);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+}
+.ord .btn--link:hover {
+  background: var(--cobalt);
+  border-color: var(--cobalt);
+  color: var(--bone);
+  text-decoration: none;
+}
+@media (max-width: 620px) {
+  .ord {
+    grid-template-columns: 52px 1fr;
+    grid-template-areas:
+      'media body'
+      'media pill'
+      'actions actions';
+    row-gap: 6px;
+    column-gap: 14px;
+  }
+  .ord__media {
+    width: 52px;
+    height: 52px;
+    grid-area: media;
+    align-self: start;
+  }
+  .ord__body {
+    grid-area: body;
+  }
+  .ord .pill {
+    grid-area: pill;
+    justify-self: start;
+  }
+  .ord__actions {
+    grid-area: actions;
+    justify-content: flex-start;
+    margin-left: -10px;
+  }
+}
+
+/* Account forms + destructive delete zone. */
+.acct-form .field:first-of-type {
+  margin-top: 0;
+}
+.acct-form .btn--primary {
+  margin-top: 20px;
+}
+.acct-ok {
+  margin-top: 14px;
+  color: var(--ok);
+  font-size: 14px;
+}
+
+/* Dev-only per-order delete button (rendered only in development), sized to sit next
+   to View/Download in the order row and warn-tinted to read as destructive. */
+.ord__del {
+  padding: 8px 12px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--warn);
+  background: var(--bone);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
+}
+.ord__del:hover:not(:disabled) {
+  background: var(--warn);
+  border-color: var(--warn);
+  color: var(--bone);
+}
+.ord__del:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.btn--danger {
+  color: var(--warn);
+  background: none;
+  border: 1px solid var(--warn);
+  border-radius: 8px;
+  padding: 12px 20px;
+}
+.btn--danger:hover:not(:disabled) {
+  background: var(--warn);
+  color: var(--bone);
+}
+.acct-confirm {
+  border: 1px solid var(--warn);
+  border-radius: 10px;
+  padding: 20px;
+  background: #fdf3f1;
+  max-width: 480px;
+}
+.acct-confirm__note {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: var(--ink);
+  line-height: 1.5;
+}
+.acct-confirm__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+/* Account tabs: a hairline tab bar with a single cobalt underline on the active
+ * tab (the one repeated accent), server-rendered panels toggled client-side. */
+.tabs {
+  margin-top: 8px;
+}
+.tablist {
+  display: flex;
+  gap: 2px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 28px;
+  overflow-x: auto;
+}
+.tab {
+  appearance: none;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ash);
+  padding: 12px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.tab:hover {
+  color: var(--ink);
+}
+.tab--on {
+  color: var(--ink);
+  font-weight: 600;
+  border-bottom-color: var(--cobalt);
+}
+.tab__count {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ash);
+  background: var(--line);
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+.tab--on .tab__count {
+  color: var(--cobalt);
+  background: #e7efe9;
+}
+.tab:focus-visible {
+  outline: 2px solid var(--cobalt);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.tabpanel:focus {
+  outline: none;
+}
+.tabpanel[hidden] {
+  display: none;
+}
+.acct__section--first {
+  margin-top: 0;
+}
