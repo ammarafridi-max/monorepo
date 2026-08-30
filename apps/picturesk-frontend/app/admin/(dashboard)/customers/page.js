@@ -87,9 +87,9 @@ function CustomersContent() {
   return (
     <div className="max-w-7xl mx-auto space-y-5">
       <div>
-        <h2 className="text-2xl font-extrabold text-gray-900">Customers</h2>
+        <h2 className="text-2xl font-extrabold text-gray-900">Users</h2>
         <p className="text-sm text-gray-400 mt-0.5">
-          {isLoadingCustomers ? 'Loading…' : `${total} customer${total !== 1 ? 's' : ''} shown`}
+          {isLoadingCustomers ? 'Loading…' : `${total} user${total !== 1 ? 's' : ''} shown`}
         </p>
       </div>
 
@@ -104,8 +104,8 @@ function CustomersContent() {
           ))
         ) : (
           <>
-            {summaryCard('Customers', String(total), 'Unique email addresses')}
-            {summaryCard('Lifetime paid', usd(lifetimeCents), 'Gross across these customers', 'text-green-700')}
+            {summaryCard('Users', String(total), 'Unique email addresses')}
+            {summaryCard('Lifetime paid', usd(lifetimeCents), 'Gross across these users', 'text-green-700')}
             {summaryCard('Repeat buyers', String(repeat), 'More than one order')}
             {summaryCard('With an account', String(withAccount), 'Rest checked out as guests')}
           </>
@@ -132,7 +132,7 @@ function CustomersContent() {
               <Users size={22} className="text-gray-400" />
             </div>
             <div>
-              <p className="text-sm font-bold text-gray-600">No customers found</p>
+              <p className="text-sm font-bold text-gray-600">No users found</p>
               <p className="text-xs text-gray-400 mt-1">Try a different search.</p>
             </div>
           </div>
@@ -142,7 +142,7 @@ function CustomersContent() {
               <table className="w-full text-sm min-w-[720px]">
                 <thead>
                   <tr className="border-b border-gray-100 bg-gray-50/60">
-                    {['Customer', 'Orders', 'Delivered', 'Lifetime paid', 'Last order', ''].map((h, i) => (
+                    {['User', 'Orders', 'Delivered', 'Lifetime paid', 'Last order', ''].map((h, i) => (
                       <th
                         key={i}
                         className="text-left text-xs font-bold text-gray-400 uppercase tracking-wide px-4 py-3 whitespace-nowrap"
@@ -188,7 +188,7 @@ function CustomersContent() {
                           <Link
                             href={`/admin/orders?search=${encodeURIComponent(c.email)}`}
                             className="p-1.5 rounded-lg text-gray-400 hover:text-primary-700 hover:bg-primary-50 transition"
-                            title="See this customer's orders"
+                            title="See this user's orders"
                           >
                             <ArrowUpRight size={14} />
                           </Link>

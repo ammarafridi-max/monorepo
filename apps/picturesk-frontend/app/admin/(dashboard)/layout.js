@@ -31,20 +31,25 @@ const nav = [
         icon: 'Camera',
         roles: ['admin', 'support'],
       },
-      {
-        label: 'Customers',
-        href: '/admin/customers',
-        mobile: 3,
-        mobileLabel: 'People',
-        icon: 'Users',
-        roles: ['admin', 'support'],
-      },
     ],
   },
   {
     section: 'People',
     items: [
-      { label: 'Team', href: '/admin/users', icon: 'Shield', roles: ['admin'] },
+      {
+        label: 'Users',
+        href: '/admin/customers',
+        mobile: 3,
+        mobileLabel: 'Users',
+        icon: 'Users',
+        roles: ['admin', 'support'],
+      },
+      {
+        label: 'Admin Users',
+        href: '/admin/users',
+        icon: 'Shield',
+        roles: ['admin'],
+      },
     ],
   },
   {
