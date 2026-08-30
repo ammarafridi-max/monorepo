@@ -1,6 +1,12 @@
 import { Router } from 'express';
+import mongoose from 'mongoose';
 import { Order, ORDER_STATES } from '@travel-suite/picturesk-shared';
 import { AppError, catchAsync } from '@travel-suite/utils';
+
+/** A user-typed search term goes into a RegExp, so its metacharacters must not. */
+function escapeRegex(value = '') {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 /**
  * Phase B: the READ-ONLY admin data surface, mounted at /admin. Every route is
@@ -135,7 +141,8 @@ export function createAdminDataRouter({ guard, restrictTo }) {
   // Every route below is read-only staff access.
   router.use(guard, restrictTo('admin', 'support'));
 
-  // GET /admin/orders  --  operational list, newest first. ?status filters, ?limit caps.
+  // GET /admin/orders  --  operational list, newest first. ?status filters,
+  // ?search matches customer email or order id, ?limit caps.
   router.get(
     '/orders',
     catchAsync(async (req, res) => {
@@ -145,6 +152,16 @@ export function createAdminDataRouter({ guard, restrictTo }) {
       }
       const limit = Math.min(Math.max(Number.parseInt(req.query.limit, 10) || 200, 1), 500);
       const filter = status ? { status } : {};
+
+      // Searching has to happen in the query, not on the page: the list is capped,
+      // so filtering client-side would only ever search the newest `limit` orders.
+      const search = String(req.query.search ?? '').trim();
+      if (search) {
+        const or = [{ customerEmail: new RegExp(escapeRegex(search), 'i') }];
+        // An exact id, so pasting an order id from a log or Stripe finds it.
+        if (mongoose.isValidObjectId(search)) or.push({ _id: search });
+        filter.$or = or;
+      }
       const orders = await Order.find(filter).sort({ createdAt: -1 }).limit(limit);
       const items = orders.map(toAdminOrder);
       res.json({
@@ -250,7 +267,11 @@ export function createAdminDataRouter({ guard, restrictTo }) {
     '/customers',
     catchAsync(async (req, res) => {
       const limit = Math.min(Math.max(Number.parseInt(req.query.limit, 10) || 200, 1), 500);
+      const search = String(req.query.search ?? '').trim();
       const rows = await Order.aggregate([
+        ...(search
+          ? [{ $match: { customerEmail: new RegExp(escapeRegex(search), 'i') } }]
+          : []),
         {
           $group: {
             _id: '$customerEmail',

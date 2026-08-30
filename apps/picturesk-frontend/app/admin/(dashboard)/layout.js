@@ -1,4 +1,8 @@
 import AdminDashboardLayout from '@travel-suite/frontend-shared/pages/admin/AdminDashboardLayout';
+import {
+  PICTURESK_SEARCH_CATEGORIES,
+  usePictureskSearchResults,
+} from '../../../hooks/admin/usePictureskSearch';
 
 export const metadata = {
   title: { absolute: 'Admin. Picturesk', template: '%s. Picturesk Admin' },
@@ -102,7 +106,10 @@ export default function Layout({ children }) {
       roleRules={roleRules}
       roleDefaultPath={roleDefaultPath}
       newOrderPing={false}
-      globalSearch={false}
+      searchCategories={PICTURESK_SEARCH_CATEGORIES}
+      useSearchResults={usePictureskSearchResults}
+      searchPlaceholder="Search orders and users..."
+
     >
       {children}
     </AdminDashboardLayout>

@@ -18,21 +18,13 @@ const ROLE_LABELS = {
   'blog-manager': 'Blog Manager',
 };
 
-const CATEGORIES = [
-  { key: 'tickets',   label: 'Dummy Tickets' },
-  { key: 'insurance', label: 'Insurance' },
-  { key: 'leads',     label: 'Visa Leads' },
-  { key: 'users',     label: 'Admin Users' },
-  { key: 'blogs',     label: 'Blog Posts' },
+export const TRAVEL_SEARCH_CATEGORIES = [
+  { key: 'tickets',   label: 'Dummy Tickets', color: 'bg-blue-50 text-blue-700' },
+  { key: 'insurance', label: 'Insurance',     color: 'bg-green-50 text-green-700' },
+  { key: 'leads',     label: 'Visa Leads',    color: 'bg-violet-50 text-violet-700' },
+  { key: 'users',     label: 'Admin Users',   color: 'bg-amber-50 text-amber-700' },
+  { key: 'blogs',     label: 'Blog Posts',    color: 'bg-rose-50 text-rose-700' },
 ];
-
-const CATEGORY_COLORS = {
-  tickets:   'bg-blue-50 text-blue-700',
-  insurance: 'bg-green-50 text-green-700',
-  leads:     'bg-violet-50 text-violet-700',
-  users:     'bg-amber-50 text-amber-700',
-  blogs:     'bg-rose-50 text-rose-700',
-};
 
 function normaliseResults(key, items = []) {
   if (key === 'tickets') {
@@ -87,7 +79,44 @@ function normaliseResults(key, items = []) {
   return [];
 }
 
-function GlobalSearch() {
+/**
+ * A search source: given the debounced query, return `{ results, loading }` where
+ * results is keyed by category and each item is { id, primary, secondary, href }.
+ * Passed in as a prop so an app searches its OWN domains; this one is the travel
+ * dashboard's. It is a hook, so it must be a stable module-level function.
+ */
+export function useTravelSearchResults(debouncedQuery, enabled) {
+  const searchFilters = { search: debouncedQuery, limit: 4 };
+  // No brand mounts all five domains, so several of these always 404. Retrying
+  // them holds the dropdown on a spinner for seconds.
+  const searchOpts = { enabled, retry: false };
+
+  const { dummyTickets, isLoadingDummyTickets } = useDummyTickets(searchFilters, searchOpts);
+  const { applications, isLoadingApplications } = useGetInsuranceApplications(searchFilters, searchOpts);
+  const { leads, isLoadingLeads } = useGetAdminVisaLeads(searchFilters, { ...searchOpts, refetchInterval: false });
+  const { users, isLoadingUsers } = useGetAdminUsers(searchFilters, searchOpts);
+  const { blogs, isLoadingBlogs } = useGetBlogs(searchFilters, searchOpts);
+
+  const loading =
+    enabled &&
+    (isLoadingDummyTickets || isLoadingApplications || isLoadingLeads || isLoadingUsers || isLoadingBlogs);
+
+  const results = useMemo(() => {
+    if (!enabled) return {};
+    const userList = Array.isArray(users) ? users : users?.users ?? [];
+    return {
+      tickets: normaliseResults('tickets', dummyTickets ?? []),
+      insurance: normaliseResults('insurance', applications ?? []),
+      leads: normaliseResults('leads', leads ?? []),
+      users: normaliseResults('users', userList),
+      blogs: normaliseResults('blogs', blogs ?? []),
+    };
+  }, [enabled, dummyTickets, applications, leads, users, blogs]);
+
+  return { results, loading };
+}
+
+function GlobalSearch({ categories, useSearchResults, placeholder }) {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
 
@@ -117,38 +146,13 @@ function GlobalSearch() {
   }, []);
 
   const enabled = debouncedQuery.length >= 2;
-  const searchFilters = { search: debouncedQuery, limit: 4 };
-
-  // No brand mounts all five domains, so several of these always 404. Retrying
-  // them holds the dropdown on a spinner for seconds.
-  const searchOpts = { enabled, retry: false };
-
-  const { dummyTickets, isLoadingDummyTickets } = useDummyTickets(searchFilters, searchOpts);
-  const { applications, isLoadingApplications } = useGetInsuranceApplications(searchFilters, searchOpts);
-  const { leads, isLoadingLeads } = useGetAdminVisaLeads(searchFilters, { ...searchOpts, refetchInterval: false });
-  const { users, isLoadingUsers } = useGetAdminUsers(searchFilters, searchOpts);
-  const { blogs, isLoadingBlogs } = useGetBlogs(searchFilters, searchOpts);
+  const { results, loading } = useSearchResults(debouncedQuery, enabled);
 
   useEffect(() => {
     if (enabled) setOpen(true);
   }, [enabled, debouncedQuery]);
 
-  const loading =
-    enabled &&
-    (isLoadingDummyTickets || isLoadingApplications || isLoadingLeads || isLoadingUsers || isLoadingBlogs);
   const searched = enabled && !loading;
-
-  const results = useMemo(() => {
-    if (!enabled) return {};
-    const userList = Array.isArray(users) ? users : users?.users ?? [];
-    return {
-      tickets: normaliseResults('tickets', dummyTickets ?? []),
-      insurance: normaliseResults('insurance', applications ?? []),
-      leads: normaliseResults('leads', leads ?? []),
-      users: normaliseResults('users', userList),
-      blogs: normaliseResults('blogs', blogs ?? []),
-    };
-  }, [enabled, dummyTickets, applications, leads, users, blogs]);
 
   const totalResults = Object.values(results).reduce((s, arr) => s + arr.length, 0);
   const hasResults = totalResults > 0;
@@ -178,7 +182,7 @@ function GlobalSearch() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => { if (searched) setOpen(true); }}
-          placeholder="Search tickets, insurance, leads…"
+          placeholder={placeholder}
           className="w-full h-9 pl-7 pr-7 bg-transparent text-sm text-gray-900 placeholder:text-gray-500 border-0 rounded-none focus:outline-none"
         />
 
@@ -210,14 +214,14 @@ function GlobalSearch() {
             </div>
           ) : (
             <div className="py-1.5">
-              {CATEGORIES.map(({ key, label }) => {
+              {categories.map(({ key, label, color }) => {
                 const items = results[key] ?? [];
                 if (!items.length) return null;
                 return (
                   <div key={key}>
 
                     <div className="px-3 pt-3 pb-1.5 flex items-center gap-2">
-                      <span className={`text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded ${CATEGORY_COLORS[key]}`}>
+                      <span className={`text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded ${color}`}>
                         {label}
                       </span>
                     </div>
@@ -251,11 +255,17 @@ function GlobalSearch() {
 }
 
 /**
- * `globalSearch` mounts the cross-domain search. It queries the travel domains
- * (tickets, insurance, leads, blog), so an app without them passes false rather
- * than firing five requests that all 404.
+ * `globalSearch` mounts the header search. The data source is a prop so each app
+ * searches its OWN domains; the defaults are the travel dashboard's. An app with
+ * none of those either passes its own `useSearchResults` + `searchCategories`, or
+ * false, rather than firing requests that all 404.
  */
-export default function AdminHeader({ globalSearch = true }) {
+export default function AdminHeader({
+  globalSearch = true,
+  searchCategories = TRAVEL_SEARCH_CATEGORIES,
+  useSearchResults = useTravelSearchResults,
+  searchPlaceholder = 'Search tickets, insurance, leads…',
+}) {
   const { adminUser } = useAdminAuth();
 
   const initials = adminUser?.name
@@ -271,7 +281,11 @@ export default function AdminHeader({ globalSearch = true }) {
     <header className="hidden lg:flex h-14 bg-white border-b border-gray-100 shrink-0 items-center gap-4 px-6">
       {globalSearch ? (
         <Suspense fallback={<div className="flex-1 max-w-md" />}>
-          <GlobalSearch />
+          <GlobalSearch
+            categories={searchCategories}
+            useSearchResults={useSearchResults}
+            placeholder={searchPlaceholder}
+          />
         </Suspense>
       ) : (
         <div className="flex-1 max-w-md" />

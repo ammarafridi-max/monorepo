@@ -19,6 +19,9 @@ export default function AdminDashboardLayout({
   roleDefaultPath,
   newOrderPing = true,
   globalSearch = true,
+  searchCategories,
+  useSearchResults,
+  searchPlaceholder,
 }) {
   return (
     <AdminAuthProvider>
@@ -27,7 +30,12 @@ export default function AdminDashboardLayout({
         <div className="flex h-screen bg-gray-50 overflow-hidden relative">
           <AdminSidebar nav={nav} brand={brand} />
           <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-            <AdminHeader globalSearch={globalSearch} />
+            <AdminHeader
+              globalSearch={globalSearch}
+              searchCategories={searchCategories}
+              useSearchResults={useSearchResults}
+              searchPlaceholder={searchPlaceholder}
+            />
             <main className="flex-1 overflow-y-auto p-4 pb-[calc(3.5rem+1rem+env(safe-area-inset-bottom))] lg:p-6">
               {children}
             </main>

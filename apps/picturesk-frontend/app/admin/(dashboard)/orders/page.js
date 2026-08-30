@@ -78,6 +78,7 @@ function OrdersContent() {
 
   const { orders, stuckCount, stuckAfterMinutes, isLoadingOrders } = useAdminOrders({
     status: urlStatus || undefined,
+    search: urlSearch.trim() || undefined,
   });
 
   function pushParams(p) {
@@ -104,17 +105,9 @@ function OrdersContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [localSearch, urlSearch]);
 
-  // The API returns the newest 200 and has no text search, so email matching and
-  // paging happen here. Fine at this volume; move both server-side if it grows.
-  const needle = urlSearch.trim().toLowerCase();
-  const filtered = orders.filter((o) => {
-    if (urlStuck && !o.stuck) return false;
-    if (!needle) return true;
-    return (
-      (o.customerEmail || '').toLowerCase().includes(needle) ||
-      o.orderId.toLowerCase().includes(needle)
-    );
-  });
+  // Search is server-side (the list is capped, so filtering here would only ever
+  // search the newest page of orders). Stuck is derived per row, so it stays local.
+  const filtered = urlStuck ? orders.filter((o) => o.stuck) : orders;
 
   const total = filtered.length;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
