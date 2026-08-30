@@ -48,6 +48,13 @@ export function retryOrder(id) {
 export function resendOrderEmail(id) {
   return adminFetch(`/api/admin/orders/${id}/resend-email`, { method: 'POST' });
 }
+export function bulkDeleteOrders(ids) {
+  return adminFetch("/api/admin/orders/bulk-delete", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ids }),
+  });
+}
 export function deleteOrder(id) {
   return adminFetch(`/api/admin/orders/${id}`, { method: 'DELETE' });
 }

@@ -12,6 +12,8 @@ import { AppError, catchAsync } from '@travel-suite/utils';
  *   POST /admin/orders/:id/refund        issue a Stripe refund, stamp refundedAt
  *   POST /admin/orders/:id/retry         re-enqueue the pipeline (stuck orders)
  *   POST /admin/orders/:id/resend-email  re-send the delivery email (delivered)
+ *   POST /admin/orders/bulk-delete       delete many orders in one request
+ *   DELETE /admin/orders/:id             delete one order + its stored images
  *
  * @param {Object} deps
  * @param {Function} deps.guard              combined admin guard (cookie or token)
@@ -126,32 +128,101 @@ export function createAdminActionsRouter({
   // ours to delete; keyForUrl returns null for them and they are skipped. Hard
   // delete and irreversible: the order (its payment/audit record) is gone. Any
   // queued pipeline job is removed first so the worker never touches a deleted order.
+  /**
+   * Remove one order: drop any queued job, delete every image we own in R2, then
+   * delete the record. Shared by the single and bulk routes so they can never
+   * drift into deleting different things.
+   */
+  async function deleteOneOrder(order) {
+    const orderId = order._id.toString();
+
+    await orderPipeline.remove(orderId).catch(() => {});
+
+    let storageResult = { deleted: 0, failed: 0, skipped: false };
+    if (storage) {
+      const urls = [
+        ...(order.uploadedImageUrls ?? []),
+        ...(order.resultImageUrls ?? []),
+        ...(order.deliveredImageUrls ?? []),
+        ...(order.swappedImageUrls ?? []),
+        ...(order.enhancedImageUrls ?? []),
+      ];
+      const keys = urls.map((u) => storage.keyForUrl(u)).filter(Boolean);
+      keys.push(`training/${orderId}.zip`);
+      storageResult = { ...(await storage.deleteObjects(keys)), skipped: false };
+    } else {
+      storageResult.skipped = true;
+    }
+
+    await Order.deleteOne({ _id: orderId });
+    return storageResult;
+  }
+
+  // One request rather than N, so the admin's "delete selected" is a single
+  // round trip. Registered before /orders/:id so the literal path always wins.
+  //
+  // Deliberately per-order and best effort: one bad id must not abandon the rest
+  // half-done, so every order is attempted and the response reports each outcome.
+  // There is no transaction here anyway, since R2 deletes cannot be rolled back.
+  const MAX_BULK = 100;
+
+  router.post(
+    '/orders/bulk-delete',
+    ...adminOnly,
+    catchAsync(async (req, res) => {
+      const ids = req.body?.ids;
+      if (!Array.isArray(ids) || ids.length === 0) {
+        throw new AppError('Provide an array of order ids to delete', 400);
+      }
+      const unique = [...new Set(ids.map(String))];
+      if (unique.length > MAX_BULK) {
+        throw new AppError(`Delete at most ${MAX_BULK} orders at a time`, 400);
+      }
+
+      const results = [];
+      for (const id of unique) {
+        try {
+          const order = await findOrder(id);
+          const storageResult = await deleteOneOrder(order);
+          results.push({
+            orderId: id,
+            deleted: true,
+            deletedObjects: storageResult.deleted,
+            failedObjects: storageResult.failed,
+            storageSkipped: storageResult.skipped,
+          });
+        } catch (err) {
+          results.push({ orderId: id, deleted: false, error: err.message });
+        }
+      }
+
+      const deleted = results.filter((r) => r.deleted).length;
+      const failed = results.length - deleted;
+
+      res.json({
+        status: 'success',
+        message:
+          failed === 0
+            ? `${deleted} order${deleted === 1 ? '' : 's'} deleted.`
+            : `${deleted} deleted, ${failed} failed.`,
+        data: {
+          requested: unique.length,
+          deleted,
+          failed,
+          deletedObjects: results.reduce((n, r) => n + (r.deletedObjects ?? 0), 0),
+          failedObjects: results.reduce((n, r) => n + (r.failedObjects ?? 0), 0),
+          results,
+        },
+      });
+    })
+  );
+
   router.delete(
     '/orders/:id',
     ...adminOnly,
     catchAsync(async (req, res) => {
       const order = await findOrder(req.params.id);
-      const orderId = order._id.toString();
-
-      await orderPipeline.remove(orderId).catch(() => {});
-
-      let storageResult = { deleted: 0, failed: 0, skipped: false };
-      if (storage) {
-        const urls = [
-          ...(order.uploadedImageUrls ?? []),
-          ...(order.resultImageUrls ?? []),
-          ...(order.deliveredImageUrls ?? []),
-          ...(order.swappedImageUrls ?? []),
-          ...(order.enhancedImageUrls ?? []),
-        ];
-        const keys = urls.map((u) => storage.keyForUrl(u)).filter(Boolean);
-        keys.push(`training/${orderId}.zip`);
-        storageResult = { ...(await storage.deleteObjects(keys)), skipped: false };
-      } else {
-        storageResult.skipped = true;
-      }
-
-      await Order.deleteOne({ _id: orderId });
+      const storageResult = await deleteOneOrder(order);
 
       res.json({
         status: 'success',

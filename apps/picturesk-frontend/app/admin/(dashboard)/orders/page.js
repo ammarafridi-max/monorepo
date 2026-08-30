@@ -11,10 +11,11 @@ import {
   ArrowUpRight,
   SlidersHorizontal,
   AlertTriangle,
+  Trash2,
   X,
 } from 'lucide-react';
 import AdminSearchInput from '@travel-suite/frontend-shared/components/admin/AdminSearchInput';
-import { useAdminOrders } from '../../../../hooks/admin/useAdminOrders';
+import { useAdminOrders, useBulkDeleteOrders } from '../../../../hooks/admin/useAdminOrders';
 import { usd, dateTime, STATUS_LABEL } from '../../../../lib/adminApi';
 
 const PAGE_SIZE = 25;
@@ -62,8 +63,18 @@ function OrdersContent() {
 
   const [localSearch, setLocalSearch] = useState(urlSearch);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [selected, setSelected] = useState(() => new Set());
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+
+  const { bulkDelete, isBulkDeleting } = useBulkDeleteOrders();
 
   useEffect(() => setLocalSearch(urlSearch), [urlSearch]);
+
+  // Selection is per view. Changing filters or page changes which rows exist, and
+  // silently keeping ids you can no longer see is how people delete the wrong thing.
+  useEffect(() => {
+    setSelected(new Set());
+  }, [urlStatus, urlSearch, urlStuck, page]);
 
   const { orders, stuckCount, stuckAfterMinutes, isLoadingOrders } = useAdminOrders({
     status: urlStatus || undefined,
@@ -109,6 +120,38 @@ function OrdersContent() {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
   const rows = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
+  const selectedRows = rows.filter((o) => selected.has(o.orderId));
+  const allOnPageSelected = rows.length > 0 && selectedRows.length === rows.length;
+  const someOnPageSelected = selectedRows.length > 0 && !allOnPageSelected;
+
+  // Deleting a paid order that was never refunded destroys the only record of
+  // money we took, so the confirmation calls it out by name.
+  const paidUnrefunded = selectedRows.filter((o) => o.amountPaidCents && !o.refundedAt).length;
+
+  function toggleOne(orderId) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(orderId)) next.delete(orderId);
+      else next.add(orderId);
+      return next;
+    });
+  }
+
+  function toggleAllOnPage() {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (allOnPageSelected) rows.forEach((o) => next.delete(o.orderId));
+      else rows.forEach((o) => next.add(o.orderId));
+      return next;
+    });
+  }
+
+  function runBulkDelete() {
+    const ids = selectedRows.map((o) => o.orderId);
+    setConfirmingDelete(false);
+    bulkDelete(ids, { onSettled: () => setSelected(new Set()) });
+  }
 
   function goToPage(p) {
     const params = new URLSearchParams(searchParams.toString());
@@ -187,6 +230,29 @@ function OrdersContent() {
         )}
       </div>
 
+      {selectedRows.length > 0 && (
+        <div className="flex items-center gap-3 rounded-2xl border border-primary-200 bg-primary-50 px-4 py-2.5">
+          <p className="text-sm font-semibold text-primary-900">
+            {selectedRows.length} selected
+          </p>
+          <button
+            onClick={() => setSelected(new Set())}
+            className="text-xs font-semibold text-primary-700 hover:text-primary-900 transition-colors"
+          >
+            Clear
+          </button>
+          <div className="flex-1" />
+          <button
+            onClick={() => setConfirmingDelete(true)}
+            disabled={isBulkDeleting}
+            className="inline-flex items-center gap-2 text-xs font-bold px-3 py-2 rounded-xl border border-red-200 bg-white text-red-700 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {isBulkDeleting ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
+            {isBulkDeleting ? 'Deleting…' : 'Delete selected'}
+          </button>
+        </div>
+      )}
+
       <div className="flex items-center gap-3 w-full">
         <AdminSearchInput
           value={localSearch}
@@ -261,6 +327,51 @@ function OrdersContent() {
         </div>
       )}
 
+      {confirmingDelete && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 p-4"
+          onClick={() => setConfirmingDelete(false)}
+        >
+          <div
+            className="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-5 space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-base font-bold text-gray-900">
+              Delete {selectedRows.length} order{selectedRows.length === 1 ? '' : 's'}?
+            </h3>
+            <p className="text-sm text-gray-500 leading-relaxed">
+              This removes each order record and the customer&apos;s uploaded photos from our
+              storage. It cannot be undone. AI-generated images are hosted by Replicate and
+              expire on their own.
+            </p>
+            {paidUnrefunded > 0 && (
+              <div className="flex gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3">
+                <AlertTriangle size={15} className="text-amber-600 shrink-0 mt-0.5" />
+                <p className="text-xs text-amber-800 leading-relaxed">
+                  {paidUnrefunded} of these {paidUnrefunded === 1 ? 'was' : 'were'} paid and not
+                  refunded. Deleting {paidUnrefunded === 1 ? 'it' : 'them'} destroys our only
+                  record of that payment. Refund first if the customer is owed money.
+                </p>
+              </div>
+            )}
+            <div className="flex gap-2 pt-1">
+              <button
+                onClick={() => setConfirmingDelete(false)}
+                className="flex-1 py-2.5 text-sm font-bold text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={runBulkDelete}
+                className="flex-1 py-2.5 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition"
+              >
+                Delete {selectedRows.length}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
         {isLoadingOrders ? (
           <div className="flex items-center justify-center py-20">
@@ -282,6 +393,18 @@ function OrdersContent() {
               <table className="w-full text-sm min-w-[860px]">
                 <thead>
                   <tr className="border-b border-gray-100 bg-gray-50/60">
+                    <th className="w-10 px-4 py-3">
+                      <input
+                        type="checkbox"
+                        checked={allOnPageSelected}
+                        ref={(el) => {
+                          if (el) el.indeterminate = someOnPageSelected;
+                        }}
+                        onChange={toggleAllOnPage}
+                        aria-label="Select all orders on this page"
+                        className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
+                      />
+                    </th>
                     {['Customer', 'Status', 'Paid', 'Compute', 'Margin', 'Waiting', 'Created', ''].map((h, i) => (
                       <th
                         key={i}
@@ -294,7 +417,21 @@ function OrdersContent() {
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {rows.map((o) => (
-                    <tr key={o.orderId} className="hover:bg-gray-50/60 transition-colors group">
+                    <tr
+                      key={o.orderId}
+                      className={`transition-colors group ${
+                        selected.has(o.orderId) ? 'bg-primary-50/60' : 'hover:bg-gray-50/60'
+                      }`}
+                    >
+                      <td className="w-10 px-4 py-3">
+                        <input
+                          type="checkbox"
+                          checked={selected.has(o.orderId)}
+                          onChange={() => toggleOne(o.orderId)}
+                          aria-label={`Select order ${o.orderId}`}
+                          className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
+                        />
+                      </td>
                       <td className="px-4 py-3">
                         <Link
                           href={`/admin/orders/${o.orderId}`}

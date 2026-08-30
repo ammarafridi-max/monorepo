@@ -11,6 +11,7 @@ import {
   retryOrder,
   resendOrderEmail,
   deleteOrder,
+  bulkDeleteOrders,
 } from '../../lib/adminApi';
 
 export function useAdminOrders(params = {}) {
@@ -92,6 +93,26 @@ export function useRetryOrder() {
 export function useResendOrderEmail() {
   const [resend, isResending] = useOrderAction(resendOrderEmail, 'Delivery email sent');
   return { resend, isResending };
+}
+
+/**
+ * Bulk delete. The endpoint is best effort per order, so a partial result is a
+ * normal outcome and must be reported rather than swallowed as success.
+ */
+export function useBulkDeleteOrders() {
+  const queryClient = useQueryClient();
+  const { mutate, isPending } = useMutation({
+    mutationFn: bulkDeleteOrders,
+    onSuccess: (data) => {
+      if (data?.failed) toast.error(`${data.deleted} deleted, ${data.failed} could not be`);
+      else toast.success(`${data?.deleted ?? 0} order${data?.deleted === 1 ? '' : 's'} deleted`);
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-customers'] });
+    },
+    onError: (err) => toast.error(err.message || 'Could not delete those orders'),
+  });
+  return { bulkDelete: mutate, isBulkDeleting: isPending };
 }
 
 export function useDeleteOrder() {
