@@ -14,10 +14,10 @@ import {
   Order,
   QUEUE_NAMES,
 } from '@travel-suite/picturesk-shared';
-import { TRIGGER_WORD } from './replicateClient.js';
-import { createPipeline } from './pipeline.js';
-import { createEnsureRefund } from './refund.js';
-import { classifyFacialHair } from './classifyFacialHair.js';
+import { TRIGGER_WORD } from './pipeline/replicateClient.js';
+import { createPipeline } from './pipeline/pipeline.js';
+import { createEnsureRefund } from './pipeline/refund.js';
+import { classifyFacialHair } from './pipeline/classifyFacialHair.js';
 
 /**
  * Picturesk worker (Phase 5: failure hardening).
@@ -103,18 +103,18 @@ const stripe = STRIPE_SECRET_KEY ? new Stripe(STRIPE_SECRET_KEY) : null;
 // training + generation), or the PuLID client (no training; reference-image
 // generation).
 const client = USE_FAKE_REPLICATE
-  ? await import('./replicateClient.fake.js')
+  ? await import('./pipeline/replicateClient.fake.js')
   : USE_PULID
-    ? await import('./replicateClient.pulid.js')
-    : await import('./replicateClient.js');
+    ? await import('./pipeline/replicateClient.pulid.js')
+    : await import('./pipeline/replicateClient.js');
 // The identity scorer, loaded ONLY when culling is enabled (it needs the embed
 // model). When disabled, the pipeline uses its neutral default scorer and makes
 // no embedding calls. Real/fake split mirrors the Replicate client.
 const scoreIdentity = IDENTITY_SCORING
   ? (
       USE_FAKE_REPLICATE
-        ? await import('./scoreIdentity.fake.js')
-        : await import('./scoreIdentity.js')
+        ? await import('./pipeline/scoreIdentity.fake.js')
+        : await import('./pipeline/scoreIdentity.js')
     ).scoreIdentity
   : undefined;
 
@@ -127,8 +127,8 @@ const FACE_SWAP = !USE_PULID && Boolean(process.env.REPLICATE_FACE_SWAP_MODEL);
 const swapFace = FACE_SWAP
   ? (
       USE_FAKE_REPLICATE
-        ? await import('./swapFace.fake.js')
-        : await import('./swapFace.js')
+        ? await import('./pipeline/swapFace.fake.js')
+        : await import('./pipeline/swapFace.js')
     ).swapFace
   : undefined;
 
@@ -140,8 +140,8 @@ const ENHANCE_FACE = Boolean(process.env.REPLICATE_ENHANCE_MODEL);
 const enhanceFace = ENHANCE_FACE
   ? (
       USE_FAKE_REPLICATE
-        ? await import('./enhanceFace.fake.js')
-        : await import('./enhanceFace.js')
+        ? await import('./pipeline/enhanceFace.fake.js')
+        : await import('./pipeline/enhanceFace.js')
     ).enhanceFace
   : undefined;
 
@@ -153,8 +153,8 @@ const PERSIST_DELIVERED = (process.env.PERSIST_DELIVERED ?? 'on') !== 'off';
 const persistImage = PERSIST_DELIVERED
   ? (
       USE_FAKE_REPLICATE
-        ? await import('./persistImage.fake.js')
-        : await import('./persistImage.js')
+        ? await import('./pipeline/persistImage.fake.js')
+        : await import('./pipeline/persistImage.js')
     ).createImagePersister()
   : undefined;
 if (USE_FAKE_REPLICATE) console.warn('[worker] USE_FAKE_REPLICATE=1: using the in-memory fake client');

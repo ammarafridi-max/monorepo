@@ -5,9 +5,9 @@ import cookieParser from 'cookie-parser';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { connectMongo, Order, ORDER_STATES } from '@travel-suite/picturesk-shared';
-import { createAdminSubsystem } from '../admin/index.js';
-import { createAdminActionsRouter } from '../admin/adminActions.js';
-import { createAdminDataRouter } from '../admin/adminData.js';
+import { createAdminSubsystem } from '../src/admin/index.js';
+import { createAdminActionsRouter } from '../src/admin/adminActions.js';
+import { createAdminDataRouter } from '../src/admin/adminData.js';
 
 /**
  * Admin order actions e2e with injected stubs (no real Stripe/BullMQ/email).

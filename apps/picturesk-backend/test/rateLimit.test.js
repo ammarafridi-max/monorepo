@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
-import { createRateLimiters } from '../rateLimit.js';
+import { createRateLimiters } from '../src/rateLimit.js';
 
 /**
  * Verify the rate-limit tiers and, crucially, that the Stripe webhook is exempt.

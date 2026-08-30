@@ -4,9 +4,9 @@ import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 
 import { Order, ORDER_STATES, buildPrompts } from '@travel-suite/picturesk-shared';
-import { createPipeline } from '../pipeline.js';
-import { createEnsureRefund } from '../refund.js';
-import * as fake from '../replicateClient.fake.js';
+import { createPipeline } from '../src/pipeline/pipeline.js';
+import { createEnsureRefund } from '../src/pipeline/refund.js';
+import * as fake from '../src/pipeline/replicateClient.fake.js';
 
 // Sample selections so the harness builds prompts the SAME way production does:
 // through the shared catalog buildPrompts, from an order's selected looks/attire.

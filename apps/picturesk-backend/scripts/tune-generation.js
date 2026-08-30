@@ -10,7 +10,7 @@ import {
   defaultLoraScale,
   startGeneration,
   pollGeneration,
-} from '../replicateClient.js';
+} from '../src/pipeline/replicateClient.js';
 
 /**
  * DEV-ONLY generation tuning. Runs the REAL startGeneration/pollGeneration from

@@ -5,7 +5,7 @@
  * Idempotent: if ANY admin account already exists it does nothing, so it is safe
  * to run repeatedly (and in a deploy release step).
  *
- * Usage (from apps/picturesk-api):
+ * Usage (from apps/picturesk-backend):
  *   node --env-file=.env.development scripts/seed-admin.js
  *
  * Override the defaults with env (recommended — do NOT ship the default password):

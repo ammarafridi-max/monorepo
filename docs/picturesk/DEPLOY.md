@@ -9,15 +9,26 @@ Three Fly apps, one per service, all built from the monorepo root:
 
 | Fly app | Source | Public? | Notes |
 |---|---|---|---|
-| `picturesk-api` | `apps/picturesk-api` | Yes (`:3001`) | Stripe webhook + web calls. Keep 1 machine up. |
-| `picturesk-web` | `apps/picturesk-web` | Yes (`:3000`) | Next.js. NEXT_PUBLIC_* are baked at build. |
-| `picturesk-worker` | `apps/picturesk-worker` | No | Drains the BullMQ queue. Runs continuously. |
+| `picturesk-api` | `apps/picturesk-backend` (`build-target = "server"`) | Yes (`:3001`) | Stripe webhook + web calls. Keep 1 machine up. |
+| `picturesk-web` | `apps/picturesk-frontend` | Yes (`:3000`) | Next.js. NEXT_PUBLIC_* are baked at build. |
+| `picturesk-worker` | `apps/picturesk-backend` (`build-target = "worker"`) | No | Drains the BullMQ queue. Runs continuously. |
+
+`picturesk-api` and `picturesk-worker` are two Fly apps built from the **same
+Dockerfile and the same package**, selected by `build-target`. They are separate
+apps rather than one process because the server auto-suspends on idle HTTP and
+scales on request load, while the worker must run continuously at concurrency 1,
+needs more memory to build a training zip, and must not be restarted by a deploy
+triggered by a web change.
+
+The Fly app names predate the directory rename and are kept on purpose:
+`api.picturesk.ai` resolves to `picturesk-api`, so renaming would mean
+re-pointing DNS and reissuing certificates for no gain.
 
 MongoDB and Redis are **external managed services** (e.g. MongoDB Atlas + Upstash
 Redis), reused via their connection strings; nothing is provisioned on Fly for
 them. R2 (storage), Stripe, Replicate, and Brevo are the other external providers.
 
-Rename the apps and set `primary_region` in each `fly.*.toml` to match your setup.
+Set `primary_region` in each `fly.*.toml` to match your setup.
 
 ## 0. Prerequisites
 

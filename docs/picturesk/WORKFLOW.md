@@ -146,10 +146,10 @@ Clears the session cookie and returns you to the login page.
 
 ## Where each thing lives
 
-- `apps/picturesk-web` — the customer funnel and the admin UI (Next.js).
-- `apps/picturesk-api` — checkout, the Stripe webhook, the public order view, the download
+- `apps/picturesk-frontend` — the customer funnel and the admin UI (Next.js).
+- `apps/picturesk-backend` — checkout, the Stripe webhook, the public order view, the download
   endpoints, and all `/auth`, `/admin`, and `/admin-users` routes (Express).
-- `apps/picturesk-worker` — the training and generation pipeline (BullMQ consumer).
+- `apps/picturesk-backend` — the training and generation pipeline (BullMQ consumer).
 - `packages/picturesk-shared` — the contracts every service imports: order states, the
   Mongoose models (`Order`, `User`, `AdminUser`), the look and attire catalog, the
   queue names, storage, and email.

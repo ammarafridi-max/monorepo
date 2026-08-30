@@ -22,7 +22,7 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 # here builds fine and then dies at runtime with ERR_MODULE_NOT_FOUND.
 COPY packages/picturesk-shared/package.json  packages/picturesk-shared/package.json
 COPY packages/frontend-shared/package.json   packages/frontend-shared/package.json
-COPY apps/picturesk-web/package.json         apps/picturesk-web/package.json
+COPY apps/picturesk-frontend/package.json         apps/picturesk-frontend/package.json
 
 RUN pnpm install --frozen-lockfile
 
@@ -31,7 +31,7 @@ FROM deps AS builder
 WORKDIR /repo
 
 COPY packages/ packages/
-COPY apps/picturesk-web/ apps/picturesk-web/
+COPY apps/picturesk-frontend/ apps/picturesk-frontend/
 
 # Build-time public config (inlined into the client bundle). NEXT_PUBLIC_API_BASE_URL
 # MUST point at the deployed API origin. The rest are optional (code has defaults).
@@ -61,14 +61,14 @@ ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL \
     NEXT_PUBLIC_SENTRY_ENVIRONMENT=$NEXT_PUBLIC_SENTRY_ENVIRONMENT \
     NODE_ENV=production
 
-RUN pnpm --filter picturesk-web build
+RUN pnpm --filter picturesk-frontend build
 
-# Next standalone in a monorepo nests the output under apps/picturesk-web/.
+# Next standalone in a monorepo nests the output under apps/picturesk-frontend/.
 # Static + public must be copied into that same nested location.
-RUN cp -r apps/picturesk-web/.next/static \
-         apps/picturesk-web/.next/standalone/apps/picturesk-web/.next/static && \
-    cp -r apps/picturesk-web/public \
-         apps/picturesk-web/.next/standalone/apps/picturesk-web/public
+RUN cp -r apps/picturesk-frontend/.next/static \
+         apps/picturesk-frontend/.next/standalone/apps/picturesk-frontend/.next/static && \
+    cp -r apps/picturesk-frontend/public \
+         apps/picturesk-frontend/.next/standalone/apps/picturesk-frontend/public
 
 # ── Production image ─────────────────────────────────────────────────────────
 FROM node:22-alpine AS runner
@@ -79,7 +79,7 @@ ENV HOSTNAME=0.0.0.0
 ENV PORT=3000
 
 # Standalone already contains its own node_modules
-COPY --from=builder /repo/apps/picturesk-web/.next/standalone ./
+COPY --from=builder /repo/apps/picturesk-frontend/.next/standalone ./
 
 EXPOSE 3000
-CMD ["node", "apps/picturesk-web/server.js"]
+CMD ["node", "apps/picturesk-frontend/server.js"]

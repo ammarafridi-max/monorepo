@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { QUALITY, REASONS, reasonForImage, evaluateImages, countError } from '../uploadGate.js';
+import { QUALITY, REASONS, reasonForImage, evaluateImages, countError } from '../src/uploadGate.js';
 
 /**
  * The quality-gate RULES are pure, so we test them without any face detection,

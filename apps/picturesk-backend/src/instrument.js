@@ -1,8 +1,9 @@
 import * as Sentry from '@sentry/node';
 
 /**
- * Sentry bootstrap for the API. Imported FIRST in server.js (before express), so
- * the SDK is initialised before anything it needs to instrument.
+ * Sentry bootstrap, shared by both entrypoints. Imported FIRST in server.js
+ * (before express, so the SDK can instrument it) and FIRST in worker.js (so its
+ * crash handlers are armed before any pipeline code runs).
  *
  * Env comes from node --env-file (see the package scripts), so SENTRY_DSN is
  * already set by the time this module is evaluated.
@@ -10,6 +11,11 @@ import * as Sentry from '@sentry/node';
  * NO DSN => Sentry is never initialised and every Sentry.* call is a safe no-op,
  * so local dev without a DSN boots and runs exactly as before.
  */
+
+// Which of the two entrypoints loaded us, so the log line matches the prefix the
+// rest of that process uses. The server and worker ship in one image and differ
+// only by start command.
+const ROLE = process.argv[1]?.endsWith('worker.js') ? 'worker' : 'api';
 
 const dsn = process.env.SENTRY_DSN;
 export const sentryEnabled = Boolean(dsn);
@@ -61,10 +67,10 @@ if (sentryEnabled) {
     beforeSend: scrubEvent,
   });
   console.log(
-    `[api] Sentry error tracking enabled (${process.env.SENTRY_ENVIRONMENT || process.env.NODE_ENV || 'development'})`,
+    `[${ROLE}] Sentry error tracking enabled (${process.env.SENTRY_ENVIRONMENT || process.env.NODE_ENV || 'development'})`,
   );
 } else {
-  console.log('[api] SENTRY_DSN unset: error tracking disabled');
+  console.log(`[${ROLE}] SENTRY_DSN unset: error tracking disabled`);
 }
 
 /** Report a handled error. Safe no-op when Sentry is disabled. */

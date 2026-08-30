@@ -1,11 +1,14 @@
 {
-  "name": "@travel-suite/picturesk-api",
+  "name": "@travel-suite/picturesk-backend",
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "main": "src/server.js",
   "scripts": {
-    "dev": "NODE_ENV=development node --env-file=.env.development --watch server.js",
-    "start": "node --env-file=.env.production server.js",
+    "dev": "NODE_ENV=development node --env-file=.env.development --watch src/server.js",
+    "dev:worker": "NODE_ENV=development node --env-file=.env.development --watch src/worker.js",
+    "start": "node --env-file=.env.production src/server.js",
+    "start:worker": "node --env-file=.env.production src/worker.js",
     "test": "node --test 'test/**/*.test.js'"
   },
   "dependencies": {
@@ -21,12 +24,13 @@
     "cors": "^2.8.5",
     "express": "^5.2.1",
     "express-rate-limit": "^8.5.2",
+    "jszip": "^3.10.1",
     "mongoose": "^9.0.2",
     "sharp": "^0.33.5",
     "stripe": "^17.5.0"
   },
   "devDependencies": {
-    "mongodb-memory-server": "^10.4.3"
+    "mongodb-memory-server": "^10.1.2"
   },
   "engines": {
     "node": "22.x"

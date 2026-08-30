@@ -10,9 +10,9 @@ design and build plan.
 
 ## Layout
 
-- `apps/picturesk-web` - Next.js frontend: upload, checkout kickoff, live status + results (Phase 4).
-- `apps/picturesk-api` - Express service: real Stripe Checkout + webhook that drive the pipeline (Phase 2).
-- `apps/picturesk-worker` - BullMQ worker: drives orders through real Replicate training + generation (Phase 3).
+- `apps/picturesk-frontend` - Next.js frontend: upload, checkout kickoff, live status + results (Phase 4).
+- `apps/picturesk-backend` - Express service: real Stripe Checkout + webhook that drive the pipeline (Phase 2).
+- `apps/picturesk-backend` - BullMQ worker: drives orders through real Replicate training + generation (Phase 3).
 - `packages/picturesk-shared` - shared order contracts, the atomic transition helper, and the Redis connection helper.
 
 ## Multi-step funnel (select, upload, payment)
@@ -29,7 +29,7 @@ uploads their photos, then pays. Payment is the last step; the order is created 
 checkout already carrying the selections AND the photos. This is the one purchase
 flow; the old single-page upload+pay flow is gone. (The old `/generator/*` URLs
 permanent-redirect to their `/ai-headshot-generator/*` equivalents, `pay ->
-payment`, in `apps/picturesk-web/next.config.mjs`.)
+payment`, in `apps/picturesk-frontend/next.config.mjs`.)
 
 **State machine.**
 
@@ -40,7 +40,7 @@ AWAITING_PAYMENT -> PAID -> TRAINING -> GENERATING -> DELIVERED
 `PAID` is the webhook's idempotency checkpoint and where the pipeline is enqueued;
 the worker then moves `PAID -> TRAINING`.
 
-**The web funnel (`apps/picturesk-web/app/ai-headshot-generator/(funnel)`).** A shared stepper
+**The web funnel (`apps/picturesk-frontend/app/ai-headshot-generator/(funnel)`).** A shared stepper
 layout over three routes: `/ai-headshot-generator/select` (pick a plan first, then
 gender + age range + optional race as single-select chips with the facial-hair field
 carrying an info tooltip, then looks + attire each with a preview image or a
@@ -166,8 +166,8 @@ curl -s localhost:3001/orders/<orderId>
 ## Deploying (Fly.io)
 
 Three Fly apps (`api`, `web`, `worker`), each built from the monorepo root, with
-MongoDB and Redis as external managed services. Dockerfiles (`apps/picturesk-api/Dockerfile`,
-`apps/picturesk-worker/Dockerfile`, `apps/picturesk-web/Dockerfile`) and Fly configs (`fly.picturesk-api.toml`,
+MongoDB and Redis as external managed services. Dockerfiles (`apps/picturesk-backend/Dockerfile`,
+`apps/picturesk-backend/Dockerfile`, `apps/picturesk-frontend/Dockerfile`) and Fly configs (`fly.picturesk-api.toml`,
 `fly.picturesk-worker.toml`, `fly.picturesk-web.toml`) are in the repo root; `pnpm deploy:api` /
 `deploy:web` / `deploy:worker` wrap `fly deploy`. Full runbook (create apps, set
 per-app secrets, deploy order, Stripe webhook + R2 CORS wiring) in
@@ -402,7 +402,7 @@ in the buy flow is gated; the only gated page is `/account`.
 Staff-only area to see every order, revenue/margin, stuck orders, and customers.
 Separate from customer accounts: a distinct `AdminUser` identity, a distinct cookie,
 and its own login. Modeled on the shared admin/auth pattern from the travel-suite
-monorepo, right-sized to this repo (layered modules in `apps/picturesk-api`, not DI packages).
+monorepo, right-sized to this repo (layered modules in `apps/picturesk-backend`, not DI packages).
 
 - **Identity:** the shared `admin-user` model from `@travel-suite/auth` (name,
   username, email, bcrypt `password`, `role` in `admin|support`, `status`,
@@ -441,7 +441,7 @@ monorepo, right-sized to this repo (layered modules in `apps/picturesk-api`, not
     customer topbar/footer are hidden on `/admin`.
 - **Bootstrap the first admin:** set `ADMIN_JWT_SECRET` and a strong `SEED_PASSWORD`
   (plus optional `SEED_NAME/SEED_USERNAME/SEED_EMAIL`), then run
-  `pnpm --filter @travel-suite/picturesk-api seed-admin` (idempotent: skips if any admin exists).
+  `pnpm --filter @travel-suite/picturesk-backend seed-admin` (idempotent: skips if any admin exists).
   Cross-origin note: in production the api and web are separate origins, so the admin
   cookie is `SameSite=None; Secure` and CORS runs with credentials pinned to
   `WEB_BASE_URL`. Both must be HTTPS for the cookie to stick.
@@ -456,12 +456,12 @@ reach pay, not after training.
 Two layers, and the server one is the real gate (same lesson as server-owned
 pricing: client validation can be bypassed by calling the API directly):
 
-- **Client (apps/picturesk-web):** on file add, the browser's `FaceDetector` runs per photo as
+- **Client (apps/picturesk-frontend):** on file add, the browser's `FaceDetector` runs per photo as
   a fast pre-check, flagging an obvious problem instantly ("No clear face", "More than
   one person", "Face too small, get closer"). It is Chromium-only and fail-open, so it
   never earns the green tick on its own -- a passing or deferred pre-check just
   proceeds to the server gate.
-- **Server (apps/picturesk-api, `POST /uploads/gate`):** each photo is uploaded to R2 and run
+- **Server (apps/picturesk-backend, `POST /uploads/gate`):** each photo is uploaded to R2 and run
   through this gate AS IT IS ADDED. Only a server pass promotes the photo (green
   tick); a failure returns `422` with a per-image reason shown on the thumbnail, and
   Continue stays disabled until every photo passes. Checkout does NOT re-screen, so by
@@ -479,7 +479,7 @@ the frame. Plus the promised `UPLOAD_MIN_PHOTOS`..`UPLOAD_MAX_PHOTOS` count.
 
 **Strict screen (sunglasses / hats).** A clean training set is the single biggest
 lever on likeness (it is how Aragon and the top tier get resemblance), so on top of
-face detection a vision model (Qwen2-VL, `apps/picturesk-api/photoGate.js`) screens each photo
+face detection a vision model (Qwen2-VL, `apps/picturesk-backend/photoGate.js`) screens each photo
 for the two unambiguous, training-wrecking cases yolov8 cannot see: dark sunglasses
 that hide the eyes, and hats covering the head, mapped to a branded reason ("Take
 the sunglasses off", "No hats or caps") shown on the pay step. It is deliberately
@@ -513,7 +513,7 @@ Two levers, both generation-only:
   anchor. Naming the subject up front stops the base model's prior from drifting
   gender or facial hair on a weak-identity seed. Real orders derive that anchor from
   the customer's demographics (`buildSubject` in the shared catalog); the dev tuning
-  script uses a fixed `SUBJECT` + `PROMPTS` set in `apps/picturesk-worker/replicateClient.js`
+  script uses a fixed `SUBJECT` + `PROMPTS` set in `apps/picturesk-backend/replicateClient.js`
   so you can iterate on the model without an order. Edit `SUBJECT` there to try a
   different subject in the tuning script.
 - **`GEN_LORA_SCALE`:** LoRA strength (~0.8 to 1.1; higher pulls harder toward the
@@ -524,13 +524,13 @@ Grab a trained model version from a prior order's `replicate.trainedModelVersion
 then run the generate-only script:
 
 ```sh
-pnpm --filter @travel-suite/picturesk-worker tune:gen \
+pnpm --filter @travel-suite/picturesk-backend tune:gen \
   --version <owner/name:hash> --scale 1.05 --count 3
 ```
 
 It runs the real generation functions against that version, polls to completion,
 prints each image URL, and saves a record under
-`apps/picturesk-worker/scripts/results/`. It never creates an order or touches
+`apps/picturesk-backend/scripts/results/`. It never creates an order or touches
 Mongo/Redis/Stripe. Compare a few scales; once a scale looks good it is already
 promoted, since `GEN_LORA_SCALE` is the default the worker reads for real orders.
 (Real-order prompts come from the shared catalog + the customer's selections and
@@ -542,7 +542,7 @@ Two protective layers sit around the app: rate limiting on the public API, and
 error tracking across all three services. Both are configured entirely through
 env (see `.env.example`).
 
-### Rate limiting (apps/picturesk-api)
+### Rate limiting (apps/picturesk-backend)
 
 The public endpoints are unauthenticated, so they are rate limited per client IP:
 
@@ -595,7 +595,7 @@ training.
   `REPLICATE_API_TOKEN`, like the face detector). The tradeoff: this catches the
   dominant risk (explicit/sexual imagery) with one credential, but is not a
   compliance-grade illegal-content system. `moderateImage(url)` in
-  `apps/picturesk-api/contentModerator.js` is a swappable interface: drop in AWS Rekognition
+  `apps/picturesk-backend/contentModerator.js` is a swappable interface: drop in AWS Rekognition
   Moderation, Hive, or Google Vision SafeSearch by replacing that one function.
 - A flagged image gets a structured `422` (like the quality gate) listing the
   rejected images with a **non-graphic, branded reason** ("This photo cannot be
@@ -623,7 +623,7 @@ events** (no email, no image data, no order contents):
   a cookieless alternative; a no-op when unset.
 
 GA4 + Clarity load only **after opt-in via a cookie-consent banner**
-(`apps/picturesk-web/app/Analytics.js`); until then no analytics cookies are set. The same five
+(`apps/picturesk-frontend/app/Analytics.js`); until then no analytics cookies are set. The same five
 funnel events fire across whichever tool is enabled:
 
 1. `landing_view`: landing page loaded (`app/ai-headshot-generator/page.js`; `/`
@@ -640,7 +640,7 @@ A quality feature in the worker: overgenerate headshots, score each candidate fo
 identity fidelity against the customer's real selfies, and deliver only the best
 ones, so an occasional off-identity seed (a gender flip, dropped beard, or shifted
 face shape) is culled instead of shipped, without retraining. Implemented in
-`apps/picturesk-worker/scoreIdentity.js` and `selectAndDeliver` in `apps/picturesk-worker/pipeline.js`.
+`apps/picturesk-backend/scoreIdentity.js` and `selectAndDeliver` in `apps/picturesk-backend/pipeline.js`.
 It is **env-gated and OFF by default**.
 
 **How scoring works.** We compute a face EMBEDDING for each candidate and each
@@ -695,7 +695,7 @@ weights are baked at an absolute path (`root="/src"`) so setup never re-download
 runtime -- do not remove that or the model fails to boot on Replicate.
 
 The API already serves the culled `deliveredImageUrls` to customers (`toPublicOrder`
-in `apps/picturesk-api/server.js`, with a fallback to the full set for older orders), and with
+in `apps/picturesk-backend/server.js`, with a fallback to the full set for older orders), and with
 culling off `deliveredImageUrls` still equals every generated image, so nothing else
 changes when switching the feature on or off.
 
@@ -708,8 +708,8 @@ The face-swap step fixes that by swapping the customer's REAL face onto each
 delivered headshot -- the generated image keeps the pose, outfit, lighting and
 background; only the face is replaced, with the customer's true geometry.
 
-Implemented in `apps/picturesk-worker/swapFace.js` (+ `.fake.js`), applied in `selectAndDeliver`
-(`apps/picturesk-worker/pipeline.js`) AFTER culling: it swaps the real face onto the selected
+Implemented in `apps/picturesk-backend/swapFace.js` (+ `.fake.js`), applied in `selectAndDeliver`
+(`apps/picturesk-backend/pipeline.js`) AFTER culling: it swaps the real face onto the selected
 `deliverN` shots, persisting each to `swappedImageUrls` (resumable, per slot), then
 points `deliveredImageUrls` at the swapped set. The source face is the first
 uploaded selfie. A swap that can't find a face in a shot ships that shot un-swapped
@@ -792,11 +792,11 @@ these carry real legal weight. They are known and deliberately deferred, not
 resolved. Get a lawyer to review the privacy policy + terms before scaling ad spend.
 
 - **Cookie consent withdrawal.** There is an opt-in banner gating GA4 + Clarity
-  (`apps/picturesk-web/app/Analytics.js`), but no easy "withdraw" path. GDPR wants withdrawing
+  (`apps/picturesk-frontend/app/Analytics.js`), but no easy "withdraw" path. GDPR wants withdrawing
   to be as easy as giving; today changing the choice means clearing site data. Add a
   "Cookie choices" footer link that reopens the banner.
 - **Governing law / jurisdiction.** Still a TODO in the terms
-  (`apps/picturesk-web/data/legal.js`); it currently says the jurisdiction "will be confirmed".
+  (`apps/picturesk-frontend/data/legal.js`); it currently says the jurisdiction "will be confirmed".
 - **Data retention / deletion.** No automatic deletion runs: uploaded selfies,
   training zips, and delivered images persist in R2 until manually removed. The
   privacy policy has no concrete retention schedule. Define and (ideally) enforce one.

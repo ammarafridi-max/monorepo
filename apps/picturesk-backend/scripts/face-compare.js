@@ -62,10 +62,10 @@ import { mkdirSync, writeFileSync, readdirSync, statSync, rmSync, readFileSync a
 
 const here = dirname(fileURLToPath(import.meta.url));
 
-import * as lora from '../replicateClient.js';
-import * as pulid from '../replicateClient.pulid.js';
-import { swapFace } from '../swapFace.js';
-import { enhanceFace } from '../enhanceFace.js';
+import * as lora from '../src/pipeline/replicateClient.js';
+import * as pulid from '../src/pipeline/replicateClient.pulid.js';
+import { swapFace } from '../src/pipeline/swapFace.js';
+import { enhanceFace } from '../src/pipeline/enhanceFace.js';
 import { buildPrompts, buildSubject } from '@travel-suite/picturesk-shared/catalog';
 import { createStorage } from '@travel-suite/picturesk-shared';
 import JSZip from 'jszip';

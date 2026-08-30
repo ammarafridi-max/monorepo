@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { nsfwScoreFrom, MODERATION_REASON } from '../contentModerator.js';
+import { nsfwScoreFrom, MODERATION_REASON } from '../src/contentModerator.js';
 
 // The network call (runModeration) needs a real REPLICATE_API_TOKEN + model, so it
 // is not exercised here. What we CAN test without creds is the piece that decides

@@ -4,7 +4,8 @@ app = "picturesk-api"
 primary_region = "iad"
 
 [build]
-  dockerfile = "apps/picturesk-api/Dockerfile"
+  dockerfile = "apps/picturesk-backend/Dockerfile"
+  build-target = "server"
 
 [http_service]
   internal_port = 3001

@@ -10,7 +10,7 @@
  * change anything. Roles are untouched: 'support' is now a valid role in the
  * shared enum.
  *
- * Usage (from apps/picturesk-api). Dry run first, it is the default:
+ * Usage (from apps/picturesk-backend). Dry run first, it is the default:
  *   node --env-file=.env.production scripts/migrate-admin-users-to-shared.mjs
  *   node --env-file=.env.production scripts/migrate-admin-users-to-shared.mjs --apply
  *

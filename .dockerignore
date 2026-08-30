@@ -58,4 +58,4 @@ README.md
 
 # Test suites and local tuning output (Picturesk) — never needed in an image
 **/test
-apps/picturesk-worker/scripts/results
+apps/picturesk-backend/scripts/results

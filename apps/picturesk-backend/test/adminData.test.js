@@ -5,8 +5,8 @@ import cookieParser from 'cookie-parser';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { connectMongo, Order, ORDER_STATES } from '@travel-suite/picturesk-shared';
-import { createAdminSubsystem } from '../admin/index.js';
-import { createAdminDataRouter } from '../admin/adminData.js';
+import { createAdminSubsystem } from '../src/admin/index.js';
+import { createAdminDataRouter } from '../src/admin/adminData.js';
 
 /**
  * End-to-end Phase B: the read-only admin data routes over an in-memory Mongo,

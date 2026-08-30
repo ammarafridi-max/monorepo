@@ -1,4 +1,4 @@
-# picturesk-web
+# picturesk-frontend
 
 The Next.js frontend (App Router), built in **Phase 4 (delivery + UI)**. Styled
 per the root `BRAND.md`: bone/ink surfaces, cobalt as the single accent, Fraunces
@@ -23,7 +23,7 @@ See root `CLAUDE.md` for the hard rule.
 ## Run
 
 ```sh
-pnpm --filter picturesk-web dev   # http://localhost:3000
+pnpm --filter picturesk-frontend dev   # http://localhost:3000
 ```
 
 The api (`pnpm api`) must be running, and its `WEB_BASE_URL` must point back here

@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { connectMongo } from '@travel-suite/picturesk-shared';
-import { createAdminSubsystem } from '../admin/index.js';
+import { createAdminSubsystem } from '../src/admin/index.js';
 
 /**
  * Admin-user management e2e: role gate (support blocked), CRUD, uniqueness,
