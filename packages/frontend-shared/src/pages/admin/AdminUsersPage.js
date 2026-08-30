@@ -11,13 +11,14 @@ import AdminSearchInput from '../../components/admin/AdminSearchInput';
 import FilterMenu from '../../components/admin/FilterMenu';
 import AdminFab from '../../components/admin/AdminFab';
 
-const ROLES = ['admin', 'agent', 'blog-manager'];
+const DEFAULT_ROLES = ['admin', 'agent', 'blog-manager'];
 const STATUSES = ['ACTIVE', 'INACTIVE'];
 
 const ROLE_CFG = {
   admin:          { label: 'Admin',        cls: 'bg-purple-50 text-purple-700 border-purple-200' },
   agent:          { label: 'Agent',        cls: 'bg-blue-50   text-blue-700   border-blue-200'   },
   'blog-manager': { label: 'Blog Manager', cls: 'bg-green-50  text-green-700  border-green-200'  },
+  support:        { label: 'Support',      cls: 'bg-amber-50  text-amber-700  border-amber-200'  },
 };
 
 const STATUS_CFG = {
@@ -52,14 +53,12 @@ function StatusDot({ status }) {
 const inputCls =
   'w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300 transition disabled:bg-gray-50 disabled:text-gray-400';
 
-const EMPTY_CREATE = { name: '', username: '', email: '', password: '', role: 'agent', status: 'ACTIVE' };
-
-function UserModal({ initial, onClose, onSave, saving }) {
+function UserModal({ initial, onClose, onSave, saving, roles }) {
   const isEdit = !!initial;
   const [form, setForm] = useState(
     isEdit
       ? { name: initial.name, email: initial.email, role: initial.role, status: initial.status }
-      : EMPTY_CREATE,
+      : { name: '', username: '', email: '', password: '', role: roles[roles.length - 1], status: 'ACTIVE' },
   );
   const [showPw, setShowPw] = useState(false);
 
@@ -123,7 +122,7 @@ function UserModal({ initial, onClose, onSave, saving }) {
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1.5">Role <span className="text-red-500">*</span></label>
             <select value={form.role} onChange={(e) => set('role', e.target.value)} className={inputCls}>
-              {ROLES.map((r) => (
+              {roles.map((r) => (
                 <option key={r} value={r}>{ROLE_CFG[r]?.label ?? r}</option>
               ))}
             </select>
@@ -235,7 +234,11 @@ function SetPasswordModal({ user, onClose, onSave, saving }) {
   );
 }
 
-export default function AdminUsersPage() {
+/**
+ * `roles` is the set of roles this app actually offers, so a brand only ever sees
+ * its own. Defaults to the travel dashboard's three.
+ */
+export default function AdminUsersPage({ roles = DEFAULT_ROLES }) {
   const [search, setSearch]  = useState('');
   const [role, setRole]      = useState('');
   const [status, setStatus]  = useState('');
@@ -286,6 +289,7 @@ export default function AdminUsersPage() {
           onClose={() => setModal(null)}
           onSave={handleSave}
           saving={saving}
+          roles={roles}
         />
       )}
 
@@ -321,7 +325,7 @@ export default function AdminUsersPage() {
             label="Filter by role"
             options={[
               { value: '', label: 'All roles' },
-              ...ROLES.map((item) => ({ value: item, label: ROLE_CFG[item]?.label ?? item })),
+              ...roles.map((item) => ({ value: item, label: ROLE_CFG[item]?.label ?? item })),
             ]}
           />
           <FilterMenu

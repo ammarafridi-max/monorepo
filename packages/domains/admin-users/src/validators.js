@@ -1,7 +1,7 @@
 import { AppError } from '@travel-suite/utils';
 import validator from 'validator';
 
-const ALLOWED_ROLES = ['admin', 'agent', 'blog-manager'];
+const ALLOWED_ROLES = ['admin', 'agent', 'blog-manager', 'support'];
 const ALLOWED_STATUSES = ['ACTIVE', 'INACTIVE'];
 const USERNAME_REGEX = /^[a-z0-9][a-z0-9._-]{7,49}$/;
 

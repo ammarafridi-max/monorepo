@@ -250,7 +250,12 @@ function GlobalSearch() {
   );
 }
 
-export default function AdminHeader() {
+/**
+ * `globalSearch` mounts the cross-domain search. It queries the travel domains
+ * (tickets, insurance, leads, blog), so an app without them passes false rather
+ * than firing five requests that all 404.
+ */
+export default function AdminHeader({ globalSearch = true }) {
   const { adminUser } = useAdminAuth();
 
   const initials = adminUser?.name
@@ -264,9 +269,13 @@ export default function AdminHeader() {
 
   return (
     <header className="hidden lg:flex h-14 bg-white border-b border-gray-100 shrink-0 items-center gap-4 px-6">
-      <Suspense fallback={<div className="flex-1 max-w-md" />}>
-        <GlobalSearch />
-      </Suspense>
+      {globalSearch ? (
+        <Suspense fallback={<div className="flex-1 max-w-md" />}>
+          <GlobalSearch />
+        </Suspense>
+      ) : (
+        <div className="flex-1 max-w-md" />
+      )}
 
       <div className="flex-1" />
 

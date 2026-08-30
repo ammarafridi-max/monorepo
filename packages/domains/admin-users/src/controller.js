@@ -1,5 +1,16 @@
 import { catchAsync, AppError } from '@travel-suite/utils';
 
+/**
+ * `select: false` on password only applies to QUERIES. A document returned by
+ * create() still carries the freshly hashed value in memory, so any response
+ * built from it must strip the field explicitly.
+ */
+function withoutPassword(user) {
+  const obj = user?.toObject ? user.toObject() : { ...user };
+  delete obj.password;
+  return obj;
+}
+
 export function createAdminUsersController({ service }) {
   const getAdminUsers = catchAsync(async (req, res) => {
     const users = await service.getAdminUsers(req.query);
@@ -13,12 +24,12 @@ export function createAdminUsersController({ service }) {
 
   const createAdminUser = catchAsync(async (req, res) => {
     const user = await service.createAdminUser(req.body);
-    res.status(201).json({ status: 'success', message: 'Admin user created successfully', data: user });
+    res.status(201).json({ status: 'success', message: 'Admin user created successfully', data: withoutPassword(user) });
   });
 
   const updateAdminUser = catchAsync(async (req, res) => {
     const user = await service.updateAdminUserByUsername(req.params.username, req.body, req.user);
-    res.status(200).json({ status: 'success', message: 'Admin user updated successfully', data: user });
+    res.status(200).json({ status: 'success', message: 'Admin user updated successfully', data: withoutPassword(user) });
   });
 
   const deleteAdminUser = catchAsync(async (req, res) => {
@@ -37,17 +48,13 @@ export function createAdminUsersController({ service }) {
   });
 
   const getMe = (req, res) => {
-    const userObj = req.user.toObject ? req.user.toObject() : { ...req.user };
-    delete userObj.password;
-    res.status(200).json({ status: 'success', data: userObj });
+    res.status(200).json({ status: 'success', data: withoutPassword(req.user) });
   };
 
   const updateMe = catchAsync(async (req, res) => {
     const { name, email } = req.body;
     const user = await service.updateAdminUserByUsername(req.user.username, { name, email }, req.user);
-    const userObj = user.toObject ? user.toObject() : { ...user };
-    delete userObj.password;
-    res.status(200).json({ status: 'success', data: userObj });
+    res.status(200).json({ status: 'success', data: withoutPassword(user) });
   });
 
   const updateMyPassword = catchAsync(async (req, res) => {

@@ -8,6 +8,8 @@ A pnpm + Turborepo monorepo ("travel-suite") hosting **six travel brands**, each
 
 `travelshield` was discontinued and its apps deleted. Leftover references remain in `packages/shared/config/src/brands/travelshield.js`, the tickets and affiliates domains, and `docs/`. They are harmless but dead — do not build against them.
 
+**Picturesk** (`apps/picturesk-web`, `apps/picturesk-api`, `apps/picturesk-worker`, `packages/picturesk-shared`) also lives here but is NOT a travel brand: it is an AI headshot generator with its own Mongo database, its own brand identity (`docs/picturesk/BRAND.md`), and its own conventions. It does not use `@travel-suite/config`, `frontend-shared`, or Tailwind, and it is the only thing here with a queue worker (Redis + BullMQ), R2 storage, and Sentry. Do not pull it into the brand machinery, and do not let its dependencies leak into the travel packages.
+
 The split in progress: **travl** is narrowing to travel insurance only, and **visawadi** takes all visa assistance. Every brand ships as two apps — a Next.js frontend (`apps/<brand>-frontend`) and an Express 5 + Mongoose 9 / MongoDB backend (`apps/<brand>-backend`). All the real logic lives in `packages/` and is composed per-brand.
 
 Everything is ESM (`"type": "module"`), Node 22, React 19, Tailwind v4.
@@ -69,7 +71,7 @@ pnpm dev        # node --env-file=.env.development --watch src/server.js
 node --env-file=.env.development scripts/seed-admin.js   # seed an admin user
 ```
 
-**Testing:** `turbo test` is wired but no test files or per-package `test` scripts exist yet — there is currently no test suite to run. **Linting** exists only on frontends (`next lint`); shared packages have no lint/build step (they're consumed as raw source via subpath exports).
+**Testing:** the travel apps have no tests. The only test suites in the repo are Picturesk's (`node --test` in `apps/picturesk-api` and `apps/picturesk-worker`), so a root `pnpm test` runs those and nothing else. One of them, `apps/picturesk-api/test/pricing.test.js`, fails on prices that changed without the test being updated; it failed the same way before Picturesk was imported. **Linting** exists only on frontends (`next lint`); shared packages have no lint/build step (they're consumed as raw source via subpath exports).
 
 ## Architecture
 

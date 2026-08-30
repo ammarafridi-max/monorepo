@@ -1,0 +1,27 @@
+# Picturesk API. Deploy from the repo root:  fly deploy -c fly.picturesk-api.toml
+# Rename `app` and set `primary_region` to match your setup.
+app = "picturesk-api"
+primary_region = "iad"
+
+[build]
+  dockerfile = "apps/picturesk-api/Dockerfile"
+
+[http_service]
+  internal_port = 3001
+  force_https = true
+  # Keep one machine always up: the Stripe webhook must be reachable at all times
+  # and the success page polls /orders. Auto-start absorbs extra load.
+  auto_stop_machines = "suspend"
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    interval = "15s"
+    timeout = "3s"
+    grace_period = "10s"
+    method = "GET"
+    path = "/health"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

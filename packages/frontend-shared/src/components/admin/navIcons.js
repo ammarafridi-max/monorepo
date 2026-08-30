@@ -2,14 +2,14 @@ import {
   LayoutDashboard, Ticket, ShieldCheck, Inbox, Mail, BookOpen, Tag, Stamp,
   TrendingUp, Link2, Package, DollarSign, CircleDollarSign, Users, Handshake,
   UserCircle, Plane, ClipboardList, Shield, CalendarCheck, Car, MapPin,
-  SlidersHorizontal, CalendarDays, FileText, MessageSquare,
+  SlidersHorizontal, CalendarDays, FileText, MessageSquare, Camera,
 } from 'lucide-react';
 
 export const ICON_MAP = {
   LayoutDashboard, Ticket, ShieldCheck, Inbox, Mail, BookOpen, Tag, Stamp,
   TrendingUp, Link2, Package, DollarSign, CircleDollarSign, Users, Handshake,
   UserCircle, Plane, ClipboardList, Shield, CalendarCheck, Car, MapPin,
-  SlidersHorizontal, CalendarDays, FileText, MessageSquare,
+  SlidersHorizontal, CalendarDays, FileText, MessageSquare, Camera,
 };
 
 export function visibleNavFor(nav = [], role) {

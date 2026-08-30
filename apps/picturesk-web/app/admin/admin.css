@@ -1,0 +1,52 @@
+/*
+ * Tailwind, scoped to the /admin subtree. The customer-facing site is plain CSS
+ * (globals.css) and stays that way; this file is only pulled into the bundle for
+ * routes under app/admin, so Preflight never touches the marketing pages.
+ */
+@import 'tailwindcss';
+
+@source "../../../../packages/frontend-shared/src/components";
+@source "../../../../packages/frontend-shared/src/pages";
+@source "../../../../packages/frontend-shared/src/layouts";
+
+@theme inline {
+  /* Forest & Gold, from docs/picturesk/BRAND.md. The shared admin design system
+     is parameterised on `primary`, exactly like each travel brand, so Picturesk
+     keeps its own identity while the layout, spacing, and components stay
+     identical across the monorepo. primary-700 is the brand green (#0E4A44);
+     white on it measures far past AA. */
+  --color-primary-50:  #f0f6f5;
+  --color-primary-100: #d9e9e6;
+  --color-primary-200: #b3d3ce;
+  --color-primary-300: #85b6af;
+  --color-primary-400: #57968e;
+  --color-primary-500: #327a71;
+  --color-primary-600: #1a5f58;
+  --color-primary-700: #0e4a44;
+  --color-primary-800: #0c3b36;
+  --color-primary-900: #0a2e2a;
+  --color-primary-950: #061c1a;
+
+  /* Gold is the second accent, kept restrained per BRAND.md. */
+  --color-accent-50:  #fdf7ea;
+  --color-accent-100: #faedcc;
+  --color-accent-200: #f4da9c;
+  --color-accent-300: #eec66c;
+  --color-accent-400: #e7b24c;
+  --color-accent-500: #d99c2c;
+  --color-accent-600: #b87d1f;
+  --color-accent-700: #925f1b;
+  --color-accent-800: #6d461a;
+  --color-accent-900: #4a3015;
+  --color-accent-950: #2a1b0b;
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+/* The root layout's globals.css sets a sand page background and Fraunces/Inter
+   for the marketing site. The admin is a working surface, not a brand showcase,
+   so it resets to the shared dashboard's neutral ground. */
+body:has(.picturesk-admin) {
+  background: #f9fafb;
+  font-family: var(--font-sans);
+}

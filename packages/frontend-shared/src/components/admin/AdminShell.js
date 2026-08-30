@@ -6,13 +6,13 @@ import { Loader2 } from 'lucide-react';
 import { useAdminAuth } from '../../contexts/AdminAuthContext.js';
 import { isUnderPath } from '../../utils/paths.js';
 
-const ROLE_DEFAULT_PATH = {
+const DEFAULT_ROLE_DEFAULT_PATH = {
   admin: '/admin',
   agent: '/admin/dummy-tickets',
   'blog-manager': '/admin/blog',
 };
 
-const ROLE_ROUTE_RULES = [
+const DEFAULT_ROLE_ROUTE_RULES = [
 
   { prefix: '/admin/dummy-tickets',           roles: ['admin', 'agent'] },
   { prefix: '/admin/chat',                    roles: ['admin', 'agent'] },
@@ -34,10 +34,10 @@ const ROLE_ROUTE_RULES = [
   { prefix: '/admin',                         roles: ['admin', 'agent', 'blog-manager'] },
 ];
 
-function getAllowedRoles(pathname) {
+function getAllowedRoles(pathname, rules) {
   return (
-    ROLE_ROUTE_RULES.find((rule) => isUnderPath(pathname, rule.prefix))
-      ?.roles || ['admin', 'agent', 'blog-manager']
+    rules.find((rule) => isUnderPath(pathname, rule.prefix))?.roles ||
+    rules[rules.length - 1]?.roles || ['admin']
   );
 }
 
@@ -52,7 +52,17 @@ function LoadingScreen({ message = 'Loading admin workspace...' }) {
   );
 }
 
-export default function AdminShell({ children }) {
+/**
+ * Client-side route guard for the admin area. The rules are props so an app whose
+ * admin is not the travel dashboard can pass its own; the defaults keep the
+ * travel brands behaving exactly as before. This guard is UX only — the real
+ * boundary is the API checking the cookie and role on every request.
+ */
+export default function AdminShell({
+  children,
+  roleRules = DEFAULT_ROLE_ROUTE_RULES,
+  roleDefaultPath = DEFAULT_ROLE_DEFAULT_PATH,
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const { adminUser, isLoadingAdminAuth } = useAdminAuth();
@@ -66,17 +76,17 @@ export default function AdminShell({ children }) {
       return;
     }
 
-    const allowedRoles = getAllowedRoles(pathname || '/admin');
+    const allowedRoles = getAllowedRoles(pathname || '/admin', roleRules);
     if (!allowedRoles.includes(adminUser.role)) {
-      router.replace(ROLE_DEFAULT_PATH[adminUser.role] || '/admin');
+      router.replace(roleDefaultPath[adminUser.role] || '/admin');
     }
-  }, [adminUser, isLoadingAdminAuth, pathname, router]);
+  }, [adminUser, isLoadingAdminAuth, pathname, router, roleRules, roleDefaultPath]);
 
   if (isLoadingAdminAuth || !adminUser) {
     return <LoadingScreen />;
   }
 
-  const allowedRoles = getAllowedRoles(pathname || '/admin');
+  const allowedRoles = getAllowedRoles(pathname || '/admin', roleRules);
   if (!allowedRoles.includes(adminUser.role)) {
     return <LoadingScreen message="Redirecting to your workspace..." />;
   }

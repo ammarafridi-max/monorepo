@@ -3,7 +3,31 @@ import Link from 'next/link';
 import { Plane } from 'lucide-react';
 import AdminLoginForm from './AdminLoginForm';
 
-export default function AdminLoginPage({ siteName = 'Admin' }) {
+const DEFAULT_HIGHLIGHTS = [
+  { label: 'Dummy Tickets', value: 'Order management' },
+  { label: 'Insurance', value: 'Policy management' },
+  { label: 'Affiliates', value: 'Commission mgmt' },
+  { label: 'Blog', value: 'Content tools' },
+];
+
+/**
+ * The marketing half is copy, so it is props. Defaults are the travel dashboard's
+ * wording; an app selling something else passes its own rather than telling staff
+ * they manage a ticketing platform.
+ */
+export default function AdminLoginPage({
+  siteName = 'Admin',
+  icon: Icon = Plane,
+  headline = (
+    <>
+      Manage your
+      <br />
+      ticketing platform
+    </>
+  ),
+  blurb = 'Access orders, insurance applications, affiliates, content, and financial settings from one secure dashboard.',
+  highlights = DEFAULT_HIGHLIGHTS,
+}) {
   return (
     <div className="min-h-screen flex">
 
@@ -16,7 +40,7 @@ export default function AdminLoginPage({ siteName = 'Admin' }) {
 
         <div className="relative flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center">
-            <Plane size={20} className="text-white" />
+            <Icon size={20} className="text-white" />
           </div>
           <span className="text-white font-extrabold text-xl tracking-tight">
             {siteName}
@@ -28,22 +52,14 @@ export default function AdminLoginPage({ siteName = 'Admin' }) {
 
         <div className="relative">
           <h1 className="text-4xl font-extrabold text-white leading-tight mb-4">
-            Manage your
-            <br />
-            ticketing platform
+            {headline}
           </h1>
           <p className="text-primary-200 text-base leading-relaxed max-w-sm">
-            Access orders, insurance applications, affiliates, content, and
-            financial settings from one secure dashboard.
+            {blurb}
           </p>
 
           <div className="mt-10 grid grid-cols-2 gap-4">
-            {[
-              { label: 'Dummy Tickets', value: 'Order management' },
-              { label: 'Insurance', value: 'Policy management' },
-              { label: 'Affiliates', value: 'Commission mgmt' },
-              { label: 'Blog', value: 'Content tools' },
-            ].map(({ label, value }) => (
+            {highlights.map(({ label, value }) => (
               <div
                 key={label}
                 className="bg-white/10 border border-white/15 rounded-xl p-4"
@@ -64,7 +80,7 @@ export default function AdminLoginPage({ siteName = 'Admin' }) {
         <div className="w-full max-w-md">
 
           <div className="lg:hidden flex items-center gap-2 mb-8">
-            <Plane size={22} className="text-primary-700" />
+            <Icon size={22} className="text-primary-700" />
             <span className="font-extrabold text-gray-900 text-lg">{siteName}</span>
             <span className="text-xs font-semibold bg-primary-50 text-primary-700 px-2 py-0.5 rounded-full border border-primary-200">
               Admin

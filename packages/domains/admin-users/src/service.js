@@ -58,7 +58,7 @@ export function createAdminUsersService({ AdminUser }) {
   const getAdminUsers = async (query = {}) => {
     const filter = {};
 
-    if (query.role && ['admin', 'agent', 'blog-manager'].includes(query.role)) {
+    if (query.role && ['admin', 'agent', 'blog-manager', 'support'].includes(query.role)) {
       filter.role = query.role;
     }
     if (query.status && ['ACTIVE', 'INACTIVE'].includes(query.status)) {

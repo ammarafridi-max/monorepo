@@ -41,7 +41,7 @@ const AdminUserSchema = new mongoose.Schema(
     role: {
       type: String,
       lowercase: true,
-      enum: ['admin', 'agent', 'blog-manager'],
+      enum: ['admin', 'agent', 'blog-manager', 'support'],
       default: 'agent',
       required: true,
     },
