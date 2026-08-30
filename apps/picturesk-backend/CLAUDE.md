@@ -18,6 +18,15 @@ and scales on request load; the worker must run continuously at concurrency 1,
 needs more memory to build a training zip, and must not be restarted by a deploy
 triggered by a web change. Do not merge them into one process.
 
+`pnpm dev` starts the server only. `pnpm dev:worker` starts the worker;
+`pnpm dev:all` runs both under concurrently. Node runs one entry script per
+process, so there is no single-command form: `node --watch a.js --watch b.js`
+silently runs only `a.js` and passes the rest as argv.
+
+`dev` deliberately does not start the worker. A worker started by reflex on
+every dev loop will act on whatever database MONGODB_URI points at, which is
+real Replicate spend, real delivery emails, and real refunds.
+
 ## Core design principle
 
 **Money in, then a slow external job we don't control. Never lose or double-run
