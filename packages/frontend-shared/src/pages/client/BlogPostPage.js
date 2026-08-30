@@ -11,6 +11,7 @@ import BlogOfferRail from "../../components/sections/v2/BlogOfferRail";
 import BlogRelatedPosts from "../../components/sections/v2/BlogRelatedPosts";
 import BlogOfferCard from "../../components/ui/v2/BlogOfferCard";
 import BlogInlineOffer from "../../components/ui/v2/BlogInlineOffer";
+import AuthorBox from "../../components/ui/v2/AuthorBox";
 import { prepareArticleHtml } from "../../utils/articleHtml.js";
 
 const INLINE_OFFER_AFTER_HEADING = 2;
@@ -122,6 +123,8 @@ export default function BlogPostPage({
 
             <TagPills tags={blog.tags} allBlogTags={allBlogTags} />
 
+            <AuthorBox author={blog.author} />
+
             {/* Desktop rail carries the contents, so offers live here on mobile only. */}
             {offers.length > 0 && (
               <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:hidden">
@@ -186,7 +189,16 @@ function ArticleMeta({ blog, sectionCount }) {
           {dot}
           <span className="inline-flex items-center gap-1.5">
             <HiOutlineUser aria-hidden="true" className="text-[15px] text-gray-400" />
-            {blog.author.name}
+            {blog.author.authorProfile?.slug ? (
+              <Link
+                href={`/authors/${blog.author.authorProfile.slug}`}
+                className="underline-offset-2 hover:text-gray-700 hover:underline"
+              >
+                {blog.author.name}
+              </Link>
+            ) : (
+              blog.author.name
+            )}
           </span>
         </>
       )}

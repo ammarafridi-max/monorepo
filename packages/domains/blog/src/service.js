@@ -32,7 +32,7 @@ async function generateUniqueSlug(Blog, baseSlug, currentId = null) {
 
 export function createBlogService({ Blog, BlogTag, imageStorage }) {
   const getBlogPopulation = () => [
-    { path: 'author', select: 'name username email role status createdAt updatedAt' },
+    { path: 'author', select: 'name username email role status authorProfile createdAt updatedAt' },
     { path: 'publisher', select: 'name username email role status createdAt updatedAt' },
   ];
 

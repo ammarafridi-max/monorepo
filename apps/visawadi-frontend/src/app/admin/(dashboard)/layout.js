@@ -2,7 +2,9 @@ import AdminDashboardLayout from "@travel-suite/frontend-shared/pages/admin/Admi
 
 export const metadata = {
   title: {
-    default: "Admin — VisaWadi",
+    // absolute, not default: a nested default is still fed through the root
+    // layout's "%s | VisaWadi" template, which is what doubled the brand name.
+    absolute: "Admin | VisaWadi",
     template: "%s | VisaWadi Admin",
   },
   robots: { index: false, follow: false },

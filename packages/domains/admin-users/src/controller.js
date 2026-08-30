@@ -26,6 +26,16 @@ export function createAdminUsersController({ service }) {
     res.status(204).json({ status: 'success', data: null });
   });
 
+  const getPublicAuthors = catchAsync(async (req, res) => {
+    const authors = await service.getPublicAuthors();
+    res.status(200).json({ status: 'success', results: authors.length, data: authors });
+  });
+
+  const getPublicAuthor = catchAsync(async (req, res) => {
+    const author = await service.getPublicAuthorBySlug(req.params.slug);
+    res.status(200).json({ status: 'success', data: author });
+  });
+
   const getMe = (req, res) => {
     const userObj = req.user.toObject ? req.user.toObject() : { ...req.user };
     delete userObj.password;
@@ -52,5 +62,5 @@ export function createAdminUsersController({ service }) {
     res.status(200).json({ status: 'success', message: 'Password updated successfully.' });
   });
 
-  return { getMe, updateMe, updateMyPassword, getAdminUsers, getAdminUser, createAdminUser, updateAdminUser, deleteAdminUser, adminSetUserPassword };
+  return { getMe, updateMe, updateMyPassword, getAdminUsers, getAdminUser, createAdminUser, updateAdminUser, deleteAdminUser, adminSetUserPassword, getPublicAuthors, getPublicAuthor };
 }

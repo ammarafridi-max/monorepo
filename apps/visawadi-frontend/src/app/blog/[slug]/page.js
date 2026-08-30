@@ -12,6 +12,7 @@ import {
   buildFAQPage,
   buildGraph,
   buildOrganization,
+  buildPerson,
   buildWebPage,
   buildWebsite,
 } from '@/lib/schema';
@@ -108,7 +109,21 @@ export default async function Page({ params }) {
       datePublished: blog.publishedAt,
       dateModified: blog.updatedAt,
       authorName: blog.author?.name,
+      authorSlug: blog.author?.authorProfile?.slug,
     }),
+    ...(blog.author?.authorProfile?.slug
+      ? [
+          buildPerson({
+            name: blog.author.name,
+            slug: blog.author.authorProfile.slug,
+            jobTitle: blog.author.authorProfile.jobTitle,
+            bio: blog.author.authorProfile.bio,
+            image: blog.author.authorProfile.avatarUrl,
+            sameAs: blog.author.authorProfile.sameAs,
+            expertise: blog.author.authorProfile.expertise,
+          }),
+        ]
+      : []),
     ...(faqs.length > 0
       ? [buildFAQPage({ canonical, title: `${blog.title} FAQs`, description, faqs })]
       : []),

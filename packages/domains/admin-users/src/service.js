@@ -22,6 +22,18 @@ async function ensureUsernameIsUnique(AdminUser, username, excludeId = null) {
   if (existing) throw new AppError('Username is already in use by another admin user.', 400);
 }
 
+/** Only the byline data. Never email, role, or status. */
+const PUBLIC_AUTHOR_FIELDS = 'name authorProfile updatedAt';
+
+async function ensureAuthorSlugIsUnique(AdminUser, slug, excludeId = null) {
+  if (!slug) return;
+  const existing = await AdminUser.findOne({
+    'authorProfile.slug': slug,
+    ...(excludeId ? { _id: { $ne: excludeId } } : {}),
+  }).lean();
+  if (existing) throw new AppError('That author slug is already in use.', 400);
+}
+
 async function ensureLastActiveAdminRemains(AdminUser, { userIdToChange, nextRole, nextStatus }) {
   const current = await AdminUser.findById(userIdToChange).lean();
   if (!current) return;
@@ -103,6 +115,7 @@ export function createAdminUsersService({ AdminUser }) {
     }
 
     await ensureEmailIsUnique(AdminUser, normalized.email, existingUser._id);
+    await ensureAuthorSlugIsUnique(AdminUser, normalized['authorProfile.slug'], existingUser._id);
     await ensureLastActiveAdminRemains(AdminUser, {
       userIdToChange: existingUser._id,
       nextRole,
@@ -173,5 +186,27 @@ export function createAdminUsersService({ AdminUser }) {
     return user;
   };
 
-  return { getAdminUsers, getAdminUserByUsername, createAdminUser, updateAdminUserByUsername, deleteAdminUserByUsername, updateMyPassword, adminSetUserPassword };
+  const getPublicAuthors = async () =>
+    AdminUser.find({
+      status: 'ACTIVE',
+      'authorProfile.slug': { $nin: ['', null] },
+    })
+      .select(PUBLIC_AUTHOR_FIELDS)
+      .sort({ name: 1 })
+      .lean();
+
+  const getPublicAuthorBySlug = async (slug) => {
+    const normalized = String(slug || '').trim().toLowerCase();
+    if (!normalized) throw new AppError('Please provide an author slug', 400);
+    const author = await AdminUser.findOne({
+      status: 'ACTIVE',
+      'authorProfile.slug': normalized,
+    })
+      .select(PUBLIC_AUTHOR_FIELDS)
+      .lean();
+    if (!author) throw new AppError('Author not found.', 404);
+    return author;
+  };
+
+  return { getAdminUsers, getAdminUserByUsername, createAdminUser, updateAdminUserByUsername, deleteAdminUserByUsername, updateMyPassword, adminSetUserPassword, getPublicAuthors, getPublicAuthorBySlug };
 }

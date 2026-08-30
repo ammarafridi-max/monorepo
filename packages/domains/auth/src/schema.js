@@ -56,6 +56,17 @@ const AdminUserSchema = new mongoose.Schema(
       type: Date,
       select: false,
     },
+    // Public byline data. Optional everywhere: only accounts that actually
+    // write posts need it, and only the brands that publish a blog use it.
+    authorProfile: {
+      slug: { type: String, lowercase: true, trim: true, maxlength: 80, default: '' },
+      jobTitle: { type: String, trim: true, maxlength: 120, default: '' },
+      bio: { type: String, trim: true, maxlength: 1500, default: '' },
+      credentials: { type: [String], default: [] },
+      expertise: { type: [String], default: [] },
+      avatarUrl: { type: String, trim: true, default: '' },
+      sameAs: { type: [String], default: [] },
+    },
   },
   { timestamps: true, toJSON: true },
 );

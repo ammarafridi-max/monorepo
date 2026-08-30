@@ -15,6 +15,8 @@ export const {
   buildWebPage,
   buildBlog,
   buildBlogPosting,
+  buildPerson,
+  buildProfilePage,
   buildService,
   buildProduct,
 } = createSchemaBuilders({

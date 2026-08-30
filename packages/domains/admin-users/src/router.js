@@ -21,6 +21,10 @@ export function createAdminUsersRouterFromParts({ controller, auth }) {
   const router = Router();
   const { protect, restrictTo } = auth;
 
+  // Public byline data for the blog. Must stay above the protect guard below.
+  router.get("/authors", controller.getPublicAuthors);
+  router.get("/authors/:slug", controller.getPublicAuthor);
+
   router.get("/me", protect, controller.getMe);
   router.patch("/me", protect, controller.updateMe);
   router.patch("/me/password", protect, controller.updateMyPassword);

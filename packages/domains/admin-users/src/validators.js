@@ -54,6 +54,73 @@ function normalizeStatus(value) {
   return status;
 }
 
+const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+function normalizeStringList(value, { field, maxItems, maxLength }) {
+  if (value === undefined || value === null) return [];
+  const list = Array.isArray(value) ? value : [value];
+  const cleaned = list.map((item) => String(item || '').trim()).filter(Boolean);
+  if (cleaned.length > maxItems) {
+    throw new AppError(`${field} may contain at most ${maxItems} entries`, 400);
+  }
+  for (const item of cleaned) {
+    if (item.length > maxLength) {
+      throw new AppError(`Each ${field} entry must be at most ${maxLength} characters`, 400);
+    }
+  }
+  return cleaned;
+}
+
+function normalizeAuthorSlug(value) {
+  const slug = String(value || '').trim().toLowerCase();
+  if (!slug) return '';
+  if (slug.length > 80) throw new AppError('Author slug must be at most 80 characters', 400);
+  if (!SLUG_REGEX.test(slug)) {
+    throw new AppError('Author slug must be lowercase words separated by single hyphens', 400);
+  }
+  return slug;
+}
+
+function normalizeAuthorUrl(value) {
+  const url = String(value || '').trim();
+  if (!url) return '';
+  if (!validator.isURL(url, { protocols: ['https'], require_protocol: true })) {
+    throw new AppError('Author profile links must be full https URLs', 400);
+  }
+  return url;
+}
+
+/** Every field is optional: an author profile can be filled in a piece at a time. */
+export function normalizeAuthorProfile(value = {}) {
+  if (typeof value !== 'object' || Array.isArray(value)) {
+    throw new AppError('authorProfile must be an object', 400);
+  }
+  const profile = {};
+  const has = (key) => Object.prototype.hasOwnProperty.call(value, key);
+
+  if (has('slug')) profile.slug = normalizeAuthorSlug(value.slug);
+  if (has('jobTitle')) {
+    profile.jobTitle = String(value.jobTitle || '').trim();
+    if (profile.jobTitle.length > 120) throw new AppError('Job title must be at most 120 characters', 400);
+  }
+  if (has('bio')) {
+    profile.bio = String(value.bio || '').trim();
+    if (profile.bio.length > 1500) throw new AppError('Bio must be at most 1500 characters', 400);
+  }
+  if (has('credentials')) {
+    profile.credentials = normalizeStringList(value.credentials, { field: 'credentials', maxItems: 12, maxLength: 200 });
+  }
+  if (has('expertise')) {
+    profile.expertise = normalizeStringList(value.expertise, { field: 'expertise', maxItems: 20, maxLength: 80 });
+  }
+  if (has('avatarUrl')) profile.avatarUrl = normalizeAuthorUrl(value.avatarUrl);
+  if (has('sameAs')) {
+    profile.sameAs = normalizeStringList(value.sameAs, { field: 'sameAs', maxItems: 10, maxLength: 300 }).map(normalizeAuthorUrl);
+  }
+
+  return profile;
+}
+
 export const createAdminUserSchema = (body = {}) => ({
   name: normalizeName(body.name),
   username: normalizeUsername(body.username),
@@ -77,6 +144,11 @@ export const updateAdminUserSchema = (body = {}) => {
   if (Object.prototype.hasOwnProperty.call(body, 'email')) payload.email = normalizeEmail(body.email);
   if (Object.prototype.hasOwnProperty.call(body, 'role')) payload.role = normalizeRole(body.role);
   if (Object.prototype.hasOwnProperty.call(body, 'status')) payload.status = normalizeStatus(body.status);
+  if (Object.prototype.hasOwnProperty.call(body, 'authorProfile')) {
+    const profile = normalizeAuthorProfile(body.authorProfile);
+    // Dotted keys so a partial update never wipes the fields it left out.
+    for (const [key, val] of Object.entries(profile)) payload[`authorProfile.${key}`] = val;
+  }
 
   if (!Object.keys(payload).length) {
     throw new AppError('At least one admin user field is required', 400);

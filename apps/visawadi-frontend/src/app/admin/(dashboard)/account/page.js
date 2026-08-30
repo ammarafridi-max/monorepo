@@ -2,7 +2,7 @@ import AdminAccountPage from '@travel-suite/frontend-shared/pages/admin/AdminAcc
 import { buildMetadata } from '@/lib/schema';
 
 export const metadata = buildMetadata({
-  title: 'My Account - Admin',
+  title: 'My Account',
   description: 'Manage your admin account details.',
 });
 
