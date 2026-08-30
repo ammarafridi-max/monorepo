@@ -18,14 +18,17 @@ and scales on request load; the worker must run continuously at concurrency 1,
 needs more memory to build a training zip, and must not be restarted by a deploy
 triggered by a web change. Do not merge them into one process.
 
-`pnpm dev` starts the server only. `pnpm dev:worker` starts the worker;
-`pnpm dev:all` runs both under concurrently. Node runs one entry script per
-process, so there is no single-command form: `node --watch a.js --watch b.js`
-silently runs only `a.js` and passes the rest as argv.
+`pnpm dev` runs both entrypoints under concurrently, the way standalone
+Picturesk did. `pnpm dev:server` and `pnpm dev:worker` run one each. Node runs
+one entry script per process, so there is no flag form of this:
+`node --watch a.js --watch b.js` silently runs only `a.js` and passes the rest
+through as argv.
 
-`dev` deliberately does not start the worker. A worker started by reflex on
-every dev loop will act on whatever database MONGODB_URI points at, which is
-real Replicate spend, real delivery emails, and real refunds.
+A local worker drains the queue at REDIS_URL, so keep that pointed at a local
+Redis. That is what stops it picking up production jobs while MONGODB_URI still
+points at the shared database. Requeueing an order from the local admin UI will
+still act on a real order: real Replicate spend, real delivery email, real
+refund. Set USE_FAKE_REPLICATE=1 to exercise the pipeline without any of that.
 
 ## Core design principle
 
