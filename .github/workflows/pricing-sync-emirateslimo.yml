@@ -5,7 +5,7 @@ on:
     - cron: '0 5 * * 1,4' # Monday and Thursday, 09:00 Gulf time
   workflow_dispatch:
     inputs:
-      dry-run:
+      dry_run:
         description: Read the sheet and report without writing
         type: boolean
         default: false
@@ -16,4 +16,4 @@ jobs:
     secrets: inherit
     with:
       job: pricing-sync
-      dry-run: ${{ inputs.dry-run == true }}
+      dry_run: ${{ inputs.dry_run || false }}

@@ -20,7 +20,8 @@ on:
         required: false
         type: string
         default: ''
-      dry-run:
+      dry_run:
+        description: Run without writing anything
         required: false
         type: boolean
         default: false
@@ -66,7 +67,7 @@ jobs:
         run: |
           node src/cli.mjs "${{ inputs.job }}" \
             ${{ inputs.target && format('--target {0}', inputs.target) || '' }} \
-            ${{ inputs.dry-run && '--dry-run' || '' }} \
+            ${{ inputs.dry_run && '--dry-run' || '' }} \
             ${{ inputs.args }}
 
       # A red tick in a tab nobody opens is not a notification. One open issue per
