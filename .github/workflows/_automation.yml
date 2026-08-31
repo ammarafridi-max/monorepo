@@ -49,7 +49,7 @@ jobs:
       - name: Validate targets
         run: pnpm --filter @travel-suite/automations automation check
 
-      - name: Run ${{ inputs.job }}${{ inputs.target && format(' → {0}', inputs.target) }}
+      - name: Run ${{ inputs.job }}${{ inputs.target && format(' ({0})', inputs.target) }}
         working-directory: automations
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

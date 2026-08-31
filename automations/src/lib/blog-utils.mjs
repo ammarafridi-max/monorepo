@@ -187,6 +187,42 @@ export function isCitationUrl(url, brand) {
   );
 }
 
+/**
+ * The Blog schema's own maxlength caps, mirrored here so an over-long field is
+ * caught in the generation retry loop (where the model can fix it) instead of at
+ * POST time, where Mongoose rejects it and the backend renders a bare 500.
+ *
+ * Keep in step with packages/domains/blog/src/schemas/blog.schema.js.
+ */
+export const FIELD_LIMITS = {
+  title: 200,
+  quickAnswer: 500,
+  metaDescription: 160,
+};
+const FAQ_QUESTION_LIMIT = 300;
+
+export function validateFieldLengths(parsed) {
+  const tooLong = [];
+  for (const [field, limit] of Object.entries(FIELD_LIMITS)) {
+    const value = parsed[field];
+    if (typeof value === "string" && value.length > limit) {
+      tooLong.push(`${field} is ${value.length} characters, the maximum is ${limit}`);
+    }
+  }
+  (parsed.faqs ?? []).forEach((faq, i) => {
+    if (typeof faq?.question === "string" && faq.question.length > FAQ_QUESTION_LIMIT) {
+      tooLong.push(`faqs[${i}].question is ${faq.question.length} characters, the maximum is ${FAQ_QUESTION_LIMIT}`);
+    }
+  });
+  if (tooLong.length) {
+    console.error(`❌ Field(s) over the schema limit:`);
+    for (const t of tooLong) console.error(`   - ${t}`);
+    throw new Error(
+      `${tooLong.join("; ")}. Shorten the field(s) and keep everything else the same.`,
+    );
+  }
+}
+
 /** Every official-source link in the post, deduplicated, in document order. */
 export function extractCitations(html, brand) {
   const urls = [...(html || "").matchAll(/href\s*=\s*["']([^"']+)["']/gi)].map((m) => m[1]);

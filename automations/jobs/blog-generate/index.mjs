@@ -29,6 +29,7 @@ import {
   formatRequiredLinksBlock,
   validateRequiredLinks,
   validateContentQuality,
+  validateFieldLengths,
   fetchCoverImage,
 } from "../../src/lib/blog-utils.mjs";
 import { resolveFormat } from "../../src/lib/formats.mjs";
@@ -244,7 +245,7 @@ Respond with a single valid JSON object (no markdown code fences, no extra text)
   "metaTitle": "SEO meta title, 50–60 characters",
   "metaDescription": "SEO meta description, 150–160 characters",
   "excerpt": "2–3 sentence plain-text summary for blog listing, no HTML",
-  "quickAnswer": "Plain-text direct answer to the title question, 40–80 words. MUST lead with a definitive verdict in the first sentence (e.g. 'Yes,', 'No,', 'You need...'). MUST include at least one concrete, verifiable detail (a number, named requirement, or specific term). MUST be fully self-contained. Avoid hedging words like 'most', 'generally', 'typically'. This is the single most-cited block by AI search engines, so make it specific and quotable.",
+  "quickAnswer": "Plain-text direct answer to the title question, 40–70 words AND at most 500 characters (a hard database limit — count them). MUST lead with a definitive verdict in the first sentence (e.g. 'Yes,', 'No,', 'You need...'). MUST include at least one concrete, verifiable detail (a number, named requirement, or specific term). MUST be fully self-contained. Avoid hedging words like 'most', 'generally', 'typically'. This is the single most-cited block by AI search engines, so make it specific and quotable.",
   "content": "Full HTML body content, ${wordRange}, with proper headings, paragraphs, and internal links. MUST open with a short introductory <p> (2–3 sentences) that directly answers the title question — do NOT start with an <h2>. The first <h2> comes after the opening paragraph. Each <h2> should match a question a user would actually ask. Lead each section with its core claim. Keep every <p> to 2–3 sentences maximum. Must include every link listed under 'Required Internal Links' in the system prompt.",
   "ctaBlock": "Self-contained HTML callout starting with <div class=\\"${brand.ctaClass}\\">, matching the CTA Block rules in the system prompt.",
   "faqs": [
@@ -340,6 +341,7 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
   if (format) parsed.content = splitLongParagraphs(parsed.content);
 
   try {
+    validateFieldLengths(parsed);
     validateRequiredLinks(parsed, requiredLinks);
     validateContentQuality(parsed, lengthTier, brand, { minWords: format?.minWords });
     if (format) {
