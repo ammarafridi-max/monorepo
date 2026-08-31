@@ -1,6 +1,9 @@
 // Usage:
-//   node --env-file=apps/emirateslimo-backend/.env.production apps/emirateslimo-backend/scripts/sync-pricing.js
-//   node --env-file=apps/emirateslimo-backend/.env.production apps/emirateslimo-backend/scripts/sync-pricing.js --dry
+//   pnpm automation pricing-sync --dry-run
+//   pnpm automation pricing-sync
+//
+// Locally, supply config with:
+//   node --env-file=apps/emirateslimo-backend/.env.production src/cli.mjs pricing-sync --dry-run
 //
 // The Google service account needs EDITOR access on the sheet (it writes the Added column).
 
@@ -26,7 +29,8 @@ const CONFIG = {
   returnStrategy: "double",
 };
 
-const DRY = process.argv.includes("--dry");
+/** Set from the CLI context; --dry is still honoured for standalone runs. */
+let DRY = process.argv.includes("--dry") || process.argv.includes("--dry-run");
 
 function createRuleName(vehicles, pickupZones, dropoffZones) {
   return `${vehicles.map((veh) => `${veh.brand} ${veh.model}`).join(" / ")} - ${pickupZones
@@ -116,7 +120,11 @@ async function resolveZoneCell(Zone, text) {
   return { docs, missing };
 }
 
-async function main() {
+/**
+ * @param {{ dryRun: boolean }} ctx
+ */
+export async function run({ dryRun } = {}) {
+  DRY = DRY || Boolean(dryRun);
   if (!process.env.MONGO_URI) throw new Error("MONGO_URI is required");
   if (!CONFIG.sheetId) throw new Error("PRICING_SHEET_ID is required");
 
@@ -321,7 +329,4 @@ async function main() {
     console.log(`  errors:\n    ${stats.errors.join("\n    ")}`);
 }
 
-main().catch((err) => {
-  console.error("[sync] FAILED:", err.message);
-  process.exit(1);
-});
+export default run;

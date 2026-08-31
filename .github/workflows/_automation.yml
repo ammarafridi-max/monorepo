@@ -1,0 +1,102 @@
+# Shared body for every scheduled automation. Callers supply the job, the target,
+# and their own cron; everything else — checkout, install, run, failure reporting
+# — lives here once.
+name: Automation
+
+on:
+  workflow_call:
+    inputs:
+      job:
+        description: Job name from automations/src/registry.mjs
+        required: true
+        type: string
+      target:
+        description: Target key, for jobs that need one
+        required: false
+        type: string
+        default: ''
+      args:
+        description: Extra flags passed through to the job
+        required: false
+        type: string
+        default: ''
+      dry-run:
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write # to raise the failure issue below
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Catches a target that no longer satisfies the schema before we spend
+      # anything on it.
+      - name: Validate targets
+        run: pnpm --filter @travel-suite/automations automation check
+
+      - name: Run ${{ inputs.job }}${{ inputs.target && format(' → {0}', inputs.target) }}
+        working-directory: automations
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          RECRAFT_API_KEY: ${{ secrets.RECRAFT_API_KEY }}
+          TRAVL_ADMIN_EMAIL: ${{ secrets.TRAVL_ADMIN_EMAIL }}
+          TRAVL_ADMIN_PASSWORD: ${{ secrets.TRAVL_ADMIN_PASSWORD }}
+          TRAVL_COOKIE: ${{ secrets.TRAVL_COOKIE }}
+          VISAWADI_ADMIN_EMAIL: ${{ secrets.VISAWADI_ADMIN_EMAIL }}
+          VISAWADI_ADMIN_PASSWORD: ${{ secrets.VISAWADI_ADMIN_PASSWORD }}
+          VISAWADI_COOKIE: ${{ secrets.VISAWADI_COOKIE }}
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          PRICING_SHEET_ID: ${{ secrets.PRICING_SHEET_ID }}
+          PRICING_SHEET_TAB: ${{ secrets.PRICING_SHEET_TAB }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: |
+          node src/cli.mjs "${{ inputs.job }}" \
+            ${{ inputs.target && format('--target {0}', inputs.target) || '' }} \
+            ${{ inputs.dry-run && '--dry-run' || '' }} \
+            ${{ inputs.args }}
+
+      # A red tick in a tab nobody opens is not a notification. One open issue per
+      # automation, reused so a repeated failure comments rather than spamming.
+      - name: Report failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const job = ${{ toJSON(inputs.job) }};
+            const target = ${{ toJSON(inputs.target) }};
+            const label = target ? `${job} → ${target}` : job;
+            const title = `Automation failed: ${label}`;
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = `\`${label}\` failed on ${new Date().toISOString().slice(0, 16).replace('T', ' ')} UTC.\n\n[View the run](${runUrl})`;
+
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', labels: 'automation-failure', per_page: 100,
+            });
+            const open = existing.data.find((i) => i.title === title);
+
+            if (open) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: open.number, body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo,
+                title, body, labels: ['automation-failure'],
+              });
+            }

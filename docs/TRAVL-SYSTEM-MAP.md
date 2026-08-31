@@ -280,11 +280,10 @@ All Anthropic calls use **`claude-sonnet-4-6`**, key `ANTHROPIC_API_KEY`.
 | same `chat()` | Conversational itinerary edit | "itinerary editor"; returns `{updatedInput,itinerary,reply}` | re-rendered order |
 | same `parseDocuments()` | Extract flight segments from **customer-uploaded** PDFs/images | "extract travel details…resolve codes…never invent" | prefill form; files archived Cloudinary |
 | `packages/domains/blog/src/controller.js:350` `improveContent` | Rewrite blog HTML to sound human | "professional editor…no em dashes…forbidden words…British English" (raw `fetch api.anthropic.com`) | back to admin editor |
-| `scripts/generate-blog-draft.mjs:204` | Daily blog generation | large SEO/GEO Travl system prompt; JSON post | POST `/api/blogs` status `published` |
-| `scripts/expand-blog-post.mjs` | Blog expansion utility (unclear exact use — not fully read) | — | likely blog API |
+| `automations/jobs/blog-generate/index.mjs` | Daily blog generation | large SEO/GEO Travl system prompt; JSON post | POST `/api/blogs` status `published` |
 
-- **Recraft image gen** (`RECRAFT_API_KEY`): blog cover images — `packages/domains/blog/src/controller.js:301` (`recraftv3`, realistic, 1820×1024) and `scripts/generate-blog-draft.mjs:276` (picsum fallback).
-- **Blog pipeline:** `scripts/topics.json` + `scripts/site-context.md` → `scripts/generate-blog-draft.mjs` (login as admin, Claude JSON, Recraft cover, POST `/api/blogs`) → GitHub Action `.github/workflows/travl-daily-blog-publish.yml` (**currently PAUSED** — cron commented out; manual dispatch only). Secrets: `ANTHROPIC_API_KEY`, `TRAVL_ADMIN_EMAIL`, `TRAVL_ADMIN_PASSWORD`, `RECRAFT_API_KEY`.
+- **Recraft image gen** (`RECRAFT_API_KEY`): blog cover images — `packages/domains/blog/src/controller.js:301` (`recraftv3`, realistic, 1820×1024) and `automations/jobs/blog-generate/index.mjs` (picsum fallback).
+- **Blog pipeline:** `automations/targets/travl/{topics.json,site-context.md}` → `automations/jobs/blog-generate` (login as admin, Claude JSON, Recraft cover, POST `/api/blogs`), run via `pnpm automation blog-generate --target travl` → GitHub Action `.github/workflows/blog-travl.yml` (**currently PAUSED** — cron commented out; manual dispatch only). Secrets: `ANTHROPIC_API_KEY`, `TRAVL_ADMIN_EMAIL`, `TRAVL_ADMIN_PASSWORD`, `RECRAFT_API_KEY`. See `automations/README.md`.
 
 ---
 

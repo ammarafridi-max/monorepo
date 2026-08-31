@@ -34,21 +34,6 @@ export const BANNED_WORDS = [
   "unlock",
 ];
 
-/** Resolve a brand pack by key. Throws with the valid keys if it doesn't exist. */
-export async function loadBrand(key) {
-  try {
-    const mod = await import(`./brands/${key}.mjs`);
-    return mod.BRAND ?? mod.default;
-  } catch (err) {
-    if (err?.code === "ERR_MODULE_NOT_FOUND") {
-      throw new Error(
-        `Unknown brand "${key}". Add scripts/lib/brands/${key}.mjs to support it.`,
-      );
-    }
-    throw err;
-  }
-}
-
 /**
  * Everything that talks to a brand's backend. The brand supplies the base URL
  * and the names of its admin credential env vars, so two brands never share a

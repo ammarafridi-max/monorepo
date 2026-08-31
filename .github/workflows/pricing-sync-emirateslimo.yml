@@ -1,0 +1,19 @@
+name: Emirates Limo Pricing Sync
+
+on:
+  schedule:
+    - cron: '0 5 * * 1,4' # Monday and Thursday, 09:00 Gulf time
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: Read the sheet and report without writing
+        type: boolean
+        default: false
+
+jobs:
+  sync:
+    uses: ./.github/workflows/_automation.yml
+    secrets: inherit
+    with:
+      job: pricing-sync
+      dry-run: ${{ inputs.dry-run == true }}

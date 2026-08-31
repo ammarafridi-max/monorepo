@@ -18,6 +18,8 @@ Everything is ESM (`"type": "module"`), Node 22, React 19, Tailwind v4.
 
 > Note: the root `README.md` is out of date — it lists only four brands and a flat `packages/` layout. Trust this file and the actual tree over the README.
 
+**Scheduled jobs live in `automations/`** — one workspace package holding every cron: blog generation per brand, the blog backlog scheduler, the Emirates Limo pricing sync. One entrypoint (`node src/cli.mjs <job> [--target <key>]`), one reusable GitHub workflow with thin per-job callers, and a config schema that validates every target at load. Every job supports `--dry-run`, and a dry run needs no credentials so CI can exercise it on a pull request. Add a job there rather than dropping a script at the repo root or under an app. See `automations/README.md`.
+
 ## How to work in this repo
 
 - Secrets are radioactive. Never echo .env files, never print API keys, webhook

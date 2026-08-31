@@ -1,13 +1,13 @@
 /**
- * Generates and publishes one blog post for a brand, from that brand's topic
- * schedule. Everything brand-specific lives in lib/brands/<key>.mjs.
+ * Generates and publishes one blog post for a target, from that target's topic
+ * schedule. Everything target-specific lives in ../../targets/<key>/.
  *
  * Usage:
- *   node generate-blog-draft.mjs                    # defaults to travl
- *   node generate-blog-draft.mjs --brand visawadi
+ *   pnpm automation blog-generate --target travl
+ *   pnpm automation blog-generate --target visawadi --dry-run
  *
- * Env: ANTHROPIC_API_KEY, RECRAFT_API_KEY, and the brand's admin credentials
- * (TRAVL_ADMIN_EMAIL / TRAVL_ADMIN_PASSWORD, VISAWADI_ADMIN_EMAIL / ...).
+ * Env: ANTHROPIC_API_KEY, RECRAFT_API_KEY, and the target's admin credentials
+ * (named by adminEmailEnv / adminPasswordEnv in its config).
  */
 
 import Anthropic from "@anthropic-ai/sdk";
@@ -17,7 +17,6 @@ import { dirname, join } from "path";
 
 import {
   LENGTH_TIERS,
-  loadBrand,
   validateCitations,
   validateParagraphs,
   splitLongParagraphs,
@@ -28,14 +27,16 @@ import {
   validateRequiredLinks,
   validateContentQuality,
   fetchCoverImage,
-} from "./lib/blog-utils.mjs";
-import { resolveFormat } from "./lib/formats.mjs";
-import { verifyDraft, assertVerification, reportVerification, needsRevision, buildRevisionBrief } from "./lib/verify.mjs";
+} from "../../src/lib/blog-utils.mjs";
+import { resolveFormat } from "../../src/lib/formats.mjs";
+import { verifyDraft, assertVerification, reportVerification, needsRevision, buildRevisionBrief } from "../../src/lib/verify.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-const MODEL = "claude-sonnet-4-6";
+/** Overridable per target via `model` in its config. */
+const DEFAULT_MODEL = "claude-sonnet-4-6";
+const modelFor = (target) => target?.model ?? DEFAULT_MODEL;
 /** Stop after the draft is written, before any fact-check spend. */
 const GENERATE_ONLY = process.argv.includes("--generate-only");
 /** One fact-check pass, report the verdict, no revision and no publish. */
@@ -58,14 +59,8 @@ function parseStatusArg(argv) {
   return v;
 }
 
-const DRY_RUN = process.argv.includes("--dry-run");
-
-function parseBrandArg(argv) {
-  const i = argv.indexOf("--brand");
-  if (i !== -1 && argv[i + 1]) return argv[i + 1];
-  const inline = argv.find((a) => a.startsWith("--brand="));
-  return inline ? inline.split("=")[1] : "travl";
-}
+/** Set from the CLI context; the process.argv read keeps standalone runs working. */
+let DRY_RUN = process.argv.includes("--dry-run");
 
 function getTodayUAE() {
   const now = new Date();
@@ -82,7 +77,7 @@ function parseDateArg(argv) {
 }
 
 function loadTopics(brand) {
-  return JSON.parse(readFileSync(join(__dirname, brand.topicsFile), "utf8"));
+  return JSON.parse(readFileSync(join(brand.dir, "topics.json"), "utf8"));
 }
 
 function getTopicForDate(brand, dateOverride) {
@@ -90,7 +85,7 @@ function getTopicForDate(brand, dateOverride) {
   const today = dateOverride || getTodayUAE();
   const entry = topics.find((t) => t.date === today);
   if (!entry) {
-    throw new Error(`No topic scheduled for ${today}. Check ${brand.topicsFile}.`);
+    throw new Error(`No topic scheduled for ${today}. Check ${brand.key}/topics.json.`);
   }
   return entry;
 }
@@ -287,7 +282,7 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       message = await client.messages.create({
-        model: MODEL,
+        model: modelFor(brand),
         max_tokens: maxTokens,
         system: systemPrompt,
         output_config: { format: { type: "json_schema", schema: POST_SCHEMA } },
@@ -426,8 +421,12 @@ async function postDraft({ brand, api, token, topic, content, availableTags, sta
   return body.data;
 }
 
-async function main() {
-  const brand = await loadBrand(parseBrandArg(process.argv.slice(2)));
+/**
+ * @param {{ target: object, dryRun: boolean, argv: string[] }} ctx
+ */
+export async function run({ target, dryRun }) {
+  const brand = target;
+  DRY_RUN = DRY_RUN || dryRun;
   const api = createApiClient(brand);
 
   console.log(`\n=== ${brand.name} Blog Draft Generator ===`);
@@ -445,7 +444,7 @@ async function main() {
     await generateBlogContent({
       brand,
       topic,
-      siteContext: readFileSync(join(__dirname, brand.siteContextFile), "utf8"),
+      siteContext: readFileSync(join(brand.dir, "site-context.md"), "utf8"),
       publishedPosts: [],
       availableTags: ["Example Tag"],
     });
@@ -467,7 +466,7 @@ async function main() {
       (t) => !existingTitles.has(t.title.trim().toLowerCase()),
     );
     if (!topic) {
-      console.log(`⏭  Every topic in ${brand.topicsFile} is already written.`);
+      console.log(`⏭  Every topic in ${brand.key}/topics.json is already written.`);
       return;
     }
   }
@@ -483,7 +482,7 @@ async function main() {
     `✓ Fetched ${publishedPosts.length} published posts, ${availableTags.length} tags`,
   );
 
-  const siteContext = readFileSync(join(__dirname, brand.siteContextFile), "utf8");
+  const siteContext = readFileSync(join(brand.dir, "site-context.md"), "utf8");
 
   const draftCache = parseFlag(process.argv.slice(2), "draft-file");
   const cached = draftCache && existsSync(draftCache)
@@ -532,7 +531,7 @@ async function main() {
     console.log("\nFact-checking against the cited official sources...");
     verification = await verifyDraft({
       apiKey: ANTHROPIC_API_KEY,
-      model: parseFlag(process.argv.slice(2), "verify-model") ?? MODEL,
+      model: parseFlag(process.argv.slice(2), "verify-model") ?? modelFor(brand),
       title: topic.title,
       content: content.content,
       citations: content.__citations,
@@ -565,7 +564,7 @@ async function main() {
       console.log("Re-checking the revised draft...");
       verification = await verifyDraft({
         apiKey: ANTHROPIC_API_KEY,
-        model: MODEL,
+        model: modelFor(brand),
         title: topic.title,
         content: content.content,
         citations: content.__citations ?? [],
@@ -587,7 +586,5 @@ async function main() {
   );
 }
 
-main().catch((err) => {
-  console.error("\n❌ Error:", err.message);
-  process.exit(1);
-});
+export default run;
+

@@ -1,12 +1,12 @@
-#!/usr/bin/env node
 /**
- * travl-schedule-drafts.mjs — schedule backlog draft posts for publishing,
- * one per day at 09:00 Asia/Dubai (05:00 UTC), oldest-created first.
+ * Schedule backlog draft posts for publishing, one per day at 09:00 Asia/Dubai
+ * (05:00 UTC), oldest-created first.
  *
- *   node travl-schedule-drafts.mjs            # dry run (default)
- *   node travl-schedule-drafts.mjs --apply    # PATCH status=scheduled + scheduledAt
+ *   pnpm automation blog-schedule --target travl --dry-run
+ *   pnpm automation blog-schedule --target travl --apply
  *
- * Auth: export TRAVL_COOKIE="jwt=<admin session>"
+ * Auth: the target's admin session cookie, from <TARGET>_COOKIE
+ * (e.g. TRAVL_COOKIE="jwt=<admin session>").
  *
  * Idempotent + stable: the ordering basis is every draft/scheduled post (minus
  * exclusions) sorted by createdAt, so slug→date never shifts between runs. A post
@@ -14,10 +14,9 @@
  * scheduled→published when the time passes (publishDueScheduledBlogs on any GET).
  */
 
-const BASE = process.env.TRAVL_API || 'https://api.travl.ae';
-const COOKIE = process.env.TRAVL_COOKIE || '';
-const APPLY = process.argv.includes('--apply');
-const DRY = !APPLY;
+let BASE = '';
+let COOKIE = '';
+let DRY = true;
 
 // --- schedule parameters (confirmed) ---
 const START_UTC = Date.UTC(2026, 6, 20, 5, 0, 0); // 2026-07-20 09:00 GST
@@ -47,8 +46,17 @@ async function patch(id, body) {
   return res.json();
 }
 
-async function main() {
-  if (!COOKIE) throw new Error('TRAVL_COOKIE not set');
+/**
+ * @param {{ target: object, dryRun: boolean }} ctx
+ */
+export async function run({ target, dryRun }) {
+  const cookieEnv = `${target.key.toUpperCase()}_COOKIE`;
+  BASE = process.env[`${target.key.toUpperCase()}_API`] || target.backendUrl;
+  COOKIE = process.env[cookieEnv] || '';
+  // --apply is the explicit opt-in to write; --dry-run and the bare default both stay read-only.
+  DRY = dryRun || !process.argv.includes('--apply');
+
+  if (!COOKIE) throw new Error(`${cookieEnv} not set`);
   console.log(`\n=== schedule-drafts [${DRY ? 'DRY RUN' : 'APPLY'}] ===\n`);
 
   // Stable basis: drafts + already-scheduled, minus exclusions, oldest-created first.
@@ -82,4 +90,4 @@ async function main() {
   if (basis.length) console.log(`Window: ${gst(START_UTC)}  →  ${gst(START_UTC + (basis.length - 1) * STEP_MS)}`);
 }
 
-main().catch((e) => { console.error('FATAL:', e.message); process.exit(1); });
+export default run;

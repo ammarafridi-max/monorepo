@@ -1,6 +1,6 @@
 # Blog format: what the 2026 research says
 
-Why `scripts/lib/formats.mjs` is shaped the way it is. Researched 2026-08-17.
+Why `automations/src/lib/formats.mjs` is shaped the way it is. Researched 2026-08-17.
 
 ## Findings
 

@@ -1,0 +1,20 @@
+{
+  "name": "@travel-suite/automations",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "automation": "node src/cli.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.117.1",
+    "@travel-suite/pricing-rules": "workspace:*",
+    "@travel-suite/vehicles": "workspace:*",
+    "@travel-suite/zones": "workspace:*",
+    "googleapis": "^144.0.0",
+    "mongoose": "^9.0.2"
+  },
+  "engines": {
+    "node": "22.x"
+  }
+}

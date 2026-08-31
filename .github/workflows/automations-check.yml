@@ -1,0 +1,37 @@
+# Runs on every change to the automations, so a broken target or a generator that
+# no longer starts is caught in the pull request rather than at 05:00 in a cron.
+name: Automations Check
+
+on:
+  pull_request:
+    paths: ['automations/**', '.github/workflows/_automation.yml', '.github/workflows/automations-check.yml']
+  push:
+    branches: [master]
+    paths: ['automations/**']
+  workflow_dispatch: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Validate every target against the schema
+        working-directory: automations
+        run: node src/cli.mjs check
+
+      # No credentials: a dry run must stay runnable without them, which is what
+      # makes this check meaningful on a fork PR.
+      - name: Dry-run every blog target
+        working-directory: automations
+        run: |
+          for t in $(node -e "import('./src/registry.mjs').then(m => console.log(m.listTargets().join(' ')))"); do
+            echo "--- $t"
+            node src/cli.mjs blog-generate --target "$t" --dry-run > /dev/null
+          done

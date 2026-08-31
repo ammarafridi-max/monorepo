@@ -11,7 +11,7 @@
 const SITE = 'https://www.visawadi.com';
 const visaUrl = (slug) => `${SITE}/uae/visa/${slug}`;
 
-export const BRAND = {
+export const TARGET = {
   key: 'visawadi',
   name: 'VisaWadi',
   backendUrl: 'https://api.visawadi.com',
@@ -20,8 +20,6 @@ export const BRAND = {
   adminEmailEnv: 'VISAWADI_ADMIN_EMAIL',
   adminPasswordEnv: 'VISAWADI_ADMIN_PASSWORD',
 
-  topicsFile: 'topics-visawadi.json',
-  siteContextFile: 'site-context-visawadi.md',
 
   ctaClass: 'visawadi-cta',
 
@@ -233,4 +231,5 @@ Example shape (write your own copy, do not reuse this wording verbatim):
   },
 };
 
-export default BRAND;
+export const BRAND = TARGET;
+export default TARGET;

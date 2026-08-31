@@ -1,0 +1,23 @@
+name: Travl Daily Blog
+
+on:
+  # PAUSED 2026-07-19: the backlog was publishing one per day and ran out on
+  # 2026-08-28, so this is currently producing nothing. Uncomment to resume.
+  # schedule:
+  #   - cron: '0 5 * * *' # 09:00 Asia/Dubai
+  workflow_dispatch:
+    inputs:
+      status:
+        description: Publish immediately or stage as a draft
+        type: choice
+        options: [published, draft]
+        default: draft
+
+jobs:
+  generate:
+    uses: ./.github/workflows/_automation.yml
+    secrets: inherit
+    with:
+      job: blog-generate
+      target: travl
+      args: --status ${{ inputs.status || 'draft' }}

@@ -7,7 +7,7 @@
  * it always did.
  */
 
-export const BRAND = {
+export const TARGET = {
   key: 'travl',
   name: 'Travl',
   backendUrl: 'https://api.travl.ae',
@@ -17,8 +17,6 @@ export const BRAND = {
   adminEmailEnv: 'TRAVL_ADMIN_EMAIL',
   adminPasswordEnv: 'TRAVL_ADMIN_PASSWORD',
 
-  topicsFile: 'topics.json',
-  siteContextFile: 'site-context.md',
 
   ctaClass: 'travl-cta',
 
@@ -197,4 +195,5 @@ Example shape (write your own copy, do not reuse this wording verbatim):
   },
 };
 
-export default BRAND;
+export const BRAND = TARGET;
+export default TARGET;
