@@ -10,6 +10,13 @@ on:
         type: boolean
         default: false
 
+# The failure reporter in _automation.yml opens an issue, and a called workflow
+# cannot request more than its caller holds. The repo default is read-only, so
+# the caller has to grant it here.
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   sync:
     uses: ./.github/workflows/_automation.yml
