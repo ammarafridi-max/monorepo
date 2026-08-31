@@ -441,7 +441,7 @@ monorepo, right-sized to this repo (layered modules in `apps/picturesk-backend`,
     customer topbar/footer are hidden on `/admin`.
 - **Bootstrap the first admin:** set `ADMIN_JWT_SECRET` and a strong `SEED_PASSWORD`
   (plus optional `SEED_NAME/SEED_USERNAME/SEED_EMAIL`), then run
-  `pnpm --filter @travel-suite/picturesk-backend seed-admin` (idempotent: skips if any admin exists).
+  created directly against the database (the seed script has been removed).
   Cross-origin note: in production the api and web are separate origins, so the admin
   cookie is `SameSite=None; Secure` and CORS runs with credentials pinned to
   `WEB_BASE_URL`. Both must be HTTPS for the cookie to stick.
@@ -530,7 +530,7 @@ pnpm --filter @travel-suite/picturesk-backend tune:gen \
 
 It runs the real generation functions against that version, polls to completion,
 prints each image URL, and saves a record under
-`apps/picturesk-backend/scripts/results/`. It never creates an order or touches
+a local results directory. It never creates an order or touches
 Mongo/Redis/Stripe. Compare a few scales; once a scale looks good it is already
 promoted, since `GEN_LORA_SCALE` is the default the worker reads for real orders.
 (Real-order prompts come from the shared catalog + the customer's selections and

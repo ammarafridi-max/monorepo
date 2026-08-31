@@ -56,6 +56,5 @@ README.md
 # Test coverage
 **/coverage
 
-# Test suites and local tuning output (Picturesk) — never needed in an image
+# Test suites — never needed in an image
 **/test
-apps/picturesk-backend/scripts/results

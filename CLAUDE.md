@@ -70,7 +70,6 @@ Backends run directly on Node's built-in watcher and env-file loader (no nodemon
 ```bash
 # from apps/<brand>-backend — dev uses .env.development, start uses .env.production
 pnpm dev        # node --env-file=.env.development --watch src/server.js
-node --env-file=.env.development scripts/seed-admin.js   # seed an admin user
 ```
 
 **Testing:** the travel apps have no tests. The only test suite in the repo is Picturesk's (`node --test` in `apps/picturesk-backend`), so a root `pnpm test` runs that and nothing else. It passes. **Linting** exists only on frontends (`next lint`); shared packages have no lint/build step (they're consumed as raw source via subpath exports).
