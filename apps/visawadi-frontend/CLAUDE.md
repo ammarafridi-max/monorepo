@@ -4,11 +4,13 @@ Scoped guidance for the **VisaWadi** frontend. Read the repo-root `CLAUDE.md` fi
 
 ## What VisaWadi is
 
-VisaWadi is a **visa-only** brand for UAE residents: visa application support and nothing else.
+VisaWadi is a **visa-assistance** brand for UAE residents.
 
-It does **not** sell travel insurance, travel itineraries, dummy/verifiable flight tickets, hotel reservations or transfers. Don't build UI for any of them, and don't import shared components or services belonging to those domains — the backend does not mount them, so the calls would 404.
+The Schengen-family packages (`schengen`, `france-visa`, `germany-visa`, `italy-visa`, `spain-visa`, `greece-visa`) **do include** a dummy flight reservation, a hotel reservation, 9 days of travel insurance and a day-by-day itinerary. This is deliberate: VisaWadi has owned supply for these at near-zero marginal cost, and it is the basis of the pricing position. Do not "correct" these out of `packages[].features` as a brand-neutrality or scope breach. They are the offer.
 
-One distinction to keep straight: a **travel insurance policy** and a **day-by-day itinerary** are documents an applicant supplies as part of a visa file, and they appear in checklists and requirement lists. That is not the same as VisaWadi selling those products.
+The UK, US and Canada packages are different: they offer **guidance** on the flight reservation, not the reservation itself. Their flight FAQ says the applicant arranges it separately, and that is accurate. Keep the two families distinct when editing copy.
+
+What VisaWadi does **not** sell as a standalone product is transfers. There is also no self-serve checkout for insurance or itineraries: they exist only as components of a visa package, so don't build product UI for them or import shared components from those domains — the backend does not mount them, so the calls would 404.
 
 ### Who owns which product (blog content)
 
@@ -42,7 +44,9 @@ Admin:
 
 The sidebar nav and brand mark are configured in `src/app/admin/(dashboard)/layout.js`.
 
-`src/config.js` reads the `NEXT_PUBLIC_*` env vars. `src/proxy.js` is the middleware and currently only redirects apex to www; add legacy-path redirects there as they appear.
+`src/config.js` reads the `NEXT_PUBLIC_*` env vars.
+
+**There is no middleware.** An earlier version of this file claimed a `src/proxy.js`; no such file exists and none is needed. Apex-to-www and the legacy `/visa/*` to `/uae/visa/*` redirects are `async redirects()` entries in `next.config.mjs`, which is also the right place to add new ones. That matters because Next silently ignores middleware under `output: 'standalone'`, which this app uses.
 
 ## Conventions specific to this app
 
