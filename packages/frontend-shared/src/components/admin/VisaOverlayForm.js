@@ -220,371 +220,416 @@ export default function VisaOverlayForm({
     (String(watch('visaCentre.name') || '').trim() ? 1 : 0);
 
   return (
-    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-5 pb-24">
-      {/* What this screen is. Worth stating plainly — the inherit model is the
-          one thing that makes the empty fields make sense. */}
-      <div className="flex items-start gap-2.5 px-4 py-3 rounded-2xl bg-primary-50 border border-primary-100">
-        <Info size={15} className="text-primary-700 shrink-0 mt-0.5" />
-        <p className="text-xs text-primary-900/80 leading-relaxed">
-          You are editing the <span className="font-bold">{country.name}</span> version of{' '}
-          <span className="font-bold">{base?.countryName}</span>. Anything you leave empty is taken
-          from the base page, so you only fill in what is genuinely different here.
-          {overrideCount === 0 && (
-            <span className="block mt-1 font-semibold">
-              Nothing is different yet, so this page reads exactly like the base one.
-            </span>
-          )}
-        </p>
+    <form onSubmit={handleSubmit(onFormSubmit)}>
+
+      <div className="flex items-center justify-between gap-4 mb-6">
+        <h2 className="text-lg font-extrabold text-gray-900">
+          Edit {country.short || country.name} Version
+        </h2>
+        <button
+          type="submit"
+          disabled={isSaving}
+          className="flex items-center gap-2 bg-primary-700 hover:bg-primary-800 disabled:opacity-60 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors cursor-pointer"
+        >
+          {isSaving && <Loader2 size={13} className="animate-spin" />}
+          {isSaving ? 'Saving…' : isDirty ? 'Save Changes' : 'Saved'}
+        </button>
       </div>
 
-      <Card title="Page basics">
-        <div className="space-y-4">
-          <Field label="Hero headline" hint="Leave empty to use the base headline.">
-            <TextInput {...register('heroHeadline')} placeholder={base?.heroHeadline || '—'} />
-          </Field>
-          <Field label="Hero subheadline">
-            <TextareaInput rows={2} {...register('heroSubheadline')} placeholder={base?.heroSubheadline || '—'} />
-          </Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Processing time" hint="Local estimate, if it differs.">
-              <TextInput {...register('processingTime')} placeholder={base?.processingTime || '—'} />
-            </Field>
-            <Field label="Card excerpt" hint="Shown on the listing page.">
-              <TextInput {...register('excerpt')} placeholder={base?.excerpt || '—'} />
-            </Field>
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_300px] gap-5 items-start">
+
+        <div className="space-y-5">
+
+          {/* What this screen is. Worth stating plainly — the inherit model is the
+              one thing that makes the empty fields make sense. */}
+          <div className="flex items-start gap-2.5 px-4 py-3 rounded-2xl bg-primary-50 border border-primary-100">
+            <Info size={15} className="text-primary-700 shrink-0 mt-0.5" />
+            <p className="text-xs text-primary-900/80 leading-relaxed">
+              You are editing the <span className="font-bold">{country.name}</span> version of{' '}
+              <span className="font-bold">{base?.countryName}</span>. Anything you leave empty is taken
+              from the base page, so you only fill in what is genuinely different here.
+              {overrideCount === 0 && (
+                <span className="block mt-1 font-semibold">
+                  Nothing is different yet, so this page reads exactly like the base one.
+                </span>
+              )}
+            </p>
           </div>
-        </div>
-      </Card>
 
-      <Card title="Search listing" collapsible defaultOpen={false}>
-        <div className="space-y-4">
-          <p className="text-[11px] text-gray-400">
-            Google shows one result per URL, so a country version that reuses the base title
-            competes with the base page. Worth writing.
-          </p>
-          <Field label="Meta title" hint="The brand name is added automatically — don't repeat it.">
-            <TextInput {...register('metaTitle')} placeholder={base?.metaTitle || '—'} />
-          </Field>
-          <Field label="Meta description">
-            <TextareaInput rows={2} {...register('metaDescription')} placeholder={base?.metaDescription || '—'} />
-          </Field>
-        </div>
-      </Card>
+          <Card title="Page basics">
+            <div className="space-y-4">
+              <Field label="Hero headline" hint="Leave empty to use the base headline.">
+                <TextInput {...register('heroHeadline')} placeholder={base?.heroHeadline || '—'} />
+              </Field>
+              <Field label="Hero subheadline">
+                <TextareaInput rows={2} {...register('heroSubheadline')} placeholder={base?.heroSubheadline || '—'} />
+              </Field>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Processing time" hint="Local estimate, if it differs.">
+                  <TextInput {...register('processingTime')} placeholder={base?.processingTime || '—'} />
+                </Field>
+                <Field label="Card excerpt" hint="Shown on the listing page.">
+                  <TextInput {...register('excerpt')} placeholder={base?.excerpt || '—'} />
+                </Field>
+              </div>
+            </div>
+          </Card>
 
-      <Card title="Visa centre" collapsible defaultOpen={false}>
-        <div className="space-y-4">
-          <p className="text-[11px] text-gray-400">
-            Where applicants physically go. There is no base version of this — it only exists
-            per country.
-          </p>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Name">
-              <TextInput {...register('visaCentre.name')} placeholder="e.g. VFS Global" />
-            </Field>
-            <Field label="City">
-              <TextInput {...register('visaCentre.city')} placeholder={country.hub || 'e.g. Dubai'} />
-            </Field>
-          </div>
-          <Field label="Address">
-            <TextareaInput rows={2} {...register('visaCentre.address')} placeholder="Street address…" />
-          </Field>
-          <Field label="Note" hint="Anything applicants get wrong, e.g. appointment-only.">
-            <TextInput {...register('visaCentre.note')} placeholder="Optional" />
-          </Field>
-        </div>
-      </Card>
+          <Card title="Search listing" collapsible defaultOpen={false}>
+            <div className="space-y-4">
+              <p className="text-[11px] text-gray-400">
+                Google shows one result per URL, so a country version that reuses the base title
+                competes with the base page. Worth writing.
+              </p>
+              <Field label="Meta title" hint="The brand name is added automatically — don't repeat it.">
+                <TextInput {...register('metaTitle')} placeholder={base?.metaTitle || '—'} />
+              </Field>
+              <Field label="Meta description">
+                <TextareaInput rows={2} {...register('metaDescription')} placeholder={base?.metaDescription || '—'} />
+              </Field>
+            </div>
+          </Card>
 
-      {/* Requirements: the one card that merges per section rather than wholesale. */}
-      <Card title="Documents required" collapsible>
-        <p className="text-[11px] text-gray-400 mb-4">
-          Each section is inherited until you customise it. Customising one leaves the rest
-          tracking the base, so a change to the shared checklist still reaches this country.
-        </p>
-        <div className="space-y-4">
-          {reqs.fields.map((field, si) => {
-            const row = watchedReq[si] || {};
-            const on = !!row._custom;
-            const items = row.items || [];
-            return (
-              <ItemBox
-                key={field.id}
-                label={`${row.title || 'Untitled section'}${row._extra ? ` · ${country.short} only` : ''}`}
-                defaultOpen={on}
-                onRemove={row._extra ? () => reqs.remove(si) : undefined}
-                actions={
-                  !row._extra && (
-                    <button
-                      type="button"
-                      onClick={() => setValue(`requirementSections.${si}._custom`, !on, { shouldDirty: true })}
-                      className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border transition cursor-pointer ${
-                        on
-                          ? 'border-gray-200 text-gray-600 hover:bg-white'
-                          : 'border-primary-200 bg-primary-50 text-primary-700 hover:bg-primary-100'
-                      }`}
-                    >
-                      {on ? 'Revert to base' : 'Customise'}
-                    </button>
-                  )
-                }
-              >
-                {!on && (
-                  <p className="text-[11px] text-gray-400">
-                    Inherited. {items.length} item{items.length === 1 ? '' : 's'} from the base page.
-                  </p>
-                )}
-                {on && (
-                  <>
-                    {row._extra && (
-                      <Field label="Section title">
-                        <TextInput {...register(`requirementSections.${si}.title`)} placeholder="e.g. Emirates ID documents" />
-                      </Field>
+          <Card title="Visa centre" collapsible defaultOpen={false}>
+            <div className="space-y-4">
+              <p className="text-[11px] text-gray-400">
+                Where applicants physically go. There is no base version of this — it only exists
+                per country.
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Name">
+                  <TextInput {...register('visaCentre.name')} placeholder="e.g. VFS Global" />
+                </Field>
+                <Field label="City">
+                  <TextInput {...register('visaCentre.city')} placeholder={country.hub || 'e.g. Dubai'} />
+                </Field>
+              </div>
+              <Field label="Address">
+                <TextareaInput rows={2} {...register('visaCentre.address')} placeholder="Street address…" />
+              </Field>
+              <Field label="Note" hint="Anything applicants get wrong, e.g. appointment-only.">
+                <TextInput {...register('visaCentre.note')} placeholder="Optional" />
+              </Field>
+            </div>
+          </Card>
+
+          {/* Requirements: the one card that merges per section rather than wholesale. */}
+          <Card title="Documents required" collapsible>
+            <p className="text-[11px] text-gray-400 mb-4">
+              Each section is inherited until you customise it. Customising one leaves the rest
+              tracking the base, so a change to the shared checklist still reaches this country.
+            </p>
+            <div className="space-y-4">
+              {reqs.fields.map((field, si) => {
+                const row = watchedReq[si] || {};
+                const on = !!row._custom;
+                const items = row.items || [];
+                return (
+                  <ItemBox
+                    key={field.id}
+                    label={`${row.title || 'Untitled section'}${row._extra ? ` · ${country.short} only` : ''}`}
+                    defaultOpen={on}
+                    onRemove={row._extra ? () => reqs.remove(si) : undefined}
+                    actions={
+                      !row._extra && (
+                        <button
+                          type="button"
+                          onClick={() => setValue(`requirementSections.${si}._custom`, !on, { shouldDirty: true })}
+                          className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border transition cursor-pointer ${
+                            on
+                              ? 'border-gray-200 text-gray-600 hover:bg-white'
+                              : 'border-primary-200 bg-primary-50 text-primary-700 hover:bg-primary-100'
+                          }`}
+                        >
+                          {on ? 'Revert to base' : 'Customise'}
+                        </button>
+                      )
+                    }
+                  >
+                    {!on && (
+                      <p className="text-[11px] text-gray-400">
+                        Inherited. {items.length} item{items.length === 1 ? '' : 's'} from the base page.
+                      </p>
                     )}
-                    <Field label="Intro (optional)">
-                      <TextareaInput rows={2} {...register(`requirementSections.${si}.intro`)} placeholder={base?.requirementSections?.[si]?.intro || 'Brief description…'} />
+                    {on && (
+                      <>
+                        {row._extra && (
+                          <Field label="Section title">
+                            <TextInput {...register(`requirementSections.${si}.title`)} placeholder="e.g. Emirates ID documents" />
+                          </Field>
+                        )}
+                        <Field label="Intro (optional)">
+                          <TextareaInput rows={2} {...register(`requirementSections.${si}.intro`)} placeholder={base?.requirementSections?.[si]?.intro || 'Brief description…'} />
+                        </Field>
+                        <div>
+                          <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Items</p>
+                          <StringList
+                            values={items}
+                            placeholder="Requirement"
+                            onChange={(next) => setValue(`requirementSections.${si}.items`, next, { shouldDirty: true })}
+                          />
+                        </div>
+                      </>
+                    )}
+                  </ItemBox>
+                );
+              })}
+              <AddButton
+                onClick={() => reqs.append({ title: '', intro: '', items: [''], _custom: true, _extra: true })}
+                label={`Add a ${country.short}-only section`}
+              />
+            </div>
+          </Card>
+
+          <Card title="Packages" collapsible>
+            <OverrideSwitch on={custom.packages} countryShort={country.short} onChange={(v) => setOwn('packages', v)} />
+            {custom.packages ? (
+              <div className="space-y-4">
+                {pkgs.fields.map((field, i) => (
+                  <ItemBox key={field.id} label={watch(`packages.${i}.name`) || `Package ${i + 1}`} onRemove={() => pkgs.remove(i)}>
+                    <Field label="Name">
+                      <TextInput {...register(`packages.${i}.name`)} placeholder="e.g. Standard" />
+                    </Field>
+                    <div className="grid grid-cols-3 gap-3">
+                      <Field label="Price">
+                        <TextInput type="number" min="0" step="0.01" {...register(`packages.${i}.price`)} placeholder="0" />
+                      </Field>
+                      <Field label="Currency">
+                        <TextInput {...register(`packages.${i}.currency`)} placeholder={country.currency || 'AED'} />
+                      </Field>
+                      <Field label="Timeline">
+                        <TextInput {...register(`packages.${i}.timeline`)} placeholder="e.g. 10 days" />
+                      </Field>
+                    </div>
+                    <Field label="Description">
+                      <TextareaInput rows={2} {...register(`packages.${i}.description`)} />
                     </Field>
                     <div>
-                      <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Items</p>
+                      <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Includes</p>
                       <StringList
-                        values={items}
-                        placeholder="Requirement"
-                        onChange={(next) => setValue(`requirementSections.${si}.items`, next, { shouldDirty: true })}
+                        values={watch(`packages.${i}.features`) || []}
+                        placeholder="Feature"
+                        max={20}
+                        onChange={(next) => setValue(`packages.${i}.features`, next, { shouldDirty: true })}
                       />
                     </div>
-                  </>
-                )}
-              </ItemBox>
-            );
-          })}
-          <AddButton
-            onClick={() => reqs.append({ title: '', intro: '', items: [''], _custom: true, _extra: true })}
-            label={`Add a ${country.short}-only section`}
-          />
-        </div>
-      </Card>
-
-      <Card title="Packages" collapsible>
-        <OverrideSwitch on={custom.packages} countryShort={country.short} onChange={(v) => setOwn('packages', v)} />
-        {custom.packages ? (
-          <div className="space-y-4">
-            {pkgs.fields.map((field, i) => (
-              <ItemBox key={field.id} label={watch(`packages.${i}.name`) || `Package ${i + 1}`} onRemove={() => pkgs.remove(i)}>
-                <Field label="Name">
-                  <TextInput {...register(`packages.${i}.name`)} placeholder="e.g. Standard" />
-                </Field>
-                <div className="grid grid-cols-3 gap-3">
-                  <Field label="Price">
-                    <TextInput type="number" min="0" step="0.01" {...register(`packages.${i}.price`)} placeholder="0" />
-                  </Field>
-                  <Field label="Currency">
-                    <TextInput {...register(`packages.${i}.currency`)} placeholder={country.currency || 'AED'} />
-                  </Field>
-                  <Field label="Timeline">
-                    <TextInput {...register(`packages.${i}.timeline`)} placeholder="e.g. 10 days" />
-                  </Field>
-                </div>
-                <Field label="Description">
-                  <TextareaInput rows={2} {...register(`packages.${i}.description`)} />
-                </Field>
-                <div>
-                  <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Includes</p>
-                  <StringList
-                    values={watch(`packages.${i}.features`) || []}
-                    placeholder="Feature"
-                    max={20}
-                    onChange={(next) => setValue(`packages.${i}.features`, next, { shouldDirty: true })}
-                  />
-                </div>
-                <div>
-                  <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Excludes</p>
-                  <StringList
-                    values={watch(`packages.${i}.exclusions`) || []}
-                    placeholder="Exclusion"
-                    max={20}
-                    onChange={(next) => setValue(`packages.${i}.exclusions`, next, { shouldDirty: true })}
-                  />
-                </div>
-                <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 cursor-pointer">
-                  <input type="checkbox" {...register(`packages.${i}.isHighlighted`)} className="accent-primary-700" />
-                  Most popular
-                </label>
-              </ItemBox>
-            ))}
-            <AddButton
-              onClick={() => pkgs.append({ name: '', price: 0, currency: country.currency || 'AED', timeline: '', description: '', features: [], exclusions: [], isHighlighted: false })}
-              label="Add package"
-            />
-          </div>
-        ) : (
-          <InheritedPreview rows={(base?.packages || []).map((p) => `${p.name} · ${p.currency} ${p.price}`)} />
-        )}
-      </Card>
-
-      <Card title="How it works" collapsible defaultOpen={false}>
-        <OverrideSwitch on={custom.processSteps} countryShort={country.short} onChange={(v) => setOwn('processSteps', v)} />
-        {custom.processSteps ? (
-          <div className="space-y-4">
-            {steps.fields.map((field, i) => (
-              <ItemBox key={field.id} label={watch(`processSteps.${i}.title`) || `Step ${i + 1}`} onRemove={() => steps.remove(i)}>
-                <Field label="Title">
-                  <TextInput {...register(`processSteps.${i}.title`)} placeholder="e.g. Book biometrics" />
-                </Field>
-                <Field label="Description">
-                  <TextareaInput rows={2} {...register(`processSteps.${i}.description`)} />
-                </Field>
-              </ItemBox>
-            ))}
-            <AddButton onClick={() => steps.append({ title: '', description: '' })} label="Add step" disabled={steps.fields.length >= 7} />
-          </div>
-        ) : (
-          <InheritedPreview rows={(base?.processSteps || []).map((s) => s.title)} />
-        )}
-      </Card>
-
-      <Card title="Price breakdown" collapsible defaultOpen={false}>
-        <OverrideSwitch on={custom.pricingBreakdown} countryShort={country.short} onChange={(v) => setOwn('pricingBreakdown', v)} />
-        {custom.pricingBreakdown ? (
-          <div className="space-y-4">
-            {prices.fields.map((field, i) => (
-              <ItemBox key={field.id} label={watch(`pricingBreakdown.${i}.item`) || `Item ${i + 1}`} onRemove={() => prices.remove(i)}>
-                <div className="grid grid-cols-2 gap-3">
-                  <Field label="Description">
-                    <TextInput {...register(`pricingBreakdown.${i}.item`)} placeholder="e.g. Embassy fee" />
-                  </Field>
-                  <Field label="Paid to">
-                    <TextInput {...register(`pricingBreakdown.${i}.paidTo`)} placeholder="e.g. Embassy" />
-                  </Field>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <Field label="Amount">
-                    <TextInput type="number" min="0" step="0.01" {...register(`pricingBreakdown.${i}.amount`)} placeholder="0" />
-                  </Field>
-                  <Field label="Currency">
-                    <TextInput {...register(`pricingBreakdown.${i}.currency`)} placeholder={country.currency || 'AED'} />
-                  </Field>
-                </div>
-                <Field label="Note">
-                  <TextInput {...register(`pricingBreakdown.${i}.note`)} placeholder="Optional" />
-                </Field>
-              </ItemBox>
-            ))}
-            <AddButton
-              onClick={() => prices.append({ item: '', amount: 0, currency: country.currency || 'AED', paidTo: '', note: '' })}
-              label="Add line"
-            />
-          </div>
-        ) : (
-          <InheritedPreview rows={(base?.pricingBreakdown || []).map((p) => `${p.item} · ${p.currency} ${p.amount}`)} />
-        )}
-      </Card>
-
-      <Card title="FAQs" collapsible defaultOpen={false}>
-        <OverrideSwitch on={custom.faqs} countryShort={country.short} onChange={(v) => setOwn('faqs', v)} />
-        {custom.faqs ? (
-          <div className="space-y-4">
-            {faqs.fields.map((field, i) => (
-              <ItemBox key={field.id} label={watch(`faqs.${i}.question`) || `Question ${i + 1}`} onRemove={() => faqs.remove(i)}>
-                <Field label="Question">
-                  <TextInput {...register(`faqs.${i}.question`)} />
-                </Field>
-                <Field label="Answer">
-                  <TextareaInput rows={3} {...register(`faqs.${i}.answer`)} />
-                </Field>
-              </ItemBox>
-            ))}
-            <AddButton onClick={() => faqs.append({ question: '', answer: '' })} label="Add question" />
-          </div>
-        ) : (
-          <InheritedPreview rows={(base?.faqs || []).map((f) => f.question)} />
-        )}
-      </Card>
-
-      <Card title="Why us" collapsible defaultOpen={false}>
-        <OverrideSwitch on={custom.whyUs} countryShort={country.short} onChange={(v) => setOwn('whyUs', v)} />
-        {custom.whyUs ? (
-          <div className="space-y-4">
-            {why.fields.map((field, i) => (
-              <ItemBox key={field.id} label={watch(`whyUs.${i}.title`) || `Reason ${i + 1}`} onRemove={() => why.remove(i)}>
-                <Field label="Title">
-                  <TextInput {...register(`whyUs.${i}.title`)} placeholder="e.g. Licensed Dubai office" />
-                </Field>
-                <Field label="Description">
-                  <TextareaInput rows={2} {...register(`whyUs.${i}.description`)} />
-                </Field>
-              </ItemBox>
-            ))}
-            <AddButton onClick={() => why.append({ title: '', description: '' })} label="Add reason" />
-          </div>
-        ) : (
-          <InheritedPreview rows={(base?.whyUs || []).map((w) => w.title)} />
-        )}
-      </Card>
-
-      <Card title="Testimonials" collapsible defaultOpen={false}>
-        <OverrideSwitch on={custom.testimonials} countryShort={country.short} onChange={(v) => setOwn('testimonials', v)} />
-        {custom.testimonials ? (
-          <div className="space-y-4">
-            {quotes.fields.map((field, i) => (
-              <ItemBox key={field.id} label={watch(`testimonials.${i}.name`) || `Testimonial ${i + 1}`} onRemove={() => quotes.remove(i)}>
-                <div className="grid grid-cols-2 gap-3">
-                  <Field label="Name">
-                    <TextInput {...register(`testimonials.${i}.name`)} />
-                  </Field>
-                  <Field label="Nationality">
-                    <TextInput {...register(`testimonials.${i}.nationality`)} />
-                  </Field>
-                </div>
-                <Field label="Quote">
-                  <TextareaInput rows={3} {...register(`testimonials.${i}.quote`)} />
-                </Field>
-              </ItemBox>
-            ))}
-            <AddButton onClick={() => quotes.append({ name: '', nationality: '', quote: '', rating: 5 })} label="Add testimonial" />
-          </div>
-        ) : (
-          <InheritedPreview rows={(base?.testimonials || []).map((t) => t.name)} />
-        )}
-      </Card>
-
-      {/* Sticky bar: publishing and saving are the two things you always want
-          reachable on a form this long. */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-gray-200 bg-white/95 backdrop-blur">
-        <div className="max-w-4xl mx-auto flex items-center justify-between gap-4 px-5 py-3">
-          <div className="min-w-0">
-            <label className="flex items-center gap-2 text-xs font-semibold text-gray-700 cursor-pointer">
-              <input type="checkbox" {...register('isPublished')} className="accent-primary-700" />
-              {isPublished
-                ? <span className="inline-flex items-center gap-1.5 text-green-700"><Globe size={13} /> Live in {country.short}</span>
-                : <span className="inline-flex items-center gap-1.5 text-gray-500"><EyeOff size={13} /> Not live in {country.short}</span>}
-            </label>
-            {isPublished && base?.slug && (
-              <a href={liveUrl} target="_blank" rel="noreferrer"
-                 className="mt-0.5 inline-flex items-center gap-1 text-[11px] text-gray-400 hover:text-primary-700 truncate">
-                /{country.slug}/visa/{base.slug} <ExternalLink size={10} />
-              </a>
+                    <div>
+                      <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Excludes</p>
+                      <StringList
+                        values={watch(`packages.${i}.exclusions`) || []}
+                        placeholder="Exclusion"
+                        max={20}
+                        onChange={(next) => setValue(`packages.${i}.exclusions`, next, { shouldDirty: true })}
+                      />
+                    </div>
+                    <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 cursor-pointer">
+                      <input type="checkbox" {...register(`packages.${i}.isHighlighted`)} className="accent-primary-700" />
+                      Most popular
+                    </label>
+                  </ItemBox>
+                ))}
+                <AddButton
+                  onClick={() => pkgs.append({ name: '', price: 0, currency: country.currency || 'AED', timeline: '', description: '', features: [], exclusions: [], isHighlighted: false })}
+                  label="Add package"
+                />
+              </div>
+            ) : (
+              <InheritedPreview rows={(base?.packages || []).map((p) => `${p.name} · ${p.currency} ${p.price}`)} />
             )}
-          </div>
+          </Card>
 
-          <div className="flex items-center gap-2 shrink-0">
-            {overlay && (
+          <Card title="How it works" collapsible defaultOpen={false}>
+            <OverrideSwitch on={custom.processSteps} countryShort={country.short} onChange={(v) => setOwn('processSteps', v)} />
+            {custom.processSteps ? (
+              <div className="space-y-4">
+                {steps.fields.map((field, i) => (
+                  <ItemBox key={field.id} label={watch(`processSteps.${i}.title`) || `Step ${i + 1}`} onRemove={() => steps.remove(i)}>
+                    <Field label="Title">
+                      <TextInput {...register(`processSteps.${i}.title`)} placeholder="e.g. Book biometrics" />
+                    </Field>
+                    <Field label="Description">
+                      <TextareaInput rows={2} {...register(`processSteps.${i}.description`)} />
+                    </Field>
+                  </ItemBox>
+                ))}
+                <AddButton onClick={() => steps.append({ title: '', description: '' })} label="Add step" disabled={steps.fields.length >= 7} />
+              </div>
+            ) : (
+              <InheritedPreview rows={(base?.processSteps || []).map((s) => s.title)} />
+            )}
+          </Card>
+
+          <Card title="Price breakdown" collapsible defaultOpen={false}>
+            <OverrideSwitch on={custom.pricingBreakdown} countryShort={country.short} onChange={(v) => setOwn('pricingBreakdown', v)} />
+            {custom.pricingBreakdown ? (
+              <div className="space-y-4">
+                {prices.fields.map((field, i) => (
+                  <ItemBox key={field.id} label={watch(`pricingBreakdown.${i}.item`) || `Item ${i + 1}`} onRemove={() => prices.remove(i)}>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Field label="Description">
+                        <TextInput {...register(`pricingBreakdown.${i}.item`)} placeholder="e.g. Embassy fee" />
+                      </Field>
+                      <Field label="Paid to">
+                        <TextInput {...register(`pricingBreakdown.${i}.paidTo`)} placeholder="e.g. Embassy" />
+                      </Field>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Field label="Amount">
+                        <TextInput type="number" min="0" step="0.01" {...register(`pricingBreakdown.${i}.amount`)} placeholder="0" />
+                      </Field>
+                      <Field label="Currency">
+                        <TextInput {...register(`pricingBreakdown.${i}.currency`)} placeholder={country.currency || 'AED'} />
+                      </Field>
+                    </div>
+                    <Field label="Note">
+                      <TextInput {...register(`pricingBreakdown.${i}.note`)} placeholder="Optional" />
+                    </Field>
+                  </ItemBox>
+                ))}
+                <AddButton
+                  onClick={() => prices.append({ item: '', amount: 0, currency: country.currency || 'AED', paidTo: '', note: '' })}
+                  label="Add line"
+                />
+              </div>
+            ) : (
+              <InheritedPreview rows={(base?.pricingBreakdown || []).map((p) => `${p.item} · ${p.currency} ${p.amount}`)} />
+            )}
+          </Card>
+
+          <Card title="FAQs" collapsible defaultOpen={false}>
+            <OverrideSwitch on={custom.faqs} countryShort={country.short} onChange={(v) => setOwn('faqs', v)} />
+            {custom.faqs ? (
+              <div className="space-y-4">
+                {faqs.fields.map((field, i) => (
+                  <ItemBox key={field.id} label={watch(`faqs.${i}.question`) || `Question ${i + 1}`} onRemove={() => faqs.remove(i)}>
+                    <Field label="Question">
+                      <TextInput {...register(`faqs.${i}.question`)} />
+                    </Field>
+                    <Field label="Answer">
+                      <TextareaInput rows={3} {...register(`faqs.${i}.answer`)} />
+                    </Field>
+                  </ItemBox>
+                ))}
+                <AddButton onClick={() => faqs.append({ question: '', answer: '' })} label="Add question" />
+              </div>
+            ) : (
+              <InheritedPreview rows={(base?.faqs || []).map((f) => f.question)} />
+            )}
+          </Card>
+
+          <Card title="Why us" collapsible defaultOpen={false}>
+            <OverrideSwitch on={custom.whyUs} countryShort={country.short} onChange={(v) => setOwn('whyUs', v)} />
+            {custom.whyUs ? (
+              <div className="space-y-4">
+                {why.fields.map((field, i) => (
+                  <ItemBox key={field.id} label={watch(`whyUs.${i}.title`) || `Reason ${i + 1}`} onRemove={() => why.remove(i)}>
+                    <Field label="Title">
+                      <TextInput {...register(`whyUs.${i}.title`)} placeholder="e.g. Licensed Dubai office" />
+                    </Field>
+                    <Field label="Description">
+                      <TextareaInput rows={2} {...register(`whyUs.${i}.description`)} />
+                    </Field>
+                  </ItemBox>
+                ))}
+                <AddButton onClick={() => why.append({ title: '', description: '' })} label="Add reason" />
+              </div>
+            ) : (
+              <InheritedPreview rows={(base?.whyUs || []).map((w) => w.title)} />
+            )}
+          </Card>
+
+          <Card title="Testimonials" collapsible defaultOpen={false}>
+            <OverrideSwitch on={custom.testimonials} countryShort={country.short} onChange={(v) => setOwn('testimonials', v)} />
+            {custom.testimonials ? (
+              <div className="space-y-4">
+                {quotes.fields.map((field, i) => (
+                  <ItemBox key={field.id} label={watch(`testimonials.${i}.name`) || `Testimonial ${i + 1}`} onRemove={() => quotes.remove(i)}>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Field label="Name">
+                        <TextInput {...register(`testimonials.${i}.name`)} />
+                      </Field>
+                      <Field label="Nationality">
+                        <TextInput {...register(`testimonials.${i}.nationality`)} />
+                      </Field>
+                    </div>
+                    <Field label="Quote">
+                      <TextareaInput rows={3} {...register(`testimonials.${i}.quote`)} />
+                    </Field>
+                  </ItemBox>
+                ))}
+                <AddButton onClick={() => quotes.append({ name: '', nationality: '', quote: '', rating: 5 })} label="Add testimonial" />
+              </div>
+            ) : (
+              <InheritedPreview rows={(base?.testimonials || []).map((t) => t.name)} />
+            )}
+          </Card>
+
+        </div>
+
+        <div className="space-y-5 xl:sticky xl:top-6">
+
+          <Card title="Version Info" collapsible>
+            <dl className="space-y-2 text-xs">
+              {[
+                ['Country',   country.name],
+                ['Base page', base?.countryName || '—'],
+                ['Overrides', overrideCount === 0 ? 'None yet' : `${overrideCount} field${overrideCount === 1 ? '' : 's'}`],
+                ['URL',       base?.slug ? `/${country.slug}/visa/${base.slug}` : '—'],
+              ].map(([k, v]) => (
+                <div key={k} className="flex justify-between gap-2">
+                  <dt className="text-gray-400 font-medium">{k}</dt>
+                  <dd className="text-gray-700 font-semibold text-right truncate max-w-[160px]">{v}</dd>
+                </div>
+              ))}
+            </dl>
+          </Card>
+
+          <Card title="Visibility" collapsible>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-500 font-medium">Status</span>
+                {isPublished
+                  ? <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full border bg-green-50 text-green-700 border-green-200"><Globe size={11} /> Live in {country.short}</span>
+                  : <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full border bg-gray-100 text-gray-600 border-gray-200"><EyeOff size={11} /> Not live</span>}
+              </div>
+
+              <label className="flex items-center gap-2 text-xs font-semibold text-gray-700 cursor-pointer">
+                <input type="checkbox" {...register('isPublished')} className="accent-primary-700" />
+                Live in {country.short}
+              </label>
+
+              {isPublished && base?.slug && (
+                <a href={liveUrl} target="_blank" rel="noreferrer"
+                   className="inline-flex items-center gap-1 text-[11px] text-gray-400 hover:text-primary-700 truncate">
+                  /{country.slug}/visa/{base.slug} <ExternalLink size={10} />
+                </a>
+              )}
+
+              <p className="text-[11px] text-gray-400">
+                This is saved with the form — tick it, then save.
+                {base?.status !== 'published' && ' The base page is still a draft, so nothing is public until that is published too.'}
+              </p>
+            </div>
+          </Card>
+
+          {overlay && (
+            <Card title="Danger Zone" collapsible defaultOpen={false}>
               <button
                 type="button"
                 onClick={onRemove}
                 disabled={isRemoving}
-                className="text-xs font-semibold text-red-500 hover:text-red-600 hover:bg-red-50 px-3 py-2 rounded-xl transition cursor-pointer disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2 text-xs font-bold px-3 py-2 rounded-xl border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 transition cursor-pointer disabled:opacity-50"
               >
+                <Trash2 size={13} />
                 {isRemoving ? 'Removing…' : `Remove ${country.short} version`}
               </button>
-            )}
-            <button
-              type="submit"
-              disabled={isSaving}
-              className="inline-flex items-center gap-2 text-xs font-bold text-white bg-primary-700 hover:bg-primary-800 px-5 py-2.5 rounded-xl transition cursor-pointer disabled:opacity-50"
-            >
-              {isSaving && <Loader2 size={13} className="animate-spin" />}
-              {isSaving ? 'Saving…' : isDirty ? 'Save changes' : 'Saved'}
-            </button>
-          </div>
+              <p className="text-[11px] text-gray-400 mt-2">
+                Deletes only this country version. The base page stays untouched.
+              </p>
+            </Card>
+          )}
         </div>
+
       </div>
     </form>
   );

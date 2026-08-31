@@ -82,7 +82,7 @@ export default function AdminEditVisaPage({ countries = [], siteUrl = '' }) {
 
   return (
     <div>
-      <div className="max-w-4xl mx-auto px-5 pt-5">
+      <div className="mb-5">
         <div className="flex items-center gap-1 p-1 rounded-2xl bg-gray-100 overflow-x-auto">
           <TabButton
             active={tab === 'base'}
@@ -114,7 +114,7 @@ export default function AdminEditVisaPage({ countries = [], siteUrl = '' }) {
         </p>
       </div>
 
-      {tab === 'base' && <div className="mt-1">{baseForm}</div>}
+      {tab === 'base' && baseForm}
 
       {active && (
         isLoadingOverlays ? (
@@ -122,29 +122,27 @@ export default function AdminEditVisaPage({ countries = [], siteUrl = '' }) {
             <Loader2 size={22} className="animate-spin" />
           </div>
         ) : (
-          <div className="max-w-4xl mx-auto px-5 py-5">
-            <VisaOverlayForm
-              // Remount on tab change so each country gets its own form state.
-              key={active.slug}
-              base={visa}
-              country={active}
-              overlay={byResidence[active.code] || null}
-              siteUrl={siteUrl}
-              isSaving={isSavingOverlay}
-              isRemoving={isDeletingOverlay}
-              onSave={(payload, markClean) =>
-                upsertOverlay(payload, { onSuccess: () => markClean?.() })
-              }
-              onRemove={() => {
-                if (!confirm(`Remove the ${active.name} version? The base page stays untouched.`)) return;
-                deleteOverlay({
-                  residence: active.code,
-                  visaSlug: visa.slug,
-                  residenceName: active.name,
-                });
-              }}
-            />
-          </div>
+          <VisaOverlayForm
+            // Remount on tab change so each country gets its own form state.
+            key={active.slug}
+            base={visa}
+            country={active}
+            overlay={byResidence[active.code] || null}
+            siteUrl={siteUrl}
+            isSaving={isSavingOverlay}
+            isRemoving={isDeletingOverlay}
+            onSave={(payload, markClean) =>
+              upsertOverlay(payload, { onSuccess: () => markClean?.() })
+            }
+            onRemove={() => {
+              if (!confirm(`Remove the ${active.name} version? The base page stays untouched.`)) return;
+              deleteOverlay({
+                residence: active.code,
+                visaSlug: visa.slug,
+                residenceName: active.name,
+              });
+            }}
+          />
         )
       )}
     </div>
