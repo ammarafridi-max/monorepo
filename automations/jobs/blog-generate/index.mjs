@@ -33,6 +33,7 @@ import {
   fetchCoverImage,
 } from "../../src/lib/blog-utils.mjs";
 import { resolveFormat } from "../../src/lib/formats.mjs";
+import { gatherSources, formatSourcesBlock } from "../../src/lib/sources.mjs";
 import { verifyDraft, assertVerification, reportVerification, needsRevision, buildRevisionBrief } from "../../src/lib/verify.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -101,6 +102,7 @@ async function generateBlogContent({
   publishedPosts,
   availableTags,
   revision,
+  sources = [],
 }) {
   if (!ANTHROPIC_API_KEY && !DRY_RUN) {
     throw new Error("ANTHROPIC_API_KEY env var is required.");
@@ -269,6 +271,10 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
   console.log(`Generating content for: ${topic.title}`);
 
   // A revision starts from the rejected draft plus the fact-checker's verdict.
+  // Real URLs, retrieved and liveness-checked before generation, so the model
+  // cites from this list rather than from memory.
+  const sourcesBlock = formatSourcesBlock(sources);
+
   let feedback = revision
     ? `\n\n## Revise the draft below\n\nA fact-checker read the official sources you cited and rejected this draft. Rewrite it, fixing every point listed. Keep everything that was fine, keep the same format and required links, and keep the article the same length.\n\n${buildRevisionBrief(revision.verification)}\n\n### The draft to revise\n\n${revision.previous.content}`
     : "";
@@ -291,7 +297,7 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
         max_tokens: maxTokens,
         system: systemPrompt,
         output_config: { format: { type: "json_schema", schema: POST_SCHEMA } },
-        messages: [{ role: "user", content: userPrompt + feedback }],
+        messages: [{ role: "user", content: userPrompt + sourcesBlock + feedback }],
       });
       break;
     } catch (err) {
@@ -531,6 +537,17 @@ export async function run({ target, dryRun }) {
   }
   if (cached) console.log(`Reusing saved draft: ${draftCache}`);
 
+  // Retrieved once and reused for any revision: the sources do not change
+  // between rounds, and searching again would just cost more.
+  const sources = cached
+    ? []
+    : await gatherSources({
+        apiKey: ANTHROPIC_API_KEY,
+        model: modelFor(brand),
+        topic,
+        brand,
+      });
+
   let content = cached
     ?? await generateBlogContent({
         brand,
@@ -538,6 +555,7 @@ export async function run({ target, dryRun }) {
         siteContext,
         publishedPosts,
         availableTags,
+        sources,
       });
 
   if (draftCache && !cached) {
@@ -588,6 +606,7 @@ export async function run({ target, dryRun }) {
         siteContext,
         publishedPosts,
         availableTags,
+        sources,
         revision: { previous: content, verification },
       });
 
