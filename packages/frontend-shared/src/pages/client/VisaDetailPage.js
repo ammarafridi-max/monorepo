@@ -13,7 +13,7 @@ import VisaTestimonials from "../../components/sections/v1/VisaTestimonials.js";
 import VisaFaqSection from "../../components/sections/v1/VisaFaqSection.js";
 import VisaFinalCta from "../../components/sections/v1/VisaFinalCta.js";
 
-export default function VisaDetailPage({ visa, schema, breadcrumbJsonLd, whatsappUrl }) {
+export default function VisaDetailPage({ visa, schema, breadcrumbJsonLd, whatsappUrl, trustAssurances = [], trustSubtitle = "" }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalPackage, setModalPackage] = useState("undecided");
   const [modalSource, setModalSource] = useState("hero_cta");
@@ -76,7 +76,7 @@ export default function VisaDetailPage({ visa, schema, breadcrumbJsonLd, whatsap
         countryName={visa.countryName}
         guide={guides.pricing}
       />
-      <VisaTrust items={visa.whyUs} />
+      <VisaTrust items={visa.whyUs} assurances={trustAssurances} subtitle={trustSubtitle} />
       <VisaTestimonials testimonials={visa.testimonials ?? []} />
       <VisaFaqSection
         faqs={visa.faqs}

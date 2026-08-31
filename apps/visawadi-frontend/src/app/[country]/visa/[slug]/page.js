@@ -17,6 +17,7 @@ import {
 import VisaDetailPage from '@travel-suite/frontend-shared/pages/client/VisaDetailPage';
 import { LIVE_COUNTRIES, countryBySlug } from '@/config/countries';
 import { WHATSAPP_URL } from '@/config/contact';
+import { TRUST_ASSURANCES, TRUST_SUBTITLE } from '@/config/trust';
 
 // Nothing on this route's ancestor chain (including app/loading.js) may define a
 // loading.js. A loading.js opens a Suspense boundary, so Next flushes the HTML
@@ -111,6 +112,8 @@ export default async function Page({ params }) {
       breadcrumbJsonLd={buildBreadcrumbList({ paths: breadcrumbPaths })}
       breadcrumbPaths={breadcrumbPaths}
       whatsappUrl={WHATSAPP_URL || undefined}
+      trustAssurances={TRUST_ASSURANCES}
+      trustSubtitle={TRUST_SUBTITLE}
     />
   );
 }

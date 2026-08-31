@@ -9,28 +9,15 @@ function resolveIcon(name, fallback = "Circle") {
   return LucideIcons[name] || LucideIcons[fallback] || LucideIcons.Circle;
 }
 
-const TRUST_STATS = [
-  { value: "500+", label: "Visas Processed", caption: "Across 30+ countries" },
-  {
-    value: "98%",
-    label: "Approval Rate",
-    caption: "For complete applications",
-  },
-  {
-    value: "3 min",
-    label: "Avg. Response Time",
-    caption: "During business hours",
-  },
-  { value: "2024", label: "UAE Licensed", caption: "DAFZ-registered office" },
-];
 
-export default function VisaTrust({ items = [], title = "Why UAE Residents Trust Us" }) {
+// `assurances` is supplied by the consuming app so this stays brand-neutral.
+export default function VisaTrust({ items = [], assurances = [], title = "Why UAE Residents Trust Us", subtitle = "" }) {
   return (
     <section className="py-12 md:py-16 bg-gray-50">
       <Container>
         <SectionHead
           title={title}
-          subtitle="A licensed Dubai team with a track record UAE residents rely on for their visa applications."
+          subtitle={subtitle}
         />
 
         {items.length > 0 && (
@@ -59,24 +46,30 @@ export default function VisaTrust({ items = [], title = "Why UAE Residents Trust
           </div>
         )}
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {TRUST_STATS.map(({ value, label, caption }) => (
-            <div
-              key={label}
-              className="rounded-2xl border border-gray-100 bg-white p-5 shadow-[0_2px_8px_rgba(16,24,40,0.04)]"
-            >
-              <p className="font-outfit font-medium text-[36px] md:text-[42px] text-gray-900 leading-none mb-1.5 tracking-[-0.02em]">
-                {value}
-              </p>
-              <p className="font-outfit font-medium text-[13px] text-gray-800 mb-0.5">
-                {label}
-              </p>
-              <p className="font-outfit font-normal text-[12px] text-gray-600 leading-4">
-                {caption}
-              </p>
-            </div>
-          ))}
-        </div>
+        {assurances.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {assurances.map(({ title: heading, caption, icon }) => {
+              const Icon = resolveIcon(icon, "Check");
+              return (
+                <div
+                  key={heading}
+                  className="rounded-2xl border border-gray-100 bg-white p-5 shadow-[0_2px_8px_rgba(16,24,40,0.04)]"
+                >
+                  <div className="w-10 h-10 flex items-center justify-center bg-primary-50 text-primary-700 rounded-xl mb-4">
+                    <Icon size={18} />
+                  </div>
+                  <p className="font-outfit font-medium text-[15px] text-gray-900 mb-1 leading-snug">
+                    {heading}
+                  </p>
+                  <p className="font-outfit font-normal text-[13px] text-gray-600 leading-5">
+                    {caption}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
       </Container>
     </section>
   );
