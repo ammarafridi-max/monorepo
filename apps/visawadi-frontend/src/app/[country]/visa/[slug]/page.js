@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { notFound } from 'next/navigation';
 import { nullOn404 } from '@travel-suite/frontend-shared/services/apiClient';
 import {
@@ -41,13 +42,19 @@ export async function generateStaticParams() {
   return params;
 }
 
-async function load(countrySlug, slug) {
+/**
+ * Deduped across generateMetadata and the page body. Without this the route
+ * fetches twice per request, and if the two calls disagree the metadata can
+ * say index while the body throws notFound(), which makes Next inject a
+ * `robots: noindex` tag alongside the real one.
+ */
+const load = cache(async (countrySlug, slug) => {
   const c = countryBySlug(countrySlug);
   if (!c?.isLive) return { c: null, visa: null };
   const res = await getPublicVisaForResidenceApi(slug, c.code).catch(nullOn404);
   const visa = res?.data ?? res ?? null;
   return { c, visa };
-}
+});
 
 function copyFor(c, visa, slug) {
   const title = visa.metaTitle || `${visa.countryName} visa for ${c.residents}`;
