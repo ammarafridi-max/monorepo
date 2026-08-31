@@ -107,7 +107,7 @@ export default async function Page({ params }) {
   return (
     <VisaDetailPage
       visa={visa}
-      graph={graph}
+      schema={graph}
       breadcrumbJsonLd={buildBreadcrumbList({ paths: breadcrumbPaths })}
       breadcrumbPaths={breadcrumbPaths}
       whatsappUrl={WHATSAPP_URL || undefined}

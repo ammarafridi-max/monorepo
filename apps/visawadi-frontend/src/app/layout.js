@@ -1,11 +1,12 @@
-import { Elms_Sans, Geist_Mono } from 'next/font/google';
+import { Commissioner, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import Providers from './Providers';
 
-// Elms Sans is the brand face. It ships a variable weight axis (100-900), so
+// Commissioner is the brand face. It ships a variable weight axis (100-900), so
 // one request covers every weight the UI uses instead of pinning a list.
-const elmsSans = Elms_Sans({
-  variable: '--font-elms',
+// It has no italic style, so <em> renders as a synthesised oblique.
+const brandSans = Commissioner({
+  variable: '--font-brand',
   subsets: ['latin'],
   display: 'swap',
   // Next has no metric overrides for this face, so it cannot auto-generate a
@@ -48,7 +49,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${elmsSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html lang="en" className={`${brandSans.variable} ${geistMono.variable} h-full antialiased`}>
       <head>
         <link rel="preconnect" href="https://res.cloudinary.com" />
         <link rel="dns-prefetch" href="https://res.cloudinary.com" />

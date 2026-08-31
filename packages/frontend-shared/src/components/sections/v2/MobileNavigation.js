@@ -33,9 +33,9 @@ export default function MobileNavigation({
         </button>
       </div>
       {open && (
-        <div className="lg:hidden fixed inset-x-0 top-0 bottom-0 z-40 bg-white overflow-y-auto py-6">
+        <div className="lg:hidden fixed inset-x-0 top-0 bottom-0 z-40 bg-white overflow-y-auto py-3">
           <div className="px-4 sm:px-6 flex flex-col gap-1 text-sm font-medium text-gray-700">
-            <div className="flex items-center justify-between py-3 mb-1 border-b border-gray-100">
+            <div className="flex items-center justify-between py-2 mb-1 border-b border-gray-100">
               <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                 Menu
               </span>
@@ -66,7 +66,7 @@ export default function MobileNavigation({
                         onClick={() =>
                           setOpenIndex((p) => (p === i ? null : i))
                         }
-                        className="flex items-center justify-between w-full py-3 border-b border-gray-100"
+                        className="flex items-center justify-between w-full py-2.5 border-b border-gray-100"
                       >
                         <span className="font-semibold">{page.name}</span>
                         <ChevronRight
@@ -75,13 +75,13 @@ export default function MobileNavigation({
                         />
                       </button>
                       {openIndex === i && (
-                        <div className="pl-2 flex flex-col gap-1 py-2">
+                        <div className="pl-2 flex flex-col gap-0.5 py-1">
                           {allSubpages.map((sub, j) => (
                             <Link
                               key={j}
                               href={sub.link}
                               onClick={() => setOpen(false)}
-                              className="block py-2.5 text-gray-600 hover:text-primary-700 transition-colors"
+                              className="block py-2 text-gray-600 hover:text-primary-700 transition-colors"
                             >
                               {sub.name}
                             </Link>
@@ -93,7 +93,7 @@ export default function MobileNavigation({
                     <Link
                       href={page.links?.[0] ?? "#"}
                       onClick={() => setOpen(false)}
-                      className="block py-3 border-b border-gray-100 hover:text-primary-700 transition-colors"
+                      className="block py-2.5 border-b border-gray-100 hover:text-primary-700 transition-colors"
                     >
                       {page.name}
                     </Link>
@@ -107,7 +107,7 @@ export default function MobileNavigation({
                 <Link
                   href="/account"
                   onClick={() => setOpen(false)}
-                  className="py-3 border-b border-gray-100 hover:text-primary-700 transition-colors flex items-center gap-2"
+                  className="py-2.5 border-b border-gray-100 hover:text-primary-700 transition-colors flex items-center gap-2"
                 >
                   <User size={14} className="text-gray-400" /> My Account
                 </Link>
@@ -121,7 +121,7 @@ export default function MobileNavigation({
                     }
                     await signOut({ callbackUrl: "/" });
                   }}
-                  className="py-3 text-left text-red-600 hover:text-red-700 transition-colors flex items-center gap-2"
+                  className="py-2.5 text-left text-red-600 hover:text-red-700 transition-colors flex items-center gap-2"
                 >
                   <LogOut size={14} /> Sign out
                 </button>
@@ -130,7 +130,7 @@ export default function MobileNavigation({
               <Link
                 href={loginHref}
                 onClick={() => setOpen(false)}
-                className="py-3 border-b border-gray-100 hover:text-primary-700 transition-colors"
+                className="py-2.5 border-b border-gray-100 hover:text-primary-700 transition-colors"
               >
                 Log in
               </Link>

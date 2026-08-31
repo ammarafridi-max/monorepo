@@ -86,13 +86,13 @@ export default function VisaHero({
             <button
               type="button"
               onClick={onCtaClick}
-              className="inline-flex items-center gap-2 font-outfit font-semibold text-[16px] py-3.5 px-7 rounded-full bg-accent-500 hover:bg-accent-600 text-gray-900 shadow-sm hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+              className="inline-flex items-center gap-2 font-outfit font-semibold text-[14px] py-2.5 px-5 sm:text-[16px] sm:py-3.5 sm:px-7 rounded-full bg-accent-500 hover:bg-accent-600 text-gray-900 shadow-sm hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
             >
               {ctaText}
             </button>
             <a
               href="#packages"
-              className={`inline-flex items-center gap-2 text-[15px] font-outfit font-medium py-3.5 px-6 rounded-full border transition-colors duration-200 ${
+              className={`inline-flex items-center gap-2 text-[14px] py-2.5 px-5 sm:text-[15px] sm:py-3.5 sm:px-6 font-outfit font-medium rounded-full border transition-colors duration-200 ${
                 hasImage
                   ? "border-white/40 text-white hover:bg-white/10 hover:border-white/70"
                   : "border-gray-300 text-gray-700 hover:bg-white hover:border-gray-400"

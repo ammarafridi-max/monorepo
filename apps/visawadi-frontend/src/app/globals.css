@@ -41,16 +41,17 @@
   --color-accent-900: #762913;
   --color-accent-950: #441a0e;
 
-  /* VisaWadi uses Elms Sans (UI/body) + Geist Mono (reference codes). The
+  /* VisaWadi uses Commissioner (UI/body) + Geist Mono (reference codes). The
      historical --font-outfit / --font-nunito / --font-merriweather aliases are
      repointed here rather than chased through the components, so every existing
-     `font-outfit`/`var(--font-nunito)` usage inherits the brand face. Change the
-     font in ONE place: --font-elms in layout.js, and these five lines. */
-  --font-sans:         var(--font-elms), ui-sans-serif, system-ui, sans-serif;
+     `font-outfit`/`var(--font-nunito)` usage inherits the brand face. The token
+     is named for its role, not the face, so swapping fonts is one line in
+     layout.js and nothing here. */
+  --font-sans:         var(--font-brand), ui-sans-serif, system-ui, sans-serif;
   --font-mono:         var(--font-geist-mono), ui-monospace, monospace;
-  --font-nunito:       var(--font-elms), sans-serif;
-  --font-merriweather: var(--font-elms), sans-serif;
-  --font-outfit:       var(--font-elms), sans-serif;
+  --font-nunito:       var(--font-brand), sans-serif;
+  --font-merriweather: var(--font-brand), sans-serif;
+  --font-outfit:       var(--font-brand), sans-serif;
 
   --rounded-input-sm: 5px;
   --rounded-input-md: 8px;

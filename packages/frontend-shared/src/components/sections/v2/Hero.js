@@ -35,7 +35,7 @@ export default function Hero({
           />
         </div>
 
-        <Container className="relative pt-10 pb-14 md:pb-20">
+        <Container className="relative py-16 md:py-24">
           <div className="max-w-3xl lg:mx-auto lg:text-center">
             <h1
               className={`text-4xl md:text-5xl xl:text-5xl font-bold leading-tight tracking-tight ${

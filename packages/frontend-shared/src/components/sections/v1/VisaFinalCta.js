@@ -3,7 +3,10 @@
 import Container from "../../shared/layout/Container.js";
 
 function CtaButton({ children, onClick, href, size = "md" }) {
-  const sz = size === "lg" ? "text-[15px] py-3 px-6" : "text-[14px] py-2.5 px-5";
+  const sz =
+    size === "lg"
+      ? "text-[14px] py-2.5 px-5 sm:text-[15px] sm:py-3 sm:px-6"
+      : "text-[13px] py-2 px-4 sm:text-[14px] sm:py-2.5 sm:px-5";
   const cls = `inline-flex items-center justify-center gap-2 font-outfit font-semibold rounded-full bg-white hover:bg-primary-50 text-primary-700 border border-white transition-colors duration-200 cursor-pointer ${sz}`;
   if (onClick)
     return (
@@ -47,7 +50,7 @@ export default function VisaFinalCta({ headline, ctaText, onCtaClick, whatsappUr
             {whatsappUrl && (
               <a
                 href={whatsappUrl}
-                className="inline-flex items-center justify-center gap-2 text-[14px] font-outfit font-semibold py-3 px-5 rounded-full border border-white/25 text-white hover:bg-white/10 transition-colors duration-200 whitespace-nowrap"
+                className="inline-flex items-center justify-center gap-2 text-[14px] py-2.5 px-5 sm:py-3 font-outfit font-semibold rounded-full border border-white/25 text-white hover:bg-white/10 transition-colors duration-200 whitespace-nowrap"
               >
                 Chat on WhatsApp
               </a>
