@@ -49,7 +49,7 @@ const VISA = {
     'You are visiting family or friends in Saudi Arabia, or travelling for an event or a concert.',
     'Your residence permit or passport is close to expiry and you are not sure whether you still qualify.',
     'You applied yourself, it was rejected, and nobody told you what was actually wrong.',
-    'You would rather someone checked the photo, the details and the insurance before you pay a non refundable fee.',
+    'You would rather someone checked the photo, the details and the insurance before the application is submitted.',
   ],
 
   packages: [
@@ -64,12 +64,11 @@ const VISA = {
         'Eligibility check against your residence permit and passport validity',
         'Application completed and submitted on your behalf',
         'Photo and passport scan checked against Saudi specifications before submission',
-        'Mandatory medical insurance added correctly during the application',
+        'Saudi government eVisa fee and the mandatory medical insurance included, nothing further to pay',
         'Application tracked daily until the visa is issued',
         'Free resubmission if the application is rejected on document grounds',
       ],
       exclusions: [
-        'Saudi eVisa fee and mandatory insurance (approx. AED 295) not included',
         'Hajj, work, study and residence visas are not covered',
       ],
       icon: 'FileText',
@@ -97,9 +96,9 @@ const VISA = {
       icon: 'ClipboardCheck',
     },
     {
-      title: 'You pay the Saudi fee',
+      title: 'You pay once',
       description:
-        'The government fee and insurance are paid on the official portal. We tell you the exact amount before anything is submitted.',
+        'AED 700 covers the government fee, the mandatory insurance and our handling. There is nothing to pay on the Saudi portal.',
       icon: 'CreditCard',
     },
     {
@@ -165,18 +164,11 @@ const VISA = {
 
   pricingBreakdown: [
     {
-      item: 'VisaWadi service fee',
+      item: 'Tourist eVisa for GCC residents, all in',
       amount: 700,
       currency: 'AED',
       paidTo: 'VisaWadi',
-      note: 'Covers the eligibility check, the application, and a free resubmission if it is rejected on document grounds.',
-    },
-    {
-      item: 'Saudi eVisa fee and insurance',
-      amount: 295,
-      currency: 'AED',
-      paidTo: 'Saudi Government',
-      note: 'SAR 300 on the official portal, roughly AED 295. The exact total depends on the exchange rate and the insurance quoted on the day, and it is not refundable if the application is refused.',
+      note: 'Covers the Saudi government eVisa fee, the mandatory medical insurance, the eligibility check and the application. There is nothing further to pay.',
     },
   ],
 
@@ -230,7 +222,7 @@ const VISA = {
     {
       question: 'How much does the Saudi tourist visa cost for GCC residents?',
       answer:
-        'The Saudi government charges SAR 300, around AED 295, which covers the visa and the mandatory medical insurance and is paid on the official portal. VisaWadi charges AED 700 to check your eligibility, complete and submit the application, and resubmit free of charge if it is refused on document grounds. Budget roughly AED 995 per applicant in total.',
+        'AED 700 per applicant, all in. That covers the Saudi government eVisa fee, the mandatory medical insurance the visa requires, and our handling of the application from the eligibility check through to the visa landing in your inbox. There is nothing extra to pay on the official portal and no separate government charge to budget for.',
     },
     {
       question: 'How long does the Saudi eVisa take?',
@@ -255,7 +247,7 @@ const VISA = {
     {
       question: 'What happens if my application is rejected?',
       answer:
-        'Refusals are almost always about documents: a residence permit with under three months left, a passport under six months, or a photo that does not meet the specification. We check all of those before submitting. If it is still refused on document grounds we correct it and reapply at no extra service fee. The government fee is not refundable.',
+        'Refusals are almost always about documents: a residence permit with under three months left, a passport under six months, or a photo that does not meet the specification. We check all of those before submitting. If it is still refused on document grounds we correct it and reapply at no extra service fee.',
     },
     {
       question: 'How soon before travelling should I apply?',
