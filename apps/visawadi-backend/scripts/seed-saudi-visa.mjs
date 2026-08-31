@@ -268,7 +268,8 @@ const VISA = {
   finalCtaText:
     'Send us your passport and residence permit copies. We will confirm whether you qualify before you pay anything.',
 
-  metaTitle: 'Saudi Tourist Visa for GCC Residents | VisaWadi',
+  // No brand suffix: the root layout's title template already appends it.
+  metaTitle: 'Saudi Tourist Visa for GCC Residents',
   metaDescription:
     'Saudi tourist eVisa for GCC residents. One year, multiple entry, no embassy visit. VisaWadi checks your eligibility and files it for you, AED 700.',
 };
