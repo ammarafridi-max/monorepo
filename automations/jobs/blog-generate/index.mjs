@@ -21,6 +21,9 @@ import {
   validateParagraphs,
   splitLongParagraphs,
   verifyCitationUrls,
+  findDeadCitations,
+  dropDeadCitations,
+  extractCitations,
   stripEmDashesFromPost,
   createApiClient,
   formatRequiredLinksBlock,
@@ -269,13 +272,14 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
     ? `\n\n## Revise the draft below\n\nA fact-checker read the official sources you cited and rejected this draft. Rewrite it, fixing every point listed. Keep everything that was fine, keep the same format and required links, and keep the article the same length.\n\n${buildRevisionBrief(revision.verification)}\n\n### The draft to revise\n\n${revision.previous.content}`
     : "";
   let lastValidationError;
+  let lastGoodDraft = null;
   // Accumulated, not replaced: a retry that fixes the newest complaint while
   // forgetting the previous one just trades one failure for another.
   const failures = [];
 
   for (let round = 1; round <= 4; round++) {
     if (round > 1) {
-      console.log(`\n↻ Retry ${round - 1}/3 — feeding the validation failure back to the model`);
+      console.log(`\n↻ Retry ${round - 1}/3 — ${lastValidationError?.message ?? 'validation failed'}`);
     }
 
   let message;
@@ -347,6 +351,7 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
     }
   } catch (err) {
     lastValidationError = err;
+    lastGoodDraft = parsed;
     failures.push(err.message);
     feedback =
       `\n\n## Previous attempts were rejected\n\n` +
@@ -357,6 +362,29 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
 
   console.log("✓ Blog content generated");
   return parsed;
+  }
+
+  // Every round failed. If the only thing wrong is invented URLs, unwrap them and
+  // publish the post without those links rather than publishing nothing — but only
+  // while enough real sources survive to meet the format's citation floor.
+  if (format && /cited source\(s\) do not exist/.test(lastValidationError?.message ?? "")) {
+    const citations = extractCitations(lastGoodDraft?.content ?? "", brand);
+    const dead = await findDeadCitations(citations);
+    const repaired = dead.length
+      ? dropDeadCitations(lastGoodDraft.content, dead.map((d) => d.url), {
+          minCitations: format.minCitations,
+          brand,
+        })
+      : null;
+    if (repaired) {
+      console.warn(
+        `⚠ Publishing without ${dead.length} invented link(s); ${repaired.citations.length} real source(s) remain:`,
+      );
+      for (const d of dead) console.warn(`   dropped ${d.url} (${d.status})`);
+      lastGoodDraft.content = repaired.content;
+      lastGoodDraft.__citations = repaired.citations;
+      return lastGoodDraft;
+    }
   }
 
   throw lastValidationError;

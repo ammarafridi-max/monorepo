@@ -224,7 +224,7 @@ export function validateCitations(parsed, brand, { minCitations }) {
  * 403 or nothing at all, so treating any non-200 as broken would reject real
  * sources. A 404 means the server looked and the page is not there.
  */
-export async function verifyCitationUrls(urls, { timeoutMs = 15000 } = {}) {
+export async function findDeadCitations(urls, { timeoutMs = 15000 } = {}) {
   const dead = [];
   await Promise.all(
     urls.map(async (url) => {
@@ -241,12 +241,38 @@ export async function verifyCitationUrls(urls, { timeoutMs = 15000 } = {}) {
       }
     }),
   );
+  return dead;
+}
+
+/** Throwing form, used inside the generation retry loop. */
+export async function verifyCitationUrls(urls, opts) {
+  const dead = await findDeadCitations(urls, opts);
   if (dead.length) {
     throw new Error(
       `${dead.length} cited source(s) do not exist: ${dead.map((d) => `${d.url} (${d.status})`).join(', ')}`,
     );
   }
   console.log(`✓ ${urls.length} cited URLs checked, none returned 404`);
+}
+
+/**
+ * Last resort when the model will not stop inventing a URL: unwrap the dead
+ * links, keeping their anchor text, so the sentence survives without a broken
+ * link. Returns null when doing so would drop the post below its citation floor
+ * — a post with too few real sources should still fail rather than publish.
+ */
+export function dropDeadCitations(content, deadUrls, { minCitations, brand }) {
+  let out = content;
+  for (const url of new Set(deadUrls)) {
+    const escaped = url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    out = out.replace(
+      new RegExp(`<a\\s+[^>]*?href\\s*=\\s*["']${escaped}["'][^>]*>([\\s\\S]*?)</a>`, 'gi'),
+      '$1',
+    );
+  }
+  const remaining = extractCitations(out, brand);
+  if (remaining.length < minCitations) return null;
+  return { content: out, citations: remaining };
 }
 
 /** Abbreviations that would otherwise be read as sentence ends. */
