@@ -48,7 +48,7 @@ export default function NotFound() {
               Back to Home
             </Link>
             <Link
-              href="/visa"
+              href="/uae"
               className="inline-flex items-center gap-2 border border-gray-200 hover:border-primary-300 text-gray-700 hover:text-primary-700 text-sm font-semibold px-6 py-3 rounded-xl transition-colors"
             >
               Browse Visas

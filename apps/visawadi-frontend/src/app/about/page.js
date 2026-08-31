@@ -45,7 +45,7 @@ export default function AboutPage() {
 
         <div className="flex flex-wrap gap-3">
           <Link
-            href="/visa"
+            href="/uae"
             className="inline-flex items-center px-5 py-3 rounded-xl bg-primary-700 hover:bg-primary-800 text-white text-sm font-semibold transition-colors"
           >
             See the visas we handle

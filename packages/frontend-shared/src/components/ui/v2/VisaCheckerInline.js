@@ -19,6 +19,9 @@ const OUTCOME_ICON = {
 
 export default function VisaCheckerInline({
   consultHref = '/visa',
+  // Brands that segment visa pages by residence country pass the segment here,
+  // e.g. basePath="/uae" to link /uae/visa/<slug>.
+  basePath = '',
   extraDestinations = [SCHENGEN_OPTION],
   className = '',
 }) {
@@ -70,7 +73,7 @@ export default function VisaCheckerInline({
                 books your appointment. Most refusals come from mistakes that were preventable.
               </p>
               <Link
-                href={v.result.visaSlug ? `/visa/${v.result.visaSlug}` : consultHref}
+                href={v.result.visaSlug ? `${basePath}/visa/${v.result.visaSlug}` : consultHref}
                 className="mt-4 inline-flex items-center gap-2 rounded-full bg-primary-700 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-800"
               >
                 See what is involved <ArrowRight size={15} />

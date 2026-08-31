@@ -39,20 +39,20 @@ const visawadiFooter = (
       {
         heading: "Visa Assistance",
         links: [
-          { label: "All Destinations", href: "/visa" },
-          { label: "Schengen Visa", href: "/visa/schengen" },
-          { label: "United Kingdom", href: "/visa/united-kingdom" },
-          { label: "United States", href: "/visa/usa" },
-          { label: "Canada", href: "/visa/canada" },
+          { label: "All Destinations", href: "/uae" },
+          { label: "Schengen Visa", href: "/uae/visa/schengen" },
+          { label: "United Kingdom", href: "/uae/visa/united-kingdom" },
+          { label: "United States", href: "/uae/visa/usa" },
+          { label: "Canada", href: "/uae/visa/canada" },
         ],
       },
       {
         heading: "Schengen Countries",
         links: [
-          { label: "France", href: "/visa/france-visa" },
-          { label: "Germany", href: "/visa/germany-visa" },
-          { label: "Italy", href: "/visa/italy-visa" },
-          { label: "Spain", href: "/visa/spain-visa" },
+          { label: "France", href: "/uae/visa/france-visa" },
+          { label: "Germany", href: "/uae/visa/germany-visa" },
+          { label: "Italy", href: "/uae/visa/italy-visa" },
+          { label: "Spain", href: "/uae/visa/spain-visa" },
         ],
       },
       {
@@ -71,7 +71,7 @@ const visawadiFooter = (
 const defaultPages = [
   {
     name: "Visa Assistance",
-    links: ["/visa"],
+    links: ["/uae"],
     mega: {
       layout: "tabs",
       columns: [
@@ -82,55 +82,55 @@ const defaultPages = [
               Icon: Globe,
               label: "All Destinations",
               desc: "Browse every visa service we offer",
-              href: "/visa",
+              href: "/uae",
             },
             {
               flag: "european_union",
               label: "Schengen Visa",
               desc: "Access 29 European countries with one visa",
-              href: "/visa/schengen",
+              href: "/uae/visa/schengen",
             },
             {
               flag: "fr",
               label: "France",
               desc: "Schengen visa handled through VFS Global France",
-              href: "/visa/france-visa",
+              href: "/uae/visa/france-visa",
             },
             {
               flag: "de",
               label: "Germany",
               desc: "Schengen visa handled through VFS Global Germany",
-              href: "/visa/germany-visa",
+              href: "/uae/visa/germany-visa",
             },
             {
               flag: "it",
               label: "Italy",
               desc: "Schengen visa handled through VFS Global Italy",
-              href: "/visa/italy-visa",
+              href: "/uae/visa/italy-visa",
             },
             {
               flag: "es",
               label: "Spain",
               desc: "Schengen visa handled through BLS Spain",
-              href: "/visa/spain-visa",
+              href: "/uae/visa/spain-visa",
             },
             {
               flag: "gb",
               label: "United Kingdom",
               desc: "Tourism, business, and family visits to the UK",
-              href: "/visa/united-kingdom",
+              href: "/uae/visa/united-kingdom",
             },
             {
               flag: "us",
               label: "United States",
               desc: "B1/B2 visitor visa with interview coaching",
-              href: "/visa/usa",
+              href: "/uae/visa/usa",
             },
             {
               flag: "ca",
               label: "Canada",
               desc: "Temporary resident visa for tourism and family",
-              href: "/visa/canada",
+              href: "/uae/visa/canada",
             },
           ],
         },

@@ -22,6 +22,7 @@ import {
 } from "@/lib/schema";
 import { homepageFaqs } from "@/data/faqs";
 import { EMAIL } from "@/config/contact";
+import { DEFAULT_COUNTRY } from "@/config/countries";
 import {
   ArrowRight,
   FileCheck,
@@ -154,13 +155,13 @@ function VisaDestinations({ visas }) {
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {visas.map((visa) => (
-            <VisaCard key={visa.slug} visa={visa} />
+            <VisaCard key={visa.slug} visa={visa} basePath={`/${DEFAULT_COUNTRY.slug}`} />
           ))}
         </div>
 
         <div className="mt-10">
           <Link
-            href="/visa"
+            href={`/${DEFAULT_COUNTRY.slug}`}
             className="inline-flex items-center gap-2 text-sm font-semibold text-primary-700 transition-colors hover:text-primary-800"
           >
             See all destinations <ArrowRight size={15} />
@@ -211,7 +212,7 @@ export default async function HomePage() {
         pills={pageData.hero.pills}
         layout="centered"
         dark
-        below={<VisaCheckerInline />}
+        below={<VisaCheckerInline basePath={`/${DEFAULT_COUNTRY.slug}`} consultHref={`/${DEFAULT_COUNTRY.slug}`} />}
       />
       <VisaDestinations visas={list} />
       <HowItWorks

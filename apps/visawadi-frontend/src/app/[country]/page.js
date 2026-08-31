@@ -102,7 +102,7 @@ export default async function Page({ params }) {
             </p>
           </div>
           <div className="relative mt-9 max-w-4xl lg:mx-auto">
-            <VisaCheckerInline />
+            <VisaCheckerInline basePath={`/${c.slug}`} consultHref={`/${c.slug}`} />
           </div>
         </Container>
       </PrimarySection>

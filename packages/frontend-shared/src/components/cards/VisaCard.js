@@ -7,7 +7,9 @@ const DEFAULT_FEATURES = [
   "Cover letter and financial summary written for you",
 ];
 
-export default function VisaCard({ visa, fallbackTagline = "", features = DEFAULT_FEATURES, href }) {
+// basePath: brands that segment visa pages by residence country pass the
+// segment, e.g. basePath="/uae" to link /uae/visa/<slug>. `href` overrides it.
+export default function VisaCard({ visa, fallbackTagline = "", features = DEFAULT_FEATURES, href, basePath = "" }) {
   if (!visa?.slug) return null;
 
   const tagline = visa.excerpt || fallbackTagline || visa.heroSubheadline || "";
@@ -22,7 +24,7 @@ export default function VisaCard({ visa, fallbackTagline = "", features = DEFAUL
 
   return (
     <Link
-      href={href || `/visa/${visa.slug}`}
+      href={href || `${basePath}/visa/${visa.slug}`}
       className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-[0_4px_20px_rgba(16,24,40,0.06)] hover:-translate-y-1 hover:shadow-[0_12px_36px_rgba(16,24,40,0.12)] transition-all duration-300"
     >
       <div className="relative aspect-16/7 bg-linear-to-br from-primary-50 to-primary-100/50 overflow-hidden">

@@ -34,7 +34,7 @@ The 35 posts migrated from Travl originally violated all of this: they sold Trav
 
 Public:
 - **`/`** — visa-led homepage.
-- **`/visa`, `/visa/[slug]`** — the visa listing and detail pages (ISR, `revalidate = 300`).
+- **`/[country]`, `/[country]/visa/[slug]`** — the visa listing and detail pages, segmented by residence country (ISR, `revalidate = 300`). Only `uae` is live. The legacy `/visa` and `/visa/[slug]` paths 308 to these from `next.config.mjs`; internal links must use the canonical country-prefixed form.
 - **`/blog`, `/blog/[slug]`, `/blog/tags`, `/blog/tags/[slug]`** — blog.
 - **`/about`, `/contact`, `/faq`, `/privacy-policy`, `/terms-and-conditions`** — hand-written, not shared components.
 - **`/apply`, `/apply/login`, `/apply/[applicationRef]`** — the customer document-upload flow. `noindex`. There is no public entry point: an admin creates the application and the backend emails a magic link. **The reminder cron already sends `/apply/...` URLs, so these routes must stay reachable.**
