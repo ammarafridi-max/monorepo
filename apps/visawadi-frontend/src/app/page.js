@@ -120,6 +120,9 @@ const DESTINATION_ORDER = [
   "united-kingdom",
   "usa",
   "canada",
+  // Saudi is the current launch priority, so it sits inside the six the
+  // homepage shows. Reorder here to change what gets homepage placement.
+  "saudi-arabia",
   "germany-visa",
   "france-visa",
   "italy-visa",
