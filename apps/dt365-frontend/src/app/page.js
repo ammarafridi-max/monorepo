@@ -1,3 +1,4 @@
+import { EMAIL, WHATSAPP_NUMBER } from '@/config/contact';
 import Hero from "@travel-suite/frontend-shared/components/sections/v1/Hero";
 import AllForms from "@travel-suite/frontend-shared/components/forms/v1/AllForms";
 import Process from "@travel-suite/frontend-shared/components/sections/v1/Process";
@@ -253,7 +254,7 @@ export default function HomePage() {
         form={<AllForms forms={["ticket"]} />}
         pills={[
           "Dummy tickets from $13",
-          "Valid 6-digit PNR included",
+          "Valid 6-digit PNR",
           "Accepted worldwide",
           "Delivered in minutes",
         ]}
@@ -318,7 +319,8 @@ export default function HomePage() {
           },
         ]}
       />
-      <Contact email="info@dummyticket365.com" />
+      <Contact
+        whatsappNumber={WHATSAPP_NUMBER} email={EMAIL} />
     </>
   );
 }

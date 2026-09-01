@@ -1,3 +1,4 @@
+import { EMAIL } from '@/config/contact';
 import { faqArray, formatFaqArray } from '@/data/faqs';
 import { buildMetadata } from '@/lib/schema';
 import {
@@ -230,7 +231,7 @@ export default function Page() {
         title={pageData.sections.blogs.title}
         subtitle={pageData.sections.blogs.subtitle}
       />
-      <Contact email="info@mydummyticket.ae" />
+      <Contact email={EMAIL} />
     </>
   );
 }

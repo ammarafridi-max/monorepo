@@ -6,7 +6,7 @@
 * {
   box-sizing: border-box;
   scroll-behavior: smooth;
-  font-family: var(--font-outfit), sans-serif;
+  font-family: var(--font-commissioner), sans-serif;
 }
 
 @theme inline {
@@ -34,10 +34,12 @@
   --color-accent-900: #701700;
   --color-accent-950: #3d0d00;
 
-  --font-sans:         var(--font-outfit);
-  --font-nunito:       'Outfit', sans-serif;
-  --font-merriweather: 'Outfit', sans-serif;
-  --font-outfit:       'Outfit', sans-serif;
+  /* font-outfit, font-nunito and font-merriweather are legacy utility names
+     still used across frontend-shared; they all resolve to Commissioner here. */
+  --font-sans:         var(--font-commissioner);
+  --font-nunito:       var(--font-commissioner);
+  --font-merriweather: var(--font-commissioner);
+  --font-outfit:       var(--font-commissioner);
 
   --rounded-input-sm: 5px;
   --rounded-input-md: 8px;
@@ -138,7 +140,7 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: var(--font-outfit), sans-serif;
+  font-family: var(--font-commissioner), sans-serif;
   letter-spacing: -0.01em;
 }
 

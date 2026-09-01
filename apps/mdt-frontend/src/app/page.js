@@ -1,3 +1,4 @@
+import { EMAIL } from '@/config/contact';
 import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
@@ -224,7 +225,7 @@ export default function HomePage() {
         title={pageData.sections.blogs.title}
         subtitle={pageData.sections.blogs.subtitle}
       />
-      <Contact email="info@mydummyticket.ae" />
+      <Contact email={EMAIL} />
     </>
   );
 }

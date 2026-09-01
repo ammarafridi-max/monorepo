@@ -1,4 +1,5 @@
 'use client';
+import { EMAIL } from '@/config/contact';
 
 import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -11,8 +12,18 @@ import { InsuranceProvider } from '@travel-suite/frontend-shared/contexts/Insura
 import AppLayout from '@travel-suite/frontend-shared/layouts/AppLayout';
 import AnalyticsInit from '@travel-suite/frontend-shared/components/shared/AnalyticsInit';
 
+// Routes whose first section is not the dark Hero, so the transparent header
+// has to stay dark-on-light there.
+const LIGHT_HEADER_ROUTES = [
+  '/blog',
+  '/booking',
+  '/insurance-booking',
+  '/faq',
+  '/privacy-policy',
+  '/terms-and-conditions',
+];
+
 const LOGO_ALT = 'MDT Logo';
-const EMAIL = 'info@mydummyticket.ae';
 
 const defaultPages = [
   {
@@ -54,6 +65,7 @@ const flightItineraryPages = [
 export default function Providers({ children }) {
   const pathname = usePathname();
   const isAdminRoute = pathname?.startsWith('/admin');
+  const headerOnDark = !LIGHT_HEADER_ROUTES.some((route) => pathname?.startsWith(route));
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -85,7 +97,7 @@ export default function Providers({ children }) {
           <CurrencyProvider>
             <TicketProvider>
               <InsuranceProvider maxStartDays={270}>
-                <AppLayout pages={flightItineraryPages} logoAlt={LOGO_ALT} email={EMAIL}>
+                <AppLayout pages={flightItineraryPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark}>
                   <main>{children}</main>
                 </AppLayout>
               </InsuranceProvider>
@@ -104,7 +116,7 @@ export default function Providers({ children }) {
         <CurrencyProvider>
           <TicketProvider>
             <InsuranceProvider maxStartDays={270}>
-              <AppLayout pages={defaultPages} logoAlt={LOGO_ALT} email={EMAIL}>
+              <AppLayout pages={defaultPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark}>
                 <main>{children}</main>
               </AppLayout>
             </InsuranceProvider>

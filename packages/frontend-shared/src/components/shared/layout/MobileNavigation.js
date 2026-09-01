@@ -12,7 +12,7 @@ import { ChevronDown, ChevronRight } from 'lucide-react';
 import Container from './Container';
 import Currency from '../flight/Currency';
 
-export default function MobileNavigation({ pages = travlDefaultPages, logoAlt = 'Logo' }) {
+export default function MobileNavigation({ pages = travlDefaultPages, logoAlt = 'Logo', onDark = false }) {
   const pathname = usePathname();
   const wrapperRef = useRef(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -23,30 +23,32 @@ export default function MobileNavigation({ pages = travlDefaultPages, logoAlt = 
   return (
     <nav className="block lg:hidden absolute top-0 left-0 right-0 z-9999 bg-transparent py-3">
       <Container className="flex justify-between items-center">
-        <Link href="/" className="w-30 h-auto flex items-center">
+        <Link href="/" className="w-40 h-auto flex items-center">
+          {/* 160x28 matches the logo's real aspect ratio, so the header does not
+              shift as the image loads. */}
           <Image
             src="/logo.webp"
             alt={logoAlt}
-            width={100}
-            height={10}
+            width={160}
+            height={28}
             priority
-            className="w-full h-auto object-contain"
+            className={`w-full h-auto object-contain ${onDark ? 'brightness-0 invert' : ''}`}
           />
         </Link>
 
-        <div className="flex items-center gap-2">
-          <Currency />
-          <div
-            onClick={() => setMenuOpen((prev) => !prev)}
-            className="rounded-xl cursor-pointer transition-colors"
-          >
-            {menuOpen ? (
-              <HiOutlineXMark className="text-2xl" />
-            ) : (
-              <CgMenuRightAlt className="text-2xl" />
-            )}
-          </div>
-        </div>
+        <button
+          type="button"
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen((prev) => !prev)}
+          className={`-mr-2 flex h-11 w-11 items-center justify-center rounded-xl cursor-pointer transition-colors ${onDark ? 'text-white' : 'text-gray-900'}`}
+        >
+          {menuOpen ? (
+            <HiOutlineXMark className="text-xl" />
+          ) : (
+            <CgMenuRightAlt className="text-xl" />
+          )}
+        </button>
       </Container>
 
       {menuOpen && (
@@ -58,12 +60,17 @@ export default function MobileNavigation({ pages = travlDefaultPages, logoAlt = 
               className="w-[82%] max-w-[360px] h-dvh bg-white shadow-2xl border-r border-gray-200 px-5 pt-5"
             >
               <div className="mb-5 pb-4 border-b border-gray-100">
-                <p className="text-xs uppercase tracking-[0.14em] text-primary-600 font-semibold">
-                  Menu
-                </p>
-                <p className="text-sm text-gray-500 mt-1">
-                  Find tickets, insurance, and support.
-                </p>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.14em] text-primary-600 font-semibold">
+                      Menu
+                    </p>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Find tickets, insurance, and support.
+                    </p>
+                  </div>
+                  <Currency />
+                </div>
               </div>
 
               {pages.map((page, i) => {

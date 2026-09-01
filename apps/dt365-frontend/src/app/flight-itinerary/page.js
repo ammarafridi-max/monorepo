@@ -1,3 +1,4 @@
+import { EMAIL, WHATSAPP_NUMBER } from '@/config/contact';
 import { testimonials } from '@/data/testimonials';
 import { buildMetadata } from '@/lib/schema';
 import {
@@ -132,6 +133,8 @@ export default function Page() {
         benefits={pageData.sections.benefits.benefits}
       />
       <Contact
+        whatsappNumber={WHATSAPP_NUMBER}
+        email={EMAIL}
         title={pageData.sections.contact.title}
         text={pageData.sections.contact.text}
       />

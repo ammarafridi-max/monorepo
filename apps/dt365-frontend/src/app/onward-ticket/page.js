@@ -1,3 +1,4 @@
+import { EMAIL, WHATSAPP_NUMBER } from '@/config/contact';
 import { faqArray, formatFaqArray } from '@/data/faqs';
 import { buildMetadata, SITE_URL } from '@/lib/schema';
 import {
@@ -257,7 +258,8 @@ export default function Page() {
           { anchor: 'Dummy ticket for an Australia visa', href: '/dummy-ticket-australia-visa', blurb: 'Formatted for the Subclass 600 ImmiAccount upload.' },
         ]}
       />
-      <Contact email="info@dummyticket365.com" />
+      <Contact
+        whatsappNumber={WHATSAPP_NUMBER} email={EMAIL} />
     </>
   );
 }

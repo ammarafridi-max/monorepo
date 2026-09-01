@@ -1,9 +1,9 @@
-import { Outfit } from 'next/font/google';
+import { Commissioner } from 'next/font/google';
 import './globals.css';
 import Providers from './Providers';
 
-const outfit = Outfit({
-  variable: '--font-outfit',
+const commissioner = Commissioner({
+  variable: '--font-commissioner',
   subsets: ['latin'],
   display: 'swap',
 });
@@ -31,7 +31,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${outfit.variable} h-full antialiased`}>
+    <html lang="en" className={`${commissioner.variable} h-full antialiased`}>
       <head>
         <link rel="preconnect" href="https://res.cloudinary.com" />
         <link rel="dns-prefetch" href="https://res.cloudinary.com" />

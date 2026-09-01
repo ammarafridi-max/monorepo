@@ -30,7 +30,7 @@ export const defaultPages = [
 
 ];
 
-export default function Navigation({ pages = defaultPages, logoAlt = 'Logo' }) {
+export default function Navigation({ pages = defaultPages, logoAlt = 'Logo', onDark = false }) {
   const pathname = usePathname();
 
   return (
@@ -46,7 +46,7 @@ export default function Navigation({ pages = defaultPages, logoAlt = 'Logo' }) {
                 width={224}
                 height={60}
                 priority
-                className="w-full h-auto object-contain"
+                className={`w-full h-auto object-contain ${onDark ? 'brightness-0 invert' : ''}`}
                 style={{ height: 'auto' }}
               />
             </Link>
@@ -60,8 +60,12 @@ export default function Navigation({ pages = defaultPages, logoAlt = 'Logo' }) {
                   title={page.name}
                   className={`flex items-center gap-1.5 text-[14px] font-medium py-2 px-3 capitalize transition-all duration-300 rounded-xl ${
                     page.links.includes(pathname)
-                      ? 'bg-primary-100 text-primary-700'
-                      : 'text-gray-700'
+                      ? onDark
+                        ? 'bg-white/15 text-white'
+                        : 'bg-primary-100 text-primary-700'
+                      : onDark
+                        ? 'text-white/85 hover:text-white'
+                        : 'text-gray-700'
                   }`}
                 >
                   {page.icon && <span className="text-sm">{page.icon}</span>}
@@ -84,8 +88,8 @@ export default function Navigation({ pages = defaultPages, logoAlt = 'Logo' }) {
                 )}
               </div>
             ))}
-            <div className="ml-2 pl-2 border-l">
-              <Currency />
+            <div className={`ml-2 pl-2 border-l ${onDark ? 'border-white/20' : ''}`}>
+              <Currency onDark={onDark} />
             </div>
           </div>
         </nav>

@@ -1,3 +1,4 @@
+import { EMAIL, WHATSAPP_NUMBER } from '@/config/contact';
 import { buildMetadata } from "@/lib/schema";
 import {
   buildBreadcrumbList,
@@ -255,6 +256,8 @@ export default function Page() {
       />
 
       <Contact
+        whatsappNumber={WHATSAPP_NUMBER}
+        email={EMAIL}
         title={pageData.sections.contact.title}
         text={pageData.sections.contact.text}
       />

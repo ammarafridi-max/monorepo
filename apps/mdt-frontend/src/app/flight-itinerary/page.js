@@ -1,3 +1,4 @@
+import { EMAIL } from '@/config/contact';
 import { testimonials } from '@/data/testimonials';
 import { buildMetadata } from '@/lib/schema';
 import {
@@ -128,6 +129,7 @@ export default function Page() {
         benefits={pageData.sections.benefits.benefits}
       />
       <Contact
+        email={EMAIL}
         title={pageData.sections.contact.title}
         text={pageData.sections.contact.text}
       />

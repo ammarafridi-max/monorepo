@@ -5,7 +5,7 @@ import { HiChevronDown } from 'react-icons/hi2';
 import { useCurrency } from '../../../contexts/CurrencyContext.js';
 import { useOutsideClick } from '../../../hooks/general/useOutsideClick.js';
 
-export default function Currency() {
+export default function Currency({ onDark = false }) {
   const { selectedCurrency, currencies, setCurrency } = useCurrency();
   const [showCurrencies, setShowCurrencies] = useState(false);
   const wrapperRef = useRef(null);
@@ -16,7 +16,7 @@ export default function Currency() {
     <div className="relative" ref={wrapperRef}>
       <button
         type="button"
-        className="relative flex items-center justify-between text-[14px] text-gray-700 font-medium gap-1 px-2 py-1 cursor-pointer duration-300"
+        className={`relative flex min-h-11 items-center justify-between text-[13px] font-medium gap-1 px-2 py-2 cursor-pointer duration-300 ${onDark ? 'text-white/85 hover:text-white' : 'text-gray-700'}`}
         onClick={() => setShowCurrencies((val) => !val)}
         disabled={!currencies?.length}
       >

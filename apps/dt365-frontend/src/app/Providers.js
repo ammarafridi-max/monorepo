@@ -1,4 +1,5 @@
 'use client';
+import { EMAIL, WHATSAPP_NUMBER } from '@/config/contact';
 
 import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -11,11 +12,20 @@ import { InsuranceProvider } from '@travel-suite/frontend-shared/contexts/Insura
 import AppLayout from '@travel-suite/frontend-shared/layouts/AppLayout';
 import AnalyticsInit from '@travel-suite/frontend-shared/components/shared/AnalyticsInit';
 import HotjarInit from '@travel-suite/frontend-shared/components/shared/HotjarInit';
-// import StickyWhatsApp from '@travel-suite/frontend-shared/components/ui/v2/StickyWhatsApp';
+import StickyWhatsApp from '@travel-suite/frontend-shared/components/ui/v2/StickyWhatsApp';
+
+// Routes whose first section is not the dark Hero, so the transparent header
+// has to stay dark-on-light there.
+const LIGHT_HEADER_ROUTES = [
+  '/blog',
+  '/booking',
+  '/insurance-booking',
+  '/faq',
+  '/privacy-policy',
+  '/terms-and-conditions',
+];
 
 const LOGO_ALT = 'DT365 Logo';
-const EMAIL = 'info@dummyticket365.com';
-// const WHATSAPP_NUMBER = '+971527237088';
 
 const defaultPages = [
   {
@@ -49,6 +59,7 @@ const flightItineraryPages = [
 export default function Providers({ children }) {
   const pathname = usePathname();
   const isAdminRoute = pathname?.startsWith('/admin');
+  const headerOnDark = !LIGHT_HEADER_ROUTES.some((route) => pathname?.startsWith(route));
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -81,10 +92,10 @@ export default function Providers({ children }) {
           <CurrencyProvider>
             <TicketProvider>
               <InsuranceProvider>
-                <AppLayout pages={flightItineraryPages} logoAlt={LOGO_ALT} email={EMAIL}>
+                <AppLayout pages={flightItineraryPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark}>
                   <main>{children}</main>
                 </AppLayout>
-                {/* <StickyWhatsApp phoneNumber={WHATSAPP_NUMBER} /> */}
+                <StickyWhatsApp phoneNumber={WHATSAPP_NUMBER} />
               </InsuranceProvider>
             </TicketProvider>
           </CurrencyProvider>
@@ -102,10 +113,10 @@ export default function Providers({ children }) {
         <CurrencyProvider>
           <TicketProvider>
             <InsuranceProvider>
-              <AppLayout pages={defaultPages} logoAlt={LOGO_ALT} email={EMAIL}>
+              <AppLayout pages={defaultPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark}>
                 <main>{children}</main>
               </AppLayout>
-              {/* <StickyWhatsApp phoneNumber={WHATSAPP_NUMBER} /> */}
+              <StickyWhatsApp phoneNumber={WHATSAPP_NUMBER} />
             </InsuranceProvider>
           </TicketProvider>
         </CurrencyProvider>

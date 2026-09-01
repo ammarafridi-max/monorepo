@@ -1,3 +1,4 @@
+import { EMAIL } from '@/config/contact';
 import { buildMetadata } from '@/lib/schema';
 import {
   buildFAQPage,
@@ -223,6 +224,7 @@ export default function Page() {
       />
       <BlogPosts />
       <Contact
+        email={EMAIL}
         title={pageData.sections.contact.title}
         subtitle={pageData.sections.contact.subtitle}
         text={pageData.sections.contact.text}
