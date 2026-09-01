@@ -28,7 +28,7 @@ An applicant often has to *supply* these as part of a visa file, so they belong 
 
 ## Visa Pages
 
-All visa pages live under the country segment: `https://www.visawadi.com/uae/visa/<slug>`. The hub is `/uae` and the listing is `/uae/visa`.
+All visa pages live under the country segment: `https://www.visawadi.com/uae/visa/<slug>`. The hub and the listing are both `/uae`. There is no `/uae/visa` route.
 
 | Destination | URL | Packages from |
 |---|---|---|
@@ -40,6 +40,24 @@ All visa pages live under the country segment: `https://www.visawadi.com/uae/vis
 | United Kingdom | https://www.visawadi.com/uae/visa/united-kingdom | AED 699 |
 | United States (B1/B2) | https://www.visawadi.com/uae/visa/usa | AED 799 |
 | Canada | https://www.visawadi.com/uae/visa/canada | AED 699 |
+| Greece | https://www.visawadi.com/uae/visa/greece-visa | AED 299 |
+| Saudi Arabia (tourist eVisa, GCC residents) | https://www.visawadi.com/uae/visa/saudi-arabia | AED 700 all in |
+
+Saudi Arabia works differently from every other destination and the copy must
+reflect that:
+
+- It is an **eVisa**. No embassy, no appointment, no biometrics, no visa centre.
+- It is for **GCC residents**, meaning expatriates holding a GCC residence
+  permit. **GCC citizens need no visa at all** and must never be told otherwise.
+- Eligibility: residence permit valid 3+ months, passport valid 6+ months. All
+  professions qualify since March 2023.
+- One year, multiple entry, up to 90 days total stay across the year.
+- Covers tourism, family visits, events, and Umrah outside the Hajj season. Not
+  Hajj, work, study or residence.
+- **AED 700 is all inclusive** and covers the Saudi government fee and the
+  mandatory medical insurance. There is no separate government charge to pay,
+  and the full amount is refunded if the visa is refused. Never present the
+  government fee as a separate cost to the applicant.
 
 Each page offers tiered packages (Basic / Standard / Express / Concierge depending on destination) covering document review, file preparation, appointment booking and end-to-end support. Embassy and visa-centre fees are separate and passed through at cost, never marked up.
 
@@ -61,7 +79,7 @@ Every visa page opens a lead form from a **"Get free consultation"** button. Tha
 ## Internal Linking Priority (for Blog Posts)
 
 1. The visa page matching the article's destination (`/uae/visa/<slug>`) — the highest-value link in any post.
-2. `https://www.visawadi.com/uae/visa` when the article spans several destinations.
+2. `https://www.visawadi.com/uae` when the article spans several destinations. (`/uae/visa` is not a route.)
 3. Dummy Ticket 365, where the topic involves proof of onward travel, dummy tickets, or flight reservations.
 4. Travl travel insurance, where the topic involves the insurance requirement.
 5. Other VisaWadi posts on related topics, and `/faq` for general document questions.

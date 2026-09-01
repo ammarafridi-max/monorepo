@@ -64,6 +64,10 @@ export const TARGET = {
     'auswaertiges-amt.de',
     'esteri.it',            // vistoperitalia.esteri.it
     'exteriores.gob.es',
+    // Saudi Arabia. 'gov.sa' covers my.gov.sa and mofa.gov.sa; the tourist
+    // eVisa itself is issued on visitsaudi.com, which is not a .gov.sa domain.
+    'gov.sa',
+    'visitsaudi.com',
   ],
 
 
