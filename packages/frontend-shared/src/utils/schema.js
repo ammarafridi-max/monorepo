@@ -1,6 +1,9 @@
 export function createSchemaBuilders({
   siteUrl,
   siteName,
+  legalName,
+  sameAs,
+  telephone,
   logoUrl,
   email,
   address,
@@ -13,9 +16,12 @@ export function createSchemaBuilders({
     "@type": "Organization",
     "@id": organizationId,
     name: siteName,
+    ...(legalName ? { legalName } : {}),
     url: siteUrl,
     logo: { "@type": "ImageObject", url: logoUrl },
     ...(email ? { email } : {}),
+    ...(telephone ? { telephone } : {}),
+    ...(sameAs?.length ? { sameAs } : {}),
     ...(address ? { address: { "@type": "PostalAddress", ...address } } : {}),
     ...(contactPoint
       ? { contactPoint: { "@type": "ContactPoint", ...contactPoint } }
