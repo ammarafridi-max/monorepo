@@ -109,6 +109,13 @@ export const metadata = {
     url: pageData.meta.canonical,
     title: pageData.meta.title,
     description: pageData.meta.description,
+    images: [`${SITE_URL}/og-image.png`],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: pageData.meta.title,
+    description: pageData.meta.description,
+    images: [`${SITE_URL}/og-image.png`],
   },
 };
 

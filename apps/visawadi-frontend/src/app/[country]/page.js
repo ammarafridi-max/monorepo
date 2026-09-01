@@ -56,7 +56,8 @@ export async function generateMetadata({ params }) {
     description: m.description,
     alternates: { canonical: m.canonical },
     robots: { index: true, follow: true },
-    openGraph: { url: m.canonical, title: m.title, description: m.description },
+    openGraph: { url: m.canonical, title: m.title, description: m.description, images: [`${SITE_URL}/og-image.png`] },
+    twitter: { card: 'summary_large_image', title: m.title, description: m.description, images: [`${SITE_URL}/og-image.png`] },
   };
 }
 

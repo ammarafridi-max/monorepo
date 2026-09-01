@@ -14,6 +14,14 @@ export const metadata = {
   description:
     "Get in touch with VisaWadi. Email info@visawadi.com, WhatsApp our team, or find us at Regus, DAFZ, Dubai for help with your insurance policy or visa documentation.",
   alternates: { canonical: "https://www.visawadi.com/contact" },
+  openGraph: {
+    url: "https://www.visawadi.com/contact",
+    title: "Contact Us",
+    description:
+      "Get in touch with VisaWadi. Email info@visawadi.com or WhatsApp our team for help with your visa application.",
+    images: ["https://www.visawadi.com/og-image.png"],
+  },
+  twitter: { card: "summary_large_image", images: ["https://www.visawadi.com/og-image.png"] },
 };
 
 export default function ContactPage() {

@@ -7,6 +7,14 @@ export const metadata = {
   description:
     "VisaWadi is a Dubai-based team that prepares visa applications for UAE residents. Document review, file preparation and appointment booking, tracked to a decision.",
   alternates: { canonical: "https://www.visawadi.com/about" },
+  openGraph: {
+    url: "https://www.visawadi.com/about",
+    title: "About Us",
+    description:
+      "VisaWadi is a Dubai-based team that prepares visa applications for UAE residents. Document review, file preparation and appointment booking, tracked to a decision.",
+    images: ["https://www.visawadi.com/og-image.png"],
+  },
+  twitter: { card: "summary_large_image", images: ["https://www.visawadi.com/og-image.png"] },
 };
 
 export default function AboutPage() {
