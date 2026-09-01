@@ -66,7 +66,7 @@ const VISA = {
         'Photo and passport scan checked against Saudi specifications before submission',
         'Saudi government eVisa fee and the mandatory medical insurance included, nothing further to pay',
         'Application tracked daily until the visa is issued',
-        'Free resubmission if the application is rejected on document grounds',
+        'Full AED 700 refund if the application is refused',
       ],
       exclusions: [
         'Hajj, work, study and residence visas are not covered',
@@ -168,7 +168,7 @@ const VISA = {
       amount: 700,
       currency: 'AED',
       paidTo: 'VisaWadi',
-      note: 'Covers the Saudi government eVisa fee, the mandatory medical insurance, the eligibility check and the application. There is nothing further to pay.',
+      note: 'Covers the Saudi government eVisa fee, the mandatory medical insurance, the eligibility check and the application. There is nothing further to pay, and the full amount is refunded if the visa is refused.',
     },
   ],
 
@@ -182,7 +182,7 @@ const VISA = {
     {
       title: 'We check before you pay',
       description:
-        'Residence permit and passport validity sink most applications. We check both first, so you are not paying a non refundable fee to be told no.',
+        'Residence permit and passport validity sink most applications. We check both before anything is submitted, which is why refusals are rare.',
       icon: 'ShieldCheck',
     },
     {
@@ -192,9 +192,9 @@ const VISA = {
       icon: 'CalendarCheck',
     },
     {
-      title: 'Rejected applications fixed',
+      title: 'Refused means refunded',
       description:
-        'If your application is refused on document grounds, we correct it and reapply without charging our fee a second time.',
+        'If the application is refused, you get the full AED 700 back. We carry the risk on the government fee, not you.',
       icon: 'RefreshCw',
     },
     {
@@ -247,7 +247,7 @@ const VISA = {
     {
       question: 'What happens if my application is rejected?',
       answer:
-        'Refusals are almost always about documents: a residence permit with under three months left, a passport under six months, or a photo that does not meet the specification. We check all of those before submitting. If it is still refused on document grounds we correct it and reapply at no extra service fee.',
+        'Refusals are almost always about documents: a residence permit with under three months left, a passport under six months, or a photo that does not meet the specification. We check all of those before submitting. If it is still refused we refund the full AED 700. You are not out of pocket for an application that did not succeed.',
     },
     {
       question: 'How soon before travelling should I apply?',
