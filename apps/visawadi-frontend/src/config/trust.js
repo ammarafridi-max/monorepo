@@ -30,3 +30,11 @@ export const TRUST_ASSURANCES = [
 
 export const TRUST_SUBTITLE =
   "What every application gets, whichever package you choose.";
+
+/** The short strip under the visa page hero. Same rule as above: nothing here
+ *  may be a number or a claim we cannot evidence. */
+export const HERO_TRUST_ITEMS = [
+  { icon: "FileCheck", label: "Every document reviewed" },
+  { icon: "RotateCcw", label: "Refusals reanalysed" },
+  { icon: "Languages", label: "Support in your language" },
+];

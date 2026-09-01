@@ -13,7 +13,7 @@ import VisaTestimonials from "../../components/sections/v1/VisaTestimonials.js";
 import VisaFaqSection from "../../components/sections/v1/VisaFaqSection.js";
 import VisaFinalCta from "../../components/sections/v1/VisaFinalCta.js";
 
-export default function VisaDetailPage({ visa, schema, breadcrumbJsonLd, whatsappUrl, trustAssurances = [], trustSubtitle = "" }) {
+export default function VisaDetailPage({ visa, schema, breadcrumbJsonLd, whatsappUrl, trustAssurances = [], trustSubtitle = "", heroTrustItems = [] }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalPackage, setModalPackage] = useState("undecided");
   const [modalSource, setModalSource] = useState("hero_cta");
@@ -49,6 +49,7 @@ export default function VisaDetailPage({ visa, schema, breadcrumbJsonLd, whatsap
         ctaText={visa.heroCtaText}
         imageUrl={visa.heroImageUrl}
         imageAlt={visa.countryName ? `${visa.countryName} visa assistance` : ""}
+        trustItems={heroTrustItems}
         onCtaClick={() => openModal("undecided", "hero_cta")}
       />
       <VisaQualifiers

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Building2, Zap, Languages } from "lucide-react";
+import * as LucideIcons from "lucide-react";
 import Container from "../../shared/layout/Container.js";
 
 function splitHeadline(text = "") {
@@ -10,12 +10,6 @@ function splitHeadline(text = "") {
   return { first: text.slice(0, idx + 1), second: text.slice(idx + 2) };
 }
 
-const TRUST_ITEMS = [
-  { Icon: Building2, label: "Licensed Dubai office" },
-  { Icon: Zap, label: "3-minute response time" },
-  { Icon: Languages, label: "Native-language support" },
-];
-
 export default function VisaHero({
   headline = "",
   subheadline = "",
@@ -23,6 +17,9 @@ export default function VisaHero({
   imageUrl = "",
   imageAlt = "",
   onCtaClick,
+  // Supplied by the consuming app so this stays brand-neutral and no claim is
+  // hardcoded in a shared component.
+  trustItems = [],
 }) {
   const { first: headFirst, second: headSecond } = splitHeadline(headline);
   const hasImage = Boolean(imageUrl);
@@ -38,7 +35,7 @@ export default function VisaHero({
             alt={imageAlt}
             fill
             priority
-            sizes="100vw"
+            sizes="(min-width: 1920px) 1920px, 100vw"
             className="object-cover object-center"
           />
           <div className="absolute inset-0 bg-linear-to-b from-gray-900/85 via-gray-900/70 to-gray-900/85" />
@@ -103,7 +100,9 @@ export default function VisaHero({
           </div>
 
           <div className="flex flex-wrap gap-x-6 gap-y-2.5 lg:justify-center">
-            {TRUST_ITEMS.map(({ Icon, label }) => (
+            {trustItems.map(({ icon, label }) => {
+              const Icon = LucideIcons[icon] || LucideIcons.Check;
+              return (
               <span
                 key={label}
                 className={`inline-flex items-center gap-1.5 text-[13px] font-outfit font-normal ${
@@ -116,7 +115,8 @@ export default function VisaHero({
                 />
                 {label}
               </span>
-            ))}
+              );
+            })}
           </div>
         </div>
       </Container>
