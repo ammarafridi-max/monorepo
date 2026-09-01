@@ -85,7 +85,30 @@ function attachAirlines(flights) {
         airlineDetails: flight.validatingAirlineCodes.map((code) => detailFor(code, nameByCode)),
       };
     })
-    .sort((a, b) => a.itineraries[0].segments.length - b.itineraries[0].segments.length);
+    .sort((a, b) => {
+      const sa = stopProfile(a);
+      const sb = stopProfile(b);
+      // Worst leg first: a return trip is only "direct" if both legs are.
+      return sa.worst - sb.worst || sa.total - sb.total;
+    });
+}
+
+function stopsOfSegments(count) {
+  return Math.max(count - 1, 0);
+}
+
+function stopProfile(flight) {
+  const perLeg = flight.itineraries.map((it) => stopsOfSegments(it.segments.length));
+  return { worst: Math.max(...perLeg), total: perLeg.reduce((a, b) => a + b, 0) };
+}
+
+/** Fewest stops first, then shortest, so slicing keeps the best options rather than the first ones. */
+function rankOffers(offers) {
+  return [...offers].sort(
+    (a, b) =>
+      stopsOfSegments(a.flights?.length ?? 1) - stopsOfSegments(b.flights?.length ?? 1) ||
+      (a.total_duration ?? 0) - (b.total_duration ?? 0),
+  );
 }
 
 function offerToItinerary(offer) {
@@ -131,7 +154,7 @@ export function createFlightService({ Airline, airlabs, serpapi }) {
       arrivalId: dest,
       outboundDate: departureDate,
     });
-    const outbound = outboundOffers.map(offerToItinerary).filter((it) => it.segments.length);
+    const outbound = rankOffers(outboundOffers).map(offerToItinerary).filter((it) => it.segments.length);
     if (!outbound.length) return [];
 
     if (type !== 'Return') {
@@ -143,7 +166,8 @@ export function createFlightService({ Airline, airlabs, serpapi }) {
       arrivalId: origin,
       outboundDate: returnDate,
     });
-    const inbound = inboundOffers.map(offerToItinerary).filter((it) => it.segments.length);
+    // Both sides ranked, so index pairing puts a direct outbound with a direct return.
+    const inbound = rankOffers(inboundOffers).map(offerToItinerary).filter((it) => it.segments.length);
     if (!inbound.length) return [];
 
     return outbound.slice(0, 12).map((out, i) => wrapFlight([out, inbound[i % inbound.length]]));
