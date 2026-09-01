@@ -51,6 +51,7 @@ const visawadiFooter = (
         links: [
           { label: "France", href: "/uae/visa/france-visa" },
           { label: "Germany", href: "/uae/visa/germany-visa" },
+          { label: "Greece", href: "/uae/visa/greece-visa" },
           { label: "Italy", href: "/uae/visa/italy-visa" },
           { label: "Spain", href: "/uae/visa/spain-visa" },
         ],
@@ -101,6 +102,12 @@ const defaultPages = [
               label: "Germany",
               desc: "Schengen visa handled through VFS Global Germany",
               href: "/uae/visa/germany-visa",
+            },
+            {
+              flag: "gr",
+              label: "Greece",
+              desc: "Schengen visa handled through VFS Global Greece",
+              href: "/uae/visa/greece-visa",
             },
             {
               flag: "it",
