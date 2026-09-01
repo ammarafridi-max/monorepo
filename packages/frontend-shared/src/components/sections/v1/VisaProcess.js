@@ -22,45 +22,26 @@ export default function VisaProcess({ steps = [], countryName = "", guide }) {
           subtitle="From your first consultation to a decision, we handle every step with you so nothing gets missed."
         />
 
-        <div className="hidden lg:grid grid-cols-3 gap-x-8 gap-y-12 max-w-4xl mx-auto">
-          {steps.map((step, i) => (
-            <div
-              key={i}
-              className="flex flex-col items-center text-center px-3"
-            >
-              <div className="w-14 h-14 rounded-full bg-primary-700 text-white flex items-center justify-center text-lg font-outfit font-bold mb-4 shadow-md">
-                {String(i + 1).padStart(2, "0")}
-              </div>
-              <h3 className="font-outfit font-medium text-[15px] text-gray-900 mb-1 leading-snug">
-                {step.title}
-              </h3>
-              {step.description && (
-                <p className="font-outfit font-normal text-[13px] text-gray-600 leading-5">
-                  {step.description}
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
-
-        <div className="lg:hidden space-y-4">
+        {/* One list, responsive. Rendering desktop and mobile variants
+            separately put every step in the DOM twice. */}
+        <div className="grid gap-x-8 gap-y-4 lg:grid-cols-3 lg:gap-y-12 lg:max-w-4xl lg:mx-auto">
           {steps.map((step, i) => {
             const isLast = i === steps.length - 1;
             return (
-              <div key={i} className="flex items-start gap-4">
-                <div className="relative shrink-0 flex flex-col items-center">
-                  <div className="w-8 h-8 rounded-full bg-primary-700 text-white flex items-center justify-center text-[12px] font-outfit font-semibold">
+              <div
+                key={i}
+                className="flex items-start gap-4 lg:flex-col lg:items-center lg:gap-0 lg:text-center lg:px-3"
+              >
+                <div className="relative shrink-0 flex flex-col items-center self-stretch lg:self-auto">
+                  <div className="w-8 h-8 lg:w-14 lg:h-14 rounded-full bg-primary-700 text-white flex items-center justify-center text-[12px] lg:text-lg font-outfit font-semibold lg:font-bold lg:mb-4 lg:shadow-md">
                     {String(i + 1).padStart(2, "0")}
                   </div>
                   {!isLast && (
-                    <div
-                      className="w-px flex-1 bg-gray-200 mt-1.5"
-                      style={{ minHeight: "20px" }}
-                    />
+                    <div className="w-px flex-1 bg-gray-200 mt-1.5 min-h-5 lg:hidden" />
                   )}
                 </div>
-                <div className="pt-0.5 pb-4">
-                  <h3 className="font-outfit font-medium text-[15px] text-gray-900 mb-1">
+                <div className="pt-0.5 pb-4 lg:p-0">
+                  <h3 className="font-outfit font-medium text-[15px] text-gray-900 mb-1 leading-snug">
                     {step.title}
                   </h3>
                   {step.description && (

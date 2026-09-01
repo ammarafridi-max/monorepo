@@ -13,6 +13,7 @@ const staticPages = [
   { url: "/uae", changeFrequency: "weekly", priority: 0.9, lastmod: "2026-08-11" },
   { url: "/blog", changeFrequency: "daily", priority: 0.8, lastmod: "2026-08-09" },
   { url: "/blog/tags", changeFrequency: "weekly", priority: 0.5, lastmod: "2026-08-09" },
+  { url: "/faq", changeFrequency: "monthly", priority: 0.6, lastmod: "2026-08-09" },
   { url: "/about", changeFrequency: "monthly", priority: 0.5, lastmod: "2026-08-09" },
   { url: "/contact", changeFrequency: "monthly", priority: 0.5, lastmod: "2026-08-09" },
   { url: "/terms-and-conditions", changeFrequency: "yearly", priority: 0.3, lastmod: "2026-08-09" },

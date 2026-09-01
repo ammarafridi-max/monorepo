@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, Check, Clock } from "lucide-react";
 
 const DEFAULT_FEATURES = [
@@ -29,12 +30,12 @@ export default function VisaCard({ visa, fallbackTagline = "", features = DEFAUL
     >
       <div className="relative aspect-16/7 bg-linear-to-br from-primary-50 to-primary-100/50 overflow-hidden">
         {visa.heroImageUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={visa.heroImageUrl}
             alt={`${visa.countryName} visa`}
-            loading="lazy"
-            className="absolute inset-0 w-full h-full object-cover"
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="object-cover"
           />
         )}
       </div>
