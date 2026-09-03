@@ -184,6 +184,7 @@ Every fee, processing time, validity period, document requirement, eligibility r
 - End the article with a "Sources" section: an <h2>Sources</h2> followed by a <ul> listing each source as a link, naming the publisher.
 - If you are not certain of a figure and cannot point to an official page for it, do not state it. Describe it in general terms instead, or leave it out. A missing number is recoverable; a wrong one is not.
 - Do not attach a source link to a claim that source does not make. Every claim you link will be re-checked against the page it cites, and the post is rejected if the page does not support it.
+- Cite the authority that actually governs the rule. A Schengen rule is set by EU law and the member state's own mission, never by gov.uk or legislation.gov.uk; a UK rule is never evidenced by an EU source. Citing an out-of-jurisdiction domain reads as authoritative and is wrong, and the fact-checker rejects the post for it.
 `
     : "";
   console.log(`Required internal links: ${requiredLinks.length}`);
