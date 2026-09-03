@@ -28,7 +28,10 @@ export const FORMATS = {
     maxTokens: 6500,
     minWords: 1200,
     faqCount: 5,
-    minCitations: 4,
+    // Three, not four. Some destinations have only two approved domains
+    // (Spain: blsinternational.com and exteriores.gob.es), and demanding a
+    // fourth pushed the model into inventing deep links that 404.
+    minCitations: 3,
     requiresFieldData: false,
     skeleton: `1. An answer paragraph of 40–80 words. Verdict in the first sentence.
 2. An "At a glance" HTML <table> of 5–7 hard facts. Every figure attributed to an official source.

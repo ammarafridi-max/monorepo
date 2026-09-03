@@ -18,15 +18,26 @@ import { isCitationUrl, findDeadCitations } from "./blog-utils.mjs";
 
 const SEARCH_TOOL = "web_search_20260209";
 /** The server loops internally; this caps how many searches one call may run. */
-const MAX_USES = 6;
+const MAX_USES = 4;
 /** pause_turn means the server hit its own iteration limit; resume a few times. */
-const MAX_RESUMES = 3;
+const MAX_RESUMES = 2;
+/**
+ * Hard wall-clock budget across every resume. The daily job must not hang, and
+ * a slow search is worth abandoning rather than losing the run to it.
+ */
+const BUDGET_MS = 8 * 60 * 1000;
 
 export async function gatherSources({ apiKey, model, topic, brand, maxUses = MAX_USES }) {
   const domains = brand.citationDomains ?? [];
   if (!apiKey || domains.length === 0) return [];
 
-  const client = new Anthropic({ apiKey });
+  // Streamed, and not by preference: the SDK caps a non-streaming request at
+  // ten minutes, and this call blew through it on every CI run between
+  // 2026-09-01 and 2026-09-03, silently degrading to "cite from memory" — the
+  // exact failure mode this function exists to prevent. Streaming removes the
+  // cap; the budget below replaces it with one we control.
+  const client = new Anthropic({ apiKey, maxRetries: 2 });
+  const deadline = Date.now() + BUDGET_MS;
 
   const prompt =
     `Find the official source pages a writer would cite for this article:\n\n` +
@@ -43,21 +54,29 @@ export async function gatherSources({ apiKey, model, topic, brand, maxUses = MAX
 
   try {
     for (let resume = 0; resume <= MAX_RESUMES; resume++) {
-      response = await client.messages.create({
-        model,
-        max_tokens: 4000,
-        tools: [
-          {
-            type: SEARCH_TOOL,
-            name: "web_search",
-            max_uses: maxUses,
-            // The allowlist is enforced at search time, so a forbidden domain
-            // cannot reach the draft in the first place.
-            allowed_domains: domains,
-          },
-        ],
-        messages,
-      });
+      if (Date.now() > deadline) {
+        console.warn("⚠  Source search budget exhausted — using what was found so far");
+        break;
+      }
+      const stream = client.messages.stream(
+        {
+          model,
+          max_tokens: 4000,
+          tools: [
+            {
+              type: SEARCH_TOOL,
+              name: "web_search",
+              max_uses: maxUses,
+              // The allowlist is enforced at search time, so a forbidden domain
+              // cannot reach the draft in the first place.
+              allowed_domains: domains,
+            },
+          ],
+          messages,
+        },
+        { timeout: Math.max(60_000, deadline - Date.now()) },
+      );
+      response = await stream.finalMessage();
 
       if (response.stop_reason !== "pause_turn") break;
       // Resume by replaying the paused assistant turn. No extra user message:

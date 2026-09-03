@@ -375,7 +375,10 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
   // Every round failed. If the only thing wrong is invented URLs, unwrap them and
   // publish the post without those links rather than publishing nothing — but only
   // while enough real sources survive to meet the format's citation floor.
-  if (format && /cited source\(s\) do not exist/.test(lastValidationError?.message ?? "")) {
+  // Not gated on the last error naming dead links. On 2026-09-02 the final
+  // round failed on a different rule, so this never ran even though invented
+  // URLs were the recurring problem across all three rounds.
+  if (format && lastGoodDraft?.content) {
     const citations = extractCitations(lastGoodDraft?.content ?? "", brand);
     const dead = await findDeadCitations(citations);
     const repaired = dead.length
@@ -385,13 +388,25 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
         })
       : null;
     if (repaired) {
+      // Dropping links fixes only the links. Re-run every other rule against
+      // the repaired draft, or a post that also broke a brand rule (pricing,
+      // forbidden links, field lengths) would slip out through this door.
+      const candidate = { ...lastGoodDraft, content: repaired.content, __citations: repaired.citations };
+      try {
+        validateFieldLengths(candidate);
+        validateRequiredLinks(candidate, requiredLinks);
+        validateContentQuality(candidate, lengthTier, brand, { minWords: format.minWords });
+        validateCitations(candidate, brand, { minCitations: format.minCitations });
+        validateParagraphs(candidate);
+      } catch (err) {
+        console.warn(`⚠ Salvage rejected: ${err.message}`);
+        throw lastValidationError;
+      }
       console.warn(
         `⚠ Publishing without ${dead.length} invented link(s); ${repaired.citations.length} real source(s) remain:`,
       );
       for (const d of dead) console.warn(`   dropped ${d.url} (${d.status})`);
-      lastGoodDraft.content = repaired.content;
-      lastGoodDraft.__citations = repaired.citations;
-      return lastGoodDraft;
+      return candidate;
     }
   }
 

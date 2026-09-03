@@ -461,6 +461,10 @@ export function validateContentQuality(parsed, lengthTier, brand, { minWords: fl
     const url = m[1];
     const allowed =
       url.startsWith("/") ||
+      url.startsWith("#") ||
+      // mailto:/tel: are not links to another site. Rejecting the brand's own
+      // address as a "forbidden external link" burned a retry on 2026-09-02.
+      /^(?:mailto|tel):/i.test(url) ||
       brand.allowedLinkPrefixes.some((prefix) => url.startsWith(prefix)) ||
       isCitationUrl(url, brand);
     if (!allowed) externalLinks.push(url);
