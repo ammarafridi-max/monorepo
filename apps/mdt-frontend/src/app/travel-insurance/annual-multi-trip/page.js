@@ -100,7 +100,7 @@ export const faqs = [
 
 export const pageData = {
   meta: {
-    title: 'Annual Multi-Trip Travel Insurance in UAE | AED 245 | My Dummy Ticket',
+    title: 'Annual Multi-Trip Travel Insurance UAE | From AED 245',
     description:
       'Annual multi-trip travel insurance for UAE residents, issued by AXA. One policy covers all your trips for a year. From AED 245. Instant policy delivery.',
     canonical: 'https://www.mydummyticket.ae/travel-insurance/annual-multi-trip',

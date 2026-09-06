@@ -94,9 +94,9 @@ export const faqs = [
 
 export const pageData = {
   meta: {
-    title: 'Single Trip Travel Insurance for UAE Residents | My Dummy Ticket',
+    title: 'Single Trip Travel Insurance for UAE Residents',
     description:
-      'Buy single trip travel insurance online in UAE. One-time coverage for your journey, Schengen compliant, issued by AXA. Get your policy instantly at My Dummy Ticket.',
+      'Buy single trip travel insurance online in UAE. One-time cover for your journey, Schengen compliant, issued by AXA. Policy delivered instantly.',
     canonical: 'https://www.mydummyticket.ae/travel-insurance/single-trip',
     entityName: 'Single Trip Travel Insurance',
   },

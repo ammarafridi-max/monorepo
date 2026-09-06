@@ -120,7 +120,7 @@ export const pageData = {
     },
     about: {
       title: 'About Our Travel Insurance',
-      text: 'We provide travel insurance for UAE residents and citizens with instant policy delivery, genuine coverage, and pricing that makes sense. Every plan we issue meets embassy requirements and gives you real protection throughout your trip.',
+      text: 'We provide travel insurance for residents and citizens in Dubai, Abu Dhabi and across the UAE, with instant policy delivery, genuine coverage, and pricing that makes sense. Every plan we issue meets embassy requirements and gives you real protection throughout your trip.',
       services: [
         {
           icon: <MdOutlineHealthAndSafety />,

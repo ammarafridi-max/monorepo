@@ -70,7 +70,7 @@ const benefits = [
 
 const pageData = {
   meta: {
-    title: 'Dummy Ticket from AED 49 | Verifiable, Quick | My Dummy Ticket',
+    title: 'Dummy Ticket in UAE From AED 49 | Verifiable PNR',
     description:
       'Book embassy-ready dummy tickets from AED 49 with verifiable PNR references and fast delivery for visa applications from the UAE.',
     canonical: SITE_URL,

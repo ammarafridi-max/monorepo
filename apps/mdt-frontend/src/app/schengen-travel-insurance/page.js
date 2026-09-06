@@ -106,7 +106,7 @@ export const faqs = [
 export const pageData = {
   meta: {
     title:
-      'Schengen Travel Insurance for UAE Residents | From AED 30 | Instant Policy',
+      'Schengen Travel Insurance UAE From AED 30 | Instant Policy',
     description:
       'Get embassy-compliant Schengen travel insurance online. EUR 30,000 medical coverage, accepted by VFS & BLS. Instant policy for UAE residents from AED 30.',
     canonical: 'https://www.mydummyticket.ae/schengen-travel-insurance',
@@ -116,7 +116,7 @@ export const pageData = {
     hero: {
       title: 'Schengen Travel Insurance for UAE Residents from AED 30',
       subtitle:
-        'Get an embassy-compliant Schengen visa travel insurance policy online instantly. EUR 30,000 medical coverage included, accepted by VFS and BLS centers across the UAE. Plans from AED 30.',
+        'Get an embassy-compliant Schengen visa travel insurance policy online instantly. EUR 30,000 medical coverage included, accepted by VFS and BLS centres in Dubai, Abu Dhabi and across the UAE. Plans from AED 30.',
       form: <AllForms defaultTab="insurance" />,
     },
     process: {

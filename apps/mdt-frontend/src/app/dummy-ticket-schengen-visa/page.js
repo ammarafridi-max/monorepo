@@ -112,7 +112,7 @@ export const pageData = {
     hero: {
       title: 'Dummy Tickets For Schengen Visa',
       subtitle:
-        'Book your verifiable dummy ticket for your Schengen visa from AED 49. Our dummy tickets come with a 6-digit PNR number that can be used to verify ticket details at airline and reservation systems, and they are accepted by VFS, BLS, and embassies for visa applications.',
+        'Book your verifiable dummy ticket for your Schengen visa from AED 49. Our dummy tickets come with a 6-digit PNR number that can be used to verify ticket details at airline and reservation systems, and they are accepted by VFS, BLS, and the Schengen consulates in Dubai and Abu Dhabi.',
       form: <AllForms />,
     },
     process: {

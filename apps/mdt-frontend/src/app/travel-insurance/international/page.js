@@ -100,7 +100,7 @@ export const faqs = [
 
 export const pageData = {
   meta: {
-    title: 'International Travel Insurance for UAE Residents | My Dummy Ticket',
+    title: 'International Travel Insurance UAE | From AED 70',
     description:
       'Worldwide travel insurance for UAE residents, issued by AXA. International health insurance from AED 70 with medical cover from EUR 80,000. Instant delivery.',
     canonical: 'https://www.mydummyticket.ae/travel-insurance/international',

@@ -14,19 +14,24 @@ export default function Counter({ ageGroup, age, onAdd, onSubtract, value }) {
           type="button"
           onClick={onSubtract}
           disabled={value === 0}
+          aria-label={`Remove one ${ageGroup}`}
           className="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center text-gray-500 hover:border-primary-500 hover:text-primary-600 transition-colors disabled:opacity-30"
         >
-          <Minus size={13} />
+          <Minus size={13} aria-hidden="true" />
         </button>
-        <span className="w-5 text-center text-sm font-semibold text-gray-900">
+        <span
+          aria-live="polite"
+          className="w-5 text-center text-sm font-semibold text-gray-900"
+        >
           {value}
         </span>
         <button
           type="button"
           onClick={onAdd}
+          aria-label={`Add one ${ageGroup}`}
           className="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center text-gray-500 hover:border-primary-500 hover:text-primary-600 transition-colors"
         >
-          <Plus size={13} />
+          <Plus size={13} aria-hidden="true" />
         </button>
       </div>
     </div>

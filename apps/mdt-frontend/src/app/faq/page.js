@@ -14,7 +14,7 @@ import {
 
 export const faqPageData = {
   meta: {
-    title: 'Dummy Ticket FAQ | Common Questions Answered | My Dummy Ticket',
+    title: 'Dummy Ticket FAQ | Common Questions Answered',
     description:
       'Get clear answers to common questions about dummy ticket validity, verification, delivery time, refunds, and visa document usage.',
     canonical: 'https://www.mydummyticket.ae/faq',
