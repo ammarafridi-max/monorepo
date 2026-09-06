@@ -25,6 +25,8 @@ import {
 import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
+import PricingTiers from '@/components/PricingTiers';
+import { processSteps } from '@/data/processSteps';
 import About from '@travel-suite/frontend-shared/components/sections/v1/About';
 import Benefits from '@travel-suite/frontend-shared/components/sections/v1/Benefits';
 import FAQ from '@travel-suite/frontend-shared/components/sections/v1/FAQ';
@@ -33,7 +35,7 @@ import Contact from '@travel-suite/frontend-shared/components/sections/v1/Contac
 export const benefits = [
   {
     title: 'Verifiable PNRs',
-    text: "Our dummy tickets are genuine reservations with an active PNR code that can be verified on the airline's official website. This transparency builds trust and gives visa officers confidence in your documentation.",
+    text: 'Every booking is a real reservation with a live PNR. It can be verified through the global distribution systems (Amadeus, Sabre, Travelport) that embassies, airlines and travel agents use. With selected airlines, including Emirates and Etihad, you can also check it directly on their website under Manage Booking. Not every airline shows unpaid reservations on its own site, so the GDS check is the one that always works.',
     icon: FaCheckCircle,
   },
   {
@@ -58,7 +60,7 @@ export const benefits = [
   },
   {
     title: 'Flexible Validity Options',
-    text: 'Choose validity periods that match your visa appointment schedule: 48 hours, 7 days, or 14 days, depending on the availability you select.',
+    text: 'Choose a validity period that matches your visa appointment schedule: 2 days at AED 49, 7 days at AED 69, or 14 days at AED 79. The price follows the validity period you select, not availability.',
     icon: FaCalendarAlt,
   },
 ];
@@ -82,7 +84,7 @@ export const faqs = [
   {
     question: 'How long is your dummy ticket valid for a Schengen visa?',
     answer:
-      'Our dummy tickets for Schengen visa applications are available with flexible validity options of 48 hours, 7 days, or 14 days. This allows you to choose a validity period that matches your visa appointment and document submission timeline.',
+      'Our dummy tickets for Schengen visa applications come with flexible validity options of 2 days at AED 49, 7 days at AED 69, or 14 days at AED 79. This allows you to choose a validity period that matches your visa appointment and document submission timeline.',
   },
   {
     question: 'When should I order a dummy ticket for my Schengen visa appointment?',
@@ -104,6 +106,7 @@ export const pageData = {
     description:
       'Book your dummy flight ticket for Schengen visa. We provide verifiable dummy tickets with a valid PNR number that are accepted by VFS. Starting from AED 49.',
     canonical: 'https://www.mydummyticket.ae/dummy-ticket-schengen-visa',
+    entityName: 'Dummy Ticket for Schengen Visa',
   },
   sections: {
     hero: {
@@ -132,7 +135,7 @@ export const pageData = {
           icon: <MdOutlineHealthAndSafety />,
           title: 'Schengen Travel Insurance',
           description:
-            'Schengen visa applications also require EUR 30,000 medical coverage. We issue AXA-backed, embassy-compliant travel insurance instantly — bundle it with your dummy ticket.',
+            'Schengen visa applications also require EUR 30,000 medical coverage. We issue AXA-backed, embassy-compliant travel insurance instantly. Bundle it with your dummy ticket.',
         },
         {
           icon: <MdOutlineHotel />,
@@ -169,13 +172,13 @@ export default function Page() {
     buildWebPage(pageData.meta),
     buildService({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.entityName,
       description: pageData.meta.description,
       areaServed: 'AE',
     }),
     buildProduct({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.entityName,
       description: pageData.meta.description,
       price: '49.00',
       currency: 'AED',
@@ -214,7 +217,10 @@ export default function Page() {
       <Process
         title={pageData.sections.process.title}
         subtitle={pageData.sections.process.subtitle}
+        steps={processSteps}
       />
+
+      <PricingTiers keyword="Schengen visa dummy ticket" />
 
       <About title={pageData.sections.about.title} services={pageData.sections.about.services} />
 

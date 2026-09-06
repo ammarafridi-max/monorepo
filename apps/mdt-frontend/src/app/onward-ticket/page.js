@@ -23,6 +23,8 @@ import {
 import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
+import PricingTiers from '@/components/PricingTiers';
+import { processSteps } from '@/data/processSteps';
 import About from '@travel-suite/frontend-shared/components/sections/v1/About';
 import Benefits from '@travel-suite/frontend-shared/components/sections/v1/Benefits';
 import Testimonials from '@travel-suite/frontend-shared/components/sections/v1/Testimonials';
@@ -56,7 +58,7 @@ const testimonials = [
 export const benefits = [
   {
     title: 'Accepted Worldwide',
-    text: 'Our onward tickets are issued through official airline systems with a real PNR — accepted by airlines at check-in and by immigration officers at border crossings.',
+    text: 'Our onward tickets are issued through official airline systems with a real PNR, accepted by airlines at check-in and by immigration officers at border crossings.',
     icon: HiCheck,
   },
   {
@@ -66,17 +68,17 @@ export const benefits = [
   },
   {
     title: 'Only AED 49',
-    text: 'A real onward flight can cost hundreds of dirhams with no guarantee of a refund. Our verified onward ticket costs AED 49 — zero financial risk if your plans change.',
+    text: 'A real onward flight can cost hundreds of dirhams with no guarantee of a refund. Our verified onward ticket costs AED 49, with zero financial risk if your plans change.',
     icon: HiOutlineCurrencyDollar,
   },
   {
     title: 'Extended Validity',
-    text: 'Our reservations stay active for 7 or 14 days from issue — far longer than standard airline holds. Plenty of time to clear immigration or complete your visa application.',
+    text: 'Our reservations stay active for 7 or 14 days from issue, far longer than standard airline holds. Plenty of time to clear immigration or complete your visa application.',
     icon: HiOutlineClock,
   },
   {
     title: 'Visa-Friendly Format',
-    text: 'Every onward ticket follows the exact itinerary format immigration officers and embassies expect — with passenger name, route, dates, and PNR clearly displayed.',
+    text: 'Every onward ticket follows the exact itinerary format immigration officers and embassies expect, with passenger name, route, dates, and PNR clearly displayed.',
     icon: HiCheck,
   },
   {
@@ -92,12 +94,13 @@ export const pageData = {
     description:
       'Travelers use onward tickets for travel purposes, such as to show as proof of onward travel at airports. Book yours with us now. Starting from AED 49.',
     canonical: 'https://www.mydummyticket.ae/onward-ticket',
+    entityName: 'Onward Ticket',
   },
   sections: {
     hero: {
       title: 'Onward Ticket From AED 49. Verified Proof of Outbound Travel.',
       subtitle:
-        'Get a verified onward ticket issued through official airline systems with a real, verifiable PNR. Our reservations are legitimate bookings accepted by airlines and immigration officers worldwide — not fake or falsified documents.',
+        'Get a verified onward ticket issued through official airline systems with a real, verifiable PNR. Our reservations are legitimate bookings accepted by airlines and immigration officers worldwide, not fake or falsified documents.',
       form: <AllForms />,
     },
     process: {
@@ -107,25 +110,25 @@ export const pageData = {
     },
     about: {
       title: 'About Us',
-      text: "We've been issuing verified flight reservations since 2008 — over 16 years of specialist experience in travel documentation. Every year, we issue 10,000+ onward tickets to travelers who need proof of outbound travel for immigration, airline check-in, or visa requirements. Our reservations follow accepted airline formats, include a valid PNR, and are accepted by airlines and immigration officers worldwide.",
+      text: "We've been issuing verified flight reservations since 2008, over 16 years of specialist experience in travel documentation. Every year, we issue 10,000+ onward tickets to travelers who need proof of outbound travel for immigration, airline check-in, or visa requirements. Our reservations follow accepted airline formats, include a valid PNR, and are accepted by airlines and immigration officers worldwide.",
       services: [
         {
           icon: <MdOutlineAirplaneTicket />,
           title: 'Onward Tickets',
           description:
-            'Verifiable flight reservations with a real PNR — accepted by airlines, immigration officers, and border control worldwide. Delivered instantly and valid long enough to clear your checks.',
+            'Verifiable flight reservations with a real PNR, accepted by airlines, immigration officers, and border control worldwide. Delivered instantly and valid long enough to clear your checks.',
         },
         {
           icon: <MdOutlineHealthAndSafety />,
           title: 'Travel Insurance',
           description:
-            'AXA-backed travel insurance for UAE residents. Covers medical emergencies, trip cancellations, and baggage loss — a practical addition to your onward ticket.',
+            'AXA-backed travel insurance for UAE residents. Covers medical emergencies, trip cancellations, and baggage loss, a practical addition to your onward ticket.',
         },
         {
           icon: <MdOutlineHotel />,
           title: 'Hotel Reservations',
           description:
-            'We provide hotel reservations by email, formatted to meet embassy and immigration requirements — available whenever you need proof of accommodation.',
+            'We provide hotel reservations by email, formatted to meet embassy and immigration requirements, available whenever you need proof of accommodation.',
         },
       ],
     },
@@ -146,7 +149,7 @@ export const pageData = {
         {
           question: 'What is an onward ticket?',
           answer:
-            'An onward ticket is a confirmed flight reservation showing you will leave your destination country. It proves to immigration officers and airlines that you have a concrete travel plan beyond your arrival — required for many visa-on-arrival countries and transit situations.',
+            'An onward ticket is a confirmed flight reservation showing you will leave your destination country. It proves to immigration officers and airlines that you have a concrete travel plan beyond your arrival, required for many visa-on-arrival countries and transit situations.',
         },
         {
           question: 'Which countries require an onward ticket?',
@@ -157,7 +160,7 @@ export const pageData = {
           question:
             'What is the difference between an onward ticket and a dummy ticket?',
           answer:
-            'A dummy ticket is used for visa applications — it demonstrates travel intent to an embassy. An onward ticket is used at the airport — it demonstrates to immigration officers that you will leave the country. Both are verifiable reservations; the use case is different.',
+            'A dummy ticket is used for visa applications. It demonstrates travel intent to an embassy. An onward ticket is used at the airport. It demonstrates to immigration officers that you will leave the country. Both are verifiable reservations; the use case is different.',
         },
         {
           question: 'How long is the onward ticket valid for?',
@@ -187,13 +190,13 @@ export default function Page() {
     buildWebPage(pageData.meta),
     buildService({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.entityName,
       description: pageData.meta.description,
       areaServed: 'AE',
     }),
     buildProduct({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.entityName,
       description: pageData.meta.description,
       price: '49.00',
       currency: 'AED',
@@ -230,7 +233,10 @@ export default function Page() {
       <Process
         title={pageData.sections.process.title}
         subtitle={pageData.sections.process.subtitle}
+        steps={processSteps}
       />
+
+      <PricingTiers keyword="onward ticket" />
       <About
         title={pageData.sections.about.title}
         text={pageData.sections.about.text}

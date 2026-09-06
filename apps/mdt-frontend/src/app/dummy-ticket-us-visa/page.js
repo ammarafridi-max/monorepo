@@ -26,6 +26,8 @@ import {
 import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
+import PricingTiers from '@/components/PricingTiers';
+import { processSteps } from '@/data/processSteps';
 import About from '@travel-suite/frontend-shared/components/sections/v1/About';
 import Benefits from '@travel-suite/frontend-shared/components/sections/v1/Benefits';
 import Testimonials from '@travel-suite/frontend-shared/components/sections/v1/Testimonials';
@@ -59,7 +61,7 @@ const testimonials = [
 export const benefits = [
   {
     title: 'Verifiable PNRs',
-    text: 'Every dummy ticket for your US visa includes a genuine airline reservation with a verifiable PNR. Visa officers can confirm it directly on the airline’s official website. Unlike temporary holds, validity depends on the plan you select.',
+    text: 'Every dummy ticket for your US visa includes a genuine airline reservation with a live PNR. Visa officers can confirm it through the global distribution systems (Amadeus, Sabre, Travelport) that embassies and travel agents use. With selected airlines, including Emirates and Etihad, you can also check it on their website under Manage Booking. Not every airline shows unpaid reservations on its own site, so the GDS check is the one that always works.',
     icon: FaCheckCircle,
   },
   {
@@ -84,7 +86,7 @@ export const benefits = [
   },
   {
     title: 'Flexible Validity Options',
-    text: 'Choose the validity that suits your US visa appointment schedule. Options include 48 hours, 7 days, or 14 days depending on airline availability, giving you flexibility and peace of mind throughout the process.',
+    text: 'Choose the validity that suits your US visa appointment schedule. Pick 2 days at AED 49, 7 days at AED 69, or 14 days at AED 79. The price follows the validity period you select, not availability.',
     icon: FaCalendarAlt,
   },
 ];
@@ -95,6 +97,7 @@ export const pageData = {
     description:
       'Book verified dummy tickets for a US visa with real PNR. Our reservations are accepted by all US embassies across the world. Instant delivery.',
     canonical: 'https://www.mydummyticket.ae/dummy-ticket-us-visa',
+    entityName: 'Dummy Ticket for US Visa',
     keywords: 'dummy ticket for us visa',
   },
   sections: {
@@ -124,7 +127,7 @@ export const pageData = {
           icon: <MdOutlineHealthAndSafety />,
           title: 'Travel Insurance',
           description:
-            'Genuine AXA-backed travel insurance for UAE residents. Covers medical emergencies, trip cancellations, and baggage loss — delivered instantly after payment.',
+            'Genuine AXA-backed travel insurance for UAE residents. Covers medical emergencies, trip cancellations, and baggage loss, delivered instantly after payment.',
         },
         {
           icon: <MdOutlineHotel />,
@@ -167,13 +170,13 @@ export default function Page() {
     buildWebPage(pageData.meta),
     buildService({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.entityName,
       description: pageData.meta.description,
       areaServed: 'AE',
     }),
     buildProduct({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.entityName,
       description: pageData.meta.description,
       price: '49.00',
       currency: 'AED',
@@ -210,7 +213,10 @@ export default function Page() {
       <Process
         title={pageData.sections.process.title}
         subtitle={pageData.sections.process.subtitle}
+        steps={processSteps}
       />
+
+      <PricingTiers keyword="US visa dummy ticket" />
       <About title={pageData.sections.about.title} services={pageData.sections.about.services} />
       <Benefits
         title={pageData.sections.benefits.title}

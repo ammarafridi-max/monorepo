@@ -104,6 +104,7 @@ export const pageData = {
     description:
       'Worldwide travel insurance for UAE residents, issued by AXA. International health insurance from AED 70 with medical cover from EUR 80,000. Instant delivery.',
     canonical: 'https://www.mydummyticket.ae/travel-insurance/international',
+    entityName: 'International Travel Insurance',
   },
   sections: {
     hero: {
@@ -125,7 +126,7 @@ export const pageData = {
           icon: <MdOutlineHealthAndSafety />,
           title: 'International Travel Insurance',
           description:
-            'Worldwide AXA coverage from AED 70 with medical cover from EUR 80,000. Includes emergency treatment, repatriation, trip cancellations, and baggage loss — all delivered instantly.',
+            'Worldwide AXA coverage from AED 70 with medical cover from EUR 80,000. Includes emergency treatment, repatriation, trip cancellations, and baggage loss, all delivered instantly.',
         },
         {
           icon: <MdOutlineAirplaneTicket />,
@@ -153,13 +154,13 @@ export default function Page() {
     buildWebPage(pageData.meta),
     buildService({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.entityName,
       description: pageData.meta.description,
       areaServed: 'AE',
     }),
     buildProduct({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.entityName,
       description: pageData.meta.description,
       price: '70.00',
       currency: 'AED',
@@ -232,7 +233,7 @@ export default function Page() {
       >
         <Container>
           <SectionTitle textAlign="center" className="mb-10 md:mb-12">
-            International Travel Insurance — Frequently Asked Questions
+            International Travel Insurance: Frequently Asked Questions
           </SectionTitle>
           <div className="rounded-2xl border border-white bg-white p-4 md:p-7 shadow-[0_14px_35px_rgba(16,24,40,0.08)]">
             <div className="flex flex-col gap-1">
@@ -252,7 +253,7 @@ export default function Page() {
           </SectionTitle>
           <div className="flex flex-wrap justify-center gap-3">
             {[
-              { name: 'Schengen Visa Insurance', href: '/travel-insurance/schengen-visa' },
+              { name: 'Schengen Travel Insurance', href: '/schengen-travel-insurance' },
               { name: 'Travel Medical Insurance', href: '/travel-insurance/medical' },
               { name: 'Annual Multi-Trip Insurance', href: '/travel-insurance/annual-multi-trip' },
               { name: 'Single Trip Insurance', href: '/travel-insurance/single-trip' },

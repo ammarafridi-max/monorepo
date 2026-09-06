@@ -104,6 +104,7 @@ export const pageData = {
     description:
       'Annual multi-trip travel insurance for UAE residents, issued by AXA. One policy covers all your trips for a year. From AED 245. Instant policy delivery.',
     canonical: 'https://www.mydummyticket.ae/travel-insurance/annual-multi-trip',
+    entityName: 'Annual Multi-Trip Travel Insurance',
   },
   sections: {
     hero: {
@@ -125,7 +126,7 @@ export const pageData = {
           icon: <MdOutlineHealthAndSafety />,
           title: 'Annual Multi-Trip Insurance',
           description:
-            'One AXA policy covering all your international trips for 12 months. Schengen-compliant for every European trip, from AED 245 — the smart choice for frequent travellers.',
+            'One AXA policy covering all your international trips for 12 months. Schengen-compliant for every European trip, from AED 245, the smart choice for frequent travellers.',
         },
         {
           icon: <MdOutlineAirplaneTicket />,
@@ -137,7 +138,7 @@ export const pageData = {
           icon: <MdOutlineHotel />,
           title: 'Hotel Reservations',
           description:
-            'We provide hotel reservations by email, formatted to meet embassy requirements — available whenever you need proof of accommodation for a visa application.',
+            'We provide hotel reservations by email, formatted to meet embassy requirements, available whenever you need proof of accommodation for a visa application.',
         },
       ],
     },
@@ -153,13 +154,13 @@ export default function Page() {
     buildWebPage(pageData.meta),
     buildService({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.entityName,
       description: pageData.meta.description,
       areaServed: 'AE',
     }),
     buildProduct({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.entityName,
       description: pageData.meta.description,
       price: '245.00',
       currency: 'AED',
@@ -232,7 +233,7 @@ export default function Page() {
       >
         <Container>
           <SectionTitle textAlign="center" className="mb-10 md:mb-12">
-            Annual Multi-Trip Insurance — Frequently Asked Questions
+            Annual Multi-Trip Insurance: Frequently Asked Questions
           </SectionTitle>
           <div className="rounded-2xl border border-white bg-white p-4 md:p-7 shadow-[0_14px_35px_rgba(16,24,40,0.08)]">
             <div className="flex flex-col gap-1">
@@ -252,7 +253,7 @@ export default function Page() {
           </SectionTitle>
           <div className="flex flex-wrap justify-center gap-3">
             {[
-              { name: 'Schengen Visa Insurance', href: '/travel-insurance/schengen-visa' },
+              { name: 'Schengen Travel Insurance', href: '/schengen-travel-insurance' },
               { name: 'Travel Medical Insurance', href: '/travel-insurance/medical' },
               { name: 'International Travel Insurance', href: '/travel-insurance/international' },
               { name: 'Single Trip Insurance', href: '/travel-insurance/single-trip' },

@@ -2,11 +2,11 @@ import InsurancePaymentPage from '@travel-suite/frontend-shared/pages/client/Ins
 import { Ticket } from 'lucide-react';
 
 export const metadata = {
-  title: 'Booking Confirmed — My Dummy Ticket',
+  title: 'Booking Confirmed | My Dummy Ticket',
   description: 'Your travel insurance policy has been confirmed.',
 };
 
-// Cross-sell after an insurance purchase: dummy ticket (own — booking form is on the homepage).
+// Cross-sell after an insurance purchase: dummy ticket (own, booking form is on the homepage).
 const upsells = [
   {
     icon: <Ticket size={15} />,

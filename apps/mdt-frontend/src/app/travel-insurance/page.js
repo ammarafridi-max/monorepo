@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 import Container from '@travel-suite/frontend-shared/components/shared/layout/Container';
 import FaqAccordion from '@travel-suite/frontend-shared/components/ui/v1/FaqAccordion';
@@ -103,6 +104,7 @@ export const pageData = {
     description:
       'Get real, embassy-compliant travel insurance online with instant policy delivery for UAE residents and citizens.',
     canonical: 'https://www.mydummyticket.ae/travel-insurance',
+    entityName: 'Travel Insurance',
   },
   sections: {
     hero: {
@@ -130,7 +132,7 @@ export const pageData = {
           icon: <MdOutlineAirplaneTicket />,
           title: 'Dummy Tickets',
           description:
-            'Verifiable flight reservations with a real PNR code — accepted by VFS, BLS, and embassies. Often needed alongside insurance for a complete Schengen or UK visa application.',
+            'Verifiable flight reservations with a real PNR code, accepted by VFS, BLS, and embassies. Often needed alongside insurance for a complete Schengen or UK visa application.',
         },
         {
           icon: <MdOutlineHotel />,
@@ -152,7 +154,7 @@ export default function Page() {
     buildWebPage(pageData.meta),
     buildService({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.entityName,
       description: pageData.meta.description,
       areaServed: 'AE',
     }),
@@ -217,6 +219,45 @@ export default function Page() {
                   {reason.text}
                 </p>
               </div>
+            ))}
+          </div>
+        </Container>
+      </PrimarySection>
+      <PrimarySection className="py-10 lg:py-14">
+        <Container>
+          <SectionTitle textAlign="center" className="mb-6">
+            Choose Your Travel Insurance Plan
+          </SectionTitle>
+          <div className="flex flex-wrap justify-center gap-3">
+            {[
+              {
+                name: 'Schengen Travel Insurance',
+                href: '/schengen-travel-insurance',
+              },
+              {
+                name: 'Travel Medical Insurance',
+                href: '/travel-insurance/medical',
+              },
+              {
+                name: 'Annual Multi-Trip Insurance',
+                href: '/travel-insurance/annual-multi-trip',
+              },
+              {
+                name: 'International Travel Insurance',
+                href: '/travel-insurance/international',
+              },
+              {
+                name: 'Single Trip Insurance',
+                href: '/travel-insurance/single-trip',
+              },
+            ].map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="px-4 py-2 rounded-xl border border-primary-200 bg-primary-50 text-primary-700 text-[14px] font-medium hover:bg-primary-100 transition-colors"
+              >
+                {link.name}
+              </Link>
             ))}
           </div>
         </Container>

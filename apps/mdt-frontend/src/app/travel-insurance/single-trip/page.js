@@ -98,6 +98,7 @@ export const pageData = {
     description:
       'Buy single trip travel insurance online in UAE. One-time coverage for your journey, Schengen compliant, issued by AXA. Get your policy instantly at My Dummy Ticket.',
     canonical: 'https://www.mydummyticket.ae/travel-insurance/single-trip',
+    entityName: 'Single Trip Travel Insurance',
   },
   sections: {
     hero: {
@@ -119,13 +120,13 @@ export const pageData = {
           icon: <MdOutlineHealthAndSafety />,
           title: 'Single Trip Insurance',
           description:
-            'AXA-issued coverage for one journey between your chosen travel dates. Schengen-compliant, no annual commitment — pay only for the days you travel.',
+            'AXA-issued coverage for one journey between your chosen travel dates. Schengen-compliant, no annual commitment, pay only for the days you travel.',
         },
         {
           icon: <MdOutlineAirplaneTicket />,
           title: 'Dummy Tickets',
           description:
-            'Verifiable flight reservations with a real PNR code. Accepted by VFS, BLS, and embassies — the ideal companion to your single trip insurance for a visa application.',
+            'Verifiable flight reservations with a real PNR code. Accepted by VFS, BLS, and embassies, the ideal companion to your single trip insurance for a visa application.',
         },
         {
           icon: <MdOutlineHotel />,
@@ -147,7 +148,7 @@ export default function Page() {
     buildWebPage(pageData.meta),
     buildService({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.entityName,
       description: pageData.meta.description,
       areaServed: 'AE',
     }),
@@ -219,7 +220,7 @@ export default function Page() {
       >
         <Container>
           <SectionTitle textAlign="center" className="mb-10 md:mb-12">
-            Single Trip Insurance — Frequently Asked Questions
+            Single Trip Insurance: Frequently Asked Questions
           </SectionTitle>
           <div className="rounded-2xl border border-white bg-white p-4 md:p-7 shadow-[0_14px_35px_rgba(16,24,40,0.08)]">
             <div className="flex flex-col gap-1">
@@ -239,7 +240,7 @@ export default function Page() {
           </SectionTitle>
           <div className="flex flex-wrap justify-center gap-3">
             {[
-              { name: 'Schengen Visa Insurance', href: '/travel-insurance/schengen-visa' },
+              { name: 'Schengen Travel Insurance', href: '/schengen-travel-insurance' },
               { name: 'Travel Medical Insurance', href: '/travel-insurance/medical' },
               { name: 'Annual Multi-Trip Insurance', href: '/travel-insurance/annual-multi-trip' },
               { name: 'International Travel Insurance', href: '/travel-insurance/international' },

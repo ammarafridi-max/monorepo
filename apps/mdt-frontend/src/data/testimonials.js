@@ -12,7 +12,7 @@ export const testimonials = [
     stars: 5,
   },
   {
-    quote: 'The entire experience with MDT was seamless from start to finish. I got my {keyword} within minutes, and it worked perfectly for my Schengen visa. Fast response, clear instructions, and great support — highly recommend to travelers in need.',
+    quote: 'The entire experience with MDT was seamless from start to finish. I got my {keyword} within minutes, and it worked perfectly for my Schengen visa. Fast response, clear instructions, and great support, highly recommend to travelers in need.',
     name: 'Ahmed R.',
     location: 'Frequent Flyer from India',
     stars: 5,

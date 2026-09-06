@@ -46,6 +46,7 @@ export const pageData = {
     description:
       'Get a real flight itinerary with a valid PNR issued in standard airline booking format.',
     canonical: 'https://www.mydummyticket.ae/flight-itinerary',
+    entityName: 'Flight Itinerary',
   },
   sections: {
     hero: {
@@ -85,13 +86,13 @@ export default function Page() {
     buildWebPage(pageData.meta),
     buildService({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.entityName,
       description: pageData.meta.description,
       areaServed: 'AE',
     }),
     buildProduct({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.entityName,
       description: pageData.meta.description,
       price: '49.00',
       currency: 'AED',

@@ -9,6 +9,11 @@ const nextConfig = {
   async redirects() {
     return [
       {
+        source: '/travel-insurance/schengen-visa',
+        destination: '/schengen-travel-insurance',
+        permanent: true,
+      },
+      {
         source: '/blog/tag/:slug',
         destination: 'https://www.mydummyticket.ae/blog/tags/:slug',
         permanent: true,

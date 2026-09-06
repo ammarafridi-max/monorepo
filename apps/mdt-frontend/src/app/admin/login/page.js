@@ -1,7 +1,7 @@
 import AdminLoginPage from '@travel-suite/frontend-shared/pages/admin/AdminLoginPage';
 
 export const metadata = {
-  title: 'Sign In — Admin',
+  title: 'Sign In | Admin',
   robots: { index: false, follow: false },
 };
 

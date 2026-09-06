@@ -2,6 +2,8 @@ import { EMAIL } from '@/config/contact';
 import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
+import PricingTiers from '@/components/PricingTiers';
+import { processSteps } from '@/data/processSteps';
 import About from '@travel-suite/frontend-shared/components/sections/v1/About';
 import Benefits from '@travel-suite/frontend-shared/components/sections/v1/Benefits';
 import Testimonials from '@travel-suite/frontend-shared/components/sections/v1/Testimonials';
@@ -72,12 +74,13 @@ const pageData = {
     description:
       'Book embassy-ready dummy tickets from AED 49 with verifiable PNR references and fast delivery for visa applications from the UAE.',
     canonical: SITE_URL,
+    entityName: 'Dummy Ticket',
   },
   sections: {
     hero: {
       title: 'Dummy Ticket From AED 49. Verifiable and Legit.',
       subtitle:
-        'Book verifiable dummy tickets for visa applications. All legitimate reservations come with a PNR code that can be verified directly on airline websites in just a few clicks, helping you submit documents confidently and on time.',
+        'Real reservations with a live PNR, verifiable through the global GDS that embassies use, and on selected airlines like Emirates and Etihad, directly on their site.',
     },
     process: {
       title: 'Simple, Hassle-Free Process',
@@ -91,7 +94,7 @@ const pageData = {
           icon: <MdOutlineAirplaneTicket />,
           title: 'Dummy Tickets',
           description:
-            'Genuine flight reservations with a verifiable PNR code, issued through official airline systems. Accepted by VFS, BLS, and embassies worldwide — perfect proof of onward travel for your visa application.',
+            'Genuine flight reservations with a verifiable PNR code, issued through official airline systems. Accepted by VFS, BLS, and embassies worldwide. Perfect proof of onward travel for your visa application.',
         },
         {
           icon: <MdOutlineHotel />,
@@ -103,7 +106,7 @@ const pageData = {
           icon: <MdOutlineHealthAndSafety />,
           title: 'Travel Insurance',
           description:
-            'Schengen-compliant travel insurance meeting the required EUR 30,000 medical coverage. Genuine AXA-backed policies issued instantly — bundled or standalone alongside your dummy ticket.',
+            'Schengen-compliant travel insurance meeting the required EUR 30,000 medical coverage. Genuine AXA-backed policies issued instantly, bundled or standalone alongside your dummy ticket.',
         },
       ],
     },
@@ -168,7 +171,7 @@ export default function HomePage() {
     }),
     buildService({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.entityName,
       description: pageData.meta.description,
       areaServed: 'AE',
     }),
@@ -201,7 +204,10 @@ export default function HomePage() {
       <Process
         title={pageData.sections.process.title}
         subtitle={pageData.sections.process.subtitle}
+        steps={processSteps}
       />
+
+      <PricingTiers keyword="dummy ticket" />
       <About
         title={pageData.sections.about.title}
         services={pageData.sections.about.services}

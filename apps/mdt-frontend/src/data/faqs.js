@@ -7,17 +7,17 @@ export const faqArray = [
   {
     question: 'How can I verify the {keyword}?',
     answer:
-      "Our {keyword}s are legitimate flight reservations. They can be verified directly on the airline's website using the airline reservation code (or PNR) and your surname. It's important to note that some airlines do not display reservation information on their website.",
+      'Every booking is a real reservation with a live PNR. It can be verified through the global distribution systems (Amadeus, Sabre, Travelport) that embassies, airlines and travel agents use. With selected airlines, including Emirates and Etihad, you can also check it directly on their website under Manage Booking. Not every airline shows unpaid reservations on its own site, so the GDS check is the one that always works.',
   },
   {
     question: 'How much does a {keyword} cost?',
     answer:
-      'The pricing for our {keyword}s (flight reservations) start from AED 49 for both, one way and return {keyword}s, and can go up to AED 79 per person, depending on availability selected.',
+      'Pricing depends on the validity period you select, not on availability. A {keyword} valid for 2 days is AED 49, 7 days is AED 69, and 14 days is AED 79. The same price covers both one way and return {keyword}s, per person.',
   },
   {
     question: 'How long is your {keyword} valid for?',
     answer:
-      "Our {keyword}s can be valid for upto 48 hours, 7 days, or 14 days, depending on the availability you've selected.",
+      'You choose the validity period at checkout. A {keyword} can be valid for 2 days at AED 49, 7 days at AED 69, or 14 days at AED 79.',
   },
   {
     question: 'How long does it take to receive my {keyword}?',

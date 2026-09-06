@@ -20,7 +20,7 @@ import BlogPostPage from '@travel-suite/frontend-shared/pages/client/BlogPostPag
 // Nothing on this route's ancestor chain (including app/loading.js) may define a
 // loading.js. A loading.js opens a Suspense boundary, so Next flushes the HTML
 // shell with a 200 before this component runs and notFound() can no longer set
-// the status — that is what turned bad slugs into indexable soft 404s.
+// the status, that is what turned bad slugs into indexable soft 404s.
 export const revalidate = 300;
 
 export async function generateStaticParams() {

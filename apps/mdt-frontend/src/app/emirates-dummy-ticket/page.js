@@ -25,6 +25,8 @@ import {
 import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
+import PricingTiers from '@/components/PricingTiers';
+import { processSteps } from '@/data/processSteps';
 import About from '@travel-suite/frontend-shared/components/sections/v1/About';
 import Benefits from '@travel-suite/frontend-shared/components/sections/v1/Benefits';
 import FAQ from '@travel-suite/frontend-shared/components/sections/v1/FAQ';
@@ -39,7 +41,7 @@ export const benefits = [
   },
   {
     title: 'Verifiable PNRs',
-    text: 'Our dummy ticket comes with a live 6-digit PNR. You and your visa officer can check the PNR directly on the airline’s official website. Plus, the tickets do not expire within 24 hours, but the validity depends on the availability you select.',
+    text: 'Our dummy ticket comes with a live 6-digit PNR. You and your visa officer can check it on the Emirates website under Manage Booking, and through the global distribution systems (Amadeus, Sabre, Travelport) that embassies use. Validity follows the period you select: 2 days at AED 49, 7 days at AED 69, or 14 days at AED 79.',
     icon: FaSearch,
   },
   {
@@ -72,6 +74,7 @@ export const pageData = {
     description:
       'Get an official Emirates flight reservation with a live 6-digit PNR for your visa application in minutes. Accepted by VFS, BLS, and consulates. Just AED 49.',
     canonical: 'https://www.mydummyticket.ae/emirates-dummy-ticket',
+    entityName: 'Emirates Dummy Ticket',
   },
   sections: {
     hero: {
@@ -158,13 +161,13 @@ export default function Page() {
     buildWebPage(pageData.meta),
     buildService({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.entityName,
       description: pageData.meta.description,
       areaServed: 'AE',
     }),
     buildProduct({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.entityName,
       description: pageData.meta.description,
       price: '49.00',
       currency: 'AED',
@@ -201,7 +204,10 @@ export default function Page() {
       <Process
         title={pageData.sections.process.title}
         subtitle={pageData.sections.process.subtitle}
+        steps={processSteps}
       />
+
+      <PricingTiers keyword="Emirates dummy ticket" />
       <About title={pageData.sections.about.title} services={pageData.sections.about.services} />
       <Benefits
         title={pageData.sections.benefits.title}

@@ -25,6 +25,8 @@ import {
 import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
+import PricingTiers from '@/components/PricingTiers';
+import { processSteps } from '@/data/processSteps';
 import About from '@travel-suite/frontend-shared/components/sections/v1/About';
 import Benefits from '@travel-suite/frontend-shared/components/sections/v1/Benefits';
 import FAQ from '@travel-suite/frontend-shared/components/sections/v1/FAQ';
@@ -34,7 +36,7 @@ import BlogPosts from '@travel-suite/frontend-shared/components/sections/v1/Blog
 export const benefits = [
   {
     title: 'Real Etihad PNR for Verification',
-    text: "Every booking includes a live 6-character PNR verifiable on Etihad's Manage My Booking page — the same system consular officers use. Your reservation looks identical to a paid ticket.",
+    text: "Every booking includes a live 6-character PNR verifiable on Etihad's Manage My Booking page, the same system consular officers use. Your reservation looks identical to a paid ticket.",
     icon: FaCheckCircle,
   },
   {
@@ -44,7 +46,7 @@ export const benefits = [
   },
   {
     title: 'Extended Validity',
-    text: 'Our reservations stay active for 7 or 14 days — far longer than the 24–72 hour holds airlines offer. This comfortably covers standard visa processing timelines.',
+    text: 'Our reservations stay active for 7 or 14 days, far longer than the 24 to 72 hour holds airlines offer. This comfortably covers standard visa processing timelines.',
     icon: FaClock,
   },
   {
@@ -59,7 +61,7 @@ export const benefits = [
   },
   {
     title: 'Direct Support from a Specialist',
-    text: 'Our visa documentation specialists respond within 2 hours. Need a confirmation letter, travel date change, or embassy-specific query? We handle it — faster than airline support.',
+    text: 'Our visa documentation specialists respond within 2 hours. Need a confirmation letter, travel date change, or embassy-specific query? We handle it, faster than airline support.',
     icon: FaUserTie,
   },
 ];
@@ -70,6 +72,7 @@ export const pageData = {
     description:
       'Get an official Etihad Airways dummy ticket with a live, verifiable PNR for visa applications. Accepted by embassies and visa centers. Starting from AED 49.',
     canonical: 'https://www.mydummyticket.ae/etihad-dummy-ticket',
+    entityName: 'Etihad Dummy Ticket',
   },
   sections: {
     hero: {
@@ -85,7 +88,7 @@ export const pageData = {
     },
     about: {
       title: 'About Us',
-      text: "We've been issuing verified flight reservations for visa applications since 2008 — over 16 years of specialist experience. Every year, we issue 10,000+ dummy tickets to UAE residents and GCC citizens applying for Schengen, US, UK, Canadian, and other visas. Our Etihad reservations include a live PNR verifiable on Etihad's Manage My Booking system — the same system used by VFS, BLS, and consular officers to confirm reservations. Our documentation is accepted by embassies worldwide.",
+      text: "We've been issuing verified flight reservations for visa applications since 2008, over 16 years of specialist experience. Every year, we issue 10,000+ dummy tickets to UAE residents and GCC citizens applying for Schengen, US, UK, Canadian, and other visas. Our Etihad reservations include a live PNR verifiable on Etihad's Manage My Booking system, the same system used by VFS, BLS, and consular officers to confirm reservations. Our documentation is accepted by embassies worldwide.",
       services: [
         {
           icon: <MdOutlineAirplaneTicket />,
@@ -121,28 +124,28 @@ export const pageData = {
           question:
             'Is an Etihad dummy ticket valid for a Schengen or UK visa?',
           answer:
-            "Yes. Our Etihad dummy tickets fulfill the proof of booked flight requirement for Schengen, UK, US B1/B2, and Canadian TRV applications. Every reservation includes a live PNR verifiable on Etihad's Manage My Booking — the same reference visa officers check.",
+            "Yes. Our Etihad dummy tickets fulfill the proof of booked flight requirement for Schengen, UK, US B1/B2, and Canadian TRV applications. Every reservation includes a live PNR verifiable on Etihad's Manage My Booking, the same reference visa officers check.",
         },
         {
           question: 'What if the embassy asks for a paid receipt or ticket?',
           answer:
-            'Embassies require proof of a concrete travel plan, not proof of payment. Our Etihad reservations display exactly like paid bookings — with a valid PNR, passenger name, route, and travel dates — giving visa officers everything they need.',
+            'Embassies require proof of a concrete travel plan, not proof of payment. Our Etihad reservations display exactly like paid bookings, with a valid PNR, passenger name, route, and travel dates, giving visa officers everything they need.',
         },
         {
           question:
             "What's the difference between your service and booking directly with Etihad?",
           answer:
-            'A flexible Etihad ticket costs AED 2,500 or more and ties up your money before visa approval. Our verified reservation costs AED 49 — same verifiable PNR, zero financial risk if your visa is denied.',
+            'A flexible Etihad ticket costs AED 2,500 or more and ties up your money before visa approval. Our verified reservation costs AED 49, same verifiable PNR, zero financial risk if your visa is denied.',
         },
         {
           question: 'Do you offer refunds if my visa is denied?',
           answer:
-            'We do not offer refunds once the ticket has been delivered. However, if your appointment is delayed, we can re-issue your reservation with updated dates and a fresh PNR — at no extra charge.',
+            'We do not offer refunds once the ticket has been delivered. However, if your appointment is delayed, we can re-issue your reservation with updated dates and a fresh PNR, at no extra charge.',
         },
         {
           question: 'How long is the Etihad dummy ticket valid for?',
           answer:
-            'Our reservations stay active for 7 or 14 days from issue — significantly longer than the 24–72 hour holds airlines offer. This comfortably covers Schengen, UK, US, and Canadian visa processing timelines.',
+            'Our reservations stay active for 7 or 14 days from issue, significantly longer than the 24 to 72 hour holds airlines offer. This comfortably covers Schengen, UK, US, and Canadian visa processing timelines.',
         },
       ],
     },
@@ -163,13 +166,13 @@ export default function Page() {
     buildWebPage(pageData.meta),
     buildService({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.entityName,
       description: pageData.meta.description,
       areaServed: 'AE',
     }),
     buildProduct({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.entityName,
       description: pageData.meta.description,
       price: '49.00',
       currency: 'AED',
@@ -206,7 +209,10 @@ export default function Page() {
       <Process
         title={pageData.sections.process.title}
         subtitle={pageData.sections.process.subtitle}
+        steps={processSteps}
       />
+
+      <PricingTiers keyword="Etihad dummy ticket" />
       <About
         title={pageData.sections.about.title}
         text={pageData.sections.about.text}
