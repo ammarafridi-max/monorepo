@@ -39,3 +39,8 @@ travl-blog-backups/
 
 # Blog/asset migration dumps (rollback artifacts, not source)
 migration-output/
+
+# Database backups and dumps (rollback artifacts, never source). These can
+# contain customer data, so they must never reach the remote.
+backups/
+*-backup-*.json
