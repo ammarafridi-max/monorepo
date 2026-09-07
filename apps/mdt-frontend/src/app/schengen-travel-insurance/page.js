@@ -126,7 +126,11 @@ export const pageData = {
     },
     about: {
       title: 'About Our Services',
-      text: 'We provide Schengen travel insurance specifically for UAE residents applying for European Schengen visas. Every policy meets official Schengen visa insurance requirements, including mandatory EUR 30,000 medical coverage, and is accepted by embassies, VFS Global, and BLS International centers. Buy your policy online, receive it instantly, and submit your visa application with confidence.',
+      text: (
+        <>
+          We provide Schengen travel insurance for UAE residents applying for European visas. The EUR 30,000 medical minimum comes from Article 15 of the{' '}<a href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32009R0810" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-gray-900">EU Visa Code</a>, and every policy we issue meets it, valid across all 27 Schengen countries and accepted by VFS Global and BLS International.
+        </>
+      ),
       services: [
         {
           icon: <MdOutlineHealthAndSafety />,

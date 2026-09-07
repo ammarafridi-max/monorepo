@@ -89,6 +89,22 @@ const pageData = {
     },
     about: {
       title: 'About Us',
+      text: (
+        <>
+          Embassies ask for evidence of transport as part of a visa file. Article 14
+          of the{' '}
+        <a
+          href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32009R0810"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline underline-offset-2 hover:text-gray-900"
+        >
+          EU Visa Code
+        </a>{' '}
+          sets that out for Schengen applications, and a reservation with a live PNR
+          satisfies it without buying a ticket.
+        </>
+      ),
       services: [
         {
           icon: <MdOutlineAirplaneTicket />,
@@ -213,6 +229,7 @@ export default function HomePage() {
       />
       <About
         title={pageData.sections.about.title}
+        text={pageData.sections.about.text}
         services={pageData.sections.about.services}
       />
       <Benefits

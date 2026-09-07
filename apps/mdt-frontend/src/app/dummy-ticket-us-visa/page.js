@@ -115,7 +115,11 @@ export const pageData = {
     },
     about: {
       title: 'About Us',
-      text: 'We are an international travel services provider offering verifiable flight reservations and related travel documentation for travelers worldwide. Our services are used by thousands of customers each year for onward travel, immigration checks, and airline requirements. All reservations follow accepted airline formats and include a valid PNR code for verification',
+      text: (
+        <>
+          A US visitor visa application asks for your intended travel plan. The official{' '}<a href="https://www.ustraveldocs.com/ae/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-gray-900">US visa information service for UAE applicants</a>{' '}sets out what a B1/B2 file needs. Our reservations follow accepted airline formats and carry a live PNR, so you can show the plan without paying for the flight.
+        </>
+      ),
       services: [
         {
           icon: <MdOutlineAirplaneTicket />,
@@ -220,7 +224,11 @@ export default function Page() {
         title="How Much Does a US Visa Dummy Ticket Cost?"
         keyword="US visa dummy ticket"
       />
-      <About title={pageData.sections.about.title} services={pageData.sections.about.services} />
+      <About
+        title={pageData.sections.about.title}
+        text={pageData.sections.about.text}
+        services={pageData.sections.about.services}
+      />
       <Benefits
         title={pageData.sections.benefits.title}
         subtitle={pageData.sections.benefits.subtitle}

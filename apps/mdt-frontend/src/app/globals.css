@@ -10,6 +10,10 @@
 }
 
 @theme inline {
+  /* Tailwind's default gray-400 (#99a1af) is 2.6:1 on white, below AA for the
+     12px helper text it is used for. */
+  --color-gray-400: #6a7282;
+
   --color-primary-50:  #dbeff1;
   --color-primary-100: #b8e0e2;
   --color-primary-200: #8eced0;
@@ -27,11 +31,13 @@
   --color-accent-200: #ffd0c5;
   --color-accent-300: #ffb3a1;
   --color-accent-400: #ff8f75;
-  --color-accent-500: #ff603a;
-  --color-accent-600: #e7441d;
-  --color-accent-700: #c42700;
-  --color-accent-800: #a12000;
-  --color-accent-900: #701700;
+  /* 500 and darker carry white text on solid CTAs, so each step clears 4.5:1
+     against white. The old #ff603a scored 3.01 and failed WCAG AA. */
+  --color-accent-500: #c9421c;
+  --color-accent-600: #a93617;
+  --color-accent-700: #8a2c12;
+  --color-accent-800: #6d2210;
+  --color-accent-900: #4d180b;
   --color-accent-950: #3d0d00;
 
   /* font-outfit, font-nunito and font-merriweather are legacy utility names

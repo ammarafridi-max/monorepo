@@ -90,7 +90,11 @@ export const pageData = {
     },
     about: {
       title: 'About Us',
-      text: 'We are a licensed travel agency based in Dubai, UAE. We offer air tickets, hotel bookings, travel insurance, flight and hotel reservations, airport transfers, tours, and holiday packages to thousands of satisfied customers annually. Our documentation is accepted by VFS, BLS, and embassies.',
+      text: (
+        <>
+          We are a licensed travel agency based in Dubai. Every reservation we issue carries a live 6-character PNR you can check on the Emirates{' '}<a href="https://www.emirates.com/ae/english/manage-booking/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-gray-900">Manage Booking</a>{' '}page, and through the global GDS platforms embassies use.
+        </>
+      ),
       services: [
         {
           icon: <MdOutlineAirplaneTicket />,
@@ -211,7 +215,11 @@ export default function Page() {
         title="How Much Does an Emirates Dummy Ticket Cost?"
         keyword="Emirates dummy ticket"
       />
-      <About title={pageData.sections.about.title} services={pageData.sections.about.services} />
+      <About
+        title={pageData.sections.about.title}
+        text={pageData.sections.about.text}
+        services={pageData.sections.about.services}
+      />
       <Benefits
         title={pageData.sections.benefits.title}
         subtitle={pageData.sections.benefits.subtitle}

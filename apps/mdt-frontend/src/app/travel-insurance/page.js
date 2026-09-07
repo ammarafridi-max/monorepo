@@ -120,7 +120,11 @@ export const pageData = {
     },
     about: {
       title: 'About Our Travel Insurance',
-      text: 'We provide travel insurance for residents and citizens in Dubai, Abu Dhabi and across the UAE, with instant policy delivery, genuine coverage, and pricing that makes sense. Every plan we issue meets embassy requirements and gives you real protection throughout your trip.',
+      text: (
+        <>
+          We provide travel insurance for residents and citizens in Dubai, Abu Dhabi and across the UAE, with instant policy delivery. Article 15 of the{' '}<a href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32009R0810" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-gray-900">EU Visa Code</a>{' '}sets the EUR 30,000 medical minimum a Schengen application has to meet, and every plan we issue clears it.
+        </>
+      ),
       services: [
         {
           icon: <MdOutlineHealthAndSafety />,

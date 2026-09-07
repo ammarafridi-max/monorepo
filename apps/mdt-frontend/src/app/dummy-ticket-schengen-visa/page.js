@@ -123,7 +123,22 @@ export const pageData = {
     },
     about: {
       title: 'About Us',
-      text: '',
+      text: (
+        <>
+          Article 14 of the{' '}
+        <a
+          href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32009R0810"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline underline-offset-2 hover:text-gray-900"
+        >
+          EU Visa Code
+        </a>{' '}
+          lists the supporting documents a Schengen application must carry, and
+          evidence of transport is one of them. A reservation with a live PNR meets
+          it without committing to paid airfare.
+        </>
+      ),
       services: [
         {
           icon: <MdOutlineAirplaneTicket />,
@@ -225,7 +240,11 @@ export default function Page() {
         keyword="Schengen visa dummy ticket"
       />
 
-      <About title={pageData.sections.about.title} services={pageData.sections.about.services} />
+      <About
+        title={pageData.sections.about.title}
+        text={pageData.sections.about.text}
+        services={pageData.sections.about.services}
+      />
 
       <Benefits
         title={pageData.sections.benefits.title}

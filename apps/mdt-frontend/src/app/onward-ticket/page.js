@@ -110,7 +110,11 @@ export const pageData = {
     },
     about: {
       title: 'About Us',
-      text: "We've been issuing verified flight reservations since 2008, over 16 years of specialist experience in travel documentation. Every year, we issue 10,000+ onward tickets to travelers who need proof of outbound travel for immigration, airline check-in, or visa requirements. Our reservations follow accepted airline formats, include a valid PNR, and are accepted by airlines and immigration officers worldwide.",
+      text: (
+        <>
+          We have been issuing verified flight reservations since 2008. Airlines check onward travel at check-in against{' '}<a href="https://www.iata.org/en/publications/timatic/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-gray-900">IATA's Timatic database</a>, which is why a reservation with a live PNR is accepted at the desk and at the border.
+        </>
+      ),
       services: [
         {
           icon: <MdOutlineAirplaneTicket />,
