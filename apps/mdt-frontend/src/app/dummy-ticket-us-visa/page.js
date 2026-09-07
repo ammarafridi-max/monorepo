@@ -104,7 +104,7 @@ export const pageData = {
     hero: {
       title: 'Verifiable Dummy Tickets for US Visa from AED 49.',
       subtitle:
-        'Book your verifiable dummy tickets for US visa. Our reservations come with a valid 6-digit PNR number that can be used to verify the reservation, and are commonly used for US B1/B2 visas.',
+        'A dummy ticket for a US visa is a real flight reservation with a live PNR, not a paid ticket. It covers the travel-plan evidence B1/B2 applicants are asked for, and works for check-in and immigration too. Verify it on the global GDS embassies use. From AED 49, delivered in minutes.',
       form: <AllForms />,
     },
     process: {

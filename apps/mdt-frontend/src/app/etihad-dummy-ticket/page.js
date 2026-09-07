@@ -78,7 +78,7 @@ export const pageData = {
     hero: {
       title: 'Etihad Dummy Ticket From AED 49. Verified & Fast.',
       subtitle:
-        'Get an official Etihad Airways flight reservation with a live booking reference for your visa application. Our Etihad dummy tickets provide a real, verifiable flight reservation with a valid PNR that shows your travel intent, without the financial commitment.',
+        'An Etihad dummy ticket is a real Etihad Airways reservation with a live PNR, not a paid ticket. Etihad is one of the airlines that shows it under Manage My Booking, and it is also verifiable on the global GDS embassies use. Use it for visas, check-in and immigration. From AED 49.',
       form: <AllForms />,
     },
     process: {

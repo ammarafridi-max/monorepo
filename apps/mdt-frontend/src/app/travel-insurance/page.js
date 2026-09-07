@@ -110,7 +110,7 @@ export const pageData = {
     hero: {
       title: 'Travel Insurance for UAE Residents',
       subtitle:
-        'Get real, embassy-compliant travel insurance online with instant policy delivery. Our plans are genuine, legally valid, and accepted for Schengen visa applications and international travel from the UAE.',
+        'Travel insurance for UAE residents is a genuine AXA-backed policy, not a placeholder document. It covers emergency medical treatment, hospitalisation, repatriation, cancellations and baggage, and meets the requirements embassies set for visa applications. Buy online and the certificate reaches your inbox in minutes.',
       form: <AllForms defaultTab="insurance" />,
     },
     process: {

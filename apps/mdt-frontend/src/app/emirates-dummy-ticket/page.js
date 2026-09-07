@@ -80,7 +80,7 @@ export const pageData = {
     hero: {
       title: 'Emirates Dummy Ticket for Visa Applications',
       subtitle:
-        "Get an official Emirates flight reservation with a live 6-digit PNR for your visa application in minutes. Our dummy ticket is verifiable on the Emirates website under 'Manage Booking' and is accepted by VFS, BLS, and consulates as valid proof of travel intent, all for just AED 49.",
+        "An Emirates dummy ticket is a real Emirates reservation with a live 6-character PNR, not a paid ticket. Emirates is one of the airlines that shows it under Manage Booking, and it is also verifiable on the global GDS embassies use. Use it for visas, check-in and immigration. From AED 49.",
       form: <AllForms />,
     },
     process: {
@@ -140,7 +140,7 @@ export const pageData = {
         {
           question: 'How long is the Emirates dummy ticket valid?',
           answer:
-            'The usual validity period for a dummy ticket for Emirates is 24 to 72 hours. It is sufficient for visa submission and embassy review. We recommend submitting your application soon after receiving the ticket.',
+            'You choose the validity period: 2 days at AED 49, 7 days at AED 69, or 14 days at AED 79. Pick the one that covers your appointment date and the embassy review window.',
         },
       ],
     },

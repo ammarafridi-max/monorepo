@@ -100,7 +100,7 @@ export const pageData = {
     hero: {
       title: 'Onward Ticket From AED 49. Verified Proof of Outbound Travel.',
       subtitle:
-        'Get a verified onward ticket issued through official airline systems with a real, verifiable PNR. Our reservations are legitimate bookings accepted by airlines and immigration officers worldwide, not fake or falsified documents.',
+        'An onward ticket is a real flight reservation with a live PNR proving you will leave the country, not a paid ticket. Airlines accept it at check-in and immigration officers accept it at the border. Verify it on the global GDS. From AED 49, delivered by email in minutes.',
       form: <AllForms />,
     },
     process: {

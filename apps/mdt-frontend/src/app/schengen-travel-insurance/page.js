@@ -116,7 +116,7 @@ export const pageData = {
     hero: {
       title: 'Schengen Travel Insurance for UAE Residents from AED 30',
       subtitle:
-        'Get an embassy-compliant Schengen visa travel insurance policy online instantly. EUR 30,000 medical coverage included, accepted by VFS and BLS centres in Dubai, Abu Dhabi and across the UAE. Plans from AED 30.',
+        'Schengen travel insurance is a genuine AXA-backed policy meeting the mandatory EUR 30,000 medical cover, valid across all 27 Schengen countries. It is real insurance, not a placeholder. Accepted at VFS and BLS in Dubai, Abu Dhabi and across the UAE. From AED 30, delivered in minutes.',
       form: <AllForms defaultTab="insurance" />,
     },
     process: {

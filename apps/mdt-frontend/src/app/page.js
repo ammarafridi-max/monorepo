@@ -80,7 +80,7 @@ const pageData = {
     hero: {
       title: 'Dummy Ticket From AED 49. Verifiable and Legit.',
       subtitle:
-        'Real reservations with a live PNR, verifiable through the global GDS that embassies use, and on selected airlines like Emirates and Etihad, directly on their site.',
+        'A dummy ticket is a real flight reservation with a live PNR, not a purchased ticket. Use it for visa applications, airline check-in, proof of onward travel, and immigration checks. Verify it on the global GDS that embassies use. From AED 49, delivered by email in minutes.',
     },
     process: {
       title: 'Simple, Hassle-Free Process',
