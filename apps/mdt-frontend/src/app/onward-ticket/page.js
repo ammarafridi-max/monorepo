@@ -104,7 +104,7 @@ export const pageData = {
       form: <AllForms />,
     },
     process: {
-      title: 'Your Onward Ticket, Ready in 3 Easy Steps',
+      title: 'How Do You Book an Onward Ticket?',
       subtitle: 'How To Book Your Reservation',
       keyword,
     },
@@ -138,7 +138,7 @@ export const pageData = {
       benefits,
     },
     testimonials: {
-      title: 'Testimonials',
+      title: 'What Do Our Customers Say?',
       subtitle: 'What our customers say about us',
       testimonials,
     },
@@ -175,7 +175,7 @@ export const pageData = {
       ],
     },
     blogs: {
-      title: 'Blog Posts',
+      title: 'What Should You Read Next?',
       subtitle: 'Recently published blog posts',
     },
   },
@@ -236,7 +236,10 @@ export default function Page() {
         steps={processSteps}
       />
 
-      <PricingTiers keyword="onward ticket" />
+      <PricingTiers
+        title="How Much Does an Onward Ticket Cost?"
+        keyword="onward ticket"
+      />
       <About
         title={pageData.sections.about.title}
         text={pageData.sections.about.text}

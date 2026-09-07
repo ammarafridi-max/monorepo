@@ -120,7 +120,7 @@ export const pageData = {
       form: <AllForms defaultTab="insurance" />,
     },
     process: {
-      title: 'How to Book Travel Insurance',
+      title: 'How Do You Buy Schengen Travel Insurance?',
       subtitle: 'Get covered in 3 quick steps',
       steps: processSteps,
     },

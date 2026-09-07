@@ -84,7 +84,7 @@ export const pageData = {
       form: <AllForms />,
     },
     process: {
-      title: 'How to Book Your Emirates Dummy Ticket in 3 Steps',
+      title: 'How Do You Book an Emirates Dummy Ticket?',
       subtitle: 'Our entire process is safe, fast, and reliable.',
       keyword,
     },
@@ -207,7 +207,10 @@ export default function Page() {
         steps={processSteps}
       />
 
-      <PricingTiers keyword="Emirates dummy ticket" />
+      <PricingTiers
+        title="How Much Does an Emirates Dummy Ticket Cost?"
+        keyword="Emirates dummy ticket"
+      />
       <About title={pageData.sections.about.title} services={pageData.sections.about.services} />
       <Benefits
         title={pageData.sections.benefits.title}

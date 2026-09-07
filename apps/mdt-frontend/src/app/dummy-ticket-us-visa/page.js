@@ -108,7 +108,7 @@ export const pageData = {
       form: <AllForms />,
     },
     process: {
-      title: 'How to Book Your Dummy Ticket for US Visa',
+      title: 'How Do You Book a Dummy Ticket for a US Visa?',
       subtitle:
         'Get a verified dummy ticket for US visa quickly with secure booking, instant email delivery, embassy acceptance, and responsive support',
       keyword,
@@ -155,7 +155,7 @@ export const pageData = {
       faqs: formatFaqArray(faqArray, keyword),
     },
     blogs: {
-      title: 'Blog Posts',
+      title: 'What Should You Read Next?',
       subtitle: 'Recently published blog posts',
     },
   },
@@ -216,7 +216,10 @@ export default function Page() {
         steps={processSteps}
       />
 
-      <PricingTiers keyword="US visa dummy ticket" />
+      <PricingTiers
+        title="How Much Does a US Visa Dummy Ticket Cost?"
+        keyword="US visa dummy ticket"
+      />
       <About title={pageData.sections.about.title} services={pageData.sections.about.services} />
       <Benefits
         title={pageData.sections.benefits.title}

@@ -83,7 +83,7 @@ const pageData = {
         'A dummy ticket is a real flight reservation with a live PNR, not a purchased ticket. Use it for visa applications, airline check-in, proof of onward travel, and immigration checks. Verify it on the global GDS that embassies use. From AED 49, delivered by email in minutes.',
     },
     process: {
-      title: 'Simple, Hassle-Free Process',
+      title: 'How Do You Book a Dummy Ticket?',
       subtitle:
         'How it Works with quick steps and clear guidance from search to delivery',
     },
@@ -117,7 +117,7 @@ const pageData = {
       benefits,
     },
     testimonials: {
-      title: 'Testimonials',
+      title: 'What Do Our Customers Say?',
       subtitle:
         'What our customers say about us after successful visa use and approvals',
       testimonials,
@@ -129,7 +129,7 @@ const pageData = {
       faqs: formatFaqArray(faqArray, keyword),
     },
     blogs: {
-      title: 'Blog Posts',
+      title: 'What Should You Read Next?',
       subtitle:
         'Recently published blog posts with practical visa travel insights and useful updates',
     },
@@ -207,7 +207,10 @@ export default function HomePage() {
         steps={processSteps}
       />
 
-      <PricingTiers keyword="dummy ticket" />
+      <PricingTiers
+        title="How Much Does a Dummy Ticket Cost?"
+        keyword="dummy ticket"
+      />
       <About
         title={pageData.sections.about.title}
         services={pageData.sections.about.services}

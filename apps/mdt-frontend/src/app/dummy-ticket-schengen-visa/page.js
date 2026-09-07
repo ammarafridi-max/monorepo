@@ -116,7 +116,7 @@ export const pageData = {
       form: <AllForms />,
     },
     process: {
-      title: 'How to book your dummy ticket?',
+      title: 'How Do You Book a Dummy Ticket for a Schengen Visa?',
       subtitle:
         "Get your dummy ticket for Schengen visa in 3 quick, simple, and hassle-free steps. Here's how it works:",
       keyword,
@@ -220,7 +220,10 @@ export default function Page() {
         steps={processSteps}
       />
 
-      <PricingTiers keyword="Schengen visa dummy ticket" />
+      <PricingTiers
+        title="How Much Does a Schengen Visa Dummy Ticket Cost?"
+        keyword="Schengen visa dummy ticket"
+      />
 
       <About title={pageData.sections.about.title} services={pageData.sections.about.services} />
 

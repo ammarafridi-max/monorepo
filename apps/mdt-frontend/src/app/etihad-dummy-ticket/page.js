@@ -82,7 +82,7 @@ export const pageData = {
       form: <AllForms />,
     },
     process: {
-      title: 'How Our Etihad Dummy Ticket Service Works',
+      title: 'How Do You Book an Etihad Dummy Ticket?',
       subtitle:
         'We follow a simple 3-step process to guarantee an approved Etihad flight reservation that meets your visa application requirements.',
     },
@@ -212,7 +212,10 @@ export default function Page() {
         steps={processSteps}
       />
 
-      <PricingTiers keyword="Etihad dummy ticket" />
+      <PricingTiers
+        title="How Much Does an Etihad Dummy Ticket Cost?"
+        keyword="Etihad dummy ticket"
+      />
       <About
         title={pageData.sections.about.title}
         text={pageData.sections.about.text}

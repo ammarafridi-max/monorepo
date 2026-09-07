@@ -77,7 +77,12 @@ export const pageData = {
   },
 };
 
-export const metadata = buildMetadata(pageData.meta);
+// Kept live for Google Ads landing traffic, but excluded from search: the page
+// is thin and duplicates what the dummy ticket pages already cover.
+export const metadata = {
+  ...buildMetadata(pageData.meta),
+  robots: { index: false, follow: true },
+};
 
 export default function Page() {
   const graph = buildGraph([
