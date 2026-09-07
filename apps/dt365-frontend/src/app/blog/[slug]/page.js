@@ -107,6 +107,7 @@ export default async function Page({ params }) {
       datePublished: blog.publishedAt,
       dateModified: blog.updatedAt,
       authorName: blog.author?.name,
+      authorSlug: blog.author?.authorProfile?.slug,
     }),
     ...(faqs.length > 0
       ? [buildFAQPage({ canonical, title: `${blog.title} FAQs`, description, faqs })]
