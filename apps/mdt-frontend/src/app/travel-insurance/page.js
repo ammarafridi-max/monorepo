@@ -225,41 +225,21 @@ export default function Page() {
       </PrimarySection>
       <PrimarySection className="py-10 lg:py-14">
         <Container>
-          <SectionTitle textAlign="center" className="mb-6">
-            Choose Your Travel Insurance Plan
+          <SectionTitle textAlign="center" className="mb-4">
+            Applying for a Schengen Visa?
           </SectionTitle>
-          <div className="flex flex-wrap justify-center gap-3">
-            {[
-              {
-                name: 'Schengen Travel Insurance',
-                href: '/schengen-travel-insurance',
-              },
-              {
-                name: 'Travel Medical Insurance',
-                href: '/travel-insurance/medical',
-              },
-              {
-                name: 'Annual Multi-Trip Insurance',
-                href: '/travel-insurance/annual-multi-trip',
-              },
-              {
-                name: 'International Travel Insurance',
-                href: '/travel-insurance/international',
-              },
-              {
-                name: 'Single Trip Insurance',
-                href: '/travel-insurance/single-trip',
-              },
-            ].map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="px-4 py-2 rounded-xl border border-primary-200 bg-primary-50 text-primary-700 text-[14px] font-medium hover:bg-primary-100 transition-colors"
-              >
-                {link.name}
-              </Link>
-            ))}
-          </div>
+          <p className="max-w-[820px] text-[16px] font-light leading-7 text-gray-700">
+            Schengen applications have their own rules: EUR 30,000 medical
+            cover, valid across all 27 countries, for the full length of your
+            trip. Our{' '}
+            <Link
+              href="/schengen-travel-insurance"
+              className="font-medium text-primary-700 underline underline-offset-2 hover:text-primary-800"
+            >
+              Schengen travel insurance
+            </Link>{' '}
+            meets those requirements and starts at AED 30.
+          </p>
         </Container>
       </PrimarySection>
       <PrimarySection className="py-14 md:py-18 lg:py-24">

@@ -253,38 +253,21 @@ export default function Page() {
       </PrimarySection>
       <PrimarySection className="py-10 lg:py-14">
         <Container>
-          <SectionTitle textAlign="center" className="mb-6">
-            Other Travel Insurance Plans
+          <SectionTitle textAlign="center" className="mb-4">
+            Travelling Outside the Schengen Area?
           </SectionTitle>
-          <div className="flex flex-wrap justify-center gap-3">
-            {[
-              {
-                name: 'Travel Medical Insurance',
-                href: '/travel-insurance/medical',
-              },
-              {
-                name: 'Annual Multi-Trip Insurance',
-                href: '/travel-insurance/annual-multi-trip',
-              },
-              {
-                name: 'International Travel Insurance',
-                href: '/travel-insurance/international',
-              },
-              {
-                name: 'Single Trip Insurance',
-                href: '/travel-insurance/single-trip',
-              },
-              { name: 'All Travel Insurance Plans', href: '/travel-insurance' },
-            ].map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="px-4 py-2 rounded-xl border border-primary-200 bg-primary-50 text-primary-700 text-[14px] font-medium hover:bg-primary-100 transition-colors"
-              >
-                {link.name}
-              </Link>
-            ))}
-          </div>
+          <p className="max-w-[820px] text-[16px] font-light leading-7 text-gray-700">
+            Schengen cover is built for European visa applications. For trips
+            anywhere else, our{' '}
+            <Link
+              href="/travel-insurance"
+              className="font-medium text-primary-700 underline underline-offset-2 hover:text-primary-800"
+            >
+              travel insurance for UAE residents
+            </Link>{' '}
+            covers single trips and annual multi-trip plans, issued by AXA and
+            delivered instantly.
+          </p>
         </Container>
       </PrimarySection>
       <PrimarySection

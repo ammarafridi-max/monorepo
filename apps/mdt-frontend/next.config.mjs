@@ -14,6 +14,12 @@ const nextConfig = {
         permanent: true,
       },
       {
+        source:
+          '/travel-insurance/:plan(medical|international|annual-multi-trip|single-trip)',
+        destination: '/travel-insurance',
+        permanent: true,
+      },
+      {
         source: '/blog/tag/:slug',
         destination: 'https://www.mydummyticket.ae/blog/tags/:slug',
         permanent: true,
