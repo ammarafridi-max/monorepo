@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { usePathname } from 'next/navigation';
-import { Mail, Plane, Rss } from 'lucide-react';
+import { HelpCircle, Mail, Plane, Rss } from 'lucide-react';
 import { CurrencyProvider } from '@travel-suite/frontend-shared/contexts/CurrencyContext';
 import { TicketProvider } from '@travel-suite/frontend-shared/contexts/TicketContext';
 import { InsuranceProvider } from '@travel-suite/frontend-shared/contexts/InsuranceContext';
@@ -42,7 +42,18 @@ const defaultPages = [
       { name: 'Flight Itinerary', link: '/flight-itinerary' },
     ],
   },
+  {
+    name: 'By Airline',
+    links: ['/lufthansa-dummy-ticket', '/turkish-airlines-dummy-ticket', '/air-france-dummy-ticket'],
+    icon: <Plane size={18} />,
+    subpages: [
+      { name: 'Lufthansa Dummy Ticket', link: '/lufthansa-dummy-ticket' },
+      { name: 'Turkish Airlines Dummy Ticket', link: '/turkish-airlines-dummy-ticket' },
+      { name: 'Air France Dummy Ticket', link: '/air-france-dummy-ticket' },
+    ],
+  },
   { name: 'Blog', links: ['/blog'], icon: <Rss size={18} /> },
+  { name: 'FAQ', links: ['/faq'], icon: <HelpCircle size={18} /> },
   { name: 'Email Us', links: [`mailto:${EMAIL}`], icon: <Mail size={18} /> },
 ];
 

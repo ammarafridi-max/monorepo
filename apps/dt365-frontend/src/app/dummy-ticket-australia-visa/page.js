@@ -30,7 +30,6 @@ import About from "@travel-suite/frontend-shared/components/sections/v1/About";
 import Benefits from "@travel-suite/frontend-shared/components/sections/v1/Benefits";
 import FAQ from "@travel-suite/frontend-shared/components/sections/v1/FAQ";
 import Contact from "@travel-suite/frontend-shared/components/sections/v1/Contact";
-// import QuickAnswer from "@/components/QuickAnswer";
 import RelatedPages from "@/components/RelatedPages";
 
 const benefits = [
@@ -109,12 +108,13 @@ const pageData = {
     description:
       "Secure a dummy ticket for your Australia Subclass 600 visa application with a verifiable PNR. Ready for ImmiAccount upload, from $13.",
     canonical: "https://www.dummyticket365.com/dummy-ticket-australia-visa",
+    productName: 'Dummy Ticket for Australia Visa',
   },
   sections: {
     hero: {
       title: "Book Your Dummy Ticket For Australia Visa From $13",
       subtitle:
-        "Get a verifiable flight reservation for your Australian visa application without purchasing a non-refundable airline ticket. Ready to upload to your ImmiAccount, with a real PNR that the Department of Home Affairs can verify.",
+        "The Department of Home Affairs asks for travel dates and a flight itinerary on the Subclass 600 application, while also telling applicants not to finalise travel until the visa is granted. A dummy ticket satisfies both: a real reservation with a verifiable PNR for your ImmiAccount file, with no expensive ticket bought before a decision. From $13.",
       form: <AllForms forms={["ticket"]} />,
     },
     process: {
@@ -136,13 +136,13 @@ const pageData = {
           icon: <MdOutlineHotel />,
           title: "Hotel Reservations",
           description:
-            "Verified hotel bookings by email, accepted as proof of accommodation for Australia visa applications. No upfront payment to hotels, delivered instantly alongside your dummy ticket.",
+            `Hotel reservations accepted as proof of accommodation for Australia visa applications, with no upfront payment to hotels. Prepared on request, so send your trip details to ${EMAIL}.`,
         },
         {
           icon: <MdOutlineHealthAndSafety />,
           title: "Travel Insurance",
           description:
-            "Genuine travel insurance for your Australia trip. Medicare doesn't cover non-residents, so a real medical policy matters once you arrive — and a clean certificate strengthens the visa file too. Delivered instantly.",
+            `Genuine travel insurance for your Australia trip. Medicare does not cover non-residents, so a real medical policy matters once you arrive, and a clean certificate strengthens the visa file too. Arranged on request, so email your trip details to ${EMAIL}.`,
         },
       ],
     },
@@ -178,13 +178,12 @@ export default function Page() {
     buildWebPage(pageData.meta),
     buildService({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
       description: pageData.meta.description,
-      areaServed: "AE",
     }),
     buildProduct({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
       description: pageData.meta.description,
       price: "13.00",
       currency: "USD",
@@ -218,10 +217,6 @@ export default function Page() {
         breadcrumbPaths={breadcrumbPaths}
       />
 
-      {/* <QuickAnswer
-        question="Does the Subclass 600 visa require a flight booking?"
-        answer="The Department of Home Affairs asks for travel dates and a flight itinerary on the Subclass 600 application, but it also tells applicants not to finalise travel until the visa is granted. A dummy ticket squares that circle: a real reservation with a verifiable PNR for the ImmiAccount file, no $1,500 ticket purchased before a decision."
-      /> */}
 
       <Process
         title={pageData.sections.process.title}

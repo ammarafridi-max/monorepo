@@ -30,7 +30,6 @@ import About from "@travel-suite/frontend-shared/components/sections/v1/About";
 import Benefits from "@travel-suite/frontend-shared/components/sections/v1/Benefits";
 import FAQ from "@travel-suite/frontend-shared/components/sections/v1/FAQ";
 import Contact from "@travel-suite/frontend-shared/components/sections/v1/Contact";
-// import QuickAnswer from "@/components/QuickAnswer";
 import RelatedPages from "@/components/RelatedPages";
 
 const benefits = [
@@ -107,12 +106,13 @@ const pageData = {
     description:
       "Secure a dummy ticket for your Canada visitor visa or TRV application with a verifiable PNR. Aligned with IRCC guidance, from $13.",
     canonical: "https://www.dummyticket365.com/dummy-ticket-canada-visa",
+    productName: 'Dummy Ticket for Canada Visa',
   },
   sections: {
     hero: {
       title: "Book Your Dummy Ticket For Canada Visa From $13",
       subtitle:
-        "Get a verifiable flight reservation for your Canadian visa application without purchasing a non-refundable ticket. IRCC asks for flight details but advises against booking before approval, and our dummy ticket follows that guidance exactly.",
+        "IRCC asks for travel dates and a flight itinerary in the visitor visa application, and at the same time advises against booking flights before approval. A dummy ticket fits that guidance exactly. You get a verifiable PNR on global GDS platforms for the file, without locking in a paid ticket while IRCC reviews. From $13.",
       form: <AllForms forms={["ticket"]} />,
     },
     process: {
@@ -134,13 +134,13 @@ const pageData = {
           icon: <MdOutlineHotel />,
           title: "Hotel Reservations",
           description:
-            "Verified hotel bookings by email, accepted as proof of accommodation for Canada visa applications. No upfront payment to hotels, delivered instantly alongside your dummy ticket.",
+            `Hotel reservations accepted as proof of accommodation for Canada visa applications, with no upfront payment to hotels. Prepared on request, so send your trip details to ${EMAIL}.`,
         },
         {
           icon: <MdOutlineHealthAndSafety />,
           title: "Travel Insurance",
           description:
-            "Genuine travel insurance for your Canada trip. Provincial health plans don't cover visitors, so a real medical policy matters once you arrive — and a clean certificate adds weight to the visa file too. Delivered instantly.",
+            `Genuine travel insurance for your Canada trip. Provincial health plans do not cover visitors, so a real medical policy matters once you arrive, and a clean certificate adds weight to the visa file too. Arranged on request, so email your trip details to ${EMAIL}.`,
         },
       ],
     },
@@ -176,13 +176,12 @@ export default function Page() {
     buildWebPage(pageData.meta),
     buildService({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
       description: pageData.meta.description,
-      areaServed: "AE",
     }),
     buildProduct({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
       description: pageData.meta.description,
       price: "13.00",
       currency: "USD",
@@ -216,10 +215,6 @@ export default function Page() {
         breadcrumbPaths={breadcrumbPaths}
       />
 
-      {/* <QuickAnswer
-        question="Do you need a flight itinerary for a Canada visa?"
-        answer="Yes. IRCC asks for travel dates and a flight itinerary in the visitor visa application, and at the same time advises against booking flights before the visa is approved. A dummy ticket fits that guidance exactly. You get a verifiable PNR on global GDS platforms for the file, without locking in a paid ticket while IRCC reviews."
-      /> */}
 
       <Process
         title={pageData.sections.process.title}

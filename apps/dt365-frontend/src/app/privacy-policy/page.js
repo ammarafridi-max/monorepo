@@ -2,7 +2,13 @@ import Container from '@travel-suite/frontend-shared/components/shared/layout/Co
 import PrimarySection from '@travel-suite/frontend-shared/components/shared/layout/PrimarySection';
 import SectionTitle from '@travel-suite/frontend-shared/components/shared/layout/SectionTitle';
 import PageHero from '@travel-suite/frontend-shared/components/sections/v1/PageHero';
-import { buildMetadata } from '@/lib/schema';
+import {
+  buildGraph,
+  buildMetadata,
+  buildOrganization,
+  buildWebPage,
+  buildWebsite,
+} from '@/lib/schema';
 
 export const pageData = {
   meta: {
@@ -27,8 +33,18 @@ export const pageData = {
 export const metadata = buildMetadata(pageData.meta);
 
 export default function Page() {
+  const graph = buildGraph([
+    buildOrganization(),
+    buildWebsite(),
+    buildWebPage(pageData.meta),
+  ]);
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(graph) }}
+      />
       <PageHero
         paths={pageData.breadcrumb}
         title={pageData.sections.hero.title}
@@ -76,8 +92,8 @@ export default function Page() {
             </li>
             <li className="pl-2">
               We also use Hotjar to understand how visitors interact with our pages. Hotjar may record
-              anonymised session data — such as pages visited, clicks, taps, scrolling, and mouse
-              movement — and produce aggregated heatmaps. By default, Hotjar suppresses the text you
+              anonymised session data, such as pages visited, clicks, taps, scrolling, and mouse
+              movement, and produce aggregated heatmaps. By default, Hotjar suppresses the text you
               type into form fields (for example contact, passport, or payment details); we use this
               data only in aggregate to improve usability, never to identify you personally.
             </li>

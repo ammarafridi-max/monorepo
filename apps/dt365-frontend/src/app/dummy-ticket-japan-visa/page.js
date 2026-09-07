@@ -30,7 +30,6 @@ import About from "@travel-suite/frontend-shared/components/sections/v1/About";
 import Benefits from "@travel-suite/frontend-shared/components/sections/v1/Benefits";
 import FAQ from "@travel-suite/frontend-shared/components/sections/v1/FAQ";
 import Contact from "@travel-suite/frontend-shared/components/sections/v1/Contact";
-// import QuickAnswer from "@/components/QuickAnswer";
 import RelatedPages from "@/components/RelatedPages";
 
 const benefits = [
@@ -107,12 +106,13 @@ const pageData = {
     description:
       "Secure a dummy ticket for your Japan visa application with a verifiable PNR. Formatted for embassy and eVISA submissions, from $13.",
     canonical: "https://www.dummyticket365.com/dummy-ticket-japan-visa",
+    productName: 'Dummy Ticket for Japan Visa',
   },
   sections: {
     hero: {
       title: "Book Your Dummy Ticket For Japan Visa From $13",
       subtitle:
-        "Get a verifiable flight reservation for your Japan visa application without purchasing a non-refundable airline ticket. Japanese embassies require a round-trip itinerary, and our dummy ticket is formatted to meet that requirement with a real, checkable PNR.",
+        "Japanese embassies and the Ministry of Foreign Affairs list a round-trip flight reservation among the required documents for a tourist or business visa, including JAPAN eVISA applications. You do not need a paid ticket. Our dummy ticket carries a verifiable PNR on Amadeus, Sabre, and Travelport and arrives in minutes, from $13.",
       form: <AllForms forms={["ticket"]} />,
     },
     process: {
@@ -134,13 +134,13 @@ const pageData = {
           icon: <MdOutlineHotel />,
           title: "Hotel Reservations",
           description:
-            "Verified hotel bookings by email, accepted as proof of accommodation for Japan visa applications. Dates aligned with your flight reservation, delivered instantly.",
+            `Hotel reservations accepted as proof of accommodation for Japan visa applications, with dates aligned to your flight reservation. Prepared on request, so send your trip details to ${EMAIL}.`,
         },
         {
           icon: <MdOutlineHealthAndSafety />,
           title: "Travel Insurance",
           description:
-            "Genuine travel insurance for your Japan trip. Visitors to Japan need their own medical cover — and a clean certificate alongside your dummy ticket and hotel reservation rounds out the visa file. Delivered instantly.",
+            `Genuine travel insurance for your Japan trip. Visitors to Japan need their own medical cover, and a clean certificate alongside your dummy ticket and hotel reservation rounds out the visa file. Arranged on request, so email your trip details to ${EMAIL}.`,
         },
       ],
     },
@@ -176,13 +176,12 @@ export default function Page() {
     buildWebPage(pageData.meta),
     buildService({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
       description: pageData.meta.description,
-      areaServed: "AE",
     }),
     buildProduct({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
       description: pageData.meta.description,
       price: "13.00",
       currency: "USD",
@@ -216,10 +215,6 @@ export default function Page() {
         breadcrumbPaths={breadcrumbPaths}
       />
 
-      {/* <QuickAnswer
-        question="Do you need a flight reservation for a Japan visa?"
-        answer="Yes. The Ministry of Foreign Affairs and Japanese embassies list a round-trip flight reservation among the required documents for a tourist or business visa, including applications through the JAPAN eVISA portal. You do not need a paid ticket. A dummy ticket with a verifiable PNR on Amadeus, Sabre, and Travelport meets that requirement and ships in minutes."
-      /> */}
 
       <Process
         title={pageData.sections.process.title}

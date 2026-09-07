@@ -26,7 +26,6 @@ import About from '@travel-suite/frontend-shared/components/sections/v1/About';
 import Benefits from '@travel-suite/frontend-shared/components/sections/v1/Benefits';
 import FAQ from '@travel-suite/frontend-shared/components/sections/v1/FAQ';
 import Contact from '@travel-suite/frontend-shared/components/sections/v1/Contact';
-// import QuickAnswer from '@/components/QuickAnswer';
 import RelatedPages from '@/components/RelatedPages';
 
 const benefits = [
@@ -96,12 +95,13 @@ const pageData = {
     description:
       'Secure a dummy ticket for UK visa applications with a verifiable PNR. Accepted for visa submissions and available from $13.',
     canonical: 'https://www.dummyticket365.com/dummy-ticket-uk-visa',
+    productName: 'Dummy Ticket for UK Visa',
   },
   sections: {
     hero: {
       title: 'Book Your Dummy Ticket for UK Visa from $13',
       subtitle:
-        'Secure a dummy ticket for UK visa applications with a verifiable PNR, without purchasing a fully paid airline ticket. Commonly used to show travel intent for UK visa submissions.',
+        'UKVI does not list a flight booking as a required document for the Standard Visitor visa, but a flight itinerary helps caseworkers see your intended dates and route. A dummy ticket with a verifiable PNR meets that bar without you paying for a non-refundable ticket months before a decision. From $13.',
       form: <AllForms forms={['ticket']} />,
     },
     process: {
@@ -120,12 +120,12 @@ const pageData = {
         {
           icon: <MdOutlineHotel />,
           title: "Hotel Reservations",
-          description: "Temporary hotel reservations formatted to UK visa standards. Like dummy tickets, these are real reservations — not paid bookings — so your UKVI file is complete without locking in non-refundable nights before approval.",
+          description: `Temporary hotel reservations formatted to UK visa standards. These are real reservations, not paid bookings, so your UKVI file is complete without locking in non-refundable nights before approval. Prepared on request, so email your trip details to ${EMAIL}.`,
         },
         {
           icon: <MdOutlineHealthAndSafety />,
           title: "Travel Insurance",
-          description: "Genuine AXA-backed travel insurance for visa applicants and travellers. Schengen-compliant plans available if your itinerary includes European destinations.",
+          description: `Genuine AXA-backed travel insurance for visa applicants and travellers. Schengen-compliant plans are available if your itinerary includes European destinations. Arranged on request, so email your trip details to ${EMAIL}.`,
         },
       ],
     },
@@ -160,13 +160,12 @@ export default function Page() {
     buildWebPage(pageData.meta),
     buildService({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
       description: pageData.meta.description,
-      areaServed: 'AE',
     }),
     buildProduct({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
       description: pageData.meta.description,
       price: '13.00',
       currency: 'USD',
@@ -200,10 +199,6 @@ export default function Page() {
         breadcrumbPaths={breadcrumbPaths}
       />
 
-      {/* <QuickAnswer
-        question="Do you need a flight reservation for a UK visa?"
-        answer="Not strictly. UKVI does not list a flight booking as a required document for the Standard Visitor visa. It is strongly recommended though, because a flight itinerary helps caseworkers see your intended dates and route. A dummy ticket with a verifiable PNR meets that bar without you paying for a non-refundable ticket months before approval."
-      /> */}
 
       <Process
         title={pageData.sections.process.title}

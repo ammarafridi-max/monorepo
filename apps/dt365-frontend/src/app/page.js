@@ -8,7 +8,6 @@ import Testimonials from "@travel-suite/frontend-shared/components/sections/v1/T
 import FAQ from "@travel-suite/frontend-shared/components/sections/v1/FAQ";
 import Contact from "@travel-suite/frontend-shared/components/sections/v1/Contact";
 import BlogPosts from "@travel-suite/frontend-shared/components/sections/v1/BlogPosts";
-// import QuickAnswer from "@/components/QuickAnswer";
 import RelatedPages from "@/components/RelatedPages";
 import {
   SITE_URL,
@@ -43,7 +42,7 @@ const benefits = [
   },
   {
     title: "Verifiable PNR & Embassy-Friendly",
-    text: "Every reservation includes a verifiable PNR on global GDS platforms (Amadeus, Sabre, Travelport) — the same systems embassies, visa officers, and travel agents use to confirm bookings. Suitable for embassy review and immigration verification.",
+    text: "Every reservation includes a verifiable PNR on global GDS platforms (Amadeus, Sabre, Travelport), the same systems embassies, visa officers, and travel agents use to confirm bookings. Suitable for embassy review and immigration verification.",
     icon: HiShieldCheck,
   },
   {
@@ -117,7 +116,7 @@ const faqs = [
   {
     question: "How much does a dummy ticket cost?",
     answer:
-      "Our pricing is affordable, with dummy ticket prices starting from USD 13. The final cost may vary based on itinerary type, selected validity, and availability at the time of booking.",
+      "A dummy ticket costs $13 for 2 days validity, $20 for 7 days, or $23 for 14 days. All three tiers include the same verifiable PNR and the same accepted format, so pick the validity that matches your appointment or travel window.",
   },
   {
     question: "Is a dummy ticket suitable for immigration checks?",
@@ -132,12 +131,13 @@ const pageData = {
     description:
       "Book a dummy ticket for onward travel with a verifiable PNR. Ideal for airline check-in and immigration checks. Instant email delivery. Starting from USD 13.",
     canonical: "https://www.dummyticket365.com",
+    productName: 'Dummy Ticket',
   },
   sections: {
     hero: {
       title: "Dummy Tickets for Visa, Onward Travel From $13",
       subtitle:
-        "A dummy ticket is a real flight reservation with a valid PNR you can verify on GDS platforms, not a purchased ticket. Use it for visa applications, airline check-in, and immigration checks. We deliver yours by email in minutes, from $13, so you get fast, verifiable proof without paying for a flight you don't need.",
+        "A dummy ticket is a real flight reservation with a verifiable PNR, created through global GDS platforms (Amadeus, Sabre, Travelport). Use it for visa applications, airline check-in, proof of onward travel, and immigration checks. You pay for the reservation document, not the flight, from $13, delivered by email in minutes.",
       form: <AllForms />,
     },
     process: {
@@ -160,13 +160,13 @@ const pageData = {
           icon: <MdOutlineHotel />,
           title: "Hotel Reservations",
           description:
-            "Temporary hotel reservations for visa applications, formatted to meet embassy and consulate requirements. Like dummy tickets, these are real reservations — not paid bookings — delivered by email so you can submit your file without committing the funds upfront.",
+            `Temporary hotel reservations for visa applications, formatted to meet embassy and consulate requirements. These are real reservations, not paid bookings. We prepare them on request, so send your trip details to ${EMAIL} and we will have yours ready.`,
         },
         {
           icon: <MdOutlineHealthAndSafety />,
           title: "Travel Insurance",
           description:
-            "Schengen-compliant travel insurance meeting the mandatory EUR 30,000 medical coverage requirement. Genuine AXA-backed policies issued instantly and accepted by embassies.",
+            `Genuine AXA-backed travel insurance, Schengen-compliant and meeting the mandatory EUR 30,000 medical coverage requirement. Policies are arranged on request, so email your trip details to ${EMAIL} and we will prepare your cover.`,
         },
       ],
     },
@@ -229,9 +229,8 @@ export default function HomePage() {
     }),
     buildService({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
       description: pageData.meta.description,
-      areaServed: "AE",
     }),
     buildFAQPage({
       canonical: pageData.meta.canonical,
@@ -259,10 +258,6 @@ export default function HomePage() {
           "Delivered in minutes",
         ]}
       />
-      {/* <QuickAnswer
-        question="What is a dummy ticket?"
-        answer="A dummy ticket is a real flight reservation with a verifiable PNR, generated through global GDS platforms (Amadeus, Sabre, Travelport). It is used to show proof of onward travel for visa applications, airline check-in, and immigration. You are not paying for the ticket itself, only for the reservation document, which starts at $13."
-      /> */}
       <Process
         title={pageData.sections.process.title}
         subtitle={pageData.sections.process.subtitle}

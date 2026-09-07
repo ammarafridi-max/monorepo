@@ -14,7 +14,7 @@ import {
 
 export const faqPageData = {
   meta: {
-    title: 'Dummy Ticket FAQ | Common Questions Answered | Dummy Ticket 365',
+    title: 'Dummy Ticket FAQ | Validity, Verification and Pricing',
     description:
       'Get clear answers to common questions about dummy ticket validity, verification, delivery time, refunds, and visa document usage.',
     canonical: 'https://www.dummyticket365.com/faq',
@@ -25,7 +25,7 @@ export const faqPageData = {
   ],
   sections: {
     hero: {
-      title: 'Frequently Asked Questions',
+      title: 'Dummy Ticket FAQs',
       subtitle:
         'Our FAQs section answers the most common questions about dummy tickets, including validity, usage, and verification. It’s designed to give you clear, quick, and reliable information so you can proceed with confidence.',
     },

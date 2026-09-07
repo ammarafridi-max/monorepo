@@ -3,15 +3,7 @@ export default function robots() {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: [
-        '/admin',
-        '/booking',
-        '/travel-insurance',
-        '/insurance-booking/quote',
-        '/insurance-booking/passengers',
-        '/insurance-booking/review',
-        '/insurance-booking/payment',
-      ],
+      disallow: ['/admin', '/booking'],
     },
     sitemap: 'https://www.dummyticket365.com/sitemap.xml',
   };

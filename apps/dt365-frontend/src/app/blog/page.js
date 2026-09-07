@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation';
 import { getPublishedBlogsApi } from '@travel-suite/frontend-shared/services/apiBlog';
 import {
   SITE_URL,
@@ -18,7 +19,7 @@ const meta = {
 };
 
 const hero = {
-  title: 'Blog',
+  title: 'Dummy Ticket and Visa Travel Blog',
   subtitle:
     'Our blog covers everything you need to know about dummy tickets, including how they work, when to use them, and why they are commonly required for visa and immigration purposes. We also share tips, updates, and best practices to help you avoid mistakes and apply with confidence.',
 };
@@ -28,24 +29,33 @@ const breadcrumbPaths = [
   { label: 'Blog', path: '/blog' },
 ];
 
-export const metadata = {
-  title: meta.title,
-  description: meta.description,
-  alternates: { canonical: meta.canonical },
-  robots: { index: true, follow: true },
-  openGraph: {
-    url: meta.canonical,
-    title: meta.title,
+// Page 2+ self-canonicalises. Canonicalising them all to /blog told Google the
+// deeper pages were duplicates, which discouraged crawling the older posts.
+export async function generateMetadata({ searchParams }) {
+  const resolved = await searchParams;
+  const page = Math.max(1, Number(resolved?.page || 1) || 1);
+  const canonical = page > 1 ? `${meta.canonical}?page=${page}` : meta.canonical;
+  const title = page > 1 ? `${meta.title} | Page ${page}` : meta.title;
+
+  return {
+    title,
     description: meta.description,
-    images: [`${SITE_URL}/og-image.png`],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: meta.title,
-    description: meta.description,
-    images: [`${SITE_URL}/og-image.png`],
-  },
-};
+    alternates: { canonical },
+    robots: { index: true, follow: true },
+    openGraph: {
+      url: canonical,
+      title,
+      description: meta.description,
+      images: [`${SITE_URL}/og-image.png`],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description: meta.description,
+      images: [`${SITE_URL}/og-image.png`],
+    },
+  };
+}
 
 export const revalidate = 3600;
 
@@ -60,7 +70,12 @@ export default async function Page({ searchParams }) {
     blogs = data?.blogs || [];
     pagination = data?.pagination || null;
   } catch {
-    // API unreachable at build time — ISR will populate on first request
+    // API unreachable at build time, ISR will populate on first request
+  }
+
+  // Without this any ?page=N returns 200, leaving an unbounded crawlable param space.
+  if (pagination && pagination.totalPages > 0 && currentPage > pagination.totalPages) {
+    notFound();
   }
 
   const schema = buildGraph([

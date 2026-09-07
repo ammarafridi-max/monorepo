@@ -26,7 +26,6 @@ import About from '@travel-suite/frontend-shared/components/sections/v1/About';
 import Benefits from '@travel-suite/frontend-shared/components/sections/v1/Benefits';
 import FAQ from '@travel-suite/frontend-shared/components/sections/v1/FAQ';
 import Contact from '@travel-suite/frontend-shared/components/sections/v1/Contact';
-// import QuickAnswer from '@/components/QuickAnswer';
 import RelatedPages from '@/components/RelatedPages';
 
 const processSteps = [
@@ -57,7 +56,7 @@ const benefits = [
   },
   {
     title: 'Paris CDG Is a Major Global Hub',
-    text: "Charles de Gaulle is one of Europe's largest airports and serves as Air France's main long-haul hub. AF connects Paris to nearly 200 destinations across six continents, making almost any origin or destination routable through Paris — useful for Schengen, North American, African, and Asian itineraries alike.",
+    text: "Charles de Gaulle is one of Europe's largest airports and serves as Air France's main long-haul hub. AF connects Paris to nearly 200 destinations across six continents, making almost any origin or destination routable through Paris, which is useful for Schengen, North American, African, and Asian itineraries alike.",
     icon: HiOutlineBuildingOffice2,
   },
   {
@@ -67,7 +66,7 @@ const benefits = [
   },
   {
     title: 'Part of the Air France-KLM Group',
-    text: 'Air France and KLM operate as a unified group with a transatlantic joint venture alongside Delta and Virgin Atlantic. Codeshare flights across these carriers are common, particularly on European and transatlantic routes — an AF booking can include KLM segments via Amsterdam under a single PNR.',
+    text: 'Air France and KLM operate as a unified group with a transatlantic joint venture alongside Delta and Virgin Atlantic. Codeshare flights across these carriers are common, particularly on European and transatlantic routes. An AF booking can include KLM segments via Amsterdam under a single PNR.',
     icon: HiOutlineArrowsRightLeft,
   },
   {
@@ -114,14 +113,15 @@ const pageData = {
   meta: {
     title: 'Book a Dummy Ticket on Air France from $13 | Verifiable PNR',
     description:
-      'Get a verifiable Air France flight reservation for your visa application from $13. PNR generated through recognized GDS systems and delivered to your inbox in minutes.',
+      'Air France dummy ticket with a verifiable PNR from $13. Real AF flight numbers, issued through Amadeus, Sabre and Travelport, delivered in minutes.',
     canonical: 'https://www.dummyticket365.com/air-france-dummy-ticket',
+    productName: 'Air France Dummy Ticket',
   },
   sections: {
     hero: {
       title: 'Book a Dummy Ticket on Air France from $13',
       subtitle:
-        "Get a verifiable Air France flight reservation for your visa application without purchasing a non-refundable ticket. As France's flag carrier and a founding member of SkyTeam, Air France is one of the most natural carrier choices for Schengen visa itineraries through Paris.",
+        "We issue Air France flight reservations through global GDS platforms (Amadeus, Sabre, Travelport) with a six-character PNR your consulate or any travel agent can look up during validity. Real AF flight numbers, real CDG routing, no paid ticket required. Suitable for Schengen visa files and any embassy that asks for proof of travel. From $13.",
       form: <AllForms forms={['ticket']} />,
     },
     process: {
@@ -143,13 +143,13 @@ const pageData = {
           icon: <MdOutlineHealthAndSafety />,
           title: 'Schengen Travel Insurance',
           description:
-            'Genuine Schengen-compliant travel insurance with the required EUR 30,000 minimum medical coverage. Since Air France itineraries are most commonly used for Schengen applications, bundling your dummy ticket with compliant insurance gives you two essential documents in one order.',
+            `Genuine Schengen-compliant travel insurance with the required EUR 30,000 minimum medical coverage. Air France itineraries are most commonly used for Schengen applications, where compliant insurance is mandatory. Arranged on request, so email your trip details to ${EMAIL}.`,
         },
         {
           icon: <MdOutlineHotel />,
           title: 'Hotel Reservations',
           description:
-            'Temporary hotel reservations formatted to Schengen embassy and consulate standards. Like dummy tickets, these are real reservations — not paid bookings — so your French visa file is complete without locking in non-refundable nights before approval.',
+            `Temporary hotel reservations formatted to Schengen embassy and consulate standards. These are real reservations, not paid bookings, so your French visa file is complete without locking in non-refundable nights before approval. Prepared on request, so email your trip details to ${EMAIL}.`,
         },
       ],
     },
@@ -185,13 +185,12 @@ export default function Page() {
     buildWebPage(pageData.meta),
     buildService({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
       description: pageData.meta.description,
-      areaServed: 'AE',
     }),
     buildProduct({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
       description: pageData.meta.description,
       price: '13.00',
       currency: 'USD',
@@ -225,10 +224,6 @@ export default function Page() {
         breadcrumbPaths={breadcrumbPaths}
       />
 
-      {/* <QuickAnswer
-        question="Can you get a verifiable Air France reservation without buying a ticket?"
-        answer="Yes. We issue Air France flight reservations through global GDS platforms (Amadeus, Sabre, Travelport) with a six-character PNR your consulate or any travel agent can look up during validity. Real AF flight numbers, real CDG routing, no paid ticket required. From $13, in your inbox in minutes. Suitable for Schengen visa files and any embassy that asks for proof of travel."
-      /> */}
 
       <Process
         title={pageData.sections.process.title}

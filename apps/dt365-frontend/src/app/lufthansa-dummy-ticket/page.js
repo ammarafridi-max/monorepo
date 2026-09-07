@@ -26,7 +26,6 @@ import About from '@travel-suite/frontend-shared/components/sections/v1/About';
 import Benefits from '@travel-suite/frontend-shared/components/sections/v1/Benefits';
 import FAQ from '@travel-suite/frontend-shared/components/sections/v1/FAQ';
 import Contact from '@travel-suite/frontend-shared/components/sections/v1/Contact';
-// import QuickAnswer from '@/components/QuickAnswer';
 import RelatedPages from '@/components/RelatedPages';
 
 const processSteps = [
@@ -72,7 +71,7 @@ const benefits = [
   },
   {
     title: 'Direct Routes From High-Volume Visa Markets',
-    text: 'Lufthansa operates direct flights from cities where Schengen demand is highest — Delhi, Mumbai, Bengaluru, Dubai, Riyadh, Lagos, Johannesburg, Tokyo, Seoul, and Bangkok — so the itinerary looks natural and credible for applicants in those markets.',
+    text: 'Lufthansa operates direct flights from cities where Schengen demand is highest, including Delhi, Mumbai, Bengaluru, Dubai, Riyadh, Lagos, Johannesburg, Tokyo, Seoul, and Bangkok, so the itinerary looks natural and credible for applicants in those markets.',
     icon: HiOutlineMapPin,
   },
 ];
@@ -114,14 +113,15 @@ const pageData = {
   meta: {
     title: 'Book a Dummy Ticket on Lufthansa from $13 | Verifiable PNR',
     description:
-      'Get a verifiable Lufthansa flight reservation for your visa application from $13. PNR generated through recognized GDS systems and delivered to your inbox in minutes.',
+      'Lufthansa dummy ticket with a verifiable PNR from $13. Real LH flight numbers, issued through Amadeus, Sabre and Travelport, delivered in minutes.',
     canonical: 'https://www.dummyticket365.com/lufthansa-dummy-ticket',
+    productName: 'Lufthansa Dummy Ticket',
   },
   sections: {
     hero: {
       title: 'Book a Dummy Ticket on Lufthansa from $13',
       subtitle:
-        'Get a verifiable Lufthansa flight reservation for your visa application without purchasing a non-refundable ticket. As Germany\'s flag carrier and a founding member of Star Alliance, Lufthansa is one of the most frequently used airlines on Schengen visa itineraries.',
+        'We issue Lufthansa flight reservations through global GDS platforms (Amadeus, Sabre, Travelport) with a six-character PNR that German consulates and travel agents can confirm during validity. Real LH flight numbers, Frankfurt or Munich routing, no paid ticket required. Schengen-ready and accepted at VFS and TLScontact German visa centres. From $13.',
       form: <AllForms forms={['ticket']} />,
     },
     process: {
@@ -143,13 +143,13 @@ const pageData = {
           icon: <MdOutlineHealthAndSafety />,
           title: 'Schengen Travel Insurance',
           description:
-            'Genuine Schengen-compliant travel insurance with the required EUR 30,000 minimum medical coverage. Since Lufthansa itineraries are most commonly used for Schengen applications, bundling your dummy ticket with compliant insurance gives you two essential documents in one order.',
+            `Genuine Schengen-compliant travel insurance with the required EUR 30,000 minimum medical coverage. Lufthansa itineraries are most commonly used for Schengen applications, where compliant insurance is mandatory. Arranged on request, so email your trip details to ${EMAIL}.`,
         },
         {
           icon: <MdOutlineHotel />,
           title: 'Hotel Reservations',
           description:
-            'Temporary hotel reservations formatted to Schengen embassy and consulate standards. Like dummy tickets, these are real reservations — not paid bookings — so your visa file is complete without locking in non-refundable nights before approval.',
+            `Temporary hotel reservations formatted to Schengen embassy and consulate standards. These are real reservations, not paid bookings, so your visa file is complete without locking in non-refundable nights before approval. Prepared on request, so email your trip details to ${EMAIL}.`,
         },
       ],
     },
@@ -185,13 +185,12 @@ export default function Page() {
     buildWebPage(pageData.meta),
     buildService({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
       description: pageData.meta.description,
-      areaServed: 'AE',
     }),
     buildProduct({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
       description: pageData.meta.description,
       price: '13.00',
       currency: 'USD',
@@ -225,10 +224,6 @@ export default function Page() {
         breadcrumbPaths={breadcrumbPaths}
       />
 
-      {/* <QuickAnswer
-        question="Can you get a verifiable Lufthansa reservation without buying a ticket?"
-        answer="Yes. We issue Lufthansa flight reservations through global GDS platforms (Amadeus, Sabre, Travelport) with a six-character PNR that German consulates and travel agents can confirm during validity. Real LH flight numbers, Frankfurt or Munich routing, no paid ticket required. From $13, in your inbox in minutes. Schengen-ready and accepted at VFS and TLScontact German visa centres."
-      /> */}
 
       <Process
         title={pageData.sections.process.title}

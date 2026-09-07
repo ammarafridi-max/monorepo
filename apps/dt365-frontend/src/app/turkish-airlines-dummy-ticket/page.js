@@ -26,7 +26,6 @@ import About from '@travel-suite/frontend-shared/components/sections/v1/About';
 import Benefits from '@travel-suite/frontend-shared/components/sections/v1/Benefits';
 import FAQ from '@travel-suite/frontend-shared/components/sections/v1/FAQ';
 import Contact from '@travel-suite/frontend-shared/components/sections/v1/Contact';
-// import QuickAnswer from '@/components/QuickAnswer';
 import RelatedPages from '@/components/RelatedPages';
 
 const processSteps = [
@@ -57,7 +56,7 @@ const benefits = [
   },
   {
     title: 'Star Alliance Network Expands Your Routing',
-    text: 'As a Star Alliance member, Turkish Airlines has codeshare and interline agreements with Lufthansa, SWISS, United, Air Canada, ANA, and Singapore Airlines. This allows multi-carrier itineraries under a single booking — particularly useful for complex visa applications involving connections on partner carriers.',
+    text: 'As a Star Alliance member, Turkish Airlines has codeshare and interline agreements with Lufthansa, SWISS, United, Air Canada, ANA, and Singapore Airlines. This allows multi-carrier itineraries under a single booking. That is particularly useful for complex visa applications involving connections on partner carriers.',
     icon: HiOutlineUserGroup,
   },
   {
@@ -112,16 +111,17 @@ const faqs = [
 
 const pageData = {
   meta: {
-    title: 'Book a Dummy Ticket on Turkish Airlines from $13 | Verifiable PNR',
+    title: 'Turkish Airlines Dummy Ticket from $13 | Verifiable PNR',
     description:
-      'Get a verifiable Turkish Airlines flight reservation for your visa application from $13. PNR generated through recognized GDS systems and delivered to your inbox in minutes.',
+      'Turkish Airlines dummy ticket with a verifiable PNR from $13. Real TK flight numbers, issued through Amadeus, Sabre and Travelport, delivered in minutes.',
     canonical: 'https://www.dummyticket365.com/turkish-airlines-dummy-ticket',
+    productName: 'Turkish Airlines Dummy Ticket',
   },
   sections: {
     hero: {
       title: 'Book a Dummy Ticket on Turkish Airlines from $13',
       subtitle:
-        'Get a verifiable Turkish Airlines flight reservation for your visa application without purchasing a non-refundable ticket. With over 340 destinations across 130 countries, Turkish Airlines is one of the most commonly used carriers on visa itineraries worldwide.',
+        'We issue Turkish Airlines flight reservations through global GDS platforms (Amadeus, Sabre, Travelport) with a six-character PNR your consulate or any travel agent can look up during validity. Real TK flight numbers, Istanbul routing, no paid ticket required. Accepted on Schengen, UK, US, Canadian, and many other visa files. From $13.',
       form: <AllForms forms={['ticket']} />,
     },
     process: {
@@ -143,13 +143,13 @@ const pageData = {
           icon: <MdOutlineHealthAndSafety />,
           title: 'Travel Insurance',
           description:
-            'Genuine travel insurance for visa applicants. Schengen-compliant plans with the required EUR 30,000 minimum medical coverage are available if your Turkish Airlines itinerary includes European destinations. Bundle it with your dummy ticket for a complete visa document package.',
+            `Genuine travel insurance for visa applicants. Schengen-compliant plans with the required EUR 30,000 minimum medical coverage are available if your Turkish Airlines itinerary includes European destinations. Arranged on request, so email your trip details to ${EMAIL}.`,
         },
         {
           icon: <MdOutlineHotel />,
           title: 'Hotel Reservations',
           description:
-            'Temporary hotel reservations formatted to embassy and consulate standards. Like dummy tickets, these are real reservations — not paid bookings — so your visa file is complete without locking in non-refundable nights before approval.',
+            `Temporary hotel reservations formatted to embassy and consulate standards. These are real reservations, not paid bookings, so your visa file is complete without locking in non-refundable nights before approval. Prepared on request, so email your trip details to ${EMAIL}.`,
         },
       ],
     },
@@ -185,13 +185,12 @@ export default function Page() {
     buildWebPage(pageData.meta),
     buildService({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
       description: pageData.meta.description,
-      areaServed: 'AE',
     }),
     buildProduct({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
       description: pageData.meta.description,
       price: '13.00',
       currency: 'USD',
@@ -225,10 +224,6 @@ export default function Page() {
         breadcrumbPaths={breadcrumbPaths}
       />
 
-      {/* <QuickAnswer
-        question="Can you get a verifiable Turkish Airlines reservation without buying a ticket?"
-        answer="Yes. We issue Turkish Airlines flight reservations through global GDS platforms (Amadeus, Sabre, Travelport) with a six-character PNR your consulate or any travel agent can look up during validity. Real TK flight numbers, Istanbul routing, no paid ticket required. From $13, delivered in minutes. Accepted on Schengen, UK, US, Canadian, and many other visa files."
-      /> */}
 
       <Process
         title={pageData.sections.process.title}

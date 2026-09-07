@@ -47,6 +47,7 @@ export const pageData = {
     description:
       'Get a real flight itinerary with a valid PNR issued in standard airline booking format.',
     canonical: 'https://www.dummyticket365.com/flight-itinerary',
+    productName: 'Flight Itinerary',
   },
   sections: {
     hero: {
@@ -77,7 +78,12 @@ export const pageData = {
   },
 };
 
-export const metadata = buildMetadata(pageData.meta);
+// Kept live for Google Ads landing traffic, but excluded from search: the page
+// is thin and was cannibalising /blog/what-is-a-flight-itinerary-for-a-schengen-visa.
+export const metadata = {
+  ...buildMetadata(pageData.meta),
+  robots: { index: false, follow: true },
+};
 
 export default function Page() {
   const breadcrumbPaths = [
@@ -91,13 +97,12 @@ export default function Page() {
     buildWebPage(pageData.meta),
     buildService({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
       description: pageData.meta.description,
-      areaServed: 'AE',
     }),
     buildProduct({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
       description: pageData.meta.description,
       price: '13.00',
       currency: 'USD',

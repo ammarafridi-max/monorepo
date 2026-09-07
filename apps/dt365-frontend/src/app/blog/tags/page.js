@@ -10,14 +10,14 @@ import {
 import BlogTagsPage from '@travel-suite/frontend-shared/pages/client/BlogTagsPage';
 
 const meta = {
-  title: 'Blog Tags | Dummy Ticket 365',
+  title: 'Dummy Ticket and Visa Blog Topics | Dummy Ticket 365',
   description:
     'Browse blog categories to find published posts about visas, dummy tickets, travel insurance, and related topics.',
   canonical: `${SITE_URL}/blog/tags`,
 };
 
 const hero = {
-  title: 'Blog Tags',
+  title: 'Dummy Ticket and Visa Topics',
   subtitle: 'Explore topics and read the latest published posts under each tag.',
 };
 

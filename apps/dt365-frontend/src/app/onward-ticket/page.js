@@ -24,7 +24,6 @@ import PrimarySection from '@travel-suite/frontend-shared/components/shared/layo
 import Container from '@travel-suite/frontend-shared/components/shared/layout/Container';
 import SectionTitle from '@travel-suite/frontend-shared/components/shared/layout/SectionTitle';
 import FaqAccordion from '@travel-suite/frontend-shared/components/ui/v1/FaqAccordion';
-// import QuickAnswer from '@/components/QuickAnswer';
 import RelatedPages from '@/components/RelatedPages';
 
 const keyword = 'onward ticket';
@@ -43,7 +42,7 @@ const testimonials = [
     stars: 5,
   },
   {
-    quote: 'The entire experience with DT365 was seamless from start to finish. I got my onward ticket within minutes, and it worked perfectly for my Schengen visa. Fast response, clear instructions, and great support — highly recommend to travelers in need.',
+    quote: 'The entire experience with DT365 was seamless from start to finish. I got my onward ticket within minutes, and it worked perfectly for my Schengen visa. Fast response, clear instructions, and great support. Highly recommend to travelers in need.',
     name: 'Ahmed R.',
     location: 'Frequent Flyer from India',
     stars: 5,
@@ -58,7 +57,7 @@ const benefits = [
   },
   {
     title: 'Instant Delivery',
-    text: 'Our automated process ensures you receive your onward ticket by email within minutes—quick, seamless, and completely hassle-free.',
+    text: 'Our automated process ensures you receive your onward ticket by email within minutes, quick, seamless, and completely hassle-free.',
     icon: HiOutlineClock,
   },
   {
@@ -72,14 +71,15 @@ const pageData = {
   meta: {
     title: 'Onward Ticket From USD 13 | Instant, Genuine, & Affordable',
     description:
-      'Book a verifiable onward ticket for airline check-in or immigration from USD 13. Three validity tiers — 2 days ($13), 7 days ($20), 14 days ($23). Delivered in minutes.',
+      'Onward ticket with a verifiable PNR for airline check-in and immigration. Three validity tiers: 2 days $13, 7 days $20, 14 days $23. Delivered in minutes.',
     canonical: 'https://www.dummyticket365.com/onward-ticket',
+    productName: 'Onward Ticket',
   },
   sections: {
     hero: {
       title: 'Book Your Onward Ticket From USD 13',
       subtitle:
-        'Get onward tickets issued through global GDS platforms (Amadeus, Sabre, Travelport) with a valid, verifiable PNR. Legitimate bookings created for travel documentation purposes, not fake or falsified tickets.',
+        'Proof of onward travel is a flight reservation showing you will leave the destination country within the permitted stay. Airlines and immigration officers accept a real reservation with a verifiable PNR and do not require a paid ticket. Ours is issued on Amadeus, Sabre, and Travelport in three validity tiers: 2 days $13, 7 days $20, 14 days $23.',
       form: <AllForms forms={['ticket']} />,
     },
     process: {
@@ -94,17 +94,17 @@ const pageData = {
         {
           icon: <MdOutlineLuggage />,
           title: "Onward Tickets",
-          description: "Verifiable flight reservations accepted by airlines and immigration officers worldwide. Includes a valid PNR, follows accepted airline formats, and is delivered instantly — without financial risk.",
+          description: "Verifiable flight reservations accepted by airlines and immigration officers worldwide. Includes a valid PNR, follows accepted airline formats, and is delivered instantly, without financial risk.",
         },
         {
           icon: <MdOutlineHotel />,
           title: "Hotel Reservations",
-          description: "Temporary hotel reservations formatted to embassy and consulate standards. Like onward tickets, these are real reservations — not paid bookings — so your visa file is complete without locking in non-refundable nights before approval.",
+          description: `Temporary hotel reservations formatted to embassy and consulate standards. These are real reservations, not paid bookings, so your visa file is complete without locking in non-refundable nights before approval. Prepared on request, so email your trip details to ${EMAIL}.`,
         },
         {
           icon: <MdOutlineHealthAndSafety />,
           title: "Travel Insurance",
-          description: "Schengen-compliant travel insurance issued by AXA. A practical addition to your travel documentation when applying for a European visa.",
+          description: `Genuine Schengen-compliant travel insurance issued by AXA. A practical addition to your travel documentation when applying for a European visa. Arranged on request, so email your trip details to ${EMAIL}.`,
         },
       ],
     },
@@ -144,9 +144,8 @@ export default function Page() {
     buildWebPage(pageData.meta),
     buildService({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
       description: pageData.meta.description,
-      areaServed: 'AE',
     }),
     // Inline Product node with AggregateOffer — onward tickets are priced
     // in three validity tiers ($13 / $20 / $23) and the shared buildProduct
@@ -155,7 +154,7 @@ export default function Page() {
     {
       '@type': 'Product',
       '@id': `${pageData.meta.canonical}#product`,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
       description: pageData.meta.description,
       url: pageData.meta.canonical,
       brand: { '@id': `${SITE_URL}/#organization` },
@@ -197,10 +196,6 @@ export default function Page() {
         ]}
         breadcrumbPaths={breadcrumbPaths}
       />
-      {/* <QuickAnswer
-        question="What counts as proof of onward travel?"
-        answer="Proof of onward travel is a flight reservation showing you will leave the destination country within the permitted stay. Airlines and immigration officers accept a real reservation with a verifiable PNR. They do not require a paid ticket. Our onward ticket gives you exactly that, on global GDS platforms (Amadeus, Sabre, Travelport), in three validity tiers from $13."
-      /> */}
       <Process
         title={pageData.sections.process.title}
         subtitle={pageData.sections.process.subtitle}

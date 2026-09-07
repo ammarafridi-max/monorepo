@@ -12,7 +12,7 @@ export const faqArray = [
   {
     question: 'Does a {keyword} include a verifiable PNR?',
     answer:
-      'Yes, every {keyword} comes with a valid PNR (Passenger Name Record) on global GDS platforms (Amadeus, Sabre, Travelport) — the same systems travel agents and visa officers use to confirm flight reservations.',
+      'Yes, every {keyword} comes with a valid PNR (Passenger Name Record) on global GDS platforms (Amadeus, Sabre, Travelport), the same systems travel agents and visa officers use to confirm flight reservations.',
   },
   {
     question: 'How can I verify my {keyword}?',
@@ -22,7 +22,7 @@ export const faqArray = [
   {
     question: 'How much does a {keyword} cost?',
     answer:
-      'The cost of a {keyword} starts from USD 13 and may vary based on the itinerary type, validity duration, and availability selected at the time of booking.',
+      'A {keyword} costs $13 for 2 days validity, $20 for 7 days, or $23 for 14 days. All three tiers include the same verifiable PNR and the same accepted format, so pick the validity that matches your appointment or travel window.',
   },
   {
     question: 'How long is a {keyword} valid for?',

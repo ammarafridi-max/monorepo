@@ -29,7 +29,6 @@ import PrimarySection from '@travel-suite/frontend-shared/components/shared/layo
 import Container from '@travel-suite/frontend-shared/components/shared/layout/Container';
 import SectionTitle from '@travel-suite/frontend-shared/components/shared/layout/SectionTitle';
 import FaqAccordion from '@travel-suite/frontend-shared/components/ui/v1/FaqAccordion';
-// import QuickAnswer from '@/components/QuickAnswer';
 import RelatedPages from '@/components/RelatedPages';
 
 const benefits = [
@@ -59,8 +58,8 @@ const benefits = [
     icon: HiOutlineCalendarDays,
   },
   {
-    title: 'Bundled With Hotel Reservations and Travel Insurance',
-    text: 'Schengen files need three things: flight reservation, accommodation proof, and EUR 30,000 medical insurance. Order all three together and ship them to the appointment as one clean file.',
+    title: 'Hotel Reservations and Insurance on Request',
+    text: 'Schengen files need three things: flight reservation, accommodation proof, and EUR 30,000 medical insurance. You can book the flight reservation here. Ask us for the other two by email and we will prepare them for your appointment.',
     icon: HiOutlineClock,
   },
 ];
@@ -114,12 +113,13 @@ const pageData = {
     description:
       'Secure a dummy ticket for Schengen visa applications with a verifiable PNR, accepted for visa submissions. Budget-friendly pricing from $13.',
     canonical: 'https://www.dummyticket365.com/dummy-ticket-schengen-visa',
+    productName: 'Dummy Ticket for Schengen Visa',
   },
   sections: {
     hero: {
       title: 'Book Your Dummy Ticket For Schengen Visa From $13',
       subtitle:
-        'Secure a dummy ticket for Schengen visa applications with a verifiable PNR, without buying an expensive flight. Widely used for embassy, VFS, and BLS submissions, and trusted worldwide for clear, credible travel plans.',
+        'Schengen embassies and visa centres accept a flight reservation in place of a paid ticket at the application stage, and EU Visa Code Article 14 lists it among the supporting documents. Our dummy ticket carries a verifiable PNR on Amadeus, Sabre, and Travelport, so consulates, VFS, and BLS can confirm it directly. From $13.',
       form: <AllForms forms={['ticket']} />,
     },
     process: {
@@ -139,12 +139,12 @@ const pageData = {
         {
           icon: <MdOutlineHealthAndSafety />,
           title: "Schengen Travel Insurance",
-          description: "Schengen visa applications require EUR 30,000 minimum medical coverage. We issue AXA-backed, embassy-compliant insurance instantly — bundle it with your dummy ticket.",
+          description: `Schengen visa applications require EUR 30,000 minimum medical coverage. We arrange genuine AXA-backed, embassy-compliant policies on request. Email your trip details to ${EMAIL} and we will prepare your cover.`,
         },
         {
           icon: <MdOutlineHotel />,
           title: "Hotel Reservations",
-          description: "Temporary hotel reservations formatted to meet Schengen embassy and consulate requirements. Like dummy tickets, these are real reservations — not paid bookings — delivered by email so your visa file is complete without the upfront commitment.",
+          description: `Temporary hotel reservations formatted to meet Schengen embassy and consulate requirements. These are real reservations, not paid bookings. We prepare them on request, so send your trip details to ${EMAIL}.`,
         },
       ],
     },
@@ -180,13 +180,12 @@ export default function Page() {
     buildWebPage(pageData.meta),
     buildService({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
       description: pageData.meta.description,
-      areaServed: 'AE',
     }),
     buildProduct({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
       description: pageData.meta.description,
       price: '13.00',
       currency: 'USD',
@@ -220,10 +219,6 @@ export default function Page() {
         breadcrumbPaths={breadcrumbPaths}
       />
 
-      {/* <QuickAnswer
-        question="Is a dummy ticket accepted for a Schengen visa?"
-        answer="Yes. Schengen embassies and visa centres routinely accept a flight reservation in place of a paid ticket at the application stage. EU Visa Code Article 14 lists flight reservation among the supporting documents, not a purchased ticket. Our dummy ticket carries a verifiable PNR on Amadeus, Sabre, and Travelport, so consulates and VFS or BLS staff can confirm it directly."
-      /> */}
 
       <Process
         title={pageData.sections.process.title}
