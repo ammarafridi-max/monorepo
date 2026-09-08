@@ -12,7 +12,9 @@ const TICKET_STEPS = [
 
 export default function TicketLayout({ children }) {
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 text-gray-900 font-sans mt-20">
+    // The header is absolutely positioned, so this margin has to match its
+    // height: 68px on mobile, taller on desktop.
+    <div className="flex flex-col min-h-screen bg-gray-50 text-gray-900 font-sans mt-17 lg:mt-20">
       <div className="bg-white border-b border-gray-200 shadow-sm">
         <StepperDesktop />
         <StepperMobile />
