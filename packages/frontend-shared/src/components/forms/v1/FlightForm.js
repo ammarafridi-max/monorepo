@@ -13,6 +13,8 @@ import Email from '../../form-elements/v1/Email';
 import PhoneInput from '../../form-elements/v1/PhoneInput';
 import PrimaryButton from '../../ui/v1/PrimaryButton';
 import SegmentedRadioGroup from '../../form-elements/v1/SegmentedRadioGroup';
+import { Tooltip } from 'react-tooltip';
+import { FaInfo } from 'react-icons/fa';
 
 import { useDummyTicketPricing } from '../../../hooks/pricing/useDummyTicketPricing';
 import { normalizePricingOptions } from '../../../utils/dummyTicketPricing';
@@ -289,6 +291,9 @@ function TicketValidityOptions({
   );
 }
 
+const DELIVERY_TOOLTIP =
+  'Your validity period starts when the ticket is delivered. Choose now and it starts today. Choose a later date and it starts on that date.';
+
 function TicketDelivery({
   receiveNow,
   deliveryDate,
@@ -298,7 +303,27 @@ function TicketDelivery({
   return (
     <FormRow>
       <FormItem>
-        <Label>Ticket Delivery Type</Label>
+        <div className="flex items-center gap-1.5">
+          <Label>Ticket Delivery Type</Label>
+          <span
+            data-tooltip-id="delivery-tooltip"
+            data-tooltip-content={DELIVERY_TOOLTIP}
+            aria-label={DELIVERY_TOOLTIP}
+            className="w-4 h-4 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center cursor-pointer transition-colors shrink-0"
+          >
+            <FaInfo className="text-gray-500" style={{ fontSize: '8px' }} />
+          </span>
+          <Tooltip
+            id="delivery-tooltip"
+            place="top"
+            style={{
+              maxWidth: '220px',
+              fontSize: '12px',
+              lineHeight: '1.5',
+              borderRadius: '8px',
+            }}
+          />
+        </div>
         <div>
           <div className="font-light text-[14.5px]">
             <input
