@@ -70,9 +70,9 @@ const keyword = 'Emirates dummy ticket';
 
 export const pageData = {
   meta: {
-    title: 'Emirates Dummy Ticket From AED 49 | Verifiable PNR',
+    title: 'Emirates Dummy Ticket AED 49 | Verify on Emirates.com',
     description:
-      'Get an official Emirates flight reservation with a live 6-digit PNR for your visa application in minutes. Accepted by VFS, BLS, and consulates. Just AED 49.',
+      'Real Emirates reservation with a live 6-character PNR, checkable on Emirates.com under Manage Booking. Accepted by VFS and BLS. From AED 49, sent in minutes.',
     canonical: 'https://www.mydummyticket.ae/emirates-dummy-ticket',
     entityName: 'Emirates Dummy Ticket',
   },

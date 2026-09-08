@@ -90,9 +90,9 @@ export const benefits = [
 
 export const pageData = {
   meta: {
-    title: 'Onward Ticket From AED 49 | Instant, Genuine, & Affordable',
+    title: 'Onward Ticket for Visa & Check-In | Real PNR, AED 49',
     description:
-      'Travelers use onward tickets for travel purposes, such as to show as proof of onward travel at airports. Book yours with us now. Starting from AED 49.',
+      'Proof of onward travel with a live PNR, accepted at airline check-in and by immigration officers. Verifiable on the global GDS. From AED 49, sent in minutes.',
     canonical: 'https://www.mydummyticket.ae/onward-ticket',
     entityName: 'Onward Ticket',
   },
