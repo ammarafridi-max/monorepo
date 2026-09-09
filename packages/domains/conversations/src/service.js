@@ -13,6 +13,21 @@ function withWindow(conversation) {
   };
 }
 
+// Graph rejections are plain Errors, so without this they reach the error handler
+// as non-operational and render as a bare 500 with Meta's reason lost.
+function fromGraph(err, action) {
+  if (err instanceof AppError) return err;
+  logger.error('[conversations] WhatsApp rejected the request', {
+    action,
+    code: err?.code ?? null,
+    subcode: err?.subcode ?? null,
+    httpStatus: err?.httpStatus ?? null,
+    detail: err?.message,
+  });
+  const suffix = err?.code ? ` (Meta error ${err.code})` : '';
+  return new AppError(`WhatsApp rejected this ${action}: ${err?.message ?? 'unknown error'}${suffix}`, 502);
+}
+
 function previewOf(message) {
   if (message.text) return message.text.slice(0, 140);
   return `[${message.type}]`;
@@ -164,7 +179,12 @@ export function createConversationService({ Conversation, Message, SavedReply, A
 
     // Send first: without a wamid from Meta there is nothing to reconcile delivery statuses against.
     const replyToWamid = await resolveReplyTarget({ conversation, replyTo });
-    const { wamid } = await whatsapp.sendText({ to: waId, text: body, replyToWamid });
+    let wamid;
+    try {
+      ({ wamid } = await whatsapp.sendText({ to: waId, text: body, replyToWamid }));
+    } catch (err) {
+      throw fromGraph(err, 'message');
+    }
     if (!wamid) throw new AppError('WhatsApp accepted the message but returned no id', 502);
 
     const sentAt = new Date();
@@ -203,22 +223,32 @@ export function createConversationService({ Conversation, Message, SavedReply, A
       );
     }
 
-    const mediaId = await whatsapp.uploadMedia({
-      buffer: file.buffer,
-      mimeType: file.mimetype,
-      filename: file.originalname,
-    });
+    let mediaId;
+    try {
+      mediaId = await whatsapp.uploadMedia({
+        buffer: file.buffer,
+        mimeType: file.mimetype,
+        filename: file.originalname,
+      });
+    } catch (err) {
+      throw fromGraph(err, 'upload');
+    }
     if (!mediaId) throw new AppError('WhatsApp rejected the upload', 502);
 
     const replyToWamid = await resolveReplyTarget({ conversation, replyTo });
-    const { wamid, kind } = await whatsapp.sendMedia({
-      to: waId,
-      mediaId,
-      mimeType: file.mimetype,
-      filename: file.originalname,
-      caption,
-      replyToWamid,
-    });
+    let wamid, kind;
+    try {
+      ({ wamid, kind } = await whatsapp.sendMedia({
+        to: waId,
+        mediaId,
+        mimeType: file.mimetype,
+        filename: file.originalname,
+        caption,
+        replyToWamid,
+      }));
+    } catch (err) {
+      throw fromGraph(err, 'file');
+    }
     if (!wamid) throw new AppError('WhatsApp accepted the file but returned no id', 502);
 
     const sentAt = new Date();

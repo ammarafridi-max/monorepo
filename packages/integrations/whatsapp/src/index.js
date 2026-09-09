@@ -23,8 +23,9 @@ export function createWhatsAppClient({ accessToken, phoneNumberId, logger } = {}
       const detail = json?.error?.message ?? `HTTP ${res.status}`;
       logger?.warn('[whatsapp] request failed', { action, status: res.status, detail });
       const error = new Error(detail);
-      error.status = res.status;
+      error.httpStatus = res.status;
       error.code = json?.error?.code;
+      error.subcode = json?.error?.error_subcode;
       throw error;
     }
     return json;
@@ -57,7 +58,9 @@ export function createWhatsAppClient({ accessToken, phoneNumberId, logger } = {}
       const detail = json?.error?.message ?? `HTTP ${res.status}`;
       logger?.warn('[whatsapp] media upload failed', { status: res.status, detail });
       const error = new Error(detail);
-      error.status = res.status;
+      error.httpStatus = res.status;
+      error.code = json?.error?.code;
+      error.subcode = json?.error?.error_subcode;
       throw error;
     }
     return json?.id ?? null;
