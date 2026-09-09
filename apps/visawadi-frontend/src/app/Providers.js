@@ -44,6 +44,7 @@ const visawadiFooter = (
           { label: "United Kingdom", href: "/uae/visa/united-kingdom" },
           { label: "United States", href: "/uae/visa/usa" },
           { label: "Canada", href: "/uae/visa/canada" },
+          { label: "Saudi Arabia", href: "/uae/visa/saudi-arabia" },
         ],
       },
       {
@@ -59,6 +60,7 @@ const visawadiFooter = (
       {
         heading: "Company",
         links: [
+          { label: "About Us", href: "/about" },
           { label: "Blog", href: "/blog" },
           { label: "Contact Us", href: "/contact" },
           { label: "Privacy Policy", href: "/privacy-policy" },

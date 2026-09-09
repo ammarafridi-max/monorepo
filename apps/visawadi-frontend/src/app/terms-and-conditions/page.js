@@ -47,9 +47,12 @@ export default function Page() {
               VisaWadi provides visa application assistance for UAE residents. This
               covers document review, file preparation, cover letters and financial
               summaries, appointment booking at visa centres, and support until the
-              embassy reaches a decision. We do not sell or issue travel insurance,
-              flight reservations, dummy tickets or hotel bookings. Dummy tickets are
-              issued only by Dummy Ticket 365, never by VisaWadi.
+              embassy reaches a decision. Where a package includes a flight
+              reservation, hotel booking, travel insurance or an itinerary, those
+              documents are arranged on your behalf from the providers that issue
+              them. VisaWadi is not the issuer or the insurer of record, and does
+              not sell any of them as a standalone product. Flight reservations are
+              issued by Dummy Ticket 365, never by VisaWadi.
             </li>
             <li className="pl-2">
               Our services are intended for legitimate use only. Misuse for fraudulent or illegal

@@ -8,34 +8,38 @@ import { LIVE_COUNTRIES } from "@/config/countries";
 // Regenerate hourly so blog/visa/tag entries appear once the backend is reachable
 // at runtime (the build-time Docker container usually can't reach it).
 export const revalidate = 3600;
+// Hand-written pages have no modification date in any datastore, so they carry
+// none. A wrong lastmod is worse than an absent one: Google discounts the field
+// site-wide once it stops matching what actually changed.
 const staticPages = [
-  { url: "/", changeFrequency: "weekly", priority: 1.0, lastmod: "2026-08-09" },
-  { url: "/uae", changeFrequency: "weekly", priority: 0.9, lastmod: "2026-08-11" },
-  { url: "/blog", changeFrequency: "daily", priority: 0.8, lastmod: "2026-08-09" },
-  { url: "/blog/tags", changeFrequency: "weekly", priority: 0.5, lastmod: "2026-08-09" },
-  { url: "/faq", changeFrequency: "monthly", priority: 0.6, lastmod: "2026-08-09" },
-  { url: "/about", changeFrequency: "monthly", priority: 0.5, lastmod: "2026-08-09" },
-  { url: "/contact", changeFrequency: "monthly", priority: 0.5, lastmod: "2026-08-09" },
-  { url: "/terms-and-conditions", changeFrequency: "yearly", priority: 0.3, lastmod: "2026-08-09" },
-  { url: "/privacy-policy", changeFrequency: "yearly", priority: 0.3, lastmod: "2026-08-09" },
+  { url: "/", changeFrequency: "weekly", priority: 1.0 },
+  { url: "/uae", changeFrequency: "weekly", priority: 0.9 },
+  { url: "/blog", changeFrequency: "daily", priority: 0.8 },
+  { url: "/blog/tags", changeFrequency: "weekly", priority: 0.5 },
+  { url: "/faq", changeFrequency: "monthly", priority: 0.6 },
+  { url: "/about", changeFrequency: "monthly", priority: 0.5 },
+  { url: "/contact", changeFrequency: "monthly", priority: 0.5 },
+  { url: "/terms-and-conditions", changeFrequency: "yearly", priority: 0.3 },
+  { url: "/privacy-policy", changeFrequency: "yearly", priority: 0.3 },
 ];
 
 export default async function sitemap() {
   const now = new Date().toISOString();
 
-  const staticEntries = staticPages.map(
-    ({ url, changeFrequency, priority, lastmod }) => ({
-      url: `${SITE_URL}${url}`,
-      lastModified: lastmod,
-      changeFrequency,
-      priority,
-    }),
-  );
+  // Next normalises canonicals without a trailing slash, so the root entry has
+  // to match or the two disagree on the homepage URL.
+  const staticEntries = staticPages.map(({ url, changeFrequency, priority }) => ({
+    url: url === "/" ? SITE_URL : `${SITE_URL}${url}`,
+    changeFrequency,
+    priority,
+  }));
 
   let blogEntries = [];
+  let blogPool = [];
   try {
     const data = await getPublishedBlogsApi({ page: 1, limit: 1000 });
     const blogs = data?.blogs || [];
+    blogPool = blogs;
     blogEntries = blogs
       .filter((blog) => blog?.slug)
       .map((blog) => ({
@@ -70,18 +74,33 @@ export default async function sitemap() {
     }
   }
 
+  // A tag is as fresh as its newest post. Tags with no posts yet stay listed
+  // and simply carry no lastmod.
   let tagEntries = [];
   try {
     const data = await getBlogTagsApi();
     const tags = data?.tags || data || [];
+    const newestByTag = new Map();
+    for (const blog of blogPool) {
+      const stamp = blog.updatedAt || blog.createdAt;
+      if (!stamp) continue;
+      for (const tag of blog.tags || []) {
+        const name = tag?.name || tag?.slug || tag;
+        const current = newestByTag.get(name);
+        if (!current || new Date(stamp) > new Date(current)) newestByTag.set(name, stamp);
+      }
+    }
     tagEntries = tags
       .filter((tag) => tag?.slug)
-      .map((tag) => ({
-        url: `${SITE_URL}/blog/tags/${tag.slug}`,
-        lastModified: "2026-04-28",
-        changeFrequency: "weekly",
-        priority: 0.5,
-      }));
+      .map((tag) => {
+        const newest = newestByTag.get(tag.name) || newestByTag.get(tag.slug);
+        return {
+          url: `${SITE_URL}/blog/tags/${tag.slug}`,
+          ...(newest ? { lastModified: newest } : {}),
+          changeFrequency: "weekly",
+          priority: 0.5,
+        };
+      });
   } catch (err) {
     console.error("[sitemap] fetch failed:", err);
   }

@@ -12,16 +12,18 @@
 const DUMMY_TICKET_URL = 'https://www.dummyticket365.com';
 
 /** Slug token -> visa page. Order matters: first match wins, so the specific
- *  country slugs must be tested before the generic Schengen fallback. */
+ *  country slugs must be tested before the generic Schengen fallback.
+ *  Paths are country-prefixed: bare /visa/* only 308s to these, and a CTA that
+ *  redirects keeps the legacy URL alive in the index. */
 const VISA_BY_SLUG_TOKEN = [
-  { tokens: ['france'], href: '/visa/france-visa', label: 'France visa' },
-  { tokens: ['germany'], href: '/visa/germany-visa', label: 'Germany visa' },
-  { tokens: ['italy'], href: '/visa/italy-visa', label: 'Italy visa' },
-  { tokens: ['spain'], href: '/visa/spain-visa', label: 'Spain visa' },
-  { tokens: ['uk-visa', 'united-kingdom'], href: '/visa/united-kingdom', label: 'UK visa' },
-  { tokens: ['usa', 'us-visa', 'b1b2'], href: '/visa/usa', label: 'US visa' },
-  { tokens: ['canada'], href: '/visa/canada', label: 'Canada visa' },
-  { tokens: ['schengen', 'netherlands', 'switzerland', 'greece'], href: '/visa/schengen', label: 'Schengen visa' },
+  { tokens: ['france'], href: '/uae/visa/france-visa', label: 'France visa' },
+  { tokens: ['germany'], href: '/uae/visa/germany-visa', label: 'Germany visa' },
+  { tokens: ['italy'], href: '/uae/visa/italy-visa', label: 'Italy visa' },
+  { tokens: ['spain'], href: '/uae/visa/spain-visa', label: 'Spain visa' },
+  { tokens: ['uk-visa', 'united-kingdom'], href: '/uae/visa/united-kingdom', label: 'UK visa' },
+  { tokens: ['usa', 'us-visa', 'b1b2'], href: '/uae/visa/usa', label: 'US visa' },
+  { tokens: ['canada'], href: '/uae/visa/canada', label: 'Canada visa' },
+  { tokens: ['schengen', 'netherlands', 'switzerland', 'greece'], href: '/uae/visa/schengen', label: 'Schengen visa' },
 ];
 
 /** Pick the visa page closest to the post's subject, defaulting to the hub. */
@@ -38,7 +40,7 @@ function resolveVisa(blog) {
         note: 'Document review, file preparation and appointment booking, tracked until a decision.',
       }
     : {
-        href: '/visa',
+        href: '/uae',
         eyebrow: 'Visa assistance',
         note: 'Every document checked against current embassy requirements before you submit.',
       };

@@ -95,21 +95,22 @@ export default function NotFound() {
           {
             heading: 'Visa Assistance',
             links: [
-              { label: 'All Destinations', href: '/visa' },
-              { label: 'Schengen Visa', href: '/visa/schengen' },
-              { label: 'United Kingdom', href: '/visa/united-kingdom' },
-              { label: 'United States', href: '/visa/usa' },
-              { label: 'Canada', href: '/visa/canada' },
+              { label: 'All Destinations', href: '/uae' },
+              { label: 'Schengen Visa', href: '/uae/visa/schengen' },
+              { label: 'United Kingdom', href: '/uae/visa/united-kingdom' },
+              { label: 'United States', href: '/uae/visa/usa' },
+              { label: 'Canada', href: '/uae/visa/canada' },
+              { label: 'Saudi Arabia', href: '/uae/visa/saudi-arabia' },
             ],
           },
           {
-            heading: 'Visa Services',
+            heading: 'Schengen Countries',
             links: [
-              { label: 'All Destinations', href: '/visa' },
-              { label: 'Schengen Visa', href: '/visa/schengen' },
-              { label: 'United Kingdom', href: '/visa/united-kingdom' },
-              { label: 'United States', href: '/visa/usa' },
-              { label: 'Canada', href: '/visa/canada' },
+              { label: 'France', href: '/uae/visa/france-visa' },
+              { label: 'Germany', href: '/uae/visa/germany-visa' },
+              { label: 'Greece', href: '/uae/visa/greece-visa' },
+              { label: 'Italy', href: '/uae/visa/italy-visa' },
+              { label: 'Spain', href: '/uae/visa/spain-visa' },
             ],
           },
           {
@@ -117,7 +118,6 @@ export default function NotFound() {
             links: [
               { label: 'About Us', href: '/about' },
               { label: 'Blog', href: '/blog' },
-              { label: 'Make a Claim', href: '/claims' },
               { label: 'Contact Us', href: '/contact' },
               { label: 'Privacy Policy', href: '/privacy-policy' },
               { label: 'Terms & Conditions', href: '/terms-and-conditions' },

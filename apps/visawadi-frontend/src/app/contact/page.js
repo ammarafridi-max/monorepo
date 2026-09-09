@@ -8,11 +8,20 @@ import {
   GMB_URL,
   SOCIALS,
 } from "@/config/contact";
+import {
+  buildBreadcrumbList,
+  buildGraph,
+  buildOrganization,
+  buildWebPage,
+  buildWebsite,
+} from "@/lib/schema";
+
+const CANONICAL = "https://www.visawadi.com/contact";
 
 export const metadata = {
   title: "Contact Us",
   description:
-    "Get in touch with VisaWadi. Email info@visawadi.com, WhatsApp our team, or find us at Regus, DAFZ, Dubai for help with your insurance policy or visa documentation.",
+    "Get in touch with VisaWadi. Email info@visawadi.com or WhatsApp our team for help with a Schengen, UK, US or Canada visa application from the UAE.",
   alternates: { canonical: "https://www.visawadi.com/contact" },
   openGraph: {
     url: "https://www.visawadi.com/contact",
@@ -25,8 +34,26 @@ export const metadata = {
 };
 
 export default function ContactPage() {
+  const graph = buildGraph([
+    buildOrganization(),
+    buildWebsite(),
+    {
+      ...buildWebPage({
+        canonical: CANONICAL,
+        title: "Contact VisaWadi",
+        description: metadata.description,
+      }),
+      "@type": "ContactPage",
+    },
+    buildBreadcrumbList({ items: [{ label: "Contact Us", path: "/contact" }] }),
+  ]);
+
   return (
     <PrimarySection className="py-14 md:py-20">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(graph) }}
+      />
       <Container className="max-w-3xl">
         <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
           Contact Us
@@ -37,9 +64,9 @@ export default function ContactPage() {
         </p>
 
         <p className="text-gray-600 leading-relaxed mb-8">
-          For questions about an existing policy, please include your policy
-          number. For help with a new application, just tell us what you're
-          applying for and from where.
+          For questions about an application already with us, include your
+          application reference. For a new one, tell us what you are applying
+          for, where you are applying from, and when you plan to travel.
         </p>
 
         <div className="grid gap-3 sm:grid-cols-2">
@@ -60,22 +87,26 @@ export default function ContactPage() {
         </div>
 
         <div className="mt-12 grid gap-8 border-t border-gray-100 pt-10 sm:grid-cols-2">
-          <div>
-            <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-gray-400 mb-3">
-              Our office
-            </h2>
-            <address className="not-italic text-gray-700 leading-relaxed">
-              {ADDRESS}
-            </address>
-            <a
-              href={GMB_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-2 inline-block text-sm font-medium text-primary-700 hover:underline"
-            >
-              View on Google Maps
-            </a>
-          </div>
+          {ADDRESS ? (
+            <div>
+              <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-gray-400 mb-3">
+                Our office
+              </h2>
+              <address className="not-italic text-gray-700 leading-relaxed">
+                {ADDRESS}
+              </address>
+              {GMB_URL ? (
+                <a
+                  href={GMB_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 inline-block text-sm font-medium text-primary-700 hover:underline"
+                >
+                  View on Google Maps
+                </a>
+              ) : null}
+            </div>
+          ) : null}
 
           <div>
             <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-gray-400 mb-3">

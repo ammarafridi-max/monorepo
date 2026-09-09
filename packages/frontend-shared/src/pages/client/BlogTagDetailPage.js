@@ -59,6 +59,9 @@ export default function BlogTagDetailPage({
             <p className="text-gray-500">No published posts found for this tag yet.</p>
           ) : (
             <>
+              <h2 className="mb-7 text-xl font-bold text-gray-900">
+                {`Guides tagged ${tag?.name ?? ''}`.trim()}
+              </h2>
               <div className="grid grid-cols-1 gap-7 md:grid-cols-2 lg:grid-cols-3">
                 {blogs.map((post) => (
                   <BlogCard

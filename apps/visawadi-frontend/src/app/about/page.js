@@ -1,6 +1,15 @@
 import Link from "next/link";
 import Container from "@travel-suite/frontend-shared/components/shared/layout/Container";
 import PrimarySection from "@travel-suite/frontend-shared/components/shared/layout/PrimarySection";
+import {
+  buildBreadcrumbList,
+  buildGraph,
+  buildOrganization,
+  buildWebPage,
+  buildWebsite,
+} from "@/lib/schema";
+
+const CANONICAL = "https://www.visawadi.com/about";
 
 export const metadata = {
   title: "About Us",
@@ -18,8 +27,26 @@ export const metadata = {
 };
 
 export default function AboutPage() {
+  const graph = buildGraph([
+    buildOrganization(),
+    buildWebsite(),
+    {
+      ...buildWebPage({
+        canonical: CANONICAL,
+        title: "About VisaWadi",
+        description: metadata.description,
+      }),
+      "@type": "AboutPage",
+    },
+    buildBreadcrumbList({ items: [{ label: "About Us", path: "/about" }] }),
+  ]);
+
   return (
     <PrimarySection className="py-14 md:py-20">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(graph) }}
+      />
       <Container className="max-w-3xl">
         <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
           About VisaWadi
@@ -40,9 +67,11 @@ export default function AboutPage() {
         </p>
 
         <p className="text-gray-600 leading-relaxed mb-4">
-          We do not sell travel insurance, flight reservations or hotel
-          bookings. When your file needs one of those, we tell you exactly what
-          the embassy expects and where to get it.
+          Our Schengen packages include the flight reservation, hotel booking,
+          travel insurance and day-by-day itinerary your consulate expects, so
+          the documents arrive with the rest of your file. We are not the issuer
+          of any of them: they are arranged on your behalf from the providers
+          that issue them, and we do not sell them as standalone products.
         </p>
 
         <p className="text-gray-600 leading-relaxed mb-8">

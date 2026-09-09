@@ -27,6 +27,13 @@ export async function generateStaticParams() {
   }
 }
 
+function clampDescription(text, max = 155) {
+  const clean = String(text).replace(/\s+/g, ' ').trim();
+  if (clean.length <= max) return clean;
+  const cut = clean.slice(0, max);
+  return `${cut.slice(0, cut.lastIndexOf(' '))}...`;
+}
+
 export async function generateMetadata({ params }) {
   const { slug } = await params;
   const author = await getAuthorBySlugApi(slug).catch(nullOn404);
@@ -38,8 +45,11 @@ export async function generateMetadata({ params }) {
   const profile = author.authorProfile || {};
   // Name only: a multi-role job title pushes the tag past what a SERP shows.
   const title = author.name;
-  const description =
-    profile.bio || `Visa guides written by ${author.name} for VisaWadi.`;
+  // The bio is page copy and runs long; a meta description over ~160 chars is
+  // truncated in the SERP, so clamp on a word boundary rather than mid-sentence.
+  const description = clampDescription(
+    profile.bio || `Visa guides written by ${author.name} for VisaWadi.`,
+  );
   const canonical = `${SITE_URL}/authors/${slug}`;
 
   return {

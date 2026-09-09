@@ -1,0 +1,13 @@
+{
+  "name": "VisaWadi",
+  "short_name": "VisaWadi",
+  "description": "Visa application support for UAE residents.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#254b8e",
+  "icons": [
+    { "src": "/favicon.png", "sizes": "300x300", "type": "image/png" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}

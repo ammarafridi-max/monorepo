@@ -36,8 +36,13 @@ export const metadata = {
     'Visa application support for UAE residents. We prepare your file, check every document against embassy requirements, and track the application to a decision.',
   robots: { index: true, follow: true },
   icons: {
-    icon: '/favicon.png',
+    icon: [
+      { url: '/favicon.ico', sizes: '32x32' },
+      { url: '/favicon.png', type: 'image/png', sizes: '300x300' },
+    ],
+    apple: '/apple-touch-icon.png',
   },
+  manifest: '/manifest.json',
   openGraph: {
     title: 'VisaWadi — Visa Assistance for UAE Residents',
     description:

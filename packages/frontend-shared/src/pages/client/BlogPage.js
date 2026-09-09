@@ -12,6 +12,7 @@ export default function BlogPage({
   breadcrumbPaths = [],
   schema,
   breadcrumbJsonLd,
+  listHeading = 'Latest guides',
 }) {
   return (
     <>
@@ -47,6 +48,9 @@ export default function BlogPage({
 
       <PrimarySection className="py-12">
         <Container>
+          <h2 className="mb-7 text-xl font-bold text-gray-900">
+            {listHeading}
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
             {blogs.map((post) => (
               <BlogCard

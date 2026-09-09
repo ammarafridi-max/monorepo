@@ -10,7 +10,7 @@ const DEFAULT_FEATURES = [
 
 // basePath: brands that segment visa pages by residence country pass the
 // segment, e.g. basePath="/uae" to link /uae/visa/<slug>. `href` overrides it.
-export default function VisaCard({ visa, fallbackTagline = "", features = DEFAULT_FEATURES, href, basePath = "" }) {
+export default function VisaCard({ visa, fallbackTagline = "", features = DEFAULT_FEATURES, href, basePath = "", priority = false }) {
   if (!visa?.slug) return null;
 
   const tagline = visa.excerpt || fallbackTagline || visa.heroSubheadline || "";
@@ -32,6 +32,7 @@ export default function VisaCard({ visa, fallbackTagline = "", features = DEFAUL
         {visa.heroImageUrl && (
           <Image
             src={visa.heroImageUrl}
+            priority={priority}
             alt={`${visa.countryName} visa`}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

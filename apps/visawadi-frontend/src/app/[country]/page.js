@@ -40,8 +40,8 @@ export function generateStaticParams() {
 
 function metaFor(c) {
   return {
-    title: `Visa Assistance for ${c.residents}`,
-    description: `Visa application support for ${c.residents}. We review every document against current embassy requirements, prepare the file and book your appointment in ${c.hub}.`,
+    title: `Visa Services in ${c.hub} for ${c.short} Residents`,
+    description: `Visa application support filed from ${c.hub}. We review every document against current embassy requirements, prepare the file and book your appointment for ${c.residents}.`,
     canonical: `${SITE_URL}/${c.slug}`,
   };
 }
@@ -95,7 +95,7 @@ export default async function Page({ params }) {
         <Container>
           <div className="max-w-3xl lg:mx-auto lg:text-center">
             <h1 className="text-3xl font-bold leading-tight md:text-4xl xl:text-5xl">
-              Visa Assistance for {c.residents}
+              Visa Services in {c.hub} for {c.short} Residents
             </h1>
             <p className="mt-5 leading-relaxed text-gray-300 lg:mx-auto">
               Most refusals come from document errors that were preventable. Our specialists build your
