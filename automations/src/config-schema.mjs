@@ -24,6 +24,7 @@ const REQUIRED_BY_JOB = {
   },
   'blog-schedule': {
     backendUrl: 'string',
+    blogSchedule: 'object',
   },
 };
 
@@ -35,6 +36,7 @@ const OPTIONAL = {
   excludedTags: 'array',
   contentChecks: 'array',
   formatsByTier: 'object',
+  blogSchedule: 'object',
   internalLinkingRule: 'string',
   linkFormatRule: 'string',
   ctaRules: 'string',

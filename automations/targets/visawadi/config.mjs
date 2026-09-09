@@ -25,6 +25,12 @@ export const TARGET = {
 
   excludedTags: ['Flight Itinerary', 'Travel Insurance', 'Visa Tips', 'Europe Travel'],
 
+  /** First slot for blog-schedule, and posts it must leave where they are. */
+  blogSchedule: {
+    start: '2026-09-10T05:00:00Z', // 09:00 GST
+    excludeSlugs: [],
+  },
+
   /**
    * Format per length tier. `long` maps to sourced-guide rather than
    * field-report because field-report requires first-party numbers and the
@@ -128,7 +134,7 @@ export const TARGET = {
 - The next step is always a free consultation on the relevant VisaWadi visa page. Never tell the reader to sign up, create an account, or book online: there is no self-serve checkout.
 - Match the article's primary intent:
   * A specific destination → CTA leads with that destination's VisaWadi visa page (https://www.visawadi.com/uae/visa/<slug>)
-  * Several destinations, or no specific one → CTA leads with https://www.visawadi.com/uae/visa
+  * Several destinations, or no specific one → CTA leads with https://www.visawadi.com/uae
   * Where the topic involves proof of onward travel, also mention Dummy Ticket 365 (https://www.dummyticket365.com) for the flight reservation, priced from USD 13
   * Where the topic involves the insurance requirement, also mention Travl (https://www.travl.ae/travel-insurance) for AXA-issued cover from AED 30
 
@@ -193,7 +199,7 @@ Example shape (write your own copy, do not reuse this wording verbatim):
 
     if (!links.length) {
       links.push({
-        url: `${SITE}/uae/visa`,
+        url: `${SITE}/uae`,
         anchor_hint:
           "varied: e.g. 'visa assistance for UAE residents', 'the destinations VisaWadi covers', 'VisaWadi's visa services'",
         context:

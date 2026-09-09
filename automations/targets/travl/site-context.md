@@ -5,7 +5,7 @@
 **Market:** UAE residents and expats  
 **Currency:** AED
 
-Travl is a UAE-based travel services platform offering travel insurance, visa assistance, travel itinerary documents, and cross-promoting Dummy Ticket 365 for flight and hotel reservations. All content targets UAE residents, expats, and travellers from the UAE.
+Travl is a UAE-based travel services platform offering travel insurance and travel itinerary documents, and cross-promoting Dummy Ticket 365 for flight and hotel reservations. Visa assistance is no longer a Travl product: it is handled by VisaWadi, and every travl.ae/visa URL now redirects there. All content targets UAE residents, expats, and travellers from the UAE.
 
 ---
 
@@ -79,17 +79,10 @@ https://www.travl.ae/insurance-booking/quote → /passengers → /review → /pa
 
 ---
 
-## Visa Assistance Pages
+## Visa Assistance (VisaWadi)
 
-### Visa Hub
-
-**URL:** https://www.travl.ae/visa  
-Overview of all countries Travl offers visa assistance for. Entry point for UAE residents looking for help with a specific country visa.
-
-### Visa Detail Pages
-
-**URL:** https://www.travl.ae/visa/[slug]  
-Individual country visa assistance pages. Each page covers document requirements, appointment booking, and end-to-end support for that country's visa. Slugs are country-based (e.g. `/visa/schengen`, `/visa/france`, `/visa/germany`, `/visa/united-kingdom`, `/visa/usa`, `/visa/canada`). Content is CMS-driven and may vary by country.
+**URL:** https://www.visawadi.com/uae and https://www.visawadi.com/uae/visa/[slug]  
+Visa assistance for UAE residents: document review, file preparation, appointment booking and tracking to a decision, from AED 299. Slugs are country-based (`schengen`, `france-visa`, `germany-visa`, `italy-visa`, `spain-visa`, `united-kingdom`, `usa`, `canada`). Where an article's topic is the visa application itself, name VisaWadi and link the country page. Never link a travl.ae/visa URL: those are redirects.
 
 ---
 
@@ -103,7 +96,7 @@ Common questions on dummy tickets, travel insurance, Schengen visa requirements,
 ### About
 
 **URL:** https://www.travl.ae/about  
-Travl Technologies LLC, a Dubai-based travel agency helping UAE residents with embassy-compliant insurance and visa documentation since 2018. Travel insurance policies underwritten by AXA.
+Travl Technologies LLC, a Dubai-based travel agency helping UAE residents with embassy-compliant travel insurance and travel documentation since 2018. Travel insurance policies underwritten by AXA.
 
 ### Contact
 
@@ -133,7 +126,7 @@ Important: dummy tickets cannot be used for actual boarding.
 **Tag Page:** https://www.travl.ae/blog/tags/[slug]  
 **Article:** https://www.travl.ae/blog/[slug]
 
-Articles covering visa applications, travel insurance, flight reservations, and travel tips for UAE residents and expats.
+Articles covering travel insurance, flight reservations, and travel tips for UAE residents and expats.
 
 ---
 
@@ -142,7 +135,7 @@ Articles covering visa applications, travel insurance, flight reservations, and 
 1. **Highest priority:** https://www.travl.ae/travel-insurance and its child pages: link heavily and naturally throughout content. For country-specific posts (France, Germany, Spain, Italy, Greece), prefer the country-specific insurance page over the generic /schengen-visa page.
 2. **High priority:** https://www.dummyticket365.com: link when covering dummy tickets, hotel reservations for visa applications, visa proof of onward travel, PNR codes. Always use the brand name "Dummy Ticket 365" in anchor text and prose, never the bare URL.
 3. **Medium-high priority:** https://www.travl.ae/travel-itinerary: link in visa-related posts where a day-by-day itinerary document is relevant (Schengen, UK, US, Canada visa guides).
-4. **Medium priority:** https://www.travl.ae/visa and https://www.travl.ae/visa/[slug]: link in posts covering visa application processes for specific countries.
+4. **Medium priority:** https://www.visawadi.com/uae and https://www.visawadi.com/uae/visa/[slug]: link in posts covering visa application processes, attributing the assistance to VisaWadi rather than Travl.
 5. **Medium priority:** https://www.travl.ae/faq: link when addressing common questions
 6. **Medium priority:** Related blog posts at https://www.travl.ae/blog/[slug]: cross-link relevant articles
 

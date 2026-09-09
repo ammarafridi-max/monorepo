@@ -1,13 +1,5 @@
 import { randomBytes } from "crypto";
-import { AppError } from "@travel-suite/utils";
-
-const addDays = (dateStr, days) => {
-  if (!dateStr) return null;
-  const d = new Date(dateStr);
-  if (Number.isNaN(d.getTime())) return null;
-  d.setDate(d.getDate() + days);
-  return d.toISOString().slice(0, 10);
-};
+import { AppError, coverEndDate } from "@travel-suite/utils";
 
 export function createInsuranceService({
   InsuranceApplication,
@@ -123,10 +115,7 @@ export function createInsuranceService({
       supplier: body.supplier || undefined,
       journeyType: body.journeyType,
       startDate: body.startDate,
-      endDate:
-        body.journeyType === 'annual'   ? addDays(body.startDate, 365) :
-        body.journeyType === 'biennial' ? addDays(body.startDate, 730) :
-        body.endDate,
+      endDate: coverEndDate(body.journeyType, body.startDate, body.endDate),
       region: body.region,
       quantity: body.quantity || {},
       passengers: body.passengers.map((pax) => ({

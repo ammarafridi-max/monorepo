@@ -1,19 +1,6 @@
-import { AppError } from '@travel-suite/utils';
+import { AppError, coverEndDate, toISODay } from '@travel-suite/utils';
 
-const formatDateISO = (value) => {
-  if (!value) return value;
-  const date = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toISOString().slice(0, 10);
-};
-
-const addDays = (dateStr, days) => {
-  if (!dateStr) return null;
-  const d = new Date(dateStr);
-  if (Number.isNaN(d.getTime())) return null;
-  d.setDate(d.getDate() + days);
-  return d.toISOString().slice(0, 10);
-};
+const formatDateISO = (value) => toISODay(value) ?? value;
 
 export class WISError extends AppError {
   constructor(message, { providerStatus, slug } = {}) {
@@ -122,10 +109,7 @@ export function createWisClient({ url, agencyId, agencyCode, frontendUrl }) {
   };
 
   const buildWISQuotePayload = (body) => {
-    const computedEndDate =
-      body.journeyType === 'annual'   ? addDays(body.startDate, 365) :
-      body.journeyType === 'biennial' ? addDays(body.startDate, 730) :
-      body.endDate;
+    const computedEndDate = coverEndDate(body.journeyType, body.startDate, body.endDate);
 
     const payload = {
       journey_id: body.journeyType,
