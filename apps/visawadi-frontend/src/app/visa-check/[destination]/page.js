@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Container from '@travel-suite/frontend-shared/components/shared/layout/Container';
@@ -105,6 +106,11 @@ export default async function VisaCheckDestinationPage({ params, searchParams })
     ? [...rows].sort((a, b) => (a.code === nationality ? -1 : b.code === nationality ? 1 : 0))
     : rows;
 
+  // Two countries per visual row: Afghanistan and Albania sit side by side,
+  // which halves a 238-row table without hiding anything from a crawler.
+  const pairs = [];
+  for (let i = 0; i < ordered.length; i += 2) pairs.push([ordered[i], ordered[i + 1] ?? null]);
+
   const verified = rule.lastVerifiedAt
     ? new Date(rule.lastVerifiedAt).toLocaleDateString('en-GB', {
         day: 'numeric',
@@ -171,7 +177,7 @@ export default async function VisaCheckDestinationPage({ params, searchParams })
       </PrimarySection>
 
       <PrimarySection className="py-12 md:py-16">
-        <Container className="max-w-4xl">
+        <Container>
           {answer ? (
             <div className={`rounded-2xl border px-5 py-4 ${TONE[answerUi.tone]}`}>
               <div className="flex flex-wrap items-center gap-2">
@@ -207,34 +213,54 @@ export default async function VisaCheckDestinationPage({ params, searchParams })
             <table className="w-full border-collapse text-sm">
               <thead>
                 <tr className="border-b border-gray-200 text-left text-xs uppercase tracking-wider text-gray-400">
-                  <th className="py-2 pr-4 font-semibold">Nationality</th>
-                  <th className="py-2 pr-4 font-semibold">Requirement</th>
+                  <th className="py-2 pr-3 font-semibold">Nationality</th>
+                  <th className="py-2 pr-3 font-semibold">Requirement</th>
+                  <th className="py-2 pr-8 font-semibold">Max stay</th>
+                  <th className="py-2 pr-3 font-semibold sm:border-l sm:border-gray-200 sm:pl-6">
+                    Nationality
+                  </th>
+                  <th className="py-2 pr-3 font-semibold">Requirement</th>
                   <th className="py-2 font-semibold">Max stay</th>
                 </tr>
               </thead>
               <tbody>
-                {ordered.map((row) => {
-                  const rowUi = ui(row.outcome);
-                  const isMatch = row.code === nationality;
-                  return (
-                    <tr
-                      key={row.code}
-                      className={`border-b border-gray-100 ${isMatch ? 'bg-primary-50/70' : ''}`}
-                    >
-                      <td className={`py-2 pr-4 ${isMatch ? 'font-semibold text-gray-900' : 'text-gray-700'}`}>
-                        {row.name}
-                      </td>
-                      <td className="py-2 pr-4">
-                        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${PILL[rowUi.tone]}`}>
-                          {rowUi.label}
-                        </span>
-                      </td>
-                      <td className="py-2 tabular-nums text-gray-600">
-                        {row.maxStayDays ? `${row.maxStayDays} days` : '—'}
-                      </td>
-                    </tr>
-                  );
-                })}
+                {pairs.map(([left, right], i) => (
+                  <tr key={left.code} className="border-b border-gray-100">
+                    {[left, right].map((row, side) =>
+                      row ? (
+                        <Fragment key={row.code}>
+                          <td
+                            className={`py-2 pr-3 ${side === 1 ? 'sm:border-l sm:border-gray-100 sm:pl-6' : ''} ${
+                              row.code === nationality
+                                ? 'bg-primary-50/70 font-semibold text-gray-900'
+                                : 'text-gray-700'
+                            }`}
+                          >
+                            {row.name}
+                          </td>
+                          <td className={`py-2 pr-3 ${row.code === nationality ? 'bg-primary-50/70' : ''}`}>
+                            <span
+                              className={`whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium ${PILL[ui(row.outcome).tone]}`}
+                            >
+                              {ui(row.outcome).label}
+                            </span>
+                          </td>
+                          <td
+                            className={`py-2 ${side === 0 ? 'pr-8' : ''} tabular-nums text-gray-600 ${
+                              row.code === nationality ? 'bg-primary-50/70' : ''
+                            }`}
+                          >
+                            {row.maxStayDays ? `${row.maxStayDays} days` : '\u2014'}
+                          </td>
+                        </Fragment>
+                      ) : (
+                        <Fragment key={`pad-${i}`}>
+                          <td /><td /><td />
+                        </Fragment>
+                      ),
+                    )}
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

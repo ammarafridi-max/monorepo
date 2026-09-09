@@ -123,7 +123,7 @@ export default async function VisaCheckIndexPage() {
       </PrimarySection>
 
       <PrimarySection className="py-12 md:py-16">
-        <Container className="max-w-5xl">
+        <Container>
           <Group
             title="Schengen area"
             note="One visa policy covers all of these, so the answer is the same across the bloc. Which country you apply to depends on where you will spend the most nights."
