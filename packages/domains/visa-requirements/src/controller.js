@@ -1,3 +1,5 @@
+import { AppError } from '@travel-suite/utils';
+
 export function createVisaRequirementsController({ service }) {
   const ok = (res, data, status = 200) => res.status(status).json({ status: 'success', data });
 
@@ -7,6 +9,16 @@ export function createVisaRequirementsController({ service }) {
         ok(res, await service.listDestinations());
       } catch (err) { next(err); }
     },
+    getPublicRule: async (req, res, next) => {
+      try {
+        const rule = await service.getPublicRule(req.params.destination);
+        if (!rule) return next(new AppError('No published rule for that destination', 404));
+        res.status(200).json({ status: 'success', data: rule });
+      } catch (err) {
+        next(err);
+      }
+    },
+
     check: async (req, res, next) => {
       try {
         const { nationality, residence, destination } = { ...req.query, ...req.body };

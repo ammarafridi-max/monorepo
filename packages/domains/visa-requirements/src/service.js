@@ -69,6 +69,25 @@ export function createVisaRequirementsService({ VisaRule, VisaQuery, providers =
     }));
   }
 
+  /**
+   * Public: one published rule, shaped for a destination page. Returns the
+   * outcome groups rather than a single answer, because the page has to render
+   * every nationality rather than one visitor's result. Unpublished rules are
+   * invisible here, so an unfinished rule cannot leak onto an indexable page.
+   */
+  async function getPublicRule(destination) {
+    const rule = await VisaRule.findOne({ destination: norm(destination), isPublished: true })
+      .select(
+        'destination destinationName visaSlug defaultOutcome groups residenceOverrides officialSourceUrl officialSourceName lastVerifiedAt generalNotes',
+      )
+      .lean();
+    if (!rule) return null;
+    return {
+      ...rule,
+      isServiced: Boolean(rule.visaSlug && serviced.has(rule.visaSlug)),
+    };
+  }
+
   async function listRules({ published } = {}) {
     const filter = {};
     if (published !== undefined) filter.isPublished = published;
@@ -141,5 +160,5 @@ export function createVisaRequirementsService({ VisaRule, VisaQuery, providers =
     };
   }
 
-  return { check, listDestinations, listRules, getRule, upsertRule, deleteRule, queryStats };
+  return { check, listDestinations, getPublicRule, listRules, getRule, upsertRule, deleteRule, queryStats };
 }

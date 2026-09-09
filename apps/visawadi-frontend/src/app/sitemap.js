@@ -3,6 +3,7 @@ import { getPublishedBlogsApi } from "@travel-suite/frontend-shared/services/api
 import { getBlogTagsApi } from "@travel-suite/frontend-shared/services/apiBlogTags";
 import { getAuthorsApi } from "@travel-suite/frontend-shared/services/apiAuthors";
 import { getPublicVisasForResidenceApi } from "@travel-suite/frontend-shared/services/apiVisa";
+import { getVisaDestinationsApi } from "@travel-suite/frontend-shared/services/apiVisaRequirements";
 import { LIVE_COUNTRIES } from "@/config/countries";
 
 // Regenerate hourly so blog/visa/tag entries appear once the backend is reachable
@@ -15,6 +16,7 @@ const staticPages = [
   { url: "/", changeFrequency: "weekly", priority: 1.0 },
   { url: "/uae", changeFrequency: "weekly", priority: 0.9 },
   { url: "/blog", changeFrequency: "daily", priority: 0.8 },
+  { url: "/visa-check", changeFrequency: "weekly", priority: 0.8 },
   { url: "/blog/tags", changeFrequency: "weekly", priority: 0.5 },
   { url: "/faq", changeFrequency: "monthly", priority: 0.6 },
   { url: "/about", changeFrequency: "monthly", priority: 0.5 },
@@ -105,6 +107,22 @@ export default async function sitemap() {
     console.error("[sitemap] fetch failed:", err);
   }
 
+  // One entry per destination that has a published rule. Param URLs are never
+  // listed: they canonicalise to these.
+  let visaCheckEntries = [];
+  try {
+    const list = await getVisaDestinationsApi();
+    visaCheckEntries = (list?.data || list || [])
+      .filter((d) => d?.code)
+      .map((d) => ({
+        url: `${SITE_URL}/visa-check/${String(d.code).toLowerCase()}`,
+        changeFrequency: "monthly",
+        priority: 0.6,
+      }));
+  } catch (err) {
+    console.error("[sitemap] visa-check destinations failed:", err);
+  }
+
   let authorEntries = [];
   try {
     const authors = await getAuthorsApi();
@@ -125,6 +143,7 @@ export default async function sitemap() {
     ...blogEntries,
     ...tagEntries,
     ...visaEntries,
+    ...visaCheckEntries,
     ...authorEntries,
   ];
 }

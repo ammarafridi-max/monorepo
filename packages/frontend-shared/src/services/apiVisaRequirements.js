@@ -13,6 +13,13 @@ export async function getVisaDestinationsApi() {
   return apiFetchPublic(`${URL}/destinations`);
 }
 
+/** Public: one published rule with its outcome groups, for a destination page. */
+export async function getPublicVisaRuleApi(destination) {
+  return apiFetchPublic(`${URL}/public/${encodeURIComponent(destination)}`, {
+    next: { revalidate: 3600 },
+  });
+}
+
 export const getVisaRulesApi = (opts = {}) => {
   const params = new URLSearchParams();
   if (opts.published !== undefined) params.append('published', String(opts.published));
