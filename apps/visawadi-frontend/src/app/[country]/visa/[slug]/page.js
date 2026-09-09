@@ -106,6 +106,7 @@ export default async function Page({ params }) {
       description,
       // The audience is where the applicant lives, not where they are going.
       areaServed: c.code,
+      offers: visa.packages ?? [],
     }),
     ...(faqs.length > 0
       ? [buildFAQPage({ canonical, title: `${visa.countryName} Visa FAQs`, description, faqs })]

@@ -12,6 +12,7 @@ export const {
   buildOrganization,
   buildWebsite,
   buildWebPage,
+  buildCollectionPage,
   buildBlog,
   buildBlogPosting,
   buildService,

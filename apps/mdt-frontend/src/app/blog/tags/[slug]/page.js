@@ -4,7 +4,7 @@ import { getPublishedBlogsApi } from '@travel-suite/frontend-shared/services/api
 import { getBlogTagBySlugApi, getBlogTagsApi } from '@travel-suite/frontend-shared/services/apiBlogTags';
 import {
   SITE_URL,
-  buildBlog,
+  buildCollectionPage,
   buildBreadcrumbList,
   buildGraph,
   buildOrganization,
@@ -90,8 +90,14 @@ export default async function Page({ params, searchParams }) {
   const graph = buildGraph([
     buildOrganization(),
     buildWebsite(),
-    buildWebPage({ canonical, title, description }),
-    buildBlog({ canonical, title, description }),
+    buildCollectionPage({
+      canonical,
+      title,
+      description,
+      items: (blogs || [])
+        .filter((post) => post?.slug)
+        .map((post) => ({ url: `${SITE_URL}/blog/${post.slug}`, name: post.title })),
+    }),
   ]);
   const breadcrumbJsonLd = buildBreadcrumbList({ paths: breadcrumbPaths });
 

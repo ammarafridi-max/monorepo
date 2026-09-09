@@ -46,6 +46,33 @@ export function createSchemaBuilders({
     publisher: { "@id": organizationId },
   });
 
+  // A tag or category listing is a CollectionPage, not a Blog: Blog describes
+  // the publication itself. `items` becomes an ItemList so the listing order is
+  // explicit rather than inferred from the DOM.
+  const buildCollectionPage = ({ canonical, title, description, items = [] }) => ({
+    "@type": "CollectionPage",
+    "@id": `${canonical}#collectionpage`,
+    url: canonical,
+    name: title,
+    description,
+    isPartOf: { "@id": websiteId },
+    publisher: { "@id": organizationId },
+    ...(items.length
+      ? {
+          mainEntity: {
+            "@type": "ItemList",
+            numberOfItems: items.length,
+            itemListElement: items.map((item, i) => ({
+              "@type": "ListItem",
+              position: i + 1,
+              url: item.url,
+              name: item.name,
+            })),
+          },
+        }
+      : {}),
+  });
+
   const buildBlog = ({ canonical, title, description }) => ({
     "@type": "Blog",
     "@id": `${canonical}#blog`,
@@ -121,16 +148,41 @@ export function createSchemaBuilders({
     mainEntityOfPage: { "@id": `${canonical}#webpage` },
   });
 
-  const buildService = ({ canonical, name, description, areaServed }) => ({
-    "@type": "Service",
-    "@id": `${canonical}#service`,
-    name,
-    description,
-    serviceType: name,
-    url: canonical,
-    areaServed,
-    provider: { "@id": organizationId },
-  });
+  // `offers` takes the brand's own package shape ({ name, price, currency,
+  // description }) and is omitted entirely when empty, so a page with no
+  // pricing emits the same Service node it always did.
+  const buildService = ({ canonical, name, description, areaServed, offers = [] }) => {
+    const priced = (offers || []).filter((o) => Number(o?.price) > 0);
+
+    return {
+      "@type": "Service",
+      "@id": `${canonical}#service`,
+      name,
+      description,
+      serviceType: name,
+      url: canonical,
+      areaServed,
+      provider: { "@id": organizationId },
+      ...(priced.length
+        ? {
+            offers: priced.map((o) => ({
+              "@type": "Offer",
+              "@id": `${canonical}#offer-${String(o.name).toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+              name: o.name,
+              ...(o.description ? { description: o.description } : {}),
+              url: canonical,
+              availability: "https://schema.org/InStock",
+              priceSpecification: {
+                "@type": "PriceSpecification",
+                price: Number(o.price),
+                priceCurrency: o.currency || "AED",
+                valueAddedTaxIncluded: true,
+              },
+            })),
+          }
+        : {}),
+    };
+  };
 
   const buildProduct = ({
     canonical,
@@ -160,6 +212,7 @@ export function createSchemaBuilders({
     buildOrganization,
     buildWebsite,
     buildWebPage,
+    buildCollectionPage,
     buildBlog,
     buildBlogPosting,
     buildPerson,

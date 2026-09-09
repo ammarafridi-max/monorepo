@@ -164,8 +164,13 @@ function VisaDestinations({ visas }) {
         </div>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {visas.map((visa) => (
-            <VisaCard key={visa.slug} visa={visa} basePath={`/${DEFAULT_COUNTRY.slug}`} />
+          {visas.map((visa, i) => (
+            <VisaCard
+              key={visa.slug}
+              visa={visa}
+              basePath={`/${DEFAULT_COUNTRY.slug}`}
+              priority={i === 0}
+            />
           ))}
         </div>
 
@@ -200,6 +205,17 @@ export default async function HomePage() {
       name: "Visa Assistance for UAE Residents",
       description: pageData.meta.description,
       areaServed: "AE",
+      // Cheapest package per destination, so the homepage advertises the same
+      // "from" prices the cards show rather than a separate set of numbers.
+      offers: list
+        .map((v) => {
+          const cheapest = (v.packages ?? []).reduce(
+            (min, p) => (min == null || Number(p.price) < Number(min.price) ? p : min),
+            null,
+          );
+          return cheapest ? { ...cheapest, name: `${v.countryName} visa assistance` } : null;
+        })
+        .filter(Boolean),
     }),
     buildFAQPage({
       canonical: pageData.meta.canonical,
