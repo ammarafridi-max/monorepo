@@ -7,6 +7,8 @@
  * rather than "Pakistani nationals" — accurate for every code, no lookup.
  */
 
+import { COUNTRIES } from '@travel-suite/frontend-shared/data/countries';
+
 const REGION_NAMES = new Intl.DisplayNames(['en'], { type: 'region' });
 
 export const countryName = (code) => {
@@ -79,51 +81,50 @@ export function resolveForNationality(rule, nationality, residence) {
 }
 
 /**
- * Every nationality the rule names, plus the codes that only fall to the
- * default, flattened into one sorted table. The default bucket is what makes
- * the page complete rather than a list of exceptions.
+ * Every nationality, not only the ones the rule names. A rule lists exceptions
+ * and leaves the rest to defaultOutcome, so a table built from the rule alone
+ * answers for 93 of 239 passports on France and stays silent on the rest, which
+ * is precisely the reader the page is for.
+ *
+ * Resolution order matches the checker: residence override, then outcome group,
+ * then the rule's default.
  */
 export function buildNationalityTable(rule, { residence } = {}) {
-  const named = new Set();
-  const rows = [];
+  const res = residence ? String(residence).toUpperCase() : null;
 
+  const fromGroups = new Map();
   for (const group of rule.groups || []) {
     for (const code of group.nationalities || []) {
-      if (named.has(code)) continue;
-      named.add(code);
-      rows.push({
-        code,
-        name: countryName(code),
-        outcome: group.outcome,
-        maxStayDays: group.maxStayDays ?? null,
-      });
-    }
-  }
-
-  if (residence) {
-    for (const o of rule.residenceOverrides || []) {
-      if (o.residence !== String(residence).toUpperCase()) continue;
-      for (const code of o.nationalities || []) {
-        const existing = rows.find((r) => r.code === code);
-        if (existing) {
-          existing.outcome = o.outcome;
-          existing.maxStayDays = o.maxStayDays ?? null;
-          existing.overridden = true;
-        } else {
-          named.add(code);
-          rows.push({
-            code,
-            name: countryName(code),
-            outcome: o.outcome,
-            maxStayDays: o.maxStayDays ?? null,
-            overridden: true,
-          });
-        }
+      if (!fromGroups.has(code)) {
+        fromGroups.set(code, { outcome: group.outcome, maxStayDays: group.maxStayDays ?? null });
       }
     }
   }
 
-  return rows.sort((a, b) => a.name.localeCompare(b.name));
+  const fromOverride = new Map();
+  if (res) {
+    for (const o of rule.residenceOverrides || []) {
+      if (o.residence !== res) continue;
+      for (const code of o.nationalities || []) {
+        fromOverride.set(code, { outcome: o.outcome, maxStayDays: o.maxStayDays ?? null });
+      }
+    }
+  }
+
+  return COUNTRIES
+    // A destination is not a nationality for its own page.
+    .filter((c) => c.code !== rule.destination)
+    .map((c) => {
+      const hit = fromOverride.get(c.code) || fromGroups.get(c.code);
+      return {
+        code: c.code,
+        name: c.name,
+        outcome: hit?.outcome ?? rule.defaultOutcome,
+        maxStayDays: hit?.maxStayDays ?? null,
+        overridden: fromOverride.has(c.code),
+      };
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export const outcomeCounts = (rows) =>

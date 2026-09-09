@@ -199,8 +199,8 @@ export default async function VisaCheckDestinationPage({ params, searchParams })
             Who needs a visa for {name}?
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-gray-500">
-            Every nationality the rule names. Anything not listed follows the default,{' '}
-            {ui(rule.defaultOutcome).label.toLowerCase()}.
+            Every nationality, resolved against the current rule. {rows.length} passports listed
+            {residence ? `, with your ${withArticle(residence)} residence applied` : ''}.
           </p>
 
           <div className="mt-5 overflow-x-auto">
@@ -208,8 +208,7 @@ export default async function VisaCheckDestinationPage({ params, searchParams })
               <thead>
                 <tr className="border-b border-gray-200 text-left text-xs uppercase tracking-wider text-gray-400">
                   <th className="py-2 pr-4 font-semibold">Nationality</th>
-                  <th className="py-2 pr-4 font-semibold">Code</th>
-                  <th className="py-2 pr-4 font-semibold">Outcome</th>
+                  <th className="py-2 pr-4 font-semibold">Requirement</th>
                   <th className="py-2 font-semibold">Max stay</th>
                 </tr>
               </thead>
@@ -225,7 +224,6 @@ export default async function VisaCheckDestinationPage({ params, searchParams })
                       <td className={`py-2 pr-4 ${isMatch ? 'font-semibold text-gray-900' : 'text-gray-700'}`}>
                         {row.name}
                       </td>
-                      <td className="py-2 pr-4 font-mono text-xs text-gray-400">{row.code}</td>
                       <td className="py-2 pr-4">
                         <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${PILL[rowUi.tone]}`}>
                           {rowUi.label}
