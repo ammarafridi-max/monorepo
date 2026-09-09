@@ -18,18 +18,12 @@ export function toISODay(value) {
   return date.toISOString().slice(0, 10);
 }
 
-/**
- * The same calendar day N years later. 29 February clamps to 28 February
- * rather than rolling into March, which is what "one year from" means to an
- * insurer reading a policy period.
- */
+/** The same calendar day N years later. 29 February rolls into 1 March. */
 export function addYears(value, years) {
   const day = toISODay(value);
   if (!day) return null;
   const [y, m, d] = day.split('-').map(Number);
-  const target = Date.UTC(y + years, m - 1, d);
-  const rolled = new Date(target).getUTCMonth() !== m - 1;
-  return new Date(rolled ? Date.UTC(y + years, m, 0) : target).toISOString().slice(0, 10);
+  return new Date(Date.UTC(y + years, m - 1, d)).toISOString().slice(0, 10);
 }
 
 export function addDays(value, days) {
@@ -40,13 +34,17 @@ export function addDays(value, days) {
 }
 
 /**
- * The end of cover a multi-year journey type implies. WIS rejects a policy
- * whose end date is not exactly one or two calendar years from its start, so
- * this must never be approximated in days: 365 lands a day short whenever the
- * period contains a 29 February.
+ * The end of cover a multi-year journey type implies: the anniversary of the
+ * start date minus one day, because WIS treats the period as inclusive of both
+ * ends. Verified against the live quote endpoint — 2026-10-01 annual is
+ * accepted as 2027-09-30 and rejected as 2027-10-01, and a leap day inside the
+ * period shifts it, so this can never be a count of days.
  */
 export function coverEndDate(journeyType, startDate, endDate) {
-  if (journeyType === 'annual') return addYears(startDate, 1);
-  if (journeyType === 'biennial') return addYears(startDate, 2);
-  return toISODay(endDate) ?? endDate;
+  const years = journeyType === 'annual' ? 1 : journeyType === 'biennial' ? 2 : 0;
+  if (!years) return toISODay(endDate) ?? endDate;
+  const day = toISODay(startDate);
+  if (!day) return null;
+  const [y, m, d] = day.split('-').map(Number);
+  return new Date(Date.UTC(y + years, m - 1, d - 1)).toISOString().slice(0, 10);
 }
