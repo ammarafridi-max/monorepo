@@ -154,9 +154,13 @@ export default async function Page({ params }) {
 const TAG_PRIORITY = ['Schengen Visa', 'Visa Documents', 'Visa Tips', 'Europe Travel', 'UAE Travel'];
 
 async function getRelatedPosts(blog, fallbackPool = []) {
-  const tags = Array.isArray(blog?.tags) ? blog.tags : [];
-  const primaryTag =
-    TAG_PRIORITY.find((tag) => tags.includes(tag)) || tags[0] || null;
+  // tags come back populated, so compare on the name and query on the slug.
+  const tags = (Array.isArray(blog?.tags) ? blog.tags : [])
+    .map((t) => (typeof t === 'string' ? { name: t, slug: t } : t))
+    .filter((t) => t?.name);
+  const primary =
+    tags.find((t) => TAG_PRIORITY.includes(t.name)) || tags[0] || null;
+  const primaryTag = primary ? primary.slug || primary.name : null;
 
   let pool = [];
   if (primaryTag) {

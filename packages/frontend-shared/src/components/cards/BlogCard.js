@@ -77,14 +77,17 @@ export default function BlogCard({
 
         {tags.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1.5">
-            {tags.slice(0, 3).map((tag) => (
-              <span
-                key={tag}
-                className="text-xs text-gray-600 bg-gray-100 px-2 py-0.5 rounded-md"
-              >
-                {tag}
-              </span>
-            ))}
+            {tags.slice(0, 3).map((tag, i) => {
+              const name = typeof tag === 'string' ? tag : tag?.name;
+              return name ? (
+                <span
+                  key={`${name}-${i}`}
+                  className="text-xs text-gray-600 bg-gray-100 px-2 py-0.5 rounded-md"
+                >
+                  {name}
+                </span>
+              ) : null;
+            })}
           </div>
         )}
 

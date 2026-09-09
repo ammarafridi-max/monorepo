@@ -269,23 +269,27 @@ function TagPills({ tags, allBlogTags }) {
 
   return (
     <div className="mt-10 flex flex-wrap items-center gap-1.5">
-      {tags.map((tagName, index) => {
-        const tagObj = allBlogTags.find(
-          (tag) =>
-            String(tag.name).toLowerCase() === String(tagName).toLowerCase(),
-        );
+      {tags.map((tag, index) => {
+        // Populated reference, or a bare name on a brand not yet migrated.
+        const tagName = typeof tag === 'string' ? tag : tag?.name;
+        const tagObj =
+          typeof tag === 'string'
+            ? allBlogTags.find(
+                (t) => String(t.name).toLowerCase() === String(tag).toLowerCase(),
+              )
+            : tag;
         const slug = tagObj?.slug || tagObj?._id;
 
         return slug ? (
           <Link
-            key={`${tagName}-${index}`}
+            key={`${tagName ?? index}-${index}`}
             href={`/blog/tags/${slug}`}
             className={`${baseClass} transition-colors hover:border-primary-200 hover:bg-primary-100`}
           >
             {tagName}
           </Link>
         ) : (
-          <span key={`${tagName}-${index}`} className={baseClass}>
+          <span key={`${tagName ?? index}-${index}`} className={baseClass}>
             {tagName}
           </span>
         );

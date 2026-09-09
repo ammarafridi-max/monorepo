@@ -141,7 +141,11 @@ export default function BlogForm({ initialData, onSubmit, isPending }) {
       scheduledAt: initialData?.scheduledAt
         ? format(new Date(initialData.scheduledAt), "yyyy-MM-dd'T'HH:mm")
         : "",
-      tags: initialData?.tags || [],
+      // Tags arrive populated on migrated brands and as names elsewhere; carry
+      // ids where we have them so the form always submits something resolvable.
+      tags: (initialData?.tags || [])
+        .map((t) => (typeof t === 'string' ? t : t?._id))
+        .filter(Boolean),
       faqs: initialData?.faqs || [],
     },
   });
@@ -193,13 +197,16 @@ export default function BlogForm({ initialData, onSubmit, isPending }) {
     }
   }
 
-  function toggleTag(tagName) {
+  const tagIsSelected = (tag, list) =>
+    list.includes(tag._id) || list.includes(tag.name);
+
+  function toggleTag(tag) {
     const current = getValues("tags") || [];
     setValue(
       "tags",
-      current.includes(tagName)
-        ? current.filter((t) => t !== tagName)
-        : [...current, tagName],
+      tagIsSelected(tag, current)
+        ? current.filter((t) => t !== tag._id && t !== tag.name)
+        : [...current, tag._id],
     );
   }
 
@@ -610,12 +617,12 @@ export default function BlogForm({ initialData, onSubmit, isPending }) {
             ) : (
               <div className="flex flex-wrap gap-1.5">
                 {allTags.map((tag) => {
-                  const active = tags.includes(tag.name);
+                  const active = tagIsSelected(tag, tags);
                   return (
                     <button
                       key={tag._id}
                       type="button"
-                      onClick={() => toggleTag(tag.name)}
+                      onClick={() => toggleTag(tag)}
                       className={`text-[11px] font-bold px-2.5 py-1 rounded-full border transition-colors ${
                         active
                           ? "bg-primary-700 border-primary-700 text-white"

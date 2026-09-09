@@ -34,6 +34,7 @@ export function createBlogService({ Blog, BlogTag, imageStorage }) {
   const getBlogPopulation = () => [
     { path: 'author', select: 'name username email role status authorProfile createdAt updatedAt' },
     { path: 'publisher', select: 'name username email role status createdAt updatedAt' },
+    { path: 'tags', select: 'name slug' },
   ];
 
   const getBlogs = async ({ page, limit, status, tag, search, author }) => {
@@ -42,7 +43,17 @@ export function createBlogService({ Blog, BlogTag, imageStorage }) {
     const filter = {};
 
     if (status && status !== 'all') filter.status = status;
-    if (tag && tag !== 'all') filter.tags = new RegExp(`^${escapeRegex(tag)}$`, 'i');
+    if (tag && tag !== 'all') {
+      // Accepts a name or a slug and resolves it to an id, so a renamed tag
+      // keeps its posts. An unknown tag matches nothing rather than everything.
+      const doc = await BlogTag.findOne({
+        $or: [
+          { name: new RegExp(`^${escapeRegex(tag)}$`, 'i') },
+          { slug: String(tag).toLowerCase() },
+        ],
+      }).select('_id').lean();
+      filter.tags = doc ? doc._id : null;
+    }
     if (author && author !== 'all') filter.author = author;
 
     if (search) {
@@ -118,10 +129,12 @@ export function createBlogService({ Blog, BlogTag, imageStorage }) {
   const ensureTagsExist = async (tags = []) => {
     if (!Array.isArray(tags) || tags.length === 0) return [];
 
-    const existingTags = await BlogTag.find().select('name').lean();
-    const nameByLower = new Map(existingTags.map((t) => [String(t.name).toLowerCase(), t.name]));
+    const existingTags = await BlogTag.find().select('name slug').lean();
     const normalizeLoose = (v = '') => String(v).toLowerCase().replace(/[^a-z0-9]/g, '');
-    const nameByLoose = new Map(existingTags.map((t) => [normalizeLoose(t.name), t.name]));
+    const byLower = new Map(existingTags.map((t) => [String(t.name).toLowerCase(), t]));
+    const bySlug = new Map(existingTags.map((t) => [String(t.slug).toLowerCase(), t]));
+    const byLoose = new Map(existingTags.map((t) => [normalizeLoose(t.name), t]));
+    const byId = new Map(existingTags.map((t) => [String(t._id), t]));
 
     const resolved = [];
     const missing = [];
@@ -130,19 +143,22 @@ export function createBlogService({ Blog, BlogTag, imageStorage }) {
       const input = String(tag || '').trim();
       if (!input) continue;
 
-      const byCaseInsensitive = nameByLower.get(input.toLowerCase());
-      if (byCaseInsensitive) { resolved.push(byCaseInsensitive); continue; }
-
-      const byLooseMatch = nameByLoose.get(normalizeLoose(input));
-      if (byLooseMatch) { resolved.push(byLooseMatch); continue; }
+      // The admin form posts ids; older callers and imports post names or slugs.
+      const hit =
+        byId.get(input) ||
+        byLower.get(input.toLowerCase()) ||
+        bySlug.get(input.toLowerCase()) ||
+        byLoose.get(normalizeLoose(input));
+      if (hit) { resolved.push(hit._id); continue; }
 
       missing.push(input);
     }
 
     if (missing.length > 0) throw new AppError(`Unknown tag(s): ${missing.join(', ')}`, 400);
 
-    return [...new Set(resolved)];
+    return [...new Map(resolved.map((id) => [String(id), id])).values()];
   };
+
 
   const saveCoverImage = async (file, blogId, existingImageUrl = null) => {
     if (!file) return existingImageUrl;

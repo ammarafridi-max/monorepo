@@ -79,7 +79,7 @@ function resolveInsurance(blog) {
 
   // Visa posts without a dedicated insurance page still want a visa-grade
   // policy; everything else gets the index.
-  const isVisaPost = slug.includes('visa') || (blog?.tags || []).includes('Visa Documents');
+  const isVisaPost = slug.includes('visa') || tagNames(blog).includes('Visa Documents');
   return isVisaPost
     ? {
         href: '/travel-insurance/schengen-visa',
@@ -120,9 +120,13 @@ export function getBlogOffers(blog) {
   ];
 }
 
+/** Tags are populated BlogTag references; older data holds bare names. */
+const tagNames = (blog) =>
+  (blog?.tags || []).map((t) => (typeof t === 'string' ? t : t?.name)).filter(Boolean);
+
 /** The single mid-article unit. Matches the post's subject where it can. */
 export function getBlogInlineOffer(blog) {
-  const tags = blog?.tags || [];
+  const tags = tagNames(blog);
   const slug = String(blog?.slug || '').toLowerCase();
   const isTicketPost =
     tags.includes('Dummy Ticket') ||
