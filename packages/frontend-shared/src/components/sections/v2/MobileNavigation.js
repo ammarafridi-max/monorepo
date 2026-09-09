@@ -14,6 +14,9 @@ export default function MobileNavigation({
   // and loginHref={null} to drop the switcher and the auth link from the menu.
   showCurrency = true,
   loginHref = "/login",
+  // Same optional { label, href } the desktop bar takes; shown as a full-width
+  // button at the top of the sheet, where a thumb actually lands.
+  cta = null,
 }) {
   const { user, isAuthenticated } = useAuth();
 
@@ -47,6 +50,16 @@ export default function MobileNavigation({
                 <X size={20} />
               </button>
             </div>
+
+            {cta?.href && cta?.label ? (
+              <Link
+                href={cta.href}
+                onClick={() => setOpen(false)}
+                className="mb-2 block rounded-lg bg-primary-700 px-4 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-primary-800"
+              >
+                {cta.label}
+              </Link>
+            ) : null}
 
             {pages.map((page, i) => {
               const allSubpages = page.mega

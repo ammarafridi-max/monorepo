@@ -20,7 +20,7 @@ export const countryName = (code) => {
 };
 
 /** XS is the Schengen area, which Intl does not know about. */
-const SPECIAL = { XS: 'the Schengen area' };
+const SPECIAL = { XS: 'Schengen Area' };
 export const destinationLabel = (code, fallback) => SPECIAL[code] || fallback || countryName(code);
 
 /**
@@ -28,7 +28,7 @@ export const destinationLabel = (code, fallback) => SPECIAL[code] || fallback ||
  * Netherlands". Covers the recurring shapes rather than enumerating every
  * country, which would be another list to maintain.
  */
-const TAKES_THE = /^(United|Republic|Democratic|Netherlands|Philippines|Bahamas|Maldives|Gambia|Comoros|Czech)\b|Islands$/;
+const TAKES_THE = /^(United|Republic|Democratic|Netherlands|Philippines|Bahamas|Maldives|Gambia|Comoros|Czech|Schengen)\b|Islands$/;
 export const withArticle = (code) => {
   const n = destinationLabel(code);
   return TAKES_THE.test(n) ? `the ${n}` : n;

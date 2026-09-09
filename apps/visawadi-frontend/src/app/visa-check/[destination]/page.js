@@ -17,7 +17,6 @@ import {
 import { DEFAULT_COUNTRY } from '@/config/countries';
 import {
   buildNationalityTable,
-  destinationLabel,
   isoParam,
   outcomeCounts,
   passportPhrase,
@@ -58,12 +57,12 @@ export async function generateMetadata({ params }) {
   const rule = await loadRule(destination);
   if (!rule) return { title: 'Not found', robots: { index: false, follow: false } };
 
-  const name = destinationLabel(rule.destination, rule.destinationName);
+  const name = withArticle(rule.destination);
   const rows = buildNationalityTable(rule);
   const counts = outcomeCounts(rows);
   const free = counts.VISA_FREE || 0;
 
-  const title = `Do You Need a Visa for ${rule.destinationName}?`;
+  const title = `Do You Need a Visa for ${withArticle(rule.destination)}?`;
   const description = free
     ? `${free} nationalities enter ${name} without a visa. Check whether yours does, what the stay limit is, and where to apply from the UAE.`
     : `Check whether your passport needs a visa for ${name}, what the stay limit is, and where to apply from the UAE.`;
@@ -92,7 +91,7 @@ export default async function VisaCheckDestinationPage({ params, searchParams })
 
   const nationality = isoParam(query.nationality);
   const residence = isoParam(query.residence);
-  const name = destinationLabel(rule.destination, rule.destinationName);
+  const name = withArticle(rule.destination);
   const canonical = `${SITE_URL}/visa-check/${slugFor(rule.destination)}`;
 
   const rows = buildNationalityTable(rule, { residence });
@@ -126,13 +125,13 @@ export default async function VisaCheckDestinationPage({ params, searchParams })
 
   const faqs = [
     {
-      question: `Do you need a visa for ${rule.destinationName}?`,
+      question: `Do you need a visa for ${name}?`,
       answer: shortAnswer,
     },
     ...(verified
       ? [
           {
-            question: `When were these ${rule.destinationName} visa rules last checked?`,
+            question: `When were the ${name} visa rules last checked?`,
             answer: `${verified}, against ${
               rule.officialSourceName || 'the official source'
             }. Requirements change without much notice, so confirm on the official page before you apply.`,
@@ -144,7 +143,7 @@ export default async function VisaCheckDestinationPage({ params, searchParams })
   const graph = buildGraph([
     buildOrganization(),
     buildWebsite(),
-    buildWebPage({ canonical, title: `Do You Need a Visa for ${rule.destinationName}?`, description: shortAnswer }),
+    buildWebPage({ canonical, title: `Do You Need a Visa for ${name}?`, description: shortAnswer }),
     buildFAQPage({ canonical, title: `${rule.destinationName} visa requirements`, description: shortAnswer, faqs }),
     buildBreadcrumbList({
       paths: [
@@ -165,7 +164,7 @@ export default async function VisaCheckDestinationPage({ params, searchParams })
             Visa check
           </p>
           <h1 className="mt-3 max-w-3xl text-3xl font-bold leading-tight md:text-4xl">
-            Do you need a visa for {rule.destinationName}?
+            Do you need a visa for {name}?
           </h1>
           <p className="mt-4 max-w-2xl leading-relaxed text-gray-300">{shortAnswer}</p>
         </Container>
@@ -197,7 +196,7 @@ export default async function VisaCheckDestinationPage({ params, searchParams })
           ) : null}
 
           <h2 className="mt-10 text-xl font-bold text-gray-900">
-            Who needs a visa for {rule.destinationName}?
+            Who needs a visa for {name}?
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-gray-500">
             Every nationality the rule names. Anything not listed follows the default,{' '}

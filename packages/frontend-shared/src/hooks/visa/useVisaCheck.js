@@ -17,14 +17,17 @@ export function useVisaCheck() {
     setResult(null);
     if (!nationality || !destination) {
       setError('Pick your nationality and where you are going.');
-      return;
+      return null;
     }
     setLoading(true);
     try {
       const res = await checkVisaRequirementApi({ nationality, residence, destination });
-      setResult(res?.data ?? res);
+      const answer = res?.data ?? res;
+      setResult(answer);
+      return answer;
     } catch (err) {
       setError(err?.message || 'Something went wrong. Try again in a moment.');
+      return null;
     } finally {
       setLoading(false);
     }

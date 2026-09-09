@@ -146,7 +146,9 @@ const defaultPages = [
       ],
     },
   },
+  { name: "Visa Check", links: ["/visa-check"] },
   { name: "Blog", links: ["/blog"] },
+  { name: "About", links: ["/about"] },
   { name: "Email Us", links: [`mailto:${EMAIL}`] },
 ];
 
@@ -214,6 +216,10 @@ export default function Providers({ children }) {
             // Restore by pointing these at "/apply/signup" and "/apply/login".
             loginHref={null}
             signupHref={null}
+            // The bar was logo, one link and dead space. A tool is a lower
+            // commitment ask than a consultation and the checker routes to the
+            // money page once it has an answer, so intent arrives qualified.
+            cta={{ label: "Check your visa", href: "/visa-check" }}
           >
             <main>{children}</main>
           </AppMegaLayout>

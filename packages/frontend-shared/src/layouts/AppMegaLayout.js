@@ -12,6 +12,7 @@ export default function AppMegaLayout({
   loginHref,
   signupHref,
   showCurrency = true,
+  cta = null,
 }) {
   return (
     <>
@@ -24,6 +25,7 @@ export default function AppMegaLayout({
         loginHref={loginHref}
         signupHref={signupHref}
         showCurrency={showCurrency}
+        cta={cta}
       />
       <div className="h-[45px] lg:h-[53px] shrink-0" aria-hidden="true" />
       {children}

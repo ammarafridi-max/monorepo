@@ -27,6 +27,9 @@ export default function Navbar({
   signupHref = "/signup",
   // Pass showCurrency={false} on brands that never quote a price.
   showCurrency = true,
+  // Optional primary action, { label, href }. Renders nothing when absent, so
+  // brands that have not defined one look exactly as they did.
+  cta = null,
 }) {
   const { user, isAuthenticated } = useAuth();
   const pathname = usePathname();
@@ -391,6 +394,13 @@ export default function Navbar({
                 </>
               )}
             </div>
+          ) : cta?.href && cta?.label ? (
+            <Link
+              href={cta.href}
+              className="hidden lg:inline-flex items-center rounded-lg bg-primary-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-700"
+            >
+              {cta.label}
+            </Link>
           ) : loginHref || signupHref ? (
             <div className="hidden lg:inline-flex items-center gap-2 text-sm font-semibold text-gray-700">
               <User size={16} className="text-primary-700 shrink-0" />
@@ -422,6 +432,7 @@ export default function Navbar({
             pages={pages}
             showCurrency={showCurrency}
             loginHref={loginHref}
+            cta={cta}
           />
         </div>
       </Container>

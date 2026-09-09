@@ -238,7 +238,7 @@ export default async function HomePage() {
         pills={pageData.hero.pills}
         layout="centered"
         dark
-        below={<VisaCheckerInline basePath={`/${DEFAULT_COUNTRY.slug}`} consultHref={`/${DEFAULT_COUNTRY.slug}`} />}
+        below={<VisaCheckerInline basePath={`/${DEFAULT_COUNTRY.slug}`} consultHref={`/${DEFAULT_COUNTRY.slug}`} resultPath="/visa-check" />}
       />
       <VisaDestinations visas={list} />
       <HowItWorks

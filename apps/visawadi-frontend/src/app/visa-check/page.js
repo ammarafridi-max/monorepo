@@ -116,6 +116,7 @@ export default async function VisaCheckIndexPage() {
             <VisaCheckerInline
               basePath={`/${DEFAULT_COUNTRY.slug}`}
               consultHref={`/${DEFAULT_COUNTRY.slug}`}
+              resultPath="/visa-check"
             />
           </div>
         </Container>

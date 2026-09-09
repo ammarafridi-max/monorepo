@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ArrowRight, Check, AlertCircle, Info, ShieldQuestion } from 'lucide-react';
 import VisaSearchBar, { SCHENGEN_OPTION } from './VisaSearchBar.js';
 import { useVisaCheck } from '../../../hooks/visa/useVisaCheck.js';
@@ -23,8 +24,13 @@ export default function VisaCheckerInline({
   // e.g. basePath="/uae" to link /uae/visa/<slug>.
   basePath = '',
   extraDestinations = [SCHENGEN_OPTION],
+  // When set, a successful check navigates to `${resultPath}/<destination>`
+  // with the answer's inputs as params, instead of rendering the result inline.
+  // The API call still runs first, so the query log is unaffected.
+  resultPath = null,
   className = '',
 }) {
+  const router = useRouter();
   const v = useVisaCheck();
   const {
     destinations,
@@ -44,13 +50,21 @@ export default function VisaCheckerInline({
         residence={v.residence} setResidence={v.setResidence}
         destination={v.destination} setDestination={v.setDestination}
         destinations={destinations}
-        onSubmit={v.submit}
+        onSubmit={async (e) => {
+          const answer = await v.submit(e);
+          if (!resultPath || !answer?.destination) return;
+          const params = new URLSearchParams({ nationality: v.nationality });
+          if (v.residence) params.set('residence', v.residence);
+          router.push(
+            `${resultPath}/${String(answer.destination).toLowerCase()}?${params.toString()}`,
+          );
+        }}
         loading={v.loading || destinationsLoading}
         error={v.error || destinationsError}
         extraDestinations={extraDestinations}
       />
 
-      {v.result && ui && (
+      {!resultPath && v.result && ui && (
         <div className="mt-6 text-left">
           <div className={`rounded-2xl border px-5 py-4 ${tone.box}`}>
             <p className={`flex items-center gap-2 text-lg font-bold ${tone.text}`}>
