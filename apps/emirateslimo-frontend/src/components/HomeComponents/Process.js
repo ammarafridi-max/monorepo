@@ -26,7 +26,7 @@ export default function Process({ title = 'Book Your Ride in 4 Easy Steps', subt
   return (
     <PrimarySection id="process" className="bg-primary-900 py-15 lg:py-30">
       <Container>
-        <SectionTitle dark textAlign="center" subtitle={subtitle}>
+        <SectionTitle dark subtitle={subtitle}>
           {title}
         </SectionTitle>
 

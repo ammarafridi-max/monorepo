@@ -229,9 +229,9 @@ export default function Page() {
         subtitle="Real feedback from UAE residents who used Travl for their travel documents"
         testimonials={testimonials}
       />
-      <PrimarySection className="py-14 md:py-18 lg:py-24">
+      <PrimarySection className="py-section">
         <Container className="rounded-3xl border border-primary-100 bg-[linear-gradient(145deg,#f5fbfb_0%,#eff7ff_55%,#fff7f0_100%)] p-8 md:p-10">
-          <SectionTitle textAlign="center" className="mb-4">
+          <SectionTitle className="mb-4">
             Ready to Get Insured Before Your Trip?
           </SectionTitle>
           <p className="text-[16px] md:text-[18px] text-gray-700 font-light leading-7 max-w-[820px]">

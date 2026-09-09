@@ -10,7 +10,7 @@ export default function WhyBookEmiratesLimo({
   return (
     <PrimarySection id="why-book" className="pb-15 lg:pb-30">
       <Container>
-        <SectionTitle textAlign="center" subtitle={subtitle}>
+        <SectionTitle subtitle={subtitle}>
           {title}
         </SectionTitle>
 

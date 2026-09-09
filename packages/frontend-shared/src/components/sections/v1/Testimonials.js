@@ -9,14 +9,14 @@ export default function Testimonials({
   testimonials,
 }) {
   return (
-    <PrimarySection className="py-14 md:py-18 lg:py-24">
+    <PrimarySection className="py-section">
       <Container>
-        <SectionTitle textAlign="center" subtitle={subtitle} className="mb-10 md:mb-12">
+        <SectionTitle align="center" subtitle={subtitle} className="mb-10 md:mb-12">
           {title}
         </SectionTitle>
         {/* Mobile is a snap carousel. The card no longer carries its own
             min-width, so the sizing lives on the wrapper here. */}
-        <div className="flex gap-5 overflow-x-auto snap-x snap-mandatory md:grid md:grid-cols-3 md:gap-7 md:overflow-visible">
+        <div className="flex gap-5 overflow-x-auto snap-x snap-mandatory md:grid md:grid-cols-3 md:gap-6 md:overflow-visible">
           {testimonials.map((test, i) => (
             <div key={i} className="min-w-[85%] snap-center md:min-w-0">
               <TestimonialCard

@@ -8,7 +8,7 @@ export default function Services({ title = 'Premium Chauffeur Experiences in Dub
   return (
     <PrimarySection id="services" className="py-15 lg:py-30">
       <Container>
-        <SectionTitle textAlign="center" subtitle={subtitle} className="text-center">
+        <SectionTitle subtitle={subtitle} className="text-center">
           {title}
         </SectionTitle>
 

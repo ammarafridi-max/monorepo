@@ -14,7 +14,7 @@ export default function Fleet({ title = 'Luxury Vehicles To Choose From', subtit
   return (
     <PrimarySection className="py-15 lg:py-30">
       <Container>
-        <SectionTitle textAlign="center" subtitle={subtitle}>
+        <SectionTitle subtitle={subtitle}>
           {title}
         </SectionTitle>
         <Swiper

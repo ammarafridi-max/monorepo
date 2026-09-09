@@ -244,7 +244,7 @@ export default function Page() {
       />
       <PrimarySection className="py-10 lg:py-14">
         <Container>
-          <SectionTitle textAlign="center" className="mb-6">
+          <SectionTitle className="mb-6">
             Other Travel Insurance Plans
           </SectionTitle>
           <div className="flex flex-wrap justify-center gap-3">

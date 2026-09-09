@@ -37,7 +37,7 @@ export default function FAQs() {
 
           {/* About Emirates Limo */}
           <div className="mb-16">
-            <SectionTitle subtitle="Who We Are" textAlign="center" className="mb-8">
+            <SectionTitle subtitle="Who We Are" className="mb-8">
               About Emirates Limo
             </SectionTitle>
             <div className="flex flex-col gap-4 max-w-3xl mx-auto">
@@ -51,7 +51,7 @@ export default function FAQs() {
 
           {/* Chauffeur Services */}
           <div className="mb-16">
-            <SectionTitle subtitle="Private Drivers" textAlign="center" className="mb-8">
+            <SectionTitle subtitle="Private Drivers" className="mb-8">
               Chauffeur Services
             </SectionTitle>
             <div className="flex flex-col gap-4 max-w-3xl mx-auto">
@@ -68,7 +68,7 @@ export default function FAQs() {
 
           {/* Airport Transfers */}
           <div>
-            <SectionTitle subtitle="Arrivals & Departures" textAlign="center" className="mb-8">
+            <SectionTitle subtitle="Arrivals & Departures" className="mb-8">
               Airport Transfers
             </SectionTitle>
             <div className="flex flex-col gap-4 max-w-3xl mx-auto">

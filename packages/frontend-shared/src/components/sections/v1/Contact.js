@@ -28,7 +28,7 @@ export default function Contact({
     : null;
 
   return (
-    <PrimarySection id="contact" className="py-14 md:py-18 lg:py-24">
+    <PrimarySection id="contact" className="py-section">
       <Container>
         <div className="relative overflow-hidden rounded-3xl bg-primary-900 bg-linear-to-br from-primary-900 via-primary-800 to-primary-900 p-7 md:p-10 lg:p-12">
           <div className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-primary-500/25 blur-3xl" />
@@ -40,7 +40,7 @@ export default function Contact({
                 Support
               </p>
 
-              <h2 className="text-[26px] md:text-[32px] lg:text-[36px] font-medium leading-[1.15] tracking-[-0.01em] text-white">
+              <h2 className="text-[26px] md:text-[32px] lg:text-[36px] font-semibold leading-[1.15] tracking-[-0.02em]! text-white">
                 {title}
               </h2>
 

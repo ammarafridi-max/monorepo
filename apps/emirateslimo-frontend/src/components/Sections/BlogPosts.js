@@ -13,7 +13,7 @@ export default function BlogPosts({ title = 'Blog Posts', subtitle = 'Recently p
   return (
     <PrimarySection className="pb-15 lg:pb-30">
       <Container>
-        <SectionTitle subtitle={subtitle} textAlign="center" className="mb-10 md:mb-12">
+        <SectionTitle subtitle={subtitle} className="mb-10 md:mb-12">
           {title}
         </SectionTitle>
 

@@ -201,10 +201,10 @@ export default function Page() {
         text={pageData.sections.about.text}
         services={pageData.sections.about.services}
       />
-      <PrimarySection className="py-14 md:py-18 lg:py-24 bg-gray-50/70">
+      <PrimarySection className="py-section bg-gray-50/70">
         <Container>
           <SectionTitle
-            textAlign="center"
+            align="center"
             subtitle="Trusted travel insurance provider for UAE residents"
             className="mb-10 md:mb-12"
           >
@@ -229,7 +229,7 @@ export default function Page() {
       </PrimarySection>
       <PrimarySection className="py-10 lg:py-14">
         <Container>
-          <SectionTitle textAlign="center" className="mb-4">
+          <SectionTitle className="mb-4">
             Applying for a Schengen Visa?
           </SectionTitle>
           <p className="max-w-[820px] text-[16px] font-light leading-7 text-gray-700">
@@ -246,9 +246,9 @@ export default function Page() {
           </p>
         </Container>
       </PrimarySection>
-      <PrimarySection className="py-14 md:py-18 lg:py-24">
+      <PrimarySection className="py-section">
         <Container className="rounded-3xl border border-primary-100 bg-[linear-gradient(145deg,#f5fbfb_0%,#eff7ff_55%,#fff7f0_100%)] p-8 md:p-10">
-          <SectionTitle textAlign="center" className="mb-4">
+          <SectionTitle className="mb-4">
             Ready to Get Insured Before Your Trip?
           </SectionTitle>
           <p className="text-[16px] md:text-[18px] text-gray-700 font-light leading-7 max-w-[820px]">
@@ -260,24 +260,22 @@ export default function Page() {
       </PrimarySection>
       <PrimarySection
         id="faq"
-        className="py-14 md:py-18 lg:py-24 bg-gray-50/70"
+        className="py-section bg-gray-50/70"
       >
         <Container>
           <SectionTitle
-            textAlign="center"
-            subtitle="Frequently Asked Questions"
+            align="center"
+            subtitle="Common questions answered"
             className="mb-10 md:mb-12"
           >
-            Common questions answered
+            Travel Insurance: Frequently Asked Questions
           </SectionTitle>
-          <div className="rounded-2xl border border-white bg-white p-4 md:p-7 shadow-[0_14px_35px_rgba(16,24,40,0.08)]">
-            <div className="flex flex-col gap-1">
-              {faqs.map((faq, i) => (
-                <FaqAccordion key={i} question={faq.question}>
-                  {faq.answer}
-                </FaqAccordion>
-              ))}
-            </div>
+          <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden [&>*:last-child]:border-b-0">
+            {faqs.map((faq, i) => (
+              <FaqAccordion key={i} question={faq.question}>
+                {faq.answer}
+              </FaqAccordion>
+            ))}
           </div>
         </Container>
       </PrimarySection>

@@ -242,10 +242,10 @@ export default function Page() {
           Google's rich-result guidelines require schema content to be
           visible on-page, so we render the full set with the same
           primitives instead. */}
-      <PrimarySection id="faq" className="py-14 md:py-18 lg:py-24 bg-gray-50/70">
+      <PrimarySection id="faq" className="py-section bg-gray-50/70">
         <Container>
           <SectionTitle
-            textAlign="center"
+            align="center"
             subtitle={pageData.sections.faqs.subtitle}
             className="mb-10 md:mb-12"
           >

@@ -10,7 +10,7 @@ export default function Testimonials({
   return (
     <PrimarySection id="testimonials" className="bg-primary-900 py-15 lg:py-30">
       <Container>
-        <SectionTitle dark textAlign="center" subtitle={subtitle}>
+        <SectionTitle dark subtitle={subtitle}>
           {title}
         </SectionTitle>
 

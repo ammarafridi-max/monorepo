@@ -331,3 +331,13 @@ a {
     font-weight: 300;
   } */
 }
+
+@utility py-section {
+  padding-block: 48px;
+  @media (min-width: 768px) {
+    padding-block: 56px;
+  }
+  @media (min-width: 1024px) {
+    padding-block: 72px;
+  }
+}

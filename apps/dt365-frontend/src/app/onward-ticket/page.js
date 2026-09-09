@@ -219,10 +219,10 @@ export default function Page() {
           component caps the visible list to 6. Google's FAQPage rich result
           guidelines require the schema content to be visible on the page,
           so this section renders the full list to match the schema. */}
-      <PrimarySection id="faq" className="py-14 md:py-18 lg:py-24 bg-gray-50/70">
+      <PrimarySection id="faq" className="py-section bg-gray-50/70">
         <Container>
           <SectionTitle
-            textAlign="center"
+            align="center"
             subtitle={pageData.sections.faqs.subtitle}
             className="mb-10 md:mb-12"
           >

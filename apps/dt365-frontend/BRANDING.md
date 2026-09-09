@@ -57,7 +57,7 @@ Canonical text colors:
 | `text-gray-500` | RelatedPages blurb, contact muted text, breadcrumb default |
 | `text-gray-400` | Placeholders, dim icons |
 | `text-gray-300` | Inactive star color, breadcrumb separator |
-| `border-gray-100` | Card borders (Process pattern) |
+| `border-gray-100` | Card borders (Benefits pattern) |
 | `border-gray-200` | Input borders, RelatedPages card borders |
 | `bg-gray-50/70` | Sectioned-off section backgrounds (Benefits, FAQ) |
 | `bg-gray-50/60` | RelatedPages section background |
@@ -100,9 +100,9 @@ Two H1 styles and two H2 styles are intentional and canonical:
 |---|---|---|---|---|
 | Landing-page H1 (with form hero) | `<h1>` via `Hero` | `text-h1-landing` | 30 → 46 @md, line-height 1.3 | `text-h1-landing font-bold font-outfit text-gray-900 mb-5` |
 | Utility-page H1 | `<h1>` via `PageTitle` | `text-h1-page` | 26 → 36 @md, line-height 32 → 48 | `text-h1-page text-black capitalize font-medium font-outfit` |
-| Section heading (default) | `<h2>` via `SectionTitle` | `text-h2` | 26 → 31 @md → 34 @lg, line-height 1.2 | `text-h2 text-gray-900 font-medium font-outfit tracking-[-0.01em] capitalize mb-2.5 text-left` |
+| Section heading (default) | `<h2>` via `SectionTitle` | `text-h2` | 26 → 31 @md → 34 @lg, line-height 1.2 | `text-h2 text-gray-900 font-semibold font-outfit tracking-[-0.02em]! mb-3 text-left`, preceded by a 40×3px `bg-primary-600` rule. Sentence case — **no `capitalize`**. |
 | Quick-answer heading | `<h2>` via `QuickAnswer` | `text-h2` | 26 → 31 @md → 34 @lg, line-height 1.2 | `text-h2 text-gray-900 font-medium font-outfit tracking-[-0.01em] text-left mb-2.5` (sentence case, **no `capitalize`** — the question is a full sentence) |
-| Content card title (Process, Benefits) | `<h3>` | `text-h3-card` | 20 | `text-h3-card font-normal text-gray-900 capitalize font-outfit text-left mt-4 mb-2` |
+| Content card title (Process, Benefits) | `<h3>` | `text-h3-card` | 20 | Benefits: `text-h3-card font-normal text-gray-900 capitalize font-outfit text-left mt-4 mb-2`. Process: `text-h3-card font-semibold text-gray-900 tracking-[-0.01em]! mb-2` (sentence case) |
 | FAQ question | `<h3>` via `FaqAccordion` | `text-h3-faq` | 16 → 18 @sm, line-height 1.375 | `text-h3-faq font-medium` (color flips per state) |
 | Related-link card title | `<h3>` via `RelatedPages` | `text-[15px]` (no token, see note) | 15 | `text-[15px] font-bold text-gray-900 group-hover:text-primary-700 transition-colors mb-1.5 leading-snug` |
 | Body large (Hero subtitle, QuickAnswer body) | `<p>` | `text-body-lg` | 16 → 18 @md, line-height 1.75rem | `text-body-lg text-gray-600 font-normal` |
@@ -121,7 +121,7 @@ Two H1 styles and two H2 styles are intentional and canonical:
 
 Three H3 roles are intentional and canonical:
 
-- **Content card title** (Process, Benefits) — soft, 20 px font-normal capitalize. Long enough to carry a sentence.
+- **Content card title** (Process, Benefits) — 20 px. Benefits is font-normal capitalize; Process is font-semibold sentence case (timeline step, no card surface). Long enough to carry a sentence.
 - **Accordion question** (FaqAccordion) — 16-18 px font-medium, smaller because it sits inside a clickable button.
 - **Related-link card title** (RelatedPages) — 15 px font-bold. Compact card surface where the title doubles as the link anchor.
 
@@ -136,7 +136,7 @@ Don't add a fourth.
 
 ### Letter spacing
 
-Headings carry `tracking-[-0.01em]` via the base `h1-h6` rule in `globals.css`. `SectionTitle` repeats it explicitly. No other tracking should be added.
+Headings carry `tracking-[-0.01em]` via the base `h1-h6` rule in `globals.css`. That rule is **unlayered**, so it beats Tailwind's layered `tracking-*` utilities regardless of specificity — any heading that needs different tracking must use the `!` modifier (`tracking-[-0.02em]!`), as `SectionTitle` and the Process step title do. No other tracking should be added.
 
 ---
 
@@ -159,7 +159,7 @@ For narrow text-only blocks (e.g. quick-answer body), nest a `max-w-3xl mx-auto`
 ```jsx
 import PrimarySection from '@travel-suite/frontend-shared/components/shared/layout/PrimarySection';
 
-<PrimarySection className="py-14 md:py-18 lg:py-24" id="benefits">
+<PrimarySection className="py-section" id="benefits">
   <Container>{...}</Container>
 </PrimarySection>
 ```
@@ -168,7 +168,7 @@ import PrimarySection from '@travel-suite/frontend-shared/components/shared/layo
 
 ### Standard section padding
 
-Use `py-14 md:py-18 lg:py-24` for any normal content section (matches Process, Benefits, FAQ, Testimonials, Contact, BlogPosts). Do not invent a new rhythm.
+Use `py-section` for any normal content section (48/56/72px, defined in `globals.css`) (matches Process, Benefits, FAQ, Testimonials, Contact, BlogPosts). Do not invent a new rhythm.
 
 For connector blocks between major sections (QuickAnswer, RelatedPages): `py-12 md:py-16`.
 
@@ -181,7 +181,8 @@ Do not modify hero padding per page. Use the existing component.
 
 ### Grid gaps
 
-- Card grids (Process, Benefits): `gap-5 md:gap-7`
+- Card grids (Benefits): `gap-5 md:gap-6`
+- Process timeline: `gap-8 lg:gap-6` (the `lg` value is also the connector-line length)
 - Wider Contact/About layouts: `gap-8 lg:gap-12`
 - RelatedPages 4-up grid: `gap-4`
 
@@ -252,12 +253,22 @@ import SectionTitle from '@travel-suite/frontend-shared/components/shared/layout
 
 `type="secondary"` swaps the H2 color from `text-gray-900` to `text-primary-700`. Use sparingly.
 
+`align="center"` centres the rule, heading and subtitle from `md` up, staying left-aligned on
+mobile. Default is left. Every section on the marketing pages passes it — `Process`, `Benefits`,
+`FAQ`, `Testimonials`, `BlogPosts`, `RelatedPages`, MDT's `PricingTiers`, and the per-page
+benefit/FAQ blocks. Three deliberate exceptions stay left: `About`, any heading that sits directly
+above a left-aligned prose paragraph (the insurance pages' "Applying for a Schengen Visa?" style
+blocks), and the section headings inside `/privacy-policy` and `/terms-and-conditions`, where
+centring sub-headings over long-form legal text hurts readability. The old `textAlign` prop was accepted and then discarded — every one
+of its 50 call sites rendered left regardless — so it has been removed rather than made live,
+which would have silently re-centred four brands.
+
 ### PrimarySection and Container
 
 Always pair them. `PrimarySection` is the outer `<section>` (controls padding and background). `Container` is the inner width-limiter.
 
 ```jsx
-<PrimarySection className="py-14 md:py-18 lg:py-24 bg-gray-50/70" id="benefits">
+<PrimarySection className="py-section bg-gray-50/70" id="benefits">
   <Container>
     <SectionTitle textAlign="center" className="mb-10 md:mb-12">
       Why Choose DT365?
@@ -306,7 +317,7 @@ There is no single Card component. The card pattern is a `div` with these classe
 </div>
 ```
 
-For cards on white background (Process step pattern):
+For cards on white background (Benefits step pattern):
 
 ```jsx
 <div className="rounded-2xl border border-gray-100 bg-white p-7 md:p-8 shadow-[0_14px_35px_rgba(16,24,40,0.08)]">
@@ -334,7 +345,7 @@ import FaqAccordion from '@travel-suite/frontend-shared/components/ui/v1/FaqAcco
 </FaqAccordion>
 ```
 
-The shared `<FAQ>` section component slices to 6 items. If a page passes more than 6 FAQs and those are also in the FAQPage schema, render the full list inline using `<FaqAccordion>` directly (see `/dummy-ticket-schengen-visa` and `/onward-ticket` for the inline pattern).
+The shared `<FAQ>` section wraps the accordions in a single `rounded-2xl border border-gray-200` list on a white background and closes with a "Still have questions? Read all FAQs" link to `/faq`. It slices to 6 items. If a page passes more than 6 FAQs and those are also in the FAQPage schema, render the full list inline using `<FaqAccordion>` directly (see `/dummy-ticket-schengen-visa` and `/onward-ticket` for the inline pattern).
 
 ### QuickAnswer (DT365 local)
 
@@ -419,6 +430,11 @@ import Process from '@travel-suite/frontend-shared/components/sections/v1/Proces
 ```
 
 If you don't pass `steps`, a default generic template renders.
+
+Renders as a numbered `<ol>` timeline, not cards: a `bg-primary-600` numeral badge per
+step with a hairline connector running to the next one (horizontal at `lg`, vertical
+below it). The last step renders no connector. Step titles are sentence case — write
+them that way in `steps`, nothing upper-cases them for you.
 
 ### Benefits
 
@@ -527,7 +543,7 @@ Never use arbitrary radius like `rounded-[7px]`. The asymmetric `rounded-[16px_4
 
 | Use | Class |
 |---|---|
-| Card border (default) | `border border-gray-100` (Process pattern) |
+| Card border (default) | `border border-gray-100` (Benefits pattern) |
 | Card border on tinted bg | `border border-white` (over `bg-gray-50/70`) |
 | Input border | `border border-gray-200` |
 | Tinted wrapper border | `border border-primary-100` (Contact, About Stat) |
@@ -541,7 +557,7 @@ Never use arbitrary radius like `rounded-[7px]`. The asymmetric `rounded-[16px_4
 - Reuse the components in section 4. Don't re-style.
 - Use `Container` inside `PrimarySection` for every page section.
 - Use `SectionTitle` for every section H2.
-- Match the standard section padding `py-14 md:py-18 lg:py-24`.
+- Match the standard section padding `py-section`.
 - Use the existing color tokens. Reference colors as `bg-primary-500`, not the hex.
 - Use Outfit (already loaded). Reference via `font-outfit` only when overriding.
 - Use the standard card pattern: `rounded-2xl`, `border border-gray-100` or `border border-white`, the shadow tokens above.
@@ -595,3 +611,5 @@ If this doc disagrees with the code, the code wins. Open an issue or update the 
 | 2026-06-30 | §2 typography, §8 do's and don'ts, §9 open questions | Resolved OQ16 (named type scale). Added 10 `@utility` blocks to DT365 and MDT `globals.css` (kept in sync): `text-h1-landing`, `text-h1-page`, `text-h2`, `text-h2-compact`, `text-h3-card`, `text-h3-faq`, `text-body-lg`, `text-body`, `text-small`, `text-pill`. Each bakes in size + responsive shifts + line-height. §2 table updated so every row references the token name as the canonical class; Do/Don't section now enforces "use tokens, never `text-[XYpx]`". Migration is opportunistic: only QuickAnswer migrated in this PR as the reference implementation (`text-[22px] md:text-[26px] ... leading-tight` → `text-h2-compact`; `text-[16px] md:text-[18px] ... leading-7` → `text-body-lg`). Two pixel values (15, 15→16) intentionally not tokenised this round — noted in §2. Open Questions now: 3 items remaining (button naming, gradient tokens, icon libraries). |
 | 2026-07-01 | §2 typography, §4 components, §5 interactive states | Two UI fixes. (1) Booking form (`TicketForm`, shared, used by 25 pages across DT365 and MDT): removed the "disabled until valid" gating on the Search Flights CTA so it always renders active accent-500. Validation now fires on submit; missing required fields get `border-red-600` plus a `<FieldError>` underneath, first invalid field is focused and scrolled into view, field errors clear as users fill them. Added optional `error` and `inputRef` props to `SelectAirport` and `DatePicker` primitives (backward-compatible). (2) `QuickAnswer` redesign: removed `max-w-3xl mx-auto` centering, wrapped in standard `<Container>`, left-aligned. Heading now uses `text-h2` (was `text-h2-compact`) matching `SectionTitle` with one deliberate deviation (no `capitalize`, since the question is a full sentence). Added `HiOutlineQuestionMarkCircle` (react-icons/hi2) at `w-7 h-7 text-primary-500` left of the heading. Answer paragraph gets `max-w-[760px]` to match `SectionTitle` subtitle width. `text-h2-compact` is now orphaned (no component uses it); flagged in §2 as a removal candidate, not removed. Added a new §5 entry covering inline form-validation styling with red-600. |
 | 2026-07-01 | §4 components | `QuickAnswer` visual follow-up: wrapped content in a soft tinted box (`rounded-2xl border border-primary-100 bg-primary-50/40 p-6 md:p-8`) so the block reads as a deliberate answer card rather than floating prose between the hero and the process section. Reuses the documented `border-primary-100` tinted-wrapper convention from §7. Removed the outer section's `border-b border-gray-100` since the new box self-delineates. |
+| 2026-09-09 | §2 typography, §3 spacing, §4 components, §7 border/shadow | Visual refresh across DT365 and MDT (shared v1 components, so both brands move together). (1) `SectionTitle` H2 is now `font-semibold` with `tracking-[-0.02em]!` and a 40×3px `bg-primary-600` rule above it; dropped `capitalize`, which was upper-casing articles in authored sentence-case headings ("Book **An** Emirates…"). Documented the unlayered `h1-h6` letter-spacing rule that had been silently killing every `tracking-*` utility on headings. (2) Section rhythm moved from the repeated literal `py-14 md:py-18 lg:py-24` to a `py-section` `@utility` defined per brand, so DT365 and MDT tighten to 48/56/72px while travl, emirateslimo, airportrides and visawadi keep 56/72/96px. (3) `Process` redesigned from shadowed cards to a numbered `<ol>` timeline with connector lines; removes the dead space that unequal step copy left in the old equal-height cards, and drops a leftover empty connector `<div>`. (4) `Benefits` cards flattened to `border-gray-200` with no shadow, tinted `bg-primary-50` icon tile, `font-semibold` sentence-case titles, and a 2-up `md` breakpoint. (5) `FAQ` section rebuilt in the v2 style (single bordered/divided list on white, "Read all FAQs" link to `/faq`); kept the v1 `FaqAccordion` rather than v2's so FAQ questions stay `<h3>`, and pointed the closing link at `/faq` because neither brand has the `/contact` route v2 links to. |
+| 2026-09-09 | §2 typography, §3 spacing, §4 components | Follow-up to the same refresh. (1) `TestimonialCard` flattened to match `Benefits`: `border-gray-200`, no shadow, `hover:border-primary-300`, quote promoted to a real `<blockquote>` at 16px, plan pill moved up beside the stars, decorative quote-mark tile dropped. Star row gained an `sr-only` "N out of 5 stars" label. Testimonials grid gap `md:gap-7` → `md:gap-6`. (2) MDT's `PricingTiers` comparison table rebuilt: wrapped in `rounded-2xl border-gray-200`, `bg-gray-50` uppercase micro-label header, `divide-y` rows with hover, price cell promoted to 20px semibold `primary-700`, "Most popular" pill on the 7-day tier. Stays a real `<table>` with `<caption>` and row `<th scope="row">` — it earns AI-overview and featured-snippet pickup, so it must not become a div grid. Still scrolls horizontally below ~520px, which is the intended responsive behaviour for a 3-column comparison. (3) `SectionTitle` gained a working `align` prop; `textAlign` removed. |

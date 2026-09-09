@@ -23,7 +23,7 @@ export default function FAQs({ title = 'Frequently Asked Questions', subtitle = 
     <>
       <PrimarySection className="py-15 lg:py-30">
         <Container>
-          <SectionTitle textAlign="center" subtitle={subtitle}>
+          <SectionTitle subtitle={subtitle}>
             {title}
           </SectionTitle>
           <div className="mt-12 flex flex-col gap-5 overflow-x-scroll lg:overflow-x-visible">

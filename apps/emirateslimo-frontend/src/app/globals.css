@@ -247,3 +247,13 @@ label {
     padding: 12px 14px;
   }
 }
+
+@utility py-section {
+  padding-block: 56px;
+  @media (min-width: 768px) {
+    padding-block: 72px;
+  }
+  @media (min-width: 1024px) {
+    padding-block: 96px;
+  }
+}

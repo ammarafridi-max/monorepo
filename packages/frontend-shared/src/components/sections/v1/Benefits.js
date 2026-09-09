@@ -8,21 +8,21 @@ export default function Benefits({
   benefits,
 }) {
   return (
-    <PrimarySection className="py-14 md:py-18 lg:py-24 bg-gray-50/70" id="benefits">
+    <PrimarySection className="py-section bg-gray-50/70" id="benefits">
       <Container>
-        <SectionTitle textAlign="center" subtitle={subtitle} className="mb-10 md:mb-12">
+        <SectionTitle align="center" subtitle={subtitle} className="mb-10 md:mb-12">
           {title}
         </SectionTitle>
-        <div className="flex flex-col gap-5 md:grid md:grid-cols-3 md:gap-7">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
           {benefits.map((item, i) => (
             <div
-              className="w-full md:mb-0 font-outfit rounded-2xl border border-white bg-white p-7 shadow-[0_14px_35px_rgba(16,24,40,0.08)]"
+              className="h-full font-outfit rounded-2xl border border-gray-200 bg-white p-6 md:p-7 transition-colors duration-200 hover:border-primary-300"
               key={i}
             >
-              <div className="w-10 h-10 flex items-center justify-center bg-primary-600 text-white text-lg font-medium font-outfit rounded-xl">
+              <div className="w-11 h-11 flex items-center justify-center bg-primary-50 text-primary-700 text-[19px] rounded-xl">
                 <item.icon />
               </div>
-              <h3 className="text-[20px] font-normal text-gray-900 capitalize font-outfit text-left mt-4 mb-2">
+              <h3 className="text-[20px] font-semibold text-gray-900 tracking-[-0.01em]! text-left mt-5 mb-2">
                 {item?.title}
               </h3>
               <p className="text-[16px] text-gray-600 font-light leading-7">{item?.text}</p>

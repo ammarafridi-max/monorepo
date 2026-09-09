@@ -85,7 +85,7 @@ export default function ContactUs() {
       {/* Contact Channels */}
       <PrimarySection className="py-15 lg:py-20">
         <Container>
-          <SectionTitle subtitle="Get In Touch" textAlign="center">
+          <SectionTitle subtitle="Get In Touch">
             How to Reach Us
           </SectionTitle>
 

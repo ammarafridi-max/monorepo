@@ -1,8 +1,8 @@
+import Link from 'next/link';
 import SectionTitle from '../../shared/layout/SectionTitle';
 import PrimarySection from '../../shared/layout/PrimarySection';
 import Container from '../../shared/layout/Container';
 import FaqAccordion from '../../ui/v1/FaqAccordion';
-import PrimaryLink from '../../ui/v1/PrimaryLink';
 
 export default function FAQ({
   title = 'Frequently Asked Questions',
@@ -10,25 +10,29 @@ export default function FAQ({
   faqs,
 }) {
   return (
-    <PrimarySection id="faq" className="py-14 md:py-18 lg:py-24 bg-gray-50/70">
+    <PrimarySection id="faq" className="py-section">
       <Container>
-        <SectionTitle textAlign="center" subtitle={subtitle} className="mb-10 md:mb-12">
+        <SectionTitle align="center" subtitle={subtitle} className="mb-10 md:mb-12">
           {title}
         </SectionTitle>
-        <div className="rounded-2xl border border-white bg-white p-4 md:p-7 shadow-[0_14px_35px_rgba(16,24,40,0.08)]">
-          <div className="flex flex-col gap-1">
+
+        <div className="rounded-2xl border border-gray-200 overflow-hidden [&>*:last-child]:border-b-0">
           {faqs?.slice(0, 6).map((faq, i) => (
             <FaqAccordion key={i} question={faq.question}>
               {faq.answer}
             </FaqAccordion>
           ))}
-          </div>
         </div>
-        <div className="flex items-center justify-center mt-10">
-          <PrimaryLink size="small" to="/faq">
-            Read More FAQs
-          </PrimaryLink>
-        </div>
+
+        <p className="mt-8 text-center text-[15px] text-gray-600">
+          Still have questions?{' '}
+          <Link
+            href="/faq"
+            className="text-primary-700 font-medium hover:underline"
+          >
+            Read all FAQs
+          </Link>
+        </p>
       </Container>
     </PrimarySection>
   );

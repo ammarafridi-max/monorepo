@@ -22,11 +22,11 @@ export default async function BlogPosts({
   }
 
   return (
-    <PrimarySection className="py-14 md:py-18 lg:py-24">
+    <PrimarySection className="py-section">
       <Container>
         <SectionTitle
+          align="center"
           subtitle={subtitle}
-          textAlign="center"
           className="mb-10 md:mb-12"
         >
           {title}

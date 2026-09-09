@@ -20,7 +20,7 @@ export default function RelatedPages({
     <PrimarySection className="py-12 md:py-16 bg-gray-50/60 border-t border-gray-100">
       <Container>
         <SectionTitle
-          textAlign="center"
+          align="center"
           subtitle={subtitle}
           className="mb-8 md:mb-10"
         >

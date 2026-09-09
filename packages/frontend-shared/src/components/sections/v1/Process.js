@@ -24,37 +24,47 @@ export default function Process({
   steps = stepsTemplate,
 }) {
   return (
-    <PrimarySection className="py-14 md:py-18 lg:py-24" id="process">
+    <PrimarySection className="py-section" id="process">
       <Container>
         <SectionTitle
-          textAlign="center"
+          align="center"
           subtitle={subtitle}
           className="mb-10 md:mb-12"
         >
           {title}
         </SectionTitle>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 md:gap-7">
+        <ol className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-6">
           {steps.map((step, i) => (
-            <div
-              className="relative min-w-0 rounded-2xl border border-gray-100 bg-white p-7 md:p-8 shadow-[0_14px_35px_rgba(16,24,40,0.08)]"
-              key={i}
-            >
-              <div className="absolute inset-x-0 top-10 hidden lg:block">
+            <li key={i} className="relative flex gap-5 lg:block">
+              {i < steps.length - 1 && (
+                <>
+                  <span
+                    aria-hidden="true"
+                    className="absolute left-5 top-12 -bottom-8 w-px bg-gray-200 lg:hidden"
+                  />
+                  <span
+                    aria-hidden="true"
+                    className="absolute hidden lg:block top-5 left-12 -right-6 h-px bg-gray-200"
+                  />
+                </>
+              )}
 
+              <span className="relative z-10 shrink-0 w-10 h-10 rounded-full bg-primary-600 text-white flex items-center justify-center text-[15px] font-semibold">
+                {i + 1}
+              </span>
+
+              <div className="min-w-0 lg:mt-5">
+                <h3 className="text-[20px] font-semibold text-gray-900 tracking-[-0.01em]! mb-2">
+                  {step.title}
+                </h3>
+                <p className="text-[16px] text-gray-600 font-light leading-7">
+                  {step.text.replaceAll('{keyword}', keyword)}
+                </p>
               </div>
-              <div className="relative z-10 w-10 h-10 flex items-center justify-center bg-primary-600 text-white text-md font-medium font-outfit rounded-full shadow-sm">
-                {String(i + 1).padStart(2, '0')}
-              </div>
-              <h3 className="text-[20px] font-normal text-gray-900 capitalize font-outfit text-left mt-4 mb-2">
-                {step.title}
-              </h3>
-              <p className="text-[16px] text-gray-600 font-light leading-7">
-                {step.text.replaceAll('{keyword}', keyword)}
-              </p>
-            </div>
+            </li>
           ))}
-        </div>
+        </ol>
       </Container>
     </PrimarySection>
   );
