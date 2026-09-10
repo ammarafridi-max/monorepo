@@ -1,21 +1,22 @@
 import { samples } from '../data/samples';
 import Frame from '../components/Frame';
 import Container from '../components/Container';
+import SectionHeading from '../components/SectionHeading';
 
 // The results showcase: the loudest section on the page, built as a photography
-// studio's portfolio. Each sample shows the ordinary selfies it started from
-// (a small filmstrip) resolving into a wall of studio prints. Data-driven from
-// data/samples.js so new identities are pure content edits.
+// studio's portfolio. Each sample is a real scenario, showing the ordinary selfies
+// it started from (a small filmstrip), what the person needed the set for, and the
+// wall of studio prints they got back. Data-driven from data/samples.js so new
+// identities are pure content edits.
 export default function Showcase() {
   return (
     <section id="work" className="section showcase">
       <Container>
-        <p className="eyebrow">The work</p>
-        <h2 className="h2">Real headshots, from real selfies.</h2>
-        <p className="section__lede">
-          Every set below started as a handful of ordinary phone selfies. Same
-          person, turned into a studio shoot.
-        </p>
+        <SectionHeading
+          eyebrow="The work"
+          title="Real people, real selfies, real sets."
+          lede="Every set below started as ordinary phone selfies that were never meant to be headshots. Same person, same face, photographed properly."
+        />
 
         <div className="samples">
           {samples.map((s) => (
@@ -36,6 +37,14 @@ export default function Showcase() {
                   <span className="sample__name">{s.name}</span>
                   {s.role ? `, ${s.role}` : ''}
                 </p>
+
+                {s.scenario && <p className="sample__scenario">{s.scenario}</p>}
+                {s.story && <p className="sample__story">{s.story}</p>}
+                {s.used && (
+                  <p className="sample__used">
+                    <span className="sample__usedlabel">Used for</span> {s.used}
+                  </p>
+                )}
               </div>
 
               <div className="sample__after">

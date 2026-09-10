@@ -1,0 +1,150 @@
+/*
+ * Tailwind for the @travel-suite/frontend-shared components the CUSTOMER SITE
+ * reuses: the FAQ accordion the travel brands ship, and the whole client blog
+ * (BlogPage, BlogPostPage and the cards, rails and breadcrumb they pull in). The
+ * site is otherwise plain CSS and stays that way; this exists so a shared page can
+ * be rendered as-is rather than re-implemented.
+ *
+ * Three deliberate limits keep it from leaking into the marketing pages:
+ *
+ * 1. NO PREFLIGHT. The full `@import 'tailwindcss'` pulls in Preflight, whose
+ *    element resets would re-style every marketing page. We import only the theme
+ *    variables and the utilities. The handful of resets those components actually
+ *    depend on are re-created at the bottom, scoped to `.shared-ui`.
+ * 2. `source(none)` plus explicit `@source` lines means Tailwind scans ONLY the
+ *    shared trees we render, never this app, so /admin's classes never land here.
+ * 3. The `.shared-ui` wrapper is required on any subtree using these components.
+ *
+ * UNLAYERED on purpose. globals.css styles bare elements (`a { color: green }`)
+ * outside any cascade layer, and unlayered rules beat layered ones no matter their
+ * specificity, so a layered `.text-white` on a link inside the dark blog hero would
+ * lose and render green on green. Keeping utilities unlayered puts them back under
+ * normal specificity rules, where a class beats a bare element selector. Nothing
+ * collides: this app's own CSS is all BEM-ish class names, never utility names.
+ */
+
+@layer theme;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' source(none);
+
+/* The only files Tailwind reads: exactly the components this site renders, so the
+   stylesheet carries no utilities for pages we never show. ADD A LINE HERE when a
+   shared component starts being rendered on the site, or it ships unstyled. */
+@source "../../../../packages/frontend-shared/src/pages/client/BlogPage.js";
+@source "../../../../packages/frontend-shared/src/pages/client/BlogPostPage.js";
+@source "../../../../packages/frontend-shared/src/components/shared/layout/Container.js";
+@source "../../../../packages/frontend-shared/src/components/shared/layout/PrimarySection.js";
+@source "../../../../packages/frontend-shared/src/components/shared/layout/Breadcrumb.js";
+@source "../../../../packages/frontend-shared/src/components/cards/BlogCard.js";
+@source "../../../../packages/frontend-shared/src/components/ui/v1/BlogPaginationBar.js";
+@source "../../../../packages/frontend-shared/src/components/ui/v1/FaqAccordion.js";
+@source "../../../../packages/frontend-shared/src/components/ui/v2/FaqAccordion.js";
+@source "../../../../packages/frontend-shared/src/components/ui/v2/ShareButtons.js";
+@source "../../../../packages/frontend-shared/src/components/ui/v2/AuthorBox.js";
+@source "../../../../packages/frontend-shared/src/components/ui/v2/BlogOfferCard.js";
+@source "../../../../packages/frontend-shared/src/components/ui/v2/BlogInlineOffer.js";
+@source "../../../../packages/frontend-shared/src/components/sections/v2/BlogChipNav.js";
+@source "../../../../packages/frontend-shared/src/components/sections/v2/BlogOfferRail.js";
+@source "../../../../packages/frontend-shared/src/components/sections/v2/BlogRelatedPosts.js";
+
+@theme inline {
+  /* Forest & Gold, from docs/picturesk/BRAND.md. Shared components are
+     parameterised on `primary` and `accent`, exactly like the travel brands and
+     like app/admin/admin.css, so they pick up Picturesk's green and gold. */
+  --color-primary-50: #f0f6f5;
+  --color-primary-100: #d9e9e6;
+  --color-primary-200: #b3d3ce;
+  --color-primary-300: #85b6af;
+  --color-primary-400: #57968e;
+  --color-primary-500: #327a71;
+  --color-primary-600: #1a5f58;
+  --color-primary-700: #0e4a44;
+  --color-primary-800: #0c3b36;
+  --color-primary-900: #0a2e2a;
+  --color-primary-950: #061c1a;
+
+  --color-accent-50: #fdf7ea;
+  --color-accent-100: #faedcc;
+  --color-accent-200: #f4da9c;
+  --color-accent-300: #eec66c;
+  --color-accent-400: #e7b24c;
+  --color-accent-500: #d99c2c;
+  --color-accent-600: #b87d1f;
+  --color-accent-700: #925f1b;
+  --color-accent-800: #6d461a;
+  --color-accent-900: #4a3015;
+  --color-accent-950: #2a1b0b;
+
+  /* Primary text in the shared components is text-gray-800 / text-gray-900. The
+     site sets its own copy to pure black, so these two are remapped to match;
+     gray-600 and below stay neutral greys for secondary text. */
+  --color-gray-800: #000000;
+  --color-gray-900: #000000;
+}
+
+/*
+ * The Preflight normalisations those components assume, scoped to the wrapper so
+ * they touch nothing else on the site. Written as `:where(.shared-ui) element`,
+ * which is specificity 0,0,1: high enough to beat the browser default and (being
+ * later in the cascade) globals.css's bare-element rules, low enough that any
+ * utility class on the element still wins. Getting that ordering wrong is what
+ * makes an unstyled or a green-on-green blog, so do not raise it to `.shared-ui a`.
+ */
+:where(.shared-ui) h1,
+:where(.shared-ui) h2,
+:where(.shared-ui) h3,
+:where(.shared-ui) h4,
+:where(.shared-ui) h5,
+:where(.shared-ui) h6,
+:where(.shared-ui) p,
+:where(.shared-ui) figure,
+:where(.shared-ui) blockquote,
+:where(.shared-ui) dl,
+:where(.shared-ui) dd,
+:where(.shared-ui) ul,
+:where(.shared-ui) ol,
+:where(.shared-ui) pre {
+  margin: 0;
+}
+
+:where(.shared-ui) ul,
+:where(.shared-ui) ol {
+  padding: 0;
+  list-style: none;
+}
+
+:where(.shared-ui) h1,
+:where(.shared-ui) h2,
+:where(.shared-ui) h3,
+:where(.shared-ui) h4,
+:where(.shared-ui) h5,
+:where(.shared-ui) h6 {
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+:where(.shared-ui) a {
+  color: inherit;
+  text-decoration: inherit;
+}
+
+:where(.shared-ui) button {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+:where(.shared-ui) img,
+:where(.shared-ui) svg,
+:where(.shared-ui) video {
+  display: block;
+  max-width: 100%;
+}
+
+:where(.shared-ui) hr {
+  border: 0;
+  border-top: 1px solid currentColor;
+}

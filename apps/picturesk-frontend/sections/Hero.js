@@ -1,39 +1,50 @@
-import { samples } from '../data/samples';
+import { heroShots } from '../data/samples';
 import Frame from '../components/Frame';
+import Check from '../components/Check';
 import Container from '../components/Container';
 
-// Hero: the thesis. Serif verdict headline, one primary action that scrolls to
-// the uploader, and a small cluster of real result frames so photos are loud from
-// the first screen. The cluster pulls from the first sample set, so once real R2
-// URLs land in data/samples.js the hero fills in with no markup change.
+// Hero: the thesis. A verdict headline, a quick-answer paragraph that states
+// plainly what the product does (the thing a first-time visitor and an AI summary
+// both need), one primary action, and the promises as a short ticked list. The
+// frame cluster is its own set in data/samples.js (heroShots), picked so the hero
+// and the portfolio below never show the same photo twice.
+const PROMISES = [
+  'Look-like-you guarantee, or your money back',
+  'Three one-time plans, from nine dollars',
+  'Delivered by email in about an hour',
+];
+
 export default function Hero() {
-  const showcase = (samples[0]?.after ?? []).slice(0, 3);
-  const frames = showcase.length ? showcase : ['', '', ''];
+  const frames = heroShots.length ? heroShots.slice(0, 3) : ['', '', ''];
 
   return (
     <section className="hero">
       <Container className="hero__inner">
         <div className="hero__copy">
-          <p className="eyebrow">A photo studio in your browser</p>
+          <p className="eyebrow">AI Headshot Generator</p>
           <h1 className="display hero__title">
             Headshots that don&apos;t look AI.
           </h1>
           <p className="lede">
-            Upload a few selfies. We train a model on your face and send back studio
-            headshots you would actually put on LinkedIn.
+            Picturesk is an AI headshot generator. Upload five to fifteen selfies, choose
+            the backgrounds and outfits you want, and pay once. We train a model on your
+            own face, generate a set of professional headshots across those looks, and
+            email them to you in about an hour. No studio, no photographer, no
+            subscription.
           </p>
           <div className="hero__actions">
             <a className="btn btn--primary" href="/ai-headshot-generator/select">
               Get my headshots <span className="btn__price">from $9</span>
             </a>
-            <a className="btn btn--link" href="#work">
-              See real results
-            </a>
           </div>
-          <p className="hero__guarantee">Look-like-you guarantee, or your money back.</p>
-          <p className="hero__meta">
-            Three one-time plans, from nine dollars. Delivered by email in about an hour.
-          </p>
+          <ul className="hero__promises">
+            {PROMISES.map((promise) => (
+              <li className="hero__promise" key={promise}>
+                <Check />
+                <span>{promise}</span>
+              </li>
+            ))}
+          </ul>
         </div>
 
         <div className="hero__gallery">

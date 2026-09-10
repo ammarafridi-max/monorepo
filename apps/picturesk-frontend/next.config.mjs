@@ -25,6 +25,19 @@ const nextConfig = {
       { source: '/generator/capture', destination: '/ai-headshot-generator/capture', permanent: true },
     ];
   },
+  // Blog cover images are served from the R2 bucket the api writes to, so
+  // next/image has to be told the host is ours. R2's public buckets live on
+  // <id>.r2.dev; set NEXT_PUBLIC_IMAGE_HOST as well once a custom CDN domain is
+  // put in front of the bucket.
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    remotePatterns: [
+      { protocol: 'https', hostname: '**.r2.dev' },
+      ...(process.env.NEXT_PUBLIC_IMAGE_HOST
+        ? [{ protocol: 'https', hostname: process.env.NEXT_PUBLIC_IMAGE_HOST }]
+        : []),
+    ],
+  },
   // Keep these server-only packages out of the bundler (mongoose in particular
   // misbehaves when bundled). They load from node_modules at runtime, on the
   // Node.js server only.

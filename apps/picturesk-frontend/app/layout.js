@@ -18,11 +18,12 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <head>
         {/* Fonts loaded at runtime so the build never depends on the network.
-            Fraunces = serif display, Inter = grotesque body (see BRAND.md). */}
+            Commissioner is the single typeface, display and body (see BRAND.md).
+            The variable axis covers 400 to 800, which is every weight the site uses. */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400..800&display=swap"
           rel="stylesheet"
         />
       </head>

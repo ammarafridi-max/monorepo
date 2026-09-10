@@ -1,37 +1,45 @@
 /*
  * Picturesk brand tokens + base styles. See BRAND.md.
  * Forest & Gold: warm sand body, deep-green ink, green as the workhorse accent
- * (CTAs, links, focus) with gold as the second accent. Inter (humanist sans) for
- * both display and body. Token NAMES kept (--cobalt = green, --serif = sans) to
- * avoid churn across existing var() refs.
+ * (CTAs, links, focus) with gold as the second accent. Commissioner (humanist
+ * sans) for both display and body. Token NAMES kept (--cobalt = green, --serif
+ * = sans) to avoid churn across existing var() refs.
  */
 
 :root {
   /* Forest & Gold brand (rebrand). Token names kept so existing var() refs work.
      --cobalt is now the GREEN workhorse accent; --serif now resolves to the
-     humanist sans display stack (headings are sans in this identity). */
-  --ink: #163a33;
-  --bone: #f5efe2;
+     humanist sans display stack (headings are sans in this identity), so both
+     type tokens are Commissioner. */
+  /* Text is black, and secondary text is a NEUTRAL grey. Both were green-tinted
+     (#163a33 / #5f6b62), which read as a colour cast once the page went white. */
+  --ink: #000000;
+  /* The page ground. White, not the old sand: --bone is also the text colour on
+     the dark green chrome, where white reads correctly too. */
+  --bone: #ffffff;
   --cobalt: #0e4a44;
   --gold: #e7b24c;
-  --ash: #5f6b62;
-  --line: #e4dcc8;
-  --card: #fbf7ec;
+  --ash: #4b5563;
+  --line: #e5e7eb;
+  --card: #ffffff;
   --ok: #1f9d57;
   --warn: #c4462b;
-  --serif: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --serif: 'Commissioner', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --sans: 'Commissioner', ui-sans-serif, system-ui, -apple-system, sans-serif;
   --fg-gold: #e7b24c;
   --fg-hero-fg: #f4eee1;
   --fg-hero-muted: #a9c3bd;
   --fg-hero-ring: rgba(244, 238, 225, 0.16);
-  --fg-body-bg: #f5efe2;
-  --fg-body-bg2: #eee6d3;
-  --fg-ink: #163a33;
-  --fg-muted: #5f6b62;
+  --fg-body-bg: #ffffff;
+  --fg-body-bg2: #f7f8f8;
+  --fg-ink: #000000;
+  --fg-muted: #4b5563;
   --fg-green: #0e4a44;
-  --fg-line: #e4dcc8;
-  --fg-card: #fbf7ec;
+  --fg-cta: #0f7a6b;
+  --fg-line: #e5e7eb;
+  --fg-card: #ffffff;
+  /* The one non-white fill left: table headers and other quiet bands. */
+  --fg-band: #f4f5f6;
   --fg-footer: #0a3833;
   --fg-on-gold: #123f3a;
 }
@@ -72,30 +80,16 @@ a {
 
 /* Layout ------------------------------------------------------------------ */
 
-.wrap {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 72px 24px 96px;
-}
-
-.wrap--wide {
-  max-width: 960px;
-}
-
-.topbar {
-  /* Match the page .container (max-width + side padding) so the navbar edges line
-     up with the Hero and the rest of the content. */
-  max-width: 1040px;
-  margin: 0 auto;
-  padding: 28px clamp(20px, 5vw, 24px) 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+/* Vertical rhythm for a standalone page (login, success, account, the funnel).
+   The column width and side padding come from <Container>, so a page never
+   hand-rolls its own gutter. Marketing sections use .section instead. */
+.page {
+  padding: 72px 0 96px;
 }
 
 .brand {
   font-family: var(--serif);
-  font-weight: 600;
+  font-weight: 800;
   font-size: 20px;
   letter-spacing: -0.01em;
   color: var(--ink);
@@ -158,9 +152,58 @@ a {
   height: 16px;
 }
 .nav-auth__sep {
-  color: var(--fg-hero-fg);
-  opacity: 0.5;
+  color: var(--fg-muted);
+  opacity: 0.6;
   font-weight: 400;
+}
+
+/* The nav's primary action: a fully rounded grey pill that fills with the accent
+   green on hover and focus. Quiet at rest so it does not fight the hero CTA, and
+   unmistakably the button on the bar once you go near it. */
+.navcta {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 10px 18px;
+  background: var(--fg-band);
+  color: var(--fg-ink);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.16s ease, color 0.16s ease;
+}
+
+.navcta:hover,
+.navcta:focus-visible {
+  background: var(--fg-cta);
+  color: #ffffff;
+}
+
+/* No mobile menu yet, so the bar sheds its least critical items as it narrows:
+   first Sign Up (the CTA leads to the same place), then Blog. The wordmark, Log in
+   and the primary action survive to the smallest screen. */
+@media (max-width: 720px) {
+  .nav {
+    gap: 12px;
+  }
+
+  .nav-auth .navlink[href='/signup'],
+  .nav-auth__sep {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav .navlink[href='/blog'] {
+    display: none;
+  }
+
+  .navcta {
+    padding: 9px 14px;
+    font-size: 14px;
+  }
 }
 
 /* Account order list. */
@@ -213,7 +256,7 @@ a {
   gap: 10px;
   text-decoration: none;
   color: var(--ink);
-  background: #fffdf9;
+  background: #ffffff;
   border: 1px solid var(--line);
   border-radius: 6px;
   padding: 13px 18px;
@@ -301,7 +344,7 @@ a {
 
 .display {
   font-family: var(--serif);
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.05;
   font-size: clamp(38px, 6vw, 60px);
@@ -321,7 +364,7 @@ a {
 
 .h2 {
   font-family: var(--serif);
-  font-weight: 600;
+  font-weight: 700;
   font-size: clamp(26px, 4vw, 34px);
   letter-spacing: -0.015em;
   line-height: 1.1;
@@ -334,7 +377,7 @@ a {
   margin-top: 40px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #fffdf9;
+  background: #ffffff;
   padding: 22px;
 }
 
@@ -377,7 +420,7 @@ a {
   padding: 12px 14px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #fffdf9;
+  background: #ffffff;
   font-size: 14px;
   line-height: 1.5;
 }
@@ -899,10 +942,33 @@ a {
   }
 }
 
+/* THE page measure, matched to the travel brands so Picturesk is never the narrow
+   one: frontend-shared's Container is `w-[90%] md:w-[85%] lg:w-[80%] mx-auto`, a
+   percentage of the viewport with NO max-width, so the column keeps growing with
+   the display. This is that rule in plain CSS. The gutter IS the leftover
+   percentage, so there is no horizontal padding to add on top.
+
+   The size modifiers cap that percentage for columns that are about reading, not
+   layout: a login form or a legal page must not run 1500px wide. */
 .container {
-  max-width: 1040px;
+  width: 90%;
   margin: 0 auto;
-  padding: 0 clamp(20px, 5vw, 24px);
+}
+
+@media (min-width: 768px) {
+  .container {
+    width: 85%;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    width: 80%;
+  }
+}
+
+.container--medium {
+  max-width: 960px;
 }
 
 .container--narrow {
@@ -910,8 +976,28 @@ a {
 }
 
 .section {
-  padding: clamp(64px, 9vw, 116px) 0;
+  padding: clamp(44px, 5.5vw, 72px) 0;
   scroll-margin-top: 32px;
+}
+
+/* Section heading block (SectionHeading.js): eyebrow + heading + optional lede.
+ * Its bottom margin is THE gap between a section's title and its content, so the
+ * content grids below set no top margin of their own. */
+.sechead {
+  margin: 0 0 28px;
+}
+
+.sechead--center {
+  text-align: center;
+}
+
+.sechead--center .eyebrow {
+  justify-content: center;
+}
+
+.sechead--center .section__lede {
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* Section eyebrow: quiet uppercase label with a single short cobalt tick, the
@@ -920,11 +1006,11 @@ a {
   display: flex;
   align-items: center;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--ash);
-  margin: 0 0 16px;
+  margin: 0 0 12px;
 }
 
 .eyebrow::before {
@@ -940,7 +1026,7 @@ a {
   font-size: 18px;
   color: var(--ash);
   max-width: 54ch;
-  margin: 14px 0 0;
+  margin: 10px 0 0;
 }
 
 /* Buttons (anchor CTAs) ---------------------------------------------------- */
@@ -1012,7 +1098,7 @@ a {
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--line);
-  background: #efece6;
+  background: #f3f4f6;
 }
 
 .frame img {
@@ -1037,7 +1123,7 @@ a {
 /* Hero -------------------------------------------------------------------- */
 
 .hero {
-  padding: clamp(36px, 6vw, 80px) 0 clamp(52px, 8vw, 100px);
+  padding: clamp(20px, 3vw, 36px) 0 clamp(28px, 4vw, 48px);
   scroll-margin-top: 32px;
 }
 
@@ -1052,6 +1138,12 @@ a {
   margin-top: 6px;
 }
 
+.hero .lede {
+  font-size: 17px;
+  line-height: 1.6;
+  max-width: 56ch;
+}
+
 .hero__actions {
   display: flex;
   flex-wrap: wrap;
@@ -1060,16 +1152,28 @@ a {
   margin-top: 28px;
 }
 
-.hero__guarantee {
-  margin: 16px 0 0;
-  font-size: 13px;
-  color: var(--fg-hero-muted);
+.hero__promises {
+  list-style: none;
+  margin: 20px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
 }
 
-.hero__meta {
-  margin: 18px 0 0;
-  font-size: 14px;
-  color: var(--ash);
+.hero__promise {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--fg-muted);
+}
+
+.hero__promise .check {
+  width: 14px;
+  height: 14px;
+  margin-top: 3px;
+  color: var(--fg-cta);
 }
 
 .hero__gallery {
@@ -1094,15 +1198,15 @@ a {
 /* Showcase (the portfolio) ------------------------------------------------ */
 
 .samples {
-  margin-top: 8px;
+  margin-top: 0;
 }
 
 .sample {
   display: grid;
-  grid-template-columns: 220px 1fr;
+  grid-template-columns: minmax(260px, 320px) 1fr;
   gap: clamp(20px, 4vw, 40px);
   align-items: start;
-  padding: clamp(24px, 4vw, 40px) 0;
+  padding: clamp(20px, 3vw, 32px) 0;
   border-top: 1px solid var(--line);
 }
 
@@ -1130,9 +1234,36 @@ a {
   color: var(--ash);
 }
 
+.sample__scenario {
+  margin: 14px 0 0;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--fg-ink);
+}
+
+.sample__story {
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--fg-muted);
+}
+
+.sample__used {
+  margin: 12px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--fg-muted);
+}
+
+.sample__usedlabel {
+  font-weight: 700;
+  color: var(--fg-ink);
+}
+
 .sample__name {
   color: var(--ink);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .sample__after {
@@ -1143,34 +1274,58 @@ a {
 
 /* How it works ------------------------------------------------------------ */
 
+/* The steps sit on a single rail so the order is read, not just numbered: the
+   markers are the beads, the hairline between them is the thread. */
 .steps-grid {
   list-style: none;
-  margin: 40px 0 0;
+  margin: 0;
   padding: 0;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: clamp(20px, 4vw, 36px);
 }
 
-/* Each step reads as an editorial plate: a heavy top rule and a serif numeral. */
 .stepcard {
-  border-top: 2px solid var(--ink);
-  padding-top: 18px;
+  position: relative;
+}
+
+.stepcard__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+/* The rail: drawn from each marker to the next one, so it never dangles off the
+   last step. It runs under the marker and on into the grid gap. ::before (not
+   ::after) so it paints BEHIND the marker and the meta label, both of which are
+   opaque and mask it; a negative z-index would put it behind the section itself. */
+.stepcard:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: calc(clamp(20px, 4vw, 36px) * -1);
+  top: 22px;
+  height: 1px;
+  background: var(--fg-line);
 }
 
 .stepcard__num {
-  display: block;
-  font-family: var(--serif);
-  font-weight: 500;
-  font-size: 34px;
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 15px;
   line-height: 1;
-  color: var(--ink);
-  margin-bottom: 14px;
 }
 
 .stepcard__title {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   margin: 0 0 8px;
 }
 
@@ -1178,6 +1333,7 @@ a {
   margin: 0;
   color: var(--ash);
   font-size: 15px;
+  line-height: 1.65;
 }
 
 /* What you get ------------------------------------------------------------ */
@@ -1186,7 +1342,7 @@ a {
   display: grid;
   grid-template-columns: 1.05fr 0.95fr;
   gap: clamp(24px, 5vw, 56px);
-  margin-top: 40px;
+  margin-top: 0;
 }
 
 .checklist {
@@ -1228,40 +1384,72 @@ a {
 }
 
 /* Use-cases grid ("Who it's for"): scannable cards, subtle radius per BRAND. */
+/* Three columns with the lead panel spanning two, so eight entries fill exactly
+   three rows with no hole. */
 .usecases__grid {
   list-style: none;
-  margin: 28px 0 0;
+  margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 14px;
 }
+
+.usecase--lead {
+  grid-column: span 2;
+  justify-content: flex-end;
+  gap: 8px;
+  min-height: 168px;
+}
+
 @media (max-width: 860px) {
   .usecases__grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .usecase--lead {
+    min-height: 0;
+  }
 }
+
 @media (max-width: 480px) {
   .usecases__grid {
     grid-template-columns: 1fr;
   }
+
+  .usecase--lead {
+    grid-column: span 1;
+  }
 }
 .usecase {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 14px;
   background: var(--card);
-  padding: 18px 18px 20px;
+  padding: 20px 20px 22px;
+  transition: border-color 0.16s ease, transform 0.16s ease;
 }
+
+.usecase:hover {
+  border-color: var(--fg-green);
+  transform: translateY(-2px);
+}
+
 .usecase__title {
-  margin: 0 0 6px;
+  margin: 0;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   color: var(--ink);
 }
+
 .usecase__body {
   margin: 0;
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.55;
   color: var(--ash);
 }
 
@@ -1270,7 +1458,7 @@ a {
   border-radius: 6px;
   padding: 7px 12px;
   font-size: 14px;
-  background: #fffdf9;
+  background: #ffffff;
 }
 
 /* Pricing ----------------------------------------------------------------- */
@@ -1280,7 +1468,7 @@ a {
   margin-top: 32px;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: #fffdf9;
+  background: #ffffff;
   padding: clamp(24px, 4vw, 32px);
   box-shadow: 0 1px 2px rgba(11, 11, 12, 0.04);
 }
@@ -1293,7 +1481,7 @@ a {
 
 .pricecard__amount {
   font-family: var(--serif);
-  font-weight: 600;
+  font-weight: 800;
   font-size: 56px;
   line-height: 1;
   letter-spacing: -0.02em;
@@ -1323,96 +1511,36 @@ a {
 
 /* FAQ --------------------------------------------------------------------- */
 
+/* The rows themselves are the SHARED FaqAccordion the travel brands use, styled
+   by its own Tailwind classes (see app/(site)/shared-ui.css). What lives here is the
+   CARD that groups them, the way MDT and DT365 present theirs (frontend-shared
+   sections/v2/Faqs): one grey bordered, rounded container with the rows divided
+   inside it, spanning the full width of the section. */
 .faq__list {
-  margin-top: 32px;
-}
-
-.qa {
-  border-bottom: 1px solid var(--line);
-}
-
-.qa:first-child {
-  border-top: 1px solid var(--line);
-}
-
-.qa__q {
-  width: 100%;
-  cursor: pointer;
-  padding: 20px 0;
-  font: inherit;
-  font-size: 18px;
-  font-weight: 500;
-  color: inherit;
-  background: none;
-  border: none;
-  text-align: left;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-}
-
-/* Collapsible answer panel. The answer is always in the DOM; grid-rows animates it
-   from 0 (collapsed) to its natural height (open), so nothing is hidden from crawlers. */
-.qa__panel {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 0.22s ease;
-}
-.qa--open .qa__panel {
-  grid-template-rows: 1fr;
-}
-.qa__panel > .qa__a {
+  margin-top: 0;
+  border: 1px solid var(--fg-line);
+  border-radius: 16px;
   overflow: hidden;
-  min-height: 0;
 }
 
-/* Plus that becomes a minus on open. */
-.qa__mark {
-  position: relative;
-  width: 14px;
-  height: 14px;
-  flex: none;
+/* Breathing room inside the card, on top of each row's own padding. */
+.faq__list > div {
+  padding-left: 8px;
+  padding-right: 8px;
 }
 
-.qa__mark::before,
-.qa__mark::after {
-  content: '';
-  position: absolute;
-  background: var(--ash);
-}
-
-.qa__mark::before {
-  top: 6px;
-  left: 0;
-  width: 14px;
-  height: 2px;
-}
-
-.qa__mark::after {
-  left: 6px;
-  top: 0;
-  width: 2px;
-  height: 14px;
-  transition: transform 0.15s ease;
-}
-
-.qa--open .qa__mark::after {
-  transform: scaleY(0);
-}
-
-.qa__a {
-  margin: 0;
-  padding: 0 0 22px;
-  color: var(--ash);
-  max-width: 66ch;
-  font-size: 16px;
+/* The accordion sets border-b on every row; the last one would double up with the
+   card's own border, so it goes. A class selector beats the utility. */
+.faq__list > div:last-child {
+  border-bottom-width: 0;
 }
 
 /* Start (the one uploader) ------------------------------------------------ */
 
 .start__inner {
   max-width: 620px;
+  margin: 0 auto;
+  text-align: center;
 }
 
 /* Footer ------------------------------------------------------------------ */
@@ -1433,7 +1561,7 @@ a {
 
 .footer__word {
   font-family: var(--serif);
-  font-weight: 600;
+  font-weight: 800;
   font-size: 22px;
   margin: 0;
 }
@@ -1538,9 +1666,9 @@ a {
   padding-top: 40px;
 }
 
-/* The funnel needs more room than the narrow .wrap column so the option-card
-   grids breathe. Override .wrap's 720px with a wider column for all four steps. */
-.wrap.generator {
+/* The funnel needs more room than the narrow reading column so the option-card
+   grids breathe. Widens the container for all four steps. */
+.generator .container {
   max-width: 900px;
 }
 
@@ -1599,7 +1727,7 @@ a {
 /* Section subheads on the merged select step. */
 .gen-subhead {
   font-family: var(--serif);
-  font-weight: 600;
+  font-weight: 700;
   font-size: 20px;
   margin: 36px 0 2px;
 }
@@ -1693,7 +1821,7 @@ a {
   cursor: pointer;
   border: 1px solid var(--line);
   border-radius: 6px;
-  background: #fffdf9;
+  background: #ffffff;
   padding: 8px 14px;
   font: inherit;
   font-size: 14px;
@@ -1752,7 +1880,7 @@ a {
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #fffdf9;
+  background: #ffffff;
   padding: 0;
   font: inherit;
   color: var(--ink);
@@ -1774,7 +1902,7 @@ a {
   display: grid;
   place-items: center;
   aspect-ratio: 4 / 5;
-  background: #efece6;
+  background: #f3f4f6;
   overflow: hidden;
 }
 .option-card__media img {
@@ -1938,7 +2066,7 @@ a {
   padding: 14px 16px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #fffdf9;
+  background: #ffffff;
 }
 .capture-cta__text {
   margin: 0;
@@ -1985,6 +2113,197 @@ a {
   font-size: 15px;
 }
 
+/* ========================================================================== *
+ * Blog. The PAGES are the shared client BlogPage / BlogPostPage (Tailwind, see
+ * app/(site)/shared-ui.css). Two things stay here, because they are ours:
+ *
+ *   .blogpage   brand overrides on the shared markup
+ *   .blog_post  the article body, which every brand styles itself. The post's
+ *               HTML comes from the editor with no classes on it, so it is styled
+ *               by element. These sit INSIDE .shared-ui, whose resets zero the
+ *               element margins, so every rule here has to restore what it wants.
+ * ========================================================================== */
+
+/* The shared hero ships a green-to-gold gradient. Picturesk's hero language is the
+   deep green radial the home page uses, so the blog matches the rest of the site.
+   Delete this rule to get the shared gradient back. */
+.blogpage .bg-linear-to-br {
+  background-image: radial-gradient(130% 115% at 50% -10%, #0e4a44 0%, #0e4a44 38%, #0a3833 100%);
+}
+
+.blog_post h2,
+.blog_post h3,
+.blog_post h4 {
+  font-family: var(--sans);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--fg-ink);
+}
+
+.blog_post h2 {
+  font-size: 30px;
+  line-height: 1.2;
+  margin: 40px 0 20px;
+}
+
+.blog_post h3 {
+  font-size: 22px;
+  line-height: 1.28;
+  margin: 34px 0 14px;
+}
+
+.blog_post h4 {
+  font-size: 19px;
+  line-height: 1.35;
+  margin: 28px 0 12px;
+}
+
+.blog_post p,
+.blog_post ol,
+.blog_post ul {
+  margin-bottom: 26px;
+}
+
+.blog_post p,
+.blog_post li {
+  font-size: 17px;
+  line-height: 1.7;
+  color: var(--fg-ink);
+}
+
+.blog_post a {
+  color: var(--fg-green);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1.5px;
+}
+
+.blog_post a:hover {
+  color: #12564f;
+}
+
+.blog_post ul,
+.blog_post ol {
+  padding-left: 22px;
+  list-style-position: outside;
+}
+
+.blog_post ul {
+  list-style-type: disc;
+}
+
+.blog_post ol {
+  list-style-type: decimal;
+}
+
+.blog_post li {
+  margin-bottom: 10px;
+}
+
+.blog_post li:last-of-type,
+.blog_post p:last-child {
+  margin-bottom: 0;
+}
+
+.blog_post strong {
+  font-weight: 700;
+  color: var(--fg-ink);
+}
+
+.blog_post blockquote {
+  margin: 30px 0;
+  padding: 14px 18px;
+  border-left: 3px solid var(--fg-green);
+  border-radius: 8px;
+  background: var(--fg-card);
+  color: var(--fg-ink);
+}
+
+.blog_post img {
+  width: 100%;
+  height: auto;
+  margin: 8px 0 28px;
+  border-radius: 14px;
+}
+
+.blog_post table {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin: 32px 0;
+  overflow-x: auto;
+  border: 1px solid var(--fg-line);
+  border-radius: 14px;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #ffffff;
+}
+
+.blog_post thead {
+  background: var(--fg-band);
+}
+
+.blog_post th,
+.blog_post td {
+  min-width: 160px;
+  padding: 14px 18px;
+  border-right: 1px solid var(--fg-line);
+  border-bottom: 1px solid var(--fg-line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.blog_post th {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--fg-ink);
+  white-space: nowrap;
+}
+
+.blog_post td {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--fg-ink);
+}
+
+.blog_post tr:last-child td {
+  border-bottom: 0;
+}
+
+.blog_post th:last-child,
+.blog_post td:last-child {
+  border-right: 0;
+}
+
+@media (max-width: 1023px) {
+  .blog_post h2 {
+    font-size: 26px;
+    margin: 34px 0 12px;
+  }
+
+  .blog_post h3 {
+    font-size: 21px;
+    margin-top: 28px;
+  }
+
+  .blog_post p,
+  .blog_post li {
+    font-size: 16px;
+  }
+
+  .blog_post p,
+  .blog_post ol,
+  .blog_post ul {
+    margin-bottom: 20px;
+  }
+
+  .blog_post th,
+  .blog_post td {
+    min-width: 140px;
+    padding: 12px 14px;
+  }
+}
+
 /* Content pages (privacy, terms, refunds, contact, faq) ------------------- */
 
 .content {
@@ -1998,7 +2317,7 @@ a {
 
 .content__title {
   font-family: var(--serif);
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.05;
   font-size: clamp(32px, 5vw, 46px);
@@ -2038,7 +2357,7 @@ a {
 
 .prose__h2 {
   font-family: var(--serif);
-  font-weight: 600;
+  font-weight: 700;
   font-size: clamp(21px, 3vw, 26px);
   letter-spacing: -0.01em;
   line-height: 1.15;
@@ -2073,7 +2392,7 @@ a {
   margin-top: 36px;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: #fffdf9;
+  background: #ffffff;
   padding: clamp(22px, 4vw, 30px);
   max-width: 460px;
 }
@@ -2104,7 +2423,7 @@ a {
 /* Small cross-links ------------------------------------------------------- */
 
 .faq__more {
-  margin: 28px 0 0;
+  margin: 20px 0 0;
   font-size: 15px;
   font-weight: 500;
 }
@@ -2116,11 +2435,12 @@ a {
 @media (prefers-reduced-motion: reduce) {
   .btn,
   .cta,
-  .qa__mark::after {
+  .usecase {
     transition: none;
   }
   .btn--primary:hover,
-  .cta:hover:not(:disabled) {
+  .cta:hover:not(:disabled),
+  .usecase:hover {
     transform: none;
   }
 }
@@ -2131,7 +2451,7 @@ a {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
-  margin: 4px 0 22px;
+  margin: 0 0 22px;
 }
 .plan {
   position: relative;
@@ -2143,7 +2463,7 @@ a {
   cursor: pointer;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #fffdf9;
+  background: #ffffff;
   padding: 16px 16px 18px;
   font: inherit;
   color: var(--ink);
@@ -2161,7 +2481,7 @@ a {
   font-size: 15px;
 }
 .plan__price {
-  font-family: var(--serif, Georgia, serif);
+  font-family: var(--serif);
   font-size: 30px;
   line-height: 1.1;
   letter-spacing: -0.01em;
@@ -2191,25 +2511,21 @@ a {
  * Forest & Gold — GLOBAL brand. See BRAND rebrand.
  *
  * The "Forest & Gold" direction, applied site-wide: a DARK GREEN hero into a
- * LIGHT sand body, ivory + gold accents, humanist sans (Inter) headings. The
- * --fg-* custom props live in :root, and the base body/link rules already theme
+ * LIGHT sand body, ivory + gold accents, humanist sans (Commissioner) headings.
+ * The --fg-* custom props live in :root, and the base body/link rules already theme
  * via the tokens, so these rules layer the marketing/chrome treatment on top.
  * `.hero` only affects the home page (only Hero.js renders it).
  * =========================================================================== */
 
-/* --- Nav: a flat green bar that reads as the top of the hero. Full-bleed
-       colour; the inner <Container> aligns the brand + nav to the 1040 width.
-       The bar uses the hero's DOMINANT tone (#0e4a44, the gradient's 50% stop and
-       --fg-green) rather than its bright top-centre tint. The old #14615a made the
-       bar read as a lighter band sitting above a darker hero; matching the tone the
-       eye reads as "the hero colour" lets the nav and hero look like one continuous
-       dark-green surface on the home page. Solid green on every route (nav is
-       global), so non-home pages keep a clean green bar. -- */
+/* --- Nav: a white bar on the white page, separated by a hairline rather than by
+       a change of colour. Full-bleed; the inner <Container> aligns the brand and
+       links to the page measure. -- */
 .topbar {
   max-width: none;
   margin: 0;
-  padding: 20px 0;
-  background: #0e4a44;
+  padding: 18px 0;
+  background: #ffffff;
+  border-bottom: 1px solid var(--fg-line);
   display: block;
 }
 
@@ -2221,7 +2537,7 @@ a {
 
 .brand {
   font-family: var(--sans);
-  color: var(--fg-hero-fg);
+  color: var(--fg-ink);
 }
 
 .brand__word {
@@ -2229,21 +2545,21 @@ a {
   font-weight: 800;
   font-size: 21px;
   letter-spacing: -0.02em;
-  color: var(--fg-hero-fg);
+  color: var(--fg-ink);
 }
 
-/* Nav links are ivory white with an explicit, fixed size + weight so every
-   current and future link (Log in, and any added later) renders identically.
-   Hover lifts to full white. */
+/* Nav links carry an explicit, fixed size + weight so every current and future
+   link renders identically. Hover lifts to the brand green. They sit a step below
+   the CTA pill, which stays at 600 so the button remains the emphasis on the bar. */
 .navlink {
-  color: var(--fg-hero-fg);
+  color: var(--fg-ink);
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1;
 }
 
 .navlink:hover {
-  color: #fff;
+  color: var(--fg-green);
 }
 
 /* --- Profile menu (authed nav identity) ----------------------------------
@@ -2264,18 +2580,18 @@ a {
   border: 1px solid transparent;
   border-radius: 999px;
   cursor: pointer;
-  color: var(--fg-hero-fg);
+  color: var(--fg-ink);
   font: inherit;
   line-height: 1;
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 
-/* Hover / open: lighten to a translucent-ivory wash over the green. */
+/* Hover / open: a quiet grey wash on the white bar. */
 .profile:hover .profile__trigger,
 .profile__trigger:hover,
 .profile__trigger[aria-expanded='true'] {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(244, 238, 225, 0.18);
+  background: var(--fg-band);
+  border-color: var(--fg-line);
 }
 
 .profile__avatar {
@@ -2285,8 +2601,8 @@ a {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: var(--fg-gold);
-  color: var(--fg-on-gold);
+  background: var(--fg-green);
+  color: var(--fg-hero-fg);
   font-weight: 800;
   font-size: 14px;
   line-height: 1;
@@ -2294,29 +2610,29 @@ a {
 
 .profile__name {
   font-size: 15px;
-  font-weight: 600;
-  color: var(--fg-hero-fg);
+  font-weight: 500;
+  color: var(--fg-ink);
 }
 
 .profile__chev {
-  color: var(--fg-hero-muted);
+  color: var(--fg-muted);
   transition: transform 0.15s ease;
 }
 .profile__chev--open {
   transform: rotate(180deg);
 }
 
-/* Dropdown panel: a solid deep-green card with a hairline border + soft shadow. */
+/* Dropdown panel: a white card with a hairline border + soft shadow. */
 .profile__menu {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
   min-width: 184px;
   padding: 6px;
-  background: #0a3833;
-  border: 1px solid rgba(244, 238, 225, 0.12);
+  background: #ffffff;
+  border: 1px solid var(--fg-line);
   border-radius: 8px;
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 14px 34px rgba(22, 58, 51, 0.14);
   z-index: 50;
 }
 
@@ -2345,7 +2661,7 @@ a {
   width: 100%;
   padding: 9px 10px;
   border-radius: 6px;
-  color: var(--fg-hero-fg);
+  color: var(--fg-ink);
   font-family: inherit;
   font-size: 14px;
   font-weight: 500;
@@ -2358,54 +2674,38 @@ a {
 
 .profile__item svg {
   flex: none;
-  color: var(--fg-hero-muted);
+  color: var(--fg-muted);
 }
 
 .profile__item:hover,
 .profile__item:focus-visible {
-  background: rgba(244, 238, 225, 0.1);
-  color: #fff;
+  background: var(--fg-band);
+  color: var(--fg-green);
   outline: none;
 }
 
 .profile__item:hover svg,
 .profile__item:focus-visible svg {
-  color: var(--fg-gold);
+  color: var(--fg-green);
 }
 
-/* --- Hero: dark radial green, ivory type, gold + ivory actions -------------
-   The gradient now BEGINS at the nav colour (#0e4a44) and holds it across the top
-   before darkening to #0a3833 lower down. So the nav's bottom edge and the hero's
-   top edge are the exact same tone — no brighter band under the bar — and the two
-   read as one continuous dark-green surface, with the falloff giving the hero its
-   depth. (Was #14615a at 0%, which put a lighter tint directly beneath the nav.) */
+/* --- Hero: the same white ground as the rest of the page. The photos carry it,
+   so the type is ink on white and the accents behave exactly as they do in every
+   other section: green eyebrow, green primary. -- */
 .hero {
-  background: radial-gradient(130% 115% at 50% -10%, #0e4a44 0%, #0e4a44 38%, #0a3833 100%);
-  color: var(--fg-hero-fg);
-}
-
-.hero .eyebrow {
-  color: var(--fg-gold);
-  font-weight: 700;
-}
-
-.hero .eyebrow::before {
-  background: var(--fg-gold);
+  background: #ffffff;
+  color: var(--fg-ink);
 }
 
 .hero .display {
   font-family: var(--sans);
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.03em;
-  color: var(--fg-hero-fg);
+  color: var(--fg-ink);
 }
 
 .hero .lede {
-  color: #cfe0dc;
-}
-
-.hero__meta {
-  color: var(--fg-hero-muted);
+  color: var(--fg-muted);
 }
 
 /* --- Headings + ledes in the light body ----------------------------------- */
@@ -2430,18 +2730,6 @@ a {
   background: var(--fg-green);
 }
 
-/* --- Home page sections: white background. Hero and footer keep the dark
-   green chrome; every marketing section between them sits on white. ---------- */
-.section.showcase,
-.section.get,
-.section.faq,
-.section.usecases,
-.section.how,
-.section.pricing,
-.section.start {
-  background: #ffffff;
-}
-
 /* --- Buttons: pill shape, no cobalt glow ---------------------------------- */
 .btn {
   border-radius: 40px;
@@ -2452,50 +2740,40 @@ a {
   opacity: 0.72;
 }
 
-/* Body/pricing primary = green pill, ivory text. */
+/* Primary = bright green pill, white text. */
 .btn--primary {
-  background: var(--fg-green);
-  color: var(--fg-hero-fg);
+  background: var(--fg-cta);
+  color: #ffffff;
   box-shadow: none;
 }
 
 .btn--primary:hover:not(:disabled) {
-  background: #12564f;
+  background: #0c675b;
   box-shadow: none;
   transform: translateY(-1px);
 }
 
-/* Hero primary = gold pill, dark-green text. */
-.hero .btn--primary {
-  background: var(--fg-gold);
-  color: var(--fg-on-gold);
-  box-shadow: none;
-}
-
-.hero .btn--primary:hover:not(:disabled) {
-  background: #eec06a;
-  box-shadow: none;
-  transform: translateY(-1px);
-}
-
-/* Hero secondary ("See real results") = ivory with a translucent underline. */
+/* Secondary action ("See real results", the funnel's Back links) = ink with a
+   quiet underline. It was ivory for the dark hero, which on the white page made
+   every one of them invisible. */
 .btn--link {
-  color: var(--fg-hero-fg);
+  color: var(--fg-ink);
   background: none;
   border-radius: 0;
   padding: 6px 2px;
-  border-bottom: 1.5px solid rgba(244, 238, 225, 0.35);
+  border-bottom: 1.5px solid var(--fg-line);
 }
 
 .btn--link:hover {
   text-decoration: none;
-  border-bottom-color: rgba(244, 238, 225, 0.7);
+  color: var(--fg-green);
+  border-bottom-color: var(--fg-green);
 }
 
 /* --- Frames / showcase ---------------------------------------------------- */
 .frame {
   border-color: var(--fg-line);
-  background: #e7ddc9;
+  background: #f3f4f6;
 }
 
 .frame--empty {
@@ -2520,24 +2798,13 @@ a {
   color: var(--fg-ink);
 }
 
-/* --- How it works: gold numeral in a green circle ------------------------- */
-.stepcard {
-  border-top: none;
-  padding-top: 0;
-}
-
+/* --- How it works: gold numeral in a green marker on a hairline rail -------- */
 .stepcard__num {
   font-family: var(--sans);
   font-weight: 800;
-  font-size: 15px;
-  color: var(--fg-gold);
+  color: #ffffff;
   background: var(--fg-green);
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  margin-bottom: 16px;
+  box-shadow: 0 0 0 5px #ffffff;
 }
 
 .stepcard__title {
@@ -2546,6 +2813,196 @@ a {
 
 .stepcard__body {
   color: var(--fg-muted);
+}
+
+/* --- Who it's for: the lead panel gets the solid-green treatment, the same one
+   the popular pricing plan uses, so the section has a focal point. ------------ */
+.usecase {
+  background: var(--fg-card);
+  border-color: var(--fg-line);
+}
+
+.usecase__title {
+  color: var(--fg-ink);
+}
+
+.usecase__body {
+  color: var(--fg-muted);
+}
+
+.usecase--lead {
+  background: var(--fg-green);
+  border-color: var(--fg-green);
+  box-shadow: 0 24px 50px -30px rgba(14, 74, 68, 0.55);
+}
+
+.usecase--lead .usecase__title {
+  font-size: clamp(22px, 2.6vw, 28px);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--fg-hero-fg);
+}
+
+.usecase--lead .usecase__body {
+  font-size: 16px;
+  color: #d7e4e0;
+}
+
+.usecase--lead:hover {
+  border-color: var(--fg-green);
+}
+
+/* --- Why us: four cards in a row on a quiet grey fill, numbered so the arguments
+       still read in order. Two up on a tablet, stacked on a phone. --- */
+.benefits__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.benefit {
+  padding: 22px 20px 24px;
+  border-radius: 16px;
+  background: var(--fg-band);
+}
+
+/* A white chip lifts the glyph off the grey card, at the same 40px as the process
+   markers so the two sections share one scale. */
+.benefit__icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  background: #ffffff;
+  color: var(--fg-cta);
+  font-size: 19px;
+}
+
+.benefit__title {
+  margin: 0 0 10px;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  color: var(--fg-ink);
+}
+
+.benefit__body {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--fg-muted);
+}
+
+@media (max-width: 1080px) {
+  .benefits__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 620px) {
+  .benefits__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Testimonials --------------------------------------------------------- */
+.quotes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.quote {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  border: 1px solid var(--fg-line);
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+/* Gold, the one place a rating earns the second accent. */
+.quote__stars {
+  display: inline-flex;
+  gap: 3px;
+  color: var(--fg-gold);
+  font-size: 14px;
+}
+
+/* The attribution sits at the bottom whatever the quote length, so a row of
+   cards lines up. */
+.quote__who {
+  margin-top: auto;
+}
+
+.quote__text {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--fg-ink);
+}
+
+.quote__text::before {
+  content: '\201C';
+}
+
+.quote__text::after {
+  content: '\201D';
+}
+
+.quote__who {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.quote__avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--fg-cta);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 15px;
+  line-height: 1;
+}
+
+.quote__name {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--fg-ink);
+}
+
+.quote__role {
+  display: block;
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+
+@media (max-width: 1080px) {
+  .quotes {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 620px) {
+  .quotes {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* --- What you get --------------------------------------------------------- */
@@ -2569,9 +3026,107 @@ a {
 
 /* --- Pricing plans -------------------------------------------------------- */
 .plan {
-  background: var(--fg-card);
+  background: #ffffff;
   border-color: var(--fg-line);
   border-radius: 16px;
+  padding: 22px 20px 24px;
+}
+
+/* What the plan includes, ticked. Built from the tier data in Pricing.js. */
+.plan__includes {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 9px;
+}
+
+.plan__include {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--fg-ink);
+}
+
+.plan__include .check {
+  width: 15px;
+  height: 15px;
+  margin-top: 2px;
+  color: var(--fg-cta);
+}
+
+/* The verdict line: who this plan is actually for. */
+.plan__best {
+  margin: 18px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--fg-line);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--fg-ink);
+}
+
+/* The one place the plan runs out. A dash, not a cross: it is a limit of the
+   plan, not a failure of it. */
+.plan__limits {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.plan__limit {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--fg-muted);
+}
+
+.plan__dash {
+  position: relative;
+  flex: none;
+  width: 15px;
+  height: 15px;
+  margin-top: 2px;
+}
+
+.plan__dash::before {
+  content: '';
+  position: absolute;
+  top: 7px;
+  left: 1px;
+  width: 13px;
+  height: 1.5px;
+  border-radius: 1px;
+  background: var(--fg-muted);
+  opacity: 0.75;
+}
+
+/* The popular plan is a solid green panel, so its inner type has to invert. */
+.plan--on .plan__include {
+  color: var(--fg-hero-fg);
+}
+
+.plan--on .plan__include .check {
+  color: #ffffff;
+}
+
+.plan--on .plan__best {
+  border-top-color: rgba(255, 255, 255, 0.22);
+  color: var(--fg-hero-fg);
+}
+
+.plan--on .plan__limit {
+  color: #d7e4e0;
+}
+
+.plan--on .plan__dash::before {
+  background: #d7e4e0;
 }
 
 .plan__name {
@@ -2628,24 +3183,6 @@ a {
 }
 
 /* --- FAQ ------------------------------------------------------------------ */
-.qa,
-.qa:first-child {
-  border-color: var(--fg-line);
-}
-
-.qa__q {
-  color: var(--fg-ink);
-}
-
-.qa__mark::before,
-.qa__mark::after {
-  background: var(--fg-green);
-}
-
-.qa__a {
-  color: var(--fg-muted);
-}
-
 .faq__more a {
   color: var(--fg-green);
 }
@@ -2688,16 +3225,22 @@ a {
 }
 
 /* --- Visible focus stays; recolour to gold on the dark/green surfaces ------ */
+/* Green, not gold: the chrome is white now, and gold on white is too faint to
+   read as a focus ring. Elements that sit on the dark footer keep a gold one. */
 a:focus-visible,
 button:focus-visible,
 .btn:focus-visible {
-  outline: 2px solid var(--fg-gold);
+  outline: 2px solid var(--fg-green);
   outline-offset: 3px;
 }
 
+.footer a:focus-visible,
+.hero .btn--primary:focus-visible {
+  outline-color: var(--fg-gold);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .btn--primary:hover:not(:disabled),
-  .hero .btn--primary:hover:not(:disabled) {
+  .btn--primary:hover:not(:disabled) {
     transform: none;
   }
 }
@@ -2725,7 +3268,7 @@ button:focus-visible,
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 4px 12px;
-  background: #fffdf9;
+  background: #ffffff;
 }
 .acct__signout-form {
   margin-left: auto;
@@ -2760,7 +3303,7 @@ button:focus-visible,
 }
 .acct__h2 {
   font-family: var(--serif);
-  font-weight: 600;
+  font-weight: 700;
   font-size: 22px;
   letter-spacing: -0.01em;
   margin: 0 0 6px;
@@ -2774,7 +3317,7 @@ button:focus-visible,
 .acct__card {
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: #fffdf9;
+  background: #ffffff;
   padding: 22px;
 }
 .acct__empty {
@@ -2803,7 +3346,7 @@ button:focus-visible,
   gap: 16px;
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: #fffdf9;
+  background: #ffffff;
   padding: 12px 16px 12px 12px;
 }
 .ord__media {
@@ -2811,7 +3354,7 @@ button:focus-visible,
   height: 64px;
   border-radius: 8px;
   overflow: hidden;
-  background: #efece6;
+  background: #f3f4f6;
   border: 1px solid var(--line);
   display: grid;
   place-items: center;

@@ -1,49 +1,34 @@
 'use client';
 
-import { useState } from 'react';
-import { faq } from '../data/faq';
+import FaqAccordion from '@travel-suite/frontend-shared/components/ui/v1/FaqAccordion';
+import { homeFaq } from '../data/faq';
 import Container from '../components/Container';
+import SectionHeading from '../components/SectionHeading';
 
-// FAQ accordion. Every answer is ALWAYS rendered in the DOM (not conditionally
-// mounted) and collapsed with CSS (grid-rows 0fr -> 1fr on open), so the full answer
-// text is in the server HTML for SEO / word count / AI citation while staying tidy.
-// Toggling is client state; keyboard + aria-expanded make it accessible.
+// The FAQ, using the SAME shared accordion MDT and DT365 use
+// (@travel-suite/frontend-shared ui/v1/FaqAccordion), so the interaction and the
+// look stay identical across the brands. It is a Tailwind component and this site
+// is plain CSS, so app/(site)/shared-ui.css compiles the handful of utilities it
+// needs and maps `primary` to Picturesk's green; `.shared-ui` carries the few
+// Preflight resets it assumes.
 export default function Faq() {
-  const [open, setOpen] = useState(() => new Set());
-  const toggle = (i) =>
-    setOpen((prev) => {
-      const next = new Set(prev);
-      if (next.has(i)) next.delete(i);
-      else next.add(i);
-      return next;
-    });
-
   return (
     <section id="faq" className="section faq">
       <Container>
-        <p className="eyebrow">FAQ</p>
-        <h2 className="h2">Questions, answered.</h2>
+        <SectionHeading
+          eyebrow="FAQ"
+          title="Questions, answered."
+          lede="The things people ask before they upload anything. If yours is not here, the contact page is one click away."
+        />
 
-        <div className="faq__list">
-          {faq.map((item, i) => {
-            const isOpen = open.has(i);
-            return (
-              <div className={`qa${isOpen ? ' qa--open' : ''}`} key={item.q}>
-                <button
-                  type="button"
-                  className="qa__q"
-                  aria-expanded={isOpen}
-                  onClick={() => toggle(i)}
-                >
-                  {item.q}
-                  <span className="qa__mark" aria-hidden="true" />
-                </button>
-                <div className="qa__panel">
-                  <p className="qa__a">{item.a}</p>
-                </div>
-              </div>
-            );
-          })}
+        {/* One grouped, grey-bordered card, the way MDT and DT365 present theirs
+            (frontend-shared sections/v2/Faqs), spanning the full container. */}
+        <div className="faq__list shared-ui">
+          {homeFaq.map((item) => (
+            <FaqAccordion key={item.q} question={item.q}>
+              {item.a}
+            </FaqAccordion>
+          ))}
         </div>
 
         <p className="faq__more">

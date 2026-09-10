@@ -5,10 +5,12 @@
  * the price a customer sees can never drift from what we charge or from what the
  * worker delivers.
  *
- * A TIER is a one-time purchase. It differs on three levers (v1): `priceCents`
- * (what Stripe charges), `deliverCount` (how many headshots we deliver), and
- * `priority` (BullMQ queue priority, so higher tiers jump the line). Quality
- * levers (4K upscale, face-swap identity-lock) are deferred to a later phase.
+ * A TIER is a one-time purchase. It differs on five levers: `priceCents` (what
+ * Stripe charges), `deliverCount` (how many headshots we deliver), `priority`
+ * (BullMQ queue priority, so higher tiers jump the line), and how much of the
+ * catalogue it unlocks: `attireCount` and `lookCount`, the maximum number of
+ * outfits and backgrounds the customer may select. `null` means no limit.
+ * Quality levers (4K upscale, face-swap identity-lock) are deferred.
  *
  * `generateCount` is how many candidates the worker generates. With identity
  * culling OFF it equals `deliverCount` (generate exactly what we deliver); if
@@ -26,6 +28,8 @@
  * @property {number} deliverCount  - headshots delivered
  * @property {number} generateCount - candidates generated (>= deliverCount)
  * @property {number} priority      - BullMQ priority (1 = highest)
+ * @property {number|null} attireCount - max outfits selectable, null = all
+ * @property {number|null} lookCount   - max backgrounds selectable, null = all
  * @property {boolean} [popular]     - render the "Most popular" badge
  */
 
@@ -38,6 +42,8 @@ export const TIERS = Object.freeze([
     deliverCount: 5,
     generateCount: 5,
     priority: 3,
+    attireCount: 1,
+    lookCount: 2,
   }),
   Object.freeze({
     id: 'pro',
@@ -46,6 +52,8 @@ export const TIERS = Object.freeze([
     deliverCount: 25,
     generateCount: 25,
     priority: 2,
+    attireCount: 3,
+    lookCount: 4,
     popular: true,
   }),
   Object.freeze({
@@ -55,6 +63,8 @@ export const TIERS = Object.freeze([
     deliverCount: 60,
     generateCount: 60,
     priority: 1,
+    attireCount: null,
+    lookCount: null,
   }),
 ]);
 

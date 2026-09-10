@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import * as Sentry from '@sentry/nextjs';
 import './globals.css';
+import Container from '../components/Container';
 
 // App Router global error boundary. Reports the render error to Sentry (a no-op
 // when Sentry is not configured) and shows a calm, on-brand fallback. It replaces
@@ -15,14 +16,16 @@ export default function GlobalError({ error, reset }) {
   return (
     <html lang="en">
       <body>
-        <main className="wrap">
-          <h1 className="display">Something went wrong.</h1>
-          <p className="lede muted">
-            An unexpected error stopped this page from loading. Please try again.
-          </p>
-          <button className="btn btn--primary" type="button" onClick={() => reset()}>
-            Try again
-          </button>
+        <main className="page">
+          <Container size="narrow">
+            <h1 className="display">Something went wrong.</h1>
+            <p className="lede muted">
+              An unexpected error stopped this page from loading. Please try again.
+            </p>
+            <button className="btn btn--primary" type="button" onClick={() => reset()}>
+              Try again
+            </button>
+          </Container>
         </main>
       </body>
     </html>

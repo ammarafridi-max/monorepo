@@ -1,4 +1,5 @@
 import '../globals.css';
+import './shared-ui.css';
 import { getSession } from '../../lib/session';
 import SiteChrome from '../../components/SiteChrome';
 import Analytics from '../../components/Analytics';

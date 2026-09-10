@@ -1,14 +1,16 @@
 import Hero from '../../../sections/Hero';
-import Showcase from '../../../sections/Showcase';
 import HowItWorks from '../../../sections/HowItWorks';
-import WhatYouGet from '../../../sections/WhatYouGet';
+import Benefits from '../../../sections/Benefits';
 import UseCases from '../../../sections/UseCases';
+import Showcase from '../../../sections/Showcase';
+import Testimonials from '../../../sections/Testimonials';
 import Pricing from '../../../sections/Pricing';
 import Faq from '../../../sections/Faq';
 import Container from '../../../components/Container';
+import SectionHeading from '../../../components/SectionHeading';
 import TrackEvent from '../../../components/TrackEvent';
 import { EVENTS } from '../../../lib/analytics';
-import { faq } from '../../../data/faq';
+import { homeFaq } from '../../../data/faq';
 import {
   SITE_URL,
   buildMetadata,
@@ -54,7 +56,7 @@ export default function AiHeadshotGeneratorPage() {
       canonical: CANONICAL,
       title: 'Picturesk FAQ',
       description: DESCRIPTION,
-      faqs: faq.map((f) => ({ question: f.q, answer: f.a })),
+      faqs: homeFaq.map((f) => ({ question: f.q, answer: f.a })),
     }),
   ]);
 
@@ -66,29 +68,29 @@ export default function AiHeadshotGeneratorPage() {
       />
       <TrackEvent event={EVENTS.LANDING_VIEW} />
       <main>
+        {/* Hero, then the page answers, in order: how it works, why us, who it is
+            for, proof, what customers say, what it costs, and the leftovers. */}
         <Hero />
-        <Showcase />
         <HowItWorks />
-        <WhatYouGet />
+        <Benefits />
         <UseCases />
+        <Showcase />
+        <Testimonials />
         <Pricing />
         <Faq />
 
         <section className="section start">
           <Container>
-            <div className="start__inner center">
-              <p className="eyebrow" style={{ justifyContent: 'center' }}>
-                Ready when you are
-              </p>
-              <h2 className="h2">Your headshots, in about an hour.</h2>
-              <p className="section__lede" style={{ margin: '14px auto 0' }}>
-                Pick your looks, upload your photos, pay once. We handle the rest.
-              </p>
-              <p style={{ marginTop: 24 }}>
-                <a className="btn btn--primary" href="/ai-headshot-generator/select">
-                  Get my headshots <span className="btn__price">from $9</span>
-                </a>
-              </p>
+            <div className="start__inner">
+              <SectionHeading
+                align="center"
+                eyebrow="Ready when you are"
+                title="Your headshots, in about an hour."
+                lede="Pick your looks, upload your photos, pay once. We handle the rest."
+              />
+              <a className="btn btn--primary" href="/ai-headshot-generator/select">
+                Get my headshots <span className="btn__price">from $9</span>
+              </a>
             </div>
           </Container>
         </section>

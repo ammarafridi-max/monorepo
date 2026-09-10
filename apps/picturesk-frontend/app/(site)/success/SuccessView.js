@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { getOrder, downloadUrl, downloadAllUrl } from '../../../lib/api';
 import { track, EVENTS } from '../../../lib/analytics';
 import Lightbox from '../../../components/Lightbox';
+import Container from '../../../components/Container';
 
 // A small download glyph (arrow into a tray). Inline so it inherits currentColor
 // and needs no asset request. Decorative; the control carries its own aria-label.
@@ -164,20 +165,24 @@ export default function SuccessView() {
 
   if (error && !order) {
     return (
-      <main className="wrap">
-        <h1 className="h2">We could not load this order.</h1>
-        <p className="muted">{error}</p>
-        <p>
-          <a href="/">Start a new order</a>
-        </p>
+      <main className="page">
+        <Container size="narrow">
+          <h1 className="h2">We could not load this order.</h1>
+          <p className="muted">{error}</p>
+          <p>
+            <a href="/">Start a new order</a>
+          </p>
+        </Container>
       </main>
     );
   }
 
   if (!order) {
     return (
-      <main className="wrap">
-        <p className="muted">Loading your order.</p>
+      <main className="page">
+        <Container size="narrow">
+          <p className="muted">Loading your order.</p>
+        </Container>
       </main>
     );
   }
@@ -219,124 +224,126 @@ export default function SuccessView() {
       : null;
 
   return (
-    <main className={`wrap${wide ? ' wrap--wide' : ''}`}>
-      <span className={`pill${isDelivered ? ' pill--ok' : isFailed ? ' pill--warn' : ''}`}>
-        {isDelivered
-          ? 'Delivered'
-          : isFailed
-            ? order.refunded
-              ? 'Refunded'
-              : 'Refund on the way'
-            : 'In progress'}
-      </span>
+    <main className="page">
+      <Container size={wide ? 'wide' : 'narrow'}>
+        <span className={`pill${isDelivered ? ' pill--ok' : isFailed ? ' pill--warn' : ''}`}>
+          {isDelivered
+            ? 'Delivered'
+            : isFailed
+              ? order.refunded
+                ? 'Refunded'
+                : 'Refund on the way'
+              : 'In progress'}
+        </span>
 
-      <h1 className="display" style={{ marginTop: 18 }}>
-        {HEADLINE[status] || 'Working on your order.'}
-      </h1>
-      {isFailed ? (
-        <p className="lede muted">{failedSubcopy(order)}</p>
-      ) : (
-        SUBCOPY[status] && <p className="lede muted">{SUBCOPY[status]}</p>
-      )}
-      {isFailed && (
-        <p style={{ marginTop: 8 }}>
-          <a href="/">Start a new order</a>
-        </p>
-      )}
+        <h1 className="display" style={{ marginTop: 18 }}>
+          {HEADLINE[status] || 'Working on your order.'}
+        </h1>
+        {isFailed ? (
+          <p className="lede muted">{failedSubcopy(order)}</p>
+        ) : (
+          SUBCOPY[status] && <p className="lede muted">{SUBCOPY[status]}</p>
+        )}
+        {isFailed && (
+          <p style={{ marginTop: 8 }}>
+            <a href="/">Start a new order</a>
+          </p>
+        )}
 
-      {timerValue && (
-        <p className="timer">
-          <span className="timer__label">{timerLabel}</span>
-          <span className="timer__value">{timerValue}</span>
-        </p>
-      )}
+        {timerValue && (
+          <p className="timer">
+            <span className="timer__label">{timerLabel}</span>
+            <span className="timer__value">{timerValue}</span>
+          </p>
+        )}
 
-      {isDelivered ? (
-        <section className="gallery">
-          <div className="gallery__bar">
-            <p className="gallery__count">
-              {(order.resultImageUrls || []).length} headshots, yours to keep.
-            </p>
-            {(order.resultImageUrls || []).length > 0 && (
-              <a className="btn btn--primary" href={downloadAllUrl(orderId)}>
-                <DownloadIcon /> Download all
-              </a>
-            )}
-          </div>
-          {/* data-clarity-mask: the delivered headshots are the customer's face; never
-              record them in Clarity session replay. */}
-          <div className="gallery__grid" data-clarity-mask="true">
-            {(order.resultImageUrls || []).map((url, i) => (
-              <figure className="shot" key={url}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={url} alt={`headshot ${i + 1}`} />
-                <div className="shot__actions">
-                  <button
-                    type="button"
-                    className="shot__view"
-                    aria-label={`View headshot ${i + 1}`}
-                    onClick={() => setPreview(url)}
-                  >
-                    <EyeIcon />
-                  </button>
-                  <a
-                    className="shot__dl"
-                    href={downloadUrl(orderId, i)}
-                    aria-label={`Download headshot ${i + 1}`}
-                  >
-                    <DownloadIcon />
-                  </a>
-                </div>
-              </figure>
-            ))}
-          </div>
-        </section>
-      ) : isFailed ? null : (
-        <>
-          {isGenerating && (
-            <div
-              className="progress"
-              role="progressbar"
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={pct ?? 0}
-              aria-label="Rendering your headshots"
-            >
-              <div className="progress__track">
-                <div
-                  className={`progress__fill${pct == null ? ' progress__fill--idle' : ''}`}
-                  style={pct == null ? undefined : { width: `${pct}%` }}
-                />
-              </div>
-              <p className="progress__label">
-                {pct == null ? 'Warming up the studio.' : `${pct}% rendered.`}
+        {isDelivered ? (
+          <section className="gallery">
+            <div className="gallery__bar">
+              <p className="gallery__count">
+                {(order.resultImageUrls || []).length} headshots, yours to keep.
               </p>
+              {(order.resultImageUrls || []).length > 0 && (
+                <a className="btn btn--primary" href={downloadAllUrl(orderId)}>
+                  <DownloadIcon /> Download all
+                </a>
+              )}
             </div>
-          )}
-          <ol className="steps">
-            {STEPS.map((step, i) => {
-              const cls =
-                i < idx ? 'step step--done' : i === idx ? 'step step--current' : 'step';
-              return (
-                <li className={cls} key={step.key}>
-                  <span className="step__dot" />
-                  <span className="step__label">{step.label}</span>
-                  {i === idx && <span className="step__detail">now</span>}
-                  {i < idx && <span className="step__detail">done</span>}
-                </li>
-              );
-            })}
-          </ol>
-        </>
-      )}
+            {/* data-clarity-mask: the delivered headshots are the customer's face; never
+                record them in Clarity session replay. */}
+            <div className="gallery__grid" data-clarity-mask="true">
+              {(order.resultImageUrls || []).map((url, i) => (
+                <figure className="shot" key={url}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt={`headshot ${i + 1}`} />
+                  <div className="shot__actions">
+                    <button
+                      type="button"
+                      className="shot__view"
+                      aria-label={`View headshot ${i + 1}`}
+                      onClick={() => setPreview(url)}
+                    >
+                      <EyeIcon />
+                    </button>
+                    <a
+                      className="shot__dl"
+                      href={downloadUrl(orderId, i)}
+                      aria-label={`Download headshot ${i + 1}`}
+                    >
+                      <DownloadIcon />
+                    </a>
+                  </div>
+                </figure>
+              ))}
+            </div>
+          </section>
+        ) : isFailed ? null : (
+          <>
+            {isGenerating && (
+              <div
+                className="progress"
+                role="progressbar"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={pct ?? 0}
+                aria-label="Rendering your headshots"
+              >
+                <div className="progress__track">
+                  <div
+                    className={`progress__fill${pct == null ? ' progress__fill--idle' : ''}`}
+                    style={pct == null ? undefined : { width: `${pct}%` }}
+                  />
+                </div>
+                <p className="progress__label">
+                  {pct == null ? 'Warming up the studio.' : `${pct}% rendered.`}
+                </p>
+              </div>
+            )}
+            <ol className="steps">
+              {STEPS.map((step, i) => {
+                const cls =
+                  i < idx ? 'step step--done' : i === idx ? 'step step--current' : 'step';
+                return (
+                  <li className={cls} key={step.key}>
+                    <span className="step__dot" />
+                    <span className="step__label">{step.label}</span>
+                    {i === idx && <span className="step__detail">now</span>}
+                    {i < idx && <span className="step__detail">done</span>}
+                  </li>
+                );
+              })}
+            </ol>
+          </>
+        )}
 
-      <p className="formnote" style={{ textAlign: 'left', marginTop: 28 }}>
-        Order {order.orderId}. A copy of your results link goes to{' '}
-        {/* data-clarity-mask: customer email (PII); keep it out of Clarity replay. */}
-        <span data-clarity-mask="true">{order.customerEmail}</span>.
-      </p>
+        <p className="formnote" style={{ textAlign: 'left', marginTop: 28 }}>
+          Order {order.orderId}. A copy of your results link goes to{' '}
+          {/* data-clarity-mask: customer email (PII); keep it out of Clarity replay. */}
+          <span data-clarity-mask="true">{order.customerEmail}</span>.
+        </p>
 
-      <Lightbox src={preview} alt="Headshot preview" onClose={() => setPreview(null)} />
+        <Lightbox src={preview} alt="Headshot preview" onClose={() => setPreview(null)} />
+      </Container>
     </main>
   );
 }

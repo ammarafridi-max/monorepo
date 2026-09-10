@@ -11,8 +11,11 @@ import { FiUserPlus } from 'react-icons/fi';
  * (the session cookie) and passed down so this client component stays serializable.
  *
  * The "Forest & Gold" identity is now the global brand, so the green chrome applies
- * to every customer route. The stored logo.png is dark and would vanish on the green
- * nav, so the brand renders as an ivory text wordmark.
+ * to every customer route. The wordmark is text, not the stored logo.png.
+ *
+ * The nav ends with the one primary action on the site, so a visitor can start the
+ * funnel from any page without scrolling back to a section CTA. It shows for signed
+ * in customers too: buying again is a normal thing to do.
  */
 export default function SiteChrome({ authed, email, children }) {
   return (
@@ -24,6 +27,9 @@ export default function SiteChrome({ authed, email, children }) {
               <span className="brand__word">Picturesk</span>
             </a>
             <nav className="nav">
+              <a className="navlink" href="/blog">
+                Blog
+              </a>
               {authed ? (
                 <ProfileMenu email={email} />
               ) : (
@@ -40,6 +46,9 @@ export default function SiteChrome({ authed, email, children }) {
                   </a>
                 </span>
               )}
+              <a className="navcta" href="/ai-headshot-generator/select">
+                Get my headshots
+              </a>
             </nav>
           </div>
         </Container>
