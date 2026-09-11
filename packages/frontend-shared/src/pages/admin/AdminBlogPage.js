@@ -229,10 +229,10 @@ export default function AdminBlogPage() {
                       <div className="flex flex-wrap gap-1 max-w-[180px]">
                         {blog.tags?.slice(0, 3).map((tag) => (
                           <span
-                            key={tag}
+                            key={tag?._id ?? tag}
                             className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded"
                           >
-                            {tag}
+                            {typeof tag === 'string' ? tag : tag?.name}
                           </span>
                         ))}
                         {blog.tags?.length > 3 && (
