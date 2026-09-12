@@ -168,7 +168,10 @@ export function createBlogTagService({ BlogTag, Blog }) {
   const deleteTag = async (id) => {
     const tag = await BlogTag.findById(id);
     if (!tag) throw new AppError('Blog tag not found', 404);
-    await Blog.updateMany({}, { $pull: { tags: tag.name } });
+    // Pull by _id, not name. Blog.tags became an array of ObjectId refs on
+    // 2026-09-08; pulling a string cast-failed and every delete returned
+    // "Invalid tags" 400, leaving the tag undeletable.
+    await Blog.updateMany({}, { $pull: { tags: tag._id } });
     await BlogTag.findByIdAndDelete(tag._id);
     return tag;
   };
