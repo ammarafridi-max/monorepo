@@ -104,7 +104,7 @@ export const TARGET = {
   /** Checked against the article text, not its markup. */
   contentChecks: [
     {
-      pattern: /(?:dummy ticket|flight reservation|flight itinerar)[^.]{0,80}AED\s*\d/i,
+      pattern: /(?:dummy ticket|flight reservation|flight itinerar)(?:(?!\bUSD\b)[^.]){0,80}AED\s*\d/i,
       message: 'Dummy Ticket 365 is priced in USD (13 / 20 / 23), never in dirhams',
     },
     {
@@ -170,7 +170,14 @@ Example shape (write your own copy, do not reuse this wording verbatim):
         match: () => /\bUSA?\b/.test(title) || has('United States') || has('B1/B2'),
         label: 'the United States',
       },
-      { slug: 'canada', match: () => has('Canada'), label: 'Canada' },
+      { slug: 'canada', match: () => has('Canada') || hasWord('IRCC'), label: 'Canada' },
+      {
+        slug: 'saudi-arabia',
+        match: () => has('Saudi') || has('Umrah'),
+        label: 'Saudi Arabia',
+        context:
+          'Mention that VisaWadi files the Saudi tourist eVisa for GCC residents at AED 700 all inclusive (government fee and mandatory medical insurance included, refunded in full if refused). No embassy, appointment or biometrics. Link naturally where it adds value.',
+      },
     ];
 
     for (const d of destinations) {
@@ -178,7 +185,9 @@ Example shape (write your own copy, do not reuse this wording verbatim):
       links.push({
         url: visaUrl(d.slug),
         anchor_hint: `varied: e.g. '${d.label} visa assistance', 'VisaWadi's ${d.label} visa service', 'help with your ${d.label} application'`,
-        context: `Mention that VisaWadi handles ${d.label} visa applications for UAE residents — document review, file preparation, appointment booking and tracking to a decision. Link naturally where it adds value.`,
+        context:
+          d.context ??
+          `Mention that VisaWadi handles ${d.label} visa applications for UAE residents — document review, file preparation, appointment booking and tracking to a decision. Link naturally where it adds value.`,
         required: true,
       });
     }
