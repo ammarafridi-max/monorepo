@@ -1,8 +1,11 @@
 name: VisaWadi Daily Blog
 
 on:
-  schedule:
-    - cron: '0 5 * * *' # 09:00 Asia/Dubai
+  # PAUSED 2026-09-11: the queue through topic 30 was written by hand, fact-checked
+  # and scheduled in the CMS one per day from 2026-09-12. Uncomment to resume from
+  # targets/visawadi/topics.json.
+  # schedule:
+  #   - cron: '0 5 * * *' # 09:00 Asia/Dubai
   workflow_dispatch:
     inputs:
       status:

@@ -13,8 +13,8 @@ cd automations && node src/cli.mjs blog-generate --target travl --dry-run
 
 | Job | Target | Schedule | Workflow |
 |---|---|---|---|
-| `blog-generate` | travl | daily 05:00 UTC | `blog-travl.yml` |
-| `blog-generate` | visawadi | daily 05:00 UTC | `blog-visawadi.yml` |
+| `blog-generate` | travl | **paused** (hand-written batches scheduled to 2026-09-30) | `blog-travl.yml` |
+| `blog-generate` | visawadi | **paused** (hand-written batch scheduled to 2026-10-11) | `blog-visawadi.yml` |
 | `blog-schedule` | travl | manual | — |
 | `pricing-sync` | — | Mon + Thu 05:00 UTC | `pricing-sync-emirateslimo.yml` |
 
@@ -22,6 +22,11 @@ Travl's cron was off between 2026-07-19 and 2026-09-09, covered by a backlog tha
 ran out on 2026-08-28. It is back on against an insurance-only topic list running
 to 2026-09-27: visa topics belong to VisaWadi now, and Travl's config fails a post
 that offers visa assistance as a Travl service or links a `travl.ae/visa` URL.
+
+`blog-generate` takes the first topic in `topics.json` that the site does not
+already have a post for, so the file is a queue and `date` is the plan, not a
+selector: a failed day is retried the next morning rather than skipped. Delete a
+topic you no longer want, or the queue will write it before anything after it.
 
 Both blog targets carry the same machinery: a format per length tier, an official
 citation allowlist, forbidden link patterns, content checks, and a per-topic
