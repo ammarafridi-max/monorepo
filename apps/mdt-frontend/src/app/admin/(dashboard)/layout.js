@@ -18,7 +18,7 @@ const nav = [
   {
     section: 'Orders',
     items: [
-      { label: 'Dummy Tickets', href: '/admin/dummy-tickets', mobile: 2, mobileLabel: 'Tickets', icon: 'Ticket', exact: true, roles: ['admin', 'agent'] },
+      { label: 'Dummy Tickets', href: '/admin/dummy-tickets', mobile: 2, mobileLabel: 'Tickets', icon: 'Ticket', exact: true, badge: 'pendingDummyTickets', roles: ['admin', 'agent'] },
       { label: "Today's Deliveries", href: '/admin/dummy-tickets/today', icon: 'CalendarCheck', roles: ['admin', 'agent', 'blog-manager'] },
       { label: 'Insurance', href: '/admin/insurance-applications', mobile: 3, icon: 'ShieldCheck', roles: ['admin', 'agent'] },
     ],

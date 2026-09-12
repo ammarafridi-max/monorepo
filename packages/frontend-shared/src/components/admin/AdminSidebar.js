@@ -8,8 +8,22 @@ import { useAdminAuth } from '../../contexts/AdminAuthContext.js';
 import { useAdminLogout } from '../../hooks/auth/useAdminLogout.js';
 import { isNavItemActive } from '../../utils/paths.js';
 import { ICON_MAP, visibleNavFor } from './navIcons.js';
+import { useNavBadges } from '../../hooks/admin/useNavBadges.js';
 
-function NavItem({ item, collapsed }) {
+export function CountBadge({ count, active = false, className = '' }) {
+  if (!count) return null;
+  return (
+    <span
+      className={`ml-auto shrink-0 min-w-[20px] h-5 px-1.5 rounded-full text-[11px] font-bold leading-5 text-center tabular-nums ${
+        active ? 'bg-white text-primary-700' : 'bg-red-500 text-white'
+      } ${className}`}
+    >
+      {count > 99 ? '99+' : count}
+    </span>
+  );
+}
+
+function NavItem({ item, collapsed, count = 0 }) {
   const pathname = usePathname();
   const isActive = isNavItemActive(pathname, item.href, item.exact);
   const Icon = ICON_MAP[item.icon];
@@ -24,8 +38,14 @@ function NavItem({ item, collapsed }) {
           : 'text-gray-400 hover:bg-white/10 hover:text-white'
       }`}
     >
-      <Icon size={17} className="shrink-0" />
+      <span className="relative shrink-0">
+        <Icon size={17} />
+        {collapsed && count > 0 && (
+          <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-red-500 ring-2 ring-gray-900" />
+        )}
+      </span>
       {!collapsed && <span className="truncate">{item.label}</span>}
+      {!collapsed && <CountBadge count={count} active={isActive} />}
     </Link>
   );
 }
@@ -36,6 +56,7 @@ export default function AdminSidebar({ nav = [], brand }) {
   const [collapsed, setCollapsed] = useState(false);
 
   const visibleNav = visibleNavFor(nav, adminUser?.role);
+  const badges = useNavBadges(nav, adminUser?.role);
   const BrandIcon = brand?.icon ? ICON_MAP[brand.icon] : null;
 
   return (
@@ -75,7 +96,7 @@ export default function AdminSidebar({ nav = [], brand }) {
               {collapsed && <div className="border-t border-white/10 mx-1 mb-2" />}
               <div className="space-y-0.5">
                 {items.map((item) => (
-                  <NavItem key={item.href} item={item} collapsed={collapsed} />
+                  <NavItem key={item.href} item={item} collapsed={collapsed} count={badges[item.badge]} />
                 ))}
               </div>
             </div>

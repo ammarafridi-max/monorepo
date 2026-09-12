@@ -28,7 +28,7 @@ const nav = [
     items: [
       {
         label: "Visa Leads",
-        href: "/admin/visa-leads", mobile: 3, mobileLabel: "Leads",
+        href: "/admin/visa-leads", mobile: 3, mobileLabel: "Leads", badge: "newVisaLeads",
         icon: "Inbox",
         roles: ["admin"],
       },

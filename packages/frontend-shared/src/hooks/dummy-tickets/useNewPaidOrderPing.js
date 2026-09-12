@@ -47,6 +47,7 @@ export function useNewPaidOrderPing({ enabled = true } = {}) {
     es.addEventListener('paid-order', () => {
       playPing();
       queryClient.invalidateQueries({ queryKey: ['dummytickets'] });
+      queryClient.invalidateQueries({ queryKey: ['nav-badges'] });
     });
 
     es.addEventListener('error', () => {

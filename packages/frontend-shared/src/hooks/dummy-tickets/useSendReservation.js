@@ -12,6 +12,7 @@ export function useSendReservation() {
       toast.success('Reservation sent to the customer.');
       queryClient.invalidateQueries({ queryKey: ['dummytickets'] });
       queryClient.invalidateQueries({ queryKey: ['dummyticket'] });
+      queryClient.invalidateQueries({ queryKey: ['nav-badges'] });
     },
     onError: (err) => {
       toast.error(err?.message || 'Could not send reservation.');

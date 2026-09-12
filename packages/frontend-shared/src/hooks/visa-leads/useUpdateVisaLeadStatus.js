@@ -12,6 +12,7 @@ export function useUpdateVisaLeadStatus() {
       toast.success('Status updated');
       queryClient.invalidateQueries({ queryKey: ['visa-leads', 'admin'] });
       queryClient.invalidateQueries({ queryKey: ['visa-lead', id] });
+      queryClient.invalidateQueries({ queryKey: ['nav-badges'] });
     },
     onError: (err) => {
       toast.error(`Failed to update status: ${err.message}`);

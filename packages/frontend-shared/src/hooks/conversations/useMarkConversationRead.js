@@ -7,7 +7,10 @@ export function useMarkConversationRead() {
 
   const { mutate: markConversationRead } = useMutation({
     mutationFn: markConversationReadApi,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['conversations'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      queryClient.invalidateQueries({ queryKey: ['nav-badges'] });
+    },
   });
 
   return { markConversationRead };

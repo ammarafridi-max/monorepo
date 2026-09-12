@@ -8,6 +8,8 @@ import { useAdminAuth } from '../../contexts/AdminAuthContext.js';
 import { useAdminLogout } from '../../hooks/auth/useAdminLogout.js';
 import { isNavItemActive } from '../../utils/paths.js';
 import { ICON_MAP, visibleNavFor, mobileTabsFor } from './navIcons.js';
+import { useNavBadges } from '../../hooks/admin/useNavBadges.js';
+import { CountBadge } from './AdminSidebar.js';
 
 const SHEET_KEYFRAMES = `
 @keyframes adminSheetFade { from { opacity: 0 } to { opacity: 1 } }
@@ -20,16 +22,21 @@ const ROLE_LABELS = {
   'blog-manager': 'Blog Manager',
 };
 
-function Tab({ icon, label, href, active, onClick }) {
+function Tab({ icon, label, href, active, onClick, count = 0 }) {
   const Icon = ICON_MAP[icon] ?? MoreHorizontal;
   const body = (
     <>
       <span
-        className={`flex items-center justify-center w-12 h-7 rounded-full transition-colors ${
+        className={`relative flex items-center justify-center w-12 h-7 rounded-full transition-colors ${
           active ? 'bg-primary-50 text-primary-700' : 'text-gray-400'
         }`}
       >
         <Icon size={19} strokeWidth={active ? 2.4 : 2} />
+        {count > 0 && (
+          <span className="absolute -top-1 right-1 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold leading-4 text-center tabular-nums ring-2 ring-white">
+            {count > 99 ? '99+' : count}
+          </span>
+        )}
       </span>
       <span
         className={`text-[10px] font-semibold leading-none truncate max-w-full px-1 ${
@@ -59,7 +66,7 @@ function Tab({ icon, label, href, active, onClick }) {
   );
 }
 
-function MoreSheet({ nav, brand, onClose }) {
+function MoreSheet({ nav, brand, badges, onClose }) {
   const pathname = usePathname();
   const { adminUser } = useAdminAuth();
   const { logout, loggingOut } = useAdminLogout();
@@ -138,6 +145,7 @@ function MoreSheet({ nav, brand, onClose }) {
                       >
                         {item.label}
                       </span>
+                      <CountBadge count={badges[item.badge]} />
                     </Link>
                   );
                 })}
@@ -188,12 +196,17 @@ export default function AdminMobileTabBar({ nav = [], brand }) {
   }, [moreOpen]);
 
   const tabs = mobileTabsFor(nav, adminUser?.role);
+  const badges = useNavBadges(nav, adminUser?.role);
+  const moreInSheet = visibleNavFor(nav, adminUser?.role)
+    .flatMap((s) => s.items)
+    .filter((i) => !tabs.includes(i))
+    .reduce((sum, i) => sum + (badges[i.badge] ?? 0), 0);
   const moreActive =
     moreOpen || !tabs.some((t) => isNavItemActive(pathname, t.href, t.exact));
 
   return (
     <>
-      {moreOpen && <MoreSheet nav={nav} brand={brand} onClose={() => setMoreOpen(false)} />}
+      {moreOpen && <MoreSheet nav={nav} brand={brand} badges={badges} onClose={() => setMoreOpen(false)} />}
 
       <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-t border-gray-200 shadow-[0_-1px_12px_rgba(0,0,0,0.04)]">
         <div className="flex items-stretch h-14">
@@ -204,12 +217,14 @@ export default function AdminMobileTabBar({ nav = [], brand }) {
               label={item.mobileLabel ?? item.label}
               href={item.href}
               active={isNavItemActive(pathname, item.href, item.exact)}
+              count={badges[item.badge]}
             />
           ))}
           <Tab
             icon="MoreHorizontal"
             label="More"
             active={moreActive}
+            count={moreInSheet}
             onClick={() => setMoreOpen((o) => !o)}
           />
         </div>

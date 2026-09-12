@@ -11,6 +11,7 @@ export function useUpdateDummyTicket() {
       toast.success('Dummy ticket updated successfully.');
       queryClient.invalidateQueries({ queryKey: ['dummytickets'] });
       queryClient.invalidateQueries({ queryKey: ['dummyticket'] });
+      queryClient.invalidateQueries({ queryKey: ['nav-badges'] });
     },
     onError: () => {
       toast.error('An error occurred.');
