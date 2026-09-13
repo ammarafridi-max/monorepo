@@ -26,6 +26,8 @@ import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
 import PricingTiers from '@/components/PricingTiers';
+import BookCta from '@/components/BookCta';
+import StickyBookingBar from '@travel-suite/frontend-shared/components/ui/v1/StickyBookingBar';
 import { processSteps } from '@/data/processSteps';
 import About from '@travel-suite/frontend-shared/components/sections/v1/About';
 import Benefits from '@travel-suite/frontend-shared/components/sections/v1/Benefits';
@@ -56,12 +58,12 @@ export const benefits = [
   },
   {
     title: 'Fast Delivery',
-    text: 'Our automated system delivers your Etihad itinerary to your inbox within 10–15 minutes, 24/7. No waiting for business hours, no manual processing.',
+    text: 'Your Etihad itinerary is sent to your inbox within 10 to 15 minutes of payment, 24/7. No waiting for business hours.',
     icon: FaBolt,
   },
   {
     title: 'Direct Support from a Specialist',
-    text: 'Our visa documentation specialists respond within 2 hours. Need a confirmation letter, travel date change, or embassy-specific query? We handle it, faster than airline support.',
+    text: 'Our visa documentation specialists are available 24/7 and reply within 10 to 15 minutes. Need a confirmation letter, travel date change, or embassy-specific query? We handle it, faster than airline support.',
     icon: FaUserTie,
   },
 ];
@@ -140,7 +142,7 @@ export const pageData = {
         {
           question: 'Do you offer refunds if my visa is denied?',
           answer:
-            'We do not offer refunds once the ticket has been delivered. However, if your appointment is delayed, we can re-issue your reservation with updated dates and a fresh PNR, at no extra charge.',
+            'Yes, in one case. If your visa is refused because the flight reservation we sent had expired or was invalid, email us the refusal letter and we refund the order in full. We do not refund for a change of plans or for a refusal on other grounds. If your appointment moves, we re-issue the reservation with new dates at no extra charge.',
         },
         {
           question: 'How long is the Etihad dummy ticket valid for?',
@@ -231,13 +233,16 @@ export default function Page() {
         subtitle={pageData.sections.faqs.subtitle}
         faqs={pageData.sections.faqs.faqs}
       />
+      <BookCta className="pb-16 md:pb-20 px-6" />
       <BlogPosts />
       <Contact
         email={EMAIL}
+        replyTime="within 10 to 15 minutes, 24/7"
         title={pageData.sections.contact.title}
         subtitle={pageData.sections.contact.subtitle}
         text={pageData.sections.contact.text}
       />
+      <StickyBookingBar label="Book now" />
     </>
   );
 }

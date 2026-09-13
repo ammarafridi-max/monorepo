@@ -46,6 +46,7 @@ export default function Navigation({ pages = defaultPages, logoAlt = 'Logo', onD
                 width={224}
                 height={60}
                 priority
+                style={{ height: 'auto' }}
                 className={`w-full h-auto object-contain ${onDark ? 'brightness-0 invert' : ''}`}
                 style={{ height: 'auto' }}
               />

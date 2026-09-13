@@ -24,6 +24,8 @@ import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
 import PricingTiers from '@/components/PricingTiers';
+import BookCta from '@/components/BookCta';
+import StickyBookingBar from '@travel-suite/frontend-shared/components/ui/v1/StickyBookingBar';
 import { processSteps } from '@/data/processSteps';
 import About from '@travel-suite/frontend-shared/components/sections/v1/About';
 import Benefits from '@travel-suite/frontend-shared/components/sections/v1/Benefits';
@@ -63,7 +65,7 @@ export const benefits = [
   },
   {
     title: 'Instant Delivery',
-    text: 'Our automated system delivers your onward ticket to your inbox within 10–15 minutes, 24/7. No waiting for business hours, no manual processing.',
+    text: 'Your onward ticket is sent to your inbox within 10 to 15 minutes of payment, 24/7. No waiting for business hours.',
     icon: HiOutlineClock,
   },
   {
@@ -83,7 +85,7 @@ export const benefits = [
   },
   {
     title: 'Specialist Support',
-    text: 'Our travel documentation team responds within 2 hours. Need a date change, confirmation letter, or help with a specific entry requirement? We handle it.',
+    text: 'Our travel documentation team is available 24/7 and replies within 10 to 15 minutes. Need a date change, confirmation letter, or help with a specific entry requirement? We handle it.',
     icon: HiCheck,
   },
 ];
@@ -174,7 +176,7 @@ export const pageData = {
         {
           question: 'Do you offer refunds if I no longer need the ticket?',
           answer:
-            'As we provide an immediate digital documentation service, we do not offer refunds once the onward ticket has been delivered. If your travel dates change, we can re-issue your reservation with updated details at no extra charge.',
+            'Yes, in one case. If your visa is refused because the flight reservation we sent had expired or was invalid, email us the refusal letter and we refund the order in full. We do not refund for a change of plans or for a refusal on other grounds. If your appointment moves, we re-issue the reservation with new dates at no extra charge.',
         },
       ],
     },
@@ -264,11 +266,13 @@ export default function Page() {
         subtitle={pageData.sections.faqs.subtitle}
         faqs={pageData.sections.faqs.faqs}
       />
+      <BookCta className="pb-16 md:pb-20 px-6" />
       <BlogPosts
         title={pageData.sections.blogs.title}
         subtitle={pageData.sections.blogs.subtitle}
       />
-      <Contact email={EMAIL} />
+      <Contact email={EMAIL} replyTime="within 10 to 15 minutes, 24/7" />
+      <StickyBookingBar label="Book now" />
     </>
   );
 }

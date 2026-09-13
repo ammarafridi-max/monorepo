@@ -21,6 +21,7 @@ function safeGetItem(key, fallback = '') {
 
 export const TicketContext = createContext();
 const AFFILIATE_STORAGE_KEY = 'affiliate_attribution_v1';
+const SEARCH_STORAGE_KEY = 'ticket_search_v1';
 const AFFILIATE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 function isValidAffiliateId(value) {
@@ -57,6 +58,7 @@ export function TicketProvider({ children }) {
   const [departureFlight, setDepartureFlight] = useState('');
   const [returnFlight, setReturnFlight] = useState('');
   const [affiliateAttribution, setAffiliateAttribution] = useState(storedAffiliate);
+  const [hydrated, setHydrated] = useState(false);
 
   const initializePassengers = useCallback((quantity) => {
     const newPassengers = [];
@@ -90,6 +92,33 @@ export function TicketProvider({ children }) {
     setTicketValidity(ticketValidity);
     setTicketPrice(ticketPrice);
   }, []);
+
+  // Search fields live in sessionStorage so a refresh or back-navigation inside the booking flow keeps them.
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(SEARCH_STORAGE_KEY) || 'null');
+      if (saved) {
+        if (saved.type) setType(saved.type);
+        if (saved.from) setFrom(saved.from);
+        if (saved.to) setTo(saved.to);
+        if (saved.departureDate) setDepartureDate(saved.departureDate);
+        if (saved.returnDate) setReturnDate(saved.returnDate);
+        if (saved.quantity) setQuantity(saved.quantity);
+        if (saved.ticketValidity) setTicketValidity(saved.ticketValidity);
+      }
+    } catch {}
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      sessionStorage.setItem(
+        SEARCH_STORAGE_KEY,
+        JSON.stringify({ type, from, to, departureDate, returnDate, quantity, ticketValidity }),
+      );
+    } catch {}
+  }, [hydrated, type, from, to, departureDate, returnDate, quantity, ticketValidity]);
 
   useEffect(() => {
     const today = todayDateOnly();
@@ -154,6 +183,7 @@ export function TicketProvider({ children }) {
         departureFlight,
         returnFlight,
         affiliateAttribution,
+        hydrated,
 
         setType,
         setFrom,

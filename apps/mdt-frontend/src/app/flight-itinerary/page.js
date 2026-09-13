@@ -15,6 +15,8 @@ import {
   HiOutlineCurrencyDollar,
 } from 'react-icons/hi2';
 import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
+import BookCta from '@/components/BookCta';
+import StickyBookingBar from '@travel-suite/frontend-shared/components/ui/v1/StickyBookingBar';
 import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
 import Benefits from '@travel-suite/frontend-shared/components/sections/v1/Benefits';
@@ -30,7 +32,7 @@ export const benefits = [
   },
   {
     title: 'Instant Delivery',
-    text: 'Our automated process ensures you receive your flight itinerary by email within minutes-quick, seamless, and completely hassle-free.',
+    text: 'Your flight itinerary is sent to your inbox within 10 to 15 minutes of payment, 24 hours a day, 7 days a week. No waiting for business hours.',
     icon: HiOutlineClock,
   },
   {
@@ -72,7 +74,7 @@ export const pageData = {
     },
     contact: {
       title: '24/7 Customer Support',
-      text: 'Need help with your booking? Our support team is available 24/7.',
+      text: 'Need help with your booking? Our support team is available 24/7 and replies within 10 to 15 minutes.',
     },
   },
 };
@@ -134,11 +136,14 @@ export default function Page() {
         subtitle={pageData.sections.benefits.subtitle}
         benefits={pageData.sections.benefits.benefits}
       />
+      <BookCta className="pb-16 md:pb-20 px-6" />
       <Contact
         email={EMAIL}
+        replyTime="within 10 to 15 minutes, 24/7"
         title={pageData.sections.contact.title}
         text={pageData.sections.contact.text}
       />
+      <StickyBookingBar label="Book now" />
     </>
   );
 }

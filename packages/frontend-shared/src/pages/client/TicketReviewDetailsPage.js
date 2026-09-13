@@ -2,6 +2,7 @@
 
 import { useContext, useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   Check,
   Lock,
@@ -53,14 +54,18 @@ function Row({ label, value }) {
   );
 }
 
-export default function TicketReviewDetailsPage({ onBeginCheckout, enablePayPal = false }) {
-  const sessionId = typeof window === 'undefined' ? '' : localStorage.getItem('SESSION_ID');
+export default function TicketReviewDetailsPage({ onBeginCheckout, enablePayPal = false, searchPath = '/' }) {
+  const router = useRouter();
+  const [sessionId, setSessionId] = useState(null);
+  useEffect(() => {
+    setSessionId(localStorage.getItem('SESSION_ID') || '');
+  }, []);
   const { type } = useContext(TicketContext);
   const { selectedCurrency, formatMoney } = useCurrency();
   const { pricing } = useDummyTicketPricing();
   const { createStripePayment, isLoadingStripePaymentURL, isErrorStripePaymentURL } = useStripePaymentURL();
   const { createPayPalOrder, isLoadingPayPalOrder } = usePayPalOrder();
-  const { dummyTicket, isLoadingDummyTicket } = useGetDummyTicket(sessionId);
+  const { dummyTicket, isLoadingDummyTicket, isErrorDummyTicket } = useGetDummyTicket(sessionId);
   const [agreed, setAgreed] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('card');
 
@@ -71,6 +76,10 @@ export default function TicketReviewDetailsPage({ onBeginCheckout, enablePayPal 
   const ticketPrice = formatMoney(baseTicketPrice, 'AED').amount;
   const totalAmount = ticketPrice * totalQuantity;
   const currencyCode = selectedCurrency?.code || 'AED';
+
+  useEffect(() => {
+    if (sessionId === '') router.replace(searchPath);
+  }, [sessionId, router, searchPath]);
 
   useEffect(() => {
     if (isErrorStripePaymentURL) {
@@ -94,7 +103,26 @@ export default function TicketReviewDetailsPage({ onBeginCheckout, enablePayPal 
     }
   };
 
-  if (isLoadingDummyTicket) return <PageLoader />;
+  if (sessionId === null || sessionId === '' || isLoadingDummyTicket) return <PageLoader />;
+
+  if (isErrorDummyTicket || !dummyTicket || totalQuantity === 0) {
+    return (
+      <div className="max-w-lg mx-auto py-24 flex flex-col items-center text-center gap-5">
+        <div>
+          <p className="text-lg font-bold text-gray-900">This booking is no longer available</p>
+          <p className="text-sm text-gray-500 mt-1">
+            Your booking details could not be loaded. Start a new search and it takes about a minute.
+          </p>
+        </div>
+        <Link
+          href={searchPath}
+          className="text-sm font-bold px-5 py-2.5 bg-primary-700 hover:bg-primary-800 text-white rounded-xl transition-colors"
+        >
+          Start a new booking
+        </Link>
+      </div>
+    );
+  }
 
   const depFlight = [
     dummyTicket?.flightDetails?.departureFlight?.segments?.[0]?.carrierCode,
@@ -219,9 +247,15 @@ export default function TicketReviewDetailsPage({ onBeginCheckout, enablePayPal 
 
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col gap-4">
             <label className="flex items-start gap-3 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+                className="sr-only peer"
+              />
               <div
-                onClick={() => setAgreed((p) => !p)}
-                className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
+                aria-hidden="true"
+                className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-primary-500 ${
                   agreed ? 'bg-primary-700 border-primary-700' : 'border-gray-300 hover:border-primary-400'
                 }`}
               >

@@ -83,12 +83,17 @@ export default function Page() {
               All payments must be made through the secure payment options provided on our website.
             </li>
             <li className="pl-2">
-              All payments are non-refundable except in cases of system failure or when the service
-              is not delivered as described.
+              Payments are refunded in full where a visa is refused because the flight reservation
+              we supplied had expired or was invalid at the time of assessment. To claim, email us
+              the refusal letter that states this reason.
             </li>
             <li className="pl-2">
-              If you experience any issue, you must contact us within 24 hours of purchase for
-              review.
+              Payments are not refunded for a change of travel plans, for a refusal on any other
+              ground, or where the reservation was used after its stated validity period.
+            </li>
+            <li className="pl-2">
+              If a reservation is not delivered, or is delivered with an error on our side, contact
+              us within 24 hours of purchase and we will correct or re-issue it at no charge.
             </li>
           </ul>
 

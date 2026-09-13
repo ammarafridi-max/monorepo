@@ -1,17 +1,23 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAirports } from '../../../hooks/airports/useAirports';
 import { useOutsideClick } from '../../../hooks/general/useOutsideClick';
+import { useDebounce } from '../../../hooks/general/useDebounce';
 
 export default function SelectAirport({ value, onChange, id, icon, error, inputRef }) {
   const [query, setQuery] = useState(value || '');
   const [isOpen, setIsOpen] = useState(false);
   // Only search while the dropdown is open; the closed input holds a display string AirLabs 502s on.
-  const { airports, isLoadingAirports } = useAirports(isOpen ? query : '');
+  const debouncedQuery = useDebounce(query, 250);
+  const { airports, isLoadingAirports } = useAirports(isOpen ? debouncedQuery : '');
   const containerRef = useRef();
 
   useOutsideClick(containerRef, () => setIsOpen(false));
+
+  useEffect(() => {
+    if (typeof value === 'string' && value.length > 0 && !isOpen) setQuery(value);
+  }, [value, isOpen]);
 
   function handleChange(e) {
     setQuery(e.target.value);
@@ -41,6 +47,7 @@ export default function SelectAirport({ value, onChange, id, icon, error, inputR
           value={query}
           onChange={handleChange}
           onClick={handleClick}
+          onFocus={handleClick}
           placeholder="Search airport or city..."
           aria-invalid={error ? 'true' : undefined}
           className={`${error ? 'border border-red-600' : 'border border-gray-200'} rounded-xl px-4 py-2.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 w-full placeholder:text-gray-400 pr-10`}

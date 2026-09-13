@@ -9,6 +9,6 @@ export const processSteps = [
   },
   {
     title: 'Pay and receive instantly',
-    text: 'Complete your secure payment and your documents arrive in your inbox within minutes. No office visits, no waiting around.',
+    text: 'Complete your secure payment and your documents arrive in your inbox within 10 to 15 minutes, any time of day. No office visits, no waiting around.',
   },
 ];

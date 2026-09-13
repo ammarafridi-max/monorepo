@@ -32,6 +32,7 @@ export default function MobileNavigation({ pages = travlDefaultPages, logoAlt = 
             width={160}
             height={28}
             priority
+            style={{ height: 'auto' }}
             className={`w-full h-auto object-contain ${onDark ? 'brightness-0 invert' : ''}`}
           />
         </Link>

@@ -123,20 +123,28 @@ export default function TicketForm() {
       className="m-0 py-7 px-4 md:p-6 rounded-2xl shadow-[0px_0px_10px_0px_rgba(0,0,0,0.1)] bg-white"
       onSubmit={handleFormSubmit}
     >
-      <div className="flex gap-2.5">
+      <div className="flex gap-2.5" role="radiogroup" aria-label="Trip type">
         {['One Way', 'Return'].map(tripType => (
-          <div
+          <label
             className="text-[14.5px] w-fit flex items-center mb-5 cursor-pointer font-light"
             key={tripType}
-            onClick={() => handleFieldChange('type', tripType)}
           >
+            <input
+              type="radio"
+              name="tripType"
+              value={tripType}
+              checked={type === tripType}
+              onChange={() => handleFieldChange('type', tripType)}
+              className="sr-only peer"
+            />
             <FaCircle
-              className={`mr-2 p-0.75 text-lg rounded-full border border-solid border-black ${
+              aria-hidden="true"
+              className={`mr-2 p-0.75 text-lg rounded-full border border-solid border-black peer-focus-visible:ring-2 peer-focus-visible:ring-primary-500 ${
                 type === tripType ? 'text-black' : 'text-transparent'
               }`}
             />
             {tripType}
-          </div>
+          </label>
         ))}
       </div>
 

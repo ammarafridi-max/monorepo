@@ -284,7 +284,9 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
           price_data: {
             currency: String(currencyCode || 'AED').toLowerCase(),
             unit_amount: Math.round(totalAmount * 100),
-            product_data: { name: `${ticket.type} Flight Reservation` },
+            product_data: {
+              name: `${ticket.type} flight reservation, ${ticket.ticketValidity} validity, ${adults + children} passenger${adults + children === 1 ? '' : 's'}, ${ticket.from} to ${ticket.to}`,
+            },
           },
           quantity: 1,
         },

@@ -31,7 +31,7 @@ export default function FlightCard({ flight, isExpanded, onSelectFlight }) {
         </div>
 
         <div className="w-full lg:w-1/4 flex justify-between lg:block pt-1 lg:pt-2.5 lg:border-t-0 px-3">
-          <div className="w-[40%] lg:w-full flex flex-col lg:flex-row gap-1 items-baseline justify-center font-nunito text-left lg:text-center lg:py-2">
+          <div className="w-[60%] lg:w-full flex flex-col lg:flex-row gap-1 items-baseline justify-center font-nunito text-left lg:text-center lg:py-2">
             <p className="text-lg font-medium text-black mb-[-8px]">
               {displayPrice.code || selectedCurrency?.code || "AED"}{" "}
               {displayPrice.value}
@@ -39,9 +39,10 @@ export default function FlightCard({ flight, isExpanded, onSelectFlight }) {
             <p className="text-sm font-light text-gray-400">/ person</p>
           </div>
           <button
-            className={`w-[30%] lg:w-full rounded-full py-2 text-sm cursor-pointer duration-300 ${isExpanded ? "bg-black text-white" : "bg-gray-200 text-black hover:bg-gray-300"}`}
+            className={`w-[40%] lg:w-full rounded-full py-1 lg:py-2 text-sm cursor-pointer duration-300 ${isExpanded ? "bg-black text-white" : "bg-gray-200 text-black hover:bg-gray-300"}`}
             disabled={isExpanded}
             onClick={onSelectFlight}
+            aria-label={`Select flight ${flight?.airlineDetails?.[0]?.commonName || ""} ${flight?.itineraries?.[0]?.segments?.[0]?.flightNumber || ""}`.trim()}
           >
             {isExpanded ? "Selected" : "Select Flight"}
           </button>

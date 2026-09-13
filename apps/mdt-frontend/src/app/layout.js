@@ -31,7 +31,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${commissioner.variable} h-full antialiased`}>
+    <html lang="en" data-scroll-behavior="smooth" className={`${commissioner.variable} h-full antialiased`}>
       <head>
         <link rel="preconnect" href="https://res.cloudinary.com" />
         <link rel="dns-prefetch" href="https://res.cloudinary.com" />

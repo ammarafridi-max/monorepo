@@ -1,6 +1,6 @@
 'use client';
 
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useCreateDummyTicket } from '../../../hooks/dummy-tickets/useCreateDummyTicket';
 import { isEmail } from 'validator';
 import { TicketContext } from '../../../contexts/TicketContext.js';
@@ -12,11 +12,13 @@ import TextArea from '../../form-elements/v1/TextArea';
 import Email from '../../form-elements/v1/Email';
 import PhoneInput from '../../form-elements/v1/PhoneInput';
 import PrimaryButton from '../../ui/v1/PrimaryButton';
+import FieldError from '../../ui/v1/FieldError';
 import SegmentedRadioGroup from '../../form-elements/v1/SegmentedRadioGroup';
 import { Tooltip } from 'react-tooltip';
 import { FaInfo } from 'react-icons/fa';
 
 import { useDummyTicketPricing } from '../../../hooks/pricing/useDummyTicketPricing';
+import { trackAddToCart } from '../../../utils/analytics';
 import { normalizePricingOptions } from '../../../utils/dummyTicketPricing';
 import { useCurrency } from '../../../contexts/CurrencyContext.js';
 import { todayDateOnly } from '../../../utils/dates';
@@ -35,7 +37,8 @@ const FormItem = ({ children }) => (
 );
 
 export default function FlightForm() {
-  const [isBtnDisabled, setIsBtnDisabled] = useState(true);
+  const [errors, setErrors] = useState({});
+  const formRef = useRef(null);
   const { createDummyTicket, isCreatingDummyTicket } = useCreateDummyTicket();
   const { pricing } = useDummyTicketPricing();
   const { selectedCurrency, formatMoney } = useCurrency();
@@ -51,6 +54,7 @@ export default function FlightForm() {
     phoneNumber,
     message,
     ticketValidity,
+    ticketPrice,
     receiveNow,
     deliveryDate,
     departureFlight,
@@ -84,32 +88,53 @@ export default function FlightForm() {
     }
   }, [initializePassengers, quantity, passengers]);
 
+  function passengerError(p) {
+    const missing = [];
+    if (!p.title) missing.push('title');
+    if (!p.firstName) missing.push('first name');
+    if (!p.lastName) missing.push('last name');
+    return missing.length ? `Enter ${missing.join(', ')}` : null;
+  }
+
+  function buildErrors() {
+    const next = {};
+    passengers.forEach((p, i) => {
+      const err = passengerError(p);
+      if (err) next[`passenger-${i}`] = err;
+    });
+    if (!email) next.email = 'Enter your email address';
+    else if (!isEmail(email)) next.email = 'Enter a valid email address';
+    if (!phoneNumber.code || !phoneNumber.digits) next.phone = 'Enter your phone number';
+    if (!receiveNow && !deliveryDate) next.deliveryDate = 'Choose a delivery date';
+    return next;
+  }
+
+  function clearError(key) {
+    setErrors((prev) => {
+      if (!prev[key]) return prev;
+      const { [key]: _removed, ...rest } = prev;
+      void _removed;
+      return rest;
+    });
+  }
+
   useEffect(() => {
-    function validateForm() {
-      if (passengers?.some((p) => !p.title || !p.firstName || !p.lastName)) {
-        setIsBtnDisabled(true);
-        return false;
-      }
-      if (!email) {
-        setIsBtnDisabled(true);
-        return false;
-      }
-      if (!isEmail(email)) {
-        setIsBtnDisabled(true);
-        return false;
-      }
-      if (!phoneNumber.code || !phoneNumber.digits) {
-        setIsBtnDisabled(true);
-        return false;
-      }
-      if (!receiveNow && !deliveryDate) {
-        setIsBtnDisabled(true);
-        return false;
-      }
-      setIsBtnDisabled(false);
-      return true;
-    }
-    validateForm();
+    passengers.forEach((p, i) => {
+      const key = `passenger-${i}`;
+      const err = passengerError(p);
+      setErrors((prev) => {
+        if (!prev[key] || prev[key] === err) return prev;
+        if (!err) {
+          const { [key]: _removed, ...rest } = prev;
+          void _removed;
+          return rest;
+        }
+        return { ...prev, [key]: err };
+      });
+    });
+    if (email && isEmail(email)) clearError('email');
+    if (phoneNumber.code && phoneNumber.digits) clearError('phone');
+    if (receiveNow || deliveryDate) clearError('deliveryDate');
   }, [passengers, email, phoneNumber, receiveNow, deliveryDate]);
 
   useEffect(() => {
@@ -131,8 +156,26 @@ export default function FlightForm() {
   async function handleSubmit(e) {
     e.preventDefault();
     if (isCreatingDummyTicket) return;
+    const next = buildErrors();
+    if (Object.keys(next).length > 0) {
+      setErrors(next);
+      const firstKey = Object.keys(next)[0];
+      const el = formRef.current?.querySelector(`[data-error-key="${firstKey}"]`);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el?.querySelector('input, [tabindex]')?.focus();
+      return;
+    }
+    setErrors({});
     localStorage.setItem('email', email);
     localStorage.setItem('phoneNumber', JSON.stringify(phoneNumber));
+
+    trackAddToCart({
+      tripType: type,
+      ticketValidity,
+      price: ticketPrice,
+      passengers: quantity.adults + quantity.children,
+      currency: selectedCurrency?.code || 'AED',
+    });
 
     createDummyTicket({
       type,
@@ -162,6 +205,8 @@ export default function FlightForm() {
 
   return (
     <form
+      ref={formRef}
+      noValidate
       className="flex flex-col mt-2.5 p-6 lg:p-6.25 rounded-xl bg-gray-100"
       onSubmit={handleSubmit}
     >
@@ -169,6 +214,7 @@ export default function FlightForm() {
         <PassengerData
           passengers={passengers}
           updatePassengerData={updatePassengerData}
+          errors={errors}
         />
       )}
 
@@ -177,6 +223,7 @@ export default function FlightForm() {
         setEmail={setEmail}
         phoneNumber={phoneNumber}
         setPhoneNumber={setPhoneNumber}
+        errors={errors}
       />
 
       <TicketValidityOptions
@@ -184,6 +231,7 @@ export default function FlightForm() {
         updatePricing={updatePricing}
         options={displayPricingOptions}
         currencyCode={selectedCurrency?.code || 'AED'}
+        departureDate={departureDate}
       />
 
       <TicketDelivery
@@ -191,21 +239,19 @@ export default function FlightForm() {
         setReceiveNow={setReceiveNow}
         deliveryDate={deliveryDate}
         setDeliveryDate={setDeliveryDate}
+        error={errors.deliveryDate}
       />
 
       <Message message={message} setMessage={setMessage} />
 
-      <PrimaryButton
-        className="w-full mt-5"
-        disabled={isBtnDisabled || isCreatingDummyTicket}
-      >
+      <PrimaryButton className="w-full mt-5" disabled={isCreatingDummyTicket}>
         {isCreatingDummyTicket ? 'Processing...' : 'Review Your Information'}
       </PrimaryButton>
     </form>
   );
 }
 
-function PassengerData({ passengers, updatePassengerData }) {
+function PassengerData({ passengers, updatePassengerData, errors }) {
   let adultCount = 0;
   let childCount = 0;
   let infantCount = 0;
@@ -222,15 +268,20 @@ function PassengerData({ passengers, updatePassengerData }) {
 
         return (
           <FormItem key={index}>
-            <Label>{label}</Label>
+            <div data-error-key={`passenger-${index}`} className="flex flex-col gap-1.5">
+            <Label htmlFor={`passenger-${index}-firstName`}>{label}</Label>
             <div className="w-full flex gap-1.25">
               <SelectTitle
+                ariaLabel={`${label} title`}
                 value={passenger.title}
                 onChange={(e) =>
                   updatePassengerData(index, 'title', e.target.value)
                 }
               />
               <Input
+                id={`passenger-${index}-firstName`}
+                aria-label={`${label} first name`}
+                autoComplete="given-name"
                 value={passenger.firstName}
                 placeholder="First Name"
                 onChange={(e) =>
@@ -238,12 +289,19 @@ function PassengerData({ passengers, updatePassengerData }) {
                 }
               />
               <Input
+                id={`passenger-${index}-lastName`}
+                aria-label={`${label} last name`}
+                autoComplete="family-name"
                 value={passenger.lastName}
                 placeholder="Last Name"
                 onChange={(e) =>
                   updatePassengerData(index, 'lastName', e.target.value)
                 }
               />
+            </div>
+            {errors[`passenger-${index}`] && (
+              <FieldError>{errors[`passenger-${index}`]}</FieldError>
+            )}
             </div>
           </FormItem>
         );
@@ -252,16 +310,22 @@ function PassengerData({ passengers, updatePassengerData }) {
   );
 }
 
-function ContactDetails({ email, setEmail, phoneNumber, setPhoneNumber }) {
+function ContactDetails({ email, setEmail, phoneNumber, setPhoneNumber, errors }) {
   return (
     <FormRow>
       <FormItem>
-        <Label>Email Address</Label>
-        <Email email={email} onChange={(e) => setEmail(e.target.value)} />
+        <div data-error-key="email" className="flex flex-col gap-1.5">
+          <Label htmlFor="email">Email Address</Label>
+          <Email email={email} onChange={(e) => setEmail(e.target.value)} />
+          {errors.email && <FieldError>{errors.email}</FieldError>}
+        </div>
       </FormItem>
       <FormItem>
-        <Label>Phone Number</Label>
-        <PhoneInput value={phoneNumber} onChange={setPhoneNumber} />
+        <div data-error-key="phone" className="flex flex-col gap-1.5">
+          <Label htmlFor="phone">Phone Number</Label>
+          <PhoneInput value={phoneNumber} onChange={setPhoneNumber} inputId="phone" />
+          {errors.phone && <FieldError>{errors.phone}</FieldError>}
+        </div>
       </FormItem>
     </FormRow>
   );
@@ -272,7 +336,13 @@ function TicketValidityOptions({
   updatePricing,
   options,
   currencyCode,
+  departureDate,
 }) {
+  const daysToDeparture = departureDate
+    ? Math.round((new Date(departureDate) - new Date(todayDateOnly())) / 86_400_000)
+    : null;
+  const shortNotice = daysToDeparture !== null && daysToDeparture <= 30;
+
   const handleChange = (option) => {
     updatePricing({ ticketValidity: option.value, ticketPrice: option.price });
   };
@@ -287,6 +357,12 @@ function TicketValidityOptions({
         onChange={handleChange}
         currencyCode={currencyCode}
       />
+      {shortNotice && (
+        <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-800">
+          Your departure is within 30 days, so we cannot guarantee a 14 day reservation on this
+          flight. We will book the best option available for the validity you choose.
+        </p>
+      )}
     </FormItem>
   );
 }
@@ -299,6 +375,7 @@ function TicketDelivery({
   deliveryDate,
   setReceiveNow,
   setDeliveryDate,
+  error,
 }) {
   return (
     <FormRow>
@@ -325,33 +402,39 @@ function TicketDelivery({
           />
         </div>
         <div>
-          <div className="font-light text-[14.5px]">
+          <label className="block font-light text-[14.5px] cursor-pointer">
             <input
               type="radio"
+              name="ticketDelivery"
               checked={receiveNow}
               onChange={() => setReceiveNow(true)}
             />{' '}
             <span className="ml-3">I need it now</span>
-          </div>
-          <div className="font-light text-[14.5px]">
+          </label>
+          <label className="block font-light text-[14.5px] cursor-pointer">
             <input
               type="radio"
+              name="ticketDelivery"
               checked={!receiveNow}
               onChange={() => setReceiveNow(false)}
             />{' '}
             <span className="ml-3">I need it on a later date</span>
-          </div>
+          </label>
         </div>
       </FormItem>
       {!receiveNow && (
         <FormItem>
-          <Label>Deliver Ticket On</Label>
-          <DatePicker
-            value={deliveryDate}
-            onChange={setDeliveryDate}
-            minDate={todayDateOnly()}
-            placeholder="Select delivery date"
-          />
+          <div data-error-key="deliveryDate" className="flex flex-col gap-1.5">
+            <Label>Deliver Ticket On</Label>
+            <DatePicker
+              value={deliveryDate}
+              onChange={setDeliveryDate}
+              minDate={todayDateOnly()}
+              placeholder="Select delivery date"
+              error={error}
+            />
+            {error && <FieldError>{error}</FieldError>}
+          </div>
         </FormItem>
       )}
     </FormRow>

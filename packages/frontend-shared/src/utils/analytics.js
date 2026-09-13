@@ -80,22 +80,38 @@ export function trackFlightSearch({
   }
 }
 
-export function trackFlightFormSubmission({
-  passengers,
-  email,
-  phoneNumber,
-  ticketValidity,
-  flightDetails,
-}) {
-  if (shouldTrackAnalytics()) {
-    ReactGA.event('flight_form_submission', {
-      passengers,
-      email,
-      phoneNumber,
-      ticketValidity,
-      flightDetails,
-    });
-  }
+export function trackSelectFlight({ tripType, carrierCode, flightNumber, ticketValidity, price, index = 0 }) {
+  if (!shouldTrackAnalytics()) return;
+  ReactGA.event('select_item', {
+    item_list_id: 'flight_results',
+    item_list_name: 'Flight Results',
+    items: [
+      {
+        item_id: [carrierCode, flightNumber].filter(Boolean).join('') || 'flight',
+        item_name: `${tripType} flight reservation`,
+        item_category: ticketValidity,
+        price,
+        quantity: 1,
+        index,
+      },
+    ],
+  });
+}
+
+export function trackAddToCart({ tripType, ticketValidity, price, passengers, currency = 'AED' }) {
+  if (!shouldTrackAnalytics()) return;
+  ReactGA.event('add_to_cart', {
+    currency,
+    value: parseFloat(((price || 0) * (passengers || 1)).toFixed(2)),
+    items: [
+      {
+        item_name: `${tripType} flight reservation`,
+        item_category: ticketValidity,
+        price,
+        quantity: passengers || 1,
+      },
+    ],
+  });
 }
 
 export function trackVisaLeadOpen({ visaSlug, packageRequested, source }) {

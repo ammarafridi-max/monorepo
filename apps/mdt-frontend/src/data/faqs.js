@@ -22,7 +22,7 @@ export const faqArray = [
   {
     question: 'How long does it take to receive my {keyword}?',
     answer:
-      'All of our {keyword}s are created and sent within 10 to 15 minutes of application time. Please note that we send {keyword}s during working hours only (09:00 AM - 09:00 PM). If you need it urgently, please send us an email',
+      'All of our {keyword}s are created and sent within 10 to 15 minutes of payment, 24 hours a day, 7 days a week. If you need it faster, email us with your order reference and we will prioritise it.',
   },
   {
     question: 'Do {keyword}s work for Schengen applications?',
@@ -56,11 +56,12 @@ export const faqArray = [
   },
   {
     question: 'How can I contact customer support?',
-    answer: 'You can contact us by sending us an email us at info@mydummyticket.ae',
+    answer: 'Email us at info@mydummyticket.ae. Support is available 24/7 and replies within 10 to 15 minutes.',
   },
   {
     question: 'Is there a money-back guarantee?',
-    answer: 'No, we do not offer any refunds or money-back guarantee.',
+    answer:
+      'Yes, in one case. If your visa is refused because the flight reservation we sent had expired or was invalid, email us the refusal letter and we refund the order in full. We do not refund for a change of plans or for a refusal on other grounds. If your appointment moves, we re-issue the reservation with new dates at no extra charge.',
   },
 ];
 

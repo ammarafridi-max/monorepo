@@ -26,6 +26,8 @@ import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
 import PricingTiers from '@/components/PricingTiers';
+import BookCta from '@/components/BookCta';
+import StickyBookingBar from '@travel-suite/frontend-shared/components/ui/v1/StickyBookingBar';
 import { processSteps } from '@/data/processSteps';
 import About from '@travel-suite/frontend-shared/components/sections/v1/About';
 import Benefits from '@travel-suite/frontend-shared/components/sections/v1/Benefits';
@@ -94,7 +96,7 @@ export const faqs = [
   {
     question: 'Do you offer refunds if my Schengen visa is rejected?',
     answer:
-      'As dummy tickets are a document-preparation service, refunds are not offered after delivery. However, if any correction or update is required due to an error on our side, we will revise the reservation at no additional cost.',
+      'Yes, in one case. If your visa is refused because the flight reservation we sent had expired or was invalid, email us the refusal letter and we refund the order in full. We do not refund for a change of plans or for a refusal on other grounds. If your appointment moves, we re-issue the reservation with new dates at no extra charge.',
   },
 ];
 
@@ -257,13 +259,16 @@ export default function Page() {
         subtitle={pageData.sections.faqs.subtitle}
         faqs={pageData.sections.faqs.faqs}
       />
+      <BookCta className="pb-16 md:pb-20 px-6" />
 
       <Contact
         email={EMAIL}
+        replyTime="within 10 to 15 minutes, 24/7"
         title={pageData.sections.contact.title}
         subtitle={pageData.sections.contact.subtitle}
         text={pageData.sections.contact.text}
       />
+      <StickyBookingBar label="Book now" />
     </>
   );
 }

@@ -27,6 +27,8 @@ import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
 import PricingTiers from '@/components/PricingTiers';
+import BookCta from '@/components/BookCta';
+import StickyBookingBar from '@travel-suite/frontend-shared/components/ui/v1/StickyBookingBar';
 import { processSteps } from '@/data/processSteps';
 import About from '@travel-suite/frontend-shared/components/sections/v1/About';
 import Benefits from '@travel-suite/frontend-shared/components/sections/v1/Benefits';
@@ -244,11 +246,13 @@ export default function Page() {
         subtitle={pageData.sections.faqs.subtitle}
         faqs={pageData.sections.faqs.faqs}
       />
+      <BookCta className="pb-16 md:pb-20 px-6" />
       <BlogPosts
         title={pageData.sections.blogs.title}
         subtitle={pageData.sections.blogs.subtitle}
       />
-      <Contact email={EMAIL} />
+      <Contact email={EMAIL} replyTime="within 10 to 15 minutes, 24/7" />
+      <StickyBookingBar label="Book now" />
     </>
   );
 }

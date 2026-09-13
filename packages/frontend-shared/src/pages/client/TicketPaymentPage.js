@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useRef } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useCapturePayPalOrder } from "../../hooks/dummy-tickets/useCapturePayPalOrder.js";
 import Link from "next/link";
@@ -40,19 +40,39 @@ function LoadingState() {
   );
 }
 
-function ErrorState({ supportEmail }) {
+function ConfirmingState() {
+  return (
+    <div className="max-w-lg mx-auto px-6 py-24 flex flex-col items-center text-center gap-5">
+      <Loader2 size={28} className="animate-spin text-primary-600" />
+      <div>
+        <p className="text-lg font-bold text-gray-900">Confirming your payment</p>
+        <p className="text-sm text-gray-400 mt-1 max-w-sm">
+          Stripe is sending us the confirmation. This usually takes a few seconds. Please keep this
+          page open.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function ErrorState({ supportEmail, sessionId, pending = false }) {
   return (
     <div className="max-w-lg mx-auto px-6 py-24 flex flex-col items-center text-center gap-5">
       <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center">
         <AlertCircle size={28} className="text-red-400" />
       </div>
       <div>
-        <p className="text-lg font-bold text-gray-900">Payment not found</p>
-        <p className="text-sm text-gray-400 mt-1 max-w-sm">
-          We couldn&apos;t find a successful payment linked to this booking. If
-          you were charged, please contact our support team with your
-          transaction details.
+        <p className="text-lg font-bold text-gray-900">
+          {pending ? "Still waiting for Stripe" : "Payment not found"}
         </p>
+        <p className="text-sm text-gray-400 mt-1 max-w-sm">
+          {pending
+            ? "We have not received Stripe's confirmation yet. If your card was charged, your order is safe: reply to the Stripe receipt or email us and quote the reference below."
+            : "We couldn't find a successful payment linked to this booking. If you were charged, please contact our support team with your transaction details."}
+        </p>
+        {sessionId && (
+          <p className="text-xs text-gray-400 mt-3 break-all">Reference: {sessionId}</p>
+        )}
       </div>
       <div className="flex items-center gap-3">
         <Link
@@ -270,7 +290,7 @@ function SuccessContent({ sessionId, dummyTicket, onPurchaseEvent, supportEmail,
                   </p>
                   <p className="text-sm text-gray-500 mt-0.5 leading-relaxed">
                     {isImmediate
-                      ? "A receipt and your dummy ticket will arrive in two separate emails shortly."
+                      ? "A receipt and your dummy ticket arrive in two separate emails, usually within 15 minutes, any time of day."
                       : `Your dummy ticket will be emailed to you on ${deliveryDate ? formatDate(deliveryDate) : "the scheduled date"}.`}
                   </p>
                 </div>
@@ -306,7 +326,7 @@ function SuccessContent({ sessionId, dummyTicket, onPurchaseEvent, supportEmail,
                 <span className="font-semibold text-gray-800 break-all">
                   {supportEmail}
                 </span>
-                . We usually reply within a few hours.
+                . We are available 24/7 and usually reply within 10 to 15 minutes.
               </p>
               <a
                 href={`mailto:${supportEmail}`}
@@ -340,21 +360,34 @@ function PaymentSuccessContent({ onPurchaseEvent, supportEmail, upsells }) {
     capturePayPalOrder({ sessionId, orderId: paypalOrderId });
   }, [isPayPal, sessionId, paypalOrderId, capturePayPalOrder]);
 
-  const { dummyTicket, isLoadingDummyTicket, isErrorDummyTicket } =
-    useGetDummyTicket(sessionId);
+  // Stripe redirects the browser before its webhook lands, so an UNPAID ticket right after
+  // checkout is normal. Poll for up to a minute before treating it as a failure.
+  const [pollTimedOut, setPollTimedOut] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setPollTimedOut(true), 60_000);
+    return () => clearTimeout(t);
+  }, []);
+
+  const { dummyTicket, isLoadingDummyTicket, isErrorDummyTicket } = useGetDummyTicket(sessionId, {
+    refetchInterval: (query) =>
+      !pollTimedOut && query.state.data?.paymentStatus === "UNPAID" ? 2000 : false,
+  });
 
   if (isPayPal && isCapturing) return <LoadingState />;
 
-  if (isPayPal && isErrorCapture) return <ErrorState supportEmail={supportEmail} />;
+  if (isPayPal && isErrorCapture) return <ErrorState supportEmail={supportEmail} sessionId={sessionId} />;
 
   if (isLoadingDummyTicket) return <LoadingState />;
 
-  if (
-    isErrorDummyTicket ||
-    dummyTicket?.paymentStatus === "UNPAID" ||
-    !sessionId
-  )
-    return <ErrorState supportEmail={supportEmail} />;
+  if (isErrorDummyTicket || !sessionId) return <ErrorState supportEmail={supportEmail} sessionId={sessionId} />;
+
+  if (dummyTicket?.paymentStatus === "UNPAID") {
+    return pollTimedOut ? (
+      <ErrorState supportEmail={supportEmail} sessionId={sessionId} pending />
+    ) : (
+      <ConfirmingState />
+    );
+  }
 
   return (
     <SuccessContent

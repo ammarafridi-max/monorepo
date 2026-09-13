@@ -97,7 +97,7 @@ export default function Providers({ children }) {
           <CurrencyProvider>
             <TicketProvider>
               <InsuranceProvider maxStartDays={270}>
-                <AppLayout pages={flightItineraryPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark}>
+                <AppLayout pages={flightItineraryPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark} copyrightName="My Dummy Ticket">
                   <main>{children}</main>
                 </AppLayout>
               </InsuranceProvider>
@@ -116,7 +116,7 @@ export default function Providers({ children }) {
         <CurrencyProvider>
           <TicketProvider>
             <InsuranceProvider maxStartDays={270}>
-              <AppLayout pages={defaultPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark}>
+              <AppLayout pages={defaultPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark} copyrightName="My Dummy Ticket">
                 <main>{children}</main>
               </AppLayout>
             </InsuranceProvider>

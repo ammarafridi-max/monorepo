@@ -3,6 +3,8 @@ import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
 import PricingTiers from '@/components/PricingTiers';
+import BookCta from '@/components/BookCta';
+import StickyBookingBar from '@travel-suite/frontend-shared/components/ui/v1/StickyBookingBar';
 import { processSteps } from '@/data/processSteps';
 import About from '@travel-suite/frontend-shared/components/sections/v1/About';
 import Benefits from '@travel-suite/frontend-shared/components/sections/v1/Benefits';
@@ -58,7 +60,7 @@ const benefits = [
   },
   {
     title: 'Instant Delivery',
-    text: 'Our automated process ensures you receive your dummy ticket by email within minutes-quick, seamless, and completely hassle-free.',
+    text: 'Your dummy ticket is sent to your inbox within 10 to 15 minutes of payment, 24 hours a day, 7 days a week. No waiting for business hours.',
     icon: Clock,
   },
   {
@@ -247,11 +249,13 @@ export default function HomePage() {
         subtitle={pageData.sections.faqs.subtitle}
         faqs={pageData.sections.faqs.faqs}
       />
+      <BookCta className="pb-16 md:pb-20 px-6" />
       <BlogPosts
         title={pageData.sections.blogs.title}
         subtitle={pageData.sections.blogs.subtitle}
       />
-      <Contact email={EMAIL} />
+      <Contact email={EMAIL} replyTime="within 10 to 15 minutes, 24/7" />
+      <StickyBookingBar label="Book now" />
     </>
   );
 }

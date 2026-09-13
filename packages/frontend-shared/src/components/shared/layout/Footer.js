@@ -29,7 +29,7 @@ export default function Footer({
               className="w-40 h-auto object-contain brightness-0 invert"
             />
             <p className="mt-3 text-[14px] md:text-[15px] text-gray-400 leading-6">
-              Genuine flight itineraries with verifiable PNR details, delivered instantly by email.
+              Genuine flight itineraries with verifiable PNR details, emailed within 10 to 15 minutes, day or night.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-4 md:gap-6">
@@ -61,7 +61,7 @@ export default function Footer({
         <p className="text-sm mt-4 text-gray-400">{disclaimer}</p>
 
         <div className="mt-6 pt-5 border-t border-white/10 text-[13px] text-gray-500">
-          © 2025 <span className="text-gray-200 font-medium">{copyrightName}</span>. All rights
+          © {new Date().getFullYear()} <span className="text-gray-200 font-medium">{copyrightName}</span>. All rights
           reserved.
         </div>
       </Container>

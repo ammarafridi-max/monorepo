@@ -2,7 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { getDummyTicketApi } from '../../services/apiDummyTickets.js';
 
-export function useGetDummyTicket(sessionId) {
+export function useGetDummyTicket(sessionId, { refetchInterval } = {}) {
   const {
     data,
     isLoading: isLoadingDummyTicket,
@@ -11,6 +11,7 @@ export function useGetDummyTicket(sessionId) {
     queryKey: ['dummyticket', sessionId],
     queryFn: () => getDummyTicketApi(sessionId),
     enabled: !!sessionId,
+    refetchInterval,
   });
 
   return {
