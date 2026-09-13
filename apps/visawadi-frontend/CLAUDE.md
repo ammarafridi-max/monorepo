@@ -54,13 +54,12 @@ The sidebar nav and brand mark are configured in `src/app/admin/(dashboard)/layo
 - Admin pages are thin re-exports of shared `pages/admin/*` components. Keep them that way; put real changes in the shared component so every brand benefits.
 - The dashboard uses `AdminVisaDashboardPage` — brand-neutral, reads only the visa and blog domains. Do not switch it to `AdminTravlDashboardPage`, which fetches insurance data and links to routes that do not exist here.
 - Contact details live in `src/config/contact.js` and nowhere else. `ADDRESS` and `GMB_URL` are still null, so the footer address block doesn't render yet. `SOCIALS` is populated (Facebook, Instagram, TikTok) and shows in the footer and on `/contact`.
+- `public/logo.webp`, `favicon.png` and `og-image.png` are VisaWadi's own assets.
 - Nationalities come from `frontend-shared/data/nationalities.js`, a static list. Do **not** switch back to `useGetNationalities` — that hits the insurance domain, which this backend does not mount, and it silently produces an unsubmittable form.
 - Copy follows the house style (conversational, no em dashes, GEO-structured, natural CTA) and **names only VisaWadi**.
 
 ## Known gaps
 
 - The legal pages (`/privacy-policy`, `/terms-and-conditions`) were adapted from another brand and name "VisaWadi" as a trading name, not a registered legal entity. They need a lawyer's review before launch.
-- `public/logo.webp` and `favicon.png` are still the other brand's files.
-- No `og-image.png`, though page metadata references one.
 - `packages/shared/config/src/brands/` has no `visawadi.js`. Nothing calls `getBrand` here yet, but it would throw if anything started to.
 

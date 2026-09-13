@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
 const rateLimitMap = new Map();
-const RATE_LIMIT_MAX = 5;
+const RATE_LIMIT_MAX = 10;
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
 
 setInterval(() => {
@@ -12,6 +12,9 @@ setInterval(() => {
 }, 10 * 60 * 1000);
 
 function leadRateLimiter(req, res, next) {
+  // Honeypot hits never reach the DB, so they must not burn the allowance of
+  // real people behind the same office or carrier IP.
+  if (req.body?.website) return next();
   const ip =
     req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
     req.ip ||
@@ -28,7 +31,7 @@ function leadRateLimiter(req, res, next) {
   if (entry.count > RATE_LIMIT_MAX) {
     return res.status(429).json({
       status: 'error',
-      message: 'Too many requests. Please try again later.',
+      message: 'We have had a lot of requests from your network in the last hour. Message us on WhatsApp instead and we will pick it up from there.',
     });
   }
   next();

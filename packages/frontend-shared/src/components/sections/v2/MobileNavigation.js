@@ -27,9 +27,17 @@ export default function MobileNavigation({
     <>
       <div className="lg:hidden flex items-center gap-1">
         {showCurrency && <Currency className="block" />}
+        {cta?.href && cta?.label && !open ? (
+          <Link
+            href={cta.href}
+            className="inline-flex min-h-11 items-center rounded-lg bg-primary-700 px-3 text-[13px] font-semibold text-white transition-colors hover:bg-primary-800"
+          >
+            {cta.label}
+          </Link>
+        ) : null}
         <button
           onClick={() => setOpen((p) => !p)}
-          className="p-2 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+          className="flex h-11 w-11 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
           aria-label={open ? "Close menu" : "Open menu"}
         >
           {open ? <X size={20} /> : <Menu size={20} />}
@@ -44,7 +52,7 @@ export default function MobileNavigation({
               </span>
               <button
                 onClick={() => setOpen(false)}
-                className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+                className="flex h-11 w-11 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
                 aria-label="Close menu"
               >
                 <X size={20} />
@@ -79,7 +87,7 @@ export default function MobileNavigation({
                         onClick={() =>
                           setOpenIndex((p) => (p === i ? null : i))
                         }
-                        className="flex items-center justify-between w-full py-2.5 border-b border-gray-100"
+                        className="flex items-center justify-between w-full min-h-11 py-2.5 border-b border-gray-100"
                       >
                         <span className="font-semibold">{page.name}</span>
                         <ChevronRight
@@ -94,7 +102,7 @@ export default function MobileNavigation({
                               key={j}
                               href={sub.link}
                               onClick={() => setOpen(false)}
-                              className="block py-2 text-gray-600 hover:text-primary-700 transition-colors"
+                              className="block min-h-11 py-2.5 text-gray-600 hover:text-primary-700 transition-colors"
                             >
                               {sub.name}
                             </Link>
@@ -106,7 +114,7 @@ export default function MobileNavigation({
                     <Link
                       href={page.links?.[0] ?? "#"}
                       onClick={() => setOpen(false)}
-                      className="block py-2.5 border-b border-gray-100 hover:text-primary-700 transition-colors"
+                      className="block min-h-11 py-3 border-b border-gray-100 hover:text-primary-700 transition-colors"
                     >
                       {page.name}
                     </Link>
@@ -143,7 +151,7 @@ export default function MobileNavigation({
               <Link
                 href={loginHref}
                 onClick={() => setOpen(false)}
-                className="py-2.5 border-b border-gray-100 hover:text-primary-700 transition-colors"
+                className="block min-h-11 py-3 border-b border-gray-100 hover:text-primary-700 transition-colors"
               >
                 Log in
               </Link>

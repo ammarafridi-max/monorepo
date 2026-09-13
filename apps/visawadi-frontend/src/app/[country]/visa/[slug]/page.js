@@ -123,6 +123,7 @@ export default async function Page({ params }) {
       trustAssurances={TRUST_ASSURANCES}
       trustSubtitle={TRUST_SUBTITLE}
       heroTrustItems={HERO_TRUST_ITEMS}
+      testimonialsSubtitle="Reviews left on Trustpilot by UAE residents who applied with us, quoted as written."
     />
   );
 }

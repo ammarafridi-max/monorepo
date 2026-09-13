@@ -11,7 +11,7 @@ export default function VisaGuideLink({ guide, label }) {
       <Link
         href={`/blog/${guide.slug}`}
         title={guide.title || label}
-        className="group inline-flex items-center gap-2 font-outfit font-semibold text-[14px] text-primary-700 hover:text-primary-800 transition-colors"
+        className="group inline-flex min-h-11 items-center gap-2 font-outfit font-semibold text-[14px] text-primary-700 hover:text-primary-800 transition-colors"
       >
         <BookOpen size={15} className="shrink-0" />
         <span className="underline underline-offset-4 decoration-primary-200 group-hover:decoration-primary-500 transition-colors">

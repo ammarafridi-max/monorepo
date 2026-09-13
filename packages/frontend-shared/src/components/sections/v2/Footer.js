@@ -100,7 +100,7 @@ export default function Footer({
         {columns.map(({ heading, links }) => (
           <div key={heading}>
             <p className="font-semibold text-white mb-4">{heading}</p>
-            <ul className="space-y-2">
+            <ul className="space-y-1">
               {links.map((link) => {
                 const label = typeof link === "string" ? link : link.label;
                 const href = typeof link === "string" ? "#" : link.href;
@@ -108,7 +108,7 @@ export default function Footer({
                   <li key={label}>
                     <Link
                       href={href}
-                      className="hover:text-white transition-colors"
+                      className="inline-flex min-h-11 items-center hover:text-white transition-colors md:min-h-0 md:py-0.5"
                     >
                       {label}
                     </Link>

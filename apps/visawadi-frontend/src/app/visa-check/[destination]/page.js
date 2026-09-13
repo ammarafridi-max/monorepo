@@ -160,6 +160,29 @@ export default async function VisaCheckDestinationPage({ params, searchParams })
     }),
   ]);
 
+  const serviceCta = rule.isServiced && rule.visaSlug ? (
+    <div className="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-xl bg-gray-900 px-5 py-4 text-white">
+      <p className="max-w-md text-sm leading-relaxed text-gray-300">
+        Applying from the UAE? We prepare the file, check every document against current
+        requirements and book the appointment.
+      </p>
+      <Link
+        href={`/${DEFAULT_COUNTRY.slug}/visa/${rule.visaSlug}`}
+        className="shrink-0 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-primary-700"
+      >
+        See what&apos;s included
+      </Link>
+    </div>
+  ) : (
+    <p className="mt-8 text-sm text-gray-500">
+      We do not currently file {rule.destinationName} applications.{' '}
+      <Link href="/uae" className="text-primary-700 underline underline-offset-2">
+        See the destinations we handle
+      </Link>
+      .
+    </p>
+  );
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(graph) }} />
@@ -200,6 +223,8 @@ export default async function VisaCheckDestinationPage({ params, searchParams })
               ) : null}
             </div>
           ) : null}
+
+          {answer && answer.outcome !== 'VISA_FREE' ? serviceCta : null}
 
           <h2 className="mt-10 text-xl font-bold text-gray-900">
             Who needs a visa for {name}?
@@ -298,28 +323,7 @@ export default async function VisaCheckDestinationPage({ params, searchParams })
             {verified ? <span className="ml-4">Last checked {verified}</span> : null}
           </p>
 
-          {rule.isServiced && rule.visaSlug ? (
-            <div className="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-xl bg-gray-900 px-5 py-4 text-white">
-              <p className="max-w-md text-sm leading-relaxed text-gray-300">
-                Applying from the UAE? We prepare the file, check every document against current
-                requirements and book the appointment.
-              </p>
-              <Link
-                href={`/${DEFAULT_COUNTRY.slug}/visa/${rule.visaSlug}`}
-                className="shrink-0 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-primary-700"
-              >
-                See what&apos;s included
-              </Link>
-            </div>
-          ) : (
-            <p className="mt-8 text-sm text-gray-500">
-              We do not currently file {rule.destinationName} applications.{' '}
-              <Link href="/uae" className="text-primary-700 underline underline-offset-2">
-                See the destinations we handle
-              </Link>
-              .
-            </p>
-          )}
+          {serviceCta}
         </Container>
       </PrimarySection>
     </>

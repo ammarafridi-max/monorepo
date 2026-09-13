@@ -23,7 +23,7 @@ function getPkgTier(pkg) {
   return "standard";
 }
 
-function PackageCard({ pkg, onCtaClick }) {
+function PackageCard({ pkg, onCtaClick, showBadge = true }) {
   const {
     name,
     price,
@@ -113,14 +113,14 @@ function PackageCard({ pkg, onCtaClick }) {
     <div
       className={`relative flex flex-col rounded-2xl border p-6 transition-transform duration-200 hover:-translate-y-0.5 ${cardCls}`}
     >
-      {tier === "express" && (
+      {showBadge && tier === "express" && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
           <span className="inline-block bg-primary-700 text-white text-[10px] font-bold font-outfit px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
             Most Popular
           </span>
         </div>
       )}
-      {tier === "concierge" && (
+      {showBadge && tier === "concierge" && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
           <span className="inline-block bg-white border border-gray-200 text-gray-700 text-[10px] font-bold font-outfit px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
             Most Comprehensive
@@ -173,7 +173,7 @@ function PackageCard({ pkg, onCtaClick }) {
         <button
           type="button"
           onClick={onCtaClick}
-          className="inline-flex items-center justify-center gap-2 font-outfit font-semibold text-[14px] py-2.5 px-5 rounded-full bg-primary-700 hover:bg-primary-800 text-white border border-primary-700 transition-colors duration-200 cursor-pointer"
+          className="inline-flex min-h-11 items-center justify-center gap-2 font-outfit font-semibold text-[14px] py-2.5 px-5 rounded-full bg-primary-700 hover:bg-primary-800 text-white border border-primary-700 transition-colors duration-200 cursor-pointer"
         >
           Choose {name}
         </button>
@@ -182,7 +182,7 @@ function PackageCard({ pkg, onCtaClick }) {
         <button
           type="button"
           onClick={onCtaClick}
-          className="inline-flex items-center justify-center gap-2 font-outfit font-semibold text-[14px] py-2.5 px-5 rounded-full bg-transparent hover:bg-primary-50 text-primary-700 border border-primary-600 transition-colors duration-200 cursor-pointer"
+          className="inline-flex min-h-11 items-center justify-center gap-2 font-outfit font-semibold text-[14px] py-2.5 px-5 rounded-full bg-transparent hover:bg-primary-50 text-primary-700 border border-primary-600 transition-colors duration-200 cursor-pointer"
         >
           Choose {name}
         </button>
@@ -191,7 +191,7 @@ function PackageCard({ pkg, onCtaClick }) {
         <button
           type="button"
           onClick={onCtaClick}
-          className="inline-flex items-center justify-center gap-2 font-outfit font-semibold text-[14px] py-2.5 px-5 rounded-full bg-transparent hover:bg-primary-50 text-primary-700 border border-primary-600 transition-colors duration-200 cursor-pointer"
+          className="inline-flex min-h-11 items-center justify-center gap-2 font-outfit font-semibold text-[14px] py-2.5 px-5 rounded-full bg-transparent hover:bg-primary-50 text-primary-700 border border-primary-600 transition-colors duration-200 cursor-pointer"
         >
           Choose {name}
         </button>
@@ -260,6 +260,7 @@ export default function VisaPackages({
               key={i}
               pkg={pkg}
               onCtaClick={() => onPackageSelect(pkg.name)}
+              showBadge={packages.length > 1}
             />
           ))}
         </div>

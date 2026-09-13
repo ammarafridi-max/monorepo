@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
 
-export default function NationalitySelect({ value, onChange, nationalities = [], inputClassName, required }) {
+export default function NationalitySelect({ value, onChange, nationalities = [], inputClassName, required, inputId }) {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
   const containerRef = useRef(null);
@@ -43,6 +43,7 @@ export default function NationalitySelect({ value, onChange, nationalities = [],
       <div className="relative">
         <input
           ref={inputRef}
+          id={inputId}
           type="text"
           required={required}
           placeholder="Search nationality…"

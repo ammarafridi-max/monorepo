@@ -46,8 +46,8 @@ const benefits = [
   },
   {
     icon: Headphones,
-    title: "3-Minute Response Time",
-    text: "Message us during business hours and you will usually hear back within three minutes. Outside them, within the hour.",
+    title: "Average Response Time 10 Minutes",
+    text: "Message us during business hours and you will hear back in about ten minutes on average. Outside them, within the hour.",
   },
   {
     icon: Stamp,
@@ -92,8 +92,8 @@ const pageData = {
     title: "Visa Assistance for UAE Residents",
     text: "Most refusals come from document errors that were preventable. Our Dubai specialists build your application and check every page before it goes in.",
     pills: [
-      "Licensed Dubai Office",
-      "3-Minute Response Time",
+      "Packages from AED 299",
+      "Average Response Time 10 Mins",
       "Document Review Included",
       "Native-Language Support",
     ],
@@ -238,7 +238,20 @@ export default async function HomePage() {
         pills={pageData.hero.pills}
         layout="centered"
         dark
-        below={<VisaCheckerInline basePath={`/${DEFAULT_COUNTRY.slug}`} consultHref={`/${DEFAULT_COUNTRY.slug}`} resultPath="/visa-check" />}
+        below={
+          <>
+            <VisaCheckerInline basePath={`/${DEFAULT_COUNTRY.slug}`} consultHref={`/${DEFAULT_COUNTRY.slug}`} resultPath="/visa-check" />
+            <p className="mt-4 text-center text-sm text-gray-300">
+              Already know you need a visa?{" "}
+              <Link
+                href={`/${DEFAULT_COUNTRY.slug}`}
+                className="inline-flex min-h-11 items-center gap-1 font-semibold text-white underline underline-offset-4 decoration-white/40 hover:decoration-white"
+              >
+                See packages from AED 299 <ArrowRight size={14} />
+              </Link>
+            </p>
+          </>
+        }
       />
       <VisaDestinations visas={list} />
       <HowItWorks

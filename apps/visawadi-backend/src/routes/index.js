@@ -69,6 +69,7 @@ const notifications = createNotificationsService({
     paymentsSenderName: "VisaWadi Payments",
     deliverySenderName: "VisaWadi Delivery",
     customerSenderName: "VisaWadi",
+    whatsappUrl: "https://wa.me/971569964924",
     // Cobalt & Stone, matching the site. An email that looks nothing like the
     // page the customer just came from reads as a phishing attempt.
     theme: { primaryColor: "#254b8e", accentColor: "#F26B4E", linkColor: "#2b5cb0" },
@@ -85,7 +86,8 @@ const { router: visaRequirementsRouter } = createVisaRequirementsRouter({
   db,
   auth,
   servicedSlugs: [
-    "schengen", "united-kingdom", "usa", "canada",
+    "schengen", "united-kingdom", "usa", "canada", "saudi-arabia",
+    "greece-visa",
     "france-visa", "germany-visa", "italy-visa", "spain-visa",
   ],
   logger,

@@ -28,7 +28,7 @@ const visaLeadSchema = new Schema(
     firstName:        { type: String, required: true, trim: true, maxlength: 50 },
     lastName:         { type: String, required: true, trim: true, maxlength: 50 },
     nationality:      { type: String, required: true, maxlength: 100 },
-    email:            { type: String, required: true, trim: true, lowercase: true, maxlength: 200 },
+    email:            { type: String, trim: true, lowercase: true, maxlength: 200 },
     phone:            { type: String, required: true, trim: true, maxlength: 30 },
     packageRequested: { type: String, required: true, maxlength: 100 },
     applicantCount:   { type: Number, required: true, min: 1, max: 20 },
@@ -37,7 +37,7 @@ const visaLeadSchema = new Schema(
     visaCountryName: { type: String, required: true },
     source:          {
       type: String,
-      enum: ['hero_cta', 'package_card', 'final_cta'],
+      enum: ['hero_cta', 'package_card', 'final_cta', 'sticky_bar', 'inline_cta'],
       required: true,
     },
     ipAddress: { type: String },

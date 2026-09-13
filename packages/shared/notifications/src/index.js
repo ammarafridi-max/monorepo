@@ -3,7 +3,7 @@ import { renderTicketPaymentTemplate } from './templates/ticket-payment.js';
 import { renderBookingPaymentTemplate } from './templates/booking-payment.js';
 import { renderBookingPaymentAdminTemplate } from './templates/booking-payment-admin.js';
 import { renderPaymentLinkPaidTemplate } from './templates/payment-link-paid.js';
-import { renderVisaLeadTemplate } from './templates/visa-lead.js';
+import { renderVisaLeadTemplate, renderVisaLeadCustomerTemplate } from './templates/visa-lead.js';
 import {
   renderMagicLink,
   renderApplicationAssigned,
@@ -99,7 +99,7 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
 
       const whatHappensNext = isScheduled
         ? `What happens next\nWe'll email your dummy ticket to this address on the morning of your chosen delivery date. You don't need to do anything until then.`
-        : `What happens next\nYou'll receive your dummy ticket by email shortly. Most orders are delivered within 15 minutes during working hours.`;
+        : `What happens next\nYou'll receive your dummy ticket by email shortly. Most orders are delivered within 15 minutes, any time of day.`;
 
       const orderLines = [
         `- Route: ${fromCode} → ${toCode} (Departure ${depFull})`,
@@ -258,6 +258,22 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
     }
   }
 
+  async function sendVisaLeadToCustomer(data) {
+    try {
+      if (!data.email) return false;
+      await sendEmail({
+        email: data.email,
+        name: data.firstName || data.email,
+        subject: `We have your ${data.visaCountryName || ''} visa request`.replace('  ', ' '),
+        htmlContent: renderVisaLeadCustomerTemplate({ brand, ...data }),
+      });
+      return true;
+    } catch (err) {
+      log('[notifications] sendVisaLeadToCustomer failed', { email: data.email, err: err.message });
+      return false;
+    }
+  }
+
   async function sendMagicLink({ email, magicLinkUrl }) {
     try {
       if (!email || !magicLinkUrl) return false;
@@ -409,6 +425,7 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
     sendPaymentLinkPaidToAdmin,
     sendContactFormToAdmin,
     sendVisaLeadToAdmin,
+    sendVisaLeadToCustomer,
     sendMagicLink,
     sendApplicationAssigned,
     sendDocumentRejected,

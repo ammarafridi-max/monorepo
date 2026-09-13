@@ -40,7 +40,7 @@ export default function SocialLinks({ socials = [], tone = "dark", size = 15, cl
               rel="noopener noreferrer"
               aria-label={name}
               title={name}
-              className={`flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${TONES[tone] ?? TONES.dark}`}
+              className={`flex h-11 w-11 items-center justify-center rounded-full border md:h-9 md:w-9 transition-colors ${TONES[tone] ?? TONES.dark}`}
             >
               <Icon size={size} aria-hidden="true" />
             </a>

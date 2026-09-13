@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { parsePhoneNumberFromString } from 'libphonenumber-js';
 import { useForm } from 'react-hook-form';
 import { X, Loader2, CheckCircle2 } from 'lucide-react';
 import { useCreateVisaLead } from '../../../hooks/visa-leads/useCreateVisaLead.js';
@@ -12,10 +13,10 @@ import PhoneInput from '../../form-elements/v1/PhoneInput.js';
 const INPUT_CLS =
   'border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent w-full placeholder:text-gray-300';
 
-function Field({ label, error, required, children }) {
+function Field({ label, error, required, htmlFor, children }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+      <label htmlFor={htmlFor} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
         {label}
         {required && <span className="text-red-400 ml-0.5">*</span>}
       </label>
@@ -53,13 +54,15 @@ function SuccessState({ firstName, onClose }) {
   );
 }
 
-export default function LeadFormModal({ isOpen, onClose, visa, defaultPackage = 'undecided', source = 'hero_cta' }) {
+export default function LeadFormModal({ isOpen, onClose, visa, defaultPackage = 'undecided', source = 'hero_cta', whatsappUrl = '' }) {
   const [success, setSuccess] = useState(false);
   const [submittedFirstName, setSubmittedFirstName] = useState('');
   const [submittedNationality, setSubmittedNationality] = useState('');
   const [serverError, setServerError] = useState(null);
 
   const { createVisaLeadAsync, isSubmittingLead } = useCreateVisaLead();
+  const firstFieldRef = useRef(null);
+  const openerRef = useRef(null);
   const nationalities = NATIONALITIES;
 
   const packages = visa?.packages ?? [];
@@ -108,8 +111,11 @@ export default function LeadFormModal({ isOpen, onClose, visa, defaultPackage = 
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      openerRef.current = document.activeElement;
+      setTimeout(() => firstFieldRef.current?.focus(), 0);
     } else {
       document.body.style.overflow = '';
+      openerRef.current?.focus?.();
     }
     return () => {
       document.body.style.overflow = '';
@@ -153,7 +159,7 @@ export default function LeadFormModal({ isOpen, onClose, visa, defaultPackage = 
       email:            data.email,
       phone,
       packageRequested: data.packageRequested,
-      applicantCount:   Number(data.applicantCount),
+      applicantCount:   Number(data.applicantCount) || 1,
       visaSlug:         visa?.slug || '',
       source,
       website:          data.website,
@@ -164,18 +170,32 @@ export default function LeadFormModal({ isOpen, onClose, visa, defaultPackage = 
       trackVisaLeadSubmit({
         visaSlug: visa?.slug || '',
         packageRequested: data.packageRequested,
-        applicantCount: Number(data.applicantCount),
+        applicantCount: Number(data.applicantCount) || 1,
         source,
       });
       setSubmittedFirstName(data.firstName);
       setSubmittedNationality(nationality);
       setSuccess(true);
     } catch (err) {
-      setServerError(err?.message || 'Something went wrong. Please try again or WhatsApp us.');
+      const message =
+        err?.name === 'TimeoutError' || err?.name === 'AbortError'
+          ? 'The request timed out. Check your connection and try again.'
+          : err?.message || 'Something went wrong. Please try again.';
+      setServerError(message);
     }
   }
 
   if (!isOpen) return null;
+
+  const firstNameReg = register('firstName', {
+    required: 'First name is required',
+    maxLength: { value: 50, message: 'Max 50 characters' },
+  });
+  const isApplication = source === 'package_card';
+  const title = isApplication
+    ? `Apply for ${visa?.countryName} Visa`
+    : `Free consultation: ${visa?.countryName} visa`;
+  const submitLabel = isApplication ? 'Submit application' : 'Request my call-back';
 
   return (
 
@@ -185,14 +205,17 @@ export default function LeadFormModal({ isOpen, onClose, visa, defaultPackage = 
     >
 
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="lead-form-title"
         className="relative w-full sm:max-w-[500px] bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
 
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
           <div>
-            <h2 className="font-outfit font-semibold text-[17px] text-gray-900 leading-tight">
-              Apply for {visa?.countryName} Visa
+            <h2 id="lead-form-title" className="font-outfit font-semibold text-[17px] text-gray-900 leading-tight">
+              {title}
             </h2>
             <p className="font-outfit font-light text-[13px] text-gray-500 mt-0.5">
               We&rsquo;ll call you within minutes during business hours
@@ -236,20 +259,22 @@ export default function LeadFormModal({ isOpen, onClose, visa, defaultPackage = 
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <Field label="First name" required error={errors.firstName?.message}>
+                  <Field label="First name" required htmlFor="lead-first-name" error={errors.firstName?.message}>
                     <input
+                      id="lead-first-name"
                       type="text"
+                      autoComplete="given-name"
                       placeholder="Sara"
                       className={INPUT_CLS}
-                      {...register('firstName', {
-                        required: 'First name is required',
-                        maxLength: { value: 50, message: 'Max 50 characters' },
-                      })}
+                      {...firstNameReg}
+                      ref={(el) => { firstNameReg.ref(el); firstFieldRef.current = el; }}
                     />
                   </Field>
-                  <Field label="Last name" required error={errors.lastName?.message}>
+                  <Field label="Last name" required htmlFor="lead-last-name" error={errors.lastName?.message}>
                     <input
+                      id="lead-last-name"
                       type="text"
+                      autoComplete="family-name"
                       placeholder="Ahmed"
                       className={INPUT_CLS}
                       {...register('lastName', {
@@ -260,8 +285,9 @@ export default function LeadFormModal({ isOpen, onClose, visa, defaultPackage = 
                   </Field>
                 </div>
 
-                <Field label="Nationality" required error={errors.nationality?.message}>
+                <Field label="Nationality" required htmlFor="lead-nationality" error={errors.nationality?.message}>
                   <NationalitySelect
+                    inputId="lead-nationality"
                     value={nationalityValue}
                     onChange={(nat) => setValue('nationality', nat, { shouldDirty: true, shouldValidate: true })}
                     nationalities={nationalities}
@@ -280,13 +306,14 @@ export default function LeadFormModal({ isOpen, onClose, visa, defaultPackage = 
                   />
                 </Field>
 
-                <Field label="Email" required error={errors.email?.message}>
+                <Field label="Email" htmlFor="lead-email" error={errors.email?.message}>
                   <input
+                    id="lead-email"
+                    autoComplete="email"
                     type="email"
-                    placeholder="sara@example.com"
+                    placeholder="Optional, for a written summary of the call"
                     className={INPUT_CLS}
                     {...register('email', {
-                      required: 'Email is required',
                       pattern: {
                         value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
                         message: 'Please enter a valid email address',
@@ -295,8 +322,9 @@ export default function LeadFormModal({ isOpen, onClose, visa, defaultPackage = 
                   />
                 </Field>
 
-                <Field label="Phone number" required error={errors.phone?.message}>
+                <Field label="Phone number" required htmlFor="lead-phone" error={errors.phone?.message}>
                   <PhoneInput
+                    inputId="lead-phone"
                     value={phoneValue}
                     onChange={(val) => setValue('phone', val, { shouldDirty: true, shouldValidate: !!errors.phone })}
                     required
@@ -311,14 +339,18 @@ export default function LeadFormModal({ isOpen, onClose, visa, defaultPackage = 
                     style={{ position: 'absolute', left: '-9999px', visibility: 'hidden' }}
                     {...register('phone', {
                       validate: () => {
-                        const digits = getValues('phone')?.digits ?? '';
-                        return digits.trim().length >= 5 || 'Please enter a valid phone number';
+                        const { code = '', digits = '' } = getValues('phone') || {};
+                        const parsed = parsePhoneNumberFromString(`${code}${digits}`.replace(/\s+/g, ''));
+                        return parsed?.isValid() === true || 'Please enter a valid phone number';
                       },
                     })}
                   />
                 </Field>
 
-                <Field label="Package" required>
+                <fieldset className="flex flex-col gap-1.5">
+                  <legend className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+                    Package<span className="text-red-400 ml-0.5">*</span>
+                  </legend>
                   <div className="flex flex-col gap-2">
                     {packages.map((pkg) => (
                       <label
@@ -355,16 +387,17 @@ export default function LeadFormModal({ isOpen, onClose, visa, defaultPackage = 
                   {errors.packageRequested && (
                     <p className="text-xs text-red-500 mt-0.5">{errors.packageRequested.message}</p>
                   )}
-                </Field>
+                </fieldset>
 
-                <Field label="How many people on the application?" required error={errors.applicantCount?.message}>
+                <Field label="How many people on the application?" htmlFor="lead-applicants" error={errors.applicantCount?.message}>
                   <input
+                    id="lead-applicants"
+                    inputMode="numeric"
                     type="number"
                     min={1}
                     max={20}
                     className={INPUT_CLS}
                     {...register('applicantCount', {
-                      required: 'Required',
                       min: { value: 1, message: 'At least 1 applicant' },
                       max: { value: 20, message: 'Maximum 20 applicants' },
                       valueAsNumber: true,
@@ -375,6 +408,20 @@ export default function LeadFormModal({ isOpen, onClose, visa, defaultPackage = 
                 {serverError && (
                   <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm font-outfit text-red-700 leading-5">
                     {serverError}
+                    {whatsappUrl && (
+                      <>
+                        {' '}
+                        <a
+                          href={whatsappUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-semibold underline underline-offset-2"
+                        >
+                          WhatsApp us
+                        </a>{' '}
+                        if it keeps failing.
+                      </>
+                    )}
                   </div>
                 )}
 
@@ -397,7 +444,7 @@ export default function LeadFormModal({ isOpen, onClose, visa, defaultPackage = 
                   Sending…
                 </>
               ) : (
-                'Submit application'
+                submitLabel
               )}
             </button>
             <p className="text-center text-[11px] font-outfit font-light text-gray-400 mt-2">

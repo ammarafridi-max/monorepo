@@ -2,7 +2,7 @@ import { parsePhoneNumber } from 'libphonenumber-js';
 import { AppError } from '@travel-suite/utils';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const VALID_SOURCES = ['hero_cta', 'package_card', 'final_cta'];
+const VALID_SOURCES = ['hero_cta', 'package_card', 'final_cta', 'sticky_bar', 'inline_cta'];
 const VALID_STATUSES = ['new', 'contacted', 'qualified', 'converted', 'lost'];
 
 function escapeRegex(value = '') {
@@ -36,8 +36,7 @@ export function createVisaLeadService({ VisaLead, Visa, notificationsService }) 
     if (!packageRequested?.trim()) throw new AppError('Package selection is required', 400);
     if (!visaSlug?.trim()) throw new AppError('Visa slug is required', 400);
 
-    if (!email?.trim()) throw new AppError('Email is required', 400);
-    if (!isValidEmail(email)) throw new AppError('Please provide a valid email address', 400);
+    if (email?.trim() && !isValidEmail(email)) throw new AppError('Please provide a valid email address', 400);
 
     if (!phone?.trim()) throw new AppError('Phone number is required', 400);
     if (!isValidPhone(phone)) {
@@ -60,7 +59,7 @@ export function createVisaLeadService({ VisaLead, Visa, notificationsService }) 
       firstName:        firstName.trim(),
       lastName:         lastName.trim(),
       nationality:      nationality.trim(),
-      email:            email.trim().toLowerCase(),
+      email:            email?.trim().toLowerCase() || undefined,
       phone:            phone.trim(),
       packageRequested: packageRequested.trim(),
       applicantCount:   count,
@@ -86,6 +85,18 @@ export function createVisaLeadService({ VisaLead, Visa, notificationsService }) 
         submittedAt:      lead.createdAt,
       }).catch((err) => {
         console.error('[visa-leads] notification email failed', err?.message);
+      });
+    }
+
+    if (notificationsService?.sendVisaLeadToCustomer) {
+      notificationsService.sendVisaLeadToCustomer({
+        email:            lead.email,
+        firstName:        lead.firstName,
+        packageRequested: lead.packageRequested,
+        applicantCount:   lead.applicantCount,
+        visaCountryName:  lead.visaCountryName,
+      }).catch((err) => {
+        console.error('[visa-leads] customer email failed', err?.message);
       });
     }
 

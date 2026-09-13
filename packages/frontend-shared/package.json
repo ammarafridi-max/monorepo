@@ -36,6 +36,7 @@
     "@turf/rewind": "^7.2.0",
     "@turf/union": "^7.2.0",
     "date-fns": "^4.1.0",
+    "libphonenumber-js": "^1.11.0",
     "lucide-react": "^1.6.0",
     "mapbox-gl": "^3.20.0",
     "next-auth": "^4.24.0",

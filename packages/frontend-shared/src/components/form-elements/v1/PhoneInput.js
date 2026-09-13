@@ -89,7 +89,7 @@ function Flag({ code }) {
   );
 }
 
-export default function PhoneInput({ value, onChange, required }) {
+export default function PhoneInput({ value, onChange, required, inputId, defaultCountry = 'AE' }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const dropdownRef = useRef(null);
@@ -97,7 +97,8 @@ export default function PhoneInput({ value, onChange, required }) {
 
   const selected =
     COUNTRIES.find((c) => c.dial === value?.code) ||
-    COUNTRIES.find((c) => c.code === 'GB');
+    COUNTRIES.find((c) => c.code === defaultCountry) ||
+    COUNTRIES[0];
 
   const filtered = query.trim()
     ? COUNTRIES.filter(
@@ -157,7 +158,10 @@ export default function PhoneInput({ value, onChange, required }) {
       </button>
 
       <input
+        id={inputId}
         type="tel"
+        inputMode="tel"
+        autoComplete="tel-national"
         required={required}
         placeholder="50 123 4567"
         value={value?.digits ?? ''}

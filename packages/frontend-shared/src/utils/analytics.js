@@ -98,6 +98,16 @@ export function trackFlightFormSubmission({
   }
 }
 
+export function trackVisaLeadOpen({ visaSlug, packageRequested, source }) {
+  if (shouldTrackAnalytics()) {
+    ReactGA.event('lead_form_open', {
+      visa_slug: visaSlug || 'unknown',
+      package: packageRequested || 'undecided',
+      lead_source: source || 'unknown',
+    });
+  }
+}
+
 export function trackVisaLeadSubmit({ visaSlug, packageRequested, applicantCount, source }) {
   if (shouldTrackAnalytics()) {
     ReactGA.event('generate_lead', {

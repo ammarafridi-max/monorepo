@@ -26,8 +26,9 @@ function StarRow({ count = 5 }) {
 
 export default function VisaTestimonials({
   testimonials = [],
-  subtitle = "Real feedback from UAE residents who applied for their visas with us.",
+  subtitle: subtitleProp,
 }) {
+  const subtitle = subtitleProp ?? "Real feedback from UAE residents who applied for their visas with us.";
   const featured = (testimonials || []).filter((t) => t.isFeatured).slice(0, 3);
   if (!featured.length) return null;
 
