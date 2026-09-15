@@ -8,7 +8,6 @@ import { useLimoBooking } from '@travel-suite/frontend-shared/contexts/LimoBooki
 import { Tooltip } from 'react-tooltip';
 import { useCurrency } from '@travel-suite/frontend-shared/contexts/CurrencyContext';
 import { trackVehicleSelection } from '../lib/analytics';
-import { trackVehicleSelectionMeta } from '../lib/meta';
 import VehicleGallery from './VehicleGallery';
 
 export default function VehicleCard({ vehicle }) {
@@ -26,13 +25,18 @@ export default function VehicleCard({ vehicle }) {
       <div
         onClick={() => {
           trackVehicleSelection({ id: vehicle?.id, brand: vehicle?.brand, model: vehicle?.model });
-          trackVehicleSelectionMeta({
-            id: vehicle?.id,
-            brand: vehicle?.brand,
-            model: vehicle?.model,
-          });
           handleSelectVehicle(vehicle);
         }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            e.currentTarget.click();
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        aria-pressed={vehicleSelected}
+        aria-label={`Select ${vehicle?.brand} ${vehicle?.model}`}
         className={`group relative grid sm:grid-cols-[3.5fr_8.5fr] items-start gap-5 rounded-2xl bg-white/90 border border-primary-100 p-4 lg:p-6 shadow-[0_4px_25px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all duration-300 backdrop-blur-sm cursor-pointer ${
           vehicleSelected ? 'ring-2 ring-primary-900/100' : 'ring-1 ring-primary-900/10 hover:ring-primary-900/50'
         }`}
@@ -128,10 +132,10 @@ function QuickFacts({ vehicle, vehicleSelected }) {
     <div className="flex justify-between items-baseline">
       <div className="flex flex-wrap items-center gap-2 mb-0">
         <Tooltip className="text-sm" id="my-tooltip" />
-        <div data-tooltip-id="my-tooltip" data-tooltip-content="Fits up to 3 luggage bags">
+        <div data-tooltip-id="my-tooltip" data-tooltip-content={`Fits up to ${vehicle.luggage} luggage bags`}>
           <Fact icon={MdOutlineLuggage} label={`${vehicle.luggage}`} />
         </div>
-        <div data-tooltip-id="my-tooltip" data-tooltip-content="Fits up to 3 passengers">
+        <div data-tooltip-id="my-tooltip" data-tooltip-content={`Fits up to ${vehicle.passengers} passengers`}>
           <Fact icon={MdOutlineMan2} label={`${vehicle.passengers}`} />
         </div>
         <Fact icon={HiOutlineStar} label={`${vehicle?.class} ${vehicle?.type}`} />

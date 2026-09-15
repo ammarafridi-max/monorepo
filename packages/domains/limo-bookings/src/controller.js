@@ -18,8 +18,8 @@ function redactForPublic(booking) {
 
 export function createBookingController({ service }) {
   const getVehicles = catchAsync(async (req, res) => {
-    const vehicles = await service.getVehiclesForTrip(req.query);
-    res.status(200).json({ status: 'success', results: vehicles.length, data: { vehicles } });
+    const { vehicles, unavailable } = await service.getVehiclesForTrip(req.query);
+    res.status(200).json({ status: 'success', results: vehicles.length, data: { vehicles, unavailable } });
   });
 
   const getBookings = catchAsync(async (req, res) => {

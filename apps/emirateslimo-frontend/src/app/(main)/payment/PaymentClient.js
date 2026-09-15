@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useGetBooking } from '@travel-suite/frontend-shared/hooks/limo-bookings/useGetBooking';
 import { useLocalStorage } from '@travel-suite/frontend-shared/hooks/general/useLocalStorage';
@@ -11,24 +11,59 @@ import PrimarySection from '@/components/PrimarySection';
 import Container from '@/components/Container';
 import Loading from '@/components/Loading';
 import PageHeading from '@/components/PageHeading';
-import { trackPurchaseEventMeta } from '@/lib/meta';
+import { WHATSAPP_URL } from '@/components/WhatsAppCTA';
+
+// Stripe redirects here before its webhook has usually reached the backend, so a
+// pending booking is polled for a while before anyone is told something failed.
+const CONFIRM_WINDOW_MS = 60000;
 
 export default function PaymentClient() {
   const searchParams = useSearchParams();
   const id = searchParams.get('id');
-  const { booking, isLoadingBooking } = useGetBooking(id);
+  const [startedAt] = useState(() => Date.now());
+  const [waitingExpired, setWaitingExpired] = useState(false);
+  const { booking, isLoadingBooking } = useGetBooking(id, {
+    refetchInterval: (query) => {
+      const status = query.state.data?.payment?.status?.toUpperCase();
+      if (status === 'PAID' || query.state.status === 'error' || Date.now() - startedAt > CONFIRM_WINDOW_MS) return false;
+      return 2000;
+    },
+  });
+
+  useEffect(() => {
+    const t = setTimeout(() => setWaitingExpired(true), CONFIRM_WINDOW_MS);
+    return () => clearTimeout(t);
+  }, []);
 
   if (isLoadingBooking) return <Loading />;
-  if (!booking) return <Failure />;
 
   const paymentStatus = booking?.payment?.status?.toUpperCase();
+  const stillConfirming = booking && paymentStatus !== 'PAID' && !waitingExpired;
 
   return (
     <PrimarySection className="py-10 lg:py-15">
       <Container>
-        {paymentStatus === 'PAID' ? <Success booking={booking} /> : <Failure />}
+        {paymentStatus === 'PAID' ? (
+          <Success booking={booking} />
+        ) : stillConfirming ? (
+          <Confirming bookingRef={booking?.bookingRef} />
+        ) : (
+          <Failure bookingRef={booking?.bookingRef} />
+        )}
       </Container>
     </PrimarySection>
+  );
+}
+
+function Confirming({ bookingRef }) {
+  return (
+    <div className="w-full lg:w-230 mx-auto text-center">
+      <Loading />
+      <PageHeading className="text-2xl lg:text-4xl text-center mt-6">Confirming your payment with Stripe</PageHeading>
+      <p className="mt-4 text-md lg:text-lg font-extralight leading-7">
+        This usually takes a few seconds. Keep this page open{bookingRef ? `; your booking reference is ${bookingRef}` : ''}.
+      </p>
+    </div>
   );
 }
 
@@ -60,11 +95,6 @@ function Success({ booking }) {
       value: payment?.amount,
       transactionId: payment?.transactionId,
       items,
-    });
-    trackPurchaseEventMeta({
-      currency: 'AED',
-      value: payment?.amount,
-      transactionId: payment?.transactionId,
     });
     deleteLocalStorage('bookingData');
   }, [
@@ -152,13 +182,32 @@ function Success({ booking }) {
   );
 }
 
-function Failure() {
+function Failure({ bookingRef }) {
   return (
-    <>
+    <div className="w-full lg:w-230 mx-auto text-center">
       <div className="flex items-center justify-center bg-red-700 w-20 h-20 lg:w-25 lg:h-25 rounded-full mx-auto mb-5">
         <FaX size={40} className="text-white" />
       </div>
-      <PageHeading className="text-2xl lg:text-4xl text-center">Payment Not Found</PageHeading>
-    </>
+      <PageHeading className="text-2xl lg:text-4xl text-center">We could not confirm this payment</PageHeading>
+      <p className="mt-4 text-md lg:text-lg font-extralight leading-7">
+        {bookingRef
+          ? `Your booking reference is ${bookingRef}. If your card was charged, Stripe has emailed you a receipt and we will confirm the ride within minutes.`
+          : 'If your card was charged, Stripe has emailed you a receipt and we will confirm the ride within minutes.'}{' '}
+        If you cancelled on the payment page, nothing was charged and your details are still saved.
+      </p>
+      <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a
+          href={WHATSAPP_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center justify-center rounded-xl bg-green-500 hover:bg-green-600 text-white px-5 py-2.5 text-sm transition-colors"
+        >
+          Message us on WhatsApp
+        </a>
+        <a href="/book/booking-details" className="text-sm font-light text-accent-600 underline-offset-4 hover:underline">
+          Back to my booking
+        </a>
+      </div>
+    </div>
   );
 }

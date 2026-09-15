@@ -1,5 +1,18 @@
 import { z } from 'zod';
 
+export const MIN_LEAD_MINUTES = 120;
+const GST_OFFSET_MINUTES = 4 * 60;
+
+// pickupDate is YYYY-MM-DD and pickupTime is "hh:mm AM" in Gulf time, which has no DST.
+export function pickupInstant(pickupDate, pickupTime) {
+  const d = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(pickupDate || ''));
+  const t = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i.exec(String(pickupTime || '').trim());
+  if (!d || !t) return null;
+  let hours = Number(t[1]) % 12;
+  if (t[3].toUpperCase() === 'PM') hours += 12;
+  return new Date(Date.UTC(Number(d[1]), Number(d[2]) - 1, Number(d[3]), hours, Number(t[2])) - GST_OFFSET_MINUTES * 60000);
+}
+
 export const createBookingSchema = z
   .object({
     tripType: z.enum(['distance', 'hourly']),
@@ -61,6 +74,16 @@ export const createBookingSchema = z
       .optional(),
   })
   .superRefine((data, ctx) => {
+    const instant = pickupInstant(data.pickupDate, data.pickupTime);
+    if (!instant) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['pickupTime'], message: 'Pickup date or time is not valid.' });
+    } else if (instant.getTime() - Date.now() < MIN_LEAD_MINUTES * 60000) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['pickupTime'],
+        message: `Pickups need at least ${MIN_LEAD_MINUTES / 60} hours' notice. For anything sooner, message us on WhatsApp.`,
+      });
+    }
     if (data.tripType === 'hourly' && (data.hoursBooked === null || data.hoursBooked === undefined)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

@@ -49,6 +49,13 @@ function extractAvailableVehicles(rule) {
   return rule.vehicles.filter((v) => v.available && v.vehicle).map((v) => v.vehicle);
 }
 
+function extractUnavailableVehicles(rule) {
+  if (!rule) return [];
+  return rule.vehicles
+    .filter((v) => !v.available && v.vehicle)
+    .map(({ vehicle }) => ({ id: vehicle._id, brand: vehicle.brand, model: vehicle.model, type: vehicle.type, class: vehicle.class }));
+}
+
 function findPricingForVehicle(vehicleId, pricingRules) {
   if (!pricingRules?.length) return null;
   return pricingRules.find((rule) => rule.vehicles.some((v) => String(v?._id) === String(vehicleId))) || null;
@@ -146,7 +153,10 @@ export function createBookingPricingService({ AvailabilityRule, PricingRule }) {
       return formatVehicle(vehicle, totalPrice, calculationMethod);
     });
 
-    return vehiclesWithPrices.sort((a, b) => a.totalPrice - b.totalPrice);
+    return {
+      vehicles: vehiclesWithPrices.sort((a, b) => a.totalPrice - b.totalPrice),
+      unavailable: extractUnavailableVehicles(availabilityRule),
+    };
   };
 
   // Fails closed when a distance trip has no zone PricingRule: never trust a client total.

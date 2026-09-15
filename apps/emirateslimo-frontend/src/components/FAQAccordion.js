@@ -22,7 +22,7 @@ export default function FAQAccordion({ question, children }) {
       }`}
       onClick={() => setOpen((prev) => !prev)}
     >
-      <button className="w-full flex justify-between items-center text-left gap-4 cursor-pointer">
+      <button className="w-full min-h-11 flex justify-between items-center text-left gap-4 cursor-pointer">
         <h3
           className={`text-[15px] lg:text-[16px] font-light leading-snug transition-colors duration-300 ${
             open ? 'text-primary-900' : 'text-gray-800'

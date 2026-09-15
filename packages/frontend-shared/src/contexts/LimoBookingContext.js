@@ -58,11 +58,17 @@ export function LimoBookingProvider({ children }) {
     },
   };
 
-  const [bookingData, setBookingData] = useState(() => {
-    if (typeof window === 'undefined') return initialBookingData;
-    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    return stored ? { ...initialBookingData, ...stored } : initialBookingData;
-  });
+  const [bookingData, setBookingData] = useState(initialBookingData);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Read the saved booking after mount so the server and first client render match.
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (stored) setBookingData((prev) => ({ ...prev, ...stored }));
+    } catch {}
+    setIsHydrated(true);
+  }, []);
 
   const isAirportTransfer =
     bookingData?.pickup?.type === 'airport' || bookingData?.dropoff?.type === 'airport';
@@ -229,6 +235,7 @@ export function LimoBookingProvider({ children }) {
       value={{
         bookingData,
         setBookingData,
+        isHydrated,
         isLoadingLimoForm,
         isAirportTransfer,
         handleChange,

@@ -3,6 +3,7 @@ import { useRef, useState } from 'react';
 import { FaClock } from 'react-icons/fa6';
 import { useOutsideClick } from '@travel-suite/frontend-shared/hooks/general/useOutsideClick';
 import { motion, AnimatePresence } from 'framer-motion';
+import { TIME_SLOTS, isTooSoon } from '../../lib/pickupTime';
 
 void motion;
 
@@ -13,50 +14,60 @@ export default function SelectTime({
   name,
   setValue,
   defaultValue,
+  value,
+  onChange,
+  selectedDate,
+  enforceLeadTime = false,
 }) {
   const wrapperRef = useRef(null);
-  const [time, setTime] = useState(defaultValue || '');
+  const [internalTime, setInternalTime] = useState(defaultValue ?? '');
   const [showOptions, setShowOptions] = useState(false);
-  const [hour, setHour] = useState('');
-  const [minute, setMinute] = useState('');
-  const [period, setPeriod] = useState('AM');
+  const inputId = `${name || 'time'}-field`;
+  const time = value !== undefined ? value : internalTime;
 
   useOutsideClick(wrapperRef, () => setShowOptions(false));
 
-  function handleTimeSelect(h, m, p) {
-    const formatted = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')} ${p}`;
-    setTime(formatted);
-    setValue && setValue(name, formatted);
+  function handleSelect(slot) {
+    setInternalTime(slot);
+    setValue?.(name, slot);
+    onChange?.(slot);
     setShowOptions(false);
   }
 
+  const disabledSlot = (slot) => enforceLeadTime && !!selectedDate && isTooSoon(selectedDate, slot);
+  const noneAvailable = enforceLeadTime && !!selectedDate && TIME_SLOTS.every(disabledSlot);
+
   return (
     <div className="w-full" ref={wrapperRef}>
-      <input type="hidden" {...register(name)} />
-      <div
-        onClick={() => setShowOptions(true)}
-        className={`flex items-center gap-3 bg-white border rounded-xl px-4 py-2.5 cursor-pointer transition-all duration-300 
+      {register && <input type="hidden" {...register(name)} />}
+      <button
+        type="button"
+        onClick={() => setShowOptions((open) => !open)}
+        aria-haspopup="listbox"
+        aria-expanded={showOptions}
+        className={`w-full flex items-center gap-3 bg-white border rounded-xl px-4 py-2.5 cursor-pointer text-left transition-all duration-300
         ${showOptions ? 'border-gray-700 shadow-sm' : 'border-gray-300 hover:border-gray-500'}`}
       >
-        <span
-          className={`text-[18px] ${showOptions ? 'text-gray-800' : 'text-gray-500'} ${time ? 'text-gray-800' : ''}`}
-        >
+        <span className={`text-[18px] ${showOptions || time ? 'text-gray-800' : 'text-gray-500'}`}>
           <FaClock />
         </span>
-        <div className="flex flex-col w-full">
+        <span className="flex flex-col w-full">
           <label
+            htmlFor={inputId}
             className={`text-[11.5px] uppercase font-light tracking-wider cursor-pointer ${showOptions ? 'text-primary-900' : 'text-primary-500'}`}
           >
             {label}
           </label>
           <input
+            id={inputId}
             readOnly
-            className="bg-transparent border-0 outline-none w-full text-[15.5px] font-light text-primary-900 placeholder:text-primary-300 cursor-pointer"
+            tabIndex={-1}
+            className="bg-transparent border-0 outline-none w-full text-[15.5px] font-light text-primary-900 placeholder:text-primary-300 cursor-pointer pointer-events-none"
             placeholder={placeholder}
             value={time}
           />
-        </div>
-      </div>
+        </span>
+      </button>
 
       <AnimatePresence>
         {showOptions && (
@@ -64,73 +75,43 @@ export default function SelectTime({
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.25 }}
-            className="fixed top-0 left-0 md:relative w-dvw h-dvh md:w-auto md:h-auto flex items-center justify-center bg-black/70 z-100"
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 md:relative md:inset-auto flex items-end md:items-start justify-center bg-black/60 md:bg-transparent z-100"
+            onClick={() => setShowOptions(false)}
           >
-            <div className="absolute top-auto md:top-2 bg-white border border-primary-100 shadow-[0_6px_24px_rgba(0,0,0,0.08)] rounded-lg w-full max-w-[380px] z-50 overflow-hidden p-3">
-              <div className="grid grid-cols-3 gap-2 text-center">
-                <div>
-                  <p className="text-[13px] font-light text-primary-500 mb-1 uppercase">Hour</p>
-                  <div className="h-[200px] overflow-y-auto rounded-md border border-primary-50">
-                    {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
-                      <p
-                        key={h}
-                        onClick={() => setHour(h)}
-                        className={`py-1.5 text-[15px] cursor-pointer font-light transition-colors duration-150 ${
-                          hour === h ? 'bg-primary-200 text-black' : 'hover:bg-primary-50 text-primary-800'
-                        }`}
-                      >
-                        {h}
-                      </p>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-[13px] font-light text-primary-500 mb-1 uppercase">Minute</p>
-                  <div className="h-[200px] overflow-y-auto rounded-md border border-primary-50">
-                    {[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map((m) => (
-                      <p
-                        key={m}
-                        onClick={() => setMinute(m)}
-                        className={`py-1.5 text-[15px] cursor-pointer font-light transition-colors duration-150 ${
-                          minute === m ? 'bg-primary-200 text-black' : 'hover:bg-primary-50 text-primary-800'
-                        }`}
-                      >
-                        {String(m).padStart(2, '0')}
-                      </p>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-[13px] font-light text-primary-500 mb-1 uppercase">AM / PM</p>
-                  <div className="h-[200px] overflow-y-auto rounded-md border border-primary-50">
-                    {['AM', 'PM'].map((p) => (
-                      <p
-                        key={p}
-                        onClick={() => setPeriod(p)}
-                        className={`py-1.5 text-[15px] cursor-pointer font-light transition-colors duration-150 ${
-                          period === p ? 'bg-primary-200 text-black' : 'hover:bg-primary-50 text-primary-800'
-                        }`}
-                      >
-                        {p}
-                      </p>
-                    ))}
-                  </div>
-                </div>
+            <div
+              role="listbox"
+              aria-label={label}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full md:absolute md:top-2 md:left-0 md:max-w-[320px] bg-white border border-primary-100 shadow-[0_6px_24px_rgba(0,0,0,0.08)] rounded-t-2xl md:rounded-lg overflow-hidden"
+            >
+              <p className="px-4 pt-4 pb-2 text-[12px] uppercase tracking-wider font-light text-primary-500">
+                {noneAvailable ? 'No times left today, pick another date' : 'Choose a pickup time'}
+              </p>
+              <div className="max-h-[50dvh] md:max-h-[280px] overflow-y-auto pb-2">
+                {TIME_SLOTS.map((slot) => {
+                  const disabled = disabledSlot(slot);
+                  return (
+                    <button
+                      key={slot}
+                      type="button"
+                      role="option"
+                      aria-selected={time === slot}
+                      disabled={disabled}
+                      onClick={() => handleSelect(slot)}
+                      className={`w-full min-h-11 px-4 text-left text-[15px] font-light transition-colors ${
+                        time === slot
+                          ? 'bg-primary-200 text-black'
+                          : disabled
+                            ? 'text-primary-300 cursor-not-allowed'
+                            : 'text-primary-800 hover:bg-primary-50'
+                      }`}
+                    >
+                      {slot}
+                    </button>
+                  );
+                })}
               </div>
-
-              {/* Confirm Button */}
-              {hour && minute !== '' && (
-                <button
-                  type="button"
-                  onClick={() => handleTimeSelect(hour, minute, period)}
-                  className="w-full mt-4 py-2 rounded-md bg-accent-500 text-white text-[14px] font-light hover:bg-accent-600 transition-colors cursor-pointer"
-                >
-                  Set Time
-                </button>
-              )}
             </div>
           </motion.div>
         )}

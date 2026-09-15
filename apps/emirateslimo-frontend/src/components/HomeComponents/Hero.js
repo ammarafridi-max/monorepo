@@ -8,7 +8,7 @@ const trustItems = [
   { label: 'Professional Drivers' },
   { label: '24/7 Availability' },
   { label: 'Fixed Pricing' },
-  { label: 'Free Cancellation' },
+  { label: 'Free cancellation up to 24h before pickup' },
 ];
 
 export default function Hero({

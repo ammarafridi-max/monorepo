@@ -3,13 +3,13 @@ import { useForm } from 'react-hook-form';
 import { useEffect } from 'react';
 import { useLimoBooking } from '@travel-suite/frontend-shared/contexts/LimoBookingContext';
 import { trackLimoFormSubmission } from '../lib/analytics';
-import { trackLimoFormSubmissionMeta } from '../lib/meta';
 import toast from 'react-hot-toast';
 import SearchLocations from './FormElements/SearchLocations';
 import SelectDate from './FormElements/SelectDate';
 import SelectTime from './FormElements/SelectTime';
 import Button from './Button';
 import SelectHours from './FormElements/SelectHours';
+import { LEAD_TIME_MESSAGE, isTooSoon } from '../lib/pickupTime';
 
 export default function LimoForm() {
   const { bookingData, setBookingData, submitLimoForm, isLoadingLimoForm } = useLimoBooking();
@@ -22,6 +22,7 @@ export default function LimoForm() {
     if (tripType === 'hourly' && !data?.hoursBooked) return 'Please select how many hours you\u2019d like to book.';
     if (!data?.pickupDate) return 'Please select a pickup date.';
     if (!data?.pickupTime) return 'Please select a pickup time.';
+    if (isTooSoon(data.pickupDate, data.pickupTime)) return LEAD_TIME_MESSAGE;
     return null;
   }
 
@@ -40,12 +41,11 @@ export default function LimoForm() {
       pickupTime: data?.pickupTime,
       hoursBooked: tripType === 'hourly' ? data?.hoursBooked : null,
     });
-    trackLimoFormSubmissionMeta({ tripType });
     submitLimoForm(data);
   }
 
   return (
-    <div className="w-full bg-white rounded-2xl border border-gray-200 shadow-sm">
+    <div id="booking-form" className="w-full bg-white rounded-2xl border border-gray-200 shadow-sm scroll-mt-24">
       <div className="flex p-1 rounded-t-2xl">
         {['distance', 'hourly'].map((type) => {
           const active = tripType === type;
@@ -110,6 +110,8 @@ export default function LimoForm() {
             register={register}
             setValue={setValue}
             defaultValue={bookingData?.pickupTime}
+            selectedDate={watch('pickupDate') || bookingData?.pickupDate}
+            enforceLeadTime
           />
         </div>
 

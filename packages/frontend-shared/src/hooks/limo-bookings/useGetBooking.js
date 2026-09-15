@@ -2,7 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { getBookingApi } from '../../services/apiLimoBookings.js';
 
-export function useGetBooking(id) {
+export function useGetBooking(id, { refetchInterval } = {}) {
   const {
     data: booking,
     isLoading: isLoadingBooking,
@@ -11,6 +11,7 @@ export function useGetBooking(id) {
     queryKey: ['limo-bookings', id],
     queryFn: () => getBookingApi(id),
     enabled: !!id,
+    refetchInterval,
   });
 
   return { booking, isLoadingBooking, isErrorBooking };

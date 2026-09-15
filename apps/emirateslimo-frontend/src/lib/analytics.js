@@ -7,40 +7,29 @@ export const trackLimoFormSubmission = ({ tripType, pickup, dropoff, pickupDate,
   ReactGA.event('limo_form_submission', {
     tripType,
     pickup,
-    dropoff: dropoff || null,
+    dropoff,
     pickupDate,
-    pickupTime: pickupTime || null,
-    hoursBooked: hoursBooked || null,
+    pickupTime,
+    hoursBooked,
   });
 };
 
 export const trackVehicleSelection = ({ id, brand, model }) => {
   if (!isProduction) return;
   ReactGA.event('vehicle_selected', {
-    id,
+    vehicleId: id,
     brand,
     model,
   });
 };
 
-export const trackBookingDetailsEntered = ({
-  firstName,
-  lastName,
-  email,
-  phoneNumber,
-  flightNumber,
-  arrivalTime,
-  message,
-}) => {
+// No passenger identity here: GA4 forbids PII in event parameters.
+export const trackBookingDetailsEntered = ({ tripType, isAirportTransfer, hasNotes }) => {
   if (!isProduction) return;
   ReactGA.event('booking_details_entered', {
-    firstName,
-    lastName,
-    email,
-    phoneNumber,
-    flightNumber,
-    arrivalTime,
-    message,
+    tripType,
+    isAirportTransfer,
+    hasNotes,
   });
 };
 
@@ -53,17 +42,19 @@ export const trackBeginCheckout = ({ currency, value, items }) => {
   });
 };
 
-export const trackPurchaseEvent = ({
-  currency,
-  value,
-  transactionId,
-  items = [{ item_name: 'Chauffeur Service', price: 150, quantity: 1 }],
-}) => {
-  if (!isProduction) return;
+const purchaseKey = (transactionId) => `ga4:purchase:${transactionId}`;
+
+// The success page re-renders on refresh; a purchase is counted once per Stripe session.
+export const trackPurchaseEvent = ({ currency, value, transactionId, items }) => {
+  if (!isProduction || !transactionId) return;
+  try {
+    if (localStorage.getItem(purchaseKey(transactionId)) === '1') return;
+    localStorage.setItem(purchaseKey(transactionId), '1');
+  } catch {}
   ReactGA.event('purchase', {
-    transaction_id: transactionId,
-    value,
     currency,
+    value,
+    transaction_id: transactionId,
     items,
   });
 };

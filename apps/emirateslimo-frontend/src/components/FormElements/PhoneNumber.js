@@ -22,19 +22,27 @@ export default function PhoneNumber({ required, optional, tooltip }) {
 
   return (
     <div ref={wrapperRef}>
-      <Label required={required} optional={optional} tooltip={tooltip}>
+      <Label htmlFor="phone-number" required={required} optional={optional} tooltip={tooltip}>
         Phone Number
       </Label>
       <div className="flex items-center gap-3 bg-transparent px-3 lg:px-2 rounded-md border border-gray-300 focus:border-primary-900 outline-0">
-        <p
-          className="w-fit bottom-1.5 left-1 text-[14px] font-light bg-primary-100 px-3 py-1 rounded-sm cursor-pointer"
+        <button
+          type="button"
+          aria-label={`Country code ${phoneNumber?.code}, change`}
+          className="w-fit text-[14px] font-light bg-primary-100 px-3 py-1 rounded-sm cursor-pointer"
           onClick={() => setShowCodes((val) => !val)}
         >
           {phoneNumber?.code}
-        </p>
+        </button>
         <input
+          id="phone-number"
+          type="tel"
+          inputMode="tel"
+          autoComplete="tel-national"
+          placeholder="50 123 4567"
           className="w-full py-2 outline-0 text-[14px] font-light"
-          onChange={(e) => handleNumberChange('number', e.target.value)}
+          value={phoneNumber?.number || ''}
+          onChange={(e) => handleNumberChange('number', e.target.value.replace(/[^\d\s]/g, ''))}
         />
       </div>
       <div className="relative">
@@ -57,15 +65,17 @@ export default function PhoneNumber({ required, optional, tooltip }) {
                   return result;
                 })
                 .map((country) => (
-                  <p
-                    className="font-extralight text-sm py-1.5 px-3 cursor-pointer hover:bg-primary-100 duration-300"
+                  <button
+                    type="button"
+                    key={`${country.country}-${country.code}`}
+                    className="w-full text-left font-extralight text-sm py-1.5 px-3 cursor-pointer hover:bg-primary-100 duration-300"
                     onClick={() => {
                       handleNumberChange('code', country.code);
                       setShowCodes(false);
                     }}
                   >
                     {country?.country} ({country?.code})
-                  </p>
+                  </button>
                 ))}
             </div>
           </div>

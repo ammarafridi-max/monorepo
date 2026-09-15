@@ -29,7 +29,7 @@ export default function MobileNavigation() {
         </Link>
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors duration-200"
+          className="min-w-11 min-h-11 flex items-center justify-center rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors duration-200"
           aria-label="Toggle menu"
         >
           {menuOpen ? <HiOutlineXMark className="text-xl" /> : <HiOutlineBars3 className="text-xl" />}

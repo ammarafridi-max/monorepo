@@ -10,7 +10,7 @@ export function useGetAvailableVehicles(bookingData) {
 
   const isReady = !!pickupZone && !!tripType && !!pickupDate && !!pickupTime;
 
-  const { data, isLoading, isError, error } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['available-vehicles', tripType, pickupZone, dropoffZone, pickupDate, pickupTime, hoursBooked, distance],
     queryFn: () =>
       getAvailableVehiclesApi({
@@ -28,8 +28,10 @@ export function useGetAvailableVehicles(bookingData) {
 
   return {
     vehicles: data?.vehicles || [],
+    unavailableVehicles: data?.unavailable || [],
     isLoadingVehicles: isLoading,
     isErrorVehicles: isError,
     errorVehicles: error,
+    refetchVehicles: refetch,
   };
 }

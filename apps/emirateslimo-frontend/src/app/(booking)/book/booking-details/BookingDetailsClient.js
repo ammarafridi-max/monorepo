@@ -4,29 +4,20 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCreateBooking } from '@travel-suite/frontend-shared/hooks/limo-bookings/useCreateBooking';
 import { useLimoBooking } from '@travel-suite/frontend-shared/contexts/LimoBookingContext';
-import { FaStripe } from 'react-icons/fa6';
-import { FaCheckCircle } from 'react-icons/fa';
+import { FaStripe, FaLock } from 'react-icons/fa6';
 import { trackBeginCheckout, trackBookingDetailsEntered } from '@/lib/analytics';
 import SectionTitle from '@/components/SectionTitle';
 import Input from '@/components/FormElements/Input';
 import BookingSummary from '@/components/BookingSummary';
 import PhoneNumber from '@/components/FormElements/PhoneNumber';
-import { trackBeginCheckoutMeta } from '@/lib/meta';
+import SelectTime from '@/components/FormElements/SelectTime';
 
-const paymentMethods = [
-  {
-    name: 'Stripe',
-    id: 'stripe',
-    icon: <FaStripe />,
-    text: 'Pay Securely with Stripe',
-    color: '#5433ff',
-  },
-];
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 export default function BookingDetails() {
   const router = useRouter();
   const { createBooking, isCreatingBooking } = useCreateBooking();
-  const { bookingData, isAirportTransfer, handleChange, handleSelectPaymentMethod } = useLimoBooking();
+  const { bookingData, isHydrated, isAirportTransfer, handleChange } = useLimoBooking();
   const {
     tripType,
     pickup,
@@ -46,16 +37,18 @@ export default function BookingDetails() {
     if (!firstName) return "Please enter the passenger's first name.";
     if (!lastName) return "Please enter the passenger's last name.";
     if (!email) return "Please enter the passenger's email address.";
+    if (!EMAIL_RE.test(email.trim())) return 'That email address does not look right. Your confirmation goes there.';
     if (!phoneNumber?.number?.trim()) return "Please enter the passenger's phone number.";
-    if (!payment?.method) return 'Please select a payment method to proceed.';
-    if (isAirportTransfer && (!bookingDetails?.flightNumber || !bookingDetails?.arrivalTime))
-      return 'Please enter your flight details.';
+    if (phoneNumber.number.replace(/\D/g, '').length < 7) return 'Please enter a full phone number.';
+    if (isAirportTransfer && !bookingDetails?.flightNumber) return 'Please enter your flight number.';
+    if (isAirportTransfer && !bookingDetails?.arrivalTime) return 'Please select the time your flight lands.';
     return null;
   }
 
   const error = validateBookingForm(bookingData);
 
   useEffect(() => {
+    if (!isHydrated) return;
     if (tripType === 'distance') {
       if (!pickup?.name || !dropoff?.name || !pickupDate || !pickupTime) router.push('/');
     }
@@ -63,7 +56,7 @@ export default function BookingDetails() {
       if (!pickup?.name || !hoursBooked || !pickupDate || !pickupTime) router.push('/');
     }
     if (!vehicle) router.push('/book/select-limo');
-  }, [tripType, pickup, dropoff, pickupDate, pickupTime, hoursBooked, vehicle, router]);
+  }, [isHydrated, tripType, pickup, dropoff, pickupDate, pickupTime, hoursBooked, vehicle, router]);
 
   function handleSubmit() {
     const items = [];
@@ -73,36 +66,29 @@ export default function BookingDetails() {
       items[0] = { item_name: 'Chauffeur Service', quantity: 1 };
     }
     trackBookingDetailsEntered({
-      firstName: bookingDetails?.firstName,
-      lastName: bookingDetails?.lastName,
-      email: bookingDetails?.email,
-      phoneNumber: `${bookingDetails?.phoneNumber?.code}-${bookingDetails?.phoneNumber?.number}`,
-      flightNumber: bookingDetails?.flightNumber || null,
-      arrivalTime: bookingDetails?.arrivalTime || null,
-      message: bookingDetails?.message || null,
+      tripType,
+      isAirportTransfer,
+      hasNotes: !!bookingDetails?.message,
     });
     trackBeginCheckout({
       currency: orderSummary?.currency?.toUpperCase(),
       value: orderSummary?.total,
       items,
     });
-    trackBeginCheckoutMeta({
-      currency: 'AED',
-      value: orderSummary?.total,
-    });
-    createBooking({ ...bookingData });
+    createBooking({ ...bookingData, payment: { ...payment, method: 'stripe' } });
   }
 
   return (
     <>
       <div className="flex flex-col gap-8 lg:gap-12 w-full p-5 lg:p-7 bg-white rounded-xl shadow-xl shadow-gray-300">
         <PassengerInformation onChange={handleChange} bookingData={bookingData} isAirportTransfer={isAirportTransfer} />
-        <PaymentOptions selected={payment.method} onSelect={handleSelectPaymentMethod} />
+        <PaymentNote />
       </div>
       <div>
         <BookingSummary
-          btnText="Proceed to Payment"
-          btnDisabled={error || isCreatingBooking}
+          btnText={isCreatingBooking ? 'Taking you to payment' : 'Proceed to Payment'}
+          btnDisabled={!!error || isCreatingBooking}
+          btnNote={error}
           btnOnClick={handleSubmit}
         />
       </div>
@@ -121,12 +107,14 @@ function PassengerInformation({ onChange, bookingData, isAirportTransfer }) {
         <Input
           label="First Name"
           required
+          autoComplete="given-name"
           value={bookingData.bookingDetails.firstName}
           onChange={(e) => onChange('firstName', e.target.value)}
         />
         <Input
           label="Last Name"
           required
+          autoComplete="family-name"
           value={bookingData.bookingDetails.lastName}
           onChange={(e) => onChange('lastName', e.target.value)}
         />
@@ -135,6 +123,9 @@ function PassengerInformation({ onChange, bookingData, isAirportTransfer }) {
         <Input
           label="Email Address"
           required
+          type="email"
+          inputMode="email"
+          autoComplete="email"
           tooltip="Enter your email so we can send your booking details and updates"
           value={bookingData.bookingDetails.email}
           onChange={(e) => onChange('email', e.target.value)}
@@ -146,18 +137,26 @@ function PassengerInformation({ onChange, bookingData, isAirportTransfer }) {
           <Input
             label="Flight Number"
             required
+            autoComplete="off"
+            autoCapitalize="characters"
             tooltip="We need your flight number to track your flight and ensure timely pickup"
-            placeholder="eg. AC057"
+            placeholder="eg. EK203"
             value={bookingData.bookingDetails.flightNumber}
-            onChange={(e) => onChange('flightNumber', e.target.value)}
+            onChange={(e) => onChange('flightNumber', e.target.value.toUpperCase())}
           />
-          <Input
-            label="Estimated Arrival Time"
-            required
-            tooltip="Enter your scheduled arrival time. We'll track delays and you won't be charged extra."
-            value={bookingData.bookingDetails.arrivalTime}
-            onChange={(e) => onChange('arrivalTime', e.target.value)}
-          />
+          <div className="flex flex-col gap-1">
+            <span className="text-[14px] font-light text-gray-700 flex items-center gap-1">
+              Flight lands at <span className="text-red-500 font-semibold">*</span>
+            </span>
+            <SelectTime
+              name="arrivalTime"
+              label="Scheduled landing time"
+              placeholder="Select time"
+              value={bookingData.bookingDetails.arrivalTime}
+              onChange={(value) => onChange('arrivalTime', value)}
+            />
+            <p className="text-[12.5px] font-light text-primary-500">We track the flight, so a delay changes nothing for you.</p>
+          </div>
         </div>
       )}
       <div className="flex flex-col gap-1 mt-3">
@@ -176,51 +175,21 @@ function PassengerInformation({ onChange, bookingData, isAirportTransfer }) {
   );
 }
 
-function PaymentOptions({ selected, onSelect }) {
+function PaymentNote() {
   return (
     <div>
       <SectionTitle className="lg:mb-0">Payment</SectionTitle>
-      <p className="font-extralight text-[14px] text-primary-500 leading-6 pt-5">
-        Select your preferred payment method. Your details are processed securely by our trusted partners. We do not
-        store any credit/debit card details.
-      </p>
-      <div className="flex flex-col gap-2 mt-4">
-        {paymentMethods.map((method) => (
-          <SelectPaymentButton
-            key={method.id}
-            id={method.id}
-            icon={method.icon}
-            text={method.text}
-            color={method.color}
-            isSelected={selected === method.id}
-            onClick={() => onSelect(method.id)}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function SelectPaymentButton({ onClick, isSelected, icon, text, color = '#000' }) {
-  return (
-    <button
-      onClick={onClick}
-      type="button"
-      className={`w-full flex items-center justify-between rounded-xl border-2 transition-all duration-300 p-4 shadow-sm cursor-pointer ${
-        isSelected
-          ? 'border-primary-900 bg-primary-50 shadow-md'
-          : 'border-gray-200 bg-white hover:border-primary-200 hover:bg-gray-50'
-      }`}
-    >
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-3">
-          <span className="text-2xl" style={isSelected ? { color } : {}}>
-            {icon}
-          </span>
-          <span className={`text-[14px] font-light ${isSelected ? 'text-primary-700' : 'text-gray-700'}`}>{text}</span>
+      <div className="mt-5 flex items-start gap-3 rounded-xl border border-primary-100 bg-primary-50 p-4">
+        <FaStripe className="text-3xl shrink-0" style={{ color: '#5433ff' }} />
+        <div className="text-[14px] font-light text-primary-700 leading-6">
+          <p className="flex items-center gap-2">
+            <FaLock className="text-[12px]" /> You pay securely on Stripe&apos;s checkout page. We never see or store your card.
+          </p>
+          <p className="mt-1 text-primary-500">
+            Your chauffeur&apos;s name and number are emailed the day before pickup. Until then our team is on WhatsApp 24/7.
+          </p>
         </div>
       </div>
-      {isSelected && <FaCheckCircle className="text-primary-900" />}
-    </button>
+    </div>
   );
 }

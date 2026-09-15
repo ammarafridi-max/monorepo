@@ -12,7 +12,7 @@ import Container from './Container';
 
 void motion;
 
-export default function BookingSummary({ btnText, btnOnClick, btnDisabled }) {
+export default function BookingSummary({ btnText, btnOnClick, btnDisabled, btnNote }) {
   const { selectedCurrency } = useCurrency();
   const {
     bookingData: { tripType, hoursBooked, pickup, dropoff, pickupDate, pickupTime, orderSummary, vehicle },
@@ -38,9 +38,21 @@ export default function BookingSummary({ btnText, btnOnClick, btnDisabled }) {
         <Button className="w-full" disabled={btnDisabled} onClick={btnOnClick}>
           {btnText}
         </Button>
+        {btnNote && (
+          <p role="status" className="mt-2 text-center text-[13px] font-light text-red-600">
+            {btnNote}
+          </p>
+        )}
       </div>
 
-      <div className="fixed lg:hidden w-full bottom-0 left-0 bg-white py-5 shadow-[0px_0px_15px_10px_rgba(0,0,0,0.2)]">
+      <div className="fixed lg:hidden w-full bottom-0 left-0 bg-white py-4 shadow-[0px_0px_15px_10px_rgba(0,0,0,0.2)]">
+        {btnNote && (
+          <Container>
+            <p role="status" className="mb-2 text-[12.5px] font-light text-red-600">
+              {btnNote}
+            </p>
+          </Container>
+        )}
         <Container className="grid grid-cols-[3.5fr_6.5fr] items-center gap-2">
           <div>
             <p className="text-sm font-extralight">Total:</p>
@@ -72,7 +84,7 @@ export default function BookingSummary({ btnText, btnOnClick, btnDisabled }) {
         .
       </p>
 
-      {/* <Benefits /> */}
+      <Benefits />
     </div>
   );
 }
@@ -160,7 +172,7 @@ function Benefits() {
           <FaCheck className="text-white text-[12px]" />
         </span>
         <p className="text-[13px] font-extralight leading-4.5 text-primary-500">
-          Free 60 minutes waiting time on airport transfers
+          Full refund if you cancel 24 hours or more before pickup
         </p>
       </div>
       <div className="grid grid-cols-[auto_1fr] items-center gap-3">
@@ -168,7 +180,7 @@ function Benefits() {
           <FaCheck className="text-white text-[12px]" />
         </span>
         <p className="text-[13px] font-extralight leading-4.5 text-primary-500">
-          Complimentary water bottle in each ride
+          60 minutes free waiting at airports, 15 minutes elsewhere
         </p>
       </div>
       <div className="grid grid-cols-[auto_1fr] items-center gap-3">
@@ -176,7 +188,7 @@ function Benefits() {
           <FaCheck className="text-white text-[12px]" />
         </span>
         <p className="text-[13px] font-extralight leading-4.5 text-primary-500">
-          Multilingual chauffeurs with decades of experience
+          Price fixed at booking: tolls and VAT included, nothing to pay in the car
         </p>
       </div>
     </div>

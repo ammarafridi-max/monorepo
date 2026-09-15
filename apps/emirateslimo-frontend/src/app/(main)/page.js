@@ -76,7 +76,7 @@ export const pageData = {
     cta: {
       title: 'Ready to Book Your Luxury Ride?',
       text: 'Experience premium chauffeur service and airport transfers across Dubai and the UAE.',
-      primary: { href: '/book/select-limo', label: 'Book Now' },
+      primary: { href: '#booking-form', label: 'Book Now' },
       secondary: { href: '/contact-us', label: 'Contact Us' },
     },
   },
