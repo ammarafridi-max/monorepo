@@ -54,6 +54,7 @@ export const useCases = [
   {
     title: 'LinkedIn profiles',
     body: 'Your profile photo is the first thing a recruiter or a client sees. Get one that looks like the person your CV describes.',
+    href: '/linkedin-headshots',
   },
   {
     title: 'Resumes and CVs',
@@ -70,6 +71,7 @@ export const useCases = [
   {
     title: 'Real estate agents',
     body: 'Buyers choose an agent they trust, and they start with your face on a listing. Get the warm, credible headshot the job asks for.',
+    href: '/real-estate-agent-headshots',
   },
   {
     title: 'Founders and speakers',

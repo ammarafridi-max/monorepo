@@ -1,17 +1,22 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { FiInfo } from 'react-icons/fi';
 import { LOOKS, ATTIRE, AGE_RANGES, GENDERS, RACES, FACIAL_HAIR } from '@travel-suite/picturesk-shared/catalog';
-import { TIERS } from '@travel-suite/picturesk-shared/pricing';
-import { readState, writeState } from '../../../../../lib/generator';
+import { TIERS, isValidTier } from '@travel-suite/picturesk-shared/pricing';
+import { readState, writeState, FUNNEL_DEFAULT_TIER } from '../../../../../lib/generator';
+import { track, EVENTS } from '../../../../../lib/analytics';
 
 // Whole-dollar price from integer cents (tier prices are round dollars).
 const usd = (cents) => `$${Math.round(cents / 100)}`;
 // One line of "what changes" per tier: count first (verdict), then turnaround.
 const TURNAROUND = { starter: 'Standard queue', pro: 'Priority queue', premium: 'Front of the queue' };
+// Only offer options that have a preview. The catalog entry stays so paid orders
+// that already carry the id keep their prompt.
+const LOOK_OPTIONS = LOOKS.filter((l) => l.image);
+const ATTIRE_OPTIONS = ATTIRE.filter((a) => a.image);
 
 // A grid of selectable option cards, each with a preview image (or a placeholder
 // until a real image URL is added to the catalog). The choices are the visual
@@ -86,6 +91,7 @@ function ChoiceRow({ items, value, onSelect, allowClear }) {
 // can read it.
 export default function SelectPage() {
   const router = useRouter();
+  const params = useSearchParams();
   const [looks, setLooks] = useState([]);
   const [attire, setAttire] = useState([]);
   const [gender, setGender] = useState('');
@@ -93,7 +99,7 @@ export default function SelectPage() {
   const [race, setRace] = useState('');
   const [facialHair, setFacialHair] = useState('');
   const [email, setEmail] = useState('');
-  const [tier, setTier] = useState('starter');
+  const [tier, setTier] = useState(FUNNEL_DEFAULT_TIER);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -105,8 +111,18 @@ export default function SelectPage() {
     setRace(s.race);
     setFacialHair(s.facialHair);
     setEmail(s.email);
-    setTier(s.tier);
+    const fromUrl = params.get('tier');
+    if (fromUrl && isValidTier(fromUrl)) {
+      setTier(fromUrl);
+      writeState({ tier: fromUrl });
+    } else {
+      setTier(s.tier);
+    }
     setReady(true);
+  }, [params]);
+
+  useEffect(() => {
+    track(EVENTS.SELECT_VIEW);
   }, []);
 
   function pickTier(id) {
@@ -153,8 +169,16 @@ export default function SelectPage() {
   }
 
   const emailOk = /.+@.+\..+/.test(email);
-  const canContinue =
-    ready && looks.length > 0 && attire.length > 0 && !!gender && !!ageRange && emailOk;
+  const missing = !gender || !ageRange
+    ? 'Tell us your gender and age range to continue.'
+    : looks.length === 0
+      ? 'Choose at least one background to continue.'
+      : attire.length === 0
+        ? 'Choose at least one outfit to continue.'
+        : !emailOk
+          ? 'Enter the email address for your results to continue.'
+          : '';
+  const canContinue = ready && !missing;
 
   return (
     <section>
@@ -223,12 +247,18 @@ export default function SelectPage() {
       )}
 
       <h3 className="gen-subhead">Background</h3>
-      <p className="gen-hint">Choose one or more backgrounds. We spread your set across them.</p>
-      <OptionGrid items={LOOKS} selected={looks} onToggle={toggleLook} showDesc />
+      <p className="gen-hint">
+        Choose one or more backgrounds. We spread your set across them.{' '}
+        <span className="gen-count">{looks.length} of {LOOK_OPTIONS.length} selected</span>
+      </p>
+      <OptionGrid items={LOOK_OPTIONS} selected={looks} onToggle={toggleLook} showDesc />
 
       <h3 className="gen-subhead">Attire</h3>
-      <p className="gen-hint">Choose what you want to wear. Mix a few for variety.</p>
-      <OptionGrid items={ATTIRE} selected={attire} onToggle={toggleAttire} showDesc={false} />
+      <p className="gen-hint">
+        Choose what you want to wear. Mix a few for variety.{' '}
+        <span className="gen-count">{attire.length} of {ATTIRE_OPTIONS.length} selected</span>
+      </p>
+      <OptionGrid items={ATTIRE_OPTIONS} selected={attire} onToggle={toggleAttire} showDesc={false} />
 
       <div className="field">
         <label className="label" htmlFor="email">
@@ -275,18 +305,24 @@ export default function SelectPage() {
       </div>
 
       <div className="gennav">
-        <Link className="btn btn--link" href="/">
+        <Link className="btn btn--link" href="/ai-headshot-generator">
           Back
         </Link>
         <button
           className="btn btn--primary"
           type="button"
           disabled={!canContinue}
+          aria-describedby={missing ? 'select-missing' : undefined}
           onClick={() => router.push('/ai-headshot-generator/upload')}
         >
           Continue
         </button>
       </div>
+      {ready && missing && (
+        <p id="select-missing" className="formnote formnote--left">
+          {missing}
+        </p>
+      )}
     </section>
   );
 }

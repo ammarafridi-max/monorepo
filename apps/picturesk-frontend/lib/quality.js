@@ -11,7 +11,10 @@ function num(v, fallback) {
 export const QUALITY = {
   minPhotos: num(process.env.NEXT_PUBLIC_UPLOAD_MIN_PHOTOS, 5),
   maxPhotos: num(process.env.NEXT_PUBLIC_UPLOAD_MAX_PHOTOS, 15),
-  minFaceBoxRatio: num(process.env.NEXT_PUBLIC_UPLOAD_MIN_FACE_RATIO, 0.15),
+  // Must match the server default in apps/picturesk-backend/src/uploadGate.js.
+  // It was 0.15 against the server's 0.12, so the browser rejected photos the real
+  // gate would have accepted.
+  minFaceBoxRatio: num(process.env.NEXT_PUBLIC_UPLOAD_MIN_FACE_RATIO, 0.12),
 };
 
 export const REASONS = {

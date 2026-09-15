@@ -20,6 +20,11 @@ import { isValidTier } from '@travel-suite/picturesk-shared/pricing';
 
 const KEY = 'picturesk.generator';
 
+// The funnel preselects Pro (the plan the pricing cards badge as most popular). The
+// server's DEFAULT_TIER stays Starter so a request that omits a tier is never
+// charged more than the cheapest plan.
+export const FUNNEL_DEFAULT_TIER = 'pro';
+
 const EMPTY = {
   looks: [],
   attire: [],
@@ -29,7 +34,7 @@ const EMPTY = {
   facialHair: '',
   email: '',
   images: [],
-  tier: 'starter',
+  tier: FUNNEL_DEFAULT_TIER,
 };
 
 /**
@@ -59,7 +64,7 @@ export function readState() {
       facialHair: valid(s.facialHair, isValidFacialHair),
       email: str(s.email),
       images: Array.isArray(s.images) ? s.images : [],
-      tier: isValidTier(str(s.tier)) ? s.tier : 'starter',
+      tier: isValidTier(str(s.tier)) ? s.tier : FUNNEL_DEFAULT_TIER,
     };
   } catch {
     return { ...EMPTY };

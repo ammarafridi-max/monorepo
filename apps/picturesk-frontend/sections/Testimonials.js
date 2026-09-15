@@ -1,5 +1,5 @@
 import { FaStar } from 'react-icons/fa6';
-import { testimonials } from '../data/landing';
+import { testimonials as defaultTestimonials } from '../data/landing';
 import Container from '../components/Container';
 import SectionHeading from '../components/SectionHeading';
 
@@ -19,15 +19,16 @@ function Stars({ rating = 5 }) {
   );
 }
 
-export default function Testimonials() {
+export default function Testimonials({
+  eyebrow = 'Testimonials',
+  title = 'What people say about their set.',
+  lede = 'The test is not whether the photos look good. It is whether the people who know you think they look like you.',
+  testimonials = defaultTestimonials,
+}) {
   return (
     <section id="testimonials" className="section testimonials">
       <Container>
-        <SectionHeading
-          eyebrow="Testimonials"
-          title="What people say about their set."
-          lede="The test is not whether the photos look good. It is whether the people who know you think they look like you."
-        />
+        <SectionHeading eyebrow={eyebrow} title={title} lede={lede} />
 
         <ul className="quotes">
           {testimonials.map((t) => (

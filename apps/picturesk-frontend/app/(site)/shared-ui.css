@@ -32,6 +32,9 @@
    shared component starts being rendered on the site, or it ships unstyled. */
 @source "../../../../packages/frontend-shared/src/pages/client/BlogPage.js";
 @source "../../../../packages/frontend-shared/src/pages/client/BlogPostPage.js";
+@source "../../../../packages/frontend-shared/src/pages/client/BlogTagDetailPage.js";
+@source "../../../../packages/frontend-shared/src/pages/client/BlogTagsPage.js";
+@source "../../../../packages/frontend-shared/src/pages/client/AuthorPage.js";
 @source "../../../../packages/frontend-shared/src/components/shared/layout/Container.js";
 @source "../../../../packages/frontend-shared/src/components/shared/layout/PrimarySection.js";
 @source "../../../../packages/frontend-shared/src/components/shared/layout/Breadcrumb.js";

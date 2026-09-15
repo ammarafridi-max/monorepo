@@ -33,6 +33,8 @@ const nextConfig = {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       { protocol: 'https', hostname: '**.r2.dev' },
+      // Blog covers and author avatars.
+      { protocol: 'https', hostname: 'res.cloudinary.com' },
       ...(process.env.NEXT_PUBLIC_IMAGE_HOST
         ? [{ protocol: 'https', hostname: process.env.NEXT_PUBLIC_IMAGE_HOST }]
         : []),

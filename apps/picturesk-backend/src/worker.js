@@ -252,7 +252,10 @@ async function onDelivered(orderId) {
     return;
   }
 
-  const resultsUrl = `${WEB_BASE_URL}/success?orderId=${orderId}`;
+  // The token is what authorises the buyer to read the order and download the set.
+  // Legacy orders have none and still resolve without it (see orderAuthorized).
+  const token = order.publicToken ? `&t=${order.publicToken}` : '';
+  const resultsUrl = `${WEB_BASE_URL}/success?orderId=${orderId}${token}`;
   try {
     await emailClient.sendDeliveryEmail({
       to: order.customerEmail,

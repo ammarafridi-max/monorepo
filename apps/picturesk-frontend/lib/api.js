@@ -88,9 +88,14 @@ export async function gateUploads(uploadedImageUrls) {
   return asJson(res);
 }
 
-/** Public order view for the success page to poll. */
-export async function getOrder(orderId) {
-  const res = await fetch(`${API_BASE}/orders/${orderId}`, { cache: 'no-store' });
+/**
+ * Public order view for the success page to poll. `token` is the order's access
+ * token, handed to the buyer in the Stripe success_url and the delivery email.
+ * Checkout is anonymous, so it is the only credential that exists.
+ */
+export async function getOrder(orderId, token) {
+  const qs = token ? `?t=${encodeURIComponent(token)}` : '';
+  const res = await fetch(`${API_BASE}/orders/${orderId}${qs}`, { cache: 'no-store' });
   return asJson(res);
 }
 
@@ -99,8 +104,9 @@ export async function getOrder(orderId) {
  * so pointing an <a> at it downloads the file instead of opening it in a new tab
  * (the plain `download` attribute is ignored for cross-origin R2 URLs).
  */
-export function downloadUrl(orderId, index) {
-  return `${API_BASE}/orders/${orderId}/download/${index}`;
+export function downloadUrl(orderId, index, token) {
+  const qs = token ? `?t=${encodeURIComponent(token)}` : '';
+  return `${API_BASE}/orders/${orderId}/download/${index}${qs}`;
 }
 
 /**
@@ -108,6 +114,7 @@ export function downloadUrl(orderId, index) {
  * (picturesk-headshots.zip), so "Download all" saves a single file instead of
  * firing one download per image.
  */
-export function downloadAllUrl(orderId) {
-  return `${API_BASE}/orders/${orderId}/download-all`;
+export function downloadAllUrl(orderId, token) {
+  const qs = token ? `?t=${encodeURIComponent(token)}` : '';
+  return `${API_BASE}/orders/${orderId}/download-all${qs}`;
 }

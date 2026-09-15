@@ -67,14 +67,11 @@ export function createAdminSubsystem({
 
   let adminUsersRouter;
   if (authEnabled) {
-    adminUsersRouter = Router();
-    // The shared router exposes public /authors routes for brands that publish a
-    // blog. Picturesk has none, so they are closed rather than left as unauthenticated
-    // endpoints that would list staff names the moment an author slug got set.
-    adminUsersRouter.use('/authors', (_req, res) =>
-      res.status(404).json({ status: 'fail', message: 'Not found' })
-    );
-    adminUsersRouter.use(createAdminUsersRouter({ AdminUser, auth: { protect: guard, restrictTo } }));
+    // The shared router's public /authors routes serve the blog bylines and the
+    // /authors/<slug> pages. They expose only the byline projection (name and
+    // authorProfile), and only for users with an author slug set, never email,
+    // role or status.
+    adminUsersRouter = createAdminUsersRouter({ AdminUser, auth: { protect: guard, restrictTo } });
   } else {
     adminUsersRouter = Router().use((_req, res) =>
       res.status(503).json({ status: 'error', message: 'admin users disabled: set ADMIN_JWT_SECRET' })

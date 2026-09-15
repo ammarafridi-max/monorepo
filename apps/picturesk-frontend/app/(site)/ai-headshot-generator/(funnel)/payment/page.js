@@ -38,6 +38,7 @@ export default function PayPage() {
       return router.replace('/ai-headshot-generator/select');
     if (s.images.length === 0) return router.replace('/ai-headshot-generator/upload');
     setState(s);
+    track(EVENTS.PAYMENT_VIEW);
   }, [router]);
 
   if (!state) return null;

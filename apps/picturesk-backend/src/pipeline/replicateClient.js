@@ -21,8 +21,6 @@
  * unique version hash, so orders never collide.
  */
 
-import { QUALITY_TAIL } from '@travel-suite/picturesk-shared/catalog';
-
 const REPLICATE_API = 'https://api.replicate.com';
 
 // Trainer model + pinned version. Version hashes change as the trainer is
@@ -32,9 +30,10 @@ const TRAINER_MODEL = 'ostris/flux-dev-lora-trainer';
 const DEFAULT_TRAINER_VERSION =
   'd995297071a44dcb72244e6c19462111649ec86a9646c32df56daa7f14801944';
 
-// The concept token the LoRA is trained against. It must be a non-word so it
-// does not collide with real vocabulary, and it must appear in every generation
-// prompt to activate the trained face. Keep it in sync with PROMPTS below.
+// The concept token the LoRA is trained against. It must be a non-word so it does
+// not collide with real vocabulary, and it must appear in every generation prompt
+// to activate the trained face. The worker prefixes it to the per-order subject
+// anchor (see subjectAnchorFor); prompts themselves come from the shared catalog.
 export const TRIGGER_WORD = 'HDLNRZ';
 
 // Rough per-second GPU rates (USD) used ONLY to estimate margin telemetry from
@@ -43,32 +42,6 @@ export const TRIGGER_WORD = 'HDLNRZ';
 // flux-dev inference both run on H100-class hardware on Replicate.
 const TRAINING_USD_PER_SEC = 0.001525;
 const GENERATION_USD_PER_SEC = 0.001525;
-
-// The subject anchor. Every prompt leads with this explicit subject descriptor
-// right after the trigger word. On a seed where the identity signal is weak, the
-// base model's prior can leak through and drift the subject (flip gender, drop
-// the beard); naming the subject up front holds it in place. Edit in ONE place.
-// (A later phase could derive this per order; for now it is a single constant.)
-export const SUBJECT = 'a bearded man';
-
-/**
- * The headshot prompts. One prompt == one output image for now. Every prompt
- * embeds TRIGGER_WORD to activate the trained face, immediately followed by
- * SUBJECT to anchor gender + facial hair. Copy is not user-facing, no BRAND.md
- * concerns here.
- * @type {readonly string[]}
- */
-export const PROMPTS = Object.freeze(
-  [
-    'wearing a tailored navy business suit, seated against a neutral grey studio backdrop, soft key light',
-    'business casual in a light blue button-down shirt, standing by a bright office window, natural daylight',
-    'crisp LinkedIn-style corporate headshot, charcoal blazer, clean seamless white background, studio lighting',
-    'professional outdoor portrait, blurred green park background, warm late-afternoon sunlight, smiling',
-    'confident executive in a black turtleneck, dark moody background, dramatic rim lighting',
-    'friendly approachable headshot in a grey sweater over a collared shirt, soft neutral beige background',
-    'formal portrait in a dark grey three-piece suit, subtle bokeh of a modern office interior behind',
-  ].map((look) => `${TRIGGER_WORD}, ${SUBJECT}, ${look}, ${QUALITY_TAIL}`)
-);
 
 /**
  * Default LoRA strength for generation, read from GEN_LORA_SCALE (float). Sane

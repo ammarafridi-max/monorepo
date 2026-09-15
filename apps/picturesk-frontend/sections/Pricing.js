@@ -25,21 +25,27 @@ const includesFor = (tier) => [
 // Pricing: three one-time plans, each showing what it includes, who it is for, and
 // the one place it runs out, then ONE action into the funnel. Verdict first (the
 // price), buy action singular and obvious.
-export default function Pricing() {
+export default function Pricing({
+  eyebrow = 'Pricing',
+  title = 'Three plans. One time.',
+  lede = 'Every plan trains a model on your own face and delivers at full resolution. What changes is how many headshots you get and how much of the catalogue you can pick from.',
+  cta = 'Get my headshots',
+}) {
   return (
     <section id="pricing" className="section pricing">
       <Container>
-        <SectionHeading
-          eyebrow="Pricing"
-          title="Three plans. One time."
-          lede="Every plan trains a model on your own face and delivers at full resolution. What changes is how many headshots you get and how much of the catalogue you can pick from."
-        />
+        <SectionHeading eyebrow={eyebrow} title={title} lede={lede} />
 
         <div className="plans">
           {TIERS.map((t) => {
             const notes = planNotes[t.id] ?? {};
             return (
-              <div className={`plan${t.popular ? ' plan--on' : ''}`} key={t.id}>
+              <a
+                className={`plan plan--link${t.popular ? ' plan--on' : ''}`}
+                href={`/ai-headshot-generator/select?tier=${t.id}`}
+                key={t.id}
+                aria-label={`Choose ${t.label}, ${usd(t.priceCents)}`}
+              >
                 {t.popular && <span className="plan__badge">Most popular</span>}
                 <span className="plan__name">{t.label}</span>
                 <span className="plan__price">{usd(t.priceCents)}</span>
@@ -65,13 +71,13 @@ export default function Pricing() {
                     ))}
                   </ul>
                 )}
-              </div>
+              </a>
             );
           })}
         </div>
 
         <a className="btn btn--primary btn--block" href="/ai-headshot-generator/select">
-          Get my headshots <span className="btn__price">from $9</span>
+          {cta} <span className="btn__price">from $9</span>
         </a>
         <p className="pricecard__fine">
           You pay on Stripe. Refunded automatically if a run fails. See our{' '}

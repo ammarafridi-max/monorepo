@@ -1,4 +1,6 @@
 import { getPublishedBlogsApi } from '@travel-suite/frontend-shared/services/apiBlog';
+import { getBlogTagsApi } from '@travel-suite/frontend-shared/services/apiBlogTags';
+import { getAuthorsApi } from '@travel-suite/frontend-shared/services/apiAuthors';
 import { SITE_URL } from '../lib/seo';
 
 // Revalidated hourly so a newly published post reaches the sitemap without a deploy.
@@ -8,7 +10,12 @@ const PAGES = [
   // The product page is canonical; the root permanently redirects here, so the
   // sitemap lists the destination, not the redirecting '/'.
   { path: '/ai-headshot-generator', changeFrequency: 'weekly', priority: 1 },
+  { path: '/pricing', changeFrequency: 'monthly', priority: 0.9 },
+  { path: '/linkedin-headshots', changeFrequency: 'monthly', priority: 0.9 },
+  { path: '/real-estate-agent-headshots', changeFrequency: 'monthly', priority: 0.8 },
+  { path: '/ai-headshots-vs-photographer', changeFrequency: 'monthly', priority: 0.8 },
   { path: '/blog', changeFrequency: 'daily', priority: 0.8 },
+  { path: '/blog/tags', changeFrequency: 'weekly', priority: 0.6 },
   { path: '/faq', changeFrequency: 'monthly', priority: 0.6 },
   { path: '/privacy', changeFrequency: 'yearly', priority: 0.3 },
   { path: '/terms', changeFrequency: 'yearly', priority: 0.3 },
@@ -34,6 +41,32 @@ export default async function sitemap() {
     // An api blip must not break the sitemap; the static pages still ship.
   }
 
+  let tags = [];
+  try {
+    const data = await getBlogTagsApi();
+    tags = (data?.tags || data || [])
+      .filter((tag) => tag?.slug)
+      .map((tag) => ({
+        url: `${SITE_URL}/blog/tags/${tag.slug}`,
+        lastModified: now,
+        changeFrequency: 'weekly',
+        priority: 0.5,
+      }));
+  } catch {}
+
+  let authors = [];
+  try {
+    const data = await getAuthorsApi();
+    authors = (data || [])
+      .filter((author) => author?.authorProfile?.slug)
+      .map((author) => ({
+        url: `${SITE_URL}/authors/${author.authorProfile.slug}`,
+        lastModified: new Date(author.updatedAt || now),
+        changeFrequency: 'monthly',
+        priority: 0.5,
+      }));
+  } catch {}
+
   return [
     ...PAGES.map((p) => ({
       url: `${SITE_URL}${p.path}`,
@@ -42,5 +75,7 @@ export default async function sitemap() {
       priority: p.priority,
     })),
     ...posts,
+    ...tags,
+    ...authors,
   ];
 }

@@ -1,11 +1,22 @@
 import ContentPage from '../../../components/ContentPage';
+import { contentPageSchema } from '../../../lib/pageSchema';
 import { CONTACT_EMAIL, RESPONSE_TIME } from '../../../data/legal';
 
-export const metadata = {
-  title: 'Contact. Picturesk.ai',
-  description: 'Reach a human at Picturesk. Support email, response time, and what to include.',
+const META = {
+  title: 'Contact Picturesk | AI Headshot Generator Support',
+  description:
+    'Reach a human at Picturesk. Support email for our AI Headshot Generator, response time, and what to include so we can help fast.',
   alternates: { canonical: '/contact' },
 };
+
+export const metadata = META;
+
+const SCHEMA = contentPageSchema({
+  path: '/contact',
+  title: META.title,
+  description: META.description,
+  label: 'Contact',
+});
 
 // Contact: no form, no backend risk. Just the support address, clearly, plus what
 // to include so we can help fast. The email is a placeholder to swap for a real
@@ -13,6 +24,7 @@ export const metadata = {
 export default function ContactPage() {
   return (
     <ContentPage
+      schema={SCHEMA.graph}
       eyebrow="Support"
       title="Contact us"
       lede="Questions, refunds, or a deletion request? Email us and a human will reply."

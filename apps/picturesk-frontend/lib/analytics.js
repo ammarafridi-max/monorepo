@@ -48,8 +48,10 @@ export function analyticsEnabled() {
  */
 export const EVENTS = Object.freeze({
   LANDING_VIEW: 'landing_view',
+  SELECT_VIEW: 'select_view',
   UPLOAD_STARTED: 'upload_started',
   UPLOAD_COMPLETED: 'upload_completed',
+  PAYMENT_VIEW: 'payment_view',
   CHECKOUT_STARTED: 'checkout_started',
   PURCHASE_COMPLETED: 'purchase_completed',
   QUALITY_GATE_FAILED: 'quality_gate_failed', // optional drop-off signal

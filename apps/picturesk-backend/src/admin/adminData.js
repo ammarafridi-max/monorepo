@@ -13,7 +13,7 @@ function escapeRegex(value = '') {
  * behind the injected `guard` (admin cookie session OR the ADMIN_TOKEN break-glass
  * header) and `restrictTo('admin','support')` — both staff roles can view.
  *
- *   GET /admin/orders        list (optional ?status, ?limit), with stuck + margin
+ *   GET /admin/orders        paged list (?status, ?stuck, ?search, ?page, ?limit), with stuck + margin
  *   GET /admin/orders/:id     full detail (images, replicate ids, scores, error)
  *   GET /admin/stats          revenue / compute cost / margin / counts / stuck
  *   GET /admin/customers      per-email order counts, spend, last order, account?
@@ -45,6 +45,24 @@ function enteredCurrentStateAt(order) {
     default:
       return null; // terminal: DELIVERED / FAILED
   }
+}
+
+function stuckFilter() {
+  const cutoff = new Date(Date.now() - STUCK_AFTER_MS);
+  const enteredAt = {
+    [ORDER_STATES.AWAITING_PAYMENT]: ['$createdAt'],
+    [ORDER_STATES.PAID]: ['$paidAt', '$createdAt'],
+    [ORDER_STATES.TRAINING]: ['$trainingStartedAt', '$paidAt', '$createdAt'],
+    [ORDER_STATES.GENERATING]: ['$generatingStartedAt', '$createdAt'],
+  };
+  const firstSet = (fields) =>
+    fields.length === 1 ? fields[0] : { $ifNull: [fields[0], firstSet(fields.slice(1))] };
+  return {
+    $or: Object.entries(enteredAt).map(([state, fields]) => ({
+      status: state,
+      $expr: { $lt: [firstSet(fields), cutoff] },
+    })),
+  };
 }
 
 function stuckForMs(order) {
@@ -141,8 +159,9 @@ export function createAdminDataRouter({ guard, restrictTo }) {
   // Every route below is read-only staff access.
   router.use(guard, restrictTo('admin', 'support'));
 
-  // GET /admin/orders  --  operational list, newest first. ?status filters,
-  // ?search matches customer email or order id, ?limit caps.
+  // GET /admin/orders  --  operational list, newest first, paged on the server.
+  // ?status and ?stuck=1 filter, ?search matches customer email or an exact order
+  // id, ?page and ?limit page. stuckCount is the GLOBAL count, not this page's.
   router.get(
     '/orders',
     catchAsync(async (req, res) => {
@@ -150,27 +169,74 @@ export function createAdminDataRouter({ guard, restrictTo }) {
       if (status && !Object.values(ORDER_STATES).includes(status)) {
         throw new AppError(`unknown status ${status}`, 400);
       }
-      const limit = Math.min(Math.max(Number.parseInt(req.query.limit, 10) || 200, 1), 500);
+      const page = Math.max(Number.parseInt(req.query.page, 10) || 1, 1);
+      const limit = Math.min(Math.max(Number.parseInt(req.query.limit, 10) || 25, 1), 100);
       const filter = status ? { status } : {};
 
-      // Searching has to happen in the query, not on the page: the list is capped,
-      // so filtering client-side would only ever search the newest `limit` orders.
+      // Searching and the stuck filter both have to happen in the query, not on the
+      // page: the list is paged, so filtering client-side would only ever see one
+      // page of orders.
       const search = String(req.query.search ?? '').trim();
       if (search) {
         const or = [{ customerEmail: new RegExp(escapeRegex(search), 'i') }];
-        // An exact id, so pasting an order id from a log or Stripe finds it.
         if (mongoose.isValidObjectId(search)) or.push({ _id: search });
         filter.$or = or;
       }
-      const orders = await Order.find(filter).sort({ createdAt: -1 }).limit(limit);
-      const items = orders.map(toAdminOrder);
+      if (req.query.stuck === '1') Object.assign(filter, stuckFilter());
+
+      // The summary cards need the whole filtered set, not the page in view.
+      const [total, orders, stuckCount, [totals]] = await Promise.all([
+        Order.countDocuments(filter),
+        Order.find(filter)
+          .sort({ createdAt: -1 })
+          .skip((page - 1) * limit)
+          .limit(limit),
+        Order.countDocuments(stuckFilter()),
+        Order.aggregate([
+          { $match: filter },
+          {
+            $group: {
+              _id: null,
+              delivered: {
+                $sum: { $cond: [{ $eq: ['$status', ORDER_STATES.DELIVERED] }, 1, 0] },
+              },
+              paidCents: { $sum: { $ifNull: ['$amountPaidCents', 0] } },
+              marginCents: {
+                $sum: {
+                  $cond: [
+                    { $eq: ['$status', ORDER_STATES.DELIVERED] },
+                    {
+                      $subtract: [
+                        { $ifNull: ['$amountPaidCents', 0] },
+                        { $ifNull: ['$computeCostCents', 0] },
+                      ],
+                    },
+                    0,
+                  ],
+                },
+              },
+            },
+          },
+        ]),
+      ]);
       res.json({
         status: 'success',
         data: {
-          count: items.length,
-          stuckCount: items.filter((o) => o.stuck).length,
+          count: orders.length,
+          stuckCount,
           stuckAfterMinutes: STUCK_AFTER_MS / 60000,
-          orders: items,
+          pagination: {
+            page,
+            limit,
+            total,
+            totalPages: Math.max(1, Math.ceil(total / limit)),
+          },
+          totals: {
+            delivered: totals?.delivered ?? 0,
+            paidCents: totals?.paidCents ?? 0,
+            marginCents: totals?.marginCents ?? 0,
+          },
+          orders: orders.map(toAdminOrder),
         },
       });
     })

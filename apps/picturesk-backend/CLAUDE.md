@@ -92,12 +92,16 @@ collection still use the unprefixed paths.
 under `/api`). The blog's `GET /` and `GET /slug/:slug` sit above its own protect
 call, so a public site can read published posts without a session.
 
-Two Picturesk-specific notes:
+Three Picturesk-specific notes:
 
-- Blog cover images go to **R2**, not Cloudinary. `blogImageStorage.js` adapts the
-  bucket to the two methods the blog service calls, sniffing the content type from
-  the buffer because the service hands over bare bytes. With R2 unset the blog
-  still serves and edits; only image upload fails, by design.
+- Blog cover images go to **Cloudinary**, the same `@travel-suite/cloudinary`
+  client and the same shared account the travel brands use, scoped to the
+  `picturesk/blog` folder. That folder prefix is the only isolation between brands
+  in that account, so never widen it. With Cloudinary unset the blog still serves
+  and edits; only image upload fails, by design.
+- Everything else stays on **R2**: the customer's uploaded selfies, the training
+  zip, and the delivered headshots. That path is egress-heavy and holds personal
+  data, and R2 is a bucket we control with no bandwidth meter. Do not move it.
 - Affiliates get **no commissionable model**. The shared service computes
   commission from Tickets and Insurance Applications, neither of which exists
   here, so CRUD works and the per-affiliate ticket/application tables stay empty.

@@ -134,6 +134,5 @@ export async function pollGeneration(predictionId) {
   };
 }
 
-// Static config parity with the real client. The worker imports PROMPTS from the
-// real module, but exporting a stub keeps the interface uniform for direct use.
-export const PROMPTS = Object.freeze(['fake prompt']);
+// Static config parity with the real client. The worker imports the trigger word
+// from the real module, but exporting a stub keeps the interface uniform.

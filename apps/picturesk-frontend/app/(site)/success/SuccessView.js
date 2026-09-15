@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { getOrder, downloadUrl, downloadAllUrl } from '../../../lib/api';
+import { clearState } from '../../../lib/generator';
 import { track, EVENTS } from '../../../lib/analytics';
 import Lightbox from '../../../components/Lightbox';
 import Container from '../../../components/Container';
@@ -72,8 +73,8 @@ const HEADLINE = {
 };
 
 const SUBCOPY = {
-  PAID: 'This takes a few minutes. You can keep this page open.',
-  TRAINING: 'This is the slow part, usually a few minutes. Leave this open.',
+  PAID: 'Your model starts training now. Most sets are ready in about an hour. You can close this page, we email you the link.',
+  TRAINING: 'This is the slow part. You do not need to keep this page open, the results link goes to your email.',
   GENERATING: 'Almost there. We are rendering each shot now.',
   DELIVERED: 'They came out well. View and download them below.',
 };
@@ -105,6 +106,8 @@ function fmtDuration(ms) {
 export default function SuccessView() {
   const params = useSearchParams();
   const orderId = params.get('orderId');
+  // The order's access token, from the Stripe success_url or the delivery email.
+  const token = params.get('t');
 
   const [order, setOrder] = useState(null);
   const [error, setError] = useState('');
@@ -120,6 +123,7 @@ export default function SuccessView() {
     if (!purchasedRef.current && order && PAID_STATES.has(order.status)) {
       purchasedRef.current = true;
       track(EVENTS.PURCHASE_COMPLETED);
+      clearState();
     }
   }, [order]);
 
@@ -142,7 +146,7 @@ export default function SuccessView() {
 
     async function tick() {
       try {
-        const data = await getOrder(orderId);
+        const data = await getOrder(orderId, token);
         if (!alive) return;
         setOrder(data);
         // Stop polling once the order is in a terminal state.
@@ -161,7 +165,7 @@ export default function SuccessView() {
       alive = false;
       clearTimeout(timer);
     };
-  }, [orderId]);
+  }, [orderId, token]);
 
   if (error && !order) {
     return (
@@ -170,7 +174,7 @@ export default function SuccessView() {
           <h1 className="h2">We could not load this order.</h1>
           <p className="muted">{error}</p>
           <p>
-            <a href="/">Start a new order</a>
+            <a href="/ai-headshot-generator">Start a new order</a>
           </p>
         </Container>
       </main>
@@ -246,7 +250,7 @@ export default function SuccessView() {
         )}
         {isFailed && (
           <p style={{ marginTop: 8 }}>
-            <a href="/">Start a new order</a>
+            <a href="/ai-headshot-generator">Start a new order</a>
           </p>
         )}
 
@@ -264,7 +268,7 @@ export default function SuccessView() {
                 {(order.resultImageUrls || []).length} headshots, yours to keep.
               </p>
               {(order.resultImageUrls || []).length > 0 && (
-                <a className="btn btn--primary" href={downloadAllUrl(orderId)}>
+                <a className="btn btn--primary" href={downloadAllUrl(orderId, token)}>
                   <DownloadIcon /> Download all
                 </a>
               )}
@@ -287,7 +291,7 @@ export default function SuccessView() {
                     </button>
                     <a
                       className="shot__dl"
-                      href={downloadUrl(orderId, i)}
+                      href={downloadUrl(orderId, i, token)}
                       aria-label={`Download headshot ${i + 1}`}
                     >
                       <DownloadIcon />
@@ -337,9 +341,12 @@ export default function SuccessView() {
         )}
 
         <p className="formnote" style={{ textAlign: 'left', marginTop: 28 }}>
-          Order {order.orderId}. A copy of your results link goes to{' '}
-          {/* data-clarity-mask: customer email (PII); keep it out of Clarity replay. */}
-          <span data-clarity-mask="true">{order.customerEmail}</span>.
+          Order {order.orderId}.{' '}
+          {isDelivered
+            ? 'A copy of your results link has been emailed to you.'
+            : isFailed
+              ? null
+              : 'We will email you this link as soon as your headshots are ready.'}
         </p>
 
         <Lightbox src={preview} alt="Headshot preview" onClose={() => setPreview(null)} />

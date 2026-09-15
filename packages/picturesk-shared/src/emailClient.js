@@ -92,6 +92,15 @@ export function createEmailClient({ apiKey, sender }) {
       });
       return send({ to, subject, html, text, signal });
     },
+
+    /**
+     * The payment confirmation. Sent once from the Stripe webhook so the buyer has
+     * the order id and the results link before the run finishes.
+     */
+    async sendPaidEmail({ to, resultsUrl, orderId, planLabel, deliverCount, signal }) {
+      const { subject, html, text } = renderPaidEmail({ resultsUrl, orderId, planLabel, deliverCount });
+      return send({ to, subject, html, text, signal });
+    },
   };
 }
 
@@ -235,6 +244,100 @@ export function renderDeliveryEmail({ resultsUrl, orderId, thumbnailUrls = [], l
     lifetimeLine,
     '',
     "Our promise: if these don't look like you, just reply to this email within 14 days and we'll refund you in full.",
+    '',
+    `Order ${orderId}`,
+  ].join('\n');
+
+  return { subject, html, text };
+}
+
+/**
+ * Render the payment confirmation email (HTML + plain-text alternative). Same
+ * table layout as the delivery email. Copy commits only to what the system does:
+ * paid, training now, the link below is where the set appears, about an hour.
+ */
+export function renderPaidEmail({ resultsUrl, orderId, planLabel, deliverCount }) {
+  const subject = 'Payment received. Your headshots are on the way';
+  const preheader = 'We are training a model on your face now. Your set is usually ready in about an hour.';
+  const planLine =
+    planLabel && deliverCount
+      ? `${planLabel} plan, ${deliverCount} headshots.`
+      : 'Your plan is confirmed.';
+
+  const html = `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light only" />
+  <title>${subject}</title>
+</head>
+<body style="margin:0;padding:0;background:${BONE};">
+  <span style="display:none!important;visibility:hidden;opacity:0;color:${BONE};height:0;width:0;overflow:hidden;mso-hide:all">${preheader}</span>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${BONE};">
+    <tr>
+      <td align="center" style="padding:40px 20px;">
+        <table role="presentation" width="520" cellpadding="0" cellspacing="0" border="0" style="width:520px;max-width:520px;background:${BONE};">
+          <tr>
+            <td style="padding:0 0 28px 0;font-family:${SANS};font-size:15px;font-weight:600;letter-spacing:0.02em;color:${INK}">
+              Picturesk.ai
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 0 14px 0;font-family:${SERIF};font-size:30px;line-height:1.2;font-weight:600;color:${INK}">
+              Payment received.
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 0 28px 0;font-family:${SANS};font-size:16px;line-height:1.6;color:${INK}">
+              ${planLine} We are training a model on your face now. Most sets are ready in about an hour, and we email you again the moment yours is.
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 0 28px 0">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse">
+                <tr>
+                  <td align="center" style="border-radius:6px;background:${COBALT};border-top:3px solid ${GOLD}">
+                    <a href="${resultsUrl}" style="display:inline-block;padding:14px 26px;font-family:${SANS};font-size:16px;font-weight:600;color:${BONE};text-decoration:none;border-radius:6px">
+                      Follow my order
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 0 28px 0;font-family:${SANS};font-size:14px;line-height:1.6;color:${ASH}">
+              Nothing to do on your side. If a run fails for any reason you are refunded automatically, and if the finished set does not look like you, reply to the delivery email within 14 days for a full refund.
+            </td>
+          </tr>
+          <tr>
+            <td style="border-top:1px solid ${LINE};padding:20px 0 0 0;font-family:${SANS};font-size:13px;line-height:1.6;color:${ASH}">
+              Trouble with the button? Paste this link into your browser:<br />
+              <a href="${resultsUrl}" style="color:${COBALT};text-decoration:none;word-break:break-all">${resultsUrl}</a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:14px 0 0 0;font-family:${SANS};font-size:12px;color:${ASH}">
+              Order ${orderId}
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+  const text = [
+    'Payment received.',
+    '',
+    `${planLine} We are training a model on your face now. Most sets are ready in about an hour, and we email you again the moment yours is.`,
+    '',
+    'Follow your order here:',
+    resultsUrl,
+    '',
+    'Nothing to do on your side. If a run fails for any reason you are refunded automatically, and if the finished set does not look like you, reply to the delivery email within 14 days for a full refund.',
     '',
     `Order ${orderId}`,
   ].join('\n');

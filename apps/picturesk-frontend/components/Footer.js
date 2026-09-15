@@ -1,5 +1,7 @@
 // Site footer: brand + grouped links + contact, on the deep-green Forest & Gold
-// surface. The brand is an ivory text wordmark (the stored logo.png is dark and
+// surface. Product links point at /ai-headshot-generator directly: linking to "/"
+// sent every internal click through a 308 and left the canonical landing page with
+// no direct inbound links at all. The brand is an ivory text wordmark (the stored logo.png is dark and
 // would vanish on green). Rendered once from the root layout, so links are absolute
 // paths (the home anchors point at /#section) and work from any page.
 import Container from './Container';
@@ -16,9 +18,13 @@ export default function Footer() {
         <nav className="footer__cols" aria-label="Footer">
           <div className="footer__col">
             <p className="footer__coltitle">Product</p>
-            <a href="/#work">Samples</a>
-            <a href="/#how">How it works</a>
-            <a href="/#pricing">Pricing</a>
+            <a href="/ai-headshot-generator">AI Headshot Generator</a>
+            <a href="/ai-headshot-generator#work">Samples</a>
+            <a href="/ai-headshot-generator#how">How it works</a>
+            <a href="/pricing">Pricing</a>
+            <a href="/linkedin-headshots">LinkedIn Headshots</a>
+            <a href="/real-estate-agent-headshots">Real Estate Headshots</a>
+            <a href="/ai-headshots-vs-photographer">AI vs Photographer</a>
             <a href="/login">Log in</a>
           </div>
 

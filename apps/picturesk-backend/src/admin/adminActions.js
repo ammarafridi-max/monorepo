@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { Order, ORDER_STATES } from '@travel-suite/picturesk-shared';
+import { getTier, Order, ORDER_STATES } from '@travel-suite/picturesk-shared';
 import { AppError, catchAsync } from '@travel-suite/utils';
 
 /**
@@ -94,7 +94,10 @@ export function createAdminActionsRouter({
       }
       const orderId = order._id.toString();
       await orderPipeline.remove(orderId).catch(() => {});
-      await orderPipeline.add('process-order', { orderId }, pipelineJobOpts(orderId));
+      // The tier's priority has to be passed here too. Without it a requeued
+      // Premium order silently rejoins the queue at the default priority.
+      const { priority } = getTier(order.tier);
+      await orderPipeline.add('process-order', { orderId }, pipelineJobOpts(orderId, priority));
       res.json({ status: 'success', message: 'Re-queued. The worker will pick it up and reattach.' });
     })
   );
@@ -113,7 +116,9 @@ export function createAdminActionsRouter({
       const orderId = order._id.toString();
       await emailClient.sendDeliveryEmail({
         to: order.customerEmail,
-        resultsUrl: `${webBaseUrl}/success?orderId=${orderId}`,
+        resultsUrl: `${webBaseUrl}/success?orderId=${orderId}${
+          order.publicToken ? `&t=${order.publicToken}` : ''
+        }`,
         orderId,
         thumbnailUrls: order.deliveredImageUrls ?? [],
       });

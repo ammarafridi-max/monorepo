@@ -11,7 +11,7 @@ export default function CancelPage() {
           No charge was made and your photos are still here. You can pick up where you left off.
         </p>
         <p style={{ marginTop: 24 }}>
-          <a href="/">Back to your order</a>
+          <a href="/ai-headshot-generator/payment">Back to review and pay</a>
         </p>
       </Container>
     </main>

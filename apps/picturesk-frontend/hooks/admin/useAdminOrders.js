@@ -23,6 +23,8 @@ export function useAdminOrders(params = {}) {
 
   return {
     orders: data?.orders ?? [],
+    pagination: data?.pagination ?? null,
+    totals: data?.totals ?? null,
     stuckCount: data?.stuckCount ?? 0,
     stuckAfterMinutes: data?.stuckAfterMinutes,
     isLoadingOrders: isLoading,

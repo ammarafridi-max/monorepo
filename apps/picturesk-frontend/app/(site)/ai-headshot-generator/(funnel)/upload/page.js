@@ -207,7 +207,7 @@ export default function UploadPage() {
         <p className="capture-cta__text">
           Want the best results? <span>Let us guide you through a quick photo shoot.</span>
         </p>
-        <Link className="btn btn--primary" href="/ai-headshot-generator/capture">
+        <Link className="btn btn--link" href="/ai-headshot-generator/capture">
           Use my camera
         </Link>
       </div>
@@ -228,7 +228,10 @@ export default function UploadPage() {
             if (e.key === 'Enter' || e.key === ' ') inputRef.current?.click();
           }}
         >
-          <p className="dropzone__title">Drag your photos here, or click to choose.</p>
+          <p className="dropzone__title">
+            <span className="dropzone__desktop">Drag your photos here, or click to choose.</span>
+            <span className="dropzone__touch">Tap to choose your photos.</span>
+          </p>
           <p className="dropzone__hint">
             One face per photo, different angles, good light, no sunglasses.
           </p>

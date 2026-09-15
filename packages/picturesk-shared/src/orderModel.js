@@ -76,6 +76,15 @@ const orderSchema = new Schema(
     deliverCount: Number,
     generateCount: Number,
 
+    // The capability token that authorises reading this order and downloading its
+    // results. An order id is a Mongo ObjectId: it embeds a timestamp and a
+    // counter, so ids are guessable enough that an id alone must not grant access
+    // to a customer's email and photos. Buying is anonymous, so there is no session
+    // to check against; the token is the only credential the buyer ever gets.
+    // Sparse by nature: orders created before this field existed have none, and the
+    // api lets those through so old delivery emails keep working.
+    publicToken: { type: String, index: true },
+
     // Idempotency anchor: one Stripe Checkout session maps to at most one order.
     stripeSessionId: { type: String, unique: true, sparse: true },
     stripePaymentIntentId: String,

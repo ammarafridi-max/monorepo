@@ -1,5 +1,5 @@
 import { FiRotateCcw, FiSearch, FiTag, FiUser } from 'react-icons/fi';
-import { benefits } from '../data/landing';
+import { benefits as defaultBenefits } from '../data/landing';
 import Container from '../components/Container';
 import SectionHeading from '../components/SectionHeading';
 
@@ -16,15 +16,16 @@ const ICONS = {
   refund: FiRotateCcw,
 };
 
-export default function Benefits() {
+export default function Benefits({
+  eyebrow = 'Why Picturesk',
+  title = 'Built so you never pay for a bad set.',
+  lede = 'Every AI headshot tool promises studio photos. The difference is what happens when your input is not perfect, when a run fails, and when the results land in your inbox.',
+  benefits = defaultBenefits,
+}) {
   return (
     <section id="why" className="section benefits">
       <Container>
-        <SectionHeading
-          eyebrow="Why Picturesk"
-          title="Built so you never pay for a bad set."
-          lede="Every AI headshot tool promises studio photos. The difference is what happens when your input is not perfect, when a run fails, and when the results land in your inbox."
-        />
+        <SectionHeading eyebrow={eyebrow} title={title} lede={lede} />
 
         <ul className="benefits__grid">
           {benefits.map((b) => {

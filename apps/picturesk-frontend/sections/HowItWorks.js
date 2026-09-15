@@ -1,19 +1,20 @@
-import { steps } from '../data/landing';
+import { steps as defaultSteps } from '../data/landing';
 import Container from '../components/Container';
 import SectionHeading from '../components/SectionHeading';
 
 // The process, and the section that follows the hero: a real three-step sequence,
 // so the steps sit on a connecting rail with numbered markers that genuinely encode
 // order, left to right on desktop and top to bottom on mobile. Calm, no icons.
-export default function HowItWorks() {
+export default function HowItWorks({
+  eyebrow = 'The process',
+  title = 'Three steps, about an hour.',
+  lede = "No studio, no shoot, no waiting on a photographer's calendar. You upload, we train and generate, and the finished set lands in your inbox the same morning.",
+  steps = defaultSteps,
+}) {
   return (
     <section id="how" className="section how">
       <Container>
-        <SectionHeading
-          eyebrow="The process"
-          title="Three steps, about an hour."
-          lede="No studio, no shoot, no waiting on a photographer's calendar. You upload, we train and generate, and the finished set lands in your inbox the same morning."
-        />
+        <SectionHeading eyebrow={eyebrow} title={title} lede={lede} />
 
         <ol className="steps-grid">
           {steps.map((s, i) => (

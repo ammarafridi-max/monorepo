@@ -1,4 +1,4 @@
-import { samples } from '../data/samples';
+import { samples as defaultSamples } from '../data/samples';
 import Frame from '../components/Frame';
 import Container from '../components/Container';
 import SectionHeading from '../components/SectionHeading';
@@ -8,15 +8,16 @@ import SectionHeading from '../components/SectionHeading';
 // it started from (a small filmstrip), what the person needed the set for, and the
 // wall of studio prints they got back. Data-driven from data/samples.js so new
 // identities are pure content edits.
-export default function Showcase() {
+export default function Showcase({
+  eyebrow = 'The work',
+  title = 'Real people, real selfies, real sets.',
+  lede = 'Every set below started as ordinary phone selfies that were never meant to be headshots. Same person, same face, photographed properly.',
+  samples = defaultSamples,
+}) {
   return (
     <section id="work" className="section showcase">
       <Container>
-        <SectionHeading
-          eyebrow="The work"
-          title="Real people, real selfies, real sets."
-          lede="Every set below started as ordinary phone selfies that were never meant to be headshots. Same person, same face, photographed properly."
-        />
+        <SectionHeading eyebrow={eyebrow} title={title} lede={lede} />
 
         <div className="samples">
           {samples.map((s) => (
@@ -30,6 +31,7 @@ export default function Showcase() {
                       src={src}
                       alt={`${s.name} selfie ${i + 1}`}
                       className="filmstrip__shot"
+                      sizes="120px"
                     />
                   ))}
                 </div>
@@ -54,6 +56,7 @@ export default function Showcase() {
                     src={src}
                     alt={`${s.name} headshot ${i + 1}`}
                     className="sample__shot"
+                    sizes="(max-width: 760px) 50vw, 30vw"
                   />
                 ))}
               </div>

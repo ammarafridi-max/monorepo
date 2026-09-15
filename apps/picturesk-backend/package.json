@@ -18,6 +18,7 @@
     "@travel-suite/affiliates": "workspace:*",
     "@travel-suite/auth": "workspace:*",
     "@travel-suite/blog": "workspace:*",
+    "@travel-suite/cloudinary": "workspace:*",
     "@travel-suite/picturesk-shared": "workspace:*",
     "@travel-suite/utils": "workspace:*",
     "archiver": "^8.0.0",

@@ -8,6 +8,12 @@ import Container from '../components/Container';
 // both need), one primary action, and the promises as a short ticked list. The
 // frame cluster is its own set in data/samples.js (heroShots), picked so the hero
 // and the portfolio below never show the same photo twice.
+const HERO_ALTS = [
+  'AI headshot of a man in a black turtleneck against greenery',
+  'AI headshot of a man in a navy polo in front of a bookshelf',
+  'AI headshot of a man in a light polo in an office',
+];
+
 const PROMISES = [
   'Look-like-you guarantee, or your money back',
   'Three one-time plans, from nine dollars',
@@ -49,7 +55,15 @@ export default function Hero() {
 
         <div className="hero__gallery">
           {frames.map((src, i) => (
-            <Frame key={i} src={src} alt="" className={`hero__frame hero__frame--${i + 1}`} />
+            <Frame
+              key={i}
+              src={src}
+              alt={HERO_ALTS[i] || ''}
+              priority
+              ratio={i === 0 ? 'portrait' : undefined}
+              sizes={i === 0 ? '(max-width: 760px) 100vw, 30vw' : '(max-width: 760px) 50vw, 18vw'}
+              className={`hero__frame hero__frame--${i + 1}`}
+            />
           ))}
         </div>
       </Container>

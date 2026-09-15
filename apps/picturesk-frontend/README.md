@@ -1,30 +1,37 @@
 # picturesk-frontend
 
-The Next.js frontend (App Router), built in **Phase 4 (delivery + UI)**. Styled
-per the root `BRAND.md`: bone/ink surfaces, cobalt as the single accent, Fraunces
-serif display + Inter body, verdict-first copy, photos as the loud element.
+The Next.js frontend (App Router) for Picturesk.ai: the marketing pages, the
+keyword landing pages, the blog, the upload and checkout funnel, the customer
+account area, and the admin dashboard.
 
-Before any UI, design, styling, layout, or copy work here, read `BRAND.md` first.
-See root `CLAUDE.md` for the hard rule.
+Before any UI, design, styling, layout or copy work, read
+`../../docs/picturesk/BRAND.md`. See `CLAUDE.md` in this directory for the hard
+rule and for the SEO limits on titles and meta descriptions.
 
 ## Flow
 
-- `/` upload: dropzone + email + one CTA. On submit it presigns uploads, PUTs the
-  photos DIRECTLY to R2, calls `POST /checkout`, then redirects to Stripe.
-- `/success?orderId=...` (Stripe `success_url`): polls `GET /orders/:id` and walks
-  paid -> training -> generating -> delivered, then shows the results grid with
-  per-image download.
+- `/` 308-redirects to `/ai-headshot-generator`, the canonical product page.
+- `/ai-headshot-generator/select` -> `/upload` -> `/payment`: pick looks and plan,
+  upload selfies (presigned, straight to R2, so bytes never touch this app), then
+  create the order and redirect to Stripe.
+- `/success?orderId=...&t=...` (Stripe `success_url`): polls `GET /orders/:id` and
+  walks paid -> training -> generating -> delivered, then shows the results grid
+  with per-image download. `t` is the order's access token.
 - `/cancel` (Stripe `cancel_url`): calm "no charge" page back to the order.
 
-## Env
+## Landing pages
 
-- `NEXT_PUBLIC_API_BASE_URL` - the Express api origin (default `http://localhost:3001`).
+`/linkedin-headshots`, `/real-estate-agent-headshots` and `/pricing` are built
+from a content object in `data/pages/`, rendered through the same prop-driven
+sections the home page uses. Adding one means a data file, a `page.js` that
+composes sections, and a line in `app/sitemap.js`.
 
 ## Run
 
 ```sh
-pnpm --filter picturesk-frontend dev   # http://localhost:3000
+pnpm dev     # http://localhost:3000
+pnpm build
 ```
 
-The api (`pnpm api`) must be running, and its `WEB_BASE_URL` must point back here
-so Stripe returns to `/success`.
+The backend must be running and `NEXT_PUBLIC_BACKEND_URL` must point at it, or
+`/blog` renders empty.

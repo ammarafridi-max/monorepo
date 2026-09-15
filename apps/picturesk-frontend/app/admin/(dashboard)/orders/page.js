@@ -76,9 +76,12 @@ function OrdersContent() {
     setSelected(new Set());
   }, [urlStatus, urlSearch, urlStuck, page]);
 
-  const { orders, stuckCount, stuckAfterMinutes, isLoadingOrders } = useAdminOrders({
+  const { orders, pagination, totals, stuckCount, stuckAfterMinutes, isLoadingOrders } = useAdminOrders({
     status: urlStatus || undefined,
     search: urlSearch.trim() || undefined,
+    stuck: urlStuck ? '1' : undefined,
+    page,
+    limit: PAGE_SIZE,
   });
 
   function pushParams(p) {
@@ -105,14 +108,12 @@ function OrdersContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [localSearch, urlSearch]);
 
-  // Search is server-side (the list is capped, so filtering here would only ever
-  // search the newest page of orders). Stuck is derived per row, so it stays local.
-  const filtered = urlStuck ? orders.filter((o) => o.stuck) : orders;
-
-  const total = filtered.length;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  // Paging, search and the stuck filter all run on the server; this page only ever
+  // holds the rows it shows.
+  const rows = orders;
+  const total = pagination?.total ?? rows.length;
+  const totalPages = pagination?.totalPages ?? 1;
   const safePage = Math.min(page, totalPages);
-  const rows = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   const selectedRows = rows.filter((o) => selected.has(o.orderId));
   const allOnPageSelected = rows.length > 0 && selectedRows.length === rows.length;
@@ -184,9 +185,9 @@ function OrdersContent() {
     );
   }
 
-  const deliveredRows = filtered.filter((o) => o.status === 'DELIVERED');
-  const paidCents = filtered.reduce((sum, o) => sum + (o.amountPaidCents || 0), 0);
-  const marginCents = deliveredRows.reduce((sum, o) => sum + (o.marginCents || 0), 0);
+  const deliveredCount = totals?.delivered ?? 0;
+  const paidCents = totals?.paidCents ?? 0;
+  const marginCents = totals?.marginCents ?? 0;
 
   return (
     <div className="max-w-7xl mx-auto space-y-5">
@@ -211,7 +212,7 @@ function OrdersContent() {
         ) : (
           <>
             {summaryCard('Orders', String(total), 'Matching the current filters')}
-            {summaryCard('Delivered', String(deliveredRows.length), 'Headshots sent to the customer', 'text-green-700')}
+            {summaryCard('Delivered', String(deliveredCount), 'Headshots sent to the customer', 'text-green-700')}
             {summaryCard('Paid', usd(paidCents), 'Gross across these orders')}
             {summaryCard(
               'Stuck now',

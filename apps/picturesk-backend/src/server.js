@@ -37,7 +37,7 @@ import { RATE_LIMITS, createRateLimiters } from './rateLimit.js';
 import { createBlogRouter, createBlogTagRouter } from '@travel-suite/blog';
 import { createAffiliatesRouter } from '@travel-suite/affiliates';
 import { createAdminSubsystem } from './admin/index.js';
-import { createBlogImageStorage } from './blogImageStorage.js';
+import { createCloudinaryStorage } from '@travel-suite/cloudinary';
 import { createAdminDataRouter } from './admin/adminData.js';
 import { createAdminActionsRouter } from './admin/adminActions.js';
 
@@ -92,6 +92,9 @@ const {
   NODE_ENV = 'development',
   ANTHROPIC_API_KEY,
   BREVO_API_KEY,
+  CLOUDINARY_CLOUD_NAME,
+  CLOUDINARY_API_KEY,
+  CLOUDINARY_API_SECRET,
   BREVO_SENDER = 'Picturesk.ai <hello@picturesk.ai>',
   WEB_BASE_URL = 'http://localhost:3000',
   PORT = 3001,
@@ -238,7 +241,6 @@ function toPublicOrder(order) {
   return {
     orderId: order._id.toString(),
     status: order.status,
-    customerEmail: order.customerEmail,
     // The customer's choices, so the upload/status pages can render a summary.
     // Catalog ids only, never internal prompt fragments.
     selectedLooks: order.selectedLooks ?? [],
@@ -455,9 +457,27 @@ app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), async (r
 
     // c. Transition succeeded -> hand the order to the pipeline exactly once,
     //    at the priority its purchased tier bought (higher tiers jump the queue).
-    const { priority } = getTier(order.tier);
-    await orderPipeline.add('process-order', { orderId }, pipelineJobOpts(orderId, priority));
+    const tier = getTier(order.tier);
+    await orderPipeline.add('process-order', { orderId }, pipelineJobOpts(orderId, tier.priority));
     console.log(`[api] webhook: order ${orderId} PAID and enqueued`);
+
+    // Best effort, after the enqueue: a failed email must not 500 the webhook, or
+    // Stripe would retry a payment that is already processed.
+    if (emailClient) {
+      const token = order.publicToken ? `&t=${order.publicToken}` : '';
+      emailClient
+        .sendPaidEmail({
+          to: order.customerEmail,
+          resultsUrl: `${WEB_BASE_URL}/success?orderId=${orderId}${token}`,
+          orderId,
+          planLabel: tier.label,
+          deliverCount: order.deliverCount ?? tier.deliverCount,
+        })
+        .catch((err) => {
+          console.error(`[api] webhook: paid email for ${orderId} failed:`, err.message);
+          captureError(err, { route: 'webhooks/stripe', stage: 'paid-email' });
+        });
+    }
 
     return res.status(200).json({ received: true });
   } catch (err) {
@@ -668,6 +688,7 @@ app.post('/checkout', checkoutLimiter, async (req, res) => {
     // is written from Stripe in the webhook once payment confirms.
     const order = await Order.create({
       customerEmail: email,
+      publicToken: randomUUID().replace(/-/g, ''),
       selectedLooks,
       selectedAttire,
       gender,
@@ -699,7 +720,7 @@ app.post('/checkout', checkoutLimiter, async (req, res) => {
         },
       ],
       metadata: { orderId },
-      success_url: `${WEB_BASE_URL}/success?orderId=${orderId}`,
+      success_url: `${WEB_BASE_URL}/success?orderId=${orderId}&t=${order.publicToken}`,
       // Cancel returns to the payment step so they can retry (a new order).
       cancel_url: `${WEB_BASE_URL}/ai-headshot-generator/payment`,
     });
@@ -716,11 +737,28 @@ app.post('/checkout', checkoutLimiter, async (req, res) => {
   }
 });
 
+/**
+ * Does this request carry the order's access token?
+ *
+ * An order id is a guessable ObjectId and checkout is anonymous, so the token in
+ * the success/delivery URL is the buyer's only credential. Orders created before
+ * the token existed have none, and those are still served: the alternative is
+ * breaking every delivery link already sitting in a customer's inbox.
+ */
+function orderAuthorized(req, order) {
+  if (!order.publicToken) return true;
+  const provided = String(req.query.t || '');
+  const a = Buffer.from(provided);
+  const b = Buffer.from(order.publicToken);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
 // GET /orders/:id  --  the success page polls this. Returns the PUBLIC view only.
 app.get('/orders/:id', async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ error: 'order not found' });
+    if (!orderAuthorized(req, order)) return res.status(404).json({ error: 'order not found' });
     return res.json(toPublicOrder(order));
   } catch (err) {
     return res.status(400).json({ error: err.message });
@@ -742,6 +780,7 @@ app.get('/orders/:id/download/:index', async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ error: 'order not found' });
+    if (!orderAuthorized(req, order)) return res.status(404).json({ error: 'order not found' });
 
     // Same projection the success page renders: the culled delivered set once
     // DELIVERED, with the legacy fallback to resultImageUrls.
@@ -808,6 +847,7 @@ app.get('/orders/:id/download-all', async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ error: 'order not found' });
+    if (!orderAuthorized(req, order)) return res.status(404).json({ error: 'order not found' });
 
     // Same projection the success page renders: the culled delivered set once
     // DELIVERED, with the legacy fallback to resultImageUrls.
@@ -901,9 +941,14 @@ app.use('/api/admin-users', admin.adminUsersRouter);
  * Content and partners, from the shared travel-suite domains. `guard` is passed
  * as `protect` so the ADMIN_TOKEN break-glass path reaches these too.
  *
- * Blog cover images go to R2 (see blogImageStorage.js) rather than the Cloudinary
- * client the travel brands inject. With no R2 configured the blog still serves
- * and edits; only image upload returns a 500 from the domain's own guard.
+ * Blog cover images go to Cloudinary, the same client and the same shared account
+ * the travel brands use, scoped to the picturesk/blog folder. Customer photos,
+ * training zips and delivered headshots stay on R2: that path is egress-heavy and
+ * holds personal data, and R2 is a bucket we control with no bandwidth meter.
+ *
+ * The folder prefix is the only isolation between brands in that account, so it
+ * must stay 'picturesk/...'. With Cloudinary unset the blog still serves and edits;
+ * only image upload fails, by design.
  *
  * The blog's own GET / and GET /slug/:slug are mounted above its protect call,
  * so a public site can read published posts without a session.
@@ -913,7 +958,13 @@ const sharedAuth = { protect: adminGuard, restrictTo };
 const blogRouter = createBlogRouter({
   db: mongoose.connection,
   auth: sharedAuth,
-  imageStorage: createBlogImageStorage({ storage: adminStorage }),
+  imageStorage: createCloudinaryStorage({
+    cloudName: CLOUDINARY_CLOUD_NAME,
+    apiKey: CLOUDINARY_API_KEY,
+    apiSecret: CLOUDINARY_API_SECRET,
+    logger: console,
+    folder: 'picturesk/blog',
+  }),
   anthropicApiKey: ANTHROPIC_API_KEY,
 });
 const blogTagRouter = createBlogTagRouter({ db: mongoose.connection, auth: sharedAuth });

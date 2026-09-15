@@ -1,4 +1,4 @@
-import { useCases } from '../data/landing';
+import { useCases as defaultUseCases } from '../data/landing';
 import Container from '../components/Container';
 import SectionHeading from '../components/SectionHeading';
 
@@ -10,25 +10,40 @@ import SectionHeading from '../components/SectionHeading';
 // the section a focal point instead of eight identical tiles. Eight entries fill the
 // three-column grid exactly (the lead spans two columns), so the grid never has a
 // hole in it. Data-driven from data/landing.js; no filler, in keeping with BRAND.md.
-export default function UseCases() {
+export default function UseCases({
+  eyebrow = "Who it's for",
+  title = 'Headshots for LinkedIn, resumes, and your team.',
+  lede = 'One set of professional headshots you control, ready for wherever you show up online.',
+  useCases = defaultUseCases,
+  // 'featured' is the home layout: a wide lead panel plus seven tiles, which fills
+  // the three-column grid exactly. Any other count leaves a hole, so a landing page
+  // with four or five entries uses 'grid'.
+  variant = 'featured',
+}) {
   const [lead, ...rest] = useCases;
+  const featured = variant === 'featured';
 
   return (
     <section className="section usecases">
       <Container>
-        <SectionHeading
-          eyebrow="Who it's for"
-          title="Headshots for LinkedIn, resumes, and your team."
-          lede="One set of professional headshots you control, ready for wherever you show up online."
-        />
-        <ul className="usecases__grid">
-          <li className="usecase usecase--lead" key={lead.title}>
-            <h3 className="usecase__title">{lead.title}</h3>
-            <p className="usecase__body">{lead.body}</p>
-          </li>
-          {rest.map((u) => (
-            <li className="usecase" key={u.title}>
-              <h3 className="usecase__title">{u.title}</h3>
+        <SectionHeading eyebrow={eyebrow} title={title} lede={lede} />
+        <ul className={`usecases__grid${featured ? '' : ' usecases__grid--even'}`}>
+          {featured && (
+            <li className={`usecase usecase--lead${lead.href ? ' usecase--link' : ''}`} key={lead.title}>
+              <h3 className="usecase__title">
+                {lead.href ? <a href={lead.href}>{lead.title}</a> : lead.title}
+              </h3>
+              <p className="usecase__body">{lead.body}</p>
+            </li>
+          )}
+          {(featured ? rest : useCases).map((u) => (
+            <li className={`usecase${u.href ? ' usecase--link' : ''}`} key={u.title}>
+              <h3 className="usecase__title">
+                {/* An entry with its own landing page links to it. This is how the
+                    home page feeds equity to the vertical pages instead of being a
+                    dead end. */}
+                {u.href ? <a href={u.href}>{u.title}</a> : u.title}
+              </h3>
               <p className="usecase__body">{u.body}</p>
             </li>
           ))}
