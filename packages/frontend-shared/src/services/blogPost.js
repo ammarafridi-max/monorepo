@@ -2,6 +2,7 @@ import { nullOn404 } from './apiClient.js';
 import { getBlogBySlugApi, getPublishedBlogsApi } from './apiBlog.js';
 import { getBlogTagsApi } from './apiBlogTags.js';
 import { buildMetadata } from '../utils/publicMetadata.js';
+import { cloudinaryUrl } from '../utils/cloudinary.js';
 import { buildBreadcrumbList, buildFAQPage, buildGraph } from '../utils/schema.js';
 
 const byNewest = (a, b) =>
@@ -77,7 +78,7 @@ export async function blogPostMetadata({ slug, siteUrl, fallbackImage = `${siteU
     title: blog.metaTitle || blog.title || 'Blog Post',
     description: blog.metaDescription || blog.excerpt,
     canonical: blogPostCanonical(siteUrl, blog, slug),
-    images: [blog.coverImageUrl || fallbackImage],
+    images: [cloudinaryUrl(blog.coverImageUrl, { width: 1200 }) || fallbackImage],
     type: 'article',
   });
 }

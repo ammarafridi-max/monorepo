@@ -52,7 +52,7 @@ export const pageData = {
         { label: 'Booking types', value: 'Single transfer, return, or hourly' },
         { label: 'Availability', value: '24 hours a day, every day' },
         { label: 'Waiting time', value: '15 minutes free at non-airport pickups' },
-        { label: 'Pricing', value: 'Fixed at booking, no surge' },
+        { label: 'Pricing', value: 'All-inclusive, fixed at booking: tolls and taxes included' },
         { label: 'Cancellation', value: 'Full refund 24 hours or more before pickup' },
       ],
     },

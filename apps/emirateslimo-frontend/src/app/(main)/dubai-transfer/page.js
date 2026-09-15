@@ -45,14 +45,14 @@ export const pageData = {
       answer:
         'A Dubai transfer is a private, chauffeur-driven ride between two addresses in Dubai, booked in advance at a fixed price. Book one when you want a guaranteed car at a set time: hotel to airport, hotel to a venue, a business district run, or a late night return, without a meter, an app surge or a wait at the taxi rank.',
       paragraphs: [
-        'Point to point in Dubai is mostly a question of Sheikh Zayed Road. Deira, Bur Dubai and Downtown sit at one end, the Marina, JBR and Palm Jumeirah at the other, with DIFC and Business Bay in between. Your chauffeur picks the route on the day, including the parallel Al Khail and Mohammed bin Zayed roads when the E11 is slow, and the fare you booked is the fare you pay.',
+        'Point to point in Dubai is mostly a question of Sheikh Zayed Road. Deira, Bur Dubai and Downtown sit at one end, the Marina, JBR and Palm Jumeirah at the other, with DIFC and Business Bay in between. Your chauffeur picks the route on the day, including the parallel Al Khail and Mohammed bin Zayed roads when the E11 is slow, and every Salik gate is already in the fare you booked.',
         'Transfers are private: the vehicle carries your party only. Pickups include 15 minutes of free waiting time, and the chauffeur will call or message on arrival. For a return journey, book both legs together; for several stops, the hourly chauffeur service is the better fit.',
         'Transfers to Abu Dhabi, Sharjah and the other emirates are available too, with dedicated pages for the Dubai to Abu Dhabi route in each direction.',
       ],
       facts: [
         { label: 'Type', value: 'Private, chauffeur-driven, one party per vehicle' },
         { label: 'Waiting time', value: '15 minutes free at pickup' },
-        { label: 'Price', value: 'Fixed at booking, no surge' },
+        { label: 'Price', value: 'All-inclusive, fixed at booking: tolls and taxes included' },
         { label: 'Coverage', value: 'All of Dubai, plus Abu Dhabi and Sharjah' },
         { label: 'Cancellation', value: 'Full refund 24 hours or more before pickup' },
       ],

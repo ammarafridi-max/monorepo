@@ -63,6 +63,7 @@ export default function TermsAndConditions() {
           <p className="text-xl font-extralight">
             <ul className="flex flex-col gap-3 list-decimal pl-5">
               <li className="pl-2">All prices listed on the website are in AED unless stated otherwise.</li>
+              <li className="pl-2">Quoted fares are all-inclusive: Salik and Darb tolls, VAT and any other applicable taxes are included. No amount is collected from the passenger during the journey.</li>
               <li className="pl-2">Payments must be made online through secure methods provided on our website (Stripe, card payments, etc.).</li>
               <li className="pl-2">Refunds follow the cancellation policy below. Duplicate payments, and bookings Emirates Limo cannot deliver because of a system error or an operational issue on our side, are always refunded in full.</li>
               <li className="pl-2">Refunds are processed back to the original payment method within 7 to 14 business days.</li>

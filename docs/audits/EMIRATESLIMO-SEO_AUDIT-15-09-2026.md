@@ -21,8 +21,8 @@ Note for whoever runs the app locally next: `apps/emirateslimo-frontend/.env.dev
 
 | Instrument | Status |
 |---|---|
-| Real browser | **No.** `chrome-devtools` MCP failed to connect. Core Web Vitals, LCP/CLS/INP, tap targets, hydration behaviour and visual rendering are **not measured**. Anything below about performance is inferred from payload sizes, not from a render. |
-| GSC export | **None provided.** Phase 6 skipped. Query, impression and click data is absent; nothing here is based on traffic. |
+| Real browser | **No.** `chrome-devtools` MCP failed to connect. A PageSpeed Insights mobile lab run for the homepage was supplied afterwards (see 1.5a); other pages, tap targets and hydration remain unmeasured. |
+| GSC export | Received after the first pass (3 months, Performance only). See Phase 6. No Indexing export. |
 | Analytics | GA4 is configured (`G-9FH4BVPKVE`) but never initialised in the app (see T-9), so there is no behavioural data either. |
 | Live rendered HTML | Yes. All 26 public routes fetched from the local server and parsed; 4 pages, both crawl files, and 7 redirect cases fetched from production. |
 | Backend API | Yes. `/api/blogs` and `/api/vehicles` queried against the live (shared) database. |
@@ -159,6 +159,19 @@ Every post URL will 404 in production the moment a post is published. Not observ
 - **Four font families** loaded in the root layout: Outfit Variable, Inter Variable, DM Sans Variable, and Google Sans in 4 weights. The prod CSS has 111 `woff2` references and 100 `font-family: Google Sans` rules. Only Outfit and Inter appear in the page CSS more than twice. Drop DM Sans and Google Sans unless something uses them.
 - Images are webp and small (hero 82 KB, service cards 23 KB, logo 3 KB). `images.unoptimized: true` means no responsive `srcset`; acceptable at these sizes.
 - Hero image is a CSS background (not an `<img>`), so no `fetchpriority` hint. Unverified whether it is the LCP element.
+
+### 1.5a PageSpeed Insights (received 15 Sep, 14:09 GST, mobile, homepage, lab data only)
+
+| Metric | Value |
+|---|---|
+| Performance / Accessibility / Best Practices / SEO | 74 / 92 / 100 / 100 |
+| FCP / LCP / TBT / CLS / Speed Index | 1.8 s / **5.1 s** / 200 ms / 0 / 4.9 s |
+| Image delivery | est. savings **3,128 KiB**; total network payload 3,786 KiB |
+| Render-blocking requests | est. savings 450 ms |
+| Unused JavaScript | est. savings 131 KiB |
+| Accessibility | contrast on muted text, icon-only links without a name |
+
+No field data (CrUX) yet, so this is a single lab run. The image finding is the whole story: measured on production, the homepage was loading a 2.2 MB blog cover and six vehicle PNGs of 550 to 755 KB each, straight from Cloudinary with no transform. Fix shipped: `frontend-shared/utils/cloudinary.js` inserts `f_auto,q_auto,w_<n>` into every Cloudinary URL rendered by the shared blog cards, the post page, the OG image and the fleet cards. Spot-checked: the S-Class PNG drops from 755 KB to 113 KB, the cover from 2.2 MB to 59 KB. Width and height attributes added to the logo, service and fleet images; `aria-label` added to the social and WhatsApp icon links. Re-run PSI after the deploy to confirm; the 450 ms of render-blocking CSS (Swiper and Toastify stylesheets in the root layout) is the next item if LCP is still over 2.5 s.
 
 ### 1.6 Structured data
 
@@ -329,7 +342,50 @@ Fixes: add the two orphans to the "Airport Transfers" and "Transfers" dropdowns;
 
 ## Phase 6: GSC opportunities
 
-Skipped. No export provided. Without it the audit cannot say which of the 13 near-duplicate pages Google chose as canonical, whether any are indexed at all, or what queries they draw. Attach a Performance export (pages + queries, 16 months) and a Coverage/Indexing export for the next run.
+Export received later on 15 Sep (Performance, Web, last 3 months: 13 Jun to 12 Sep 2026). No Indexing/Coverage export, so canonical consolidation is still inferred, not observed.
+
+### Headline numbers
+
+| Metric | Value |
+|---|---|
+| Clicks / impressions / CTR / position | 79 / 11,839 / 0.67% / 24.4 |
+| Homepage share | 74 of 79 clicks, 10,350 of 11,839 impressions |
+| All 12 service pages combined | 2 clicks (`/abu-dhabi-airport-transfer` 1, `/contact-us` 1 is not a service page) |
+| Mobile vs desktop | Mobile 44 clicks at position 14.2, CTR 1.65%; desktop 35 clicks at position 31.0, CTR 0.38% |
+| Trend | Daily impressions fell from ~150 in June to ~90 in September; average position slid from ~22 to ~35 over August and September |
+
+The site is a one-page site in Google's eyes. Every service page sits on page 4 to 7 and none of them earns clicks, which is what the 7 to 17 percent uniqueness measured in Phase 3 predicts.
+
+### Brand collision with the airline
+
+The largest query cluster is not this business. "emirates chauffeur service" (503 impressions), "emirates chauffeur" (326), "ek limo" (216), "emirates limousine service" (211), "chauffeur emirates" (153), "emirates airlines chauffeur service" (70), "emirates business class chauffeur service" (60) and dozens of variants with city names (London, Glasgow, Sydney, Hyderabad, Frankfurt) are people looking for the airline's complimentary Chauffeur-drive product for premium cabins. Roughly 2,500 impressions and a handful of clicks come from that intent, and it explains the UK (1,259 impressions), US (1,452) and India (488) rows in the Countries export. The homepage ranks 4 to 13 for these because "Emirates Limo" is a near-match, and those visitors bounce because the site does not answer their question.
+
+Two things follow. First, the homepage CTR (0.71%) and position are being dragged by traffic that was never going to convert; judge the brand on "emirates limo" (11 clicks, position 4.0), "emirates limousine" (8, position 6.6) and "emirates limo service" (3, position 8.2), which are the real branded queries. Second, there is a legitimate content opportunity: one post explaining what the airline's Chauffeur-drive includes, who qualifies, and what to book when you do not, would catch part of that intent honestly and point the rest at a paid transfer. `emirates.com` is already on the citation allowlist. Added as topics 31 and 32 in `topics.json`.
+
+### Non-brand commercial queries (the ones the service pages exist for)
+
+| Query | Impressions | Position | Page that should win |
+|---|---|---|---|
+| limo service dubai | 316 | 41.6 | `/limo-service-dubai` (currently position 69) |
+| limousine service dubai | 180 | 48.6 | same |
+| dubai limousine service | 177 | 38.8 | same |
+| dubai limousine airport transfer | 125 | 51.8 | `/dubai-airport-transfer` (57.1) |
+| limo dubai | 106 | 53.1 | `/limo-service-dubai` |
+| limousine company in dubai | 99 | 68.4 | `/about-us` or `/limo-service-dubai` |
+| limo hire dubai | 62 | 72.3 | `/limo-service-dubai` |
+| car rental dubai with driver | 32 | 65.9 | `/car-hire-with-driver-dubai` (53.7) |
+| private transfer abu dhabi to dubai | 24 | 58.7 | `/abu-dhabi-to-dubai-transfer` (39.2) |
+| abu dhabi to dubai transfer | 22 | 60.0 | same |
+| hourly chauffeur service uae | 2 | 15.0 | `/hourly-chauffeur` (13.9, the best-placed service page) |
+
+"Limo" outranks "chauffeur" in demand by a wide margin, yet `/limo-service-dubai` was the one money page not in the main nav until this audit and had the lowest position of all (69). The unique intro, the nav link and the related-services links shipped today address the on-page side; the off-page side (no reviews, no citations, no links) is untouched and is the ceiling from here.
+
+### What to do with this
+
+1. Watch `/limo-service-dubai`, `/dubai-airport-transfer` and `/abu-dhabi-to-dubai-transfer` in GSC over the next four weeks. If positions do not move off page 4+ after the rewrite is indexed, the remaining cause is authority, not content.
+2. Write the two airline-intent posts (topics 31 and 32).
+3. Request an Indexing export next time; the Pages report above lists 19 URLs with impressions, so at least those are indexed, but it cannot show which duplicates were folded.
+4. Mobile is where the site actually performs (position 14 vs 31). The PSI fixes shipped today (image transforms, dimensions) matter more here than on desktop.
 
 ## Scores
 

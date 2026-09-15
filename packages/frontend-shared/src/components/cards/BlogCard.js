@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cloudinaryUrl } from '../../utils/cloudinary.js';
 import Image from "next/image";
 import { Clock } from "lucide-react";
 
@@ -47,7 +48,7 @@ export default function BlogCard({
       <div className="relative h-48 shrink-0">
         {coverImageUrl ? (
           <Image
-            src={coverImageUrl}
+            src={cloudinaryUrl(coverImageUrl, { width: 800 })}
             alt={title}
             fill
             sizes="(max-width: 768px) 100vw, 33vw"

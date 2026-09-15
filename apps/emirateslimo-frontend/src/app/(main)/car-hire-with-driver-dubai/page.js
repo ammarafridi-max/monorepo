@@ -44,7 +44,7 @@ export const pageData = {
       answer:
         'Yes. Emirates Limo car hire with driver gives you a luxury car and a licensed chauffeur for a transfer, a few hours or a full day, with the price fixed at booking. You never drive, insure, park or refuel anything, and there is no deposit, licence check or fuel return as there would be with a rental.',
       paragraphs: [
-        'Visitors often assume a rental is cheaper until they add parking at the malls and hotels, Salik tolls, fuel, insurance excess and the time spent navigating. With a driver the car waits where you are, the fare is fixed before you travel, and you can work or rest on the move. It also removes the question of whether your home licence is accepted for driving in the UAE.',
+        'Visitors often assume a rental is cheaper until they add parking at the malls and hotels, Salik tolls, fuel, insurance excess and the time spent navigating. With a driver the car waits where you are, the fare is fixed before you travel with tolls included, and you can work or rest on the move. It also removes the question of whether your home licence is accepted for driving in the UAE.',
         'The service suits airport arrivals, day trips to Abu Dhabi or Sharjah, shopping days, and business visits with a run of meetings. For multiple stops, book by the hour; for A to B, book a transfer.',
         'Vehicles are chauffeur-driven only. The fleet covers sedans (Lexus ES300, BMW 7-Series, Mercedes-Benz S-Class), the GMC Yukon SUV and two vans for groups. Child seats are available on request.',
       ],

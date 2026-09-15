@@ -45,7 +45,7 @@ export const pageData = {
       answer:
         'Around 90 minutes from central Dubai to Abu Dhabi city, and closer to an hour if you are only going as far as Yas Island or Zayed International Airport, which sit on the Dubai side of Abu Dhabi. Emirates Limo runs the route door to door, 24/7, with a fixed price at booking and a private vehicle for your party.',
       paragraphs: [
-        'From Dubai the E11 Sheikh Zayed Road runs past Jebel Ali and straight down the coast; the E311 inland route is the alternative when the coast road is heavy. Weekday evenings leaving Dubai are the slow window. Whichever road is used, the fare is fixed when you book, so a slow evening on the E11 does not cost you more.',
+        'From Dubai the E11 Sheikh Zayed Road runs past Jebel Ali and straight down the coast; the E311 inland route is the alternative when the coast road is heavy. Weekday evenings leaving Dubai are the slow window. Whichever road is used, the fare is fixed when you book with Salik and Darb tolls included, so a slow evening on the E11 does not cost you more.',
         'Common bookings are a Dubai hotel to the Sheikh Zayed Grand Mosque and the Louvre for a day out, a corporate run to ADGM, transfers to Yas Marina Circuit for race weekends, and Dubai to AUH for a departure. For a day trip with several stops, the hourly chauffeur service keeps the same car with you.',
         'Choose a sedan for one to four passengers, the GMC Yukon for six, or a van when there is luggage. Child seats are fitted on request.',
       ],
@@ -53,7 +53,7 @@ export const pageData = {
         { label: 'Distance', value: 'About 130 to 140 km to Abu Dhabi city' },
         { label: 'Typical duration', value: 'Around 90 minutes; about an hour to Yas or AUH' },
         { label: 'Roads', value: 'E11 Sheikh Zayed Road or E311, chauffeur decides' },
-        { label: 'Price', value: 'Fixed at booking, no surcharge for traffic' },
+        { label: 'Price', value: 'All-inclusive, fixed at booking: tolls and taxes included' },
         { label: 'Cancellation', value: 'Full refund 24 hours or more before pickup' },
       ],
     },

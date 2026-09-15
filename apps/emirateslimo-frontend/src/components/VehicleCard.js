@@ -1,4 +1,5 @@
 'use client';
+import { cloudinaryUrl } from '@travel-suite/frontend-shared/utils/cloudinary';
 import { useState } from 'react';
 import { MdOutlineLuggage, MdOutlineMan2 } from 'react-icons/md';
 import { FaCircleCheck, FaImage } from 'react-icons/fa6';
@@ -56,7 +57,7 @@ export default function VehicleCard({ vehicle }) {
       {showGallery && (
         <VehicleGallery
           vehicle={`${vehicle?.brand} ${vehicle.model}`}
-          images={[vehicle?.featuredImage, ...(vehicle?.images || [])].filter(Boolean)}
+          images={[vehicle?.featuredImage, ...(vehicle?.images || [])].filter(Boolean).map((url) => cloudinaryUrl(url, { width: 1200 }))}
           showGallery={showGallery}
           setShowGallery={setShowGallery}
         />
@@ -84,7 +85,7 @@ function VehicleTitlePrice({ formatMoney, vehicle, vehiclePrice, tripType, hours
       </div>
       <div className="block lg:hidden bg-white rounded-lg overflow-hidden aspect-video">
         <img
-          src={vehicle?.featuredImage}
+          src={cloudinaryUrl(vehicle?.featuredImage, { width: 800 })}
           className="w-full h-full object-cover"
           alt={`${vehicle?.brand} ${vehicle?.model}`}
         />
@@ -97,7 +98,7 @@ function VehicleImage({ vehicle, setShowGallery }) {
   return (
     <>
       <img
-        src={vehicle?.featuredImage}
+        src={cloudinaryUrl(vehicle?.featuredImage, { width: 800 })}
         alt={`${vehicle?.brand} ${vehicle?.model}`}
         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
       />

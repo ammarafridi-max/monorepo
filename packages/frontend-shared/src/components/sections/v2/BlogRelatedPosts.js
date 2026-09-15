@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { cloudinaryUrl } from '../../../utils/cloudinary.js';
 import Link from "next/link";
 
 function formatDate(value) {
@@ -26,7 +27,7 @@ export default function BlogRelatedPosts({ posts = [], heading = "Keep reading" 
             <div className="relative aspect-3/2 overflow-hidden rounded-xl bg-gray-100">
               {post.coverImageUrl && (
                 <Image
-                  src={post.coverImageUrl}
+                  src={cloudinaryUrl(post.coverImageUrl, { width: 600 })}
                   alt={post.title}
                   fill
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 320px"

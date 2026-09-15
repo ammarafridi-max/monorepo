@@ -14,14 +14,14 @@ export default function Footer() {
       <Container className="py-16 font-outfit">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 border-b border-white/8 pb-12">
           <div className="lg:col-span-4 space-y-5">
-            <img src="/logo-dark.webp" alt="Emirates Limo" className="w-38" />
+            <img src="/logo-dark.webp" alt="Emirates Limo" width={300} height={37} className="w-38 h-auto" />
             <p className="text-white/45 text-[14px] leading-[1.85]">
               Premium airport transfers and chauffeur services across the UAE. Reliable, discreet, and always on time.
             </p>
 
             <div className="flex gap-3 pt-1">
-              <SocialIcon icon={<FaFacebookF />} href="https://www.facebook.com/emirateslimo" />
-              <SocialIcon icon={<FaInstagram />} href="https://www.instagram.com/emirateslimo" />
+              <SocialIcon icon={<FaFacebookF />} href="https://www.facebook.com/emirateslimo" label="Emirates Limo on Facebook" />
+              <SocialIcon icon={<FaInstagram />} href="https://www.instagram.com/emirateslimo" label="Emirates Limo on Instagram" />
             </div>
 
             <div className="pt-3 space-y-2">
@@ -105,12 +105,13 @@ function FooterLink({ to, children }) {
   );
 }
 
-function SocialIcon({ icon, href }) {
+function SocialIcon({ icon, href, label }) {
   return (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
+      aria-label={label}
       className="w-9 h-9 flex items-center justify-center rounded-full border border-white/10 text-white/40 hover:border-accent-500/50 hover:text-accent-400 transition-all duration-300"
     >
       {icon}

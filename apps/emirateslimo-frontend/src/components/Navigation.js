@@ -54,7 +54,7 @@ export default function Navigation() {
         <div className="flex items-center justify-between py-3.5">
           <div className="w-38">
             <Link href="/" className="flex items-center">
-              <img src="/logo-dark.webp" alt="Emirates Limo" className="w-full object-contain" />
+              <img src="/logo-dark.webp" alt="Emirates Limo" width={300} height={37} className="w-full h-auto object-contain" />
             </Link>
           </div>
 

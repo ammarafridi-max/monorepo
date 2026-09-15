@@ -1,4 +1,5 @@
 import { LuUsers, LuLuggage } from 'react-icons/lu';
+import { cloudinaryUrl } from '@travel-suite/frontend-shared/utils/cloudinary';
 
 export default function FleetCard({ vehicle }) {
   const oneHourPrice = vehicle?.pricing?.hourlyRates?.hour1 ?? vehicle?.pricing?.pricePerHour ?? 0;
@@ -9,8 +10,10 @@ export default function FleetCard({ vehicle }) {
 
       <div className="relative aspect-[16/9] overflow-hidden bg-gray-50">
         <img
-          src={vehicle?.featuredImage || '/images/fleet-placeholder.jpg'}
+          src={cloudinaryUrl(vehicle?.featuredImage, { width: 800 }) || '/images/fleet-placeholder.jpg'}
           alt={`${vehicle?.brand} ${vehicle?.model}`}
+          width={800}
+          height={450}
           className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
           loading="lazy"
         />

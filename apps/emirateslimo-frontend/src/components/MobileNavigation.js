@@ -22,6 +22,8 @@ export default function MobileNavigation() {
             src="/logo-dark.webp"
             alt="Emirates Limo Logo"
             title="Emirates Limo Logo"
+            width={300}
+            height={37}
             className="w-full h-auto object-contain"
           />
         </Link>
@@ -41,7 +43,7 @@ export default function MobileNavigation() {
           <div className="fixed inset-0 z-50 flex items-start justify-start">
             <div ref={wrapperRef} className="w-[82%] max-w-sm h-dvh bg-primary-900 border-r border-white/10 flex flex-col overflow-y-auto">
               <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
-                <img src="/logo-dark.webp" alt="Emirates Limo" className="w-32 h-auto object-contain" />
+                <img src="/logo-dark.webp" alt="Emirates Limo" width={300} height={37} className="w-32 h-auto object-contain" />
                 <button
                   onClick={() => setMenuOpen(false)}
                   className="p-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/10 transition-colors"

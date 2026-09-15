@@ -13,6 +13,7 @@ import BlogOfferCard from "../../components/ui/v2/BlogOfferCard";
 import BlogInlineOffer from "../../components/ui/v2/BlogInlineOffer";
 import AuthorBox from "../../components/ui/v2/AuthorBox";
 import { prepareArticleHtml } from "../../utils/articleHtml.js";
+import { cloudinaryUrl } from "../../utils/cloudinary.js";
 
 const INLINE_OFFER_AFTER_HEADING = 2;
 
@@ -29,7 +30,7 @@ export default function BlogPostPage({
   breadcrumbJsonLd,
   breadcrumbPaths = [],
 }) {
-  const image = blog.coverImageUrl || `${siteUrl}/og-image.png`;
+  const image = cloudinaryUrl(blog.coverImageUrl, { width: 1600 }) || `${siteUrl}/og-image.png`;
   const faqs = blog.faqs || [];
 
   const { headings, htmlBefore, htmlAfter, didSplit } = prepareArticleHtml(

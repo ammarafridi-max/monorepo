@@ -163,7 +163,7 @@ export const airportTransferFaqs = [
   {
     question: 'Is the price fixed for Dubai airport transfers?',
     answer:
-      'Yes. Prices are fixed at the time of booking, with no surge pricing, hidden fees, or extra charges for traffic or flight delays.',
+      'Yes. Prices are fixed at the time of booking and all-inclusive: Salik tolls and VAT are in the price, with no surge pricing, hidden fees, or extra charges for traffic or flight delays.',
   },
 ];
 
@@ -231,7 +231,7 @@ export const dubaiTransferFaqs = [
   {
     question: 'Are Dubai transfer prices fixed?',
     answer:
-      'Yes. Dubai transfer prices are confirmed at the time of booking, with no hidden charges, no surge pricing, and transparent luxury service rates.',
+      'Yes. Dubai transfer prices are confirmed at the time of booking and all-inclusive: Salik tolls and VAT are in the price, with no hidden charges and no surge pricing.',
   },
   {
     question: 'Can I modify or cancel my Dubai transfer booking?',
@@ -284,7 +284,7 @@ export const abuDhabiAirportFaqs = [
   {
     question: 'Is the price for an Abu Dhabi airport transfer fixed?',
     answer:
-      'Yes. The price is confirmed when you book. There is no surge pricing and no extra charge for traffic or flight delays.',
+      'Yes. The price is confirmed when you book and all-inclusive: Darb and Salik tolls and VAT are in the price, with no surge pricing and no extra charge for traffic or flight delays.',
   },
   {
     question: 'Can I cancel or change my Abu Dhabi airport transfer?',

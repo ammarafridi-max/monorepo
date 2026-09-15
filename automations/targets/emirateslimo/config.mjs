@@ -100,6 +100,10 @@ export const TARGET = {
       message: 'Emirates Limo is chauffeur-driven only: there is no self-drive rental',
     },
     {
+      pattern: /\b(?:toll|Salik|Darb)s?\b[^.]{0,60}\b(?:extra|added|on top|not included|excluded|passed on to you)\b/i,
+      message: 'fares are all-inclusive: tolls and taxes are included, never described as an extra',
+    },
+    {
       pattern: /\b(?:12|48|72)\s*hours?\b[^.]{0,40}\b(?:cancel|refund)|\b(?:cancel|refund)[^.]{0,40}\b(?:12|48|72)\s*hours?\b/i,
       message: 'the cancellation window is 24 hours: full refund before, no refund after',
     },

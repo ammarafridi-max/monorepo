@@ -17,6 +17,7 @@ export default function WhatsAppCTA() {
         href={whatsappUrl}
         target="_blank"
         rel="noopener noreferrer"
+        aria-label="Chat with Emirates Limo on WhatsApp"
         className="flex items-center gap-2 bg-green-500 text-white py-2.5 px-5 rounded-full font-light shadow-lg cursor-pointer duration-300 hover:bg-green-600"
       >
         <FaWhatsapp />

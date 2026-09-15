@@ -53,7 +53,7 @@ export const pageData = {
         { label: 'To', value: 'Any hotel, resort or residence in Dubai' },
         { label: 'Meet and greet', value: 'Name board in arrivals, luggage assistance' },
         { label: 'Waiting time', value: '60 minutes free from landing' },
-        { label: 'Price', value: 'Fixed at booking, no surge or delay charges' },
+        { label: 'Price', value: 'All-inclusive, fixed at booking: tolls, taxes, no delay charges' },
       ],
     },
     benefits: {

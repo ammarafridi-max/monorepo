@@ -45,14 +45,14 @@ export const pageData = {
         'Plan for around 90 minutes door to door from Abu Dhabi city to Dubai International (DXB), and a little less to Al Maktoum (DWC), which sits on the Abu Dhabi side of Dubai. Emirates Limo times the pickup to your flight, fixes the price at booking, and drives you in a private vehicle straight to your terminal.',
       paragraphs: [
         'The route is the Sheikh Zayed Road (E11) or the Sheikh Mohammed bin Zayed Road (E311) corridor, roughly 130 to 140 kilometres depending on where in Abu Dhabi you start. Weekday mornings towards Dubai and weekday evenings towards Abu Dhabi are the slow periods, so for a morning departure from DXB we recommend leaving earlier than the 90 minute estimate. Your chauffeur monitors traffic and picks the faster of the two highways on the day.',
-        'The fare is fixed when you book. Heavy traffic on the day, a slow queue at the airport or a late change of terminal does not change what you pay.',
+        'The fare is fixed when you book and it is all-inclusive: Salik and Darb tolls and VAT are in the price, and nothing is collected in the car. Heavy traffic on the day, a slow queue at the airport or a late change of terminal does not change what you pay.',
         'If you are flying out of DWC, tell us at booking: it is nearer to Jebel Ali than to Dubai city, so the drive is shorter and the pickup time changes accordingly. Airport drop-offs go to the departures kerb for your airline.',
       ],
       facts: [
         { label: 'Route', value: 'Abu Dhabi to DXB or DWC via E11 or E311' },
         { label: 'Distance', value: 'About 130 to 140 km to DXB' },
         { label: 'Typical duration', value: 'Around 90 minutes, longer at peak hours' },
-        { label: 'Price', value: 'Fixed at booking, no traffic surcharge' },
+        { label: 'Price', value: 'All-inclusive, fixed at booking: tolls and taxes included' },
         { label: 'Pickup', value: 'Timed to your departure, any Abu Dhabi address' },
       ],
     },

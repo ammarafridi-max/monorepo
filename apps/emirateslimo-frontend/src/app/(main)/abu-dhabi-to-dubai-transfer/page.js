@@ -53,7 +53,7 @@ export const pageData = {
         { label: 'Distance', value: 'About 130 to 140 km' },
         { label: 'Typical duration', value: 'Around 90 minutes, up to 2 hours at peak' },
         { label: 'Roads', value: 'E11 Sheikh Zayed Road or E311, chauffeur decides' },
-        { label: 'Price', value: 'Fixed at booking, no surcharge for traffic' },
+        { label: 'Price', value: 'All-inclusive, fixed at booking: tolls and taxes included' },
         { label: 'Cancellation', value: 'Full refund 24 hours or more before pickup' },
       ],
     },

@@ -53,7 +53,7 @@ The passenger and luggage counts above are the site's figures. Do not invent cap
 - **Hours:** 24 hours a day, every day, including public holidays.
 - **Airport pickups:** the chauffeur waits inside the arrivals hall with a name board, helps with luggage, and walks the passenger to the car. The flight is tracked and the pickup time moves automatically if it lands early or late, at no extra charge.
 - **Waiting time:** 60 minutes free at airports, counted from the actual landing time. 15 minutes free for every other pickup.
-- **Pricing:** every fare is fixed at the moment of booking. No surge pricing, no extra charge for traffic or flight delays. The site does not publish transfer fares, so **never quote a transfer price**; the reader gets an instant quote on the service page. The only public rate is the hourly chauffeur service, **from AED 150 per hour**.
+- **Pricing:** every fare is fixed at the moment of booking and is all-inclusive: Salik and Darb tolls, VAT and any other taxes are included, and nothing is collected in the car. No surge pricing, no extra charge for traffic or flight delays. The site does not publish transfer fares, so **never quote a transfer price**; the reader gets an instant quote on the service page. The only public rate is the hourly chauffeur service, **from AED 150 per hour**.
 - **Cancellation:** cancel 24 hours or more before the pickup time for a full refund. Cancellations within 24 hours of pickup, and no-shows, are charged in full. There is no other tier.
 - **Payment:** online by card through Stripe, with instant confirmation by email.
 - **Child seats:** available on request at booking.
