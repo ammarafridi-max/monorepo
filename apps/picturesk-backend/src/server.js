@@ -86,9 +86,9 @@ const {
   STRIPE_SECRET_KEY,
   STRIPE_WEBHOOK_SECRET,
   ADMIN_TOKEN,
-  ADMIN_JWT_SECRET,
-  ADMIN_JWT_EXPIRES_IN = '7d',
-  ADMIN_COOKIE_EXPIRES_DAYS = '7',
+  JWT_SECRET,
+  JWT_EXPIRES_IN = '14d',
+  JWT_COOKIE_EXPIRES_IN = '14',
   NODE_ENV = 'development',
   ANTHROPIC_API_KEY,
   BREVO_API_KEY,
@@ -161,6 +161,14 @@ async function mapWithLimit(items, limit, fn) {
   await Promise.all(Array.from({ length: size }, worker));
   return results;
 }
+
+// The admin session settings share the travel backends' names. The ADMIN_JWT_*
+// names still work until the Fly secrets are renamed, with a warning.
+const legacyJwtSecret = !JWT_SECRET && process.env.ADMIN_JWT_SECRET;
+const jwtSecret = JWT_SECRET || process.env.ADMIN_JWT_SECRET;
+const jwtExpiresIn = process.env.JWT_EXPIRES_IN ? JWT_EXPIRES_IN : process.env.ADMIN_JWT_EXPIRES_IN || JWT_EXPIRES_IN;
+const jwtCookieExpiresIn = Number(process.env.JWT_COOKIE_EXPIRES_IN || process.env.ADMIN_COOKIE_EXPIRES_DAYS || JWT_COOKIE_EXPIRES_IN) || 14;
+if (legacyJwtSecret) console.warn('[api] ADMIN_JWT_SECRET is deprecated; set JWT_SECRET (and JWT_EXPIRES_IN, JWT_COOKIE_EXPIRES_IN)');
 
 const mongoose = await connectMongo(MONGODB_URI);
 console.log('[api] connected to MongoDB');
@@ -511,14 +519,14 @@ app.use(globalLimiter);
  * /auth/me returns the current admin. The subsystem also hands back the combined
  * guard used by the /admin data and action routes.
  *
- * Disabled gracefully when ADMIN_JWT_SECRET is unset (503), exactly like the
+ * Disabled gracefully when JWT_SECRET is unset (503), exactly like the
  * ADMIN_TOKEN break-glass route, so a deploy without the secret still boots.
  */
 const admin = createAdminSubsystem({
   db: mongoose.connection,
-  jwtSecret: ADMIN_JWT_SECRET,
-  jwtExpiresIn: ADMIN_JWT_EXPIRES_IN,
-  cookieExpiresInDays: Number(ADMIN_COOKIE_EXPIRES_DAYS) || 7,
+  jwtSecret,
+  jwtExpiresIn,
+  cookieExpiresInDays: jwtCookieExpiresIn,
   nodeEnv: NODE_ENV,
   adminToken: ADMIN_TOKEN,
   isTokenAuthorized: adminAuthorized,
@@ -534,7 +542,7 @@ app.use('/api/auth', admin.authRouter);
 if (admin.authEnabled) {
   console.log('[api] admin auth ON (cookie sessions)');
 } else {
-  console.warn('[api] ADMIN_JWT_SECRET unset: admin auth disabled (/auth returns 503)');
+  console.warn('[api] JWT_SECRET unset: admin auth disabled (/auth returns 503)');
 }
 
 /**

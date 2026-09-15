@@ -36,7 +36,7 @@ export function createAdminSubsystem({
     AdminUser = built.AdminUser;
   } else {
     authRouter = Router().use((_req, res) =>
-      res.status(503).json({ status: 'error', message: 'admin auth disabled: set ADMIN_JWT_SECRET' })
+      res.status(503).json({ status: 'error', message: 'admin auth disabled: set JWT_SECRET' })
     );
     // Role checks still work on the ADMIN_TOKEN identity when cookie auth is off.
     restrictTo = (...roles) => (req, res, next) =>
@@ -59,7 +59,7 @@ export function createAdminSubsystem({
     if (!adminToken) {
       return res.status(503).json({
         status: 'error',
-        message: 'admin disabled: set ADMIN_JWT_SECRET (staff login) or ADMIN_TOKEN',
+        message: 'admin disabled: set JWT_SECRET (staff login) or ADMIN_TOKEN',
       });
     }
     return res.status(401).json({ status: 'fail', message: 'unauthorized' });
@@ -74,7 +74,7 @@ export function createAdminSubsystem({
     adminUsersRouter = createAdminUsersRouter({ AdminUser, auth: { protect: guard, restrictTo } });
   } else {
     adminUsersRouter = Router().use((_req, res) =>
-      res.status(503).json({ status: 'error', message: 'admin users disabled: set ADMIN_JWT_SECRET' })
+      res.status(503).json({ status: 'error', message: 'admin users disabled: set JWT_SECRET' })
     );
   }
 

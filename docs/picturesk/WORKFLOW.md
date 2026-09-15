@@ -102,7 +102,7 @@ its own login. Two roles: **admin** (full access) and **support** (read-only).
 
 ### Log in (`/admin/login`) -> "Sign in"
 Checks email and password, sets the admin session cookie, and lands you on the
-Overview. Requires `ADMIN_JWT_SECRET` on the API, otherwise login is disabled (503).
+Overview. Requires `JWT_SECRET` on the API, otherwise login is disabled (503).
 
 ### Read-only views
 - **Overview** (`/admin`): revenue, delivered margin, compute cost, counts by

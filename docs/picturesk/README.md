@@ -411,7 +411,7 @@ monorepo, right-sized to this repo (layered modules in `apps/picturesk-backend`,
 - **Auth (api):** `POST /auth/login` (email + password) issues a JWT in an httpOnly
   cookie `jwt` (`{id, role, type:'admin'}`); `GET /auth/me`, `POST
 /auth/logout`, `PATCH /auth/update-password`. `protect` + `restrictTo(...roles)`
-  guard the routes. Set `ADMIN_JWT_SECRET` (`openssl rand -hex 32`) on the api;
+  guard the routes. Set `JWT_SECRET` (`openssl rand -hex 32`) on the api;
   unset means `/auth` returns 503 (disabled).
 - **Data (api, read-only):** `GET /admin/orders` (list, `?status`/`?limit`, stuck +
   margin), `/admin/orders/:id` (full detail), `/admin/stats` (revenue, compute cost,
@@ -439,9 +439,8 @@ monorepo, right-sized to this repo (layered modules in `apps/picturesk-backend`,
   - password). Cookie is the credential (`credentials:'include'`); a client guard
     redirects to login and hides admin-only nav from `support`. Not indexed. The
     customer topbar/footer are hidden on `/admin`.
-- **Bootstrap the first admin:** set `ADMIN_JWT_SECRET` and a strong `SEED_PASSWORD`
-  (plus optional `SEED_NAME/SEED_USERNAME/SEED_EMAIL`), then run
-  created directly against the database (the seed script has been removed).
+- **Bootstrap the first admin:** `pnpm --filter @travel-suite/picturesk-backend seed-admin -- --email you@picturesk.ai --name "Your Name" --password '...'`
+  (the same shared script every backend uses; `--reset-password` on an existing email sets a new password).
   Cross-origin note: in production the api and web are separate origins, so the admin
   cookie is `SameSite=None; Secure` and CORS runs with credentials pinned to
   `WEB_BASE_URL`. Both must be HTTPS for the cookie to stick.

@@ -10,7 +10,8 @@
     "migrate-admin-users:dev": "node --env-file=.env.development scripts/migrate-admin-users.js",
     "migrate-admin-users:prod": "node --env-file=.env.production scripts/migrate-admin-users.js",
     "resend-confirmations:dev": "node --env-file=.env.development scripts/resend-booking-confirmations.js",
-    "resend-confirmations:prod": "node --env-file=.env.production scripts/resend-booking-confirmations.js"
+    "resend-confirmations:prod": "node --env-file=.env.production scripts/resend-booking-confirmations.js",
+    "seed-admin": "node --env-file=.env.production ../../packages/domains/admin-users/scripts/seed-admin.mjs"
   },
   "dependencies": {
     "@travel-suite/admin-users": "workspace:*",
