@@ -17,8 +17,8 @@ export default {
   mongoUri: process.env.MONGO_URI,
 
   jwtSecret: process.env.JWT_SECRET,
-  jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? "7d",
-  jwtCookieExpiresInDays: parseNumber(process.env.JWT_COOKIE_EXPIRES_IN, 7),
+  jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? "30d",
+  jwtCookieExpiresInDays: parseNumber(process.env.JWT_COOKIE_EXPIRES_IN, 30),
 
   brevoApiKey: process.env.BREVO_API_KEY,
 

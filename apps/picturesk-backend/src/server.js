@@ -87,8 +87,8 @@ const {
   STRIPE_WEBHOOK_SECRET,
   ADMIN_TOKEN,
   JWT_SECRET,
-  JWT_EXPIRES_IN = '14d',
-  JWT_COOKIE_EXPIRES_IN = '14',
+  JWT_EXPIRES_IN = '30d',
+  JWT_COOKIE_EXPIRES_IN = '30',
   NODE_ENV = 'development',
   ANTHROPIC_API_KEY,
   BREVO_API_KEY,
@@ -167,7 +167,7 @@ async function mapWithLimit(items, limit, fn) {
 const legacyJwtSecret = !JWT_SECRET && process.env.ADMIN_JWT_SECRET;
 const jwtSecret = JWT_SECRET || process.env.ADMIN_JWT_SECRET;
 const jwtExpiresIn = process.env.JWT_EXPIRES_IN ? JWT_EXPIRES_IN : process.env.ADMIN_JWT_EXPIRES_IN || JWT_EXPIRES_IN;
-const jwtCookieExpiresIn = Number(process.env.JWT_COOKIE_EXPIRES_IN || process.env.ADMIN_COOKIE_EXPIRES_DAYS || JWT_COOKIE_EXPIRES_IN) || 14;
+const jwtCookieExpiresIn = Number(process.env.JWT_COOKIE_EXPIRES_IN || process.env.ADMIN_COOKIE_EXPIRES_DAYS || JWT_COOKIE_EXPIRES_IN) || 30;
 if (legacyJwtSecret) console.warn('[api] ADMIN_JWT_SECRET is deprecated; set JWT_SECRET (and JWT_EXPIRES_IN, JWT_COOKIE_EXPIRES_IN)');
 
 const mongoose = await connectMongo(MONGODB_URI);

@@ -18,8 +18,8 @@ export default {
 
   jwtSecret: process.env.JWT_SECRET,
   anthropicApiKey: process.env.ANTHROPIC_API_KEY,
-  jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? "7d",
-  jwtCookieExpiresInDays: parseNumber(process.env.JWT_COOKIE_EXPIRES_IN, 7),
+  jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? "30d",
+  jwtCookieExpiresInDays: parseNumber(process.env.JWT_COOKIE_EXPIRES_IN, 30),
 
   brevoApiKey: process.env.BREVO_API_KEY,
   brevoTicketListId: process.env.BREVO_TICKET_LIST_ID,

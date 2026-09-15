@@ -439,8 +439,8 @@ monorepo, right-sized to this repo (layered modules in `apps/picturesk-backend`,
   - password). Cookie is the credential (`credentials:'include'`); a client guard
     redirects to login and hides admin-only nav from `support`. Not indexed. The
     customer topbar/footer are hidden on `/admin`.
-- **Bootstrap the first admin:** `pnpm --filter @travel-suite/picturesk-backend seed-admin -- --email you@picturesk.ai --name "Your Name" --password '...'`
-  (the same shared script every backend uses; `--reset-password` on an existing email sets a new password).
+- **Bootstrap the first admin:** create the first `admin-users` document directly in the database,
+  or have an existing admin add the account from `/admin/users`.
   Cross-origin note: in production the api and web are separate origins, so the admin
   cookie is `SameSite=None; Secure` and CORS runs with credentials pinned to
   `WEB_BASE_URL`. Both must be HTTPS for the cookie to stick.
