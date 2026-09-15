@@ -1,6 +1,7 @@
 import { SITE_URL } from "@/lib/schema";
 import { getPublishedBlogsApi } from "@travel-suite/frontend-shared/services/apiBlog";
 import { getBlogTagsApi } from "@travel-suite/frontend-shared/services/apiBlogTags";
+import { getAuthorsApi } from "@travel-suite/frontend-shared/services/apiAuthors";
 
 // Regenerate hourly so blog/tag entries appear once the backend is reachable
 // at runtime (the build-time Docker container usually can't reach it).
@@ -233,5 +234,20 @@ export default async function sitemap() {
     console.error("[sitemap] fetch failed:", err);
   }
 
-  return [...staticEntries, ...blogEntries, ...tagEntries];
+  let authorEntries = [];
+  try {
+    const authors = await getAuthorsApi();
+    authorEntries = (authors || [])
+      .filter((author) => author?.authorProfile?.slug)
+      .map((author) => ({
+        url: `${SITE_URL}/authors/${author.authorProfile.slug}`,
+        lastModified: author.updatedAt || now,
+        changeFrequency: "monthly",
+        priority: 0.5,
+      }));
+  } catch (err) {
+    console.error("[sitemap] authors fetch failed:", err);
+  }
+
+  return [...staticEntries, ...blogEntries, ...tagEntries, ...authorEntries];
 }

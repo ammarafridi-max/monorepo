@@ -62,11 +62,12 @@ export const revalidate = 3600;
 export default async function Page({ searchParams }) {
   const resolvedSearchParams = await searchParams;
   const currentPage = Math.max(1, Number(resolvedSearchParams?.page || 1) || 1);
+  const canonical = currentPage > 1 ? `${meta.canonical}?page=${currentPage}` : meta.canonical;
 
   let blogs = [];
   let pagination = null;
   try {
-    const data = await getPublishedBlogsApi({ page: currentPage, limit: 9 });
+    const data = await getPublishedBlogsApi({ page: currentPage, limit: 15 });
     blogs = data?.blogs || [];
     pagination = data?.pagination || null;
   } catch {
@@ -81,7 +82,7 @@ export default async function Page({ searchParams }) {
   const schema = buildGraph([
     buildOrganization(),
     buildWebsite(),
-    buildWebPage({ canonical: meta.canonical, title: meta.title, description: meta.description }),
+    buildWebPage({ canonical, title: meta.title, description: meta.description }),
     buildBlog({ canonical: meta.canonical, title: meta.title, description: meta.description }),
   ]);
   const breadcrumbJsonLd = buildBreadcrumbList({ paths: breadcrumbPaths });

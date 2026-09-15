@@ -1,144 +1,55 @@
 import { notFound } from 'next/navigation';
-import { nullOn404 } from '@travel-suite/frontend-shared/services/apiClient';
 import {
-  getBlogBySlugApi,
-  getPublishedBlogsApi,
-} from '@travel-suite/frontend-shared/services/apiBlog';
-import { getBlogTagsApi } from '@travel-suite/frontend-shared/services/apiBlogTags';
-import {
-  SITE_URL,
-  buildBlogPosting,
-  buildBreadcrumbList,
-  buildFAQPage,
-  buildGraph,
-  buildOrganization,
-  buildPerson,
-  buildWebPage,
-  buildWebsite,
-} from '@/lib/schema';
+  blogPostMetadata,
+  blogPostStaticParams,
+  buildBlogPostSchema,
+  loadBlogPost,
+} from '@travel-suite/frontend-shared/services/blogPost';
 import BlogPostPage from '@travel-suite/frontend-shared/pages/client/BlogPostPage';
+import * as schema from '@/lib/schema';
 import { getBlogOffers, getBlogInlineOffer } from '@/config/blogOffers';
+
+const { SITE_URL } = schema;
+
+// Related posts prefer the most specific of these tags; anything else falls
+// back to the post's first tag.
+const TAG_PRIORITY = ['Schengen Visa', 'Visa Documents', 'Visa Tips', 'Europe Travel', 'UAE Travel'];
 
 // Nothing on this route's ancestor chain (including app/loading.js) may define a
 // loading.js. A loading.js opens a Suspense boundary, so Next flushes the HTML
 // shell with a 200 before this component runs and notFound() can no longer set
-// the status — that is what turned bad slugs into indexable soft 404s.
+// the status, which turns bad slugs into indexable soft 404s.
 export const revalidate = 300;
 
-export async function generateStaticParams() {
-  try {
-    const data = await getPublishedBlogsApi({ page: 1, limit: 1000 });
-    const blogs = data?.blogs || [];
-    return blogs
-      .map((blog) => blog?.slug)
-      .filter(Boolean)
-      .map((slug) => ({ slug }));
-  } catch {
-    return [];
-  }
-}
+export const generateStaticParams = blogPostStaticParams;
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  const blog = await getBlogBySlugApi(slug).catch(nullOn404);
-
-  if (!blog) {
-    return {
-      title: 'Blog Post Not Found',
-      robots: { index: false, follow: false },
-    };
-  }
-
-  const title = blog.metaTitle || blog.title || 'Blog Post';
-  const description =
-    blog.metaDescription || blog.excerpt || 'Read the latest visa guide from VisaWadi.';
-  const canonical = `${SITE_URL}/blog/${blog.slug || slug}`;
-  const image = blog.coverImageUrl || `${SITE_URL}/og-image.png`;
-
-  return {
-    title,
-    description,
-    alternates: { canonical },
-    robots: { index: true, follow: true },
-    openGraph: { type: 'article', url: canonical, title, description, images: [image] },
-    twitter: { card: 'summary_large_image', title, description, images: [image] },
-  };
+  return blogPostMetadata({ slug, siteUrl: SITE_URL });
 }
 
 export default async function Page({ params }) {
   const { slug } = await params;
-
-  const [blog, recentData, allBlogTags] = await Promise.all([
-    getBlogBySlugApi(slug).catch(nullOn404),
-    getPublishedBlogsApi({ page: 1, limit: 20 }).catch(() => ({ blogs: [] })),
-    getBlogTagsApi().catch(() => []),
-  ]);
-
+  const { blog, recentPosts, relatedPosts, allBlogTags } = await loadBlogPost(slug, {
+    tagPriority: TAG_PRIORITY,
+  });
   if (!blog) notFound();
 
-  const recentPosts = (recentData?.blogs || [])
-    .filter((item) => item?._id !== blog?._id)
-    .sort((a, b) => new Date(b?.publishedAt || b?.createdAt || 0) - new Date(a?.publishedAt || a?.createdAt || 0))
-    .slice(0, 3);
-
-  // Further reading is matched on the post's own tags. The most specific tag is
-  // the least common one, so prefer that over whatever happens to be first.
-  const relatedPosts = await getRelatedPosts(blog, recentData?.blogs || []);
-
-  const title = blog.metaTitle || blog.title || 'Blog Post';
-  const description =
-    blog.metaDescription || blog.excerpt || 'Read the latest visa guide from VisaWadi.';
-  const canonical = `${SITE_URL}/blog/${blog.slug || slug}`;
-  const faqs = blog.faqs || [];
-
-  const breadcrumbPaths = [
-    { label: 'Home', path: '/' },
-    { label: 'Blog', path: '/blog' },
-    { label: blog.title, path: `/blog/${blog.slug || slug}` },
-  ];
-
-  const graph = buildGraph([
-    buildOrganization(),
-    buildWebsite(),
-    buildWebPage({ canonical, title, description }),
-    buildBlogPosting({
-      canonical,
-      title: blog.title,
-      description: blog.excerpt || description,
-      image: blog.coverImageUrl,
-      datePublished: blog.publishedAt,
-      dateModified: blog.updatedAt,
-      authorName: blog.author?.name,
-      authorSlug: blog.author?.authorProfile?.slug,
-    }),
-    ...(blog.author?.authorProfile?.slug
-      ? [
-          buildPerson({
-            name: blog.author.name,
-            slug: blog.author.authorProfile.slug,
-            jobTitle: blog.author.authorProfile.jobTitle,
-            bio: blog.author.authorProfile.bio,
-            image: blog.author.authorProfile.avatarUrl,
-            sameAs: blog.author.authorProfile.sameAs,
-            expertise: blog.author.authorProfile.expertise,
-          }),
-        ]
-      : []),
-    ...(faqs.length > 0
-      ? [buildFAQPage({ canonical, title: `${blog.title} FAQs`, description, faqs })]
-      : []),
-  ]);
-
-  const breadcrumbJsonLd = buildBreadcrumbList({ paths: breadcrumbPaths });
+  const { canonical, breadcrumbPaths, graph, breadcrumbJsonLd } = buildBlogPostSchema({
+    schema,
+    siteUrl: SITE_URL,
+    blog,
+    slug,
+  });
 
   return (
     <BlogPostPage
       blog={blog}
       recentPosts={recentPosts}
       relatedPosts={relatedPosts}
+      allBlogTags={allBlogTags}
       offers={getBlogOffers(blog)}
       inlineOffer={getBlogInlineOffer(blog)}
-      allBlogTags={allBlogTags}
       canonical={canonical}
       siteUrl={SITE_URL}
       graph={graph}
@@ -146,40 +57,4 @@ export default async function Page({ params }) {
       breadcrumbPaths={breadcrumbPaths}
     />
   );
-}
-
-// Tags on these posts are broad, so the rarest tag on the post is the most
-// specific signal available. Falls back to recent posts when a tag query comes
-// back thin, so the grid is never half-empty.
-const TAG_PRIORITY = ['Schengen Visa', 'Visa Documents', 'Visa Tips', 'Europe Travel', 'UAE Travel'];
-
-async function getRelatedPosts(blog, fallbackPool = []) {
-  // tags come back populated, so compare on the name and query on the slug.
-  const tags = (Array.isArray(blog?.tags) ? blog.tags : [])
-    .map((t) => (typeof t === 'string' ? { name: t, slug: t } : t))
-    .filter((t) => t?.name);
-  const primary =
-    tags.find((t) => TAG_PRIORITY.includes(t.name)) || tags[0] || null;
-  const primaryTag = primary ? primary.slug || primary.name : null;
-
-  let pool = [];
-  if (primaryTag) {
-    const data = await getPublishedBlogsApi({ page: 1, limit: 12, tag: primaryTag }).catch(
-      () => ({ blogs: [] }),
-    );
-    pool = data?.blogs || [];
-  }
-
-  const seen = new Set([String(blog?._id)]);
-  const picked = [];
-
-  for (const candidate of [...pool, ...fallbackPool]) {
-    const id = String(candidate?._id || '');
-    if (!id || seen.has(id)) continue;
-    seen.add(id);
-    picked.push(candidate);
-    if (picked.length === 3) break;
-  }
-
-  return picked;
 }

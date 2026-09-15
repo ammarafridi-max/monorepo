@@ -17,6 +17,8 @@ export const {
   buildBlogPosting,
   buildService,
   buildProduct,
+  buildPerson,
+  buildProfilePage,
 } = createSchemaBuilders({
   siteUrl: SITE_URL,
   siteName: 'Travl',

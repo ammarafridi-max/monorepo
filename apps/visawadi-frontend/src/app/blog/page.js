@@ -34,30 +34,45 @@ const breadcrumbPaths = [
   { label: "Blog", path: "/blog" },
 ];
 
-export const metadata = {
-  title: meta.title,
-  description: meta.description,
-  alternates: { canonical: meta.canonical },
-  robots: { index: true, follow: true },
-  openGraph: {
-    url: meta.canonical,
-    title: meta.title,
+const pageNumberFrom = (searchParams) =>
+  Math.max(1, Number(searchParams?.page || 1) || 1);
+
+// Paginated listings must be self-canonical. Pointing page 2+ at /blog told
+// Google they were duplicates and suppressed the posts only reachable there.
+const canonicalForPage = (page) =>
+  page > 1 ? `${meta.canonical}?page=${page}` : meta.canonical;
+
+export async function generateMetadata({ searchParams }) {
+  const page = pageNumberFrom(await searchParams);
+  const canonical = canonicalForPage(page);
+  const title = page > 1 ? `${meta.title} | Page ${page}` : meta.title;
+
+  return {
+    title,
     description: meta.description,
-    images: [`${SITE_URL}/og-image.png`],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: meta.title,
-    description: meta.description,
-    images: [`${SITE_URL}/og-image.png`],
-  },
-};
+    alternates: { canonical },
+    robots: { index: true, follow: true },
+    openGraph: {
+      url: canonical,
+      title,
+      description: meta.description,
+      images: [`${SITE_URL}/og-image.png`],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description: meta.description,
+      images: [`${SITE_URL}/og-image.png`],
+    },
+  };
+}
 
 export const revalidate = 3600;
 
 export default async function Page({ searchParams }) {
   const resolvedSearchParams = await searchParams;
-  const currentPage = Math.max(1, Number(resolvedSearchParams?.page || 1) || 1);
+  const currentPage = pageNumberFrom(resolvedSearchParams);
+  const canonical = canonicalForPage(currentPage);
 
   let blogs = [];
   let pagination = null;
@@ -71,7 +86,7 @@ export default async function Page({ searchParams }) {
     buildOrganization(),
     buildWebsite(),
     buildWebPage({
-      canonical: meta.canonical,
+      canonical,
       title: meta.title,
       description: meta.description,
     }),

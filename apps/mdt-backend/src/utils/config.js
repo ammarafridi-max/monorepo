@@ -17,6 +17,7 @@ export default {
   mongoUri: process.env.MONGO_URI,
 
   jwtSecret: process.env.JWT_SECRET,
+  anthropicApiKey: process.env.ANTHROPIC_API_KEY,
   jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? "7d",
   jwtCookieExpiresInDays: parseNumber(process.env.JWT_COOKIE_EXPIRES_IN, 7),
 
