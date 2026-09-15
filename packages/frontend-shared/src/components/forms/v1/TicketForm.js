@@ -218,6 +218,11 @@ export default function TicketForm() {
           {isPending ? 'Searching...' : 'Search Flights'}
         </PrimaryButton>
       </div>
+
+      <p className="mt-3 text-center text-[12px] leading-5 text-gray-500">
+        We reserve flights, we do not buy them. A reservation supports your visa file; it does not
+        guarantee approval.
+      </p>
     </form>
   );
 }
