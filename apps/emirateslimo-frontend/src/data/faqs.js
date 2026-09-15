@@ -12,7 +12,7 @@ export const brandFaqs = [
   {
     question: 'What vehicles does Emirates Limo offer?',
     answer:
-      'Our fleet includes Lexus ES, Kia Carnival, Toyota Highlander, Mercedes S-Class, BMW 7-Series, GMC Yukon, and Mercedes V-Class for luxury and comfort.',
+      'Our fleet includes the Lexus ES300, BMW 7-Series, Mercedes-Benz S-Class, GMC Yukon, Kia Carnival, and Mercedes-Benz V-Class, all chauffeur-driven.',
   },
   {
     question: 'Are your chauffeurs professionally trained?',
@@ -80,7 +80,7 @@ export const chauffeurFaqs = [
   {
     question: 'Is the waiting time included?',
     answer:
-      'Yes. Chauffeurs wait up to 20 minutes free for city and intercity transfers, and up to 60 minutes free for airport transfers within the UAE.',
+      'Yes. Chauffeurs wait up to 15 minutes free for city and intercity transfers, and up to 60 minutes free for airport transfers within the UAE.',
   },
   {
     question: 'Do you provide child seats?',
@@ -90,7 +90,7 @@ export const chauffeurFaqs = [
   {
     question: 'What is your cancellation policy?',
     answer:
-      'Cancellations made 24 hours or more before pickup receive a full refund. Cancellations within 24 hours of pickup are non-refundable.',
+      'Cancel 24 hours or more before your pickup date and time and you receive a full refund to the original payment method. Cancellations within 24 hours of pickup, and no-shows, are charged in full.',
   },
   {
     question: 'How do your chauffeurs handle delays or changes?',
@@ -153,7 +153,7 @@ export const airportTransferFaqs = [
   {
     question: 'Can I cancel or modify my airport transfer booking?',
     answer:
-      'Yes. Bookings can be modified or canceled within the applicable cancellation window, depending on your booking time and selected vehicle.',
+      'Yes. Cancel 24 hours or more before pickup for a full refund; within 24 hours the booking is non-refundable. Changes are subject to availability and should be requested at least 24 hours ahead.',
   },
   {
     question: 'Are child seats available for airport transfers?',
@@ -236,8 +236,68 @@ export const dubaiTransferFaqs = [
   {
     question: 'Can I modify or cancel my Dubai transfer booking?',
     answer:
-      'Yes. Bookings can be modified or canceled within the applicable cancellation window. Our team is available 24/7 to assist you with changes.',
+      'Yes. Cancel 24 hours or more before pickup for a full refund; within 24 hours the booking is non-refundable. Our team is available 24/7 to assist you with changes.',
   },
 ];
 
-export const allFaqs = [...chauffeurFaqs, ...airportTransferFaqs, ...brandFaqs, ...dubaiTransferFaqs];
+export const abuDhabiAirportFaqs = [
+  {
+    question: 'What is an Abu Dhabi airport transfer?',
+    answer:
+      'An Abu Dhabi airport transfer is a pre-booked private chauffeur ride to or from Zayed International Airport (AUH). Your vehicle and driver are reserved for you alone, with a fixed price confirmed at booking.',
+  },
+  {
+    question: 'Where will I meet my driver at Abu Dhabi Airport?',
+    answer:
+      'Your chauffeur waits inside the arrivals hall at Zayed International Airport holding a name board, helps with luggage, and walks you to the vehicle.',
+  },
+  {
+    question: 'How much waiting time is included at Abu Dhabi Airport?',
+    answer:
+      'Airport pickups include 60 minutes of free waiting time counted from your actual landing time, which covers immigration and baggage collection.',
+  },
+  {
+    question: 'Do you track my flight into Abu Dhabi?',
+    answer:
+      'Yes. We monitor your flight and move the pickup time automatically if it lands early or late. There is no extra charge for flight delays.',
+  },
+  {
+    question: 'Can I book a transfer from Abu Dhabi Airport to Dubai?',
+    answer:
+      'Yes. We run private transfers from Zayed International Airport to any address in Dubai, and from Abu Dhabi city to Dubai International (DXB) and Al Maktoum (DWC) airports.',
+  },
+  {
+    question: 'Are Abu Dhabi airport transfers available 24/7?',
+    answer:
+      'Yes. Transfers run 24 hours a day, every day, including late-night arrivals, early departures and public holidays.',
+  },
+  {
+    question: 'Which vehicles are available for Abu Dhabi airport transfers?',
+    answer:
+      'Sedans (Lexus ES300, BMW 7-Series, Mercedes-Benz S-Class), the GMC Yukon SUV, and the Kia Carnival and Mercedes-Benz V-Class vans for families and groups with more luggage.',
+  },
+  {
+    question: 'Are child seats available for Abu Dhabi airport transfers?',
+    answer:
+      'Yes. Request a child or booster seat when you book and it will be fitted before pickup.',
+  },
+  {
+    question: 'Is the price for an Abu Dhabi airport transfer fixed?',
+    answer:
+      'Yes. The price is confirmed when you book. There is no surge pricing and no extra charge for traffic or flight delays.',
+  },
+  {
+    question: 'Can I cancel or change my Abu Dhabi airport transfer?',
+    answer:
+      'Yes. Cancel 24 hours or more before pickup for a full refund; within 24 hours the booking is non-refundable. Our team is available 24/7 on WhatsApp to help with changes.',
+  },
+];
+
+// The FAQ hub lists every set, so repeated questions keep only their first answer.
+export const allFaqs = [
+  ...new Map(
+    [...brandFaqs, ...chauffeurFaqs, ...airportTransferFaqs, ...abuDhabiAirportFaqs, ...dubaiTransferFaqs].map(
+      (faq) => [faq.question.trim().toLowerCase(), faq],
+    ),
+  ).values(),
+];

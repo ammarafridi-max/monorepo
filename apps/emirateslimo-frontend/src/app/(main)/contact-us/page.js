@@ -8,14 +8,16 @@ import PageHero from '@/components/Sections/PageHero';
 import PrimarySection from '@/components/PrimarySection';
 import Container from '@/components/Container';
 import SectionTitle from '@/components/SectionTitle';
+import { SITE_URL, buildGraph, buildMetadata, buildOrganization, buildWebsite } from '@/lib/schema';
 
-export const metadata = {
+const meta = {
   title: 'Contact Emirates Limo | Dubai Chauffeur & Transfers',
   description:
     'Contact Emirates Limo for chauffeur service and airport transfer bookings in Dubai and across the UAE. Reach our team by phone or email.',
-  alternates: { canonical: 'https://www.emirateslimo.com/contact-us' },
-  robots: { index: true, follow: true },
+  canonical: `${SITE_URL}/contact-us`,
 };
+
+export const metadata = buildMetadata(meta);
 
 const channels = [
   {
@@ -35,7 +37,7 @@ const channels = [
   {
     icon: HiOutlineClock,
     label: 'Operating Hours',
-    value: '24 / 7 — 365 Days',
+    value: '24 / 7, 365 Days',
     href: null,
     note: 'Including weekends and public holidays',
   },
@@ -48,29 +50,26 @@ const channels = [
   },
 ];
 
-const contactPageSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'ContactPage',
-  name: 'Contact Emirates Limo',
-  url: 'https://www.emirateslimo.com/contact-us',
-  description:
-    'Contact Emirates Limo for chauffeur service and airport transfer bookings in Dubai and across the UAE. Reach our team by phone or email.',
-  mainEntity: {
-    '@type': 'LimousineService',
-    name: 'Emirates Limo',
-    telephone: '+971569964924',
-    url: 'https://www.emirateslimo.com',
-  },
-};
-
 export default function ContactUs() {
+  const graph = buildGraph([
+    buildOrganization(),
+    buildWebsite(),
+    {
+      '@type': 'ContactPage',
+      '@id': `${meta.canonical}#webpage`,
+      url: meta.canonical,
+      name: meta.title,
+      description: meta.description,
+      isPartOf: { '@id': `${SITE_URL}/#website` },
+      about: { '@id': `${SITE_URL}/#organization` },
+    },
+  ]);
+
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(contactPageSchema).replace(/</g, '\u003c'),
-        }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(graph) }}
       />
 
       <PageHero

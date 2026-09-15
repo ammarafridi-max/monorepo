@@ -1,60 +1,90 @@
-// Regenerate hourly so blog posts appear once the backend is reachable
+import { SITE_URL } from '@/lib/schema';
+import { getPublishedBlogsApi } from '@travel-suite/frontend-shared/services/apiBlog';
+import { getBlogTagsApi } from '@travel-suite/frontend-shared/services/apiBlogTags';
+import { getAuthorsApi } from '@travel-suite/frontend-shared/services/apiAuthors';
+
+// Regenerate hourly so blog and tag entries appear once the backend is reachable
 // at runtime (the build-time Docker container usually can't reach it).
 export const revalidate = 3600;
 
-const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND;
-
-async function fetchAllPosts() {
-  if (!BACKEND) return [];
-  const res = await fetch(`${BACKEND}/api/blogs?status=published&limit=1000&page=1`, {
-    next: { revalidate: 3600 },
-  });
-  if (!res.ok) throw new Error(`API ${res.status}`);
-  const json = await res.json();
-  return json.data?.blogs || json.data || [];
-}
+const staticPages = [
+  { url: '/', changeFrequency: 'weekly', priority: 1.0 },
+  { url: '/dubai-airport-transfer', changeFrequency: 'monthly', priority: 0.9 },
+  { url: '/dubai-airport-transfer-to-hotel', changeFrequency: 'monthly', priority: 0.9 },
+  { url: '/abu-dhabi-airport-transfer', changeFrequency: 'monthly', priority: 0.9 },
+  { url: '/abu-dhabi-airport-to-dubai-transfer', changeFrequency: 'monthly', priority: 0.9 },
+  { url: '/chauffeur-service', changeFrequency: 'monthly', priority: 0.9 },
+  { url: '/chauffeur-service-abu-dhabi', changeFrequency: 'monthly', priority: 0.8 },
+  { url: '/hourly-chauffeur', changeFrequency: 'monthly', priority: 0.8 },
+  { url: '/car-hire-with-driver-dubai', changeFrequency: 'monthly', priority: 0.8 },
+  { url: '/limo-service-dubai', changeFrequency: 'monthly', priority: 0.9 },
+  { url: '/dubai-transfer', changeFrequency: 'monthly', priority: 0.8 },
+  { url: '/abu-dhabi-to-dubai-transfer', changeFrequency: 'monthly', priority: 0.8 },
+  { url: '/dubai-to-abu-dhabi-transfer', changeFrequency: 'monthly', priority: 0.8 },
+  { url: '/services', changeFrequency: 'monthly', priority: 0.7 },
+  { url: '/fleet', changeFrequency: 'monthly', priority: 0.7 },
+  { url: '/about-us', changeFrequency: 'monthly', priority: 0.6 },
+  { url: '/contact-us', changeFrequency: 'monthly', priority: 0.6 },
+  { url: '/frequently-asked-questions', changeFrequency: 'monthly', priority: 0.6 },
+  { url: '/blog', changeFrequency: 'daily', priority: 0.8 },
+  { url: '/blog/tags', changeFrequency: 'weekly', priority: 0.6 },
+  { url: '/privacy-policy', changeFrequency: 'yearly', priority: 0.3 },
+];
 
 export default async function sitemap() {
-  const baseUrl = 'https://www.emirateslimo.com';
+  const now = new Date().toISOString();
 
-  const staticPages = [
-    { url: baseUrl, lastModified: new Date(), changeFrequency: 'weekly', priority: 1.0 },
-    { url: `${baseUrl}/dubai-airport-transfer`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.9 },
-    { url: `${baseUrl}/dubai-airport-transfer-to-hotel`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.9 },
-    { url: `${baseUrl}/abu-dhabi-airport-transfer`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.9 },
-    { url: `${baseUrl}/abu-dhabi-airport-to-dubai-transfer`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.9 },
-    { url: `${baseUrl}/chauffeur-service`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.9 },
-    { url: `${baseUrl}/chauffeur-service-abu-dhabi`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${baseUrl}/hourly-chauffeur`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${baseUrl}/car-hire-with-driver-dubai`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${baseUrl}/limo-service-dubai`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.9 },
-    { url: `${baseUrl}/dubai-transfer`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${baseUrl}/abu-dhabi-to-dubai-transfer`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${baseUrl}/dubai-to-abu-dhabi-transfer`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${baseUrl}/services`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${baseUrl}/fleet`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${baseUrl}/about-us`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${baseUrl}/contact-us`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${baseUrl}/frequently-asked-questions`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${baseUrl}/blog`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.7 },
-    { url: `${baseUrl}/blog/tags`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.5 },
+  const staticEntries = staticPages.map(({ url, changeFrequency, priority }) => ({
+    url: `${SITE_URL}${url}`,
+    lastModified: now,
+    changeFrequency,
+    priority,
+  }));
 
-    { url: `${baseUrl}/terms-and-conditions`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
-    { url: `${baseUrl}/privacy-policy`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
-  ];
-
-  let blogPages = [];
+  let blogEntries = [];
   try {
-    const posts = await fetchAllPosts();
-    blogPages = posts.map((post) => ({
-      url: `${baseUrl}/blog/${post.slug}`,
-      lastModified: new Date(post.updatedAt || post.createdAt),
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    }));
-  } catch (e) {
-    console.warn('Sitemap: could not fetch blog posts —', e.message);
+    const data = await getPublishedBlogsApi({ page: 1, limit: 1000 });
+    blogEntries = (data?.blogs || [])
+      .filter((blog) => blog?.slug)
+      .map((blog) => ({
+        url: `${SITE_URL}/blog/${blog.slug}`,
+        lastModified: blog.updatedAt || blog.createdAt || now,
+        changeFrequency: 'weekly',
+        priority: 0.7,
+      }));
+  } catch (err) {
+    console.error('[sitemap] blog posts fetch failed:', err);
   }
 
-  return [...staticPages, ...blogPages];
+  let tagEntries = [];
+  try {
+    const tags = await getBlogTagsApi();
+    tagEntries = (tags || [])
+      .filter((tag) => tag?.slug)
+      .map((tag) => ({
+        url: `${SITE_URL}/blog/tags/${tag.slug}`,
+        lastModified: now,
+        changeFrequency: 'weekly',
+        priority: 0.5,
+      }));
+  } catch (err) {
+    console.error('[sitemap] blog tags fetch failed:', err);
+  }
+
+  let authorEntries = [];
+  try {
+    const authors = await getAuthorsApi();
+    authorEntries = (authors || [])
+      .filter((author) => author?.authorProfile?.slug)
+      .map((author) => ({
+        url: `${SITE_URL}/authors/${author.authorProfile.slug}`,
+        lastModified: author.updatedAt || now,
+        changeFrequency: 'monthly',
+        priority: 0.5,
+      }));
+  } catch (err) {
+    console.error('[sitemap] authors fetch failed:', err);
+  }
+
+  return [...staticEntries, ...blogEntries, ...tagEntries, ...authorEntries];
 }

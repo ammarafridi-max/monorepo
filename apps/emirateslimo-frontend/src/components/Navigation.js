@@ -8,7 +8,9 @@ export const pages = [
     link: '/dubai-airport-transfer',
     subpages: [
       { name: 'Dubai Airport Transfer', link: '/dubai-airport-transfer' },
+      { name: 'Dubai Airport to Hotel Transfer', link: '/dubai-airport-transfer-to-hotel' },
       { name: 'Abu Dhabi Airport Transfer', link: '/abu-dhabi-airport-transfer' },
+      { name: 'Abu Dhabi to Dubai Airport Transfer', link: '/abu-dhabi-airport-to-dubai-transfer' },
     ],
   },
   {
@@ -19,6 +21,7 @@ export const pages = [
       { name: 'Abu Dhabi Chauffeur Service', link: '/chauffeur-service-abu-dhabi' },
       { name: 'Hourly Chauffeur', link: '/hourly-chauffeur' },
       { name: 'Car Hire With Driver Dubai', link: '/car-hire-with-driver-dubai' },
+      { name: 'Limo Service Dubai', link: '/limo-service-dubai' },
     ],
   },
   {

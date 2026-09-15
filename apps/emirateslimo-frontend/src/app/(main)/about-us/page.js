@@ -4,28 +4,33 @@ import SectionTitle from '@/components/SectionTitle';
 import ServiceCard from '@/components/ServiceCard';
 import PageHero from '@/components/Sections/PageHero';
 import { services } from '@/data/services';
+import { buildGraph, buildMetadata, buildOrganization, buildWebPage, buildWebsite } from '@/lib/schema';
 
-export const metadata = {
+const meta = {
   title: 'About Emirates Limo | Luxury Chauffeur Dubai',
   description:
     'Discover Emirates Limo, a premium chauffeur and airport transfer company in Dubai dedicated to luxury service, professional drivers, and seamless travel.',
-  alternates: { canonical: 'https://www.emirateslimo.com/about-us' },
-  robots: { index: true, follow: true },
+  canonical: 'https://www.emirateslimo.com/about-us',
 };
+
+export const metadata = buildMetadata(meta);
 
 const highlights = [
   { label: 'Professional Chauffeurs', desc: 'Highly experienced, multilingual, and courteous drivers.' },
-  { label: 'Luxury Fleet', desc: 'Sedans, SUVs, and executive vans — immaculately maintained.' },
+  { label: 'Luxury Fleet', desc: 'Sedans, SUVs, and executive vans, immaculately maintained.' },
   { label: 'Always On Time', desc: 'Real-time flight tracking and pre-scheduled pickups.' },
   { label: 'Transparent Pricing', desc: 'Fixed rates with no hidden charges, ever.' },
 ];
 
 export default function AboutUs() {
+  const graph = buildGraph([buildOrganization(), buildWebsite(), buildWebPage(meta)]);
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(graph) }} />
       <PageHero
         paths={[{ label: 'Home', href: '/' }, { label: 'About Us', href: '/about-us' }]}
-        title="About Emirates Limo | Luxury Chauffeur Dubai"
+        title="About Emirates Limo"
         subtitle="A premium chauffeur and luxury transportation company based in Dubai, dedicated to delivering exceptional comfort, professionalism, and reliability."
       />
 

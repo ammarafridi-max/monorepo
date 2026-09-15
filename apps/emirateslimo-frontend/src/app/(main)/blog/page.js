@@ -1,87 +1,78 @@
-import { buildBlog, buildGraph, buildOrganization, buildWebPage, buildWebsite } from '@/lib/schema';
-import PrimarySection from '@/components/PrimarySection';
-import Container from '@/components/Container';
-import BlogCard from '@/components/BlogCard';
-import PageHero from '@/components/Sections/PageHero';
+import { getPublishedBlogsApi } from '@travel-suite/frontend-shared/services/apiBlog';
+import {
+  SITE_URL,
+  buildBlog,
+  buildBreadcrumbList,
+  buildGraph,
+  buildMetadata,
+  buildOrganization,
+  buildWebPage,
+  buildWebsite,
+} from '@/lib/schema';
+import BlogPage from '@travel-suite/frontend-shared/pages/client/BlogPage';
 
-export const metadata = {
-  title: { absolute: 'Blog | Emirates Limo' },
+const meta = {
+  title: 'Blog | Emirates Limo',
   description:
-    'Read travel tips, Dubai guides, and chauffeur service insights from Emirates Limo — your trusted luxury transport provider in Dubai and Abu Dhabi.',
-  alternates: { canonical: 'https://www.emirateslimo.com/blog' },
-  robots: { index: true, follow: true },
+    'Read travel tips, Dubai guides, and chauffeur service insights from Emirates Limo, your luxury transport provider in Dubai and Abu Dhabi.',
+  canonical: `${SITE_URL}/blog`,
 };
 
-const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND;
-const CANONICAL = 'https://www.emirateslimo.com/blog';
+const hero = {
+  title: 'Blog',
+  subtitle: 'Travel guides, Dubai destination tips, chauffeur service advice, and the latest news from Emirates Limo.',
+};
 
-async function fetchBlogs() {
-  if (!BACKEND) return [];
-  try {
-    const res = await fetch(`${BACKEND}/api/blogs?status=published&limit=100&page=1`, {
-      cache: 'force-cache',
-    });
-    if (!res.ok) return [];
-    const json = await res.json();
-    return json.data?.blogs || json.data || [];
-  } catch {
-    return [];
-  }
+const breadcrumbPaths = [
+  { label: 'Home', path: '/' },
+  { label: 'Blog', path: '/blog' },
+];
+
+const pageNumberFrom = (searchParams) => Math.max(1, Number(searchParams?.page || 1) || 1);
+
+// Paginated listings must be self-canonical, otherwise page 2+ reads as a duplicate of /blog.
+const canonicalForPage = (page) => (page > 1 ? `${meta.canonical}?page=${page}` : meta.canonical);
+
+export async function generateMetadata({ searchParams }) {
+  const page = pageNumberFrom(await searchParams);
+  return buildMetadata({
+    title: page > 1 ? `${meta.title} | Page ${page}` : meta.title,
+    description: meta.description,
+    canonical: canonicalForPage(page),
+  });
 }
 
-const schema = buildGraph([
-  buildOrganization(),
-  buildWebsite(),
-  buildWebPage({
-    canonical: CANONICAL,
-    title: 'Blog | Emirates Limo',
-    description:
-      'Read travel tips, Dubai guides, chauffeur service insights, and the latest updates from Emirates Limo.',
-  }),
-  buildBlog({
-    canonical: CANONICAL,
-    title: 'Blog | Emirates Limo',
-    description:
-      'Read travel tips, Dubai guides, chauffeur service insights, and the latest updates from Emirates Limo.',
-  }),
-]);
+export const revalidate = 3600;
 
-export default async function BlogPage() {
-  const blogs = await fetchBlogs();
+export default async function Page({ searchParams }) {
+  const currentPage = pageNumberFrom(await searchParams);
+
+  let blogs = [];
+  let pagination = null;
+  try {
+    const data = await getPublishedBlogsApi({ page: currentPage, limit: 15 });
+    blogs = data?.blogs || [];
+    pagination = data?.pagination || null;
+  } catch {}
+
+  const canonical = canonicalForPage(currentPage);
+  const schema = buildGraph([
+    buildOrganization(),
+    buildWebsite(),
+    buildWebPage({ canonical, title: meta.title, description: meta.description }),
+    buildBlog({ canonical: meta.canonical, title: meta.title, description: meta.description }),
+  ]);
+  const breadcrumbJsonLd = buildBreadcrumbList({ paths: breadcrumbPaths });
 
   return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, '\u003c') }}
-      />
-
-      <PageHero
-        paths={[
-          { label: 'Home', href: '/' },
-          { label: 'Blog', href: '/blog' },
-        ]}
-        title="Blog"
-        subtitle="Explore travel guides, Dubai destination tips, chauffeur service advice, and the latest news from Emirates Limo."
-      />
-
-      <PrimarySection className="py-15 lg:py-20">
-        <Container>
-          {blogs.length === 0 ? (
-            <div className="py-20 text-center">
-              <p className="text-gray-400 font-light text-[15px]">
-                No posts available at the moment. Check back soon.
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-4">
-              {blogs.map((post) => (
-                <BlogCard key={post._id} blog={post} />
-              ))}
-            </div>
-          )}
-        </Container>
-      </PrimarySection>
-    </>
+    <BlogPage
+      blogs={blogs}
+      pagination={pagination}
+      currentPage={currentPage}
+      hero={hero}
+      breadcrumbPaths={breadcrumbPaths}
+      schema={schema}
+      breadcrumbJsonLd={breadcrumbJsonLd}
+    />
   );
 }

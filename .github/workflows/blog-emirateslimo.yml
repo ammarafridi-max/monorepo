@@ -1,0 +1,31 @@
+name: Emirates Limo Daily Blog
+
+on:
+  # NOT ENABLED YET: needs EMIRATESLIMO_ADMIN_EMAIL / EMIRATESLIMO_ADMIN_PASSWORD
+  # as repository secrets. Uncomment to start the queue in
+  # targets/emirateslimo/topics.json.
+  # schedule:
+  #   - cron: '0 5 * * *' # 09:00 Asia/Dubai
+  workflow_dispatch:
+    inputs:
+      status:
+        description: Publish immediately or stage as a draft
+        type: choice
+        options: [published, draft]
+        default: draft
+
+# The failure reporter in _automation.yml opens an issue, and a called workflow
+# cannot request more than its caller holds. The repo default is read-only, so
+# the caller has to grant it here.
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  generate:
+    uses: ./.github/workflows/_automation.yml
+    secrets: inherit
+    with:
+      job: blog-generate
+      target: emirateslimo
+      args: --status ${{ inputs.status || 'draft' }}

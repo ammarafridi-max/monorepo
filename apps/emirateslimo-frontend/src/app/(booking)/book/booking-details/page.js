@@ -1,7 +1,7 @@
 import BookingDetailsClient from './BookingDetailsClient';
 
 export const metadata = {
-  title: 'Booking Details | Emirates Limo Dubai',
+  title: 'Booking Details | Emirates Limo',
   description: 'Confirm your Emirates Limo booking details for your Dubai chauffeur or airport transfer service.',
   robots: 'noindex, nofollow',
   alternates: {

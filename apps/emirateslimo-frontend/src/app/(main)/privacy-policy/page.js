@@ -3,13 +3,13 @@ import Container from '@/components/Container';
 import PageHeading from '@/components/PageHeading';
 import SectionTitle from '@/components/SectionTitle';
 import Breadcrumb from '@/components/Breadcrumb';
+import { buildMetadata } from '@/lib/schema';
 
-export const metadata = {
-  title: 'Privacy Policy',
+export const metadata = buildMetadata({
+  title: 'Privacy Policy | Emirates Limo',
   description: 'Learn how Emirates Limo collects, uses, and protects your personal data when you book chauffeur services or airport transfers in the UAE.',
-  alternates: { canonical: 'https://www.emirateslimo.com/privacy-policy' },
-  robots: { index: true, follow: true },
-};
+  canonical: 'https://www.emirateslimo.com/privacy-policy',
+});
 
 export default function PrivacyPolicy() {
   return (

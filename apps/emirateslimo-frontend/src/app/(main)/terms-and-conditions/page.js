@@ -4,13 +4,14 @@ import Container from '@/components/Container';
 import PageHeading from '@/components/PageHeading';
 import SectionTitle from '@/components/SectionTitle';
 import Breadcrumb from '@/components/Breadcrumb';
+import { buildMetadata } from '@/lib/schema';
 
-export const metadata = {
-  title: 'Terms & Conditions',
+export const metadata = buildMetadata({
+  title: 'Terms & Conditions | Emirates Limo',
   description: 'Read the terms and conditions governing your use of Emirates Limo services, including booking policies, cancellation terms, and liability disclaimers.',
-  alternates: { canonical: 'https://www.emirateslimo.com/terms-and-conditions' },
+  canonical: 'https://www.emirateslimo.com/terms-and-conditions',
   robots: { index: false, follow: true },
-};
+});
 
 export default function TermsAndConditions() {
   return (
@@ -63,9 +64,9 @@ export default function TermsAndConditions() {
             <ul className="flex flex-col gap-3 list-decimal pl-5">
               <li className="pl-2">All prices listed on the website are in AED unless stated otherwise.</li>
               <li className="pl-2">Payments must be made online through secure methods provided on our website (Stripe, card payments, etc.).</li>
-              <li className="pl-2">Payments are non-refundable except when a duplicate payment occurs or when the service cannot be delivered due to a system error or Emirates Limo operational issue.</li>
-              <li className="pl-2">Refunds, if approved, are processed back to the original payment method within 7&ndash;14 business days.</li>
-              <li className="pl-2">Any booking changes requested by the customer must be communicated at least 12 hours before the pickup time. Accepting such changes is subject to availability.</li>
+              <li className="pl-2">Refunds follow the cancellation policy below. Duplicate payments, and bookings Emirates Limo cannot deliver because of a system error or an operational issue on our side, are always refunded in full.</li>
+              <li className="pl-2">Refunds are processed back to the original payment method within 7 to 14 business days.</li>
+              <li className="pl-2">Any booking changes requested by the customer must be communicated at least 24 hours before the pickup time. Accepting such changes is subject to availability.</li>
             </ul>
           </p>
 
@@ -103,8 +104,8 @@ export default function TermsAndConditions() {
           <SectionTitle className="my-10">Modifications &amp; Cancellations</SectionTitle>
           <p className="text-xl font-extralight">
             <ul className="flex flex-col gap-3 list-decimal pl-5">
-              <li className="pl-2">Cancellations made 12 hours or more before the pickup time may be eligible for a partial or full refund depending on operational commitments.</li>
-              <li className="pl-2">Cancellations made within 12 hours of the pickup time are non-refundable.</li>
+              <li className="pl-2">Cancellations made 24 hours or more before the scheduled pickup date and time receive a full refund.</li>
+              <li className="pl-2">Cancellations made within 24 hours of the scheduled pickup date and time are non-refundable.</li>
               <li className="pl-2">Emirates Limo reserves the right to cancel or reschedule a booking due to unforeseen circumstances such as vehicle breakdowns, safety concerns, or force majeure events. In such cases, a full refund will be issued.</li>
             </ul>
           </p>

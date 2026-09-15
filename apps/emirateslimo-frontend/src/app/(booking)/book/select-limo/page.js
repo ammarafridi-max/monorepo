@@ -3,7 +3,7 @@ import VehicleLoadingCard from '@/components/VehicleLoadingCard';
 import SelectLimoClient from './SelectLimoClient';
 
 export const metadata = {
-  title: 'Book a Limo | Emirates Limo Dubai',
+  title: 'Book a Limo | Emirates Limo',
   description: 'Book your luxury chauffeur or airport transfer in Dubai. Select your vehicle and confirm your journey with Emirates Limo.',
   robots: 'noindex, nofollow',
   alternates: {

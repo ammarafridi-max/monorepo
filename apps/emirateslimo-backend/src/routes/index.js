@@ -66,7 +66,7 @@ const vehicleImages = {
 };
 
 // -- Blog ----------------------------------------------------------------------
-router.use("/blogs", createBlogRouter({ db, auth, imageStorage: blogImageStorage }));
+router.use("/blogs", createBlogRouter({ db, auth, imageStorage: blogImageStorage, anthropicApiKey: config.anthropicApiKey }));
 router.use("/blog-tags", createBlogTagRouter({ db, auth }));
 
 // -- Currencies ----------------------------------------------------------------

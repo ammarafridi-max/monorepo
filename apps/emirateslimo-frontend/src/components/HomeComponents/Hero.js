@@ -2,6 +2,7 @@ import Container from '../Container';
 import PrimarySection from '../PrimarySection';
 import PageHeading from '../PageHeading';
 import LimoForm from '../LimoForm';
+import Breadcrumb from '../Breadcrumb';
 
 const trustItems = [
   { label: 'Professional Drivers' },
@@ -14,6 +15,7 @@ export default function Hero({
   title = 'Book Your Chauffeur',
   subtitle,
   text = 'Premium chauffeur service with professional drivers and seamless airport transfers across the UAE.',
+  breadcrumbPaths = [],
 }) {
   const eyebrow = subtitle || "UAE's Premium Chauffeur Service";
 
@@ -22,6 +24,11 @@ export default function Hero({
       <Container>
         <div className="grid lg:grid-cols-[5.5fr_4.5fr] items-start gap-8 lg:gap-16">
           <div className="text-black">
+            {breadcrumbPaths.length > 0 && (
+              <div className="mb-5">
+                <Breadcrumb paths={breadcrumbPaths} />
+              </div>
+            )}
             <div className="flex items-center gap-2 mb-4">
               <span className="h-px w-6 bg-accent-500" />
               <p className="text-[11px] tracking-[0.25em] font-light uppercase text-accent-600">{eyebrow}</p>

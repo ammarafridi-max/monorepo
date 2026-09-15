@@ -1,40 +1,19 @@
-'use client';
-import { useGetVehicles } from '@travel-suite/frontend-shared/hooks/vehicles/useGetVehicles';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Pagination } from 'swiper/modules';
+import { getVehicles } from '@/lib/vehicles';
 import PrimarySection from '../PrimarySection';
 import Container from '../Container';
 import SectionTitle from '../SectionTitle';
-import FleetCard from '../FleetCard';
 import PrimaryLink from '../PrimaryLink';
+import FleetSlider from './FleetSlider';
 
-export default function Fleet({ title = 'Luxury Vehicles To Choose From', subtitle = 'Our Fleet' }) {
-  const { vehicles = [] } = useGetVehicles();
+export default async function Fleet({ title = 'Luxury Vehicles To Choose From', subtitle = 'Our Fleet' }) {
+  const vehicles = await getVehicles().catch(() => []);
+  if (vehicles.length === 0) return null;
 
   return (
     <PrimarySection className="py-15 lg:py-30">
       <Container>
-        <SectionTitle subtitle={subtitle}>
-          {title}
-        </SectionTitle>
-        <Swiper
-          modules={[Pagination]}
-          spaceBetween={30}
-          slidesPerView={1}
-          navigation
-          pagination={{ clickable: true }}
-          breakpoints={{
-            640: { slidesPerView: 1.5 },
-            768: { slidesPerView: 2 },
-            1024: { slidesPerView: 3 },
-          }}
-        >
-          {vehicles?.map((v, i) => (
-            <SwiperSlide key={v._id || i}>
-              <FleetCard index={i} vehicle={v} />
-            </SwiperSlide>
-          ))}
-        </Swiper>
+        <SectionTitle subtitle={subtitle}>{title}</SectionTitle>
+        <FleetSlider vehicles={vehicles} />
         <div className="mt-10 flex items-center justify-center">
           <PrimaryLink to="/fleet">View Full Fleet</PrimaryLink>
         </div>

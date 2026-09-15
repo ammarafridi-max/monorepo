@@ -2,14 +2,16 @@ import Link from 'next/link';
 import PrimarySection from '@/components/PrimarySection';
 import Container from '@/components/Container';
 import PageHero from '@/components/Sections/PageHero';
+import { buildGraph, buildMetadata, buildOrganization, buildWebPage, buildWebsite } from '@/lib/schema';
 
-export const metadata = {
+const meta = {
   title: 'Dubai Chauffeur & Airport Transfer Services | Emirates Limo',
   description:
     'Premium airport transfers, chauffeur service, hourly chauffeur, and car hire with driver in Dubai. Luxury vehicles and professional drivers.',
-  alternates: { canonical: 'https://www.emirateslimo.com/services' },
-  robots: { index: true, follow: true },
+  canonical: 'https://www.emirateslimo.com/services',
 };
+
+export const metadata = buildMetadata(meta);
 
 const services = [
   {
@@ -33,16 +35,18 @@ const services = [
   {
     image: 'city-tours.webp',
     title: 'Hourly Chauffeur',
-    text: 'Need flexible transportation? Our hourly chauffeur service allows you to hire a private driver for as long as you need. Ideal for meetings, errands, shopping trips, events, and full-day travel — giving you complete freedom to move around Dubai with a professional chauffeur always at your service.',
+    text: 'Need flexible transportation? Our hourly chauffeur service allows you to hire a private driver for as long as you need. Ideal for meetings, errands, shopping trips, events, and full-day travel, giving you complete freedom to move around Dubai with a professional chauffeur always at your service.',
     link: '/hourly-chauffeur',
   },
 ];
 
 export default function Services() {
   const total = services.length;
+  const graph = buildGraph([buildOrganization(), buildWebsite(), buildWebPage(meta)]);
 
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(graph) }} />
       <PageHero
         paths={[
           { label: 'Home', href: '/' },

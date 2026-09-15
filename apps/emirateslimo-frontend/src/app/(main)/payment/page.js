@@ -3,7 +3,7 @@ import Loading from '@/components/Loading';
 import PaymentClient from './PaymentClient';
 
 export const metadata = {
-  title: 'Payment Status',
+  title: 'Payment Status | Emirates Limo',
   robots: { index: false, follow: false },
   alternates: { canonical: 'https://www.emirateslimo.com/payment' },
 };

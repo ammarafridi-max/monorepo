@@ -1,17 +1,6 @@
 import ReactGA from 'react-ga4';
-import { GA4_MEASUREMENT_ID } from '@/config';
 
 const isProduction = process.env.NODE_ENV === 'production';
-
-export function initializeGA() {
-  if (!isProduction) return;
-  ReactGA.initialize(GA4_MEASUREMENT_ID);
-}
-
-export const trackPageView = (path = window.location.pathname) => {
-  if (!isProduction) return;
-  ReactGA.send({ hitType: 'pageview', page: path });
-};
 
 export const trackLimoFormSubmission = ({ tripType, pickup, dropoff, pickupDate, pickupTime, hoursBooked }) => {
   if (!isProduction) return;
