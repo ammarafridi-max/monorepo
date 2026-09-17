@@ -20,6 +20,7 @@
     "@travel-suite/currencies": "workspace:*",
     "@travel-suite/limo-bookings": "workspace:*",
     "@travel-suite/locations": "workspace:*",
+    "@travel-suite/notifications": "workspace:*",
     "@travel-suite/payments": "workspace:*",
     "@travel-suite/pricing-rules": "workspace:*",
     "@travel-suite/utils": "workspace:*",
