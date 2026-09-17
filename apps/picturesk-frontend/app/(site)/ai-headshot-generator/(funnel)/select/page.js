@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { FiInfo } from 'react-icons/fi';
 import { LOOKS, ATTIRE, AGE_RANGES, GENDERS, RACES, FACIAL_HAIR } from '@travel-suite/picturesk-shared/catalog';
-import { TIERS, isValidTier } from '@travel-suite/picturesk-shared/pricing';
+import { TIERS, isValidTier, getTier } from '@travel-suite/picturesk-shared/pricing';
 import { readState, writeState, FUNNEL_DEFAULT_TIER } from '../../../../../lib/generator';
 import { track, EVENTS } from '../../../../../lib/analytics';
 
@@ -13,6 +13,11 @@ import { track, EVENTS } from '../../../../../lib/analytics';
 const usd = (cents) => `$${Math.round(cents / 100)}`;
 // One line of "what changes" per tier: count first (verdict), then turnaround.
 const TURNAROUND = { starter: 'Standard queue', pro: 'Priority queue', premium: 'Front of the queue' };
+const plural = (n, noun) => `${n} ${noun}${n === 1 ? '' : 's'}`;
+const planScope = (t) =>
+  t.attireCount == null && t.lookCount == null
+    ? 'All outfits and backgrounds'
+    : `${plural(t.attireCount, 'outfit')}, ${plural(t.lookCount, 'background')}`;
 // Only offer options that have a preview. The catalog entry stays so paid orders
 // that already carry the id keep their prompt.
 const LOOK_OPTIONS = LOOKS.filter((l) => l.image);
@@ -21,18 +26,20 @@ const ATTIRE_OPTIONS = ATTIRE.filter((a) => a.image);
 // A grid of selectable option cards, each with a preview image (or a placeholder
 // until a real image URL is added to the catalog). The choices are the visual
 // interest; cobalt marks the selected state.
-function OptionGrid({ items, selected, onToggle, showDesc }) {
+function OptionGrid({ items, selected, onToggle, showDesc, full }) {
   return (
     <div className="cards">
       {items.map((it) => {
         const on = selected.includes(it.id);
+        const off = full && !on;
         return (
           <button
             type="button"
             key={it.id}
-            className={`option-card${on ? ' option-card--on' : ''}`}
+            className={`option-card${on ? ' option-card--on' : ''}${off ? ' option-card--off' : ''}`}
             onClick={() => onToggle(it.id)}
             aria-pressed={on}
+            aria-disabled={off || undefined}
           >
             <span className="option-card__media">
               {it.image ? (
@@ -125,13 +132,30 @@ export default function SelectPage() {
     track(EVENTS.SELECT_VIEW);
   }, []);
 
+  const plan = getTier(tier);
+  const lookCap = plan.lookCount ?? LOOK_OPTIONS.length;
+  const attireCap = plan.attireCount ?? ATTIRE_OPTIONS.length;
+  const looksFull = looks.length >= lookCap;
+  const attireFull = attire.length >= attireCap;
+
   function pickTier(id) {
     setTier(id);
-    writeState({ tier: id });
+    const next = getTier(id);
+    const patch = { tier: id };
+    if (next.lookCount != null && looks.length > next.lookCount) {
+      patch.looks = looks.slice(0, next.lookCount);
+      setLooks(patch.looks);
+    }
+    if (next.attireCount != null && attire.length > next.attireCount) {
+      patch.attire = attire.slice(0, next.attireCount);
+      setAttire(patch.attire);
+    }
+    writeState(patch);
   }
 
   function toggleLook(id) {
     setLooks((prev) => {
+      if (!prev.includes(id) && prev.length >= lookCap) return prev;
       const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
       writeState({ looks: next });
       return next;
@@ -139,6 +163,7 @@ export default function SelectPage() {
   }
   function toggleAttire(id) {
     setAttire((prev) => {
+      if (!prev.includes(id) && prev.length >= attireCap) return prev;
       const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
       writeState({ attire: next });
       return next;
@@ -206,6 +231,7 @@ export default function SelectPage() {
               <span className="plan__name">{t.label}</span>
               <span className="plan__price">{usd(t.priceCents)}</span>
               <span className="plan__meta">{t.deliverCount} headshots</span>
+              <span className="plan__meta">{planScope(t)}</span>
               <span className="plan__meta">{TURNAROUND[t.id]}</span>
             </button>
           );
@@ -248,17 +274,33 @@ export default function SelectPage() {
 
       <h3 className="gen-subhead">Background</h3>
       <p className="gen-hint">
-        Choose one or more backgrounds. We spread your set across them.{' '}
-        <span className="gen-count">{looks.length} of {LOOK_OPTIONS.length} selected</span>
+        {plan.lookCount == null
+          ? 'Choose one or more backgrounds. We spread your set across them.'
+          : `${plan.label} includes up to ${plural(lookCap, 'background')}. Choose which.`}{' '}
+        <span className="gen-count">{looks.length} of {lookCap} selected</span>
       </p>
-      <OptionGrid items={LOOK_OPTIONS} selected={looks} onToggle={toggleLook} showDesc />
+      {looksFull && plan.lookCount != null && (
+        <p className="gen-hint gen-hint--cap">
+          That is all {plan.label} includes. Deselect one to swap it, or pick a bigger plan above for more.
+        </p>
+      )}
+      <OptionGrid items={LOOK_OPTIONS} selected={looks} onToggle={toggleLook} showDesc full={looksFull} />
 
       <h3 className="gen-subhead">Attire</h3>
       <p className="gen-hint">
-        Choose what you want to wear. Mix a few for variety.{' '}
-        <span className="gen-count">{attire.length} of {ATTIRE_OPTIONS.length} selected</span>
+        {plan.attireCount == null
+          ? 'Choose what you want to wear. Mix a few for variety.'
+          : plan.attireCount === 1
+            ? `${plan.label} includes one outfit, worn across the whole set.`
+            : `${plan.label} includes up to ${plural(attireCap, 'outfit')}. Choose which.`}{' '}
+        <span className="gen-count">{attire.length} of {attireCap} selected</span>
       </p>
-      <OptionGrid items={ATTIRE_OPTIONS} selected={attire} onToggle={toggleAttire} showDesc={false} />
+      {attireFull && plan.attireCount != null && (
+        <p className="gen-hint gen-hint--cap">
+          That is all {plan.label} includes. Deselect one to swap it, or pick a bigger plan above for more.
+        </p>
+      )}
+      <OptionGrid items={ATTIRE_OPTIONS} selected={attire} onToggle={toggleAttire} showDesc={false} full={attireFull} />
 
       <div className="field">
         <label className="label" htmlFor="email">

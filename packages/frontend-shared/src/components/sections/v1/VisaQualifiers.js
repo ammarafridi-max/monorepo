@@ -4,8 +4,9 @@ import { Check } from "lucide-react";
 import Container from "../../shared/layout/Container.js";
 import SectionHead from "./VisaSectionHead.js";
 
-export default function VisaQualifiers({ items = [], countryName = "" }) {
+export default function VisaQualifiers({ items = [], countryName = "", term = "visa" }) {
   if (!items.length) return null;
+  const Term = term.charAt(0).toUpperCase() + term.slice(1);
 
   return (
     <section className="py-12 md:py-16 border-b border-gray-100">
@@ -13,8 +14,8 @@ export default function VisaQualifiers({ items = [], countryName = "" }) {
         <SectionHead
           title={
             countryName
-              ? `Is This ${countryName} Visa Service Right for You?`
-              : "Is This Visa Service Right for You?"
+              ? `Is This ${countryName} ${Term} Service Right for You?`
+              : `Is This ${Term} Service Right for You?`
           }
           subtitle="If any of these sound like your situation, you are in the right place. Our specialists handle applications like yours every week."
         />

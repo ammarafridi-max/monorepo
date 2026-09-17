@@ -14,6 +14,7 @@ export function createInsuranceRouterFromController({ controller, auth }) {
   router.route('/download/:policyId/:index').get(controller.downloadInsurancePolicy);
   router.route('/documents/:policyId').get(controller.getInsuranceDocuments);
   router.route('/confirm-payment/:sessionId').post(controller.confirmInsurancePayment);
+  router.route('/:sessionId/resend-policy-email').post(protect, restrictTo('admin', 'agent'), controller.resendPolicyEmail);
   router
     .route('/:sessionId')
     .get(protect, restrictTo('admin', 'agent'), controller.getInsuranceApplication)

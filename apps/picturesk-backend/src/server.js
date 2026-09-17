@@ -684,6 +684,16 @@ app.post('/checkout', checkoutLimiter, async (req, res) => {
       return res.status(400).json({ error: 'tier is not a known pricing tier' });
     }
     const selectedTier = getTier(tier || DEFAULT_TIER);
+    if (selectedTier.lookCount != null && selectedLooks.length > selectedTier.lookCount) {
+      return res.status(400).json({
+        error: `${selectedTier.label} includes up to ${selectedTier.lookCount} backgrounds`,
+      });
+    }
+    if (selectedTier.attireCount != null && selectedAttire.length > selectedTier.attireCount) {
+      return res.status(400).json({
+        error: `${selectedTier.label} includes up to ${selectedTier.attireCount} outfits`,
+      });
+    }
 
     // NO image screening here. Photos are gated ONCE, at the upload step
     // (POST /uploads/gate, run by /ai-headshot-generator/upload) -- face quality, content

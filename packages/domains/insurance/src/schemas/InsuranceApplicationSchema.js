@@ -87,6 +87,12 @@ const InsuranceApplicationSchema = new mongoose.Schema(
 
     transactionId:   { type: String, trim: true },
     reviewEmailSent: { type: Boolean, default: false },
+    policyEmail: {
+      status: { type: String, enum: ['NOT_SENT', 'SENT', 'FAILED'], default: 'NOT_SENT' },
+      sentAt: { type: Date },
+      attachments: { type: Number },
+      error: { type: String, trim: true },
+    },
   },
   {
     timestamps: true,

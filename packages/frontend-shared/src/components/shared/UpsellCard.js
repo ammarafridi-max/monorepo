@@ -7,13 +7,14 @@ export default function UpsellCard({
   description,
   price,
   priceCaption = "from",
-  ctaLabel = "Book Now",
+  ctaLabel = "Book now",
+  brand,
   href,
   external = false,
   badge,
 }) {
   const ctaClass =
-    "inline-flex items-center gap-1 text-xs font-bold px-3 py-2 bg-primary-700 hover:bg-primary-800 text-white rounded-lg transition-colors shadow-sm";
+    "inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 bg-primary-700 hover:bg-primary-800 text-white rounded-lg transition-colors";
 
   const ctaContent = (
     <>
@@ -38,27 +39,27 @@ export default function UpsellCard({
   );
 
   return (
-    <div className="relative bg-gradient-to-br from-primary-50 via-white to-primary-50 border-2 border-primary-200 rounded-2xl overflow-hidden shadow-md p-6">
-      {badge && (
-        <span className="absolute top-3 right-3 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-accent-100 text-accent-700 border border-accent-200">
-          {badge}
-        </span>
-      )}
-      <div className="flex items-center gap-3 mb-3">
-        <div className="w-9 h-9 flex items-center justify-center bg-primary-700 text-white rounded-lg shadow-sm shrink-0">
+    <div className="bg-white border border-primary-200 rounded-2xl shadow-sm p-5 flex flex-col">
+      <div className="flex items-start gap-2 mb-2">
+        <span className="w-7 h-7 flex items-center justify-center text-primary-700 shrink-0 overflow-hidden [&>img]:w-6 [&>img]:h-6 [&>svg]:w-5 [&>svg]:h-5 mt-0.5">
           {icon}
+        </span>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-gray-900 leading-tight">{title}</p>
+          {brand && <p className="text-xs text-gray-500 mt-0.5">{brand}</p>}
         </div>
-        <p className="text-base font-extrabold text-gray-900 leading-tight">{title}</p>
+        {badge && (
+          <span className="ml-auto text-[10px] font-semibold uppercase tracking-wider text-primary-700 bg-primary-50 rounded-full px-2 py-0.5">
+            {badge}
+          </span>
+        )}
       </div>
-      <p className="text-sm text-gray-600 leading-relaxed mb-5">
-        {description}
-      </p>
-      <div className="flex items-center justify-between gap-3">
+      <p className="text-sm text-gray-600 leading-relaxed mb-4">{description}</p>
+      <div className="mt-auto flex items-center justify-between gap-3">
         {price ? (
-          <div>
-            <p className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">{priceCaption}</p>
-            <p className="text-base font-extrabold text-gray-900">{price}</p>
-          </div>
+          <p className="text-sm text-gray-600">
+            {priceCaption} <span className="font-semibold text-gray-900">{price}</span>
+          </p>
         ) : (
           <span />
         )}

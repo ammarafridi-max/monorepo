@@ -273,6 +273,17 @@ export function createInsuranceController({ service, wis, Nationality, Insurance
     });
   });
 
+  const resendPolicyEmail = catchAsync(async (req, res) => {
+    const { result, application } = await service.resendPolicyEmail(req.params.sessionId);
+    res.status(result.ok ? 200 : 502).json({
+      status: result.ok ? 'success' : 'fail',
+      message: result.ok
+        ? `Policy email sent with ${result.attachments} attachment(s)`
+        : `Policy email failed: ${result.error}`,
+      data: application,
+    });
+  });
+
   const deleteInsuranceApplication = catchAsync(async (req, res, next) => {
     const application = await InsuranceApplication.findOneAndDelete({ sessionId: req.params.sessionId });
     if (!application) return next(new AppError('Insurance application not found', 404));
@@ -288,6 +299,7 @@ export function createInsuranceController({ service, wis, Nationality, Insurance
     getInsuranceQuotes,
     createInsuranceApplication,
     updateInsuranceApplication,
+    resendPolicyEmail,
     finalizeInsurance,
     downloadInsurancePolicy,
     getInsuranceDocuments,

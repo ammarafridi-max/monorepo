@@ -4,8 +4,9 @@ import Container from "../../shared/layout/Container.js";
 import SectionHead from "./VisaSectionHead.js";
 import VisaGuideLink from "./VisaGuideLink.js";
 
-export default function VisaPricingBreakdown({ rows = [], countryName = "", guide }) {
-  const subject = countryName ? `${countryName} visa` : "visa";
+export default function VisaPricingBreakdown({ rows = [], countryName = "", guide, term = "visa" }) {
+  const Term = term.charAt(0).toUpperCase() + term.slice(1);
+  const subject = countryName ? `${countryName} ${term}` : term;
   if (!rows.length) return null;
   const total = rows.reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
   const currency = rows[0]?.currency || "AED";
@@ -14,7 +15,7 @@ export default function VisaPricingBreakdown({ rows = [], countryName = "", guid
     <section className="py-12 md:py-16 bg-gray-50/80 border-y border-gray-100">
       <Container>
         <SectionHead
-          title={`${countryName ? `${countryName} Visa` : "Visa"} Cost Breakdown`}
+          title={`${countryName ? `${countryName} ${Term}` : Term} Cost Breakdown`}
           subtitle="A full breakdown of every fee, including government and third-party charges passed through at cost."
         />
         <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">

@@ -68,15 +68,15 @@ export default function AiHeadshotGeneratorPage() {
       />
       <TrackEvent event={EVENTS.LANDING_VIEW} />
       <main>
-        {/* Hero, then the page answers, in order: how it works, why us, who it is
-            for, proof, what customers say, what it costs, and the leftovers. */}
+        {/* Hero, then the page answers, in order: how it works, what it costs, why us,
+            who it is for, proof, what customers say, and the leftovers. */}
         <Hero />
         <HowItWorks />
+        <Pricing />
         <Benefits />
         <UseCases />
         <Showcase />
         <Testimonials />
-        <Pricing />
         <Faq />
 
         <section className="section start">

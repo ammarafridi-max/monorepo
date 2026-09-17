@@ -1,30 +1,39 @@
+import Image from 'next/image';
 import InsurancePaymentPage from '@travel-suite/frontend-shared/pages/client/InsurancePaymentPage';
-import { Plane, Ticket } from 'lucide-react';
-import { DUMMY_TICKET_365 } from '@/config/partners';
+import { DUMMY_TICKET_365, VISAWADI } from '@/config/partners';
 
 export const metadata = {
-  title: 'Booking Confirmed — Travl',
+  title: 'Booking Confirmed | Travl',
   description: 'Your travel insurance policy has been confirmed.',
 };
 
-// Cross-sell after an insurance purchase: itinerary (own) + dummy ticket (referred out).
+const partnerIcon = (src, alt) => (
+  <Image src={src} alt={alt} width={24} height={24} className="rounded-full" />
+);
+
+// Cross-sell after an insurance purchase: both referred out to partner brands.
 const upsells = [
   {
-    icon: <Plane size={15} />,
-    title: 'Need a Travel Itinerary?',
+    icon: partnerIcon(VISAWADI.icon, VISAWADI.name),
+    title: 'Get Visa Assistance',
+    brand: VISAWADI.name,
     description:
-      'Generate an embassy-ready, day-by-day travel itinerary for your visa application.',
+      'Schengen, UK, US and Saudi Arabia visas. VisaWadi prepares your file, books the appointment and tracks it to a decision.',
     priceCaption: 'from',
-    price: 'AED 49',
-    href: '/travel-itinerary',
+    price: VISAWADI.fromPrice,
+    ctaLabel: 'Get assistance',
+    href: VISAWADI.visaHubUrl,
+    external: true,
   },
   {
-    icon: <Ticket size={15} />,
-    title: 'Need a Dummy Ticket?',
+    icon: partnerIcon(DUMMY_TICKET_365.icon, DUMMY_TICKET_365.name),
+    title: 'Book a Dummy Ticket',
+    brand: DUMMY_TICKET_365.name,
     description:
-      'Get a verifiable flight reservation accepted by embassies and visa centers for your application.',
+      'A verifiable flight reservation with a real PNR, accepted by embassies and visa centres as proof of onward travel.',
     priceCaption: 'from',
-    price: 'USD 13',
+    price: DUMMY_TICKET_365.fromPrice,
+    ctaLabel: 'Book now',
     href: DUMMY_TICKET_365.url,
     external: true,
   },

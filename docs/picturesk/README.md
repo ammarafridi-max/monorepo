@@ -610,7 +610,7 @@ training.
 
 ### Analytics
 
-Three complementary tools, all **disabled by default** and all keeping **PII out of
+Two complementary tools, both **disabled by default** and both keeping **PII out of
 events** (no email, no image data, no order contents):
 
 - **GA4** (`NEXT_PUBLIC_GA_ID`): the funnel + the `purchase_completed` conversion,
@@ -618,8 +618,6 @@ events** (no email, no image data, no order contents):
 - **Microsoft Clarity** (`NEXT_PUBLIC_CLARITY_ID`): session replay + heatmaps, with
   the face photos and email masked (`data-clarity-mask`) so a replay never records a
   customer's face.
-- **Plausible** (`NEXT_PUBLIC_ANALYTICS_DOMAIN`, optional `NEXT_PUBLIC_ANALYTICS_SRC`):
-  a cookieless alternative; a no-op when unset.
 
 GA4 + Clarity load only **after opt-in via a cookie-consent banner**
 (`apps/picturesk-frontend/app/Analytics.js`); until then no analytics cookies are set. The same five

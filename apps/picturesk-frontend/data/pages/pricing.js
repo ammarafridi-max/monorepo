@@ -59,7 +59,7 @@ export const pricingPage = {
         {
           icon: 'refund',
           title: 'Refunded if it does not work',
-          body: 'If a generation run fails, the refund is issued automatically by the system. If the set comes back and it does not look like you, tell us within 14 days and we refund in full.',
+          body: 'If a generation run fails, the refund is issued automatically by the system. If the set comes back and it does not look like you, tell us within 3 days and we refund in full.',
         },
       ],
     },
@@ -87,7 +87,7 @@ export const pricingPage = {
         },
         {
           q: 'Can I get a refund?',
-          a: 'Yes, in two situations. If a generation run fails, the refund is issued automatically without you asking. And if your headshots come back and they do not look like you, reply to your delivery email within 14 days and we refund your purchase in full.',
+          a: 'Yes, in two situations. If a generation run fails, the refund is issued automatically without you asking. And if your headshots come back and they do not look like you, reply to your delivery email within 3 days and we refund your purchase in full.',
         },
       ],
     },

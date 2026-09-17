@@ -18,10 +18,12 @@
  */
 
 // The hero cluster: the three highest-scoring shots, one per background, so the
-// first screen shows range rather than three versions of the same photo.
+// first screen shows range rather than three versions of the same photo. The
+// library shot leads (the large portrait frame); hero-1 was moved off the lead
+// slot after the 15/09 UX audit.
 export const heroShots = [
-  '/work/hero-1.jpg', // greenery, turtleneck, 0.947
   '/work/hero-2.jpg', // library, polo, 0.943
+  '/work/hero-1.jpg', // greenery, turtleneck, 0.947
   '/work/hero-3.jpg', // office, polo, 0.941
 ];
 

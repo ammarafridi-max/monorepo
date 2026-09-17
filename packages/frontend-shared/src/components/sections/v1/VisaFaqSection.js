@@ -3,9 +3,10 @@ import SectionHead from "./VisaSectionHead.js";
 import VisaGuideLink from "./VisaGuideLink.js";
 import FaqAccordion from "../../ui/v2/FaqAccordion.js";
 
-export default function VisaFaqSection({ faqs = [], countryName, guide }) {
+export default function VisaFaqSection({ faqs = [], countryName, guide, term = "visa" }) {
   if (!faqs.length) return null;
-  const subject = countryName ? `${countryName} visa` : "visa";
+  const Term = term.charAt(0).toUpperCase() + term.slice(1);
+  const subject = countryName ? `${countryName} ${term}` : term;
 
   return (
     <section
@@ -14,8 +15,8 @@ export default function VisaFaqSection({ faqs = [], countryName, guide }) {
     >
       <Container>
         <SectionHead
-          title={`${countryName ? `${countryName} Visa: ` : ""}Frequently Asked Questions`}
-          subtitle={`Common questions about ${countryName} visas. If you don't see your question, get in touch and our specialists respond within minutes.`}
+          title={`${countryName ? `${countryName} ${Term}: ` : ""}Frequently Asked Questions`}
+          subtitle={`Common questions about ${countryName} ${term}s. If you don't see your question, get in touch and our specialists respond within minutes.`}
         />
 
         <div className="rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_4px_rgba(16,24,40,0.04)] overflow-hidden">

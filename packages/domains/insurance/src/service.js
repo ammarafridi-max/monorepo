@@ -103,6 +103,94 @@ export function createInsuranceService({
     return payload;
   };
 
+
+  // The provider generates PDFs a few seconds after issuance; a first miss is
+  // normal, so retry briefly rather than send an email with no documents.
+  const fetchPolicyDocuments = async (policyId) => {
+    for (let attempt = 0; attempt < 4; attempt++) {
+      try {
+        const docs = await wis.downloadWISInsuranceDocuments(policyId);
+        if (Array.isArray(docs) && docs.length) return docs.map((d) => ({ name: d.name, url: d.url }));
+      } catch (err) {
+        logger.warn("Policy documents not ready yet", { policyId, attempt, error: err?.message });
+      }
+      await new Promise((r) => setTimeout(r, 3000));
+    }
+    return [];
+  };
+
+  const downloadAttachments = async (documents) => {
+    const out = [];
+    for (const doc of documents) {
+      try {
+        const res = await fetch(doc.url);
+        if (!res.ok) continue;
+        const buf = Buffer.from(await res.arrayBuffer());
+        const name = `${String(doc.name).replace(/[^\w\- ]+/g, "").trim() || "document"}.pdf`;
+        out.push({ name, content: buf.toString("base64") });
+      } catch (err) {
+        logger.warn("Policy document download failed", { url: doc.url, error: err?.message });
+      }
+    }
+    return out;
+  };
+
+
+  // Sends the customer's policy email and records the outcome on the
+  // application, so the admin can see it and resend. Never throws: the
+  // policy is already issued by the time this runs.
+  const sendPolicyEmail = async (application) => {
+    if (!notifications.policyIssuedEmail || !application?.policyId) return null;
+    const documents = await fetchPolicyDocuments(application.policyId);
+    const attachments = await downloadAttachments(documents);
+    let result;
+    try {
+      result = await notifications.policyIssuedEmail({
+        email: application.email,
+        firstName: application.passengers?.[0]?.firstName,
+        policyNumber: application.policyNumber,
+        journeyType: application.journeyType,
+        region: application.region?.name || application.region?.id || application.region,
+        startDate: application.startDate,
+        endDate: application.endDate,
+        passengers: application.passengers || [],
+        amount: application.amountPaid?.amount,
+        currency: application.amountPaid?.currency,
+        documents,
+        attachments,
+      });
+    } catch (err) {
+      result = { ok: false, error: err?.message || String(err) };
+    }
+    const ok = result?.ok !== false;
+    await InsuranceApplication.updateOne(
+      { _id: application._id },
+      {
+        $set: {
+          policyEmail: {
+            status: ok ? "SENT" : "FAILED",
+            sentAt: ok ? new Date() : application.policyEmail?.sentAt,
+            attachments: ok ? attachments.length : application.policyEmail?.attachments,
+            error: ok ? undefined : String(result?.error || "Unknown error").slice(0, 500),
+          },
+        },
+      },
+    );
+    if (!ok) logger.warn("Policy email failed", { policyId: application.policyId, error: result?.error });
+    return { ok, attachments: attachments.length, error: ok ? undefined : result?.error };
+  };
+
+  const resendPolicyEmail = async (sessionId) => {
+    const application = await InsuranceApplication.findOne({ sessionId });
+    if (!application) throw new AppError("Insurance application not found", 404);
+    if (application.issuanceStatus !== "ISSUED" || !application.policyId) {
+      throw new AppError("Policy is not issued yet, so there is nothing to send", 400);
+    }
+    const result = await sendPolicyEmail(application);
+    const fresh = await InsuranceApplication.findOne({ sessionId });
+    return { result, application: fresh };
+  };
+
   const createInsuranceMongoDbDocument = async (body) => {
     const affiliate = await resolveAffiliateForApplication(body.affiliateId);
 
@@ -274,8 +362,11 @@ export function createInsuranceService({
       };
     }
 
+    // Two confirmations can race (a double-mounted effect, a reload, a retry).
+    // Claiming the ISSUED transition atomically means only the winner sends
+    // the emails; the loser returns the already-issued application.
     const updated = await InsuranceApplication.findOneAndUpdate(
-      { sessionId },
+      { sessionId, issuanceStatus: { $ne: "ISSUED" } },
       {
         $set: {
           policyNumber,
@@ -294,15 +385,12 @@ export function createInsuranceService({
       { new: true },
     );
 
-    try {
-      await wis.sendWISEmail(application.policyId);
-    } catch (err) {
-      logger.warn("WIS policy email failed after issuance", {
-        sessionId,
-        policyId: application.policyId,
-        error: err,
-      });
+    if (!updated) {
+      const issued = await InsuranceApplication.findOne({ sessionId });
+      return serializeApplicationForClient(issued, "ISSUED");
     }
+
+    await sendPolicyEmail(updated);
 
     await notifications.insurancePaymentCompletionEmail({
       leadTraveler: updated?.leadPassenger,
@@ -348,5 +436,6 @@ export function createInsuranceService({
     createInsuranceMongoDbDocument,
     finalizeInsuranceMongoDbDocument,
     confirmDirectPayInsurance,
+    resendPolicyEmail,
   };
 }

@@ -61,6 +61,16 @@ Worldwide coverage with EUR 80,000+ medical. From AED 70. Includes trip cancella
 **URL:** https://www.travl.ae/travel-insurance/annual-multi-trip  
 12-month policy covering unlimited trips. From AED 245. Ideal for frequent travellers who make multiple trips per year.
 
+### Coverage Regions (quote form)
+
+Every plan is priced by the region the trip falls in. A trip must be insured for the region containing every country visited, and a destination outside the chosen region is not covered.
+
+- **Gulf:** United Arab Emirates, Saudi Arabia, Oman, Kuwait, Jordan, Lebanon, Qatar, Egypt, Bahrain
+- **Europe:** Europe including the Schengen countries
+- **Worldwide excluding USA and Canada:** worldwide except the USA, Canada, and all islands in the Caribbean and the Bahamas
+- **Worldwide:** everywhere, including the USA, Canada, the Caribbean and the Bahamas
+- **Asian Subcontinent:** Bangladesh, India, Pakistan, Sri Lanka
+
 ### Country-Specific Insurance Pages
 
 These pages target Schengen visa applicants for individual countries. All are from AED 30, EUR 30,000 medical coverage, issued by AXA. Use these as link targets in country-specific blog posts instead of the generic /travel-insurance/schengen-visa page.

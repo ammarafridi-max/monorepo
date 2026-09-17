@@ -80,8 +80,9 @@ export default function Pricing({
           {cta} <span className="btn__price">from $9</span>
         </a>
         <p className="pricecard__fine">
-          You pay on Stripe. Refunded automatically if a run fails. See our{' '}
-          <a href="/terms">Terms</a> and <a href="/refunds">Refund Policy</a>.
+          You pay on Stripe. Refunded automatically if a run fails, and refunded in full if the
+          set does not look like you (tell us within 3 days). See our <a href="/terms">Terms</a>{' '}
+          and <a href="/refunds">Refund Policy</a>.
         </p>
       </Container>
     </section>

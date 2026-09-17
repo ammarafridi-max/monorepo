@@ -29,7 +29,7 @@ import { db } from "../utils/db.js";
 import { wis } from "../utils/wis.js";
 import { createBrevoClient } from "@travel-suite/brevo";
 import { sendEmail } from "../utils/email.js";
-import { insurancePaymentCompletionEmail } from "../notifications/insurance.js";
+import { insurancePaymentCompletionEmail, policyIssuedEmail } from "../notifications/insurance.js";
 import config from "../utils/config.js";
 import { logger } from "@travel-suite/utils";
 
@@ -92,7 +92,7 @@ router.use(
     brevo,
     auth,
     Affiliate: AffiliateModel,
-    notifications: { insurancePaymentCompletionEmail },
+    notifications: { insurancePaymentCompletionEmail, policyIssuedEmail },
   }),
 );
 

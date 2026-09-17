@@ -5,14 +5,15 @@ import Container from "../../shared/layout/Container.js";
 import SectionHead from "./VisaSectionHead.js";
 import VisaGuideLink from "./VisaGuideLink.js";
 
-export default function VisaRequirements({ sections = [], countryName = "", guide }) {
-  const subject = countryName ? `${countryName} visa` : "visa";
+export default function VisaRequirements({ sections = [], countryName = "", guide, term = "visa" }) {
+  const Term = term.charAt(0).toUpperCase() + term.slice(1);
+  const subject = countryName ? `${countryName} ${term}` : term;
   if (!sections.length) return null;
   return (
     <section className="py-12 md:py-16">
       <Container>
         <SectionHead
-          title={`${countryName ? `${countryName} Visa` : "Visa"} Document Requirements`}
+          title={`${countryName ? `${countryName} ${Term}` : Term} Document Requirements`}
           subtitle="Everything you need to prepare for a smooth application, organized by category."
         />
         <div className="max-w-3xl mx-auto space-y-2">

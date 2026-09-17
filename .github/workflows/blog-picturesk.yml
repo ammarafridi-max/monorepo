@@ -1,0 +1,31 @@
+name: Picturesk Daily Blog
+
+on:
+  # NOT YET ENABLED. The schedule stays commented until the Picturesk admin
+  # account exists and PICTURESK_ADMIN_EMAIL / PICTURESK_ADMIN_PASSWORD are set as
+  # repository secrets. Until then the job can only be run by hand, as a draft.
+  # schedule:
+  #   - cron: '0 5 * * *' # 09:00 Asia/Dubai
+  workflow_dispatch:
+    inputs:
+      status:
+        description: Publish immediately or stage as a draft
+        type: choice
+        options: [published, draft]
+        default: draft
+
+# The failure reporter in _automation.yml opens an issue, and a called workflow
+# cannot request more than its caller holds. The repo default is read-only, so
+# the caller has to grant it here.
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  generate:
+    uses: ./.github/workflows/_automation.yml
+    secrets: inherit
+    with:
+      job: blog-generate
+      target: picturesk
+      args: --status ${{ inputs.status || 'draft' }}

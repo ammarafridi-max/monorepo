@@ -6,12 +6,13 @@ import Link from 'next/link';
 import {
   ArrowLeft, Loader2, AlertCircle, Download, Trash2,
   User, Mail, Phone, MapPin, CreditCard, FileText,
-  Calendar, Globe, Users, ShieldCheck, Hash,
+  Calendar, Globe, Users, ShieldCheck, Hash, Send,
 } from 'lucide-react';
 import { useGetInsuranceApplication } from '../../hooks/insurance/useGetInsuranceApplication';
 import { useUpdateInsuranceApplication } from '../../hooks/insurance/useUpdateInsuranceApplication';
 import { useDeleteInsuranceApplication } from '../../hooks/insurance/useDeleteInsuranceApplication';
 import { useGetInsuranceDocuments } from '../../hooks/insurance/useGetInsuranceDocuments';
+import { useResendPolicyEmail } from '../../hooks/insurance/useResendPolicyEmail';
 
 const PAYMENT_CFG = {
   PAID:     { dot: 'bg-green-500',  cls: 'bg-green-50   text-green-700   border-green-200'  },
@@ -188,6 +189,7 @@ export default function AdminInsuranceApplicationDetailPage() {
   const { application, isLoadingApplication, isErrorApplication } = useGetInsuranceApplication(sessionId);
   const { updateInsuranceApplication, isUpdatingApplication }     = useUpdateInsuranceApplication();
   const { documents, isLoadingDocuments, isErrorDocuments }        = useGetInsuranceDocuments(application?.policyId);
+  const { resendPolicyEmail, isResendingPolicyEmail }              = useResendPolicyEmail();
 
   if (isLoadingApplication) {
     return (
@@ -357,6 +359,26 @@ export default function AdminInsuranceApplicationDetailPage() {
                 ) : (
                   <p className="text-xs text-gray-400 py-2">No policy documents are available yet.</p>
                 )}
+
+                <div className="flex items-center justify-between gap-3 pt-3 mt-1 border-t border-gray-100">
+                  <p className="text-xs text-gray-500">
+                    {app.policyEmail?.status === 'SENT' ? (
+                      <>Policy email sent {fmtDatetime(app.policyEmail.sentAt)}{app.policyEmail.attachments ? `, ${app.policyEmail.attachments} PDF${app.policyEmail.attachments === 1 ? '' : 's'} attached` : ', no attachments'}</>
+                    ) : app.policyEmail?.status === 'FAILED' ? (
+                      <span className="text-red-600" title={app.policyEmail.error}>Policy email failed{app.policyEmail.error ? `: ${app.policyEmail.error}` : ''}</span>
+                    ) : (
+                      'Policy email not sent'
+                    )}
+                  </p>
+                  <button
+                    onClick={() => resendPolicyEmail(app.sessionId)}
+                    disabled={isResendingPolicyEmail}
+                    className="inline-flex items-center gap-1.5 shrink-0 text-xs font-semibold px-3 py-1.5 bg-primary-700 hover:bg-primary-800 text-white rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {isResendingPolicyEmail ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
+                    {app.policyEmail?.status === 'SENT' ? 'Resend email' : 'Send email'}
+                  </button>
+                </div>
               </div>
             </Card>
           )}

@@ -10,10 +10,11 @@ function resolveIcon(name, fallback = "Circle") {
   return LucideIcons[name] || LucideIcons[fallback] || LucideIcons.Circle;
 }
 
-export default function VisaProcess({ steps = [], countryName = "", guide }) {
+export default function VisaProcess({ steps = [], countryName = "", guide, term = "visa" }) {
   if (!steps.length) return null;
-  const prefix = countryName ? `${countryName} Visa` : "Visa";
-  const subject = countryName ? `${countryName} visa` : "visa";
+  const Term = term.charAt(0).toUpperCase() + term.slice(1);
+  const prefix = countryName ? `${countryName} ${Term}` : Term;
+  const subject = countryName ? `${countryName} ${term}` : term;
   return (
     <section className="py-12 md:py-16 bg-gray-50/80 border-y border-gray-100">
       <Container>

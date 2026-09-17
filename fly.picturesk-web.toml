@@ -23,7 +23,6 @@ primary_region = "iad"
     # NEXT_PUBLIC_UPLOAD_MAX_PHOTOS = "15"
     # NEXT_PUBLIC_UPLOAD_MIN_FACE_RATIO = "0.15"
     # Optional analytics + Sentry (leave unset to disable).
-    # NEXT_PUBLIC_ANALYTICS_DOMAIN = "picturesk.ai"
     # NEXT_PUBLIC_SENTRY_DSN = "https://xxxx@oyyyy.ingest.sentry.io/zzzz"
 
 [http_service]

@@ -133,7 +133,7 @@ export const linkedinHeadshots = {
         },
         {
           q: 'What if they do not look like me?',
-          a: 'Then you should not pay for them. Open your results and if they do not look like you, reply to your delivery email within 14 days and we refund your purchase in full. You keep the images either way.',
+          a: 'Then you should not pay for them. Open your results and if they do not look like you, reply to your delivery email within 3 days and we refund your purchase in full. You keep the images either way.',
         },
       ],
     },

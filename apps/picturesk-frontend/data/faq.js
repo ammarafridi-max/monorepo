@@ -13,7 +13,7 @@ export const faq = [
   {
     q: 'What if the headshots don\'t look like me?',
     home: true,
-    a: 'Then you shouldn\'t pay for them. If you open your results and they don\'t look like you, just reply to your delivery email or write to info@picturesk.ai within 14 days, and we\'ll refund your full purchase. You keep the images either way. We\'re a new studio earning your trust, so the risk is on us, not you.',
+    a: 'Then you shouldn\'t pay for them. If you open your results and they don\'t look like you, just reply to your delivery email or write to info@picturesk.ai within 3 days, and we\'ll refund your full purchase. You keep the images either way. We\'re a new studio earning your trust, so the risk is on us, not you.',
   },
   {
     q: 'How many photos do I need?',

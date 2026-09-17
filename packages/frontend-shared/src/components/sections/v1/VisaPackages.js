@@ -235,10 +235,12 @@ export default function VisaPackages({
   countryName = "",
   guide,
   onPackageSelect,
+  term = "visa",
 }) {
   if (!packages.length) return null;
-  const prefix = countryName ? `${countryName} Visa` : "Visa";
-  const subject = countryName ? `${countryName} visa` : "visa";
+  const Term = term.charAt(0).toUpperCase() + term.slice(1);
+  const prefix = countryName ? `${countryName} ${Term}` : Term;
+  const subject = countryName ? `${countryName} ${term}` : term;
   return (
     <section id="packages" className="py-12 md:py-16">
       <Container>

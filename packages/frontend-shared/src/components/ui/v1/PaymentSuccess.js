@@ -60,7 +60,7 @@ function CopyButton({ value }) {
   return (
     <button
       onClick={handleCopy}
-      className="p-1.5 rounded-lg text-gray-400 hover:text-primary-700 hover:bg-primary-50 transition-colors"
+      className="p-1.5 rounded-lg text-gray-500 hover:text-primary-700 hover:bg-primary-50 transition-colors"
       title="Copy"
     >
       {copied ? (
@@ -74,8 +74,8 @@ function CopyButton({ value }) {
 
 function DetailRow({ label, value, mono, action }) {
   return (
-    <div className="flex items-center justify-between gap-4 py-2.5 border-b border-gray-50 last:border-0">
-      <span className="text-xs text-gray-400 shrink-0">{label}</span>
+    <div className="flex items-center justify-between gap-4 py-2.5 border-b border-gray-100 last:border-0">
+      <span className="text-xs text-gray-500 shrink-0">{label}</span>
       <div className="flex items-center gap-1.5">
         <span
           className={`text-sm font-semibold text-gray-800 text-right ${mono ? 'font-mono text-xs' : ''}`}
@@ -98,7 +98,7 @@ function ConfirmingState() {
         <p className="text-lg font-bold text-gray-900">
           Confirming your policy…
         </p>
-        <p className="text-sm text-gray-400 mt-1">
+        <p className="text-sm text-gray-500 mt-1">
           Please wait while we confirm your payment and issue your policy.
         </p>
       </div>
@@ -116,7 +116,7 @@ function PendingConfirmationState({ onRetry }) {
         <p className="text-lg font-bold text-gray-900">
           Payment received, policy still syncing
         </p>
-        <p className="text-sm text-gray-400 mt-1 max-w-sm">
+        <p className="text-sm text-gray-500 mt-1 max-w-sm">
           WIS has redirected you back successfully, but your policy has not been
           issued yet. Please retry in a moment. If payment was collected, your
           documents will appear as soon as WIS confirms issuance.
@@ -131,7 +131,7 @@ function PendingConfirmationState({ onRetry }) {
         </button>
         <Link
           href="/contact"
-          className="text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors"
+          className="text-sm font-semibold text-gray-600 hover:text-gray-800 transition-colors"
         >
           Contact support
         </Link>
@@ -148,7 +148,7 @@ function PaymentNotFoundState() {
       </div>
       <div>
         <p className="text-lg font-bold text-gray-900">Payment not confirmed</p>
-        <p className="text-sm text-gray-400 mt-1 max-w-sm">
+        <p className="text-sm text-gray-500 mt-1 max-w-sm">
           We couldn't find a completed payment for this session. If you believe
           this is a mistake, please contact our support team with your booking
           reference.
@@ -163,7 +163,7 @@ function PaymentNotFoundState() {
         </Link>
         <Link
           href="/contact"
-          className="text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors"
+          className="text-sm font-semibold text-gray-600 hover:text-gray-800 transition-colors"
         >
           Contact support
         </Link>
@@ -176,11 +176,11 @@ function BookingNotFoundState() {
   return (
     <div className="max-w-lg mx-auto px-6 py-24 flex flex-col items-center text-center gap-5">
       <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
-        <AlertCircle size={28} className="text-gray-400" />
+        <AlertCircle size={28} className="text-gray-500" />
       </div>
       <div>
         <p className="text-lg font-bold text-gray-900">Booking not found</p>
-        <p className="text-sm text-gray-400 mt-1 max-w-sm">
+        <p className="text-sm text-gray-500 mt-1 max-w-sm">
           We couldn't find a booking matching this session. The link may be
           invalid or the session may have expired. Please contact support if you
           need help.
@@ -195,7 +195,7 @@ function BookingNotFoundState() {
         </Link>
         <Link
           href="/contact"
-          className="text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors"
+          className="text-sm font-semibold text-gray-600 hover:text-gray-800 transition-colors"
         >
           Contact support
         </Link>
@@ -212,7 +212,7 @@ function ErrorState({ onRetry }) {
       </div>
       <div>
         <p className="text-lg font-bold text-gray-900">Something went wrong</p>
-        <p className="text-sm text-gray-400 mt-1 max-w-sm">
+        <p className="text-sm text-gray-500 mt-1 max-w-sm">
           We couldn't confirm your policy automatically. Don't worry — if your
           payment was successful, your policy will be issued shortly. Contact
           support if the issue persists.
@@ -227,7 +227,7 @@ function ErrorState({ onRetry }) {
         </button>
         <Link
           href="/contact"
-          className="text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors"
+          className="text-sm font-semibold text-gray-600 hover:text-gray-800 transition-colors"
         >
           Contact support
         </Link>
@@ -291,6 +291,20 @@ export default function PaymentSuccess({ upsells = [] }) {
   async function handleDownload(doc, i) {
     setDownloadingIdx(i);
     try {
+      await saveDocument(doc, i);
+    } finally {
+      setDownloadingIdx(null);
+    }
+  }
+
+  async function handleDownloadAll() {
+    for (let i = 0; i < documents.length; i++) {
+      await handleDownload(documents[i], i);
+    }
+  }
+
+  async function saveDocument(doc, i) {
+    try {
       const res = await fetch(doc.url);
       const blob = await res.blob();
       const blobUrl = URL.createObjectURL(blob);
@@ -303,8 +317,6 @@ export default function PaymentSuccess({ upsells = [] }) {
       URL.revokeObjectURL(blobUrl);
     } catch {
       window.open(doc.url, '_blank');
-    } finally {
-      setDownloadingIdx(null);
     }
   }
 
@@ -395,7 +407,7 @@ export default function PaymentSuccess({ upsells = [] }) {
         <h1 className="text-3xl font-extrabold text-gray-900 mb-2">
           You&apos;re all covered!
         </h1>
-        <p className="text-sm text-gray-500 max-w-md">
+        <p className="text-sm text-gray-600 max-w-md">
           Your policy has been issued and documents have been sent to{' '}
           <span className="font-semibold text-gray-700">
             {resolvedEmail || 'your email'}
@@ -421,8 +433,8 @@ export default function PaymentSuccess({ upsells = [] }) {
         <div className="space-y-5">
           <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
             <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-gray-100">
-              <Globe size={14} className="text-gray-400" />
-              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+              <Globe size={14} className="text-gray-500" />
+              <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
                 Trip Details
               </p>
             </div>
@@ -471,12 +483,12 @@ export default function PaymentSuccess({ upsells = [] }) {
           {resolvedPassengers.length > 0 && (
             <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
               <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-gray-100">
-                <Users size={14} className="text-gray-400" />
-                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                <Users size={14} className="text-gray-500" />
+                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
                   Insured Travellers
                 </p>
               </div>
-              <div className="divide-y divide-gray-50">
+              <div className="divide-y divide-gray-100">
                 {resolvedPassengers.map((p, i) => (
                   <div
                     key={i}
@@ -494,14 +506,14 @@ export default function PaymentSuccess({ upsells = [] }) {
                             .filter(Boolean)
                             .join(' ') || '—'}
                         </p>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs text-gray-500">
                           {p.nationality?.nationality ?? p.nationality ?? '—'}
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs text-gray-400">{p.dob ?? '—'}</p>
-                      <p className="text-xs font-mono text-gray-500">
+                      <p className="text-xs text-gray-500">{p.dob ?? '—'}</p>
+                      <p className="text-xs font-mono text-gray-600">
                         {p.passport ?? '—'}
                       </p>
                     </div>
@@ -514,8 +526,8 @@ export default function PaymentSuccess({ upsells = [] }) {
           {(app.policyId || app.policyNumber || app.transactionId) && (
             <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
               <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-gray-100">
-                <FileText size={14} className="text-gray-400" />
-                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                <FileText size={14} className="text-gray-500" />
+                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
                   Policy Reference
                 </p>
               </div>
@@ -551,68 +563,81 @@ export default function PaymentSuccess({ upsells = [] }) {
           {app.policyId && (
             <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
               <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-gray-100">
-                <Download size={14} className="text-gray-400" />
-                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                <FileText size={14} className="text-gray-500" />
+                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
                   Your Documents
                 </p>
+                {documents.length > 1 && (
+                  <button
+                    onClick={handleDownloadAll}
+                    disabled={downloadingIdx !== null}
+                    className="ml-auto inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 bg-primary-700 hover:bg-primary-800 text-white rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    <Download size={13} />
+                    Download all
+                  </button>
+                )}
               </div>
-              <div className="p-5">
-                {isLoadingDocuments ? (
-                  <div className="flex items-center gap-2.5 text-sm text-gray-400 py-2">
-                    <Loader2 size={16} className="animate-spin shrink-0" />
-                    Fetching your documents…
-                  </div>
-                ) : documents.length === 0 ? (
-                  <p className="text-sm text-gray-400 py-1">
-                    Documents are being prepared. Please check back shortly or
-                    look in your inbox.
-                  </p>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {documents.map((doc, i) => (
+              {isLoadingDocuments ? (
+                <div className="flex items-center gap-2.5 text-sm text-gray-500 px-5 py-4">
+                  <Loader2 size={16} className="animate-spin shrink-0" />
+                  Fetching your documents…
+                </div>
+              ) : documents.length === 0 ? (
+                <p className="text-sm text-gray-500 px-5 py-4">
+                  Documents are being prepared. Please check back shortly or
+                  look in your inbox.
+                </p>
+              ) : (
+                <ul className="divide-y divide-gray-100">
+                  {documents.map((doc, i) => (
+                    <li key={i} className="flex items-center gap-3 px-5 py-3">
+                      <FileText size={16} className="text-gray-500 shrink-0" />
+                      <p className="text-sm font-medium text-gray-800 truncate">
+                        {doc.name}
+                      </p>
+                      {/\.pdf(\?|$)/i.test(doc.url || doc.name || '') && (
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 border border-gray-200 rounded px-1.5 py-0.5 shrink-0">
+                          PDF
+                        </span>
+                      )}
                       <button
-                        key={i}
                         onClick={() => handleDownload(doc, i)}
-                        disabled={downloadingIdx === i}
-                        className="inline-flex items-center gap-3 px-4 py-3.5 bg-primary-50 hover:bg-primary-100 border border-primary-200 rounded-xl transition-colors text-left disabled:opacity-60 disabled:cursor-not-allowed"
+                        disabled={downloadingIdx !== null}
+                        className="ml-auto inline-flex items-center gap-1.5 text-sm font-semibold text-primary-700 hover:text-primary-800 transition-colors disabled:opacity-60 disabled:cursor-not-allowed shrink-0"
                       >
                         {downloadingIdx === i ? (
-                          <Loader2
-                            size={18}
-                            className="animate-spin text-primary-600 shrink-0"
-                          />
+                          <Loader2 size={14} className="animate-spin" />
                         ) : (
-                          <Download
-                            size={18}
-                            className="text-primary-600 shrink-0"
-                          />
+                          <Download size={14} />
                         )}
-                        <div>
-                          <p className="text-sm font-semibold text-primary-800 leading-tight">
-                            {doc.name}
-                          </p>
-                          <p className="text-xs text-primary-500 mt-0.5">
-                            {downloadingIdx === i
-                              ? 'Downloading…'
-                              : 'Click to download'}
-                          </p>
-                        </div>
+                        {downloadingIdx === i ? 'Downloading…' : 'Download'}
                       </button>
-                    ))}
-                  </div>
-                )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+
+          {upsells.length > 0 && (
+            <div>
+              <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-3">
+                You might also need
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {upsells.map((u, i) => (
+                  <UpsellCard key={i} {...u} />
+                ))}
               </div>
             </div>
           )}
         </div>
 
         <div className="space-y-4 lg:sticky lg:top-6">
-          {upsells.map((u, i) => (
-            <UpsellCard key={i} {...u} />
-          ))}
 
           <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm p-5">
-            <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-4">
+            <p className="text-xs font-bold text-gray-600 uppercase tracking-wide mb-4">
               What&apos;s next
             </p>
             <div className="flex flex-col gap-4">
@@ -624,7 +649,7 @@ export default function PaymentSuccess({ upsells = [] }) {
                   <p className="text-xs font-bold text-gray-700">
                     Check your inbox
                   </p>
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  <p className="text-xs text-gray-500 mt-0.5">
                     Your policy documents and certificate have been sent to your
                     email.
                   </p>
@@ -638,7 +663,7 @@ export default function PaymentSuccess({ upsells = [] }) {
                   <p className="text-xs font-bold text-gray-700">
                     Save your policy
                   </p>
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  <p className="text-xs text-gray-500 mt-0.5">
                     Download and save a copy of your policy documents before you
                     travel.
                   </p>
@@ -652,7 +677,7 @@ export default function PaymentSuccess({ upsells = [] }) {
                   <p className="text-xs font-bold text-gray-700">
                     Emergency line
                   </p>
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  <p className="text-xs text-gray-500 mt-0.5">
                     Your policy includes 24/7 emergency assistance. Keep the
                     number handy.
                   </p>
@@ -662,7 +687,7 @@ export default function PaymentSuccess({ upsells = [] }) {
           </div>
 
           <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 text-center">
-            <p className="text-xs text-gray-500 mb-2">
+            <p className="text-xs text-gray-600 mb-2">
               Need help with your policy?
             </p>
             <Link

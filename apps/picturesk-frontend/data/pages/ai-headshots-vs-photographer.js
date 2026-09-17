@@ -41,7 +41,7 @@ export const aiHeadshotsVsPhotographer = {
         ['Consistency across a team', 'Everyone gets the same backgrounds and light, from anywhere', 'Only if everyone attends the same session in the same room'],
         ['Creative direction', 'You choose from a catalogue', 'You direct the shot, in person, with feedback'],
         ['Full body, groups, props', 'No. Head and shoulders only', 'Yes'],
-        ['If it goes wrong', 'Automatic refund on a failed run; full refund within 14 days if it does not look like you', 'Depends on the photographer. Reshoots are rarely free'],
+        ['If it goes wrong', 'Automatic refund on a failed run; full refund within 3 days if it does not look like you', 'Depends on the photographer. Reshoots are rarely free'],
       ],
     },
 
@@ -68,7 +68,7 @@ export const aiHeadshotsVsPhotographer = {
         {
           icon: 'refund',
           title: 'A guarantee a studio rarely offers',
-          body: 'If a run fails, the refund is automatic. If the results do not look like you, you get a full refund within 14 days and keep the images. Ask a photographer for that.',
+          body: 'If a run fails, the refund is automatic. If the results do not look like you, you get a full refund within 3 days and keep the images. Ask a photographer for that.',
         },
       ],
     },
@@ -127,7 +127,7 @@ export const aiHeadshotsVsPhotographer = {
         },
         {
           q: 'What if I choose AI and the results are bad?',
-          a: 'Two protections. If the generation run fails, you are refunded automatically. If the headshots come back and do not look like you, reply to the delivery email within 14 days and we refund your purchase in full. You keep the images either way.',
+          a: 'Two protections. If the generation run fails, you are refunded automatically. If the headshots come back and do not look like you, reply to the delivery email within 3 days and we refund your purchase in full. You keep the images either way.',
         },
       ],
     },

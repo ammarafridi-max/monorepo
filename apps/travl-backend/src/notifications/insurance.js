@@ -1,5 +1,51 @@
+import { createNotificationsService } from '@travel-suite/notifications';
+import { logger } from '@travel-suite/utils';
 import { sendEmail } from '../utils/email.js';
 import config from '../utils/config.js';
+
+const SITE = 'https://www.travl.ae';
+
+const customer = createNotificationsService({
+  sendEmail,
+  logger,
+  brand: {
+    name: 'Travl',
+    adminEmail: config.adminEmail,
+    theme: { primaryColor: '#0d6a66', linkColor: '#0d6a66' },
+  },
+});
+
+// Outbound brands are a deliberate exception to brand neutrality, confined to
+// this app. Visa assistance is VisaWadi's; dummy tickets are Dummy Ticket 365's.
+const UPSELLS = [
+  {
+    title: 'Get Visa Assistance',
+    brand: 'VisaWadi',
+    description: 'Schengen, UK, US and Saudi visas, handled end to end.',
+    price: 'AED 299',
+    ctaLabel: 'Get assistance',
+    href: 'https://www.visawadi.com/uae',
+  },
+  {
+    title: 'Book a Dummy Ticket',
+    brand: 'Dummy Ticket 365',
+    description: 'A verifiable flight reservation with a real PNR for your visa file.',
+    price: 'USD 13',
+    ctaLabel: 'Book now',
+    href: 'https://www.dummyticket365.com',
+  },
+];
+
+export function policyIssuedEmail(data) {
+  return customer.sendPolicyIssuedToCustomer({
+    ...data,
+    refundBeforeStart: true,
+    claimsUrl: `${SITE}/claims`,
+    supportEmail: config.adminEmail,
+    upsells: UPSELLS,
+    footerNote: 'Underwritten by AXA. Travl Technologies LLC.',
+  });
+}
 
 export async function insurancePaymentCompletionEmail({
   leadTraveler, email, sessionId, policyId, policyNumber,

@@ -2,28 +2,19 @@
 
 import { useEffect, useState } from 'react';
 import Script from 'next/script';
-import {
-  ANALYTICS_DOMAIN,
-  ANALYTICS_SRC,
-  GA_ID,
-  CLARITY_ID,
-  plausibleEnabled,
-  gaEnabled,
-  clarityEnabled,
-} from '../lib/analytics';
+import { GA_ID, CLARITY_ID, gaEnabled, clarityEnabled } from '../lib/analytics';
 
 // Where the visitor's cookie choice is remembered. localStorage (not a cookie) so
 // storing the choice itself sets nothing that would need consent.
 const CONSENT_KEY = 'picturesk.consent'; // 'granted' | 'denied'
 
 // Loads analytics scripts ONLY for the providers configured at build time, and only
-// with the visitor's consent where consent is required. Plausible is cookieless and
-// loads without consent; Google Analytics 4 and Microsoft Clarity set cookies, so we
-// gate them behind an opt-in banner (applied to everyone, the strictest common rule
-// for an international audience). track() (lib/analytics.js) fans custom funnel events
-// out to whichever script ends up loaded; before consent those calls are safe no-ops.
+// with the visitor's consent. Google Analytics 4 and Microsoft Clarity both set
+// cookies, so they sit behind an opt-in banner (applied to everyone, the strictest
+// common rule for an international audience). track() (lib/analytics.js) fans custom
+// funnel events out to whichever script ends up loaded; before consent those calls
+// are safe no-ops.
 export default function Analytics() {
-  const plausible = plausibleEnabled();
   const ga = gaEnabled();
   const clarity = clarityEnabled();
 
@@ -50,30 +41,13 @@ export default function Analytics() {
     setConsent(value);
   }
 
-  if (!plausible && !ga && !clarity) return null;
+  if (!ga && !clarity) return null;
 
   const consented = consent === 'granted';
   const showBanner = ready && needsConsent && consent === null;
 
   return (
     <>
-      {/* Plausible: cookieless, no consent needed. */}
-      {plausible && (
-        <>
-          <Script
-            defer
-            data-domain={ANALYTICS_DOMAIN}
-            src={ANALYTICS_SRC}
-            strategy="afterInteractive"
-          />
-          {/* Standard Plausible queue shim so window.plausible(...) works for custom
-              events even before the script finishes loading. */}
-          <Script id="plausible-init" strategy="afterInteractive">
-            {`window.plausible=window.plausible||function(){(window.plausible.q=window.plausible.q||[]).push(arguments)}`}
-          </Script>
-        </>
-      )}
-
       {/* GA4: cookie-based, loads only after opt-in. */}
       {ga && consented && (
         <>

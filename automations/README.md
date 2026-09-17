@@ -13,9 +13,10 @@ cd automations && node src/cli.mjs blog-generate --target travl --dry-run
 
 | Job | Target | Schedule | Workflow |
 |---|---|---|---|
-| `blog-generate` | travl | **paused** (hand-written batches scheduled to 2026-09-30) | `blog-travl.yml` |
+| `blog-generate` | travl | **paused** (hand-written batches scheduled to 2026-10-10) | `blog-travl.yml` |
 | `blog-generate` | visawadi | **paused** (hand-written batch scheduled to 2026-10-11) | `blog-visawadi.yml` |
 | `blog-generate` | emirateslimo | **not enabled** (needs the admin secrets; manual draft runs only) | `blog-emirateslimo.yml` |
+| `blog-generate` | picturesk | **not enabled** (needs the admin account + secrets; manual draft runs only) | `blog-picturesk.yml` |
 | `blog-schedule` | travl | manual | — |
 | `pricing-sync` | — | Mon + Thu 05:00 UTC | `pricing-sync-emirateslimo.yml` |
 

@@ -23,7 +23,7 @@ import { db } from "../utils/db.js";
 import { wis } from "../utils/wis.js";
 import { createBrevoClient } from "@travel-suite/brevo";
 import { sendEmail } from "../utils/email.js";
-import { insurancePaymentCompletionEmail } from "../notifications/insurance.js";
+import { insurancePaymentCompletionEmail, policyIssuedEmail } from "../notifications/insurance.js";
 import { itineraryPaymentCustomerEmail } from "../notifications/itinerary.js";
 import config from "../utils/config.js";
 
@@ -50,7 +50,7 @@ router.use(
     wis,
     brevo,
     auth,
-    notifications: { insurancePaymentCompletionEmail },
+    notifications: { insurancePaymentCompletionEmail, policyIssuedEmail },
   }),
 );
 

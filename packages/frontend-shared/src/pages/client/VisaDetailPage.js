@@ -16,7 +16,7 @@ import VisaFinalCta from "../../components/sections/v1/VisaFinalCta.js";
 import VisaStickyCta from "../../components/sections/v1/VisaStickyCta.js";
 import VisaInlineCta from "../../components/sections/v1/VisaInlineCta.js";
 
-export default function VisaDetailPage({ visa, schema, breadcrumbJsonLd, whatsappUrl, trustAssurances = [], trustSubtitle = "", heroTrustItems = [], testimonialsSubtitle }) {
+export default function VisaDetailPage({ visa, schema, breadcrumbJsonLd, whatsappUrl, trustAssurances = [], trustSubtitle = "", heroTrustItems = [], testimonialsSubtitle, term = "visa" }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalPackage, setModalPackage] = useState("undecided");
   const [modalSource, setModalSource] = useState("hero_cta");
@@ -58,7 +58,7 @@ export default function VisaDetailPage({ visa, schema, breadcrumbJsonLd, whatsap
         subheadline={visa.heroSubheadline}
         ctaText={visa.heroCtaText}
         imageUrl={visa.heroImageUrl}
-        imageAlt={visa.countryName ? `${visa.countryName} visa assistance` : ""}
+        imageAlt={visa.countryName ? `${visa.countryName} ${term} assistance` : ""}
         trustItems={heroTrustItems}
         onCtaClick={() => openModal("undecided", "hero_cta")}
       />
@@ -70,16 +70,19 @@ export default function VisaDetailPage({ visa, schema, breadcrumbJsonLd, whatsap
         onCtaClick={() => openModal("undecided", "sticky_bar")}
       />
       <VisaQualifiers
+        term={term}
         items={visa.qualifierItems}
         countryName={visa.countryName}
       />
       <VisaPackages
+        term={term}
         packages={visa.packages}
         countryName={visa.countryName}
         guide={guides.packages}
         onPackageSelect={(name) => openModal(name, "package_card")}
       />
       <VisaProcess
+        term={term}
         steps={visa.processSteps}
         countryName={visa.countryName}
         guide={guides.process}
@@ -90,6 +93,7 @@ export default function VisaDetailPage({ visa, schema, breadcrumbJsonLd, whatsap
         onCtaClick={() => openModal("undecided", "inline_cta")}
       />
       <VisaRequirements
+        term={term}
         sections={visa.requirementSections}
         countryName={visa.countryName}
         guide={guides.requirements}
@@ -100,6 +104,7 @@ export default function VisaDetailPage({ visa, schema, breadcrumbJsonLd, whatsap
         onCtaClick={() => openModal("undecided", "inline_cta")}
       />
       <VisaPricingBreakdown
+        term={term}
         rows={visa.pricingBreakdown}
         countryName={visa.countryName}
         guide={guides.pricing}
@@ -110,8 +115,9 @@ export default function VisaDetailPage({ visa, schema, breadcrumbJsonLd, whatsap
         onCtaClick={() => openModal("undecided", "inline_cta")}
       />
       <VisaTrust items={visa.whyUs} assurances={trustAssurances} subtitle={trustSubtitle} />
-      <VisaTestimonials testimonials={visa.testimonials ?? []} subtitle={testimonialsSubtitle} />
+      <VisaTestimonials testimonials={visa.testimonials ?? []} subtitle={testimonialsSubtitle} term={term} />
       <VisaFaqSection
+        term={term}
         faqs={visa.faqs}
         countryName={visa.countryName}
         guide={guides.faqs}

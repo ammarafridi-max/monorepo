@@ -26,7 +26,7 @@ export default function FlightItinerary({ itinerary, airlineInfo }) {
 
 function DepartureData({ itinerary }) {
   return (
-    <div className="w-[80px] text-left lg:text-center text-md lg:text-lg font-medium leading-4.5">
+    <div className="w-[60px] text-left lg:text-center text-md lg:text-lg font-medium leading-4.5">
       <p className="mb-1 text-[13px] lg:text-[15px]">
         {itinerary?.segments[0].departure.iataCode}
       </p>
@@ -44,7 +44,7 @@ function DepartureData({ itinerary }) {
 function ReturnData({ itinerary }) {
   const lastSegment = itinerary?.segments?.[itinerary.segments.length - 1];
   return (
-    <div className="w-[80px] text-right lg:text-center text-md lg:text-lg font-medium leading-4.5">
+    <div className="w-[60px] text-right lg:text-center text-md lg:text-lg font-medium leading-4.5">
       <p className="mb-1 text-[13px] lg:text-[15px]">
         {lastSegment?.arrival?.iataCode}
       </p>

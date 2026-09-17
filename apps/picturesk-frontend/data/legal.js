@@ -5,7 +5,8 @@
  *
  *  - Real processors: Stripe (payment), Cloudflare R2 (storage), Replicate (model
  *    training + image generation), Brevo (email).
- *  - The refund is the FAILED-order auto-refund only, not a satisfaction guarantee.
+ *  - Two refunds exist: the FAILED-order auto-refund, and the 3-day look-like-you
+ *    guarantee on a delivered set. Keep both in step with data/faq.js and the emails.
  *  - We do not claim photo auto-deletion or a retention schedule the system does not
  *    enforce; see the TODO markers where a human needs to confirm policy.
  *
@@ -13,7 +14,7 @@
  * link?: { text, href } }] }, rendered by app/Sections.js.
  */
 
-export const LAST_UPDATED = 'July 9, 2026';
+export const LAST_UPDATED = 'September 17, 2026';
 // The privacy policy carries its own date so an analytics/cookies change does not
 // imply the terms or refund policy also changed.
 export const PRIVACY_UPDATED = 'July 22, 2026';
@@ -147,7 +148,8 @@ export const terms = {
     {
       h: 'Refunds',
       body: [
-        'If a run fails and we cannot deliver your headshots, you are refunded automatically. Dissatisfaction with a delivered set is handled case by case.',
+        'If a run fails and we cannot deliver your headshots, you are refunded automatically.',
+        'If your headshots are delivered and they do not look like you, tell us within 3 days of delivery and we refund your purchase in full. You keep the images.',
       ],
       link: { text: 'Read the full Refund Policy', href: '/refunds' },
     },
@@ -175,8 +177,7 @@ export const terms = {
     {
       h: 'Governing law',
       body: [
-        // TODO: confirm governing law / jurisdiction (UAE?) and state it explicitly here.
-        'These terms are governed by the laws of the jurisdiction in which Picturesk operates. The specific jurisdiction will be confirmed here.',
+        'These terms are governed by the laws of the United Arab Emirates. Any dispute connected to Picturesk is subject to the exclusive jurisdiction of the courts of Dubai.',
       ],
     },
     {
@@ -190,7 +191,7 @@ export const terms = {
 
 export const refunds = {
   updated: LAST_UPDATED,
-  lede: 'The short version: if a run fails, you get your money back automatically.',
+  lede: 'The short version: if a run fails, you get your money back automatically. If the set does not look like you, tell us within 3 days and you get it back too.',
   sections: [
     {
       h: 'Automatic refund when a run fails',
@@ -206,10 +207,10 @@ export const refunds = {
       ],
     },
     {
-      h: 'What is not automatically refunded',
+      h: 'Look-like-you guarantee',
       body: [
-        'If your headshots are delivered successfully but you are not happy with them, that is not covered by the automatic refund, because the run did not fail.',
-        'We still want to help. If a delivered set missed the mark, contact us and we will work with you.',
+        'If your headshots are delivered and they do not look like you, reply to your delivery email or write to info@picturesk.ai within 3 days of delivery and we refund your purchase in full. You keep the images.',
+        'One refund per order. The 3 days run from the time the delivery email is sent. Requests after that are handled case by case.',
       ],
       link: { text: 'Contact us', href: '/contact' },
     },

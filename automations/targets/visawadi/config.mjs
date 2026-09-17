@@ -167,7 +167,7 @@ Example shape (write your own copy, do not reuse this wording verbatim):
       {
         slug: 'usa',
         // Case-sensitive on the bare token: /\bUS\b/i also matches the pronoun "us".
-        match: () => /\bUSA?\b/.test(title) || has('United States') || has('B1/B2'),
+        match: () => /\bUSA?\b/.test(title) || has('United States') || /\bB[12]\b/.test(title),
         label: 'the United States',
       },
       { slug: 'canada', match: () => has('Canada') || hasWord('IRCC'), label: 'Canada' },

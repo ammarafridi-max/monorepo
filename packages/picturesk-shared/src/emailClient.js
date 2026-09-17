@@ -214,7 +214,7 @@ export function renderDeliveryEmail({ resultsUrl, orderId, thumbnailUrls = [], l
           </tr>
           <tr>
             <td style="padding:0 0 28px 0;font-family:${SANS};font-size:14px;line-height:1.6;color:${ASH}">
-              Our promise: if these don't look like you, just reply to this email within 14 days and we'll refund you in full.
+              Our promise: if these don't look like you, just reply to this email within 3 days and we'll refund you in full.
             </td>
           </tr>
           <tr>
@@ -243,7 +243,7 @@ export function renderDeliveryEmail({ resultsUrl, orderId, thumbnailUrls = [], l
     '',
     lifetimeLine,
     '',
-    "Our promise: if these don't look like you, just reply to this email within 14 days and we'll refund you in full.",
+    "Our promise: if these don't look like you, just reply to this email within 3 days and we'll refund you in full.",
     '',
     `Order ${orderId}`,
   ].join('\n');
@@ -308,7 +308,7 @@ export function renderPaidEmail({ resultsUrl, orderId, planLabel, deliverCount }
           </tr>
           <tr>
             <td style="padding:0 0 28px 0;font-family:${SANS};font-size:14px;line-height:1.6;color:${ASH}">
-              Nothing to do on your side. If a run fails for any reason you are refunded automatically, and if the finished set does not look like you, reply to the delivery email within 14 days for a full refund.
+              Nothing to do on your side. If a run fails for any reason you are refunded automatically, and if the finished set does not look like you, reply to the delivery email within 3 days for a full refund.
             </td>
           </tr>
           <tr>
@@ -337,7 +337,7 @@ export function renderPaidEmail({ resultsUrl, orderId, planLabel, deliverCount }
     'Follow your order here:',
     resultsUrl,
     '',
-    'Nothing to do on your side. If a run fails for any reason you are refunded automatically, and if the finished set does not look like you, reply to the delivery email within 14 days for a full refund.',
+    'Nothing to do on your side. If a run fails for any reason you are refunded automatically, and if the finished set does not look like you, reply to the delivery email within 3 days for a full refund.',
     '',
     `Order ${orderId}`,
   ].join('\n');

@@ -3783,3 +3783,13 @@ button:focus-visible,
 .btn--link {
   min-height: 44px;
 }
+
+.option-card--off {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.gen-hint--cap {
+  margin-top: 6px;
+  color: var(--cobalt);
+}

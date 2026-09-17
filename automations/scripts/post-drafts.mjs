@@ -8,6 +8,9 @@
  * topics.json order. Auth is the target's admin JWT in <TARGET>_COOKIE.
  * Env: RECRAFT_API_KEY for cover images (falls back to a placeholder).
  *
+ * --covers <dir>: use <dir>/<slug>.jpg as the cover when present, instead of
+ * generating one. For batches whose covers were made elsewhere.
+ *
  * Idempotent: a topic whose title already exists on the site is skipped.
  */
 
@@ -25,6 +28,7 @@ const STEP_MS = 86400000;
 
 const targetKey = arg("target");
 const dir = arg("dir");
+const coversDir = arg("covers");
 const startMs = Date.parse(arg("start") ?? "");
 if (!targetKey || !dir || Number.isNaN(startMs)) {
   console.error("Usage: post-drafts.mjs --target <key> --dir <drafts/> --start <ISO> [--apply]");
@@ -62,7 +66,10 @@ for (const topic of queue) {
 
   const draft = JSON.parse(readFileSync(join(dir, `${topic.slug}.json`), "utf8"));
   const tags = draft.tags.filter((t) => allTags.includes(t));
-  const cover = await fetchCoverImage(topic.title, brand);
+  const coverPath = coversDir ? join(coversDir, `${topic.slug}.jpg`) : null;
+  const cover = coverPath && existsSync(coverPath)
+    ? new Blob([readFileSync(coverPath)], { type: "image/jpeg" })
+    : await fetchCoverImage(topic.title, brand);
 
   const form = new FormData();
   form.append("title", topic.title);

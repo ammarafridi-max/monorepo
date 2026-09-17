@@ -1,21 +1,10 @@
-// Privacy-light, cookieless funnel analytics via Plausible.
-//
-// Why Plausible: cookieless by default (no consent banner, no personal data, no
-// cross-site profile), a tiny (~1 KB) script, and simple custom events. PostHog
-// can run cookieless too but is heavier and profile-oriented; for a five-event
-// launch funnel Plausible is the lighter, privacy-first fit.
-//
-// Enabled ONLY when NEXT_PUBLIC_ANALYTICS_DOMAIN is set. Unset => no script is
-// loaded (see app/Analytics.js) and every track() below is a no-op, so local dev
-// stays clean with nothing phoning home.
+// Funnel analytics: GA4 for counts and Microsoft Clarity for session replay. Both
+// set cookies, so components/Analytics.js loads them only after the visitor opts
+// in. Enabled ONLY when the matching NEXT_PUBLIC_* id is set at build time; unset
+// means no script loads and every track() below is a no-op, so local dev stays
+// clean with nothing phoning home.
 
-export const ANALYTICS_DOMAIN = process.env.NEXT_PUBLIC_ANALYTICS_DOMAIN || '';
-export const ANALYTICS_SRC =
-  process.env.NEXT_PUBLIC_ANALYTICS_SRC || 'https://plausible.io/js/script.js';
-
-// GA4 measurement ID (G-XXXXXXXXXX). Loaded only when set at build time, same
-// opt-in shape as Plausible. Both can run together; track() fans out to whichever
-// script is present.
+// GA4 measurement ID (G-XXXXXXXXXX). track() fans out to whichever script is present.
 export const GA_ID = process.env.NEXT_PUBLIC_GA_ID || '';
 
 // Microsoft Clarity project id. Same opt-in, build-time-inlined shape as GA4.
@@ -24,10 +13,6 @@ export const GA_ID = process.env.NEXT_PUBLIC_GA_ID || '';
 // the upload/capture/pay pages) must be masked in the Clarity project's privacy
 // settings (and/or via data-clarity-mask on those elements).
 export const CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_ID || '';
-
-export function plausibleEnabled() {
-  return Boolean(ANALYTICS_DOMAIN);
-}
 
 export function gaEnabled() {
   return Boolean(GA_ID);
@@ -38,7 +23,7 @@ export function clarityEnabled() {
 }
 
 export function analyticsEnabled() {
-  return plausibleEnabled() || gaEnabled() || clarityEnabled();
+  return gaEnabled() || clarityEnabled();
 }
 
 /**
@@ -64,11 +49,6 @@ export const EVENTS = Object.freeze({
 export function track(event, props) {
   if (typeof window === 'undefined') return;
   // Analytics must never break the app: guard each sink independently.
-  if (typeof window.plausible === 'function') {
-    try {
-      window.plausible(event, props ? { props } : undefined);
-    } catch {}
-  }
   if (typeof window.gtag === 'function') {
     try {
       window.gtag('event', event, props || {});
