@@ -5,9 +5,12 @@
   "type": "module",
   "main": "./src/index.js",
   "exports": {
-    ".": "./src/index.js"
+    ".": "./src/index.js",
+    "./sentry": "./src/sentry.js"
   },
   "scripts": {},
-  "dependencies": {},
+  "dependencies": {
+    "@sentry/node": "^10.64.0"
+  },
   "devDependencies": {}
 }

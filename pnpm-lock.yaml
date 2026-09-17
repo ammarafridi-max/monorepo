@@ -57,9 +57,6 @@ importers:
       '@travel-suite/tickets':
         specifier: workspace:*
         version: link:../../packages/domains/tickets
-      '@travel-suite/users':
-        specifier: workspace:*
-        version: link:../../packages/domains/users
       '@travel-suite/utils':
         specifier: workspace:*
         version: link:../../packages/shared/utils
@@ -181,9 +178,6 @@ importers:
       '@travel-suite/tickets':
         specifier: workspace:*
         version: link:../../packages/domains/tickets
-      '@travel-suite/users':
-        specifier: workspace:*
-        version: link:../../packages/domains/users
       '@travel-suite/utils':
         specifier: workspace:*
         version: link:../../packages/shared/utils
@@ -287,6 +281,9 @@ importers:
       '@travel-suite/locations':
         specifier: workspace:*
         version: link:../../packages/domains/locations
+      '@travel-suite/notifications':
+        specifier: workspace:*
+        version: link:../../packages/shared/notifications
       '@travel-suite/payments':
         specifier: workspace:*
         version: link:../../packages/domains/payments
@@ -465,9 +462,6 @@ importers:
       '@travel-suite/cloudinary':
         specifier: workspace:*
         version: link:../../packages/integrations/cloudinary
-      '@travel-suite/currencies':
-        specifier: workspace:*
-        version: link:../../packages/domains/currencies
       '@travel-suite/flights':
         specifier: workspace:*
         version: link:../../packages/domains/flights
@@ -486,9 +480,6 @@ importers:
       '@travel-suite/tickets':
         specifier: workspace:*
         version: link:../../packages/domains/tickets
-      '@travel-suite/users':
-        specifier: workspace:*
-        version: link:../../packages/domains/users
       '@travel-suite/utils':
         specifier: workspace:*
         version: link:../../packages/shared/utils
@@ -699,9 +690,6 @@ importers:
       '@travel-suite/cloudinary':
         specifier: workspace:*
         version: link:../../packages/integrations/cloudinary
-      '@travel-suite/currencies':
-        specifier: workspace:*
-        version: link:../../packages/domains/currencies
       '@travel-suite/insurance':
         specifier: workspace:*
         version: link:../../packages/domains/insurance
@@ -817,9 +805,6 @@ importers:
       '@travel-suite/cloudinary':
         specifier: workspace:*
         version: link:../../packages/integrations/cloudinary
-      '@travel-suite/currencies':
-        specifier: workspace:*
-        version: link:../../packages/domains/currencies
       '@travel-suite/notifications':
         specifier: workspace:*
         version: link:../../packages/shared/notifications
@@ -1364,9 +1349,6 @@ importers:
 
   packages/frontend-shared:
     dependencies:
-      '@hotjar/browser':
-        specifier: ^1.0.9
-        version: 1.0.9
       '@mapbox/mapbox-gl-draw':
         specifier: ^1.5.1
         version: 1.5.1
@@ -1502,7 +1484,11 @@ importers:
         specifier: ^4.1.0
         version: 4.1.0
 
-  packages/shared/utils: {}
+  packages/shared/utils:
+    dependencies:
+      '@sentry/node':
+        specifier: ^10.64.0
+        version: 10.72.0(@opentelemetry/core@2.10.0(@opentelemetry/api@1.9.1))
 
 packages:
 
@@ -1740,9 +1726,6 @@ packages:
 
   '@fontsource/google-sans@5.2.1':
     resolution: {integrity: sha512-FteXH18YS0288Bcrjefwyyp7hLwxd8yQBEcmjU/P0BED9c8n8kxwgna3gtMtYyFQx/wIkpyrzj8RaYQyl/4quw==}
-
-  '@hotjar/browser@1.0.9':
-    resolution: {integrity: sha512-n9akDMod8BLGpYEQCrHwlYWWd63c1HlhUSXNIDfClZtKYXbUjIUOFlNZNNcUxgHTCsi4l2i+SWKsGsO0t93S8w==}
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -6724,8 +6707,6 @@ snapshots:
   '@fontsource-variable/outfit@5.2.8': {}
 
   '@fontsource/google-sans@5.2.1': {}
-
-  '@hotjar/browser@1.0.9': {}
 
   '@humanfs/core@0.19.2':
     dependencies:

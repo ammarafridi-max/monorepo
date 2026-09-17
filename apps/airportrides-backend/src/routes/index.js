@@ -8,7 +8,6 @@ import { createAirportsRouter } from "@travel-suite/flights";
 import { createAirLabsClient } from "@travel-suite/airlabs";
 import { createBookingsRouter } from "@travel-suite/bookings";
 import { createLocationsRouter } from "@travel-suite/locations";
-import { createUsersRouter } from "@travel-suite/users";
 import { createNotificationsService } from "@travel-suite/notifications";
 import {
   createStripeClient,
@@ -21,12 +20,10 @@ import {
 } from "@travel-suite/payments";
 import { db } from "../utils/db.js";
 import { sendEmail } from "../utils/email.js";
-import { createBrevoClient } from "@travel-suite/brevo";
 import { logger } from "@travel-suite/utils";
 import config from "../utils/config.js";
 
 const router = Router();
-const brevo = createBrevoClient({ apiKey: config.brevoApiKey, logger });
 
 
 // -- Auth ----------------------------------------------------------------------
@@ -122,34 +119,6 @@ router.patch(
   auth.restrictTo("admin", "agent"),
   bookingController.updateStatus,
 );
-
-// -- Contact form --------------------------------------------------------------
-router.post('/contact', async (req, res, next) => {
-  try {
-    const { name, email, subject, message } = req.body;
-    if (!name || !email || !subject || !message) {
-      return res.status(400).json({ error: 'All fields are required' });
-    }
-    await notifications.sendContactFormToAdmin({ name, email, subject, message });
-    res.json({ ok: true });
-  } catch (err) {
-    next(err);
-  }
-});
-
-// -- Launch notify signup (Brevo contact capture) -----------------------------
-router.post('/subscribe', async (req, res, next) => {
-  try {
-    const { email } = req.body;
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return res.status(400).json({ error: 'A valid email address is required' });
-    }
-    await brevo.subscribeContact({ email, attributes: { SOURCE: 'launch-notify' } });
-    res.json({ ok: true });
-  } catch (err) {
-    next(err);
-  }
-});
 
 // -- Payments (admin: revenue dashboard + custom payment links) ---------------
 const paymentService = createPaymentService({
@@ -263,18 +232,5 @@ export const stripeWebhookHandler = createStripeWebhookHandler({
     "payment-link": handlePaymentLinkSuccess,
   },
 });
-
-// -- Users (public-facing accounts) -------------------------------------------
-const { router: usersRouter } = createUsersRouter({
-  db,
-  jwtSecret: config.userJwtSecret,
-  jwtExpiresIn: config.userJwtExpiresIn,
-  cookieExpiresInDays: config.userCookieExpiresInDays,
-  nodeEnv: config.nodeEnv,
-  notifications,
-  appBaseUrl: config.frontendUrl,
-});
-
-router.use("/users", usersRouter);
 
 export default router;

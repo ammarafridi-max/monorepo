@@ -7,7 +7,6 @@ import {
 } from "@travel-suite/affiliates";
 import { createBlogRouter, createBlogTagRouter } from "@travel-suite/blog";
 import { createCloudinaryStorage } from "@travel-suite/cloudinary";
-import { createCurrenciesRouter } from "@travel-suite/currencies";
 import {
   createFlightRouter,
   createAirportsRouter,
@@ -16,7 +15,6 @@ import { createAirLabsClient } from "@travel-suite/airlabs";
 import { createSerpApiClient } from "@travel-suite/serpapi";
 import { createInsuranceRouter } from "@travel-suite/insurance";
 import { createTicketsRouter } from "@travel-suite/tickets";
-import { createUsersRouter } from "@travel-suite/users";
 import { createNotificationsService } from "@travel-suite/notifications";
 import {
   createStripeClient,
@@ -78,8 +76,6 @@ const imageStorage = createCloudinaryStorage({
 router.use("/blogs", createBlogRouter({ db, auth, imageStorage, anthropicApiKey: config.anthropicApiKey }));
 router.use("/blog-tags", createBlogTagRouter({ db, auth }));
 
-// -- Currencies ----------------------------------------------------------------
-router.use("/currencies", createCurrenciesRouter({ db, auth }));
 
 // -- Flights -------------------------------------------------------------------
 const airlabs = createAirLabsClient({ apiKey: config.airlabs.apiKey });
@@ -208,18 +204,5 @@ export const stripeWebhookHandler = createStripeWebhookHandler({
     "payment-link": handlePaymentLinkSuccess,
   },
 });
-
-// -- Users (public-facing accounts) -------------------------------------------
-const { router: usersRouter } = createUsersRouter({
-  db,
-  jwtSecret: config.userJwtSecret,
-  jwtExpiresIn: config.userJwtExpiresIn,
-  cookieExpiresInDays: config.userCookieExpiresInDays,
-  nodeEnv: config.nodeEnv,
-  notifications,
-  appBaseUrl: config.frontendUrl,
-});
-
-router.use("/users", usersRouter);
 
 export default router;

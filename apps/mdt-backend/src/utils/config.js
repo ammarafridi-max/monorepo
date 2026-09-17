@@ -53,7 +53,4 @@ export default {
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
   },
 
-  userJwtSecret: process.env.USER_JWT_SECRET ?? process.env.JWT_SECRET,
-  userJwtExpiresIn: process.env.USER_JWT_EXPIRES_IN ?? "30d",
-  userCookieExpiresInDays: parseNumber(process.env.USER_COOKIE_EXPIRES_IN, 30),
 };

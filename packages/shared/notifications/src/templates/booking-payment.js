@@ -103,7 +103,7 @@ export function renderBookingPaymentTemplate({
         <tr>
           <td style="padding:12px 14px;font-size:13px;color:#475569;border-bottom:1px solid #e2e8f0;">
             <strong style="color:#0f172a;">Driver assignment</strong><br>
-            Your driver will be assigned and you'll receive their name, photo, and contact at least 2 hours before pickup.
+            ${brand.driverDetailsNote || "Your driver will be assigned and you'll receive their name, photo, and contact at least 2 hours before pickup."}
           </td>
         </tr>
         <tr>

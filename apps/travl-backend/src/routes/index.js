@@ -4,7 +4,6 @@ import { createAuthRouter } from "@travel-suite/auth";
 import { createInsuranceRouter } from "@travel-suite/insurance";
 import { createAdminUsersRouter } from "@travel-suite/admin-users";
 import { createBlogRouter, createBlogTagRouter } from "@travel-suite/blog";
-import { createCurrenciesRouter } from "@travel-suite/currencies";
 import { createItinerariesRouter } from "@travel-suite/itineraries";
 import { createLocationsRouter } from "@travel-suite/locations";
 import { createAirLabsClient } from "@travel-suite/airlabs";
@@ -65,7 +64,6 @@ const imageStorage = createCloudinaryStorage({
 router.use("/blogs", createBlogRouter({ db, auth, imageStorage, anthropicApiKey: config.anthropicApiKey }));
 router.use("/blog-tags", createBlogTagRouter({ db, auth }));
 
-router.use("/currencies", createCurrenciesRouter({ db, auth }));
 
 // Only /cities is exposed: the other four locations routes need Google Maps /
 // ipinfo keys that Travl does not have, so mounting them would only ever 500.

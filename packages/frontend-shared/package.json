@@ -27,7 +27,6 @@
     "./layouts/*": "./src/layouts/*.js"
   },
   "dependencies": {
-    "@hotjar/browser": "^1.0.9",
     "@mapbox/mapbox-gl-draw": "^1.5.1",
     "@tinymce/tinymce-react": "^6.3.0",
     "@turf/area": "^7.2.0",

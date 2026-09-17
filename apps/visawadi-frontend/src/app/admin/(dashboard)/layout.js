@@ -90,12 +90,6 @@ const nav = [
         icon: "Package",
         roles: ["admin", "agent"],
       },
-      {
-        label: "Currencies",
-        href: "/admin/currencies",
-        icon: "CircleDollarSign",
-        roles: ["admin"],
-      },
     ],
   },
   {

@@ -22,7 +22,7 @@ import { createAvailabilityRulesRouter } from "@travel-suite/availability-rules"
 import { createBookingsRouter, createBookingPaymentHandler } from "@travel-suite/limo-bookings";
 import { db } from "../utils/db.js";
 import { sendEmail } from "../utils/email.js";
-import { createBookingNotifications } from "../notifications/booking.js";
+import { createLimoNotifications, bookingNotifications } from "../notifications/booking.js";
 import config from "../utils/config.js";
 
 const router = Router();
@@ -112,7 +112,7 @@ async function handlePaymentLinkSuccess(session) {
 }
 
 // -- Notifications -------------------------------------------------------------
-const bookingNotifications = createBookingNotifications({ sendEmail, config });
+const notifications = createLimoNotifications({ sendEmail });
 
 // -- Stripe webhook handler (mounted in app.js before JSON middleware) ----------
 export const stripeWebhookHandler = createStripeWebhookHandler({
@@ -120,7 +120,7 @@ export const stripeWebhookHandler = createStripeWebhookHandler({
   webhookSecret: config.stripe.webhookSecret,
   db,
   handlers: {
-    booking: createBookingPaymentHandler({ db, notifications: bookingNotifications }),
+    booking: createBookingPaymentHandler({ db, notifications: bookingNotifications(notifications) }),
     "payment-link": handlePaymentLinkSuccess,
   },
 });

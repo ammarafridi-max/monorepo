@@ -11,7 +11,6 @@ import { TicketProvider } from '@travel-suite/frontend-shared/contexts/TicketCon
 import { InsuranceProvider } from '@travel-suite/frontend-shared/contexts/InsuranceContext';
 import AppLayout from '@travel-suite/frontend-shared/layouts/AppLayout';
 import AnalyticsInit from '@travel-suite/frontend-shared/components/shared/AnalyticsInit';
-import HotjarInit from '@travel-suite/frontend-shared/components/shared/HotjarInit';
 import StickyWhatsApp from '@travel-suite/frontend-shared/components/ui/v2/StickyWhatsApp';
 
 // Routes whose first section is not the dark Hero, so the transparent header
@@ -97,7 +96,6 @@ export default function Providers({ children }) {
     return (
       <>
         <AnalyticsInit />
-        <HotjarInit />
         <Toaster />
         <QueryClientProvider client={queryClient}>
           <CurrencyProvider>
@@ -118,7 +116,6 @@ export default function Providers({ children }) {
   return (
     <>
       <AnalyticsInit />
-      <HotjarInit />
       <Toaster />
       <QueryClientProvider client={queryClient}>
         <CurrencyProvider>

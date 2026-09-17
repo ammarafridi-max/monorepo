@@ -9,13 +9,11 @@ import {
   CalendarDays, HeartPulse, Stethoscope, MapPin, Users,
 } from 'lucide-react';
 import { UserAuthContext } from '@travel-suite/frontend-shared/contexts/AuthContextBase';
-import { CurrencyProvider } from '@travel-suite/frontend-shared/contexts/CurrencyContext';
 import { InsuranceProvider } from '@travel-suite/frontend-shared/contexts/InsuranceContext';
 import AppMegaLayout from '@travel-suite/frontend-shared/layouts/AppMegaLayout';
 import Footer from '@travel-suite/frontend-shared/components/sections/v2/Footer';
 import StickyWhatsApp from '@travel-suite/frontend-shared/components/ui/v2/StickyWhatsApp';
 import AnalyticsInit from '@travel-suite/frontend-shared/components/shared/AnalyticsInit';
-import HotjarInit from '@travel-suite/frontend-shared/components/shared/HotjarInit';
 import { EMAIL, WHATSAPP_NUMBER, ADDRESS, GMB_URL, SOCIALS } from '@/config/contact';
 
 const LOGO_ALT = 'Travl';
@@ -149,11 +147,9 @@ export default function Providers({ children }) {
   return (
     <>
       <AnalyticsInit />
-      <HotjarInit />
       <Toaster />
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <CurrencyProvider>
             <InsuranceProvider maxStartDays={270}>
               <AppMegaLayout pages={defaultPages} logoAlt={LOGO_ALT} footer={travlFooter}>
                 <main>{children}</main>
@@ -163,7 +159,6 @@ export default function Providers({ children }) {
                 hidePathPrefixes={['/insurance-booking', '/apply']}
               />
             </InsuranceProvider>
-          </CurrencyProvider>
         </AuthProvider>
       </QueryClientProvider>
     </>

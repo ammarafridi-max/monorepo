@@ -1,4 +1,5 @@
 import { renderInsurancePaymentTemplate } from './templates/insurance-payment.js';
+import { renderPolicyIssuedTemplate, renderPolicyIssuedText } from './templates/policy-issued.js';
 import { renderTicketPaymentTemplate } from './templates/ticket-payment.js';
 import { renderBookingPaymentTemplate } from './templates/booking-payment.js';
 import { renderBookingPaymentAdminTemplate } from './templates/booking-payment-admin.js';
@@ -15,6 +16,7 @@ import {
   renderApplicationEscalated,
   renderFileReadyForStaff,
 } from './templates/visa-applications.js';
+import { format } from 'date-fns';
 import { formatDate, formatToDDMMM, formatToDDMMMYYYYMixed, extractIataCode } from './helpers.js';
 
 export function createNotificationsService({ sendEmail, logger, brand }) {
@@ -204,7 +206,7 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
       const sent = await sendEmail({
         email: data.email,
         name: `${data.firstName || ''} ${data.lastName || ''}`.trim() || data.email,
-        subject: `Booking confirmed — Airport Transfer on ${data.date ? new Date(data.date + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}`,
+        subject: `Booking confirmed — ${data.serviceName || 'Airport Transfer'} on ${data.date ? new Date(data.date + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}`,
         htmlContent,
       });
       return sent?.ok ?? false;
@@ -415,8 +417,66 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
     }
   }
 
+
+  const JOURNEY_LABEL = { single: 'Single Trip', annual: 'Annual Multi-Trip', biennial: 'Two-Year Multi-Trip' };
+  const coverDate = (d) => {
+    if (!d) return '';
+    try { return format(new Date(`${String(d).slice(0, 10)}T00:00:00Z`), 'd MMM yyyy'); } catch { return String(d); }
+  };
+
+  /**
+   * Customer-facing policy confirmation, sent by us instead of the insurer's
+   * email. `documents` are {name, url} from the provider; `attachments` are
+   * Brevo {name, content} pairs the caller already downloaded.
+   */
+  async function sendPolicyIssuedToCustomer({
+    email, firstName, policyNumber, journeyType, region, startDate, endDate,
+    passengers = [], amount, currency, documents = [], attachments = [],
+    refundBeforeStart = true, claimsUrl, supportEmail, upsells = [], footerNote,
+  }) {
+    try {
+      if (!email || !policyNumber) return { ok: false, error: 'Missing customer email or policy number' };
+      const amountLabel = [currency, typeof amount === 'number' ? amount.toFixed(2) : amount].filter(Boolean).join(' ');
+      const travellers = passengers
+        .map((p) => [p.title, p.firstName, p.lastName].filter(Boolean).join(' '))
+        .filter(Boolean)
+        .join(', ');
+      const data = {
+        brand,
+        firstName,
+        policyNumber,
+        plan: JOURNEY_LABEL[journeyType] || journeyType,
+        region,
+        coverStart: coverDate(startDate),
+        coverEnd: coverDate(endDate),
+        travellers,
+        amount: amountLabel,
+        documents,
+        attachedCount: attachments.length,
+        refundBeforeStart,
+        claimsUrl,
+        supportEmail: supportEmail || brand.adminEmail,
+        upsells,
+        footerNote,
+      };
+      const result = await sendEmail({
+        email,
+        name: firstName,
+        subject: `Your travel insurance is issued: policy ${policyNumber}`,
+        htmlContent: renderPolicyIssuedTemplate(data),
+        textContent: renderPolicyIssuedText(data),
+        attachment: attachments,
+      });
+      return result?.ok === false ? { ok: false, error: result.error } : { ok: true };
+    } catch (err) {
+      log('[notifications] sendPolicyIssuedToCustomer failed', { policyNumber, err: err.message });
+      return { ok: false, error: err.message };
+    }
+  }
+
   return {
     sendInsuranceFormSubmission,
+    sendPolicyIssuedToCustomer,
     sendInsurancePaymentToAdmin,
     sendTicketPaymentToAdmin,
     sendTicketPaymentToCustomer,

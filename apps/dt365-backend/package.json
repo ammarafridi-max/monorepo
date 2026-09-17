@@ -24,7 +24,6 @@
     "@travel-suite/paypal": "workspace:*",
     "@travel-suite/serpapi": "workspace:*",
     "@travel-suite/tickets": "workspace:*",
-    "@travel-suite/users": "workspace:*",
     "@travel-suite/utils": "workspace:*",
     "@travel-suite/whatsapp": "workspace:*",
     "compression": "^1.8.1",

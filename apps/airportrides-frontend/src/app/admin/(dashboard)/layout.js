@@ -82,12 +82,6 @@ const nav = [
         icon: "Users",
         roles: ["admin"],
       },
-      {
-        label: "Affiliates",
-        href: "/admin/affiliates",
-        icon: "Handshake",
-        roles: ["admin"],
-      },
     ],
   },
   {

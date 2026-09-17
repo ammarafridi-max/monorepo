@@ -6,6 +6,8 @@ import { useCurrency } from '../../../contexts/CurrencyContext.js';
 
 export default function Currency({ className = 'hidden sm:block' }) {
   const { currencies = [], selectedCurrency: currency, setCurrency } = useCurrency();
+  // A brand with no currency switcher renders nothing rather than an empty menu.
+  if (!currencies?.length) return null;
   const [open, setOpen] = useState(false);
 
   return (

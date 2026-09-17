@@ -196,3 +196,7 @@ export async function updateInsuranceApplicationApi({ sessionId, paymentStatus }
     body: JSON.stringify({ paymentStatus }),
   });
 }
+
+export async function resendPolicyEmailApi(sessionId) {
+  return await apiFetch(`${URL}/${sessionId}/resend-policy-email`, { method: 'POST' });
+}

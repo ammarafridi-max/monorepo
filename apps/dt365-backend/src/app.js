@@ -8,6 +8,7 @@ import { randomUUID } from 'crypto';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { logger, AppError, createErrorHandler } from '@travel-suite/utils';
+import { setupSentryErrorHandler } from '@travel-suite/utils/sentry';
 import config from './utils/config.js';
 import indexRouter, { stripeWebhookHandler, whatsappWebhookHandlers } from './routes/index.js';
 
@@ -61,6 +62,8 @@ app.use('/api', indexRouter);
 // -- 404 & global error handler ------------------------------------------------
 app.all('/{*path}', (req, _res, next) => next(new AppError(`Route ${req.originalUrl} not found`, 404)));
 
+// Sentry sees the error first, then the app answers the client.
+setupSentryErrorHandler(app);
 app.use(createErrorHandler({ logger, nodeEnv: config.nodeEnv }));
 
 export default app;

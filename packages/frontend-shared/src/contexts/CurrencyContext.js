@@ -124,10 +124,26 @@ export function CurrencyProvider({ children }) {
   );
 }
 
+// Brands without a currency switcher render no provider; prices then show in
+// the amount's own currency with no conversion.
+const SINGLE_CURRENCY = {
+  currencies: [],
+  selectedCurrency: null,
+  setCurrency: () => {},
+  convertAmount: (amount, sourceCurrencyCode) => {
+    const numericAmount = Number(amount);
+    if (!Number.isFinite(numericAmount)) return null;
+    const currency = sourceCurrencyCode || 'AED';
+    return { amount: numericAmount, currency, symbol: currency };
+  },
+  formatMoney: (amount, sourceCurrencyCode) => {
+    const numericAmount = Number(amount);
+    const code = sourceCurrencyCode || 'AED';
+    if (!Number.isFinite(numericAmount)) return { code, value: '0.00', amount: 0 };
+    return { code, symbol: code, amount: numericAmount, value: numericAmount.toFixed(2) };
+  },
+};
+
 export function useCurrency() {
-  const context = useContext(CurrencyContext);
-  if (!context) {
-    throw new Error('useCurrency must be used inside <CurrencyProvider>');
-  }
-  return context;
+  return useContext(CurrencyContext) || SINGLE_CURRENCY;
 }

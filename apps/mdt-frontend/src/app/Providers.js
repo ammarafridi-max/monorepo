@@ -6,7 +6,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { usePathname } from 'next/navigation';
 import { Mail, Plane, Rss, ShieldPlus } from 'lucide-react';
-import { CurrencyProvider } from '@travel-suite/frontend-shared/contexts/CurrencyContext';
 import { TicketProvider } from '@travel-suite/frontend-shared/contexts/TicketContext';
 import { InsuranceProvider } from '@travel-suite/frontend-shared/contexts/InsuranceContext';
 import AppLayout from '@travel-suite/frontend-shared/layouts/AppLayout';
@@ -94,15 +93,13 @@ export default function Providers({ children }) {
         <AnalyticsInit />
         <Toaster />
         <QueryClientProvider client={queryClient}>
-          <CurrencyProvider>
-            <TicketProvider>
-              <InsuranceProvider maxStartDays={270}>
-                <AppLayout pages={flightItineraryPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark} copyrightName="My Dummy Ticket">
-                  <main>{children}</main>
-                </AppLayout>
-              </InsuranceProvider>
-            </TicketProvider>
-          </CurrencyProvider>
+          <TicketProvider>
+            <InsuranceProvider maxStartDays={270}>
+              <AppLayout pages={flightItineraryPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark} copyrightName="My Dummy Ticket">
+                <main>{children}</main>
+              </AppLayout>
+            </InsuranceProvider>
+          </TicketProvider>
         </QueryClientProvider>
       </>
     );
@@ -113,15 +110,13 @@ export default function Providers({ children }) {
       <AnalyticsInit />
       <Toaster />
       <QueryClientProvider client={queryClient}>
-        <CurrencyProvider>
-          <TicketProvider>
-            <InsuranceProvider maxStartDays={270}>
-              <AppLayout pages={defaultPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark} copyrightName="My Dummy Ticket">
-                <main>{children}</main>
-              </AppLayout>
-            </InsuranceProvider>
-          </TicketProvider>
-        </CurrencyProvider>
+        <TicketProvider>
+          <InsuranceProvider maxStartDays={270}>
+            <AppLayout pages={defaultPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark} copyrightName="My Dummy Ticket">
+              <main>{children}</main>
+            </AppLayout>
+          </InsuranceProvider>
+        </TicketProvider>
       </QueryClientProvider>
     </>
   );

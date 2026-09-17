@@ -15,7 +15,6 @@
     "@travel-suite/blog": "workspace:*",
     "@travel-suite/brevo": "workspace:*",
     "@travel-suite/cloudinary": "workspace:*",
-    "@travel-suite/currencies": "workspace:*",
     "@travel-suite/insurance": "workspace:*",
     "@travel-suite/itineraries": "workspace:*",
     "@travel-suite/locations": "workspace:*",

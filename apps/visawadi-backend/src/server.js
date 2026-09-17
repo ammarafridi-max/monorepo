@@ -1,3 +1,5 @@
+// First import on purpose: Sentry must initialise before express loads.
+import "@travel-suite/utils/sentry";
 import cron from "node-cron";
 import { logger } from "@travel-suite/utils";
 import { connectDB } from "./utils/db.js";

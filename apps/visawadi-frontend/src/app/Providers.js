@@ -7,14 +7,15 @@ import { usePathname } from "next/navigation";
 import { Globe } from "lucide-react";
 import { UserAuthContext } from "@travel-suite/frontend-shared/contexts/AuthContextBase";
 import AppMegaLayout from "@travel-suite/frontend-shared/layouts/AppMegaLayout";
+import { LP_BRAND } from "@/lib/lp";
 import { UserAuthProvider } from "@travel-suite/frontend-shared/contexts/UserAuthProvider";
 import Footer from "@travel-suite/frontend-shared/components/sections/v2/Footer";
 import StickyWhatsApp from "@travel-suite/frontend-shared/components/ui/v2/StickyWhatsApp";
 import AnalyticsInit from "@travel-suite/frontend-shared/components/shared/AnalyticsInit";
-import ClarityInit from "@travel-suite/frontend-shared/components/shared/ClarityInit";
 import {
   EMAIL,
   WHATSAPP_NUMBER,
+  WHATSAPP_URL,
   ADDRESS,
   GMB_URL,
   SOCIALS,
@@ -171,6 +172,10 @@ function GuestAuthProvider({ children }) {
 export default function Providers({ children }) {
   const pathname = usePathname();
   const isAdminRoute = pathname?.startsWith("/admin");
+  // Ad landing pages carry no site chrome: the navbar and footer name the
+  // brand and the word the pages exist to avoid, and an ad click should have
+  // one exit, the lead form.
+  const isLandingRoute = pathname?.startsWith("/lp/");
   // Real customer auth only on the /apply visa-application routes; every other
   // public page keeps the guest provider.
   const isApplyRoute = pathname?.startsWith("/apply");
@@ -194,10 +199,37 @@ export default function Providers({ children }) {
     );
   }
 
+  if (isLandingRoute) {
+    return (
+      <>
+        <AnalyticsInit />
+        <Toaster />
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <header className="border-b border-gray-100 bg-white">
+              <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
+                <span className="text-lg font-extrabold tracking-tight text-gray-900">{LP_BRAND}</span>
+                {WHATSAPP_NUMBER && (
+                  <a
+                    href={WHATSAPP_URL}
+                    className="rounded-full bg-primary-700 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-800"
+                  >
+                    WhatsApp us
+                  </a>
+                )}
+              </div>
+            </header>
+            <main>{children}</main>
+            {WHATSAPP_NUMBER && <StickyWhatsApp phoneNumber={WHATSAPP_NUMBER} />}
+          </AuthProvider>
+        </QueryClientProvider>
+      </>
+    );
+  }
+
   return (
     <>
       <AnalyticsInit />
-      <ClarityInit />
       <Toaster />
       <QueryClientProvider client={queryClient}>
         <AuthProvider>

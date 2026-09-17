@@ -12,7 +12,7 @@ import { BookingSchema, deliverPaymentConfirmations } from "@travel-suite/limo-b
 import { VehicleSchema } from "@travel-suite/vehicles";
 import { ZoneSchema } from "@travel-suite/zones";
 import { sendEmail } from "../src/utils/email.js";
-import { createBookingNotifications } from "../src/notifications/booking.js";
+import { createLimoNotifications, bookingNotifications } from "../src/notifications/booking.js";
 import config from "../src/utils/config.js";
 
 const argv = process.argv.slice(2);
@@ -111,7 +111,7 @@ async function run() {
     return;
   }
 
-  const notifications = createBookingNotifications({ sendEmail, config });
+  const notifications = bookingNotifications(createLimoNotifications({ sendEmail }));
   const wanted = (booking, key) => {
     if (RECIPIENT !== "both" && RECIPIENT !== key) return false;
     return booking.notifications?.paymentConfirmation?.[key]?.status !== "sent";

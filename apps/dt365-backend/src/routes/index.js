@@ -17,7 +17,6 @@ import { createSerpApiClient } from "@travel-suite/serpapi";
 import { createTicketsRouter } from "@travel-suite/tickets";
 import { createConversationsRouter } from "@travel-suite/conversations";
 import { createWhatsAppClient } from "@travel-suite/whatsapp";
-import { createUsersRouter } from "@travel-suite/users";
 import { createNotificationsService } from "@travel-suite/notifications";
 import {
   createStripeClient,
@@ -239,18 +238,5 @@ export const stripeWebhookHandler = createStripeWebhookHandler({
     "payment-link": handlePaymentLinkSuccess,
   },
 });
-
-// -- Users (public-facing accounts) -------------------------------------------
-const { router: usersRouter } = createUsersRouter({
-  db,
-  jwtSecret: config.userJwtSecret,
-  jwtExpiresIn: config.userJwtExpiresIn,
-  cookieExpiresInDays: config.userCookieExpiresInDays,
-  nodeEnv: config.nodeEnv,
-  notifications,
-  appBaseUrl: config.frontendUrl,
-});
-
-router.use("/users", usersRouter);
 
 export default router;

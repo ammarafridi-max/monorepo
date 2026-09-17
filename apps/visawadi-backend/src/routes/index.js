@@ -5,7 +5,6 @@ import { createBlogRouter, createBlogTagRouter } from "@travel-suite/blog";
 import { createVisaRouter } from "@travel-suite/visa";
 import { createVisaLeadRouter } from "@travel-suite/visa-leads";
 import { createVisaRequirementsRouter } from "@travel-suite/visa-requirements";
-import { createCurrenciesRouter } from "@travel-suite/currencies";
 import { createUsersRouter } from "@travel-suite/users";
 import { createVisaApplicationsRouter } from "@travel-suite/visa-applications";
 import { createNotificationsService } from "@travel-suite/notifications";
@@ -56,7 +55,6 @@ const visaImageStorage = createCloudinaryStorage({
   folder: "visawadi/visa",
 });
 router.use("/visas", createVisaRouter({ db, auth, imageStorage: visaImageStorage }));
-router.use("/currencies", createCurrenciesRouter({ db, auth }));
 
 const notifications = createNotificationsService({
   sendEmail,
