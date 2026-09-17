@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   MdOutlineAirplaneTicket,
   MdOutlineHealthAndSafety,
@@ -12,15 +11,13 @@ import {
   Banknote,
   RefreshCw,
 } from "lucide-react";
-import Container from "@travel-suite/frontend-shared/components/shared/layout/Container";
-import PrimarySection from "@travel-suite/frontend-shared/components/shared/layout/PrimarySection";
-import SectionTitle from "@travel-suite/frontend-shared/components/shared/layout/SectionTitle";
 import About from "@travel-suite/frontend-shared/components/sections/v2/About";
 import Benefits from "@travel-suite/frontend-shared/components/sections/v2/Benefits";
 import Testimonials from "@travel-suite/frontend-shared/components/sections/v2/Testimonials";
 import Faqs from "@travel-suite/frontend-shared/components/sections/v2/Faqs";
 import Hero from "@travel-suite/frontend-shared/components/sections/v2/Hero";
 import HowItWorks from "@travel-suite/frontend-shared/components/sections/v2/HowItWorks";
+import RelatedPlans from "@/components/RelatedPlans";
 import { buildMetadata } from "@/lib/schema";
 import {
   buildFAQPage,
@@ -127,12 +124,12 @@ export const faqs = [
   {
     question: "Does this work for tourist, business, and family visit visas?",
     answer:
-      "Yes. The same EUR 30,000 Schengen cover applies across all Germany short-stay visa categories — tourism, business, family visit, or visiting friends.",
+      "Yes. The same EUR 30,000 Schengen cover applies across all Germany short-stay visa categories, tourism, business, family visit, or visiting friends.",
   },
   {
     question: "Does this cover a German long-stay (national) visa?",
     answer:
-      "German national visas — for study, work, family reunification, or stays over 90 days — usually require a specific long-stay insurance product, not a Schengen short-stay policy. Email us before purchasing if you are applying for a national visa.",
+      "German national visas, for study, work, family reunification, or stays over 90 days, usually require a specific long-stay insurance product, not a Schengen short-stay policy. Email us before purchasing if you are applying for a national visa.",
   },
   {
     question: "How much does Germany visa insurance cost?",
@@ -154,6 +151,7 @@ export const faqs = [
 export const pageData = {
   meta: {
     title: "Travel Insurance for Germany Visa | From AED 30 | Travl",
+    productName: "Travel Insurance for Germany Visa",
     description:
       "Get embassy-compliant Germany visa travel insurance online. EUR 30,000 medical coverage across the Schengen Area, accepted by VFS Global Germany. Instant policy for UAE residents from AED 30.",
     canonical: "https://www.travl.ae/travel-insurance/germany-visa",
@@ -211,16 +209,19 @@ export default function Page() {
     buildWebPage(pageData.meta),
     buildService({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
+      serviceType: 'Travel Insurance',
       description: pageData.meta.description,
       areaServed: "AE",
     }),
     buildProduct({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
       description: pageData.meta.description,
       price: "30.00",
       currency: "AED",
+      category: 'Travel Insurance',
+      fromPrice: true,
     }),
     buildFAQPage({
       canonical: pageData.meta.canonical,
@@ -267,38 +268,11 @@ export default function Page() {
         testimonials={testimonials}
       />
       <Faqs
-        title="Germany Visa Travel Insurance — Frequently Asked Questions"
+        title="Germany Visa Travel Insurance: Frequently Asked Questions"
         subtitle="Everything you need to know about Germany visa insurance for UAE residents"
         faqs={faqs}
       />
-      <PrimarySection className="py-10 lg:py-14">
-        <Container>
-          <SectionTitle className="mb-6">
-            Other Travel Insurance Plans
-          </SectionTitle>
-          <div className="flex flex-wrap justify-center gap-3">
-            {[
-              { name: "Schengen Visa Insurance", href: "/travel-insurance/schengen-visa" },
-              { name: "France Visa Insurance", href: "/travel-insurance/france-visa" },
-              { name: "Spain Visa Insurance", href: "/travel-insurance/spain-visa" },
-              { name: "Italy Visa Insurance", href: "/travel-insurance/italy-visa" },
-              { name: "Greece Visa Insurance", href: "/travel-insurance/greece-visa" },
-              { name: "Switzerland Visa Insurance", href: "/travel-insurance/switzerland-visa" },
-              { name: "Netherlands Visa Insurance", href: "/travel-insurance/netherlands-visa" },
-              { name: "Austria Visa Insurance", href: "/travel-insurance/austria-visa" },
-              { name: "All Travel Insurance Plans", href: "/travel-insurance" },
-            ].map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="px-4 py-2 rounded-xl border border-primary-200 bg-primary-50 text-primary-700 text-[14px] font-medium hover:bg-primary-100 transition-colors"
-              >
-                {link.name}
-              </Link>
-            ))}
-          </div>
-        </Container>
-      </PrimarySection>
+      <RelatedPlans current="/travel-insurance/germany-visa" />
     </>
   );
 }

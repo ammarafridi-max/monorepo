@@ -5,6 +5,7 @@ import {
   buildGraph,
 } from '@travel-suite/frontend-shared/utils/schema';
 import { buildMetadata as _buildMetadata } from '@travel-suite/frontend-shared/utils/publicMetadata';
+import { EMAIL, WHATSAPP_NUMBER, POSTAL_ADDRESS, LEGAL_NAME, SOCIALS } from '@/config/contact';
 
 export const SITE_URL = 'https://www.travl.ae';
 
@@ -22,16 +23,14 @@ export const {
 } = createSchemaBuilders({
   siteUrl: SITE_URL,
   siteName: 'Travl',
+  legalName: LEGAL_NAME,
   logoUrl: `${SITE_URL}/logo.webp`,
-  email: 'info@travl.ae',
-  address: {
-    streetAddress: 'Abraj Al Mamzar',
-    addressLocality: 'Al Mamzar',
-    addressRegion: 'Dubai',
-    addressCountry: 'AE',
-  },
+  email: EMAIL,
+  telephone: WHATSAPP_NUMBER,
+  sameAs: SOCIALS.filter((s) => s.platform !== 'maps').map((s) => s.href),
+  address: POSTAL_ADDRESS,
   contactPoint: {
-    email: 'info@travl.ae',
+    email: EMAIL,
     contactType: 'customer support',
     availableLanguage: 'English',
     hoursAvailable: 'Mo-Su 00:00-24:00',

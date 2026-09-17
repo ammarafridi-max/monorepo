@@ -9,6 +9,7 @@ import Testimonials from '@travel-suite/frontend-shared/components/sections/v2/T
 import Faqs from '@travel-suite/frontend-shared/components/sections/v2/Faqs';
 import Hero from '@travel-suite/frontend-shared/components/sections/v2/Hero';
 import HowItWorks from '@travel-suite/frontend-shared/components/sections/v2/HowItWorks';
+import RelatedPlans from '@/components/RelatedPlans';
 import { buildMetadata } from '@/lib/schema';
 import {
   buildFAQPage,
@@ -128,9 +129,10 @@ export const faqs = [
 
 export const pageData = {
   meta: {
-    title: 'Travel Insurance for UAE Residents | Instant Policy Delivery',
+    title: 'Travel Insurance for UAE Residents | From AED 30 | Travl',
+    productName: 'Travel Insurance for UAE Residents',
     description:
-      'Get real, embassy-compliant travel insurance online with instant policy delivery for UAE residents and citizens.',
+      'Travel insurance for UAE residents from AED 30, issued by AXA. Single trip, annual multi-trip, family and visa-compliant plans, priced by your dates and destination and emailed in minutes.',
     canonical: 'https://www.travl.ae/travel-insurance',
   },
   sections: {
@@ -181,7 +183,8 @@ export default function Page() {
     buildWebPage(pageData.meta),
     buildService({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
+      serviceType: 'Travel Insurance',
       description: pageData.meta.description,
       areaServed: 'AE',
     }),
@@ -229,6 +232,7 @@ export default function Page() {
         subtitle="Real feedback from UAE residents who used Travl for their travel documents"
         testimonials={testimonials}
       />
+      <RelatedPlans current="/travel-insurance" title="Every Travel Insurance Plan We Sell" />
       <PrimarySection className="py-section">
         <Container className="rounded-3xl border border-primary-100 bg-[linear-gradient(145deg,#f5fbfb_0%,#eff7ff_55%,#fff7f0_100%)] p-8 md:p-10">
           <SectionTitle className="mb-4">
@@ -242,7 +246,7 @@ export default function Page() {
         </Container>
       </PrimarySection>
       <Faqs
-        title="Travel Insurance — Frequently Asked Questions"
+        title="Travel Insurance: Frequently Asked Questions"
         subtitle="Common questions about our plans, coverage, and how to get your policy"
         faqs={faqs}
       />

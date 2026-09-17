@@ -4,7 +4,7 @@ import Navbar from '@travel-suite/frontend-shared/components/sections/v2/Navbar'
 import Footer from '@travel-suite/frontend-shared/components/sections/v2/Footer';
 
 export const metadata = {
-  title: '404 — Page Not Found | Travl',
+  title: '404 | Page Not Found | Travl',
   description: 'The page you were looking for could not be found.',
 };
 
@@ -23,7 +23,7 @@ export default function NotFound() {
 
           {/* Status */}
           <p className="text-sm font-bold text-primary-600 uppercase tracking-widest mb-3">
-            404 — Not Found
+            404: Not Found
           </p>
 
           {/* Headline */}

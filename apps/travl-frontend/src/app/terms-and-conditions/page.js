@@ -84,6 +84,11 @@ export default function Page() {
               is not delivered as described.
             </li>
             <li className="pl-2">
+              Travel insurance is refunded in full if your visa is refused and the policy start date
+              has not yet passed. Send the refusal letter to info@travl.ae before cover begins. Once
+              the policy has started, the premium is non-refundable.
+            </li>
+            <li className="pl-2">
               If you experience any issue, you must contact us within 24 hours of purchase for
               review.
             </li>

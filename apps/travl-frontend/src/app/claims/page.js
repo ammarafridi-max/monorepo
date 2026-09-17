@@ -84,7 +84,7 @@ const faqs = [
 ];
 
 const meta = {
-  title: 'Make a Claim — Travl Travel Insurance',
+  title: 'Make a Claim | Travl Travel Insurance',
   description:
     'Need to claim on your AXA travel insurance policy from Travl? Email or WhatsApp our team in Dubai and a real person will walk you through it.',
   canonical: 'https://www.travl.ae/claims',
@@ -217,7 +217,7 @@ export default function Page() {
       </PrimarySection>
 
       <Faqs
-        title="Claims — Frequently Asked Questions"
+        title="Claims: Frequently Asked Questions"
         subtitle="What to expect, what to gather, and what to do if something goes wrong"
         faqs={faqs}
       />

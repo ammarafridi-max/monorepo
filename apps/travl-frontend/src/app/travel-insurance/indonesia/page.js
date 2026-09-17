@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   MdOutlineAirplaneTicket,
   MdOutlineHealthAndSafety,
@@ -12,15 +11,13 @@ import {
   Banknote,
   RefreshCw,
 } from "lucide-react";
-import Container from "@travel-suite/frontend-shared/components/shared/layout/Container";
-import PrimarySection from "@travel-suite/frontend-shared/components/shared/layout/PrimarySection";
-import SectionTitle from "@travel-suite/frontend-shared/components/shared/layout/SectionTitle";
 import About from "@travel-suite/frontend-shared/components/sections/v2/About";
 import Benefits from "@travel-suite/frontend-shared/components/sections/v2/Benefits";
 import Testimonials from "@travel-suite/frontend-shared/components/sections/v2/Testimonials";
 import Faqs from "@travel-suite/frontend-shared/components/sections/v2/Faqs";
 import Hero from "@travel-suite/frontend-shared/components/sections/v2/Hero";
 import HowItWorks from "@travel-suite/frontend-shared/components/sections/v2/HowItWorks";
+import RelatedPlans from "@/components/RelatedPlans";
 import { buildMetadata } from "@/lib/schema";
 import {
   buildFAQPage,
@@ -159,6 +156,7 @@ export const faqs = [
 export const pageData = {
   meta: {
     title: "Travel Insurance for Bali & Indonesia | From AED 30 | Travl",
+    productName: "Travel Insurance for Bali and Indonesia",
     description:
       "Travel insurance for Bali and Indonesia for UAE residents. AXA-backed emergency medical, hospital, baggage and trip cover for your Indonesia trip. Instant policy from AED 30.",
     canonical: "https://www.travl.ae/travel-insurance/indonesia",
@@ -216,16 +214,19 @@ export default function Page() {
     buildWebPage(pageData.meta),
     buildService({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
+      serviceType: 'Travel Insurance',
       description: pageData.meta.description,
       areaServed: "AE",
     }),
     buildProduct({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
       description: pageData.meta.description,
       price: "30.00",
       currency: "AED",
+      category: 'Travel Insurance',
+      fromPrice: true,
     }),
     buildFAQPage({
       canonical: pageData.meta.canonical,
@@ -272,36 +273,11 @@ export default function Page() {
         testimonials={testimonials}
       />
       <Faqs
-        title="Bali Travel Insurance — Frequently Asked Questions"
+        title="Bali Travel Insurance: Frequently Asked Questions"
         subtitle="Everything you need to know about travel insurance for Bali and Indonesia for UAE residents"
         faqs={faqs}
       />
-      <PrimarySection className="py-10 lg:py-14">
-        <Container>
-          <SectionTitle className="mb-6">
-            Other Travel Insurance Plans
-          </SectionTitle>
-          <div className="flex flex-wrap justify-center gap-3">
-            {[
-              { name: "Single Trip Insurance", href: "/travel-insurance/single-trip" },
-              { name: "Annual Multi-Trip Insurance", href: "/travel-insurance/annual-multi-trip" },
-              { name: "International Travel Insurance", href: "/travel-insurance/international" },
-              { name: "Medical Travel Insurance", href: "/travel-insurance/medical" },
-              { name: "Schengen Visa Insurance", href: "/travel-insurance/schengen-visa" },
-              { name: "UK Visa Insurance", href: "/travel-insurance/uk-visa" },
-              { name: "All Travel Insurance Plans", href: "/travel-insurance" },
-            ].map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="px-4 py-2 rounded-xl border border-primary-200 bg-primary-50 text-primary-700 text-[14px] font-medium hover:bg-primary-100 transition-colors"
-              >
-                {link.name}
-              </Link>
-            ))}
-          </div>
-        </Container>
-      </PrimarySection>
+      <RelatedPlans current="/travel-insurance/indonesia" />
     </>
   );
 }

@@ -78,8 +78,8 @@ export default function Page() {
             </li>
             <li className="pl-2">
               We also use Hotjar to understand how visitors interact with our pages. Hotjar may record
-              anonymised session data — such as pages visited, clicks, taps, scrolling, and mouse
-              movement — and produce aggregated heatmaps. By default, Hotjar suppresses the text you
+              anonymised session data, such as pages visited, clicks, taps, scrolling, and mouse
+              movement, and produce aggregated heatmaps. By default, Hotjar suppresses the text you
               type into form fields (for example contact, passport, or payment details); we use this
               data only in aggregate to improve usability, never to identify you personally.
             </li>

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   MdOutlineAirplaneTicket,
   MdOutlineHealthAndSafety,
@@ -12,15 +11,13 @@ import {
   Banknote,
   RefreshCw,
 } from "lucide-react";
-import Container from "@travel-suite/frontend-shared/components/shared/layout/Container";
-import PrimarySection from "@travel-suite/frontend-shared/components/shared/layout/PrimarySection";
-import SectionTitle from "@travel-suite/frontend-shared/components/shared/layout/SectionTitle";
 import About from "@travel-suite/frontend-shared/components/sections/v2/About";
 import Benefits from "@travel-suite/frontend-shared/components/sections/v2/Benefits";
 import Testimonials from "@travel-suite/frontend-shared/components/sections/v2/Testimonials";
 import Faqs from "@travel-suite/frontend-shared/components/sections/v2/Faqs";
 import Hero from "@travel-suite/frontend-shared/components/sections/v2/Hero";
 import HowItWorks from "@travel-suite/frontend-shared/components/sections/v2/HowItWorks";
+import RelatedPlans from "@/components/RelatedPlans";
 import { buildMetadata } from "@/lib/schema";
 import {
   buildFAQPage,
@@ -84,12 +81,12 @@ const benefits = [
   {
     icon: FileCheck,
     title: "Real Travel Insurance, Not a Placeholder",
-    text: "This is a genuine travel medical insurance policy issued by a licensed insurer — valid for your visa application and for actual medical emergencies during your trip.",
+    text: "This is a genuine travel medical insurance policy issued by a licensed insurer, valid for your visa application and for actual medical emergencies during your trip.",
   },
   {
     icon: Zap,
     title: "Instant Policy Delivery",
-    text: "Receive your travel insurance certificate by email immediately after payment. No waiting, no follow-up needed — submit your Schengen visa application the same day.",
+    text: "Receive your travel insurance certificate by email immediately after payment. No waiting, no follow-up needed, submit your Schengen visa application the same day.",
   },
   {
     icon: HeartPulse,
@@ -132,7 +129,7 @@ export const faqs = [
   {
     question: "How quickly will I receive my travel insurance policy?",
     answer:
-      "Your Schengen travel insurance certificate is delivered to your email immediately after payment is confirmed — usually within minutes.",
+      "Your Schengen travel insurance certificate is delivered to your email immediately after payment is confirmed, usually within minutes.",
   },
   {
     question: "Is this insurance accepted by VFS and BLS?",
@@ -149,6 +146,7 @@ export const faqs = [
 export const pageData = {
   meta: {
     title: "Travel Insurance for Schengen Visa | From AED 30 | Travl",
+    productName: "Travel Insurance for Schengen Visa",
     description:
       "Get embassy-compliant Schengen travel insurance online. EUR 30,000 medical coverage, accepted by VFS & BLS. Instant policy for UAE residents from AED 30.",
     canonical: "https://www.travl.ae/travel-insurance/schengen-visa",
@@ -172,7 +170,7 @@ export const pageData = {
     },
     about: {
       title: "About Our Services",
-      text: "We provide Schengen travel insurance specifically for UAE residents applying for European Schengen visas. Every policy meets official Schengen visa insurance requirements — including mandatory EUR 30,000 medical coverage — and is accepted by embassies, VFS Global, and BLS International centers. Buy your policy online, receive it instantly, and submit your visa application with confidence.",
+      text: "We provide Schengen travel insurance specifically for UAE residents applying for European Schengen visas. Every policy meets official Schengen visa insurance requirements, including mandatory EUR 30,000 medical coverage, and is accepted by embassies, VFS Global, and BLS International centers. Buy your policy online, receive it instantly, and submit your visa application with confidence.",
       services: [
         {
           icon: <MdOutlineHealthAndSafety />,
@@ -206,16 +204,19 @@ export default function Page() {
     buildWebPage(pageData.meta),
     buildService({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
+      serviceType: 'Travel Insurance',
       description: pageData.meta.description,
       areaServed: "AE",
     }),
     buildProduct({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
       description: pageData.meta.description,
       price: "30.00",
       currency: "AED",
+      category: 'Travel Insurance',
+      fromPrice: true,
     }),
     buildFAQPage({
       canonical: pageData.meta.canonical,
@@ -262,46 +263,11 @@ export default function Page() {
         testimonials={testimonials}
       />
       <Faqs
-        title="Schengen Travel Insurance — Frequently Asked Questions"
+        title="Schengen Travel Insurance: Frequently Asked Questions"
         subtitle="Everything you need to know about Schengen insurance for UAE residents"
         faqs={faqs}
       />
-      <PrimarySection className="py-10 lg:py-14">
-        <Container>
-          <SectionTitle className="mb-6">
-            Other Travel Insurance Plans
-          </SectionTitle>
-          <div className="flex flex-wrap justify-center gap-3">
-            {[
-              {
-                name: "Travel Medical Insurance",
-                href: "/travel-insurance/medical",
-              },
-              {
-                name: "Annual Multi-Trip Insurance",
-                href: "/travel-insurance/annual-multi-trip",
-              },
-              {
-                name: "International Travel Insurance",
-                href: "/travel-insurance/international",
-              },
-              {
-                name: "Single Trip Insurance",
-                href: "/travel-insurance/single-trip",
-              },
-              { name: "All Travel Insurance Plans", href: "/travel-insurance" },
-            ].map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="px-4 py-2 rounded-xl border border-primary-200 bg-primary-50 text-primary-700 text-[14px] font-medium hover:bg-primary-100 transition-colors"
-              >
-                {link.name}
-              </Link>
-            ))}
-          </div>
-        </Container>
-      </PrimarySection>
+      <RelatedPlans current="/travel-insurance/schengen-visa" />
     </>
   );
 }

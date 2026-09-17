@@ -67,7 +67,7 @@ export const insuranceFaqs = [
   {
     question: 'Is travel insurance refundable if my visa is rejected?',
     answer:
-      'Some plans offer refunds after visa rejection, depending on policy terms and supporting documentation.',
+      'Yes, if the policy start date has not passed. Send us the visa refusal letter before your cover begins and we refund the premium. Once the policy has started, the premium is non-refundable.',
   },
 ];
 

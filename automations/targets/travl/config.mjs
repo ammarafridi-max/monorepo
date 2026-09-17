@@ -88,7 +88,7 @@ export const TARGET = {
   /** Checked against the article text, not its markup. */
   contentChecks: [
     {
-      pattern: /(?:dummy ticket|flight reservation|flight itinerar)[^.]{0,80}AED\s*\d/i,
+      pattern: /(?:dummy ticket|flight reservation|flight itinerar)(?:(?!\bUSD\b)[^.]){0,80}AED\s*\d/i,
       message: 'Dummy Ticket 365 is priced in USD (13 / 20 / 23), never in dirhams. Travl\'s own itinerary at AED 49 is a different product.',
     },
     {
@@ -97,6 +97,19 @@ export const TARGET = {
       pattern:
         /Travl(?:\.ae)?(?:'s)?\s+(?:offers?|provides?|handles?|sells?|files?)\b[^.]{0,60}\b(?:visa assistance|visa application|visa service)\b|\bvisa (?:assistance|application|service)s?\b[^.]{0,40}\bfrom Travl\b/i,
       message: 'Travl sells travel insurance and itineraries only — attribute visa assistance to VisaWadi',
+    },
+  ],
+
+  /**
+   * Titles that are a money page's head term. Each already has a product page
+   * under /travel-insurance, so a post with the same title cannibalises it.
+   */
+  titleChecks: [
+    {
+      pattern:
+        /^(?:(?:single[- ]trip|annual(?: multi[- ]trip)?|family|international|worldwide|travel medical|schengen(?: visa)?|(?:uk|us|usa|canada|australia|france|spain|italy|germany|greece|switzerland|netherlands|austria) visa|bali|indonesia) travel insurance(?: (?:in|for|from) (?:the )?uae(?: residents)?)?|travel insurance for (?:uae residents|(?:a |the )?(?:schengen|uk|us|usa|canada|australia|france|spain|italy|germany|greece|switzerland|netherlands|austria) visa|bali(?: and indonesia)?))\s*$/i,
+      message:
+        'Title matches a /travel-insurance product page. Give the post a long-tail angle and link the product page in the first paragraph instead.',
     },
   ],
 

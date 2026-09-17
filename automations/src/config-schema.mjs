@@ -35,12 +35,14 @@ const OPTIONAL = {
   forbiddenLinkPatterns: 'array',
   excludedTags: 'array',
   contentChecks: 'array',
+  titleChecks: 'array',
   formatsByTier: 'object',
   blogSchedule: 'object',
   internalLinkingRule: 'string',
   linkFormatRule: 'string',
   ctaRules: 'string',
   model: 'string',
+  imagePrompt: 'function',
 };
 
 function typeOf(value) {

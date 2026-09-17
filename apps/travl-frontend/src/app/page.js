@@ -104,7 +104,7 @@ const HOW_IT_WORKS = [
 
 const pageData = {
   meta: {
-    title: "AXA Travel Insurance for UAE Residents | Travl",
+    title: "Travel Insurance for UAE Residents from AED 30, Issued by AXA | Travl",
     description:
       "Travel insurance issued by AXA for UAE residents, from AED 30. EUR 30,000 medical cover that meets Schengen visa requirements, delivered to your inbox in minutes.",
     canonical: SITE_URL,
@@ -130,6 +130,13 @@ export const metadata = {
     url: pageData.meta.canonical,
     title: pageData.meta.title,
     description: pageData.meta.description,
+    images: [`${SITE_URL}/og-image.png`],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: pageData.meta.title,
+    description: pageData.meta.description,
+    images: [`${SITE_URL}/og-image.png`],
   },
 };
 
@@ -226,6 +233,7 @@ export default function HomePage() {
     buildService({
       canonical: pageData.meta.canonical,
       name: "Travel Insurance for UAE Residents",
+      serviceType: "Travel Insurance",
       description: pageData.meta.description,
       areaServed: "AE",
     }),

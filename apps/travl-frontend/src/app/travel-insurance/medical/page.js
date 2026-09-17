@@ -1,20 +1,18 @@
-import Link from 'next/link';
 import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineHotel } from 'react-icons/md';
 import { HeartPulse, Building2, FileCheck, ShieldCheck, BadgeCheck, RefreshCw } from 'lucide-react';
-import Container from '@travel-suite/frontend-shared/components/shared/layout/Container';
-import PrimarySection from '@travel-suite/frontend-shared/components/shared/layout/PrimarySection';
-import SectionTitle from '@travel-suite/frontend-shared/components/shared/layout/SectionTitle';
 import About from '@travel-suite/frontend-shared/components/sections/v2/About';
 import Benefits from '@travel-suite/frontend-shared/components/sections/v2/Benefits';
 import Testimonials from '@travel-suite/frontend-shared/components/sections/v2/Testimonials';
 import Faqs from '@travel-suite/frontend-shared/components/sections/v2/Faqs';
 import Hero from '@travel-suite/frontend-shared/components/sections/v2/Hero';
 import HowItWorks from '@travel-suite/frontend-shared/components/sections/v2/HowItWorks';
+import RelatedPlans from '@/components/RelatedPlans';
 import { buildMetadata } from '@/lib/schema';
 import {
   buildFAQPage,
   buildGraph,
   buildOrganization,
+  buildProduct,
   buildService,
   buildWebPage,
   buildWebsite,
@@ -128,9 +126,10 @@ export const faqs = [
 
 export const pageData = {
   meta: {
-    title: 'Travel Medical Insurance for UAE Residents | Travl',
+    title: 'Travel Medical Insurance UAE | From AED 30 | Travl',
+    productName: 'Travel Medical Insurance for UAE Residents',
     description:
-      'Travel medical insurance for UAE residents, issued by AXA. Emergency medical cover, hospitalisation, and repatriation. Get your policy online instantly.',
+      'Travel medical insurance for UAE residents from AED 30, issued by AXA. Emergency medical cover, hospitalisation and repatriation, with the policy emailed in minutes.',
     canonical: 'https://www.travl.ae/travel-insurance/medical',
   },
   sections: {
@@ -181,9 +180,19 @@ export default function Page() {
     buildWebPage(pageData.meta),
     buildService({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
+      serviceType: 'Travel Insurance',
       description: pageData.meta.description,
       areaServed: 'AE',
+    }),
+    buildProduct({
+      canonical: pageData.meta.canonical,
+      name: pageData.meta.productName,
+      description: pageData.meta.description,
+      price: '30.00',
+      currency: 'AED',
+      category: 'Travel Insurance',
+      fromPrice: true,
     }),
     buildFAQPage({
       canonical: pageData.meta.canonical,
@@ -230,34 +239,11 @@ export default function Page() {
         testimonials={testimonials}
       />
       <Faqs
-        title="Travel Medical Insurance — Frequently Asked Questions"
+        title="Travel Medical Insurance: Frequently Asked Questions"
         subtitle="Common questions about medical coverage, claims, and policy delivery"
         faqs={faqs}
       />
-      <PrimarySection className="py-10 lg:py-14">
-        <Container>
-          <SectionTitle className="mb-6">
-            Other Travel Insurance Plans
-          </SectionTitle>
-          <div className="flex flex-wrap justify-center gap-3">
-            {[
-              { name: 'Schengen Visa Insurance', href: '/travel-insurance/schengen-visa' },
-              { name: 'Annual Multi-Trip Insurance', href: '/travel-insurance/annual-multi-trip' },
-              { name: 'International Travel Insurance', href: '/travel-insurance/international' },
-              { name: 'Single Trip Insurance', href: '/travel-insurance/single-trip' },
-              { name: 'All Travel Insurance Plans', href: '/travel-insurance' },
-            ].map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="px-4 py-2 rounded-xl border border-primary-200 bg-primary-50 text-primary-700 text-[14px] font-medium hover:bg-primary-100 transition-colors"
-              >
-                {link.name}
-              </Link>
-            ))}
-          </div>
-        </Container>
-      </PrimarySection>
+      <RelatedPlans current="/travel-insurance/medical" />
     </>
   );
 }

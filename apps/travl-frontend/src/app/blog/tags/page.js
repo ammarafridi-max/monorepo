@@ -12,7 +12,7 @@ import BlogTagsPage from '@travel-suite/frontend-shared/pages/client/BlogTagsPag
 const meta = {
   title: 'Blog Tags | Travl',
   description:
-    'Browse blog categories to find published posts about visas, travel insurance, flight reservations, and related topics.',
+    'Browse Travl blog topics: travel insurance cover, costs, claims, visa insurance requirements and destination guides for UAE residents.',
   canonical: `${SITE_URL}/blog/tags`,
 };
 

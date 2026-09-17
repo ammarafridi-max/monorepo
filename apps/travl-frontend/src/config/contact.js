@@ -10,6 +10,14 @@ export const WHATSAPP_NUMBER = '+971569964924';
 export const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER.replace(/\D/g, '')}`;
 
 export const ADDRESS = 'Regus, DAFZ, Dubai, UAE';
+export const POSTAL_ADDRESS = {
+  streetAddress: 'Regus, Dubai Airport Freezone (DAFZ)',
+  addressLocality: 'Dubai',
+  addressRegion: 'Dubai',
+  addressCountry: 'AE',
+};
+export const LEGAL_NAME = 'Travl Technologies';
+export const TRADE_LICENSE = '1355073';
 export const GMB_URL = 'https://maps.app.goo.gl/VAouqUyAvdX1ZZnC6';
 
 export const SOCIALS = [

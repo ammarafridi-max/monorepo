@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { usePathname } from 'next/navigation';
 import {
-  Mail, Plane, ShieldPlus, Globe,
+  Mail, ShieldPlus, Globe,
   CalendarDays, HeartPulse, Stethoscope, MapPin, Users,
 } from 'lucide-react';
 import { UserAuthContext } from '@travel-suite/frontend-shared/contexts/AuthContextBase';
@@ -23,8 +23,8 @@ const travlFooter = (
     brand="Travl"
     logoSrc="/logo.webp"
     logoAlt="Travl"
-    description="Travel documentation and insurance services for UAE residents since 2018."
-    copyright={`© ${new Date().getFullYear()} Travl Technologies LLC. All rights reserved.`}
+    description="AXA-issued travel insurance for UAE residents, from AED 30, delivered by email in minutes."
+    copyright={`© ${new Date().getFullYear()} Travl Technologies. All rights reserved.`}
     socials={SOCIALS}
     address={ADDRESS}
     addressHref={GMB_URL}
@@ -34,12 +34,25 @@ const travlFooter = (
         links: [
           { label: 'All Plans', href: '/travel-insurance' },
           { label: 'Schengen Visa', href: '/travel-insurance/schengen-visa' },
-          { label: 'Annual Travel Insurance', href: '/travel-insurance/annual' },
-          { label: 'Family Travel Insurance', href: '/travel-insurance/family' },
-          { label: 'Annual Multi-Trip', href: '/travel-insurance/annual-multi-trip' },
           { label: 'Single Trip', href: '/travel-insurance/single-trip' },
+          { label: 'Annual Multi-Trip', href: '/travel-insurance/annual-multi-trip' },
+          { label: 'Family Travel Insurance', href: '/travel-insurance/family' },
           { label: 'Travel Medical', href: '/travel-insurance/medical' },
           { label: 'International', href: '/travel-insurance/international' },
+          { label: 'Bali & Indonesia', href: '/travel-insurance/indonesia' },
+        ],
+      },
+      {
+        heading: 'Insurance by Visa',
+        links: [
+          { label: 'UK Visa', href: '/travel-insurance/uk-visa' },
+          { label: 'US Visa', href: '/travel-insurance/us-visa' },
+          { label: 'Canada Visa', href: '/travel-insurance/canada-visa' },
+          { label: 'Australia Visa', href: '/travel-insurance/australia-visa' },
+          { label: 'France Visa', href: '/travel-insurance/france-visa' },
+          { label: 'Italy Visa', href: '/travel-insurance/italy-visa' },
+          { label: 'Spain Visa', href: '/travel-insurance/spain-visa' },
+          { label: 'Germany Visa', href: '/travel-insurance/germany-visa' },
         ],
       },
       {
@@ -74,7 +87,6 @@ const defaultPages = [
           heading: 'By Trip Type',
           items: [
             { Icon: ShieldPlus,    label: 'All Plans',              desc: 'Browse every insurance plan we offer',          href: '/travel-insurance' },
-            { Icon: Plane,         label: 'Annual',                 desc: 'One policy covering every trip for a year',    href: '/travel-insurance/annual' },
             { Icon: Users,         label: 'Family',                 desc: 'One policy covering the whole family',         href: '/travel-insurance/family' },
             { Icon: CalendarDays,  label: 'Annual Multi-Trip',      desc: 'One policy covering all trips for 12 months',   href: '/travel-insurance/annual-multi-trip' },
             { Icon: HeartPulse,    label: 'Single Trip',            desc: 'Pay only for the days you travel',              href: '/travel-insurance/single-trip' },
@@ -98,6 +110,7 @@ const defaultPages = [
             { flag: 'us', label: 'US Visa',           desc: 'Cover for B1/B2 and other US visa applications', href: '/travel-insurance/us-visa' },
             { flag: 'ca', label: 'Canada Visa',       desc: 'Cover accepted for Canadian visa submissions',   href: '/travel-insurance/canada-visa' },
             { flag: 'au', label: 'Australia Visa',    desc: 'Cover for Australian visitor visa applications', href: '/travel-insurance/australia-visa' },
+            { flag: 'id', label: 'Bali & Indonesia',  desc: 'Medical, baggage and trip cover for Indonesia',  href: '/travel-insurance/indonesia' },
           ],
         },
       ],
@@ -151,7 +164,14 @@ export default function Providers({ children }) {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
             <InsuranceProvider maxStartDays={270}>
-              <AppMegaLayout pages={defaultPages} logoAlt={LOGO_ALT} footer={travlFooter}>
+              <AppMegaLayout
+                pages={defaultPages}
+                logoAlt={LOGO_ALT}
+                footer={travlFooter}
+                loginHref={null}
+                signupHref={null}
+                cta={{ label: 'Get a Quote', href: '/insurance-booking/quote' }}
+              >
                 <main>{children}</main>
               </AppMegaLayout>
               <StickyWhatsApp

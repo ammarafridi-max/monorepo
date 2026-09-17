@@ -151,7 +151,7 @@ export function createSchemaBuilders({
   // `offers` takes the brand's own package shape ({ name, price, currency,
   // description }) and is omitted entirely when empty, so a page with no
   // pricing emits the same Service node it always did.
-  const buildService = ({ canonical, name, description, areaServed, offers = [] }) => {
+  const buildService = ({ canonical, name, description, serviceType, areaServed, offers = [] }) => {
     const priced = (offers || []).filter((o) => Number(o?.price) > 0);
 
     return {
@@ -159,7 +159,7 @@ export function createSchemaBuilders({
       "@id": `${canonical}#service`,
       name,
       description,
-      serviceType: name,
+      serviceType: serviceType || name,
       url: canonical,
       areaServed,
       provider: { "@id": organizationId },
@@ -184,12 +184,17 @@ export function createSchemaBuilders({
     };
   };
 
+  // `fromPrice: true` marks `price` as the lowest quote, which is what a
+  // "from AED 30" page actually promises; the Offer keeps `price` for the
+  // rich-result validator and adds the minPrice specification for everyone else.
   const buildProduct = ({
     canonical,
     name,
     description,
     price,
     currency = "USD",
+    category,
+    fromPrice = false,
     availability = "https://schema.org/InStock",
   }) => ({
     "@type": "Product",
@@ -197,11 +202,22 @@ export function createSchemaBuilders({
     name,
     description,
     url: canonical,
+    ...(category ? { category } : {}),
     brand: { "@id": organizationId },
     offers: {
       "@type": "Offer",
       price,
       priceCurrency: currency,
+      ...(fromPrice
+        ? {
+            priceSpecification: {
+              "@type": "PriceSpecification",
+              minPrice: Number(price),
+              priceCurrency: currency,
+              valueAddedTaxIncluded: true,
+            },
+          }
+        : {}),
       availability,
       url: canonical,
       seller: { "@id": organizationId },

@@ -27,7 +27,7 @@ export const faqPageData = {
     hero: {
       title: 'Frequently Asked Questions',
       subtitle:
-        'Everything you need to know about travel insurance — coverage requirements, policy delivery, Schengen compliance, and how to get the right plan for your visa application.',
+        'Everything you need to know about travel insurance: coverage requirements, policy delivery, Schengen compliance, refunds, and how to get the right plan for your trip.',
       points: ['Schengen Coverage', 'Policy Delivery', 'Visa Compliance', 'Medical & Emergency'],
     },
   },

@@ -1,15 +1,12 @@
-import Link from 'next/link';
 import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineHotel } from 'react-icons/md';
 import { Globe, HeartPulse, FileCheck, ShieldCheck, BadgeCheck, RefreshCw } from 'lucide-react';
-import Container from '@travel-suite/frontend-shared/components/shared/layout/Container';
-import PrimarySection from '@travel-suite/frontend-shared/components/shared/layout/PrimarySection';
-import SectionTitle from '@travel-suite/frontend-shared/components/shared/layout/SectionTitle';
 import About from '@travel-suite/frontend-shared/components/sections/v2/About';
 import Benefits from '@travel-suite/frontend-shared/components/sections/v2/Benefits';
 import Testimonials from '@travel-suite/frontend-shared/components/sections/v2/Testimonials';
 import Faqs from '@travel-suite/frontend-shared/components/sections/v2/Faqs';
 import Hero from '@travel-suite/frontend-shared/components/sections/v2/Hero';
 import HowItWorks from '@travel-suite/frontend-shared/components/sections/v2/HowItWorks';
+import RelatedPlans from '@/components/RelatedPlans';
 import { buildMetadata } from '@/lib/schema';
 import {
   buildFAQPage,
@@ -129,7 +126,8 @@ export const faqs = [
 
 export const pageData = {
   meta: {
-    title: 'International Travel Insurance for UAE Residents | Travl',
+    title: 'International Travel Insurance UAE | From AED 70 | Travl',
+    productName: 'International Travel Insurance for UAE Residents',
     description:
       'Worldwide travel insurance for UAE residents, issued by AXA. International health insurance from AED 70 with medical cover from EUR 80,000. Instant delivery.',
     canonical: 'https://www.travl.ae/travel-insurance/international',
@@ -154,7 +152,7 @@ export const pageData = {
           icon: <MdOutlineHealthAndSafety />,
           title: 'International Travel Insurance',
           description:
-            'Worldwide AXA coverage from AED 70 with medical cover from EUR 80,000. Includes emergency treatment, repatriation, trip cancellations, and baggage loss — all delivered instantly.',
+            'Worldwide AXA coverage from AED 70 with medical cover from EUR 80,000. Includes emergency treatment, repatriation, trip cancellations, and baggage loss, all delivered instantly.',
         },
         {
           icon: <MdOutlineAirplaneTicket />,
@@ -182,16 +180,19 @@ export default function Page() {
     buildWebPage(pageData.meta),
     buildService({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
+      serviceType: 'Travel Insurance',
       description: pageData.meta.description,
       areaServed: 'AE',
     }),
     buildProduct({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
       description: pageData.meta.description,
       price: '70.00',
       currency: 'AED',
+      category: 'Travel Insurance',
+      fromPrice: true,
     }),
     buildFAQPage({
       canonical: pageData.meta.canonical,
@@ -238,34 +239,11 @@ export default function Page() {
         testimonials={testimonials}
       />
       <Faqs
-        title="International Travel Insurance — Frequently Asked Questions"
+        title="International Travel Insurance: Frequently Asked Questions"
         subtitle="Common questions about worldwide coverage, medical limits, and plans"
         faqs={faqs}
       />
-      <PrimarySection className="py-10 lg:py-14">
-        <Container>
-          <SectionTitle className="mb-6">
-            Other Travel Insurance Plans
-          </SectionTitle>
-          <div className="flex flex-wrap justify-center gap-3">
-            {[
-              { name: 'Schengen Visa Insurance', href: '/travel-insurance/schengen-visa' },
-              { name: 'Travel Medical Insurance', href: '/travel-insurance/medical' },
-              { name: 'Annual Multi-Trip Insurance', href: '/travel-insurance/annual-multi-trip' },
-              { name: 'Single Trip Insurance', href: '/travel-insurance/single-trip' },
-              { name: 'All Travel Insurance Plans', href: '/travel-insurance' },
-            ].map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="px-4 py-2 rounded-xl border border-primary-200 bg-primary-50 text-primary-700 text-[14px] font-medium hover:bg-primary-100 transition-colors"
-              >
-                {link.name}
-              </Link>
-            ))}
-          </div>
-        </Container>
-      </PrimarySection>
+      <RelatedPlans current="/travel-insurance/international" />
     </>
   );
 }

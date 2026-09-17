@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   MdOutlineAirplaneTicket,
   MdOutlineHealthAndSafety,
@@ -12,15 +11,13 @@ import {
   Banknote,
   RefreshCw,
 } from "lucide-react";
-import Container from "@travel-suite/frontend-shared/components/shared/layout/Container";
-import PrimarySection from "@travel-suite/frontend-shared/components/shared/layout/PrimarySection";
-import SectionTitle from "@travel-suite/frontend-shared/components/shared/layout/SectionTitle";
 import About from "@travel-suite/frontend-shared/components/sections/v2/About";
 import Benefits from "@travel-suite/frontend-shared/components/sections/v2/Benefits";
 import Testimonials from "@travel-suite/frontend-shared/components/sections/v2/Testimonials";
 import Faqs from "@travel-suite/frontend-shared/components/sections/v2/Faqs";
 import Hero from "@travel-suite/frontend-shared/components/sections/v2/Hero";
 import HowItWorks from "@travel-suite/frontend-shared/components/sections/v2/HowItWorks";
+import RelatedPlans from "@/components/RelatedPlans";
 import { buildMetadata } from "@/lib/schema";
 import {
   buildFAQPage,
@@ -59,7 +56,7 @@ const testimonials = [
   },
   {
     quote:
-      "Booked a two-week trip to London and Manchester. The policy showed clear medical cover and trip dates — exactly what the caseworker wanted to see. Visa came back approved in nine days.",
+      "Booked a two-week trip to London and Manchester. The policy showed clear medical cover and trip dates, exactly what the caseworker wanted to see. Visa came back approved in nine days.",
     name: "Reema S.",
     location: "Abu Dhabi, UAE",
     stars: 5,
@@ -84,7 +81,7 @@ const benefits = [
   {
     icon: FileCheck,
     title: "Real Travel Insurance, Not a Placeholder",
-    text: "A genuine AXA travel medical policy. Valid for your UK visa submission and for real medical emergencies during your trip — NHS care for visitors is not free.",
+    text: "A genuine AXA travel medical policy. Valid for your UK visa submission and for real medical emergencies during your trip, NHS care for visitors is not free.",
   },
   {
     icon: Zap,
@@ -112,7 +109,7 @@ export const faqs = [
   {
     question: "Is travel insurance mandatory for a UK visa?",
     answer:
-      "No. UK Visas and Immigration does not list travel insurance as a mandatory document for the Standard Visitor visa. It is strongly recommended though — NHS treatment is not free for short-term visitors, and a caseworker will look more favorably on a well-prepared application that includes insurance.",
+      "No. UK Visas and Immigration does not list travel insurance as a mandatory document for the Standard Visitor visa. It is strongly recommended though, NHS treatment is not free for short-term visitors, and a caseworker will look more favorably on a well-prepared application that includes insurance.",
   },
   {
     question: "Does this insurance work for the UK Standard Visitor visa?",
@@ -127,7 +124,7 @@ export const faqs = [
   {
     question: "How much medical coverage should a UK visa policy include?",
     answer:
-      "There is no official minimum from UKVI, but at least GBP 100,000 in medical cover is the sensible benchmark — NHS treatment for visitors is charged at full cost, and emergency hospitalization can run into tens of thousands of pounds quickly.",
+      "There is no official minimum from UKVI, but at least GBP 100,000 in medical cover is the sensible benchmark, NHS treatment for visitors is charged at full cost, and emergency hospitalization can run into tens of thousands of pounds quickly.",
   },
   {
     question: "Does this cover work, study, or long-stay UK visas?",
@@ -154,6 +151,7 @@ export const faqs = [
 export const pageData = {
   meta: {
     title: "Travel Insurance for UK Visa | From AED 30 | Travl",
+    productName: "Travel Insurance for UK Visa",
     description:
       "Get a UK visa-ready travel insurance policy online. Real AXA medical cover for the Standard Visitor visa, accepted by VFS UK. Instant policy for UAE residents from AED 30.",
     canonical: "https://www.travl.ae/travel-insurance/uk-visa",
@@ -211,16 +209,19 @@ export default function Page() {
     buildWebPage(pageData.meta),
     buildService({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
+      serviceType: 'Travel Insurance',
       description: pageData.meta.description,
       areaServed: "AE",
     }),
     buildProduct({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
       description: pageData.meta.description,
       price: "30.00",
       currency: "AED",
+      category: 'Travel Insurance',
+      fromPrice: true,
     }),
     buildFAQPage({
       canonical: pageData.meta.canonical,
@@ -267,46 +268,11 @@ export default function Page() {
         testimonials={testimonials}
       />
       <Faqs
-        title="UK Visa Travel Insurance — Frequently Asked Questions"
+        title="UK Visa Travel Insurance: Frequently Asked Questions"
         subtitle="Everything you need to know about UK visa travel insurance for UAE residents"
         faqs={faqs}
       />
-      <PrimarySection className="py-10 lg:py-14">
-        <Container>
-          <SectionTitle className="mb-6">
-            Other Travel Insurance Plans
-          </SectionTitle>
-          <div className="flex flex-wrap justify-center gap-3">
-            {[
-              {
-                name: "Schengen Visa Insurance",
-                href: "/travel-insurance/schengen-visa",
-              },
-              {
-                name: "Travel Medical Insurance",
-                href: "/travel-insurance/medical",
-              },
-              {
-                name: "Annual Multi-Trip Insurance",
-                href: "/travel-insurance/annual-multi-trip",
-              },
-              {
-                name: "Single Trip Insurance",
-                href: "/travel-insurance/single-trip",
-              },
-              { name: "All Travel Insurance Plans", href: "/travel-insurance" },
-            ].map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="px-4 py-2 rounded-xl border border-primary-200 bg-primary-50 text-primary-700 text-[14px] font-medium hover:bg-primary-100 transition-colors"
-              >
-                {link.name}
-              </Link>
-            ))}
-          </div>
-        </Container>
-      </PrimarySection>
+      <RelatedPlans current="/travel-insurance/uk-visa" />
     </>
   );
 }

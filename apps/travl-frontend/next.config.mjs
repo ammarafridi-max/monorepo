@@ -52,6 +52,11 @@ const LEGACY_REDIRECTS = [
   ['/terms', '/terms-and-conditions'],
   ['/privacy', '/privacy-policy'],
   ['/schengen-travel-insurance', '/travel-insurance/schengen-visa'],
+  ['/travel-insurance/annual', '/travel-insurance/annual-multi-trip'],
+  ['/blog/flight-delay-whats-covered-when-your-flight-is-delayed',
+   '/blog/flight-delay-insurance-whats-covered-when-your-flight-is-delayed'],
+  ['/blog/pre-existing-conditions-and-travel-insurance-what-uae-travellers-need-to-know',
+   '/blog/pre-existing-medical-conditions-and-travel-insurance-what-uae-travellers-need-to-know'],
 ];
 
 /** @type {import('next').NextConfig} */

@@ -508,6 +508,17 @@ export function validateContentQuality(parsed, lengthTier, brand, { minWords: fl
     }
   }
 
+  // A post whose title is a product page's H1 competes with the page it should
+  // be sending readers to.
+  for (const check of brand.titleChecks ?? []) {
+    const title = String(parsed.title ?? "");
+    if (check.pattern.test(title)) {
+      console.error(`❌ ${check.message}`);
+      console.error(`   title: "${title}"`);
+      throw new Error(check.message);
+    }
+  }
+
   const emDashCount = (content.match(/—/g) || []).length;
   if (emDashCount > 0) {
     console.warn(
@@ -557,7 +568,7 @@ export async function fetchCoverImage(topicTitle, brand) {
     return fetchPlaceholderCoverImage(brand);
   }
 
-  const prompt = buildImagePrompt(topicTitle);
+  const prompt = brand.imagePrompt ? brand.imagePrompt(topicTitle) : buildImagePrompt(topicTitle);
   console.log(`Generating Recraft image: "${prompt}"`);
 
   try {

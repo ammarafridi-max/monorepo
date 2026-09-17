@@ -1,15 +1,12 @@
-import Link from 'next/link';
 import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineHotel } from 'react-icons/md';
 import { Calendar, Globe, ShieldCheck, Banknote, BadgeCheck, Zap } from 'lucide-react';
-import Container from '@travel-suite/frontend-shared/components/shared/layout/Container';
-import PrimarySection from '@travel-suite/frontend-shared/components/shared/layout/PrimarySection';
-import SectionTitle from '@travel-suite/frontend-shared/components/shared/layout/SectionTitle';
 import About from '@travel-suite/frontend-shared/components/sections/v2/About';
 import Benefits from '@travel-suite/frontend-shared/components/sections/v2/Benefits';
 import Testimonials from '@travel-suite/frontend-shared/components/sections/v2/Testimonials';
 import Faqs from '@travel-suite/frontend-shared/components/sections/v2/Faqs';
 import Hero from '@travel-suite/frontend-shared/components/sections/v2/Hero';
 import HowItWorks from '@travel-suite/frontend-shared/components/sections/v2/HowItWorks';
+import RelatedPlans from '@/components/RelatedPlans';
 import { buildMetadata } from '@/lib/schema';
 import {
   buildFAQPage,
@@ -39,7 +36,7 @@ export const processSteps = [
 
 const testimonials = [
   {
-    quote: 'I travel for work every few months. The annual plan from Travl has saved me so much time — one policy, sorted for the whole year.',
+    quote: 'I travel for work every few months. The annual plan from Travl has saved me so much time, one policy, sorted for the whole year.',
     name: 'Tariq B.',
     location: 'Dubai, UAE',
     stars: 5,
@@ -121,6 +118,16 @@ export const faqs = [
       'Yes. You can choose a plan that covers specific regions or worldwide destinations, depending on where you travel throughout the year.',
   },
   {
+    question: 'When does my annual travel insurance start?',
+    answer:
+      'Cover starts on the policy start date you choose and runs for 12 months. You can set it to begin on the day you buy or on a future date, whichever suits your travel plans.',
+  },
+  {
+    question: 'How much does annual travel insurance cost?',
+    answer:
+      'Annual multi-trip cover starts from AED 245. The price depends on the regions you want covered and the number of travellers on the policy. For anyone taking three or more trips a year it usually works out cheaper than buying single-trip cover each time.',
+  },
+  {
     question: 'How quickly will I receive my annual insurance policy?',
     answer:
       'Your policy is issued instantly and delivered to your email within minutes of successful payment. No office visit is required.',
@@ -130,6 +137,7 @@ export const faqs = [
 export const pageData = {
   meta: {
     title: 'Annual Multi-Trip Travel Insurance in UAE | AED 245 | Travl',
+    productName: 'Annual Multi-Trip Travel Insurance for UAE Residents',
     description:
       'Annual multi-trip travel insurance for UAE residents, issued by AXA. One policy covers all your trips for a year. From AED 245. Instant policy delivery.',
     canonical: 'https://www.travl.ae/travel-insurance/annual-multi-trip',
@@ -154,7 +162,7 @@ export const pageData = {
           icon: <MdOutlineHealthAndSafety />,
           title: 'Annual Multi-Trip Insurance',
           description:
-            'One AXA policy covering all your international trips for 12 months. Schengen-compliant for every European trip, from AED 245 — the smart choice for frequent travellers.',
+            'One AXA policy covering all your international trips for 12 months. Schengen-compliant for every European trip, from AED 245, the smart choice for frequent travellers.',
         },
         {
           icon: <MdOutlineAirplaneTicket />,
@@ -182,16 +190,19 @@ export default function Page() {
     buildWebPage(pageData.meta),
     buildService({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
+      serviceType: 'Travel Insurance',
       description: pageData.meta.description,
       areaServed: 'AE',
     }),
     buildProduct({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
       description: pageData.meta.description,
       price: '245.00',
       currency: 'AED',
+      category: 'Travel Insurance',
+      fromPrice: true,
     }),
     buildFAQPage({
       canonical: pageData.meta.canonical,
@@ -238,34 +249,11 @@ export default function Page() {
         testimonials={testimonials}
       />
       <Faqs
-        title="Annual Multi-Trip Insurance — Frequently Asked Questions"
+        title="Annual Multi-Trip Insurance: Frequently Asked Questions"
         subtitle="Common questions about annual plans, trip limits, and coverage scope"
         faqs={faqs}
       />
-      <PrimarySection className="py-10 lg:py-14">
-        <Container>
-          <SectionTitle className="mb-6">
-            Other Travel Insurance Plans
-          </SectionTitle>
-          <div className="flex flex-wrap justify-center gap-3">
-            {[
-              { name: 'Schengen Visa Insurance', href: '/travel-insurance/schengen-visa' },
-              { name: 'Travel Medical Insurance', href: '/travel-insurance/medical' },
-              { name: 'International Travel Insurance', href: '/travel-insurance/international' },
-              { name: 'Single Trip Insurance', href: '/travel-insurance/single-trip' },
-              { name: 'All Travel Insurance Plans', href: '/travel-insurance' },
-            ].map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="px-4 py-2 rounded-xl border border-primary-200 bg-primary-50 text-primary-700 text-[14px] font-medium hover:bg-primary-100 transition-colors"
-              >
-                {link.name}
-              </Link>
-            ))}
-          </div>
-        </Container>
-      </PrimarySection>
+      <RelatedPlans current="/travel-insurance/annual-multi-trip" />
     </>
   );
 }

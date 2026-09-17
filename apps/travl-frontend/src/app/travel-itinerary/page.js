@@ -37,15 +37,15 @@ const FORM_PATH = "/itinerary-booking/form";
 export const processSteps = [
   {
     title: "Enter Your Trip Details",
-    text: "Add your travel dates, arrival and departure cities, the country you are applying to, your purpose of travel, and any other countries on your trip. Everything is entered manually — no account needed.",
+    text: "Add your travel dates, arrival and departure cities, the country you are applying to, your purpose of travel, and any other countries on your trip. Everything is entered manually, no account needed.",
   },
   {
     title: "Generate & Preview",
-    text: "We instantly build a professional, day-by-day itinerary tailored to your visa country and purpose. You review a watermarked preview before paying anything — and can regenerate it if you want changes.",
+    text: "We instantly build a professional, day-by-day itinerary tailored to your visa country and purpose. You review a watermarked preview before paying anything, and can regenerate it if you want changes.",
   },
   {
     title: "Pay & Download",
-    text: "Pay a one-time AED 49 and immediately download a clean, print-ready PDF — formatted to submit with your visa application at the embassy, VFS, or BLS.",
+    text: "Pay a one-time AED 49 and immediately download a clean, print-ready PDF, formatted to submit with your visa application at the embassy, VFS, or BLS.",
   },
 ];
 
@@ -53,7 +53,7 @@ const benefits = [
   {
     icon: FileCheck,
     title: "Embassy-Ready Format",
-    text: "A clear, professional day-by-day plan laid out the way visa officers expect to see it — dates, cities, and daily intent at a glance.",
+    text: "A clear, professional day-by-day plan laid out the way visa officers expect to see it, dates, cities, and daily intent at a glance.",
   },
   {
     icon: SlidersHorizontal,
@@ -63,7 +63,7 @@ const benefits = [
   {
     icon: Lock,
     title: "Preview Before You Pay",
-    text: "See a full watermarked preview of your itinerary first. You only pay once you are happy with it — no surprises.",
+    text: "See a full watermarked preview of your itinerary first. You only pay once you are happy with it, no surprises.",
   },
   {
     icon: Zap,
@@ -73,7 +73,7 @@ const benefits = [
   {
     icon: ShieldCheck,
     title: "Consistent & Accurate",
-    text: "Every itinerary is automatically checked so the dates, cities, and country order always line up — no contradictory documents.",
+    text: "Every itinerary is automatically checked so the dates, cities, and country order always line up, no contradictory documents.",
   },
   {
     icon: Globe2,
@@ -93,7 +93,7 @@ const testimonials = [
   },
   {
     quote:
-      "The preview-before-pay was great — I regenerated once to adjust my cities, then downloaded the PDF. Accepted at VFS without any questions.",
+      "The preview-before-pay was great, I regenerated once to adjust my cities, then downloaded the PDF. Accepted at VFS without any questions.",
     name: "Daniel K.",
     location: "Abu Dhabi, UAE",
     stars: 5,
@@ -113,12 +113,12 @@ export const faqs = [
   {
     question: "What is a travel itinerary for a visa application?",
     answer:
-      "It is a professional, day-by-day plan of your trip — dates, cities, and daily activities — that many embassies ask for as proof of your travel intentions. Our generator formats it the way visa officers expect to see it.",
+      "It is a professional, day-by-day plan of your trip, dates, cities, and daily activities, that many embassies ask for as proof of your travel intentions. Our generator formats it the way visa officers expect to see it.",
   },
   {
     question: "Is this a real booking or a reservation?",
     answer:
-      "No. It is a proposed travel itinerary document for your visa application. It does not book or reserve any flights or hotels, and it never invents flight numbers or hotel names — it only references the cities and dates you provide.",
+      "No. It is a proposed travel itinerary document for your visa application. It does not book or reserve any flights or hotels, and it never invents flight numbers or hotel names, it only references the cities and dates you provide.",
   },
   {
     question: "Can I see the itinerary before paying?",
@@ -128,7 +128,7 @@ export const faqs = [
   {
     question: "Is it tailored to the country I am applying to?",
     answer:
-      "Yes. The itinerary is shaped by the country you are applying to and your purpose of travel — tourism, business, family visit, and so on — so the emphasis and format match your application.",
+      "Yes. The itinerary is shaped by the country you are applying to and your purpose of travel, tourism, business, family visit, and so on, so the emphasis and format match your application.",
   },
   {
     question: "Can I make changes after generating?",
@@ -161,7 +161,7 @@ export const pageData = {
   },
   about: {
     title: "About Our Itinerary Generator",
-    text: "We help UAE residents and travellers produce clean, professional travel itineraries for visa applications. You enter your trip details, we build and validate a day-by-day plan tailored to your destination, and you download a print-ready document — without booking or paying for flights and hotels you do not need.",
+    text: "We help UAE residents and travellers produce clean, professional travel itineraries for visa applications. You enter your trip details, we build and validate a day-by-day plan tailored to your destination, and you download a print-ready document, without booking or paying for flights and hotels you do not need.",
     services: [
       {
         icon: <MdOutlineMap />,
@@ -173,7 +173,7 @@ export const pageData = {
         icon: <MdOutlineDescription />,
         title: "Print-Ready PDF",
         description:
-          "A clean, professional, watermark-free PDF delivered instantly after payment — ready to submit at the embassy, VFS, or BLS. From AED 49.",
+          "A clean, professional, watermark-free PDF delivered instantly after payment, ready to submit at the embassy, VFS, or BLS. From AED 49.",
       },
       {
         icon: <MdOutlineVerifiedUser />,
@@ -191,7 +191,7 @@ function HeroCta() {
   const points = [
     "Tailored to your visa country & purpose",
     "Watermarked preview before you pay",
-    "Clean, print-ready PDF — no flights or hotels booked",
+    "Clean, print-ready PDF, no flights or hotels booked",
   ];
   return (
     <div className="flex flex-col gap-5">
@@ -235,7 +235,8 @@ export default function Page() {
     buildWebPage(pageData.meta),
     buildService({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: "Travel Itinerary for Visa Applications",
+      serviceType: "Travel Itinerary",
       description: pageData.meta.description,
       areaServed: "AE",
     }),
@@ -290,7 +291,7 @@ export default function Page() {
           </SectionTitle>
           <p className="text-[16px] md:text-[18px] text-gray-700 font-light leading-7 max-w-190 mx-auto">
             Enter your trip details, preview your day-by-day plan for free, and
-            download a clean, embassy-ready PDF in minutes — all for a one-time
+            download a clean, embassy-ready PDF in minutes, all for a one-time
             AED 49.
           </p>
           <Link
@@ -302,7 +303,7 @@ export default function Page() {
         </Container>
       </PrimarySection>
       <Faqs
-        title="Travel Itinerary — Frequently Asked Questions"
+        title="Travel Itinerary: Frequently Asked Questions"
         subtitle="Common questions about generating an itinerary for your visa application"
         faqs={faqs}
       />

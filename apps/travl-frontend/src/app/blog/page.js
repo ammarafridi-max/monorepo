@@ -11,17 +11,17 @@ import {
 import BlogPage from '@travel-suite/frontend-shared/pages/client/BlogPage';
 
 const meta = {
-  title: 'Travel Insurance & Visa Travel Blog | Tips, Guides & Updates',
+  title: 'Travel Insurance Guides for UAE Residents | Travl Blog',
   description:
-    'Read practical visa travel guides, travel insurance tips, and updates to help you prepare stronger documentation for your next application.',
+    'Plain-English guides on travel insurance for UAE residents: what Schengen and UK visas require, what AXA policies cover, how claims work, and what you will pay.',
   canonical: `${SITE_URL}/blog`,
 };
 
 const hero = {
-  title: 'Blog',
+  title: 'Travel Insurance Guides',
   subtitle:
-    'Our blog covers travel insurance, visa requirements, flight reservations, and everything else you need to prepare a strong application. We share practical guides, tips, and updates to help you apply with confidence.',
-  points: ['Visa Guides', 'Insurance Tips', 'Document Checklists', 'Expert Insights'],
+    'What travel insurance covers, what it costs from the UAE, what consulates ask for, and how to claim when something goes wrong. Written for UAE residents, updated as the rules change.',
+  points: ['Coverage Explained', 'Visa Requirements', 'Claims Guides', 'Destination Cover'],
 };
 
 const breadcrumbPaths = [

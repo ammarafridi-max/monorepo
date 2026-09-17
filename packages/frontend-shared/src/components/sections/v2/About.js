@@ -62,7 +62,7 @@ export default function About({
                 fill
                 sizes="210px"
                 className="object-cover object-center"
-                alt="Happy couple with their approved visas"
+                alt="Happy couple ready to travel"
               />
             </div>
             <div className="flex flex-col gap-4">
@@ -81,7 +81,7 @@ export default function About({
                   fill
                   sizes="210px"
                   className="object-cover object-center"
-                  alt="Happy couple with their flight reservations"
+                  alt="Couple planning their trip together"
                 />
               </div>
             </div>

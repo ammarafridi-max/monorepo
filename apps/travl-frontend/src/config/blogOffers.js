@@ -41,7 +41,7 @@ const INSURANCE_BY_SLUG_TOKEN = [
   ['pregnant', 'medical'],
   ['digital-nomads', 'annual-multi-trip'],
   ['working-holidays', 'annual-multi-trip'],
-  ['annual', 'annual'],
+  ['annual', 'annual-multi-trip'],
   ['family', 'family'],
 ];
 
@@ -93,11 +93,27 @@ function resolveInsurance(blog) {
       };
 }
 
+/** Tags are populated BlogTag references; older data holds bare names. */
+const tagNames = (blog) =>
+  (blog?.tags || []).map((t) => (typeof t === 'string' ? t : t?.name)).filter(Boolean);
+
+const VISA_TOKENS = ['visa', 'schengen', 'vfs', 'bls', 'embassy', 'consulate', 'onward', 'pnr'];
+
+/** Only a reader dealing with a visa file has any use for a flight reservation. */
+const isVisaAdjacent = (blog) => {
+  const slug = String(blog?.slug || '').toLowerCase();
+  const tags = tagNames(blog);
+  return (
+    VISA_TOKENS.some((t) => slug.includes(t)) ||
+    tags.some((t) => /visa|schengen|dummy ticket|flight itinerary/i.test(t))
+  );
+};
+
 /** Cards for the sticky rail, brand product first. */
 export function getBlogOffers(blog) {
   const insurance = resolveInsurance(blog);
 
-  return [
+  const cards = [
     {
       id: 'insurance',
       tone: 'brand',
@@ -107,7 +123,10 @@ export function getBlogOffers(blog) {
       href: insurance.href,
       cta: 'Get insured',
     },
-    {
+  ];
+
+  if (isVisaAdjacent(blog)) {
+    cards.push({
       id: 'dummy-ticket',
       tone: 'plain',
       eyebrow: 'Dummy ticket',
@@ -116,13 +135,11 @@ export function getBlogOffers(blog) {
       href: DUMMY_TICKET_URL,
       cta: DUMMY_TICKET_365.name,
       external: true,
-    },
-  ];
-}
+    });
+  }
 
-/** Tags are populated BlogTag references; older data holds bare names. */
-const tagNames = (blog) =>
-  (blog?.tags || []).map((t) => (typeof t === 'string' ? t : t?.name)).filter(Boolean);
+  return cards;
+}
 
 /** The single mid-article unit. Matches the post's subject where it can. */
 export function getBlogInlineOffer(blog) {
@@ -132,7 +149,6 @@ export function getBlogInlineOffer(blog) {
     tags.includes('Dummy Ticket') ||
     tags.includes('Flight Itinerary') ||
     slug.includes('dummy-ticket') ||
-    slug.includes('flight') ||
     slug.includes('pnr') ||
     slug.includes('onward');
 

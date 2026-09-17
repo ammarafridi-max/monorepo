@@ -4,9 +4,9 @@ import SocialLinks from '@travel-suite/frontend-shared/components/ui/v2/SocialLi
 import { EMAIL, WHATSAPP_URL, ADDRESS, GMB_URL, SOCIALS } from '@/config/contact';
 
 export const metadata = {
-  title: 'Contact Travl — Email, WhatsApp or Visit Our Dubai Office',
+  title: 'Contact Travl | Email, WhatsApp or Visit Our Dubai Office',
   description:
-    'Get in touch with Travl. Email info@travl.ae, WhatsApp our team, or find us at Regus, DAFZ, Dubai for help with your insurance policy or visa documentation.',
+    'Get in touch with Travl. Email info@travl.ae, WhatsApp our team, or find us at Regus, DAFZ, Dubai for help with your travel insurance policy.',
   alternates: { canonical: 'https://www.travl.ae/contact' },
 };
 
@@ -24,8 +24,8 @@ export default function ContactPage() {
 
         <p className="text-gray-600 leading-relaxed mb-8">
           For questions about an existing policy, please include your policy
-          number. For help with a new application, just tell us what you're
-          applying for and from where.
+          number. For a new policy, tell us where you&apos;re going, your travel
+          dates and how many people are travelling, and we&apos;ll send a quote.
         </p>
 
         <div className="grid gap-3 sm:grid-cols-2">

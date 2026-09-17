@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   MdOutlineAirplaneTicket,
   MdOutlineHealthAndSafety,
@@ -12,15 +11,13 @@ import {
   Banknote,
   RefreshCw,
 } from "lucide-react";
-import Container from "@travel-suite/frontend-shared/components/shared/layout/Container";
-import PrimarySection from "@travel-suite/frontend-shared/components/shared/layout/PrimarySection";
-import SectionTitle from "@travel-suite/frontend-shared/components/shared/layout/SectionTitle";
 import About from "@travel-suite/frontend-shared/components/sections/v2/About";
 import Benefits from "@travel-suite/frontend-shared/components/sections/v2/Benefits";
 import Testimonials from "@travel-suite/frontend-shared/components/sections/v2/Testimonials";
 import Faqs from "@travel-suite/frontend-shared/components/sections/v2/Faqs";
 import Hero from "@travel-suite/frontend-shared/components/sections/v2/Hero";
 import HowItWorks from "@travel-suite/frontend-shared/components/sections/v2/HowItWorks";
+import RelatedPlans from "@/components/RelatedPlans";
 import { buildMetadata } from "@/lib/schema";
 import {
   buildFAQPage,
@@ -44,14 +41,14 @@ export const processSteps = [
   },
   {
     title: "Pay and Receive Your Policy",
-    text: "Pay online and your US-ready AXA certificate arrives by email within minutes. Bring it to your US visa interview the same day if you like — or simply carry it on your trip for real medical protection.",
+    text: "Pay online and your US-ready AXA certificate arrives by email within minutes. Bring it to your US visa interview the same day if you like, or simply carry it on your trip for real medical protection.",
   },
 ];
 
 const testimonials = [
   {
     quote:
-      "Got my US B1/B2 interview slot late and rushed everything. Travl had the AXA certificate emailed in about ten minutes — solid medical cover, perfectly formatted. One less thing to worry about at the embassy.",
+      "Got my US B1/B2 interview slot late and rushed everything. Travl had the AXA certificate emailed in about ten minutes, solid medical cover, perfectly formatted. One less thing to worry about at the embassy.",
     name: "Rohan V.",
     location: "Dubai, UAE",
     stars: 5,
@@ -84,7 +81,7 @@ const benefits = [
   {
     icon: FileCheck,
     title: "Real Travel Insurance, Not a Placeholder",
-    text: "A genuine AXA travel medical policy. Useful for your US visa application file and essential for real medical emergencies during your trip — US healthcare is not free for tourists.",
+    text: "A genuine AXA travel medical policy. Useful for your US visa application file and essential for real medical emergencies during your trip, US healthcare is not free for tourists.",
   },
   {
     icon: Zap,
@@ -112,12 +109,12 @@ export const faqs = [
   {
     question: "Is travel insurance mandatory for a US visa?",
     answer:
-      "No. The US Embassy and USCIS do not require travel insurance for B1/B2 visa applications. However, US healthcare is among the most expensive in the world — a serious medical event without insurance can cost tens of thousands of dollars, so travel insurance is strongly recommended for any US trip.",
+      "No. The US Embassy and USCIS do not require travel insurance for B1/B2 visa applications. However, US healthcare is among the most expensive in the world, a serious medical event without insurance can cost tens of thousands of dollars, so travel insurance is strongly recommended for any US trip.",
   },
   {
     question: "How much medical coverage should a US trip policy include?",
     answer:
-      "USD 100,000 in medical coverage is the practical minimum — US emergency rooms regularly bill that much for a single serious incident. Higher cover is sensible if you'll be visiting for more than a few weeks or doing anything adventurous.",
+      "USD 100,000 in medical coverage is the practical minimum, US emergency rooms regularly bill that much for a single serious incident. Higher cover is sensible if you'll be visiting for more than a few weeks or doing anything adventurous.",
   },
   {
     question: "Does this insurance work for B1, B2, and combined B1/B2 visas?",
@@ -127,7 +124,7 @@ export const faqs = [
   {
     question: "Will the US Embassy ask to see my travel insurance?",
     answer:
-      "Usually not at the interview itself. Consular officers focus on intent to return, ties to your home country, and finances. Insurance is mainly for your protection while in the US — but having it stamps the file as well prepared.",
+      "Usually not at the interview itself. Consular officers focus on intent to return, ties to your home country, and finances. Insurance is mainly for your protection while in the US, but having it stamps the file as well prepared.",
   },
   {
     question: "Does this cover student (F-1) or work (H-1B) visas?",
@@ -154,6 +151,7 @@ export const faqs = [
 export const pageData = {
   meta: {
     title: "Travel Insurance for US Visa | From AED 30 | Travl",
+    productName: "Travel Insurance for US Visa",
     description:
       "Get travel insurance for your US B1/B2 visa trip. Real AXA medical cover sized for US healthcare costs. Instant policy for UAE residents from AED 30.",
     canonical: "https://www.travl.ae/travel-insurance/us-visa",
@@ -211,16 +209,19 @@ export default function Page() {
     buildWebPage(pageData.meta),
     buildService({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
+      serviceType: 'Travel Insurance',
       description: pageData.meta.description,
       areaServed: "AE",
     }),
     buildProduct({
       canonical: pageData.meta.canonical,
-      name: pageData.meta.title,
+      name: pageData.meta.productName,
       description: pageData.meta.description,
       price: "30.00",
       currency: "AED",
+      category: 'Travel Insurance',
+      fromPrice: true,
     }),
     buildFAQPage({
       canonical: pageData.meta.canonical,
@@ -267,46 +268,11 @@ export default function Page() {
         testimonials={testimonials}
       />
       <Faqs
-        title="US Visa Travel Insurance — Frequently Asked Questions"
+        title="US Visa Travel Insurance: Frequently Asked Questions"
         subtitle="Everything you need to know about US travel insurance for UAE residents"
         faqs={faqs}
       />
-      <PrimarySection className="py-10 lg:py-14">
-        <Container>
-          <SectionTitle className="mb-6">
-            Other Travel Insurance Plans
-          </SectionTitle>
-          <div className="flex flex-wrap justify-center gap-3">
-            {[
-              {
-                name: "Schengen Visa Insurance",
-                href: "/travel-insurance/schengen-visa",
-              },
-              {
-                name: "Travel Medical Insurance",
-                href: "/travel-insurance/medical",
-              },
-              {
-                name: "Annual Multi-Trip Insurance",
-                href: "/travel-insurance/annual-multi-trip",
-              },
-              {
-                name: "Single Trip Insurance",
-                href: "/travel-insurance/single-trip",
-              },
-              { name: "All Travel Insurance Plans", href: "/travel-insurance" },
-            ].map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="px-4 py-2 rounded-xl border border-primary-200 bg-primary-50 text-primary-700 text-[14px] font-medium hover:bg-primary-100 transition-colors"
-              >
-                {link.name}
-              </Link>
-            ))}
-          </div>
-        </Container>
-      </PrimarySection>
+      <RelatedPlans current="/travel-insurance/us-visa" />
     </>
   );
 }
