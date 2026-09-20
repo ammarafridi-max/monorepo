@@ -3,6 +3,7 @@
 // from picturesk-shared so the web can never sell something the worker cannot make.
 
 import { PRODUCTS, productOf } from '@travel-suite/picturesk-shared/products';
+import { services } from '../data/services';
 
 export { PRODUCTS, productOf };
 
@@ -58,4 +59,28 @@ export function productForPath(pathname) {
     if (pathname?.startsWith(cfg.base)) return cfg.id;
   }
   return PRODUCTS.HEADSHOTS;
+}
+
+/**
+ * The product a page is ABOUT, or null on a neutral page (home, pricing, blog,
+ * legal). Funnel and product pages resolve by base path; landing pages resolve
+ * through the services list, which is where every landing slug is registered.
+ */
+export function productForPage(pathname) {
+  if (!pathname || pathname === '/') return null;
+  for (const cfg of Object.values(CONFIG)) {
+    if (pathname === cfg.base || pathname.startsWith(`${cfg.base}/`)) return cfg.id;
+  }
+  for (const group of services) {
+    if (group.pages.some((p) => p.href === pathname)) return group.id;
+  }
+  return null;
+}
+
+/** The nav CTA for a page: the product's funnel when the page has one, else the hub's chooser. */
+export function navCtaFor(pathname) {
+  const product = productForPage(pathname);
+  if (!product) return { label: 'Get started', href: '/#services' };
+  const cfg = productConfig(product);
+  return { label: `Get my ${cfg.noun}`, href: funnelPaths(product).select };
 }

@@ -21,7 +21,7 @@ export default function Showcase({
 
         <div className="samples">
           {samples.map((s) => (
-            <article className="sample" key={s.name}>
+            <article className="sample" key={`${s.name}:${s.scenario}`}>
               <div className="sample__before">
                 <p className="sample__label">From these selfies</p>
                 <div className="filmstrip">

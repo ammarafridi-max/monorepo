@@ -6,6 +6,7 @@ import Footer from './Footer';
 import Container from './Container';
 import ProfileMenu from './ProfileMenu';
 import ServicesMenu from './ServicesMenu';
+import { navCtaFor } from '../lib/products';
 
 const FUNNEL_BASES = ['/ai-headshot-generator', '/ai-dating-photos'];
 
@@ -43,6 +44,7 @@ export default function SiteChrome({ authed, email, children }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const inFunnel = FUNNEL_BASES.some((base) => pathname?.startsWith(`${base}/`));
+  const cta = navCtaFor(pathname);
 
   // Navigating with the drawer open would otherwise leave it open on the new page.
   useEffect(() => setOpen(false), [pathname]);
@@ -78,8 +80,8 @@ export default function SiteChrome({ authed, email, children }) {
           Log in
         </a>
       )}
-      <a className="navcta" href="/ai-headshot-generator/select">
-        Get my headshots
+      <a className="navcta" href={cta.href}>
+        {cta.label}
       </a>
     </>
   );
