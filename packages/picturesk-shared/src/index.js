@@ -21,6 +21,7 @@ export {
   RACES,
   FACIAL_HAIR,
   BUILDS,
+  HEIGHTS,
   buildPrompts,
   buildSubject,
   isValidLook,
@@ -30,6 +31,7 @@ export {
   isValidRace,
   isValidFacialHair,
   isValidBuild,
+  isValidHeight,
 } from './catalog.js';
 export { TIERS, DEFAULT_TIER, getTier, isValidTier, isFreeTier, tiersFor, paidTiersFor, fromPriceFor, defaultTierFor } from './pricing.js';
 export { Order } from './orderModel.js';

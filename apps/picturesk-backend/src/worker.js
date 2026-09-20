@@ -294,6 +294,7 @@ const subjectAnchorFor = (order) => {
     ageRange: order.ageRange,
     race: order.race,
     build: order.build,
+    height: order.height,
     // Prefer the customer's choice; fall back to the vision-inferred one (PuLID).
     facialHair: order.facialHair || order.derivedFacialHair,
   });

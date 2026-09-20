@@ -113,6 +113,7 @@ const orderSchema = new Schema(
     // the prompt so it does not drift toward the base model's clean-shaven prior.
     gender: String,
     build: String,
+    height: String,
     ageRange: String,
     race: String,
     facialHair: String,

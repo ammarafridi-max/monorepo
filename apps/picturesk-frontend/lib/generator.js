@@ -16,6 +16,7 @@ import {
   isValidRace,
   isValidFacialHair,
   isValidBuild,
+  isValidHeight,
 } from '@travel-suite/picturesk-shared/catalog';
 import { isValidTier, getTier } from '@travel-suite/picturesk-shared/pricing';
 import { PRODUCTS, productOf, productConfig, funnelPaths } from './products';
@@ -38,6 +39,7 @@ const emptyFor = (product) => ({
   race: '',
   facialHair: '',
   build: '',
+  height: '',
   images: [],
   // Set when the customer chose to reuse the model from an earlier order instead
   // of uploading; images stays empty in that case.
@@ -73,6 +75,7 @@ export function readState(product = PRODUCTS.HEADSHOTS) {
       race: valid(s.race, isValidRace),
       facialHair: valid(s.facialHair, isValidFacialHair),
       build: valid(s.build, isValidBuild),
+      height: valid(s.height, isValidHeight),
       images: Array.isArray(s.images) ? s.images : [],
       reuseFromOrderId: str(s.reuseFromOrderId),
       tier: tierOk(str(s.tier)) ? s.tier : EMPTY.tier,

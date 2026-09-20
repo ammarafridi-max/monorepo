@@ -10,6 +10,7 @@ import {
   RACES,
   FACIAL_HAIR,
   BUILDS,
+  HEIGHTS,
 } from '@travel-suite/picturesk-shared/catalog';
 import { getTier, isFreeTier } from '@travel-suite/picturesk-shared/pricing';
 import { readState } from '../../lib/generator';
@@ -26,6 +27,7 @@ const AGE_LABEL = labels(AGE_RANGES);
 const RACE_LABEL = labels(RACES);
 const FACIAL_HAIR_LABEL = labels(FACIAL_HAIR);
 const BUILD_LABEL = labels(BUILDS);
+const HEIGHT_LABEL = labels(HEIGHTS);
 
 // Step 5: review, then pay. Every row has a Change link that opens its step with
 // ?return=review, so one choice can be corrected without touching the rest (the
@@ -46,7 +48,7 @@ export default function ReviewStep({ product }) {
 
   useEffect(() => {
     const s = readState(product);
-    if (!s.gender || !s.ageRange || !s.build) return router.replace(paths.about);
+    if (!s.gender || !s.ageRange || !s.build || !s.height) return router.replace(paths.about);
     if (s.looks.length === 0 || s.attire.length === 0) return router.replace(paths.plan);
     if (s.images.length === 0 && !s.reuseFromOrderId) return router.replace(paths.photos);
     setState(s);
@@ -75,6 +77,7 @@ export default function ReviewStep({ product }) {
         race: state.race,
         facialHair: state.facialHair,
         build: state.build,
+        height: state.height,
         uploadedImageUrls: reusing ? [] : state.images,
         reuseFromOrderId: reusing ? state.reuseFromOrderId : undefined,
         tier: state.tier,
@@ -113,6 +116,7 @@ export default function ReviewStep({ product }) {
         .join(', '),
       href: paths.about,
     },
+    { k: 'Height', v: HEIGHT_LABEL[state.height], href: paths.about },
     { k: 'Build', v: BUILD_LABEL[state.build], href: paths.about },
     {
       k: 'Photos',

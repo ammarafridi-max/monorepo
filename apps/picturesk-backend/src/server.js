@@ -21,6 +21,7 @@ import {
   isValidRace,
   isValidFacialHair,
   isValidBuild,
+  isValidHeight,
   getTier,
   isValidTier,
   isFreeTier,
@@ -689,6 +690,7 @@ app.post('/checkout', checkoutLimiter, internalOnly, async (req, res) => {
       race,
       facialHair,
       build,
+      height,
       tier,
       product: productIn,
     } = req.body ?? {};
@@ -740,6 +742,9 @@ app.post('/checkout', checkoutLimiter, internalOnly, async (req, res) => {
     if (build != null && build !== '' && !isValidBuild(build)) {
       return res.status(400).json({ error: 'build contains an unknown option' });
     }
+    if (height != null && height !== '' && !isValidHeight(height)) {
+      return res.status(400).json({ error: 'height contains an unknown option' });
+    }
     // Pricing tier. Optional for back-compat (absent -> default tier); a value that
     // is present must be a real tier. The server owns the price via getTier below,
     // so a tampered client can at worst pick a valid tier, never set an amount.
@@ -787,6 +792,7 @@ app.post('/checkout', checkoutLimiter, internalOnly, async (req, res) => {
       race: race || undefined,
       facialHair: facialHair || undefined,
       build: build || undefined,
+      height: height || undefined,
       // Reuse copies the source order's selfies (identity scoring needs them) and
       // its trained version, so the worker's training stage sees it and skips.
       uploadedImageUrls: reusing ? source.uploadedImageUrls : uploadedImageUrls,

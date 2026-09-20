@@ -401,6 +401,19 @@ export const BUILDS = Object.freeze([
   { id: 'plus', label: 'Plus-size', promptFragment: 'with a plus-size build' },
 ]);
 
+/**
+ * Estimated height, as ranges so nobody has to know their exact number. Labels
+ * show both units; the fragment describes stature relative to the average adult.
+ * @type {readonly Demographic[]}
+ */
+export const HEIGHTS = Object.freeze([
+  { id: 'under_160', label: "Under 160 cm (5'3\")", promptFragment: 'short in stature' },
+  { id: 'h_160_170', label: "160 to 170 cm (5'3\" to 5'7\")", promptFragment: 'slightly below average height' },
+  { id: 'h_170_180', label: "170 to 180 cm (5'7\" to 5'11\")", promptFragment: 'of average height' },
+  { id: 'h_180_190', label: "180 to 190 cm (5'11\" to 6'3\")", promptFragment: 'tall' },
+  { id: 'over_190', label: "Over 190 cm (6'3\")", promptFragment: 'very tall' },
+]);
+
 /** @type {readonly Demographic[]} */
 export const FACIAL_HAIR = Object.freeze([
   { id: 'clean_shaven', label: 'Clean-shaven', promptFragment: 'clean-shaven' },
@@ -433,6 +446,7 @@ const GENDERS_BY_ID = Object.freeze(Object.fromEntries(GENDERS.map((g) => [g.id,
 const RACES_BY_ID = Object.freeze(Object.fromEntries(RACES.map((r) => [r.id, r])));
 const FACIAL_HAIR_BY_ID = Object.freeze(Object.fromEntries(FACIAL_HAIR.map((f) => [f.id, f])));
 const BUILDS_BY_ID = Object.freeze(Object.fromEntries(BUILDS.map((b) => [b.id, b])));
+const HEIGHTS_BY_ID = Object.freeze(Object.fromEntries(HEIGHTS.map((h) => [h.id, h])));
 
 /** Is `id` a real look in the product's catalog? (Used by the api to validate /checkout.) */
 export function isValidLook(id, product = DEFAULT_PRODUCT) {
@@ -462,6 +476,10 @@ export function isValidFacialHair(id) {
 export function isValidBuild(id) {
   return Object.prototype.hasOwnProperty.call(BUILDS_BY_ID, id);
 }
+/** Is `id` a real height range? */
+export function isValidHeight(id) {
+  return Object.prototype.hasOwnProperty.call(HEIGHTS_BY_ID, id);
+}
 
 /**
  * Build the subject phrase that leads every prompt, from the order's demographics.
@@ -479,14 +497,16 @@ export function isValidBuild(id) {
  * @param {string} [opts.facialHair] - facial-hair id (optional)
  * @returns {string} the subject phrase (never empty)
  */
-export function buildSubject({ gender, ageRange, race, facialHair, build } = {}) {
+export function buildSubject({ gender, ageRange, race, facialHair, build, height } = {}) {
   let subject = GENDERS_BY_ID[gender]?.promptFragment || 'a person';
   const ageFrag = AGE_RANGES_BY_ID[ageRange]?.promptFragment;
   const raceFrag = RACES_BY_ID[race]?.promptFragment;
+  const heightFrag = HEIGHTS_BY_ID[height]?.promptFragment;
   const buildFrag = BUILDS_BY_ID[build]?.promptFragment;
   const hairFrag = FACIAL_HAIR_BY_ID[facialHair]?.promptFragment;
   if (ageFrag) subject += ` ${ageFrag}`;
   if (raceFrag) subject += `, ${raceFrag}`;
+  if (heightFrag) subject += `, ${heightFrag}`;
   if (buildFrag) subject += `, ${buildFrag}`;
   if (hairFrag) subject += `, ${hairFrag}`;
   return subject;

@@ -4,6 +4,7 @@ import {
   isValidRace,
   isValidFacialHair,
   isValidBuild,
+  isValidHeight,
 } from '@travel-suite/picturesk-shared/catalog';
 
 // The saved profile: the funnel's About and Build answers, validated against the
@@ -14,6 +15,7 @@ const FIELDS = {
   race: isValidRace,
   facialHair: isValidFacialHair,
   build: isValidBuild,
+  height: isValidHeight,
 };
 
 export const PROFILE_KEYS = Object.keys(FIELDS);

@@ -122,6 +122,7 @@ function toAdminOrderDetail(order) {
     ageRange: order.ageRange ?? null,
     race: order.race ?? null,
     build: order.build ?? null,
+    height: order.height ?? null,
     facialHair: order.facialHair ?? null,
     derivedFacialHair: order.derivedFacialHair ?? null,
 

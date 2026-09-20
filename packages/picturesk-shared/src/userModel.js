@@ -34,6 +34,7 @@ const userSchema = new Schema(
       race: { type: String, default: '' },
       facialHair: { type: String, default: '' },
       build: { type: String, default: '' },
+      height: { type: String, default: '' },
     },
 
     // Email verification, required before a password account can enter a funnel.

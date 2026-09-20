@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { FiInfo } from 'react-icons/fi';
-import { AGE_RANGES, GENDERS, RACES, FACIAL_HAIR, BUILDS } from '@travel-suite/picturesk-shared/catalog';
+import { AGE_RANGES, GENDERS, RACES, FACIAL_HAIR, BUILDS, HEIGHTS } from '@travel-suite/picturesk-shared/catalog';
 import { readState, writeState } from '../../lib/generator';
 import { track, EVENTS } from '../../lib/analytics';
 import { funnelPaths } from '../../lib/products';
@@ -21,6 +21,7 @@ export default function AboutStep({ product }) {
   const [race, setRace] = useState('');
   const [facialHair, setFacialHair] = useState('');
   const [build, setBuild] = useState('');
+  const [height, setHeight] = useState('');
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -28,7 +29,7 @@ export default function AboutStep({ product }) {
     // so a returning customer only confirms; an in-progress edit is never overwritten.
     const s = readState(product);
     const seed = {};
-    for (const key of ['gender', 'ageRange', 'race', 'facialHair', 'build']) {
+    for (const key of ['gender', 'ageRange', 'race', 'facialHair', 'build', 'height']) {
       if (!s[key] && profile?.[key]) seed[key] = profile[key];
     }
     if (Object.keys(seed).length) writeState(seed, product);
@@ -38,6 +39,7 @@ export default function AboutStep({ product }) {
     setRace(v.race);
     setFacialHair(v.facialHair);
     setBuild(v.build);
+    setHeight(v.height);
     setReady(true);
     track(EVENTS.SELECT_VIEW, { product, step: 'about' });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -58,9 +60,11 @@ export default function AboutStep({ product }) {
     ? 'Pick a gender to continue.'
     : !ageRange
       ? 'Pick an age range to continue.'
-      : !build
-        ? 'Pick the closest build to continue.'
-        : '';
+      : !height
+        ? 'Pick your estimated height to continue.'
+        : !build
+          ? 'Pick the closest build to continue.'
+          : '';
 
   return (
     <section>
@@ -98,6 +102,9 @@ export default function AboutStep({ product }) {
         </>
       )}
 
+      <p className="gen-fieldlabel">Estimated height</p>
+      <ChoiceRow items={HEIGHTS} value={height} onSelect={set('height', setHeight)} />
+
       <p className="gen-fieldlabel">
         Build
         <span
@@ -108,7 +115,7 @@ export default function AboutStep({ product }) {
         >
           <FiInfo aria-hidden="true" />
           <span className="info-tip__bubble" role="tooltip">
-            Photos are wider than a headshot, so the model needs to know roughly how you are built. Pick the closest.
+            Height and build together keep the generated body honest to you. Pick the closest.
           </span>
         </span>
       </p>

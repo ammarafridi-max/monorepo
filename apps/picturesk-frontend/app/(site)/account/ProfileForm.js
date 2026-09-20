@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { AGE_RANGES, GENDERS, RACES, FACIAL_HAIR, BUILDS } from '@travel-suite/picturesk-shared/catalog';
+import { AGE_RANGES, GENDERS, RACES, FACIAL_HAIR, BUILDS, HEIGHTS } from '@travel-suite/picturesk-shared/catalog';
 import { ChoiceRow } from '../../../components/funnel/controls';
 
 // The saved About and Build answers, editable. Same chips as the funnel, one save.
@@ -58,6 +58,8 @@ export default function ProfileForm({ initial }) {
           <ChoiceRow items={FACIAL_HAIR} value={p.facialHair} onSelect={set('facialHair')} allowClear />
         </>
       )}
+      <p className="gen-fieldlabel">Estimated height</p>
+      <ChoiceRow items={HEIGHTS} value={p.height} onSelect={set('height')} />
       <p className="gen-fieldlabel">Build</p>
       <ChoiceRow items={BUILDS} value={p.build} onSelect={set('build')} />
 
