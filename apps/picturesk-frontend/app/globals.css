@@ -4344,7 +4344,7 @@ button:focus-visible,
 .stepper__pct {
   display: flex;
   justify-content: space-between;
-  margin: 8px 0 14px;
+  margin: 8px 0 0;
   font-size: 13px;
   color: var(--fg-muted);
 }

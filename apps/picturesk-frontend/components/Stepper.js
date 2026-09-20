@@ -38,17 +38,6 @@ export default function Stepper() {
         </span>
         <span>{pct}% complete</span>
       </p>
-      <ol className="stepper__list">
-        {FUNNEL_STEPS.map((step, i) => {
-          const state = i < activeIdx ? 'done' : i === activeIdx ? 'current' : 'upcoming';
-          return (
-            <li key={step.key} className={`stepper__step stepper__step--${state}`}>
-              <span className="stepper__num">{i + 1}</span>
-              <span className="stepper__label">{step.label}</span>
-            </li>
-          );
-        })}
-      </ol>
     </nav>
   );
 }
