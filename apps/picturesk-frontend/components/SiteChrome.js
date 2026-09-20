@@ -113,24 +113,16 @@ export default function SiteChrome({ authed, email, children }) {
               <a className="brand" href="/" aria-label="Picturesk.ai home">
                 <span className="brand__word">Picturesk</span>
               </a>
-              <a className="navlink" href="mailto:info@picturesk.ai">
+              <a className="navlink" href="/contact" target="_blank" rel="noopener">
                 Need help?
               </a>
             </div>
           </Container>
         </header>
-        {children}
-        <footer className="footer footer--funnel">
-          <Container>
-            <p className="footer__legal">
-              <span>© 2026 Picturesk.ai</span>
-              <span>
-                <a href="/refunds">Refunds</a> · <a href="/terms">Terms</a> ·{' '}
-                <a href="/privacy">Privacy</a>
-              </span>
-            </p>
-          </Container>
-        </footer>
+        <div className="funnel-shell">
+          {children}
+          <Footer />
+        </div>
       </>
     );
   }

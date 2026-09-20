@@ -1795,7 +1795,13 @@ a {
 
 .generator {
   padding-top: 40px;
-  padding-bottom: 120px;
+  padding-bottom: 48px;
+}
+
+/* Everything under the funnel top bar, padded so the fixed action bar never
+   covers the footer's last line. */
+.funnel-shell {
+  padding-bottom: 88px;
 }
 
 /* The funnel needs more room than the narrow reading column so the option-card
@@ -3797,19 +3803,6 @@ button:focus-visible,
   .dropzone__touch {
     display: inline;
   }
-}
-
-.footer--funnel {
-  padding: 20px 0 28px;
-}
-.footer--funnel .footer__legal {
-  border-top: 0;
-  padding-top: 0;
-  margin: 0;
-}
-.footer--funnel .footer__legal a {
-  display: inline-block;
-  padding: 12px 2px;
 }
 
 .footer__col a {
