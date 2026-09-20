@@ -250,12 +250,12 @@ export default function PhotosStep({ product }) {
         <p className="capture-cta__text">
           Want the best results? <span>Let us guide you through a quick photo shoot.</span>
         </p>
-        <Link className="btn btn--link" href={paths.capture}>
+        <Link className="btn capture-cta__btn" href={paths.capture}>
           Use my camera
         </Link>
       </div>
 
-      <div className="card">
+      <div className="card card--bare">
         <div
           className={`dropzone${dragging ? ' dropzone--active' : ''}`}
           onClick={() => inputRef.current?.click()}

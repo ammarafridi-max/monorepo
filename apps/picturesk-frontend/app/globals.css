@@ -487,10 +487,7 @@ a {
 .reqs {
   list-style: none;
   margin: 14px 0 0;
-  padding: 12px 14px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #ffffff;
+  padding: 0;
   font-size: 14px;
   line-height: 1.5;
 }
@@ -2200,20 +2197,32 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 14px;
   margin-top: 18px;
-  padding: 14px 16px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #ffffff;
+  padding: 16px 18px;
+  border-radius: 10px;
+  background: var(--fg-green);
+  color: #ffffff;
 }
 .capture-cta__text {
   margin: 0;
   font-size: 14px;
-  color: var(--ink);
+  color: #ffffff;
 }
 .capture-cta__text span {
-  color: var(--ash);
+  color: rgba(255, 255, 255, 0.78);
+}
+.capture-cta__btn {
+  background: #ffffff;
+  color: var(--fg-green);
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-size: 14px;
+  width: fit-content;
+}
+.capture-cta__btn:hover {
+  background: #f1f5f4;
 }
 
 /* Step navigation (back / continue). */
@@ -4459,4 +4468,12 @@ button:focus-visible,
   .stepbar__next {
     margin-left: auto;
   }
+}
+
+/* The photos card without its outer frame: dropzone and thumbs sit on the page. */
+.card--bare {
+  border: none;
+  padding: 0;
+  margin-top: 18px;
+  background: transparent;
 }
