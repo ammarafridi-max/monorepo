@@ -1,6 +1,6 @@
 # Picturesk AI Dating Photos: implementation plan
 
-Prepared 20 September 2026. Plan only, no code yet. Companion to the market research at ~/Desktop/Picturesk_Market_Research_20-SEP.md (section 1).
+Prepared 20 September 2026. Decisions taken the same day: $19 / $39 / $59 ladder, dog park and gym scenes shipped behind an opt-in note on the card, placeholder testimonials on the dating pages for now, no second-shoot upsell yet (no past buyers). Build shipped the same day; see the commit history for what landed. Companion to the market research at ~/Desktop/Picturesk_Market_Research_20-SEP.md (section 1).
 
 ## The verdict
 
@@ -128,9 +128,15 @@ Reuse the existing events with a `product` prop: `landing_view`, `select_view`, 
 
 Roughly four to five working days of build before marketing starts.
 
-## Open decisions
+## Decisions taken
 
-1. Prices: $19 / $39 / $59 as proposed, or stay on $9 / $29 / $49 to keep one ladder across the site?
-2. Do we ship the `dog_park` scene (invents a dog) and `gym_casual`? Both convert well elsewhere but both invite "fake" accusations.
-3. Second-shoot upsell price for past buyers: $15 proposed.
-4. Testimonials section on dating pages: omit until real, or show the guarantee block in its place?
+1. Prices: $19 / $39 / $59 (20 / 60 / 120 photos).
+2. `dog_park` and `gym_casual` ship, each with a note on the option card so the customer opts in knowingly.
+3. Second-shoot upsell: deferred, there are no past buyers yet.
+4. Testimonials: placeholder quotes on the dating pages for now, flagged in the data file, to be replaced with real ones.
+
+## Still to do after launch
+
+- Run a real dating set on a trained model and iterate `DATING_QUALITY_TAIL` until output is candid and recognisable; then add a Showcase to `/ai-dating-photos` with that real output and preview images for the scene and outfit cards (they render as colour swatches until then).
+- Two launch blog posts.
+- Spot-check the photographer price ranges on `/ai-dating-photos-vs-photographer` against two live quotes.

@@ -23,6 +23,8 @@ import {
   getTier,
   isValidTier,
   DEFAULT_TIER,
+  isValidProduct,
+  productOf,
   Order,
   ORDER_STATES,
   OrderTransitionConflictError,
@@ -255,6 +257,7 @@ function toPublicOrder(order) {
   return {
     orderId: order._id.toString(),
     status: order.status,
+    product: order.product ?? 'headshots',
     // The customer's choices, so the upload/status pages can render a summary.
     // Catalog ids only, never internal prompt fragments.
     selectedLooks: order.selectedLooks ?? [],
@@ -486,6 +489,7 @@ app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), async (r
           orderId,
           planLabel: tier.label,
           deliverCount: order.deliverCount ?? tier.deliverCount,
+          product: order.product,
         })
         .catch((err) => {
           console.error(`[api] webhook: paid email for ${orderId} failed:`, err.message);
@@ -646,10 +650,17 @@ app.post('/checkout', checkoutLimiter, async (req, res) => {
       race,
       facialHair,
       tier,
+      product: productIn,
     } = req.body ?? {};
     if (!email) {
       return res.status(400).json({ error: 'email is required' });
     }
+    // Optional for back-compat (absent -> headshots); a value that is present must
+    // be a real product, since it picks the catalogue everything below validates against.
+    if (productIn != null && productIn !== '' && !isValidProduct(productIn)) {
+      return res.status(400).json({ error: 'product is not a known product' });
+    }
+    const product = productOf(productIn);
     if (!Array.isArray(selectedLooks) || selectedLooks.length === 0) {
       return res.status(400).json({ error: 'selectedLooks must be a non-empty array' });
     }
@@ -661,10 +672,10 @@ app.post('/checkout', checkoutLimiter, async (req, res) => {
     }
     // Validate selections against the shared catalog so a tampered client cannot
     // store junk ids the worker would later fail to turn into prompts.
-    if (!selectedLooks.every(isValidLook)) {
+    if (!selectedLooks.every((id) => isValidLook(id, product))) {
       return res.status(400).json({ error: 'selectedLooks contains an unknown look id' });
     }
-    if (!selectedAttire.every(isValidAttire)) {
+    if (!selectedAttire.every((id) => isValidAttire(id, product))) {
       return res.status(400).json({ error: 'selectedAttire contains an unknown attire id' });
     }
     // Subject demographics: gender + ageRange are required (the select step asks
@@ -690,6 +701,9 @@ app.post('/checkout', checkoutLimiter, async (req, res) => {
       return res.status(400).json({ error: 'tier is not a known pricing tier' });
     }
     const selectedTier = getTier(tier || DEFAULT_TIER);
+    if (selectedTier.product !== product) {
+      return res.status(400).json({ error: 'tier does not belong to this product' });
+    }
     if (selectedTier.lookCount != null && selectedLooks.length > selectedTier.lookCount) {
       return res.status(400).json({
         error: `${selectedTier.label} includes up to ${selectedTier.lookCount} backgrounds`,
@@ -720,6 +734,7 @@ app.post('/checkout', checkoutLimiter, async (req, res) => {
       race: race || undefined,
       facialHair: facialHair || undefined,
       uploadedImageUrls,
+      product,
       // Stamp the tier + a snapshot of its numeric levers so the worker delivers
       // the right count even if the catalog later changes (durable record).
       tier: selectedTier.id,
@@ -738,7 +753,7 @@ app.post('/checkout', checkoutLimiter, async (req, res) => {
             currency: 'usd',
             unit_amount: selectedTier.priceCents,
             product_data: {
-              name: `Picturesk headshots (${selectedTier.label}, ${selectedTier.deliverCount} photos)`,
+              name: `Picturesk ${product === 'dating' ? 'dating photos' : 'headshots'} (${selectedTier.label}, ${selectedTier.deliverCount} photos)`,
             },
           },
         },
@@ -746,7 +761,7 @@ app.post('/checkout', checkoutLimiter, async (req, res) => {
       metadata: { orderId },
       success_url: `${WEB_BASE_URL}/success?orderId=${orderId}&t=${order.publicToken}`,
       // Cancel returns to the payment step so they can retry (a new order).
-      cancel_url: `${WEB_BASE_URL}/ai-headshot-generator/payment`,
+      cancel_url: `${WEB_BASE_URL}/${product === 'dating' ? 'ai-dating-photos' : 'ai-headshot-generator'}/payment`,
     });
 
     // The session id is our idempotency anchor: the webhook finds the order by it.

@@ -399,7 +399,7 @@ function OrdersContent() {
                         className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
                       />
                     </th>
-                    {['Customer', 'Status', 'Paid', 'Compute', 'Margin', 'Waiting', 'Created', ''].map((h, i) => (
+                    {['Customer', 'Product', 'Status', 'Paid', 'Compute', 'Margin', 'Waiting', 'Created', ''].map((h, i) => (
                       <th
                         key={i}
                         className="text-left text-xs font-bold text-gray-400 uppercase tracking-wide px-4 py-3 whitespace-nowrap"
@@ -434,6 +434,15 @@ function OrdersContent() {
                           {o.customerEmail || '—'}
                         </Link>
                         <p className="text-xs text-gray-400 font-mono mt-0.5">{o.orderId}</p>
+                      </td>
+
+                      <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">
+                        {o.product === 'dating' ? 'Dating' : 'Headshots'}
+                        {o.tier && (
+                          <span className="text-xs text-gray-400 ml-1">
+                            {o.tier.replace(/^dating_/, '')}
+                          </span>
+                        )}
                       </td>
 
                       <td className="px-4 py-3 whitespace-nowrap">

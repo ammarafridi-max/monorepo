@@ -5,7 +5,7 @@ import Container from '../components/Container';
 // verdict headline, quick-answer paragraph, one action, ticked promises) but
 // content comes entirely from props, and there is no image cluster: a landing page
 // leads with its argument, and the proof sits further down in the showcase.
-export default function LandingHero({ eyebrow, title, lede, promises = [], cta, href }) {
+export default function LandingHero({ eyebrow, title, lede, promises = [], cta, href, from = 9 }) {
   return (
     <section className="hero hero--landing">
       <Container className="hero__inner hero__inner--single">
@@ -16,7 +16,7 @@ export default function LandingHero({ eyebrow, title, lede, promises = [], cta, 
 
           <div className="hero__actions">
             <a className="btn btn--primary" href={href}>
-              {cta} <span className="btn__price">from $9</span>
+              {cta} <span className="btn__price">from ${from}</span>
             </a>
           </div>
 

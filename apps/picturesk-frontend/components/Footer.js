@@ -25,6 +25,10 @@ export default function Footer() {
             <a href="/linkedin-headshots">LinkedIn Headshots</a>
             <a href="/real-estate-agent-headshots">Real Estate Headshots</a>
             <a href="/ai-headshots-vs-photographer">AI vs Photographer</a>
+            <a href="/ai-dating-photos">AI Dating Photos</a>
+            <a href="/hinge-photos">Hinge Photos</a>
+            <a href="/tinder-photos">Tinder Photos</a>
+            <a href="/bumble-photos">Bumble Profile Pictures</a>
             <a href="/login">Log in</a>
           </div>
 

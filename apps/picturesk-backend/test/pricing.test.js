@@ -1,28 +1,30 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { TIERS, DEFAULT_TIER, getTier, isValidTier } from '@travel-suite/picturesk-shared/pricing';
+import { TIERS, DEFAULT_TIER, getTier, isValidTier, tiersFor } from '@travel-suite/picturesk-shared/pricing';
 
-test('TIERS is the three one-time tiers, priced low to high', () => {
+test('TIERS holds three one-time tiers per product, each ladder priced low to high', () => {
   assert.deepEqual(
-    TIERS.map((t) => t.id),
-    ['starter', 'pro', 'premium']
+    tiersFor('headshots').map((t) => [t.id, t.priceCents]),
+    [['starter', 900], ['pro', 2900], ['premium', 4900]]
   );
   assert.deepEqual(
-    TIERS.map((t) => t.priceCents),
-    [900, 2900, 4900]
+    tiersFor('dating').map((t) => [t.id, t.priceCents]),
+    [['dating_starter', 1900], ['dating_pro', 3900], ['dating_premium', 5900]]
   );
-  // Asserted as an invariant too, so reordering the catalog fails here rather
-  // than only tripping the magic array above.
-  const prices = TIERS.map((t) => t.priceCents);
-  assert.deepEqual(prices, [...prices].sort((a, b) => a - b), 'tiers ascend by price');
+  for (const product of ['headshots', 'dating']) {
+    const tiers = tiersFor(product);
+    const prices = tiers.map((t) => t.priceCents);
+    assert.deepEqual(prices, [...prices].sort((a, b) => a - b), `${product} tiers ascend by price`);
+    assert.equal(tiers.filter((t) => t.popular).length, 1, `${product}: exactly one popular tier`);
+  }
   // Every tier must be internally coherent: integer cents, deliver <= generate,
-  // a valid BullMQ priority, exactly one "popular" flag.
+  // a valid BullMQ priority, a known product.
   for (const t of TIERS) {
     assert.ok(Number.isInteger(t.priceCents) && t.priceCents > 0, `${t.id} priceCents`);
     assert.ok(t.deliverCount > 0 && t.deliverCount <= t.generateCount, `${t.id} deliver<=generate`);
     assert.ok(Number.isInteger(t.priority) && t.priority >= 1, `${t.id} priority`);
+    assert.ok(['headshots', 'dating'].includes(t.product), `${t.id} product`);
   }
-  assert.equal(TIERS.filter((t) => t.popular).length, 1, 'exactly one popular tier');
 });
 
 test('higher tiers deliver more and get higher queue priority (lower number)', () => {

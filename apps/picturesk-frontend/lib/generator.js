@@ -16,16 +16,20 @@ import {
   isValidRace,
   isValidFacialHair,
 } from '@travel-suite/picturesk-shared/catalog';
-import { isValidTier } from '@travel-suite/picturesk-shared/pricing';
+import { isValidTier, getTier } from '@travel-suite/picturesk-shared/pricing';
+import { PRODUCTS, productOf, productConfig, funnelPaths } from './products';
 
-const KEY = 'picturesk.generator';
+// One key per product so a half-finished headshot order never bleeds into a
+// dating one. The headshot key keeps its original name for existing visitors.
+const keyFor = (product) =>
+  productOf(product) === PRODUCTS.HEADSHOTS ? 'picturesk.generator' : `picturesk.generator.${productOf(product)}`;
 
 // The funnel preselects Pro (the plan the pricing cards badge as most popular). The
 // server's DEFAULT_TIER stays Starter so a request that omits a tier is never
 // charged more than the cheapest plan.
 export const FUNNEL_DEFAULT_TIER = 'pro';
 
-const EMPTY = {
+const emptyFor = (product) => ({
   looks: [],
   attire: [],
   gender: '',
@@ -34,8 +38,8 @@ const EMPTY = {
   facialHair: '',
   email: '',
   images: [],
-  tier: FUNNEL_DEFAULT_TIER,
-};
+  tier: productConfig(product).defaultTier,
+});
 
 /**
  * Read the current funnel state. Safe on the server (returns empty).
@@ -49,22 +53,24 @@ const EMPTY = {
  * buildPrompts then silently drops or substitutes. Sanitizing here fixes it for
  * every reader at once (display, funnel guards, and the checkout payload).
  */
-export function readState() {
+export function readState(product = PRODUCTS.HEADSHOTS) {
+  const EMPTY = emptyFor(product);
   if (typeof window === 'undefined') return { ...EMPTY };
   try {
-    const s = JSON.parse(window.localStorage.getItem(KEY) || '{}');
+    const s = JSON.parse(window.localStorage.getItem(keyFor(product)) || '{}');
     const str = (v) => (typeof v === 'string' ? v : '');
     const valid = (v, isValid) => (isValid(str(v)) ? str(v) : '');
+    const tierOk = (id) => isValidTier(id) && getTier(id).product === productOf(product);
     return {
-      looks: Array.isArray(s.looks) ? s.looks.filter(isValidLook) : [],
-      attire: Array.isArray(s.attire) ? s.attire.filter(isValidAttire) : [],
+      looks: Array.isArray(s.looks) ? s.looks.filter((id) => isValidLook(id, product)) : [],
+      attire: Array.isArray(s.attire) ? s.attire.filter((id) => isValidAttire(id, product)) : [],
       gender: valid(s.gender, isValidGender),
       ageRange: valid(s.ageRange, isValidAgeRange),
       race: valid(s.race, isValidRace),
       facialHair: valid(s.facialHair, isValidFacialHair),
       email: str(s.email),
       images: Array.isArray(s.images) ? s.images : [],
-      tier: isValidTier(str(s.tier)) ? s.tier : FUNNEL_DEFAULT_TIER,
+      tier: tierOk(str(s.tier)) ? s.tier : EMPTY.tier,
     };
   } catch {
     return { ...EMPTY };
@@ -72,24 +78,28 @@ export function readState() {
 }
 
 /** Merge a patch into the stored state and return the new state. */
-export function writeState(patch) {
-  if (typeof window === 'undefined') return { ...EMPTY };
-  const next = { ...readState(), ...patch };
-  window.localStorage.setItem(KEY, JSON.stringify(next));
+export function writeState(patch, product = PRODUCTS.HEADSHOTS) {
+  if (typeof window === 'undefined') return emptyFor(product);
+  const next = { ...readState(product), ...patch };
+  window.localStorage.setItem(keyFor(product), JSON.stringify(next));
   return next;
 }
 
 /** Clear stored state (after the order is created). */
-export function clearState() {
-  if (typeof window !== 'undefined') window.localStorage.removeItem(KEY);
+export function clearState(product = PRODUCTS.HEADSHOTS) {
+  if (typeof window !== 'undefined') window.localStorage.removeItem(keyFor(product));
 }
 
 /**
  * The three funnel steps. `pay` has no route of its own past the Stripe redirect;
  * it still renders in the stepper. Order defines "done vs upcoming".
  */
-export const FUNNEL_STEPS = [
-  { key: 'select', label: 'Select', href: '/ai-headshot-generator/select' },
-  { key: 'upload', label: 'Upload', href: '/ai-headshot-generator/upload' },
-  { key: 'pay', label: 'Pay' },
-];
+export function funnelSteps(product = PRODUCTS.HEADSHOTS) {
+  const paths = funnelPaths(product);
+  return [
+    { key: 'select', label: 'Select', href: paths.select },
+    { key: 'upload', label: 'Upload', href: paths.upload },
+    { key: 'pay', label: 'Pay' },
+  ];
+}
+export const FUNNEL_STEPS = funnelSteps(PRODUCTS.HEADSHOTS);

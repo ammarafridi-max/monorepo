@@ -23,6 +23,7 @@
 /**
  * @typedef {Object} Tier
  * @property {string} id            - stable id, stored on the order
+ * @property {string} product       - product id from products.js
  * @property {string} label         - user-facing name (BRAND: no em dashes)
  * @property {number} priceCents    - one-time charge, in integer USD cents
  * @property {number} deliverCount  - headshots delivered
@@ -33,10 +34,13 @@
  * @property {boolean} [popular]     - render the "Most popular" badge
  */
 
+import { PRODUCTS, DEFAULT_PRODUCT, productOf } from './products.js';
+
 /** @type {readonly Tier[]} */
 export const TIERS = Object.freeze([
   Object.freeze({
     id: 'starter',
+    product: PRODUCTS.HEADSHOTS,
     label: 'Starter',
     priceCents: 900,
     deliverCount: 5,
@@ -47,6 +51,7 @@ export const TIERS = Object.freeze([
   }),
   Object.freeze({
     id: 'pro',
+    product: PRODUCTS.HEADSHOTS,
     label: 'Pro',
     priceCents: 2900,
     deliverCount: 25,
@@ -58,6 +63,7 @@ export const TIERS = Object.freeze([
   }),
   Object.freeze({
     id: 'premium',
+    product: PRODUCTS.HEADSHOTS,
     label: 'Premium',
     priceCents: 4900,
     deliverCount: 60,
@@ -66,10 +72,60 @@ export const TIERS = Object.freeze([
     attireCount: null,
     lookCount: null,
   }),
+  Object.freeze({
+    id: 'dating_starter',
+    product: PRODUCTS.DATING,
+    label: 'Starter',
+    priceCents: 1900,
+    deliverCount: 20,
+    generateCount: 20,
+    priority: 3,
+    attireCount: 2,
+    lookCount: 3,
+  }),
+  Object.freeze({
+    id: 'dating_pro',
+    product: PRODUCTS.DATING,
+    label: 'Pro',
+    priceCents: 3900,
+    deliverCount: 60,
+    generateCount: 60,
+    priority: 2,
+    attireCount: 4,
+    lookCount: 6,
+    popular: true,
+  }),
+  Object.freeze({
+    id: 'dating_premium',
+    product: PRODUCTS.DATING,
+    label: 'Premium',
+    priceCents: 5900,
+    deliverCount: 120,
+    generateCount: 120,
+    priority: 1,
+    attireCount: null,
+    lookCount: null,
+  }),
 ]);
+
+/** The tiers sold for one product, in display order. */
+export function tiersFor(product) {
+  const id = productOf(product);
+  return TIERS.filter((t) => t.product === id);
+}
+
+/** The cheapest tier of a product, in whole dollars, for "from $X" copy. */
+export function fromPriceFor(product) {
+  return Math.round(Math.min(...tiersFor(product).map((t) => t.priceCents)) / 100);
+}
 
 /** The tier assumed when a request omits one (keeps old clients working). */
 export const DEFAULT_TIER = 'starter';
+
+/** The default tier for a product (what the select step preselects). */
+export function defaultTierFor(product) {
+  return productOf(product) === DEFAULT_PRODUCT ? DEFAULT_TIER : `${productOf(product)}_starter`;
+}
 
 const TIERS_BY_ID = Object.freeze(Object.fromEntries(TIERS.map((t) => [t.id, t])));
 

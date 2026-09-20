@@ -82,6 +82,8 @@ function toAdminOrder(order) {
   return {
     orderId: order._id.toString(),
     status: order.status,
+    product: order.product ?? 'headshots',
+    tier: order.tier ?? null,
     customerEmail: order.customerEmail,
     amountPaidCents: order.amountPaidCents ?? null,
     computeCostCents: order.computeCostCents ?? 0,
@@ -103,6 +105,8 @@ function toAdminOrderDetail(order) {
   return {
     orderId: order._id.toString(),
     status: order.status,
+    product: order.product ?? 'headshots',
+    tier: order.tier ?? null,
     customerEmail: order.customerEmail,
     userId: order.userId ? order.userId.toString() : null,
 

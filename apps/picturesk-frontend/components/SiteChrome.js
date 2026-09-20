@@ -39,8 +39,7 @@ function Burger({ open, onClick }) {
 export default function SiteChrome({ authed, email, children }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
-  const inFunnel =
-    pathname?.startsWith('/ai-headshot-generator/') && pathname !== '/ai-headshot-generator';
+  const inFunnel = FUNNEL_BASES.some((base) => pathname?.startsWith(`${base}/`));
 
   // Navigating with the drawer open would otherwise leave it open on the new page.
   useEffect(() => setOpen(false), [pathname]);

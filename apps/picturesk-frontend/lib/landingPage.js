@@ -10,6 +10,13 @@ import {
 } from './schema';
 
 const FUNNEL = '/ai-headshot-generator/select';
+const DATING_FUNNEL = '/ai-dating-photos/select';
+
+// The canonical page each family of landing pages breadcrumbs from.
+export const ROOTS = {
+  headshots: { label: 'AI Headshot Generator', path: '/ai-headshot-generator' },
+  dating: { label: 'AI Dating Photos', path: '/ai-dating-photos' },
+};
 
 /**
  * Metadata and the JSON-LD graph for a keyword landing page, built from the page's
@@ -45,15 +52,12 @@ export function landingMetadata({ meta }) {
   };
 }
 
-export function landingSchema({ meta, sections, productName }) {
+export function landingSchema({ meta, sections, productName, root = ROOTS.headshots, price = '9' }) {
   const canonical = `${SITE_URL}${meta.canonical}`;
   const faqs = sections.faq?.faqs ?? [];
-  const { '@context': _c, ...breadcrumb } = buildBreadcrumbList({
-    paths: [
-      { label: 'AI Headshot Generator', path: '/ai-headshot-generator' },
-      { label: meta.breadcrumb, path: meta.canonical },
-    ],
-  });
+  const crumbs = [{ label: root.label, path: root.path }];
+  if (meta.canonical !== root.path) crumbs.push({ label: meta.breadcrumb, path: meta.canonical });
+  const { '@context': _c, ...breadcrumb } = buildBreadcrumbList({ paths: crumbs });
 
   return buildGraph([
     buildOrganization(),
@@ -63,7 +67,7 @@ export function landingSchema({ meta, sections, productName }) {
       canonical,
       name: productName,
       description: meta.description,
-      price: '9',
+      price,
     }),
     breadcrumb,
     ...(faqs.length
@@ -79,4 +83,4 @@ export function landingSchema({ meta, sections, productName }) {
   ]);
 }
 
-export { FUNNEL };
+export { FUNNEL, DATING_FUNNEL };

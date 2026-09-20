@@ -83,8 +83,9 @@ export function createEmailClient({ apiKey, sender }) {
      * results page. Idempotency lives in the caller (deliveredEmailSentAt), not
      * here: this just sends, and throws on failure so the caller can retry.
      */
-    async sendDeliveryEmail({ to, resultsUrl, orderId, thumbnailUrls = [], linkLifetime, signal }) {
+    async sendDeliveryEmail({ to, resultsUrl, orderId, thumbnailUrls = [], linkLifetime, product, signal }) {
       const { subject, html, text } = renderDeliveryEmail({
+        product,
         resultsUrl,
         orderId,
         thumbnailUrls,
@@ -97,8 +98,8 @@ export function createEmailClient({ apiKey, sender }) {
      * The payment confirmation. Sent once from the Stripe webhook so the buyer has
      * the order id and the results link before the run finishes.
      */
-    async sendPaidEmail({ to, resultsUrl, orderId, planLabel, deliverCount, signal }) {
-      const { subject, html, text } = renderPaidEmail({ resultsUrl, orderId, planLabel, deliverCount });
+    async sendPaidEmail({ to, resultsUrl, orderId, planLabel, deliverCount, product, signal }) {
+      const { subject, html, text } = renderPaidEmail({ resultsUrl, orderId, planLabel, deliverCount, product });
       return send({ to, subject, html, text, signal });
     },
   };
@@ -133,8 +134,12 @@ const SERIF = SANS;
  *        a few are embedded as a preview, but the CTA is the primary action
  * @param {string} [args.linkLifetime] - short truthful line on link availability
  */
-export function renderDeliveryEmail({ resultsUrl, orderId, thumbnailUrls = [], linkLifetime }) {
-  const subject = 'Your headshots are ready';
+// The set is called by the product's own noun so a dating buyer never reads "headshots".
+const nounFor = (product) => (product === 'dating' ? 'dating photos' : 'headshots');
+
+export function renderDeliveryEmail({ resultsUrl, orderId, thumbnailUrls = [], linkLifetime, product }) {
+  const noun = nounFor(product);
+  const subject = `Your ${noun} are ready`;
   const preheader = 'Open your gallery to view and download the full set.';
   const lifetimeLine =
     linkLifetime ||
@@ -153,7 +158,7 @@ export function renderDeliveryEmail({ resultsUrl, orderId, thumbnailUrls = [], l
                 .map(
                   (url) => `<td style="padding-right:10px" valign="top">
                 <a href="${resultsUrl}" style="text-decoration:none">
-                  <img src="${url}" width="140" height="140" alt="Your headshot" style="display:block;width:140px;height:140px;object-fit:cover;border-radius:6px;border:1px solid ${LINE}" />
+                  <img src="${url}" width="140" height="140" alt="Your photo" style="display:block;width:140px;height:140px;object-fit:cover;border-radius:6px;border:1px solid ${LINE}" />
                 </a>
               </td>`
                 )
@@ -185,7 +190,7 @@ export function renderDeliveryEmail({ resultsUrl, orderId, thumbnailUrls = [], l
           </tr>
           <tr>
             <td style="padding:0 0 14px 0;font-family:${SERIF};font-size:30px;line-height:1.2;font-weight:600;color:${INK}">
-              Your headshots are ready.
+              Your ${noun} are ready.
             </td>
           </tr>
           <tr>
@@ -200,7 +205,7 @@ export function renderDeliveryEmail({ resultsUrl, orderId, thumbnailUrls = [], l
                 <tr>
                   <td align="center" style="border-radius:6px;background:${COBALT};border-top:3px solid ${GOLD}">
                     <a href="${resultsUrl}" style="display:inline-block;padding:14px 26px;font-family:${SANS};font-size:16px;font-weight:600;color:${BONE};text-decoration:none;border-radius:6px">
-                      View my headshots
+                      View my ${noun}
                     </a>
                   </td>
                 </tr>
@@ -236,7 +241,7 @@ export function renderDeliveryEmail({ resultsUrl, orderId, thumbnailUrls = [], l
 </html>`;
 
   const text = [
-    'Your headshots are ready.',
+    `Your ${noun} are ready.`,
     '',
     'They came out well. View the full set and download the ones you want here:',
     resultsUrl,
@@ -256,12 +261,13 @@ export function renderDeliveryEmail({ resultsUrl, orderId, thumbnailUrls = [], l
  * table layout as the delivery email. Copy commits only to what the system does:
  * paid, training now, the link below is where the set appears, about an hour.
  */
-export function renderPaidEmail({ resultsUrl, orderId, planLabel, deliverCount }) {
-  const subject = 'Payment received. Your headshots are on the way';
+export function renderPaidEmail({ resultsUrl, orderId, planLabel, deliverCount, product }) {
+  const noun = nounFor(product);
+  const subject = `Payment received. Your ${noun} are on the way`;
   const preheader = 'We are training a model on your face now. Your set is usually ready in about an hour.';
   const planLine =
     planLabel && deliverCount
-      ? `${planLabel} plan, ${deliverCount} headshots.`
+      ? `${planLabel} plan, ${deliverCount} ${noun}.`
       : 'Your plan is confirmed.';
 
   const html = `<!doctype html>

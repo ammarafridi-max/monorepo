@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { ORDER_STATES } from './orderStates.js';
 import { DEFAULT_TIER } from './pricing.js';
+import { DEFAULT_PRODUCT } from './products.js';
 
 /**
  * Mongoose schema + model for an Order.
@@ -75,6 +76,8 @@ const orderSchema = new Schema(
     // just the id, so a later change to the tier catalog never mutates an in-flight
     // order: the worker reads deliverCount/generateCount straight off the order.
     // Legacy orders predate tiers and leave these unset (worker falls back to env).
+    // Which product this order is for; legacy orders predate it and are headshots.
+    product: { type: String, default: DEFAULT_PRODUCT, index: true },
     tier: { type: String, default: DEFAULT_TIER, index: true },
     deliverCount: Number,
     generateCount: Number,

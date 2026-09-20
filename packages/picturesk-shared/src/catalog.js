@@ -12,10 +12,12 @@
  * leave it '' to render a placeholder, and drop in a real image URL later.
  */
 
-/** @typedef {{ id: string, label: string, description: string, promptFragment: string, image: string, swatch?: string }} Look */
+import { PRODUCTS, DEFAULT_PRODUCT, productOf } from './products.js';
+
+/** @typedef {{ id: string, label: string, description: string, promptFragment: string, image: string, swatch?: string, note?: string }} Look */
 // `swatch` is a solid CSS color the UI shows as the preview when there is no real
 // `image` yet -- for a background option, the backdrop tone is a fair stand-in.
-/** @typedef {{ id: string, label: string, promptFragment: string, image: string }} Attire */
+/** @typedef {{ id: string, label: string, promptFragment: string, promptFragmentByGender?: Record<string, string>, image: string }} Attire */
 
 /** @type {readonly Look[]} */
 export const LOOKS = Object.freeze([
@@ -164,6 +166,181 @@ export const ATTIRE = Object.freeze([
 ]);
 
 /**
+ * Dating photos. Same engine, different catalogue: scenes a real date would happen
+ * in, and clothes people actually own. Fragments are written for candid framing,
+ * not a headshot. `note` is shown on the option card so the customer opts in
+ * knowingly when a scene adds something that is not theirs (a dog).
+ */
+
+/** @type {readonly Look[]} */
+export const DATING_LOOKS = Object.freeze([
+  {
+    id: 'coffee_shop',
+    label: 'Coffee shop',
+    description: 'Window seat, warm daylight, a cup in hand.',
+    promptFragment: 'sitting at a window table in a bright independent coffee shop, holding a ceramic cup, warm morning daylight',
+    image: '',
+    swatch: '#b98b62',
+  },
+  {
+    id: 'rooftop_golden_hour',
+    label: 'Rooftop at golden hour',
+    description: 'City skyline, low sun, relaxed.',
+    promptFragment: 'on a rooftop terrace at golden hour with a soft city skyline behind, warm low sunlight',
+    image: '',
+    swatch: '#d9964f',
+  },
+  {
+    id: 'city_street_evening',
+    label: 'City street, evening',
+    description: 'Neon and shopfronts softly out of focus.',
+    promptFragment: 'walking down a lively city street in the evening, shopfront lights and neon softly blurred behind',
+    image: '',
+    swatch: '#3d4a6b',
+  },
+  {
+    id: 'hiking_trail',
+    label: 'Hiking trail',
+    description: 'Mountain path, open air, natural light.',
+    promptFragment: 'on a mountain hiking trail with a wide valley view behind, overcast natural light, wind in the hair',
+    image: '',
+    swatch: '#6b8a5a',
+  },
+  {
+    id: 'beach_sunset',
+    label: 'Beach at sunset',
+    description: 'Sand, sea and a warm sky.',
+    promptFragment: 'standing on a quiet beach at sunset, sea and warm orange sky behind, hair slightly windblown',
+    image: '',
+    swatch: '#e2a266',
+  },
+  {
+    id: 'park_picnic',
+    label: 'Park picnic',
+    description: 'Blanket on the grass, dappled shade.',
+    promptFragment: 'sitting on a picnic blanket in a leafy park, dappled afternoon sunlight through the trees',
+    image: '',
+    swatch: '#7fa35c',
+  },
+  {
+    id: 'cosy_kitchen',
+    label: 'Cosy kitchen',
+    description: 'Cooking at home, warm and lived in.',
+    promptFragment: 'in a warm home kitchen preparing food at the counter, soft window light, lived-in details',
+    image: '',
+    swatch: '#c9a982',
+  },
+  {
+    id: 'bookshop',
+    label: 'Bookshop',
+    description: 'Shelves of books, soft indoor light.',
+    promptFragment: 'browsing shelves in a small independent bookshop, warm tungsten light, holding an open book',
+    image: '',
+    swatch: '#8a6a4f',
+  },
+  {
+    id: 'dinner_table',
+    label: 'Dinner out',
+    description: 'Restaurant table, candlelight, mid-conversation.',
+    promptFragment: 'seated at a restaurant table in the evening, candlelight and warm ambient light, mid-conversation',
+    image: '',
+    swatch: '#6e3f3a',
+  },
+  {
+    id: 'travel_old_town',
+    label: 'Travelling, old town',
+    description: 'Cobbled street, pastel buildings, holiday light.',
+    promptFragment: 'on a cobbled street in a sunny European old town, pastel facades softly blurred behind, holiday atmosphere',
+    image: '',
+    swatch: '#d8b47a',
+  },
+  {
+    id: 'gym_casual',
+    label: 'Gym, casual',
+    description: 'Post-workout, dressed, not posing.',
+    promptFragment: 'in a modern gym after a workout, dressed in training clothes, towel over the shoulder, relaxed and not posing, natural light from tall windows',
+    image: '',
+    swatch: '#5c6470',
+    note: 'Adds a gym setting. You stay dressed and it stays casual.',
+  },
+  {
+    id: 'dog_park',
+    label: 'With a dog',
+    description: 'Outdoors with a friendly dog.',
+    promptFragment: 'outdoors in a park crouching beside a friendly medium-sized dog, both looking relaxed, soft daylight',
+    image: '',
+    swatch: '#8d9a6a',
+    note: 'This adds a dog that is not yours. Pick it only if you are happy with that.',
+  },
+]);
+
+/** @type {readonly Attire[]} */
+// `promptFragmentByGender` overrides the neutral fragment where the garment reads
+// differently by gender; buildPrompts picks by the order's gender id.
+export const DATING_ATTIRE = Object.freeze([
+  {
+    id: 'smart_casual_shirt',
+    label: 'Smart casual shirt',
+    promptFragment: 'wearing a well-fitted casual button-up shirt with the sleeves rolled',
+    promptFragmentByGender: { woman: 'wearing a relaxed silk blouse' },
+    image: '',
+    swatch: '#9fb3c8',
+  },
+  {
+    id: 'fitted_tee_jeans',
+    label: 'Fitted tee and jeans',
+    promptFragment: 'wearing a plain fitted t-shirt and dark jeans',
+    image: '',
+    swatch: '#2f3b52',
+  },
+  {
+    id: 'knit_sweater',
+    label: 'Knit sweater',
+    promptFragment: 'wearing a soft crew-neck knit sweater',
+    image: '',
+    swatch: '#b8a48c',
+  },
+  {
+    id: 'linen_summer',
+    label: 'Linen, summer',
+    promptFragment: 'wearing a light linen shirt, top buttons open',
+    promptFragmentByGender: { woman: 'wearing a light linen summer dress' },
+    image: '',
+    swatch: '#e6dcc3',
+  },
+  {
+    id: 'denim_jacket',
+    label: 'Denim jacket',
+    promptFragment: 'wearing a classic denim jacket over a white tee',
+    image: '',
+    swatch: '#4a6a95',
+  },
+  {
+    id: 'bomber_jacket',
+    label: 'Bomber or leather jacket',
+    promptFragment: 'wearing a fitted bomber jacket',
+    promptFragmentByGender: { woman: 'wearing a cropped leather jacket over a simple top' },
+    image: '',
+    swatch: '#3a3a3a',
+  },
+  {
+    id: 'blazer_no_tie',
+    label: 'Blazer, no tie',
+    promptFragment: 'wearing an unstructured blazer over an open-collar shirt, no tie',
+    promptFragmentByGender: { woman: 'wearing a relaxed blazer over a simple top' },
+    image: '',
+    swatch: '#5a6270',
+  },
+  {
+    id: 'athleisure',
+    label: 'Athleisure',
+    promptFragment: 'wearing clean modern athleisure, a fitted hoodie or quarter-zip',
+    image: '',
+    swatch: '#7a8590',
+  },
+]);
+
+/**
  * Subject demographics. These describe the person, not the scene, so they refine
  * the SUBJECT ANCHOR that leads every prompt (via buildSubject) rather than being
  * combined like looks x attire. Gender is the head noun; age and race modify it.
@@ -222,18 +399,33 @@ export const FACIAL_HAIR = Object.freeze([
 
 const LOOKS_BY_ID = Object.freeze(Object.fromEntries(LOOKS.map((l) => [l.id, l])));
 const ATTIRE_BY_ID = Object.freeze(Object.fromEntries(ATTIRE.map((a) => [a.id, a])));
+const DATING_LOOKS_BY_ID = Object.freeze(Object.fromEntries(DATING_LOOKS.map((l) => [l.id, l])));
+const DATING_ATTIRE_BY_ID = Object.freeze(Object.fromEntries(DATING_ATTIRE.map((a) => [a.id, a])));
+
+/**
+ * The catalogue for a product: the option lists the select step renders and the
+ * lookups checkout validates against. Unknown or missing product means headshots,
+ * so every order that predates products keeps working.
+ */
+export function catalogFor(product) {
+  if (product === PRODUCTS.DATING) {
+    return { looks: DATING_LOOKS, attire: DATING_ATTIRE, looksById: DATING_LOOKS_BY_ID, attireById: DATING_ATTIRE_BY_ID };
+  }
+  return { looks: LOOKS, attire: ATTIRE, looksById: LOOKS_BY_ID, attireById: ATTIRE_BY_ID };
+}
+
 const AGE_RANGES_BY_ID = Object.freeze(Object.fromEntries(AGE_RANGES.map((a) => [a.id, a])));
 const GENDERS_BY_ID = Object.freeze(Object.fromEntries(GENDERS.map((g) => [g.id, g])));
 const RACES_BY_ID = Object.freeze(Object.fromEntries(RACES.map((r) => [r.id, r])));
 const FACIAL_HAIR_BY_ID = Object.freeze(Object.fromEntries(FACIAL_HAIR.map((f) => [f.id, f])));
 
-/** Is `id` a real look in the catalog? (Used by the api to validate /checkout.) */
-export function isValidLook(id) {
-  return Object.prototype.hasOwnProperty.call(LOOKS_BY_ID, id);
+/** Is `id` a real look in the product's catalog? (Used by the api to validate /checkout.) */
+export function isValidLook(id, product = DEFAULT_PRODUCT) {
+  return Object.prototype.hasOwnProperty.call(catalogFor(product).looksById, id);
 }
-/** Is `id` a real attire option in the catalog? */
-export function isValidAttire(id) {
-  return Object.prototype.hasOwnProperty.call(ATTIRE_BY_ID, id);
+/** Is `id` a real attire option in the product's catalog? */
+export function isValidAttire(id, product = DEFAULT_PRODUCT) {
+  return Object.prototype.hasOwnProperty.call(catalogFor(product).attireById, id);
 }
 /** Is `id` a real age range? */
 export function isValidAgeRange(id) {
@@ -319,14 +511,50 @@ export const QUALITY_TAIL =
   'softly blurred background, sharp focus on the face, natural realistic skin texture, ' +
   'sharp detailed eyes, high detail';
 
-export function buildPrompts({ looks = [], attire = [], count, subjectAnchor }) {
-  const lookFrags = looks.map((id) => LOOKS_BY_ID[id]?.promptFragment).filter(Boolean);
-  const attireFrags = attire.map((id) => ATTIRE_BY_ID[id]?.promptFragment).filter(Boolean);
+// The dating tail is the opposite brief: a candid lifestyle photo, wider framing,
+// available light and visible skin texture. Every competitor complaint about
+// "looks AI" is really about every shot being a posed studio portrait.
+export const DATING_QUALITY_TAIL =
+  'candid lifestyle photo, three-quarter or waist-up framing, shot on a full-frame camera ' +
+  'with a 35mm lens, natural available light, warm tones, genuine relaxed expression, ' +
+  'natural realistic skin texture with visible pores, no retouching, sharp eyes, ' +
+  'slight film grain, looks like a photo a friend took';
+
+// Poses cycle through dating prompts so a set is not all the same posed portrait.
+// Two of five look away from the camera or are in motion on purpose.
+const DATING_POSES = Object.freeze([
+  'smiling naturally at the camera',
+  'laughing, looking slightly off camera',
+  'caught mid-movement, glancing back at the camera',
+  'relaxed half-smile, looking at the camera',
+  'looking away into the distance, unposed',
+]);
+
+function attireFragment(entry, gender) {
+  if (!entry) return undefined;
+  return entry.promptFragmentByGender?.[gender] || entry.promptFragment;
+}
+
+/**
+ * @param {Object} opts
+ * @param {string[]} opts.looks - selected look ids
+ * @param {string[]} opts.attire - selected attire ids
+ * @param {number} opts.count - how many prompt strings to return (== generateCount)
+ * @param {string} opts.subjectAnchor - e.g. "HDLNRZ, a person" (trigger + subject)
+ * @param {string} [opts.product] - product id; picks the catalogue, tail and poses
+ * @param {string} [opts.gender] - gender id, for gender-conditional attire
+ * @returns {string[]} exactly `count` prompt strings
+ */
+export function buildPrompts({ looks = [], attire = [], count, subjectAnchor, product, gender }) {
+  const cat = catalogFor(product);
+  const dating = productOf(product) === PRODUCTS.DATING;
+  const lookFrags = looks.map((id) => cat.looksById[id]?.promptFragment).filter(Boolean);
+  const attireFrags = attire.map((id) => attireFragment(cat.attireById[id], gender)).filter(Boolean);
 
   // Fall back to the first catalog entry so a bad/empty selection still yields
   // usable prompts rather than throwing on the money path.
-  const L = lookFrags.length ? lookFrags : [LOOKS[0].promptFragment];
-  const A = attireFrags.length ? attireFrags : [ATTIRE[0].promptFragment];
+  const L = lookFrags.length ? lookFrags : [cat.looks[0].promptFragment];
+  const A = attireFrags.length ? attireFrags : [attireFragment(cat.attire[0], gender)];
 
   // Every selected combination, in a stable order (attire varies fastest).
   const combos = [];
@@ -336,7 +564,12 @@ export function buildPrompts({ looks = [], attire = [], count, subjectAnchor }) 
   const prompts = [];
   for (let i = 0; i < n; i++) {
     const { look, att } = combos[i % combos.length];
-    prompts.push(`${subjectAnchor}, ${att}, ${look}, ${QUALITY_TAIL}`);
+    if (dating) {
+      const pose = DATING_POSES[i % DATING_POSES.length];
+      prompts.push(`${subjectAnchor}, ${att}, ${look}, ${pose}, ${DATING_QUALITY_TAIL}`);
+    } else {
+      prompts.push(`${subjectAnchor}, ${att}, ${look}, ${QUALITY_TAIL}`);
+    }
   }
   return prompts;
 }

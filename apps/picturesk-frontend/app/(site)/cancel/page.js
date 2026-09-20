@@ -13,6 +13,9 @@ export default function CancelPage() {
         <p style={{ marginTop: 24 }}>
           <a href="/ai-headshot-generator/payment">Back to review and pay</a>
         </p>
+        <p className="muted" style={{ marginTop: 8 }}>
+          Ordering dating photos? <a href="/ai-dating-photos/payment">Back to that order</a>.
+        </p>
       </Container>
     </main>
   );

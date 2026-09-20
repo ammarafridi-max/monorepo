@@ -3793,3 +3793,11 @@ button:focus-visible,
   margin-top: 6px;
   color: var(--cobalt);
 }
+
+.option-card__note {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--cobalt);
+}

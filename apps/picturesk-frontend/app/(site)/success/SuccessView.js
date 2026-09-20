@@ -56,21 +56,25 @@ function EyeIcon() {
 const PAID_STATES = new Set(['PAID', 'TRAINING', 'GENERATING', 'DELIVERED']);
 
 // The pipeline order. AWAITING_PAYMENT sits before the first visible step.
-const STEPS = [
+const nounFor = (order) => (order?.product === 'dating' ? 'dating photos' : 'headshots');
+const landingFor = (order) => (order?.product === 'dating' ? '/ai-dating-photos' : '/ai-headshot-generator');
+
+const stepsFor = (noun) => [
   { key: 'PAID', label: 'Payment received' },
   { key: 'TRAINING', label: 'Training a model on your face' },
-  { key: 'GENERATING', label: 'Making your headshots' },
+  { key: 'GENERATING', label: `Making your ${noun}` },
   { key: 'DELIVERED', label: 'Delivered' },
 ];
 
-const HEADLINE = {
+const headlineFor = (noun) => ({
   AWAITING_PAYMENT: 'Waiting on your payment.',
   PAID: 'You are paid. Your session is starting.',
   TRAINING: 'We are training a model on your face.',
-  GENERATING: 'We are making your headshots.',
-  DELIVERED: 'Your headshots are ready.',
+  GENERATING: `We are making your ${noun}.`,
+  DELIVERED: `Your ${noun} are ready.`,
   FAILED: 'This run did not work out.',
-};
+});
+const STEPS = stepsFor('headshots');
 
 const SUBCOPY = {
   PAID: 'Your model starts training now. Most sets are ready in about an hour. You can close this page, we email you the link.',
@@ -81,9 +85,10 @@ const SUBCOPY = {
 
 // FAILED copy is calm and depends on whether the refund has gone through.
 function failedSubcopy(order) {
+  const noun = nounFor(order);
   return order.refunded
-    ? 'We could not make headshots you would be happy with, so we refunded your payment in full. You can try again whenever you like.'
-    : 'We could not make headshots you would be happy with. Your refund is on its way, no action needed.';
+    ? `We could not make ${noun} you would be happy with, so we refunded your payment in full. You can try again whenever you like.`
+    : `We could not make ${noun} you would be happy with. Your refund is on its way, no action needed.`;
 }
 
 function currentIndex(status) {
@@ -193,6 +198,9 @@ export default function SuccessView() {
 
   const status = order.status;
   const idx = currentIndex(status);
+  const noun = nounFor(order);
+  const HEADLINE = headlineFor(noun);
+  const steps = stepsFor(noun);
   const isDelivered = status === 'DELIVERED';
   const isFailed = status === 'FAILED';
   const isGenerating = status === 'GENERATING';
@@ -250,7 +258,7 @@ export default function SuccessView() {
         )}
         {isFailed && (
           <p style={{ marginTop: 8 }}>
-            <a href="/ai-headshot-generator">Start a new order</a>
+            <a href={landingFor(order)}>Start a new order</a>
           </p>
         )}
 
@@ -265,7 +273,7 @@ export default function SuccessView() {
           <section className="gallery">
             <div className="gallery__bar">
               <p className="gallery__count">
-                {(order.resultImageUrls || []).length} headshots, yours to keep.
+                {(order.resultImageUrls || []).length} {noun}, yours to keep.
               </p>
               {(order.resultImageUrls || []).length > 0 && (
                 <a className="btn btn--primary" href={downloadAllUrl(orderId, token)}>
@@ -310,7 +318,7 @@ export default function SuccessView() {
                 aria-valuemin={0}
                 aria-valuemax={100}
                 aria-valuenow={pct ?? 0}
-                aria-label="Rendering your headshots"
+                aria-label={`Rendering your ${noun}`}
               >
                 <div className="progress__track">
                   <div
@@ -324,7 +332,7 @@ export default function SuccessView() {
               </div>
             )}
             <ol className="steps">
-              {STEPS.map((step, i) => {
+              {steps.map((step, i) => {
                 const cls =
                   i < idx ? 'step step--done' : i === idx ? 'step step--current' : 'step';
                 return (
@@ -346,7 +354,7 @@ export default function SuccessView() {
             ? 'A copy of your results link has been emailed to you.'
             : isFailed
               ? null
-              : 'We will email you this link as soon as your headshots are ready.'}
+              : `We will email you this link as soon as your ${noun} are ready.`}
         </p>
 
         <Lightbox src={preview} alt="Headshot preview" onClose={() => setPreview(null)} />

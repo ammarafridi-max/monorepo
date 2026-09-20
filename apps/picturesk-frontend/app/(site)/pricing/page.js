@@ -5,7 +5,7 @@ import Faq from '../../../sections/Faq';
 import Container from '../../../components/Container';
 import SectionHeading from '../../../components/SectionHeading';
 import { pricingPage as page } from '../../../data/pages/pricing';
-import { FUNNEL, landingMetadata, landingSchema } from '../../../lib/landingPage';
+import { FUNNEL, DATING_FUNNEL, landingMetadata, landingSchema } from '../../../lib/landingPage';
 
 // The pricing page. Content comes from data/pages/pricing.js, but the PLAN FACTS
 // come from the shared pricing catalogue via the Pricing section, so the page can
@@ -26,6 +26,14 @@ export default function PricingPage() {
       <main>
         <LandingHero {...hero} cta="Get my headshots" href={FUNNEL} />
         <Pricing {...pricing} />
+        <Pricing
+          eyebrow="Dating photos"
+          title="Dating photos. Three packs, one time."
+          lede="Same engine, a different brief: candid photos in real places for Hinge, Tinder and Bumble. From $19, no subscription."
+          cta="Get my dating photos"
+          product="dating"
+          href={DATING_FUNNEL}
+        />
         <Benefits {...benefits} />
         <Faq {...faq} />
 

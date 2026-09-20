@@ -9,9 +9,13 @@
  */
 
 export { ORDER_STATES, ORDER_TRANSITIONS, canTransition } from './orderStates.js';
+export { PRODUCTS, DEFAULT_PRODUCT, isValidProduct, productOf } from './products.js';
 export {
   LOOKS,
   ATTIRE,
+  DATING_LOOKS,
+  DATING_ATTIRE,
+  catalogFor,
   AGE_RANGES,
   GENDERS,
   RACES,
@@ -25,7 +29,7 @@ export {
   isValidRace,
   isValidFacialHair,
 } from './catalog.js';
-export { TIERS, DEFAULT_TIER, getTier, isValidTier } from './pricing.js';
+export { TIERS, DEFAULT_TIER, getTier, isValidTier, tiersFor, fromPriceFor, defaultTierFor } from './pricing.js';
 export { Order } from './orderModel.js';
 export { User } from './userModel.js';
 export { QUEUE_NAMES } from './queue.js';

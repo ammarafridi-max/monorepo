@@ -82,8 +82,9 @@ export const useCases = [
     body: 'You cannot fly twelve people to one studio for an afternoon. Everyone uploads their own selfies and the sets come back to a single standard.',
   },
   {
-    title: 'Conference and press bios',
-    body: 'The request always arrives with a deadline and a resolution requirement attached. Have a current, high-resolution headshot ready for the next one.',
+    title: 'Dating profiles',
+    body: 'A different job from a headshot: candid, natural, in real places. We make those too, from the same selfies.',
+    href: '/ai-dating-photos',
   },
 ];
 
@@ -134,6 +135,18 @@ export const planNotes = {
   premium: {
     best: 'Best for teams, and for anyone who wants the full catalogue.',
     cons: ['More photos than one person usually needs'],
+  },
+  dating_starter: {
+    best: 'Best for refreshing one profile with a few strong photos.',
+    cons: ['Two outfits and three scenes means less variety across the set'],
+  },
+  dating_pro: {
+    best: 'Best for most people: enough range to fill every photo slot on every app.',
+    cons: ['Not every scene in the catalogue is unlocked'],
+  },
+  dating_premium: {
+    best: 'Best if you want the whole catalogue and photos to spare.',
+    cons: ['More photos than one profile usually needs'],
   },
 };
 

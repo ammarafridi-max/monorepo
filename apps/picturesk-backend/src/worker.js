@@ -268,6 +268,7 @@ async function onDelivered(orderId) {
       orderId,
       // The culled best set from candidate selection, not the full candidate list.
       thumbnailUrls: order.deliveredImageUrls ?? [],
+      product: order.product,
     });
   } catch (err) {
     // Leave deliveredEmailSentAt unset and let the retry re-attempt.
@@ -312,6 +313,8 @@ const buildOrderPrompts = (order, count) =>
     // overgeneration); fall back to the tier snapshot / env for older call sites.
     count: count ?? order.generateCount ?? GENERATE_COUNT,
     subjectAnchor: subjectAnchorFor(order),
+    product: order.product,
+    gender: order.gender,
   });
 
 const pipeline = createPipeline({

@@ -2,9 +2,13 @@
 
 ## What this is
 
-The Next.js frontend for Picturesk.ai, an AI headshot generator. It carries the
-marketing pages, the upload/checkout funnel under `/ai-headshot-generator`, the
-customer account area, and the admin dashboard. It talks to `picturesk-backend` at
+The Next.js frontend for Picturesk.ai, an AI headshot generator that also sells AI
+dating photos. It carries the marketing pages, one funnel per product (the same
+select/upload/payment steps in `components/funnel/*`, mounted under
+`/ai-headshot-generator` and `/ai-dating-photos`), the customer account area, and
+the admin dashboard. Products, their catalogues and their price ladders come from
+`@travel-suite/picturesk-shared` (`products.js`, `catalog.js`, `pricing.js`);
+`lib/products.js` holds only the web-side config (paths, labels, default tier). It talks to `picturesk-backend` at
 `NEXT_PUBLIC_API_BASE_URL`; the browser uploads selfies directly to R2 via
 presigned URLs, so photo bytes never pass through this app.
 

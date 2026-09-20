@@ -1,18 +1,21 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { FUNNEL_STEPS } from '../lib/generator';
+import { funnelSteps } from '../lib/generator';
+import { productForPath } from '../lib/products';
 
 // Which funnel step the current route is on, so the stepper can render each step
 // as done / current / upcoming. Pay has no route past the Stripe redirect.
 function currentKey(pathname) {
-  if (pathname?.startsWith('/ai-headshot-generator/upload')) return 'upload';
-  if (pathname?.startsWith('/ai-headshot-generator/payment')) return 'pay';
+  if (pathname?.endsWith('/upload') || pathname?.endsWith('/capture')) return 'upload';
+  if (pathname?.endsWith('/payment')) return 'pay';
   return 'select';
 }
 
 export default function Stepper() {
-  const activeKey = currentKey(usePathname());
+  const pathname = usePathname();
+  const activeKey = currentKey(pathname);
+  const FUNNEL_STEPS = funnelSteps(productForPath(pathname));
   const activeIdx = FUNNEL_STEPS.findIndex((s) => s.key === activeKey);
 
   return (
