@@ -125,7 +125,6 @@ export default function ReviewStep({ product }) {
 
   return (
     <section>
-      <p className="eyebrow">Step 5 of 5</p>
       <h1 className="h2">{free ? 'Review and start.' : 'Review and pay.'}</h1>
       <p className="section__lede">{free ? 'Your free set. No card needed.' : 'One time. No subscription.'}</p>
 

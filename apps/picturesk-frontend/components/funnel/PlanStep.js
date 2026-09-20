@@ -104,7 +104,6 @@ export default function PlanStep({ product }) {
 
   return (
     <section>
-      <p className="eyebrow">Step 3 of 5</p>
       <h1 className="h2">{cfg.selectTitle}</h1>
       <p className="section__lede">Pick your plan, then the {lookNoun}s and outfits it includes.</p>
 

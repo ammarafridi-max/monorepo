@@ -202,7 +202,6 @@ export default function PhotosStep({ product }) {
 
   return (
     <section>
-      <p className="eyebrow">Step 4 of 5</p>
       <h1 className="h2">{reusable ? 'Your photos.' : 'Upload your photos.'}</h1>
       <p className="section__lede">
         Your photos are the single biggest factor in how much the results look like you.

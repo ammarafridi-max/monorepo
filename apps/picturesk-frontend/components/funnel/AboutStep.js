@@ -56,7 +56,6 @@ export default function AboutStep({ product }) {
 
   return (
     <section>
-      <p className="eyebrow">Step 1 of 5</p>
       <h1 className="h2">About you.</h1>
       <p className="section__lede">This anchors the model to you. It is used only to generate your photos and stays private.</p>
 

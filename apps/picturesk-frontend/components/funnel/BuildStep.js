@@ -33,7 +33,6 @@ export default function BuildStep({ product }) {
 
   return (
     <section>
-      <p className="eyebrow">Step 2 of 5</p>
       <h1 className="h2">Your build.</h1>
       <p className="section__lede">
         Photos are wider than a headshot, so the model needs to know roughly how you are built. Pick the closest.

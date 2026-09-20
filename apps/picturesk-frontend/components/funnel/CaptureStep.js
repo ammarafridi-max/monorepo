@@ -238,7 +238,7 @@ export default function CaptureStep({ product }) {
 
   return (
     <section>
-      <p className="eyebrow">Step 2</p>
+      <p className="eyebrow">Photo shoot</p>
       <h1 className="h2">Let us take your photos.</h1>
 
       {phase === 'intro' && (
