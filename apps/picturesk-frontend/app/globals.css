@@ -4443,6 +4443,12 @@ button:focus-visible,
 .stepbar__back,
 .stepbar__next {
   flex: none;
+  width: fit-content;
+}
+
+.stepbar__next {
+  padding: 11px 20px;
+  font-size: 14px;
 }
 
 @media (max-width: 560px) {
@@ -4457,7 +4463,6 @@ button:focus-visible,
     text-align: left;
   }
   .stepbar__next {
-    flex: 1;
-    justify-content: center;
+    margin-left: auto;
   }
 }
