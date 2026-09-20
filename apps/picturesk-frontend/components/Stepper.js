@@ -18,8 +18,26 @@ export default function Stepper() {
   const FUNNEL_STEPS = funnelSteps(productForPath(pathname));
   const activeIdx = FUNNEL_STEPS.findIndex((s) => s.key === activeKey);
 
+  const pct = Math.round((activeIdx / (FUNNEL_STEPS.length - 1)) * 100);
+
   return (
     <nav className="stepper" aria-label="Progress">
+      <div
+        className="stepper__bar"
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={pct}
+        aria-label={`Step ${activeIdx + 1} of ${FUNNEL_STEPS.length}`}
+      >
+        <div className="stepper__fill" style={{ width: `${pct}%` }} />
+      </div>
+      <p className="stepper__pct">
+        <span>
+          Step {activeIdx + 1} of {FUNNEL_STEPS.length}
+        </span>
+        <span>{pct}% complete</span>
+      </p>
       <ol className="stepper__list">
         {FUNNEL_STEPS.map((step, i) => {
           const state = i < activeIdx ? 'done' : i === activeIdx ? 'current' : 'upcoming';

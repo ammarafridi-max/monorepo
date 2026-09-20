@@ -8,14 +8,22 @@ import { funnelPaths, productConfig } from '../../lib/products';
 import { useFunnel, useNextHref } from './FunnelContext';
 import { OptionGrid, withPreview } from './controls';
 import StepNav from './StepNav';
+import Check from '../Check';
+import Cross from '../Cross';
 
 const usd = (cents) => `$${Math.round(cents / 100)}`;
-const TURNAROUND = { 4: 'Standard queue', 3: 'Standard queue', 2: 'Priority queue', 1: 'Front of the queue' };
 const plural = (n, noun) => `${n} ${noun}${n === 1 ? '' : 's'}`;
-const planScope = (t, lookNoun) =>
-  t.attireCount == null && t.lookCount == null
-    ? `All outfits and ${lookNoun}s`
-    : `${plural(t.attireCount, 'outfit')}, ${plural(t.lookCount, lookNoun)}`;
+const scope = (n, noun) => (n == null ? `All ${noun}s` : plural(n, noun));
+
+// What a plan includes and does not, as one checklist, so the cards compare
+// line for line. Built from the tier data so it can never drift from what is sold.
+const featuresFor = (t, lookNoun) => [
+  { ok: true, text: `${t.deliverCount} photos` },
+  { ok: true, text: scope(t.attireCount, 'outfit') },
+  { ok: true, text: scope(t.lookCount, lookNoun) },
+  { ok: t.priority <= 2, text: t.priority === 1 ? 'Front of the queue' : 'Priority queue' },
+  { ok: !isFreeTier(t), text: 'Look-like-you money-back guarantee' },
+];
 
 // Step 3: plan, then scenes and outfits within that plan's caps. Everything
 // persists to localStorage as it changes.
@@ -119,9 +127,14 @@ export default function PlanStep({ product }) {
               {free && <span className="plan__badge plan__badge--free">Try it once</span>}
               <span className="plan__name">{t.label}</span>
               <span className="plan__price">{free ? '$0' : usd(t.priceCents)}</span>
-              <span className="plan__meta">{t.deliverCount} photos</span>
-              <span className="plan__meta">{planScope(t, lookNoun)}</span>
-              <span className="plan__meta">{TURNAROUND[t.priority]}</span>
+              <ul className="plan__features">
+                {featuresFor(t, lookNoun).map((f) => (
+                  <li className={`plan__feature${f.ok ? '' : ' plan__feature--no'}`} key={f.text}>
+                    {f.ok ? <Check /> : <Cross />}
+                    <span>{f.text}</span>
+                  </li>
+                ))}
+              </ul>
             </button>
           );
         })}
