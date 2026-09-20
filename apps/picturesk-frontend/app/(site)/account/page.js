@@ -9,6 +9,8 @@ import AccountTabs from './AccountTabs';
 import PasswordForm from './PasswordForm';
 import DeleteAccount from './DeleteAccount';
 import DeleteOrderButton from './DeleteOrderButton';
+import ProfileForm from './ProfileForm';
+import { cleanProfile } from '../../../lib/profile';
 import { FiLogOut } from 'react-icons/fi';
 
 // The only gated area. Reading the session (cookies) makes it dynamic anyway;
@@ -171,6 +173,17 @@ export default async function AccountPage() {
           {/* Panel 2: Settings */}
           <div>
             <section className="acct__section acct__section--first">
+              <h2 className="acct__h2">About you</h2>
+              <p className="acct__hint">
+                What we know about you for generating photos. Every new set starts with these answers, and you can
+                change them on the way through.
+              </p>
+              <div className="acct__card">
+                <ProfileForm initial={cleanProfile(user?.profile)} />
+              </div>
+            </section>
+
+            <section className="acct__section">
               <h2 className="acct__h2">Password</h2>
               <p className="acct__hint">
                 {hasPassword
@@ -185,7 +198,7 @@ export default async function AccountPage() {
             <section className="acct__section acct__section--danger">
               <h2 className="acct__h2">Delete account</h2>
               <p className="acct__hint">
-                Remove your login. Your orders revert to anonymous and your delivered headshots stay
+                Remove your login. Your orders revert to anonymous and your delivered photos stay
                 downloadable from their links.
               </p>
               <DeleteAccount />

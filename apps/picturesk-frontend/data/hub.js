@@ -16,6 +16,11 @@ export const hub = {
     eyebrow: 'AI photo studio',
     title: 'One set of selfies. Every photo you need.',
     lede: 'Picturesk is an AI photo studio. Upload five to fifteen selfies once, and we train a model on your own face and generate the photos you need from it: professional headshots for LinkedIn and your CV, or candid dating photos for Hinge, Tinder and Bumble. No photographer, no studio, one payment per set, delivered by email in about an hour.',
+    promises: [
+      'Your first small set is free, once per account',
+      'Look-like-you guarantee, or your money back',
+      'One payment per set, from $9. No subscription.',
+    ],
   },
 
   services: {

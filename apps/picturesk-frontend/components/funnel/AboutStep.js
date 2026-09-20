@@ -6,7 +6,7 @@ import { AGE_RANGES, GENDERS, RACES, FACIAL_HAIR } from '@travel-suite/picturesk
 import { readState, writeState } from '../../lib/generator';
 import { track, EVENTS } from '../../lib/analytics';
 import { funnelPaths } from '../../lib/products';
-import { useNextHref } from './FunnelContext';
+import { useFunnel, useNextHref } from './FunnelContext';
 import { ChoiceRow } from './controls';
 import StepNav from './StepNav';
 
@@ -15,6 +15,7 @@ import StepNav from './StepNav';
 export default function AboutStep({ product }) {
   const paths = funnelPaths(product);
   const nextHref = useNextHref(paths.build, paths.review);
+  const { profile } = useFunnel();
   const [gender, setGender] = useState('');
   const [ageRange, setAgeRange] = useState('');
   const [race, setRace] = useState('');
@@ -22,13 +23,22 @@ export default function AboutStep({ product }) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    // Saved answers from the account fill anything the funnel has not asked yet,
+    // so a returning customer only confirms; an in-progress edit is never overwritten.
     const s = readState(product);
-    setGender(s.gender);
-    setAgeRange(s.ageRange);
-    setRace(s.race);
-    setFacialHair(s.facialHair);
+    const seed = {};
+    for (const key of ['gender', 'ageRange', 'race', 'facialHair']) {
+      if (!s[key] && profile?.[key]) seed[key] = profile[key];
+    }
+    if (Object.keys(seed).length) writeState(seed, product);
+    const v = { ...s, ...seed };
+    setGender(v.gender);
+    setAgeRange(v.ageRange);
+    setRace(v.race);
+    setFacialHair(v.facialHair);
     setReady(true);
     track(EVENTS.SELECT_VIEW, { product, step: 'about' });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product]);
 
   const set = (key, setter) => (v) => {

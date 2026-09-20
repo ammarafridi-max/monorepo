@@ -7,6 +7,7 @@ import Testimonials from '../../sections/Testimonials';
 import Faq from '../../sections/Faq';
 import Container from '../../components/Container';
 import SectionHeading from '../../components/SectionHeading';
+import GetStartedButton from '../../components/GetStartedButton';
 import { hub } from '../../data/hub';
 import { samples, datingSamples } from '../../data/samples';
 import {
@@ -63,7 +64,7 @@ export default function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
       />
       <main>
-        <HubHero {...hub.hero} services={hub.services.items} />
+        <HubHero {...hub.hero} />
         <HowItWorks
           lede="Both services run on the same three steps. You upload once, we train a model on your face, and the set you chose lands in your inbox."
         />
@@ -81,13 +82,7 @@ export default function HomePage() {
           <Container>
             <div className="start__inner">
               <SectionHeading align="center" eyebrow={hub.cta.eyebrow} title={hub.cta.title} lede={hub.cta.lede} />
-              <div className="hero__actions" style={{ justifyContent: 'center' }}>
-                {hub.services.items.map((s) => (
-                  <a className="btn btn--primary" href={s.href} key={s.id}>
-                    {s.title} <span className="btn__price">from ${s.from}</span>
-                  </a>
-                ))}
-              </div>
+              <GetStartedButton />
             </div>
           </Container>
         </section>

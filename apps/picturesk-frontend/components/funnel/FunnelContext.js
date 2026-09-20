@@ -9,9 +9,15 @@ import { writeState } from '../../lib/generator';
 // in, whether they already used the free plan, and the most recent order whose
 // model can be reused. Also lands a `?tier=` from a pricing card into state on
 // the first step, so the plan step preselects it.
-const FunnelContext = createContext({ product: 'headshots', email: '', freeUsed: false, reusable: null });
+const FunnelContext = createContext({
+  product: 'headshots',
+  email: '',
+  profile: {},
+  freeUsed: false,
+  reusable: null,
+});
 
-export function FunnelProvider({ product, email, freeUsed, reusable, children }) {
+export function FunnelProvider({ product, email, profile = {}, freeUsed, reusable, children }) {
   const params = useSearchParams();
   const tier = params.get('tier');
   useEffect(() => {
@@ -19,7 +25,7 @@ export function FunnelProvider({ product, email, freeUsed, reusable, children })
   }, [tier, product]);
 
   return (
-    <FunnelContext.Provider value={{ product, email, freeUsed, reusable }}>{children}</FunnelContext.Provider>
+    <FunnelContext.Provider value={{ product, email, profile, freeUsed, reusable }}>{children}</FunnelContext.Provider>
   );
 }
 

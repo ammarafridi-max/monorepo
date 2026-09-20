@@ -4,6 +4,7 @@ import { TIERS, isFreeTier } from '@travel-suite/picturesk-shared/pricing';
 import { dbConnect } from './db';
 import { getSession } from './session';
 import { needsVerification } from './verification';
+import { cleanProfile } from './profile';
 
 const FREE_TIER_IDS = TIERS.filter(isFreeTier).map((t) => t.id);
 const MODEL_REUSE_MAX_AGE_MS = 365 * 24 * 60 * 60 * 1000;
@@ -38,6 +39,7 @@ export async function loadFunnelSession(entryPath) {
 
   return {
     email: user.email,
+    profile: cleanProfile(user.profile),
     freeUsed: Boolean(freeUsed),
     reusable: source
       ? {

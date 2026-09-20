@@ -1,11 +1,13 @@
 import { hubShots } from '../data/samples';
 import Frame from '../components/Frame';
+import Check from '../components/Check';
 import Container from '../components/Container';
+import GetStartedButton from '../components/GetStartedButton';
 
 // The hub hero. Same shape as the product hero (eyebrow, verdict headline, the
-// quick answer, the frame cluster), but the single action becomes two service
-// cards: on a hub the one thing to do is pick a service. Copy comes from data/hub.js.
-export default function HubHero({ eyebrow, title, lede, services = [] }) {
+// quick answer, one action, ticked promises, the frame cluster). The action opens
+// the service picker, since on a hub the one thing to do is pick a service.
+export default function HubHero({ eyebrow, title, lede, promises = [] }) {
   return (
     <section className="hero hero--hub">
       <Container className="hero__inner">
@@ -14,17 +16,19 @@ export default function HubHero({ eyebrow, title, lede, services = [] }) {
           <h1 className="display hero__title">{title}</h1>
           <p className="lede">{lede}</p>
 
-          <div className="hub-picks">
-            {services.map((s) => (
-              <a className="hub-pick" href={s.href} key={s.id}>
-                <span className="hub-pick__title">{s.title}</span>
-                <span className="hub-pick__who">{s.who}</span>
-                <span className="hub-pick__cta">
-                  Start <span className="hub-pick__price">from ${s.from}</span>
-                </span>
-              </a>
-            ))}
+          <div className="hero__actions">
+            <GetStartedButton />
           </div>
+          {promises.length > 0 && (
+            <ul className="hero__promises">
+              {promises.map((promise) => (
+                <li className="hero__promise" key={promise}>
+                  <Check />
+                  <span>{promise}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <div className="hero__gallery">

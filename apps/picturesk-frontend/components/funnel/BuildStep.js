@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { BUILDS } from '@travel-suite/picturesk-shared/catalog';
 import { readState, writeState } from '../../lib/generator';
 import { funnelPaths } from '../../lib/products';
-import { useNextHref } from './FunnelContext';
+import { useFunnel, useNextHref } from './FunnelContext';
 import { ChoiceRow } from './controls';
 import StepNav from './StepNav';
 
@@ -13,12 +13,17 @@ import StepNav from './StepNav';
 export default function BuildStep({ product }) {
   const paths = funnelPaths(product);
   const nextHref = useNextHref(paths.plan, paths.review);
+  const { profile } = useFunnel();
   const [build, setBuild] = useState('');
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    setBuild(readState(product).build);
+    const stored = readState(product).build;
+    const v = stored || profile?.build || '';
+    if (!stored && v) writeState({ build: v }, product);
+    setBuild(v);
     setReady(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product]);
 
   function onBuild(v) {

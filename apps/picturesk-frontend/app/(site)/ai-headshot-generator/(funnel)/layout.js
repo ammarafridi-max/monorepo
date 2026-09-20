@@ -19,7 +19,7 @@ export default async function GeneratorLayout({ children }) {
     <main className="page generator">
       <Container size="narrow">
         <Suspense fallback={null}>
-          <FunnelProvider product="headshots" email={session.email} freeUsed={session.freeUsed} reusable={session.reusable}>
+          <FunnelProvider product="headshots" email={session.email} profile={session.profile} freeUsed={session.freeUsed} reusable={session.reusable}>
             <Stepper />
             {children}
           </FunnelProvider>

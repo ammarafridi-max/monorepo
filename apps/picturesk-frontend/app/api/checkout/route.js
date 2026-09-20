@@ -3,6 +3,7 @@ import { dbConnect } from '../../../lib/db';
 import { getSession } from '../../../lib/session';
 import { needsVerification } from '../../../lib/verification';
 import { API_BASE } from '../../../lib/api';
+import { cleanProfile } from '../../../lib/profile';
 
 /**
  * POST /api/checkout -> the only way into the api's /checkout. Reads the session,
@@ -23,6 +24,12 @@ export async function POST(req) {
   if (needsVerification(user)) return Response.json({ error: 'Verify your email to continue' }, { status: 403 });
 
   const body = await req.json().catch(() => ({}));
+  // The answers the funnel just collected become the account's profile, so the
+  // next set starts prefilled. Best effort: a profile write must not block a sale.
+  const profile = cleanProfile(body);
+  if (profile.gender && profile.ageRange) {
+    User.updateOne({ _id: user._id }, { $set: { profile } }).catch(() => {});
+  }
   const upstream = await fetch(`${API_BASE}/checkout`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-Internal-Key': key },
