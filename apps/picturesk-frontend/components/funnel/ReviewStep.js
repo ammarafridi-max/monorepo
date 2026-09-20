@@ -17,6 +17,7 @@ import { createCheckout } from '../../lib/api';
 import { track, EVENTS } from '../../lib/analytics';
 import { funnelPaths, productConfig } from '../../lib/products';
 import { useFunnel } from './FunnelContext';
+import StepNav from './StepNav';
 
 const usd = (cents) => `$${Math.round(cents / 100)}`;
 const labels = (list) => Object.fromEntries(list.map((x) => [x.id, x.label]));
@@ -144,15 +145,13 @@ export default function ReviewStep({ product }) {
         ))}
       </dl>
 
-      <div className="gennav">
-        <Link className="btn btn--link" href={paths.photos}>
-          Back
-        </Link>
-        <button className="btn btn--primary" type="button" disabled={busy} onClick={onPay}>
-          {busy ? (free ? 'Starting your set' : 'Taking you to payment') : free ? 'Start my free set' : 'Pay and start'}{' '}
-          {!free && <span className="btn__price">{usd(tier.priceCents)}</span>}
-        </button>
-      </div>
+      <StepNav
+        backHref={paths.photos}
+        canContinue={!busy}
+        label={busy ? (free ? 'Starting your set' : 'Taking you to payment') : free ? 'Start my free set' : 'Pay and start'}
+        trailing={!free ? <span className="btn__price">{usd(tier.priceCents)}</span> : null}
+        onContinue={onPay}
+      />
 
       {!free && (
         <p className="formnote formnote--left">

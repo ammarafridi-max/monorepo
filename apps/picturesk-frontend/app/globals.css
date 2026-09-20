@@ -1795,6 +1795,7 @@ a {
 
 .generator {
   padding-top: 40px;
+  padding-bottom: 120px;
 }
 
 /* The funnel needs more room than the narrow reading column so the option-card
@@ -4405,4 +4406,58 @@ button:focus-visible,
 
 .plan--on .plan__feature .cross {
   color: #7fa19a;
+}
+
+/* The fixed action bar under every funnel step. */
+.stepbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+  background: #ffffff;
+  border-top: 1px solid var(--fg-line);
+  box-shadow: 0 -10px 30px rgba(22, 58, 51, 0.08);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.stepbar__inner {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.stepbar__hint {
+  flex: 1;
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: var(--fg-muted);
+  text-align: center;
+}
+
+.stepbar__back,
+.stepbar__next {
+  flex: none;
+}
+
+@media (max-width: 560px) {
+  .stepbar__inner {
+    flex-wrap: wrap;
+    padding: 10px 16px;
+    gap: 8px 12px;
+  }
+  .stepbar__hint {
+    order: -1;
+    flex-basis: 100%;
+    text-align: left;
+  }
+  .stepbar__next {
+    flex: 1;
+    justify-content: center;
+  }
 }

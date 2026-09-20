@@ -9,6 +9,7 @@ import { readState, writeState } from '../../lib/generator';
 import { track, EVENTS } from '../../lib/analytics';
 import { funnelPaths } from '../../lib/products';
 import { useFunnel, useNextHref } from './FunnelContext';
+import StepNav from './StepNav';
 
 // Step 4: photos. One unified grid holds both photos already uploaded on a
 // previous visit (kind 'existing', an R2 URL) and newly picked files (kind 'new',
@@ -341,14 +342,13 @@ export default function PhotosStep({ product }) {
 
       </div>
 
-      <div className="gennav">
-        <Link className="btn btn--link" href={paths.plan}>
-          Back
-        </Link>
-        <button className="btn btn--primary" type="button" disabled={!canContinue} onClick={onContinue}>
-          {!reusing && checking ? 'Checking your photos' : 'Continue'}
-        </button>
-      </div>
+      <StepNav
+        backHref={paths.plan}
+        canContinue={canContinue}
+        missing={!reusing && !canContinue ? note : ''}
+        label={!reusing && checking ? 'Checking your photos' : 'Continue'}
+        onContinue={onContinue}
+      />
     </section>
   );
 }
