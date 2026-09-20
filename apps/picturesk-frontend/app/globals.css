@@ -3801,3 +3801,148 @@ button:focus-visible,
   line-height: 1.4;
   color: var(--cobalt);
 }
+
+/* Services dropdown in the top bar: two product columns, same card as .profile__menu. */
+.services {
+  position: relative;
+  display: inline-block;
+}
+
+.services__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 0;
+  color: var(--fg-ink);
+}
+
+.services__trigger[aria-expanded='true'],
+.services:hover .services__trigger {
+  color: var(--fg-green);
+}
+
+.services__chev {
+  color: var(--fg-muted);
+  transition: transform 0.15s ease;
+}
+
+.services__chev--open {
+  transform: rotate(180deg);
+}
+
+.services__panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 6px;
+  padding: 10px;
+  background: #ffffff;
+  border: 1px solid var(--fg-line);
+  border-radius: 8px;
+  box-shadow: 0 14px 34px rgba(22, 58, 51, 0.14);
+  z-index: 50;
+}
+
+.services__panel[hidden] {
+  display: none;
+}
+
+.services__panel::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 0;
+  right: 0;
+  height: 8px;
+}
+
+.services__group {
+  padding: 6px;
+}
+
+.services__group + .services__group {
+  border-left: 1px solid var(--fg-line);
+  padding-left: 14px;
+}
+
+.services__head {
+  display: block;
+  padding: 6px 8px 8px;
+  border-radius: 6px;
+  text-decoration: none;
+}
+
+.services__head:hover {
+  background: var(--fg-band);
+}
+
+.services__label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--fg-ink);
+}
+
+.services__tagline {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+
+.services__pages {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+}
+
+.services__page {
+  display: block;
+  padding: 7px 8px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--fg-ink);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.services__page:hover,
+.services__page:focus-visible {
+  background: var(--fg-band);
+  color: var(--fg-green);
+  outline: none;
+}
+
+/* The same groups inside the mobile drawer, as plain lists. */
+.services-list {
+  display: grid;
+  gap: 16px;
+  width: 100%;
+}
+
+.services-list__title {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--fg-muted);
+}
+
+.services-list__link {
+  display: block;
+  padding: 6px 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--fg-ink);
+  text-decoration: none;
+}
+
+.services-list__link:hover {
+  color: var(--fg-green);
+}

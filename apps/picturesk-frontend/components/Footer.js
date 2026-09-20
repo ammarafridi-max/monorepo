@@ -5,6 +5,7 @@
 // would vanish on green). Rendered once from the root layout, so links are absolute
 // paths (the home anchors point at /#section) and work from any page.
 import Container from './Container';
+import { services } from '../data/services';
 
 export default function Footer() {
   return (
@@ -12,30 +13,26 @@ export default function Footer() {
       <Container className="footer__inner">
         <div className="footer__brand">
           <p className="footer__word">Picturesk.ai</p>
-          <p className="footer__tag">Studio headshots from your selfies.</p>
+          <p className="footer__tag">Headshots and dating photos from your selfies.</p>
         </div>
 
         <nav className="footer__cols" aria-label="Footer">
-          <div className="footer__col">
-            <p className="footer__coltitle">Product</p>
-            <a href="/ai-headshot-generator">AI Headshot Generator</a>
-            <a href="/ai-headshot-generator#work">Samples</a>
-            <a href="/ai-headshot-generator#how">How it works</a>
-            <a href="/pricing">Pricing</a>
-            <a href="/linkedin-headshots">LinkedIn Headshots</a>
-            <a href="/real-estate-agent-headshots">Real Estate Headshots</a>
-            <a href="/ai-headshots-vs-photographer">AI vs Photographer</a>
-            <a href="/ai-dating-photos">AI Dating Photos</a>
-            <a href="/hinge-photos">Hinge Photos</a>
-            <a href="/tinder-photos">Tinder Photos</a>
-            <a href="/bumble-photos">Bumble Profile Pictures</a>
-            <a href="/login">Log in</a>
-          </div>
-
+          {services.map((group) => (
+            <div className="footer__col" key={group.id}>
+              <p className="footer__coltitle">{group.label}</p>
+              {group.pages.map((p) => (
+                <a href={p.href} key={p.href}>
+                  {p.label}
+                </a>
+              ))}
+            </div>
+          ))}
           <div className="footer__col">
             <p className="footer__coltitle">Support</p>
-            <a href="/contact">Contact</a>
+            <a href="/pricing">Pricing</a>
             <a href="/faq">FAQ</a>
+            <a href="/contact">Contact</a>
+            <a href="/login">Log in</a>
           </div>
 
           <div className="footer__col">

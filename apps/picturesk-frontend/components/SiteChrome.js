@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import Footer from './Footer';
 import Container from './Container';
 import ProfileMenu from './ProfileMenu';
+import ServicesMenu from './ServicesMenu';
 
 const FUNNEL_BASES = ['/ai-headshot-generator', '/ai-dating-photos'];
 
@@ -61,8 +62,9 @@ export default function SiteChrome({ authed, email, children }) {
     };
   }, [open]);
 
-  const links = (
+  const links = (variant) => (
     <>
+      <ServicesMenu variant={variant} />
       <a className="navlink" href="/pricing">
         Pricing
       </a>
@@ -121,14 +123,14 @@ export default function SiteChrome({ authed, email, children }) {
             <a className="brand" href="/ai-headshot-generator" aria-label="Picturesk.ai home">
               <span className="brand__word">Picturesk</span>
             </a>
-            <nav className="nav nav--desktop">{links}</nav>
+            <nav className="nav nav--desktop">{links('dropdown')}</nav>
             <Burger open={open} onClick={() => setOpen((v) => !v)} />
           </div>
         </Container>
 
         <div id="site-menu" className={`drawer${open ? ' drawer--open' : ''}`} hidden={!open}>
           <Container>
-            <nav className="drawer__nav">{links}</nav>
+            <nav className="drawer__nav">{links('list')}</nav>
           </Container>
         </div>
       </header>
