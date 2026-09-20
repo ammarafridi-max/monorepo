@@ -9,7 +9,7 @@ import { productForPath } from '../lib/products';
 function currentKey(pathname) {
   const last = pathname?.split('/').pop();
   if (last === 'capture') return 'photos';
-  return ['about', 'build', 'plan', 'photos', 'review'].includes(last) ? last : 'about';
+  return ['about', 'plan', 'photos', 'review'].includes(last) ? last : 'about';
 }
 
 export default function Stepper() {

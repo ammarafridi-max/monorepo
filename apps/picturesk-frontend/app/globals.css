@@ -1971,9 +1971,10 @@ a {
 }
 .chip--on {
   border-color: var(--cobalt);
-  background: var(--cobalt);
-  box-shadow: inset 0 0 0 1px var(--cobalt);
-  color: #fff;
+  background: #e6f0ee;
+  box-shadow: none;
+  color: #000000;
+  font-weight: 600;
 }
 
 /* Selection cards: each option has a preview image (or a placeholder). The

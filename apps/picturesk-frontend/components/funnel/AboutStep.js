@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { FiInfo } from 'react-icons/fi';
-import { AGE_RANGES, GENDERS, RACES, FACIAL_HAIR } from '@travel-suite/picturesk-shared/catalog';
+import { AGE_RANGES, GENDERS, RACES, FACIAL_HAIR, BUILDS } from '@travel-suite/picturesk-shared/catalog';
 import { readState, writeState } from '../../lib/generator';
 import { track, EVENTS } from '../../lib/analytics';
 import { funnelPaths } from '../../lib/products';
@@ -10,16 +10,17 @@ import { useFunnel, useNextHref } from './FunnelContext';
 import { ChoiceRow } from './controls';
 import StepNav from './StepNav';
 
-// Step 1: who the person is. Gender and age lead every prompt, so both are
-// required; race and facial hair refine it and are optional.
+// Step 1: who the person is. Gender, age and build lead every prompt, so all
+// three are required; race and facial hair refine it and are optional.
 export default function AboutStep({ product }) {
   const paths = funnelPaths(product);
-  const nextHref = useNextHref(paths.build, paths.review);
+  const nextHref = useNextHref(paths.plan, paths.review);
   const { profile } = useFunnel();
   const [gender, setGender] = useState('');
   const [ageRange, setAgeRange] = useState('');
   const [race, setRace] = useState('');
   const [facialHair, setFacialHair] = useState('');
+  const [build, setBuild] = useState('');
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -27,7 +28,7 @@ export default function AboutStep({ product }) {
     // so a returning customer only confirms; an in-progress edit is never overwritten.
     const s = readState(product);
     const seed = {};
-    for (const key of ['gender', 'ageRange', 'race', 'facialHair']) {
+    for (const key of ['gender', 'ageRange', 'race', 'facialHair', 'build']) {
       if (!s[key] && profile?.[key]) seed[key] = profile[key];
     }
     if (Object.keys(seed).length) writeState(seed, product);
@@ -36,6 +37,7 @@ export default function AboutStep({ product }) {
     setAgeRange(v.ageRange);
     setRace(v.race);
     setFacialHair(v.facialHair);
+    setBuild(v.build);
     setReady(true);
     track(EVENTS.SELECT_VIEW, { product, step: 'about' });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -52,7 +54,13 @@ export default function AboutStep({ product }) {
     if (v === 'woman' && facialHair) set('facialHair', setFacialHair)('');
   };
 
-  const missing = !gender ? 'Pick a gender to continue.' : !ageRange ? 'Pick an age range to continue.' : '';
+  const missing = !gender
+    ? 'Pick a gender to continue.'
+    : !ageRange
+      ? 'Pick an age range to continue.'
+      : !build
+        ? 'Pick the closest build to continue.'
+        : '';
 
   return (
     <section>
@@ -89,6 +97,22 @@ export default function AboutStep({ product }) {
           <ChoiceRow items={FACIAL_HAIR} value={facialHair} onSelect={set('facialHair', setFacialHair)} allowClear />
         </>
       )}
+
+      <p className="gen-fieldlabel">
+        Build
+        <span
+          className="info-tip"
+          tabIndex={0}
+          role="note"
+          aria-label="Photos are wider than a headshot, so the model needs to know roughly how you are built."
+        >
+          <FiInfo aria-hidden="true" />
+          <span className="info-tip__bubble" role="tooltip">
+            Photos are wider than a headshot, so the model needs to know roughly how you are built. Pick the closest.
+          </span>
+        </span>
+      </p>
+      <ChoiceRow items={BUILDS} value={build} onSelect={set('build', setBuild)} />
 
       <StepNav backHref={paths.landing} nextHref={nextHref} canContinue={ready && !missing} missing={ready ? missing : ''} />
     </section>

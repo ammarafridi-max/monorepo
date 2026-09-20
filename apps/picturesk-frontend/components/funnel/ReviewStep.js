@@ -46,13 +46,12 @@ export default function ReviewStep({ product }) {
 
   useEffect(() => {
     const s = readState(product);
-    if (!s.gender || !s.ageRange) return router.replace(paths.about);
-    if (!s.build) return router.replace(paths.build);
+    if (!s.gender || !s.ageRange || !s.build) return router.replace(paths.about);
     if (s.looks.length === 0 || s.attire.length === 0) return router.replace(paths.plan);
     if (s.images.length === 0 && !s.reuseFromOrderId) return router.replace(paths.photos);
     setState(s);
     track(EVENTS.PAYMENT_VIEW, { product });
-  }, [router, product, paths.about, paths.build, paths.plan, paths.photos]);
+  }, [router, product, paths.about, paths.plan, paths.photos]);
 
   if (!state) return null;
 
@@ -114,7 +113,7 @@ export default function ReviewStep({ product }) {
         .join(', '),
       href: paths.about,
     },
-    { k: 'Build', v: BUILD_LABEL[state.build], href: paths.build },
+    { k: 'Build', v: BUILD_LABEL[state.build], href: paths.about },
     {
       k: 'Photos',
       v: reusing ? `Reusing the model from your order of ${reusable?.date ?? 'an earlier date'}` : `${state.images.length} uploaded`,

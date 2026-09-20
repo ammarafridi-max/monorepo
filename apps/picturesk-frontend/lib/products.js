@@ -47,7 +47,6 @@ export function funnelPaths(product) {
   return {
     landing: base,
     about: `${base}/about`,
-    build: `${base}/build`,
     plan: `${base}/plan`,
     photos: `${base}/photos`,
     capture: `${base}/capture`,

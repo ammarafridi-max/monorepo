@@ -103,7 +103,6 @@ export function funnelSteps(product = PRODUCTS.HEADSHOTS) {
   const paths = funnelPaths(product);
   return [
     { key: 'about', label: 'About you', href: paths.about },
-    { key: 'build', label: 'Build', href: paths.build },
     { key: 'plan', label: 'Plan', href: paths.plan },
     { key: 'photos', label: 'Photos', href: paths.photos },
     { key: 'review', label: 'Review', href: paths.review },

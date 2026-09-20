@@ -171,7 +171,7 @@ export default function PlanStep({ product }) {
       )}
       <OptionGrid items={ATTIRE_OPTIONS} selected={attire} onToggle={toggleAttire} showDesc={false} full={attireFull} />
 
-      <StepNav backHref={paths.build} nextHref={nextHref} canContinue={ready && !missing} missing={ready ? missing : ''} />
+      <StepNav backHref={paths.about} nextHref={nextHref} canContinue={ready && !missing} missing={ready ? missing : ''} />
     </section>
   );
 }
