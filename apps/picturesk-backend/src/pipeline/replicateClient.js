@@ -87,7 +87,9 @@ async function withRetry(label, fn, { attempts = 4, baseDelayMs = 1000, timeoutM
       await sleep(delay);
     }
   }
-  throw new Error(`[replicate] ${label} failed after ${attempts} attempts: ${lastErr.message}`);
+  const err = new Error(`[replicate] ${label} failed after ${attempts} attempts: ${lastErr.message}`);
+  err.status = lastErr.status;
+  throw err;
 }
 
 /** Read the API token at call time (worker loads .env before any call runs). */
@@ -129,6 +131,7 @@ async function replicateFetch(path, { method = 'GET', body, signal } = {}) {
     }
     throw err;
   }
+  if (res.status === 204) return null;
   return res.json();
 }
 
@@ -234,7 +237,7 @@ export async function startTraining(imageZipUrl) {
  * 2. Fetch current training status. Does not block.
  *
  * @param {string} trainingId
- * @returns {Promise<{ status: 'processing'|'succeeded'|'failed', trainedModelVersion?: string, costUsd?: number }>}
+ * @returns {Promise<{ status: 'processing'|'succeeded'|'failed', trainedModelVersion?: string, weightsUrl?: string, costUsd?: number }>}
  */
 export async function pollTraining(trainingId) {
   // A status GET normally answers in ~1s, so a stall means a hung/stale socket,
@@ -251,6 +254,9 @@ export async function pollTraining(trainingId) {
   // On success the trainer returns output.version as "owner/name:hash" -- the
   // runnable trained model we generate from.
   const trainedModelVersion = status === 'succeeded' ? t.output?.version : undefined;
+  // output.weights is a short-lived replicate.delivery URL to the LoRA archive; the
+  // worker copies it to R2 so the model outlives Replicate's retention.
+  const weightsUrl = status === 'succeeded' ? t.output?.weights : undefined;
   return {
     status,
     // Has Replicate actually allocated hardware and STARTED running this training?
@@ -259,8 +265,30 @@ export async function pollTraining(trainingId) {
     // this to tell "slow to finish" from "never got hardware".
     allocated: Boolean(t.started_at),
     trainedModelVersion,
+    weightsUrl,
     costUsd: estimateCostUsd(t.metrics?.predict_time, TRAINING_USD_PER_SEC),
   };
+}
+
+/**
+ * Delete a trained model version from the destination model, so the weights no
+ * longer exist on Replicate. Idempotent: a version that is already gone is a
+ * success. Used by the erasure path when a customer asks for their data removed.
+ * @param {string} modelVersion - "owner/name:hash" as stored on the order
+ */
+export async function deleteTrainedModel(modelVersion) {
+  const [model, hash] = String(modelVersion).split(':');
+  if (!model || !hash) return;
+  try {
+    await withRetry(
+      'deleteTrainedModel',
+      (signal) => replicateFetch(`/v1/models/${model}/versions/${hash}`, { method: 'DELETE', signal }),
+      { attempts: 2, timeoutMs: 15000 }
+    );
+  } catch (err) {
+    if (err.status === 404) return;
+    throw err;
+  }
 }
 
 /**

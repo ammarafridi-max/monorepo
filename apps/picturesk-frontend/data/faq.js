@@ -32,7 +32,7 @@ export const faq = [
   {
     q: 'What happens to my photos?',
     home: true,
-    a: 'Your photos go to private storage and are used only to train your model and generate your headshots. They are not sold, and they are never used to train any shared model. You can email us to have them removed.',
+    a: 'Your photos go to private storage and are used only to train your model and generate your headshots. They are not sold, and they are never used to train any shared model. We keep your trained model for 12 months so you can order another set without uploading again. Email us at any time and we will remove your photos, your results and your model.',
   },
   {
     q: 'Can I use the headshots anywhere?',

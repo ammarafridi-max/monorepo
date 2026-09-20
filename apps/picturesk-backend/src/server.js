@@ -194,6 +194,12 @@ const adminStorage = (() => {
   }
 })();
 
+// Erasure also removes the customer's trained model version on Replicate. Best
+// effort: without a token the delete still runs and reports the model as skipped.
+const deleteTrainedModel = process.env.REPLICATE_API_TOKEN
+  ? (await import('./pipeline/replicateClient.js')).deleteTrainedModel
+  : null;
+
 const connection = createRedisConnection(REDIS_URL);
 const orderPipeline = new Queue(QUEUE_NAMES.ORDER_PIPELINE, { connection });
 
@@ -938,6 +944,7 @@ const adminActionsRouter = createAdminActionsRouter({
   pipelineJobOpts,
   emailClient,
   storage: adminStorage,
+  deleteTrainedModel,
   webBaseUrl: WEB_BASE_URL,
 });
 const adminDataRouter = createAdminDataRouter({ guard: adminGuard, restrictTo });

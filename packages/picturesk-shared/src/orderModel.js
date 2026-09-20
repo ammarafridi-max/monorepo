@@ -16,6 +16,9 @@ const replicateSchema = new Schema(
   {
     trainingId: String,
     trainedModelVersion: String,
+    // Our own R2 copy of the LoRA weights, so the customer's model survives
+    // Replicate's retention and can be deleted on request with everything else.
+    weightsUrl: String,
     generationIds: [String],
     // How many times we cancelled a training that never got hardware (stuck in
     // "starting") and started a fresh one. Bounds the restart loop so a persistent

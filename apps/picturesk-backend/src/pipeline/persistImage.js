@@ -41,3 +41,23 @@ export function createImagePersister() {
     return { imageUrl };
   };
 }
+
+/**
+ * Copies a finished training's LoRA archive (a short-lived replicate.delivery URL)
+ * into R2 under models/<orderId>, so the customer's model outlives Replicate's
+ * retention and can be deleted alongside their photos.
+ */
+export function createWeightsPersister() {
+  const storage = createStorage();
+
+  return async function persistWeights(sourceUrl, keyBase) {
+    const res = await fetch(sourceUrl);
+    if (!res.ok) {
+      throw new Error(`[persist] fetch weights ${sourceUrl} -> ${res.status}`);
+    }
+    const ext = /\.safetensors(\?|$)/.test(sourceUrl) ? 'safetensors' : 'tar';
+    const body = Buffer.from(await res.arrayBuffer());
+    const weightsUrl = await storage.putObject(`${keyBase}.${ext}`, body, 'application/octet-stream');
+    return { weightsUrl };
+  };
+}

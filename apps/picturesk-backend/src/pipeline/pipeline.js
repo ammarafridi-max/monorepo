@@ -56,6 +56,8 @@ export const DEFAULT_MAX_TRAINING_RESTARTS = 1;
  *        >= deliverCount.
  * @param {number} [opts.deliverCount] - how many candidates to DELIVER after
  *        scoring. Clamped to <= generateCount.
+ * @param {(weightsUrl: string, keyBase: string) => Promise<{ weightsUrl: string }>} [opts.persistWeights]
+ *        copies the trained LoRA archive into our own storage; optional, best effort.
  * @param {(order: any) => Promise<string>} [opts.resolveTrainingZip] - returns the
  *        zip URL to train this order on (built from its real uploaded images)
  * @param {string} [opts.imageZipUrl] - static fallback zip URL when no resolver
@@ -99,6 +101,7 @@ export function createPipeline({
   swapFace,
   enhanceFace,
   persistImage,
+  persistWeights,
   generateCount = 14,
   deliverCount = 14,
   scoreConcurrency = 6,
@@ -245,6 +248,17 @@ export function createPipeline({
       }
     );
     console.log(`[worker] order ${orderId} trained: ${result.trainedModelVersion}`);
+
+    // Best effort: a failed backup must never fail a paid order, the Replicate
+    // version still runs. The weights URL expires, so this has to happen now.
+    if (persistWeights && result.weightsUrl) {
+      try {
+        const { weightsUrl } = await persistWeights(result.weightsUrl, `models/${orderId}`);
+        await Order.updateOne({ _id: orderId }, { $set: { 'replicate.weightsUrl': weightsUrl } });
+      } catch (err) {
+        console.warn(`[worker] order ${orderId}: weights backup failed (${err.message})`);
+      }
+    }
 
     await transitionOrder(orderId, ORDER_STATES.TRAINING, ORDER_STATES.GENERATING);
   }

@@ -157,6 +157,11 @@ const persistImage = PERSIST_DELIVERED
         : await import('./pipeline/persistImage.js')
     ).createImagePersister()
   : undefined;
+const persistWeights = (
+  USE_FAKE_REPLICATE
+    ? await import('./pipeline/persistImage.fake.js')
+    : await import('./pipeline/persistImage.js')
+).createWeightsPersister();
 if (USE_FAKE_REPLICATE) console.warn('[worker] USE_FAKE_REPLICATE=1: using the in-memory fake client');
 console.log(
   `[worker] identity culling ${
@@ -316,6 +321,7 @@ const pipeline = createPipeline({
   swapFace,
   enhanceFace,
   persistImage,
+  persistWeights,
   generateCount: GENERATE_COUNT,
   deliverCount: DELIVER_COUNT,
   // How many candidates to identity-score at once (culling). Scoring is a CPU embed

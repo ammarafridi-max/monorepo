@@ -23,6 +23,7 @@ import { AppError, catchAsync } from '@travel-suite/utils';
  * @param {(orderId:string)=>object} deps.pipelineJobOpts
  * @param {{ sendDeliveryEmail:Function }|null} deps.emailClient
  * @param {{ keyForUrl:Function, deleteObjects:Function }|null} deps.storage  R2 client (or null if unconfigured)
+ * @param {((modelVersion:string)=>Promise<void>)|null} deps.deleteTrainedModel  removes the order's Replicate model version (or null)
  * @param {string} deps.webBaseUrl
  */
 export function createAdminActionsRouter({
@@ -33,6 +34,7 @@ export function createAdminActionsRouter({
   pipelineJobOpts,
   emailClient,
   storage,
+  deleteTrainedModel,
   webBaseUrl,
 }) {
   const router = Router();
@@ -127,23 +129,23 @@ export function createAdminActionsRouter({
     })
   );
 
-  // Delete an order AND the objects WE store for it: the uploaded selfies and the
-  // training zip in R2. The AI-generated images (result/delivered/swapped/enhanced)
-  // live on Replicate (replicate.delivery) and expire on their own, so they are not
-  // ours to delete; keyForUrl returns null for them and they are skipped. Hard
-  // delete and irreversible: the order (its payment/audit record) is gone. Any
-  // queued pipeline job is removed first so the worker never touches a deleted order.
+  // Delete an order AND everything WE hold for it: the uploaded selfies, the
+  // training zip and the model weights in R2, plus the trained model version on
+  // Replicate. Images still on replicate.delivery expire on their own; keyForUrl
+  // returns null for them and they are skipped. Hard delete and irreversible: the
+  // order (its payment/audit record) is gone. Any queued pipeline job is removed
+  // first so the worker never touches a deleted order.
   /**
-   * Remove one order: drop any queued job, delete every image we own in R2, then
-   * delete the record. Shared by the single and bulk routes so they can never
-   * drift into deleting different things.
+   * Remove one order: drop any queued job, delete every object we own in R2 and
+   * the Replicate model, then delete the record. Shared by the single and bulk
+   * routes so they can never drift into deleting different things.
    */
   async function deleteOneOrder(order) {
     const orderId = order._id.toString();
 
     await orderPipeline.remove(orderId).catch(() => {});
 
-    let storageResult = { deleted: 0, failed: 0, skipped: false };
+    let storageResult = { deleted: 0, failed: 0, skipped: false, model: 'skipped' };
     if (storage) {
       const urls = [
         ...(order.uploadedImageUrls ?? []),
@@ -151,12 +153,26 @@ export function createAdminActionsRouter({
         ...(order.deliveredImageUrls ?? []),
         ...(order.swappedImageUrls ?? []),
         ...(order.enhancedImageUrls ?? []),
+        order.replicate?.weightsUrl,
       ];
       const keys = urls.map((u) => storage.keyForUrl(u)).filter(Boolean);
       keys.push(`training/${orderId}.zip`);
-      storageResult = { ...(await storage.deleteObjects(keys)), skipped: false };
+      storageResult = { ...storageResult, ...(await storage.deleteObjects(keys)) };
     } else {
       storageResult.skipped = true;
+    }
+
+    const version = order.replicate?.trainedModelVersion;
+    if (version && deleteTrainedModel) {
+      try {
+        await deleteTrainedModel(version);
+        storageResult.model = 'deleted';
+      } catch (err) {
+        console.warn(`[admin] order ${orderId}: model delete failed (${err.message})`);
+        storageResult.model = 'failed';
+      }
+    } else if (!version) {
+      storageResult.model = 'none';
     }
 
     await Order.deleteOne({ _id: orderId });
@@ -195,6 +211,7 @@ export function createAdminActionsRouter({
             deletedObjects: storageResult.deleted,
             failedObjects: storageResult.failed,
             storageSkipped: storageResult.skipped,
+            model: storageResult.model,
           });
         } catch (err) {
           results.push({ orderId: id, deleted: false, error: err.message });
@@ -236,6 +253,7 @@ export function createAdminActionsRouter({
           deletedObjects: storageResult.deleted,
           failedObjects: storageResult.failed,
           storageSkipped: storageResult.skipped,
+          model: storageResult.model,
         },
       });
     })

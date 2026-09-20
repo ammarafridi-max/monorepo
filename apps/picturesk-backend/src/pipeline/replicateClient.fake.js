@@ -37,7 +37,14 @@ let state;
  */
 export function resetFake(config = {}) {
   state = {
-    counts: { startTraining: 0, pollTraining: 0, startGeneration: 0, pollGeneration: 0, cancelTraining: 0 },
+    counts: {
+      startTraining: 0,
+      pollTraining: 0,
+      startGeneration: 0,
+      pollGeneration: 0,
+      cancelTraining: 0,
+      deleteTrainedModel: 0,
+    },
     // The first N trainings created stay "unallocated" (status processing, never
     // gets hardware) forever, to exercise the worker's cancel-and-restart-fresh path.
     unallocatedTrainings: config.unallocatedTrainings ?? 0,
@@ -48,6 +55,7 @@ export function resetFake(config = {}) {
     trainingStatusSeq: config.trainingStatusSeq ?? ['succeeded'],
     generationStatusSeq: config.generationStatusSeq ?? ['succeeded'],
     trainedModelVersion: config.trainedModelVersion ?? 'fakeowner/fakemodel:v1',
+    weightsUrl: config.weightsUrl ?? undefined,
     trainingCostUsd: config.trainingCostUsd ?? 1.5,
     generationCostUsd: config.generationCostUsd ?? 0.02,
     crashOn: { ...(config.crashOn ?? {}) },
@@ -108,12 +116,17 @@ export async function pollTraining(trainingId) {
     status,
     allocated: true,
     trainedModelVersion: status === 'succeeded' ? state.trainedModelVersion : undefined,
+    weightsUrl: status === 'succeeded' ? state.weightsUrl : undefined,
     costUsd: status === 'succeeded' ? state.trainingCostUsd : undefined,
   };
 }
 
 export async function cancelTraining(_trainingId) {
   state.counts.cancelTraining += 1;
+}
+
+export async function deleteTrainedModel(_modelVersion) {
+  state.counts.deleteTrainedModel += 1;
 }
 
 export async function startGeneration(_modelVersion, _prompt) {

@@ -17,7 +17,7 @@
 export const LAST_UPDATED = 'September 17, 2026';
 // The privacy policy carries its own date so an analytics/cookies change does not
 // imply the terms or refund policy also changed.
-export const PRIVACY_UPDATED = 'July 22, 2026';
+export const PRIVACY_UPDATED = 'September 20, 2026';
 
 // Support inbox, mirrored in the footer.
 export const CONTACT_EMAIL = 'info@picturesk.ai';
@@ -85,10 +85,11 @@ export const privacy = {
     {
       h: 'Where your data is stored',
       body: [
-        'Uploaded photos and generated images are stored with Cloudflare R2. Model training and image generation run on Replicate. Payment data is held by Stripe.',
+        'Uploaded photos, generated images and the model trained on your face are stored with Cloudflare R2. Model training and image generation run on Replicate, which also holds a copy of your trained model. Payment data is held by Stripe.',
         // TODO: confirm data storage region(s) with each provider and state them here.
-        'We keep your data for as long as we need it to provide and support your order. We do not currently run automatic deletion, so your photos and results stay in storage until they are removed. If you want them removed sooner, contact us and we will delete them.',
+        'We keep the model trained on your face for 12 months from your order, so you can order another set without uploading again. It is used only for your own orders and never to train a shared model. Your photos and results stay in storage for as long as we need them to provide and support your order; we do not currently run automatic deletion of those.',
         // TODO: confirm retention policy (whether/when uploads and results are auto-deleted).
+        'If you want any of it removed sooner, contact us and we will delete your photos, your results and your trained model, including the copy held on Replicate.',
       ],
     },
     {
