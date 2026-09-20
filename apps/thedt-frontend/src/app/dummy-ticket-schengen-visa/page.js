@@ -1,0 +1,274 @@
+import { EMAIL } from '@/config/contact';
+import { buildMetadata } from '@/lib/schema';
+import {
+  buildFAQPage,
+  buildGraph,
+  buildOrganization,
+  buildProduct,
+  buildService,
+  buildWebPage,
+  buildWebsite,
+} from '@/lib/schema';
+import {
+  FaCalendarAlt,
+  FaCheckCircle,
+  FaFileAlt,
+  FaHeadset,
+  FaMoneyBillWave,
+  FaShieldAlt,
+} from 'react-icons/fa';
+import {
+  MdOutlineAirplaneTicket,
+  MdOutlineHealthAndSafety,
+  MdOutlineHotel,
+} from 'react-icons/md';
+import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
+import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
+import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
+import PricingTiers from '@/components/PricingTiers';
+import BookCta from '@/components/BookCta';
+import StickyBookingBar from '@travel-suite/frontend-shared/components/ui/v1/StickyBookingBar';
+import { processSteps } from '@/data/processSteps';
+import About from '@travel-suite/frontend-shared/components/sections/v1/About';
+import Benefits from '@travel-suite/frontend-shared/components/sections/v1/Benefits';
+import FAQ from '@travel-suite/frontend-shared/components/sections/v1/FAQ';
+import Contact from '@travel-suite/frontend-shared/components/sections/v1/Contact';
+
+export const benefits = [
+  {
+    title: 'Verifiable PNRs',
+    text: 'Every booking is a real reservation with a live PNR. It can be verified through the global distribution systems (Amadeus, Sabre, Travelport) that embassies, airlines and travel agents use. With selected airlines, including Emirates and Etihad, you can also check it directly on their website under Manage Booking. Not every airline shows unpaid reservations on its own site, so the GDS check is the one that always works.',
+    icon: FaCheckCircle,
+  },
+  {
+    title: 'Visa-Friendly Formatting',
+    text: 'Our itineraries follow professional formats with clean routes, accurate timing, passenger information, and layouts that align with officer expectations. This keeps your file organized and reduces questioning during appointments.',
+    icon: FaFileAlt,
+  },
+  {
+    title: 'Affordable Service',
+    text: 'Our packages are affordable whether you choose a flight itinerary or a complete bundle with hotel booking and insurance. Prices start from AED 49, a cost-effective option in the UAE without compromising authenticity.',
+    icon: FaMoneyBillWave,
+  },
+  {
+    title: 'No Financial Risk',
+    text: 'Buying a real ticket before visa approval can cost thousands, and if denied, you lose your money. With our dummy ticket, you avoid that risk entirely by paying only for the reservation service, not the actual flight.',
+    icon: FaShieldAlt,
+  },
+  {
+    title: 'Fast Delivery & Support',
+    text: 'We deliver your flight reservation and optional hotel bookings quickly, often within minutes. Our UAE-based support team is responsive and ready to assist with verification or adjustments.',
+    icon: FaHeadset,
+  },
+  {
+    title: 'Flexible Validity Options',
+    text: 'Choose a validity period that matches your visa appointment schedule: 2 days at AED 49, 7 days at AED 69, or 14 days at AED 79. The price follows the validity period you select, not availability.',
+    icon: FaCalendarAlt,
+  },
+];
+
+export const faqs = [
+  {
+    question: 'Is it mandatory to show a flight reservation for a Schengen visa application?',
+    answer:
+      'Yes, most Schengen embassies and visa centers require a confirmed or reserved return flight itinerary as proof of onward and return travel when applying for a Schengen visa. A flight reservation helps visa officers assess your travel plan without requiring you to purchase a non-refundable ticket.',
+  },
+  {
+    question: 'Will a dummy ticket work for a Schengen visa?',
+    answer:
+      'Yes. A dummy ticket for a Schengen visa is widely accepted when it is a genuine flight reservation with a verifiable PNR code. Embassies and visa centers such as VFS and BLS accept these reservations as valid proof of travel for visa applications.',
+  },
+  {
+    question: 'Do I need to buy an actual flight ticket for a Schengen visa?',
+    answer:
+      'No, you do not need to buy a real flight ticket before your visa is approved. A dummy flight ticket or flight reservation allows you to submit embassy-ready travel proof while avoiding the financial risk of purchasing a non-refundable airfare.',
+  },
+  {
+    question: 'How long is your dummy ticket valid for a Schengen visa?',
+    answer:
+      'Our dummy tickets for Schengen visa applications come with flexible validity options of 2 days at AED 49, 7 days at AED 69, or 14 days at AED 79. This allows you to choose a validity period that matches your visa appointment and document submission timeline.',
+  },
+  {
+    question: 'When should I order a dummy ticket for my Schengen visa appointment?',
+    answer:
+      'It is recommended to order your dummy ticket one to three days before your Schengen visa appointment so the reservation remains active during verification. For urgent or last-minute appointments, same-day express delivery is also available.',
+  },
+  {
+    question: 'Do you offer refunds if my Schengen visa is rejected?',
+    answer:
+      'Yes, in one case. If your visa is refused because the flight reservation we sent had expired or was invalid, email us the refusal letter and we refund the order in full. We do not refund for a change of plans or for a refusal on other grounds. If your appointment moves, we re-issue the reservation with new dates at no extra charge.',
+  },
+];
+
+const keyword = 'dummy ticket';
+
+export const pageData = {
+  meta: {
+    title: 'Dummy Ticket for Schengen Visa From AED 49 | Accepted by VFS',
+    description:
+      'Book your dummy flight ticket for Schengen visa. We provide verifiable dummy tickets with a valid PNR number that are accepted by VFS. Starting from AED 49.',
+    canonical: 'https://www.thedummyticket.ae/dummy-ticket-schengen-visa',
+    entityName: 'Dummy Ticket for Schengen Visa',
+  },
+  sections: {
+    hero: {
+      title: 'Dummy Tickets For Schengen Visa',
+      subtitle:
+        'A dummy ticket for a Schengen visa is a real flight reservation with a live PNR, not a paid ticket. It satisfies the proof of onward travel requirement at VFS, BLS and the consulates in Dubai and Abu Dhabi. Verify it on the global GDS. From AED 49, delivered in minutes.',
+      form: <AllForms />,
+    },
+    process: {
+      title: 'How Do You Book a Dummy Ticket for a Schengen Visa?',
+      subtitle:
+        "Get your dummy ticket for Schengen visa in 3 quick, simple, and hassle-free steps. Here's how it works:",
+      keyword,
+    },
+    about: {
+      title: 'About Us',
+      text: (
+        <>
+          Article 14 of the{' '}
+        <a
+          href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32009R0810"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline underline-offset-2 hover:text-gray-900"
+        >
+          EU Visa Code
+        </a>{' '}
+          lists the supporting documents a Schengen application must carry, and
+          evidence of transport is one of them. A reservation with a live PNR meets
+          it without committing to paid airfare.
+        </>
+      ),
+      services: [
+        {
+          icon: <MdOutlineAirplaneTicket />,
+          title: 'Dummy Tickets for Schengen Visa',
+          description:
+            'Genuine flight reservations with a verifiable PNR, issued through official airline systems. Accepted by VFS Global, BLS International, and Schengen embassies. From AED 49.',
+        },
+        {
+          icon: <MdOutlineHealthAndSafety />,
+          title: 'Schengen Travel Insurance',
+          description:
+            'Schengen visa applications also require EUR 30,000 medical coverage. We issue AXA-backed, embassy-compliant travel insurance instantly. Bundle it with your dummy ticket.',
+        },
+        {
+          icon: <MdOutlineHotel />,
+          title: 'Hotel Reservations',
+          description:
+            'Need proof of accommodation too? We provide hotel reservations by email, formatted to meet Schengen embassy requirements.',
+        },
+      ],
+    },
+    benefits: {
+      title: 'Benefits of Choosing Our Dummy Tickets for Your Schengen Visa',
+      subtitle: 'This is why we believe you should book your dummy ticket with us',
+      benefits,
+    },
+    faqs: {
+      title: 'Frequently Asked Questions',
+      subtitle: 'Commonly asked questions about dummy tickets for Schengen visa',
+      faqs,
+    },
+    contact: {
+      title: 'Reserve Your Dummy Ticket with Us',
+      subtitle: 'Contact us now',
+      text: 'Still not sure whether you should book a dummy ticket or get a real flight ticket? Get in touch with us now and let us help you clear your doubts.',
+    },
+  },
+};
+
+export const metadata = buildMetadata(pageData.meta);
+
+export default function Page() {
+  const graph = buildGraph([
+    buildOrganization(),
+    buildWebsite(),
+    buildWebPage(pageData.meta),
+    buildService({
+      canonical: pageData.meta.canonical,
+      name: pageData.meta.entityName,
+      description: pageData.meta.description,
+      areaServed: 'AE',
+    }),
+    buildProduct({
+      canonical: pageData.meta.canonical,
+      name: pageData.meta.entityName,
+      description: pageData.meta.description,
+      price: '49.00',
+      currency: 'AED',
+    }),
+    buildFAQPage({
+      canonical: pageData.meta.canonical,
+      title: pageData.sections.faqs.title,
+      description: pageData.meta.description,
+      faqs: pageData.sections.faqs.faqs,
+    }),
+  ]);
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(graph) }}
+      />
+
+      <Hero
+        title={pageData.sections.hero.title}
+        subtitle={pageData.sections.hero.subtitle}
+        form={pageData.sections.hero.form}
+        pills={[
+          'Accepted by VFS & BLS',
+          'Verifiable PNR Code',
+          'Schengen Visa Compliant',
+          'Starts from AED 49',
+        ]}
+        breadcrumbPaths={[
+          { label: 'Home', href: '/' },
+          { label: 'Dummy Ticket for Schengen Visa' },
+        ]}
+      />
+
+      <Process
+        title={pageData.sections.process.title}
+        subtitle={pageData.sections.process.subtitle}
+        steps={processSteps}
+      />
+
+      <PricingTiers
+        title="How Much Does a Schengen Visa Dummy Ticket Cost?"
+        keyword="Schengen visa dummy ticket"
+      />
+
+      <About
+        title={pageData.sections.about.title}
+        text={pageData.sections.about.text}
+        services={pageData.sections.about.services}
+      />
+
+      <Benefits
+        title={pageData.sections.benefits.title}
+        subtitle={pageData.sections.benefits.subtitle}
+        benefits={pageData.sections.benefits.benefits}
+      />
+
+      <FAQ
+        title={pageData.sections.faqs.title}
+        subtitle={pageData.sections.faqs.subtitle}
+        faqs={pageData.sections.faqs.faqs}
+      />
+      <BookCta className="pb-16 md:pb-20 px-6" />
+
+      <Contact
+        email={EMAIL}
+        replyTime="within 10 to 15 minutes, 24/7"
+        title={pageData.sections.contact.title}
+        subtitle={pageData.sections.contact.subtitle}
+        text={pageData.sections.contact.text}
+      />
+      <StickyBookingBar label="Book now" />
+    </>
+  );
+}

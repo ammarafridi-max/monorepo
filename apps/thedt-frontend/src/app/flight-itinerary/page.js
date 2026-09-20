@@ -1,0 +1,149 @@
+import { EMAIL } from '@/config/contact';
+import { testimonials } from '@/data/testimonials';
+import { buildMetadata } from '@/lib/schema';
+import {
+  buildGraph,
+  buildOrganization,
+  buildProduct,
+  buildService,
+  buildWebPage,
+  buildWebsite,
+} from '@/lib/schema';
+import {
+  HiCheck,
+  HiOutlineClock,
+  HiOutlineCurrencyDollar,
+} from 'react-icons/hi2';
+import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
+import BookCta from '@/components/BookCta';
+import StickyBookingBar from '@travel-suite/frontend-shared/components/ui/v1/StickyBookingBar';
+import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
+import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
+import Benefits from '@travel-suite/frontend-shared/components/sections/v1/Benefits';
+import Contact from '@travel-suite/frontend-shared/components/sections/v1/Contact';
+
+const keyword = 'flight reservation';
+
+export const benefits = [
+  {
+    title: 'Airline Booking Format',
+    text: 'We provide a real itinerary with a verifiable PNR and clear trip details in standard airline booking format.',
+    icon: HiCheck,
+  },
+  {
+    title: 'Instant Delivery',
+    text: 'Your flight itinerary is sent to your inbox within 10 to 15 minutes of payment, 24 hours a day, 7 days a week. No waiting for business hours.',
+    icon: HiOutlineClock,
+  },
+  {
+    title: 'Great Value',
+    text: 'Starting from just AED 49, we provide professionally prepared flight itineraries at an affordable price with fast delivery and clear booking details.',
+    icon: HiOutlineCurrencyDollar,
+  },
+];
+
+export const pageData = {
+  meta: {
+    title: 'Flight Itinerary From AED 49 | Instant Delivery With PNR',
+    description:
+      'Get a real flight itinerary with a valid PNR issued in standard airline booking format.',
+    canonical: 'https://www.thedummyticket.ae/flight-itinerary',
+    entityName: 'Flight Itinerary',
+  },
+  sections: {
+    hero: {
+      title: 'Flight Itineraries for Travel from AED 49',
+      subtitle:
+        'Receive a real itinerary in standard booking format with a valid PNR and trip details delivered by email.',
+      form: <AllForms />,
+    },
+    process: {
+      title: 'How To Get Your Flight Itinerary?',
+      subtitle: 'Get your itinerary in 3 easy and simple steps',
+      keyword,
+    },
+    benefits: {
+      title: 'Why Choose Us?',
+      subtitle: 'Fast and reliable flight itinerary service',
+      benefits,
+    },
+    testimonials: {
+      title: 'Testimonials',
+      subtitle: 'What our customers say about us',
+      testimonials,
+    },
+    contact: {
+      title: '24/7 Customer Support',
+      text: 'Need help with your booking? Our support team is available 24/7 and replies within 10 to 15 minutes.',
+    },
+  },
+};
+
+// Kept live for Google Ads landing traffic, but excluded from search: the page
+// is thin and duplicates what the dummy ticket pages already cover.
+export const metadata = {
+  ...buildMetadata(pageData.meta),
+  robots: { index: false, follow: true },
+};
+
+export default function Page() {
+  const graph = buildGraph([
+    buildOrganization(),
+    buildWebsite(),
+    buildWebPage(pageData.meta),
+    buildService({
+      canonical: pageData.meta.canonical,
+      name: pageData.meta.entityName,
+      description: pageData.meta.description,
+      areaServed: 'AE',
+    }),
+    buildProduct({
+      canonical: pageData.meta.canonical,
+      name: pageData.meta.entityName,
+      description: pageData.meta.description,
+      price: '49.00',
+      currency: 'AED',
+    }),
+  ]);
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(graph) }}
+      />
+      <Hero
+        title={pageData.sections.hero.title}
+        subtitle={pageData.sections.hero.subtitle}
+        form={pageData.sections.hero.form}
+        pills={[
+          'Official Airline Format',
+          'Real PNR Included',
+          'Delivered in Minutes',
+          'Starts from AED 49',
+        ]}
+        breadcrumbPaths={[
+          { label: 'Home', href: '/' },
+          { label: 'Flight Itinerary' },
+        ]}
+      />
+      <Process
+        title={pageData.sections.process.title}
+        subtitle={pageData.sections.process.subtitle}
+      />
+      <Benefits
+        title={pageData.sections.benefits.title}
+        subtitle={pageData.sections.benefits.subtitle}
+        benefits={pageData.sections.benefits.benefits}
+      />
+      <BookCta className="pb-16 md:pb-20 px-6" />
+      <Contact
+        email={EMAIL}
+        replyTime="within 10 to 15 minutes, 24/7"
+        title={pageData.sections.contact.title}
+        text={pageData.sections.contact.text}
+      />
+      <StickyBookingBar label="Book now" />
+    </>
+  );
+}

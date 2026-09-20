@@ -1,0 +1,284 @@
+import Link from 'next/link';
+import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
+import Container from '@travel-suite/frontend-shared/components/shared/layout/Container';
+import FaqAccordion from '@travel-suite/frontend-shared/components/ui/v1/FaqAccordion';
+import PrimarySection from '@travel-suite/frontend-shared/components/shared/layout/PrimarySection';
+import SectionTitle from '@travel-suite/frontend-shared/components/shared/layout/SectionTitle';
+import About from '@travel-suite/frontend-shared/components/sections/v1/About';
+import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
+import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
+import {
+  MdOutlineAirplaneTicket,
+  MdOutlineHealthAndSafety,
+  MdOutlineHotel,
+} from 'react-icons/md';
+import { buildMetadata } from '@/lib/schema';
+import {
+  buildFAQPage,
+  buildGraph,
+  buildOrganization,
+  buildService,
+  buildWebPage,
+  buildWebsite,
+} from '@/lib/schema';
+
+export const processSteps = [
+  {
+    title: 'Enter Your Trip Details',
+    text: 'Select your trip start and end dates, choose your destination region, and enter the number of travelers by age group. Whether you are traveling solo or with family, the form adjusts to your exact needs.',
+  },
+  {
+    title: 'Fill in Passenger Details',
+    text: "Enter each traveler's full name, date of birth, nationality, and passport number exactly as they appear on the passport. Accurate details ensure your policy is issued correctly and accepted without issues at any embassy or visa center.",
+  },
+  {
+    title: 'Pay and Receive Your Policy',
+    text: 'Review your selected plan, complete your payment securely online, and receive your travel insurance policy by email within minutes. It is ready to download immediately for visa submission or travel.',
+  },
+];
+
+const reasons = [
+  {
+    title: 'Genuine Policy, Not a Reservation',
+    text: 'Our travel insurance is a fully valid, legally issued policy backed by a licensed insurer. It is not a placeholder or a reservation.',
+  },
+  {
+    title: 'Embassy-Compliant Coverage',
+    text: 'Our plans meet official visa requirements, including the minimum EUR 30,000 medical coverage required for Schengen visa applications.',
+  },
+  {
+    title: 'Instant Policy Delivery',
+    text: 'Once your payment is confirmed, your policy is issued and delivered to your inbox within minutes. No office visit and no waiting.',
+  },
+  {
+    title: 'Covers the Full Trip',
+    text: 'Coverage includes emergency medical expenses, hospitalization, trip cancellations, baggage loss, travel delays, and COVID-19 medical coverage (as per policy terms).',
+  },
+  {
+    title: 'Affordable Rates for Every Trip',
+    text: 'We offer competitive pricing for single-trip and annual plans, giving UAE residents strong coverage with practical pricing.',
+  },
+  {
+    title: 'Single and Annual Plans Available',
+    text: 'Choose a single-trip plan for one-off travel or an annual multi-trip plan if you travel frequently.',
+  },
+];
+
+export const faqs = [
+  {
+    question:
+      'Is travel insurance mandatory for UAE residents traveling abroad?',
+    answer:
+      'Yes, many countries require valid travel insurance as part of the visa application process. Schengen states in particular make it a strict requirement.',
+  },
+  {
+    question: 'Does your travel insurance meet Schengen visa requirements?',
+    answer:
+      'Yes. Our plans include the minimum EUR 30,000 medical coverage required by Schengen consulates and are suitable for embassy, VFS, and BLS submissions.',
+  },
+  {
+    question: 'Is this a real insurance policy or a dummy document?',
+    answer:
+      'This is a fully genuine, underwritten insurance policy issued by a licensed insurer. It is not a dummy document.',
+  },
+  {
+    question: 'How quickly will I receive my policy after payment?',
+    answer:
+      'Your policy is issued instantly and delivered to your email within minutes of successful payment.',
+  },
+  {
+    question: 'Can I buy travel insurance online as a UAE resident?',
+    answer:
+      'Yes. UAE residents and citizens can purchase and receive a fully valid travel insurance policy entirely online.',
+  },
+  {
+    question: 'What does the travel insurance policy cover?',
+    answer:
+      'Coverage includes emergency medical expenses, hospital stays, trip cancellations, baggage loss, travel delays, and COVID-19 related medical treatment during your trip.',
+  },
+];
+
+export const pageData = {
+  meta: {
+    title: 'Travel Insurance for UAE Residents | Instant Policy Delivery',
+    description:
+      'Get real, embassy-compliant travel insurance online with instant policy delivery for UAE residents and citizens.',
+    canonical: 'https://www.thedummyticket.ae/travel-insurance',
+    entityName: 'Travel Insurance',
+  },
+  sections: {
+    hero: {
+      title: 'Travel Insurance for UAE Residents',
+      subtitle:
+        'Travel insurance for UAE residents is a genuine AXA-backed policy, not a placeholder document. It covers emergency medical treatment, hospitalisation, repatriation, cancellations and baggage, and meets the requirements embassies set for visa applications. Buy online and the certificate reaches your inbox in minutes.',
+      form: <AllForms defaultTab="insurance" />,
+    },
+    process: {
+      title: 'How Do You Buy Travel Insurance?',
+      subtitle: 'Get covered in 3 quick steps',
+      steps: processSteps,
+    },
+    about: {
+      title: 'About Our Travel Insurance',
+      text: (
+        <>
+          We provide travel insurance for residents and citizens in Dubai, Abu Dhabi and across the UAE, with instant policy delivery. Article 15 of the{' '}<a href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32009R0810" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-gray-900">EU Visa Code</a>{' '}sets the EUR 30,000 medical minimum a Schengen application has to meet, and every plan we issue clears it.
+        </>
+      ),
+      services: [
+        {
+          icon: <MdOutlineHealthAndSafety />,
+          title: 'Travel Insurance',
+          description:
+            'Genuine AXA-backed travel insurance for UAE residents. Every plan meets embassy requirements, covers medical emergencies and trip cancellations, and is delivered instantly after payment.',
+        },
+        {
+          icon: <MdOutlineAirplaneTicket />,
+          title: 'Dummy Tickets',
+          description:
+            'Verifiable flight reservations with a real PNR code, accepted by VFS, BLS, and embassies. Often needed alongside insurance for a complete Schengen or UK visa application.',
+        },
+        {
+          icon: <MdOutlineHotel />,
+          title: 'Hotel Reservations',
+          description:
+            'Need proof of accommodation for your visa? We provide hotel reservations by email, formatted to meet embassy requirements and ready to submit with your application.',
+        },
+      ],
+    },
+  },
+};
+
+export const metadata = buildMetadata(pageData.meta);
+
+export default function Page() {
+  const graph = buildGraph([
+    buildOrganization(),
+    buildWebsite(),
+    buildWebPage(pageData.meta),
+    buildService({
+      canonical: pageData.meta.canonical,
+      name: pageData.meta.entityName,
+      description: pageData.meta.description,
+      areaServed: 'AE',
+    }),
+    buildFAQPage({
+      canonical: pageData.meta.canonical,
+      title: 'Travel Insurance FAQ',
+      description: pageData.meta.description,
+      faqs,
+    }),
+  ]);
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(graph) }}
+      />
+      <Hero
+        title={pageData.sections.hero.title}
+        subtitle={pageData.sections.hero.subtitle}
+        form={pageData.sections.hero.form}
+        pills={[
+          'Real Policy, Not a Placeholder',
+          'Issued by AXA',
+          'EUR 30,000 Medical Cover',
+          'Instant Policy Delivery',
+        ]}
+        breadcrumbPaths={[
+          { label: 'Home', href: '/' },
+          { label: 'Travel Insurance' },
+        ]}
+      />
+      <Process
+        title={pageData.sections.process.title}
+        subtitle={pageData.sections.process.subtitle}
+        steps={pageData.sections.process.steps}
+      />
+      <About
+        title={pageData.sections.about.title}
+        text={pageData.sections.about.text}
+        services={pageData.sections.about.services}
+      />
+      <PrimarySection className="py-section bg-gray-50/70">
+        <Container>
+          <SectionTitle
+            align="center"
+            subtitle="Trusted travel insurance provider for UAE residents"
+            className="mb-10 md:mb-12"
+          >
+            Why Book Travel Insurance With Us?
+          </SectionTitle>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-6">
+            {reasons.map((reason, i) => (
+              <div
+                key={i}
+                className="rounded-2xl border border-gray-100 bg-white p-6 md:p-7 shadow-[0_12px_30px_rgba(16,24,40,0.07)]"
+              >
+                <h3 className="text-[20px] font-normal text-gray-900 font-outfit mb-2">
+                  {reason.title}
+                </h3>
+                <p className="text-[16px] text-gray-600 font-light leading-6.5">
+                  {reason.text}
+                </p>
+              </div>
+            ))}
+          </div>
+        </Container>
+      </PrimarySection>
+      <PrimarySection className="py-10 lg:py-14">
+        <Container>
+          <SectionTitle className="mb-4">
+            Applying for a Schengen Visa?
+          </SectionTitle>
+          <p className="max-w-[820px] text-[16px] font-light leading-7 text-gray-700">
+            Schengen applications have their own rules: EUR 30,000 medical
+            cover, valid across all 27 countries, for the full length of your
+            trip. Our{' '}
+            <Link
+              href="/schengen-travel-insurance"
+              className="font-medium text-primary-700 underline underline-offset-2 hover:text-primary-800"
+            >
+              Schengen travel insurance
+            </Link>{' '}
+            meets those requirements and starts at AED 30.
+          </p>
+        </Container>
+      </PrimarySection>
+      <PrimarySection className="py-section">
+        <Container className="rounded-3xl border border-primary-100 bg-[linear-gradient(145deg,#f5fbfb_0%,#eff7ff_55%,#fff7f0_100%)] p-8 md:p-10">
+          <SectionTitle className="mb-4">
+            Ready to Get Insured Before Your Trip?
+          </SectionTitle>
+          <p className="text-[16px] md:text-[18px] text-gray-700 font-light leading-7 max-w-[820px]">
+            Do not leave your travel plans or your visa application without
+            proper coverage. Get your genuine, embassy-accepted travel insurance
+            policy in minutes and travel from the UAE with confidence.
+          </p>
+        </Container>
+      </PrimarySection>
+      <PrimarySection
+        id="faq"
+        className="py-section bg-gray-50/70"
+      >
+        <Container>
+          <SectionTitle
+            align="center"
+            subtitle="Common questions answered"
+            className="mb-10 md:mb-12"
+          >
+            Travel Insurance: Frequently Asked Questions
+          </SectionTitle>
+          <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden [&>*:last-child]:border-b-0">
+            {faqs.map((faq, i) => (
+              <FaqAccordion key={i} question={faq.question}>
+                {faq.answer}
+              </FaqAccordion>
+            ))}
+          </div>
+        </Container>
+      </PrimarySection>
+    </>
+  );
+}

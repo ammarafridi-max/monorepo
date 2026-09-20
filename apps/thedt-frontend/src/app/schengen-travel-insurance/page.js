@@ -1,0 +1,296 @@
+import Link from 'next/link';
+import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
+import Container from '@travel-suite/frontend-shared/components/shared/layout/Container';
+import FaqAccordion from '@travel-suite/frontend-shared/components/ui/v1/FaqAccordion';
+import PrimarySection from '@travel-suite/frontend-shared/components/shared/layout/PrimarySection';
+import SectionTitle from '@travel-suite/frontend-shared/components/shared/layout/SectionTitle';
+import About from '@travel-suite/frontend-shared/components/sections/v1/About';
+import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
+import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
+import {
+  MdOutlineAirplaneTicket,
+  MdOutlineHealthAndSafety,
+  MdOutlineHotel,
+} from 'react-icons/md';
+import { buildMetadata } from '@/lib/schema';
+import {
+  buildFAQPage,
+  buildGraph,
+  buildOrganization,
+  buildProduct,
+  buildService,
+  buildWebPage,
+  buildWebsite,
+} from '@/lib/schema';
+
+export const processSteps = [
+  {
+    title: 'Enter Your Trip Details',
+    text: 'Select your travel dates, destination region, and number of travelers. The form automatically adjusts to Schengen visa insurance requirements.',
+  },
+  {
+    title: 'Fill in Passenger Details',
+    text: "Enter each traveler's details exactly as shown on their passport. This ensures your policy is issued correctly and accepted by the embassy without delays.",
+  },
+  {
+    title: 'Pay and Receive Your Policy',
+    text: 'Complete payment securely and receive your Schengen-compliant travel insurance certificate by email within minutes, ready for your visa submission.',
+  },
+];
+
+const reasons = [
+  {
+    title: 'Embassy-Compliant Schengen Insurance',
+    text: 'Every policy meets official Schengen visa requirements, including the mandatory EUR 30,000 medical coverage valid across all 27 Schengen countries.',
+  },
+  {
+    title: 'Real Travel Insurance, Not a Placeholder',
+    text: 'This is a genuine travel medical insurance policy issued by a licensed insurer, valid for your visa application and for actual medical emergencies during your trip.',
+  },
+  {
+    title: 'Instant Policy Delivery',
+    text: 'Receive your travel insurance certificate by email immediately after payment. No waiting, no follow-up needed. Submit your Schengen visa application the same day.',
+  },
+  {
+    title: 'Comprehensive Medical and Travel Coverage',
+    text: 'Coverage includes emergency medical treatment, hospitalization, repatriation, travel delays, baggage loss, and trip cancellations.',
+  },
+  {
+    title: 'Affordable Plans for Every Budget',
+    text: 'Compare cost-effective Schengen insurance plans starting from AED 30, designed for visa applications without overpaying for unnecessary extras.',
+  },
+  {
+    title: 'Single-Trip and Multi-Trip Plans',
+    text: "Whether you're applying for one Schengen visa or traveling to Europe multiple times a year, we have a plan that fits.",
+  },
+];
+
+export const faqs = [
+  {
+    question: 'Is travel insurance mandatory for a Schengen visa?',
+    answer:
+      'Yes. Travel insurance is a mandatory requirement for all Schengen visa applications. Your policy must cover at least EUR 30,000 in medical expenses and be valid across all Schengen countries for the full duration of your trip.',
+  },
+  {
+    question: 'What coverage is required for Schengen travel insurance?',
+    answer:
+      'Your Schengen visa insurance must include a minimum of EUR 30,000 in medical coverage, covering emergency treatment, hospitalization, and repatriation to your home country.',
+  },
+  {
+    question: 'Is this policy valid across all Schengen countries?',
+    answer:
+      'Yes. The policy is valid in all 27 Schengen countries and fully meets the visa insurance requirements set by European embassies.',
+  },
+  {
+    question: 'How much does Schengen travel insurance cost for UAE residents?',
+    answer:
+      'Plans start from AED 30. The exact price depends on your travel dates, destination, and number of travelers. You can get a quote instantly on this page.',
+  },
+  {
+    question: 'How quickly will I receive my travel insurance policy?',
+    answer:
+      'Your Schengen travel insurance certificate is delivered to your email immediately after payment is confirmed, usually within minutes.',
+  },
+  {
+    question: 'Is this insurance accepted by VFS and BLS?',
+    answer:
+      'Yes. Policies issued through this page are accepted by VFS Global and BLS International visa centers in the UAE.',
+  },
+  {
+    question: "Do I need travel insurance if I'm only applying for a visa?",
+    answer:
+      "Yes. Even if you haven't booked your flights yet, you still need travel insurance before submitting your Schengen visa application. Our policies cover the dates you specify.",
+  },
+];
+
+export const pageData = {
+  meta: {
+    title:
+      'Schengen Travel Insurance UAE From AED 30 | Instant Policy',
+    description:
+      'Get embassy-compliant Schengen travel insurance online. EUR 30,000 medical coverage, accepted by VFS & BLS. Instant policy for UAE residents from AED 30.',
+    canonical: 'https://www.thedummyticket.ae/schengen-travel-insurance',
+    entityName: 'Schengen Travel Insurance',
+  },
+  sections: {
+    hero: {
+      title: 'Schengen Travel Insurance for UAE Residents from AED 30',
+      subtitle:
+        'Schengen travel insurance is a genuine AXA-backed policy meeting the mandatory EUR 30,000 medical cover, valid across all 27 Schengen countries. It is real insurance, not a placeholder. Accepted at VFS and BLS in Dubai, Abu Dhabi and across the UAE. From AED 30, delivered in minutes.',
+      form: <AllForms defaultTab="insurance" />,
+    },
+    process: {
+      title: 'How Do You Buy Schengen Travel Insurance?',
+      subtitle: 'Get covered in 3 quick steps',
+      steps: processSteps,
+    },
+    about: {
+      title: 'About Our Services',
+      text: (
+        <>
+          We provide Schengen travel insurance for UAE residents applying for European visas. The EUR 30,000 medical minimum comes from Article 15 of the{' '}<a href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32009R0810" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-gray-900">EU Visa Code</a>, and every policy we issue meets it, valid across all 27 Schengen countries and accepted by VFS Global and BLS International.
+        </>
+      ),
+      services: [
+        {
+          icon: <MdOutlineHealthAndSafety />,
+          title: 'Schengen Travel Insurance',
+          description:
+            'Embassy-compliant Schengen travel insurance with the mandatory EUR 30,000 medical coverage. Issued by AXA, accepted by VFS Global and BLS International, and delivered instantly.',
+        },
+        {
+          icon: <MdOutlineAirplaneTicket />,
+          title: 'Dummy Tickets for Schengen Visa',
+          description:
+            'Verifiable flight reservations with a real PNR code, the proof of onward travel required alongside insurance for a Schengen visa application. From AED 49.',
+        },
+        {
+          icon: <MdOutlineHotel />,
+          title: 'Hotel Reservations',
+          description:
+            'Proof of accommodation is a Schengen visa requirement. We provide hotel reservations by email, formatted to meet embassy and consulate standards.',
+        },
+      ],
+    },
+  },
+};
+
+export const metadata = buildMetadata(pageData.meta);
+
+export default function Page() {
+  const graph = buildGraph([
+    buildOrganization(),
+    buildWebsite(),
+    buildWebPage(pageData.meta),
+    buildService({
+      canonical: pageData.meta.canonical,
+      name: pageData.meta.entityName,
+      description: pageData.meta.description,
+      areaServed: 'AE',
+    }),
+    buildProduct({
+      canonical: pageData.meta.canonical,
+      name: pageData.meta.entityName,
+      description: pageData.meta.description,
+      price: '30.00',
+      currency: 'AED',
+    }),
+    buildFAQPage({
+      canonical: pageData.meta.canonical,
+      title: 'Schengen Travel Insurance FAQ',
+      description: pageData.meta.description,
+      faqs,
+    }),
+  ]);
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(graph) }}
+      />
+      <Hero
+        title={pageData.sections.hero.title}
+        subtitle={pageData.sections.hero.subtitle}
+        form={pageData.sections.hero.form}
+        pills={[
+          'EUR 30,000 Medical Cover',
+          'Real Policy, Not a Placeholder',
+          'Issued by AXA',
+          'Accepted by VFS & BLS',
+          'Instant Policy Delivery',
+        ]}
+        breadcrumbPaths={[
+          { label: 'Home', href: '/' },
+          { label: 'Schengen Travel Insurance' },
+        ]}
+      />
+      <Process
+        title={pageData.sections.process.title}
+        subtitle={pageData.sections.process.subtitle}
+        steps={pageData.sections.process.steps}
+      />
+      <About
+        title={pageData.sections.about.title}
+        text={pageData.sections.about.text}
+        services={pageData.sections.about.services}
+      />
+      <PrimarySection className="py-section bg-gray-50/70">
+        <Container>
+          <SectionTitle align="center" className="mb-10 md:mb-12">
+            Why UAE Residents Choose Us for Schengen Travel Insurance
+          </SectionTitle>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-6">
+            {reasons.map((reason, i) => (
+              <div
+                key={i}
+                className="rounded-2xl border border-gray-100 bg-white p-6 md:p-7 shadow-[0_12px_30px_rgba(16,24,40,0.07)]"
+              >
+                <h3 className="text-[20px] font-normal text-gray-900 font-outfit mb-2">
+                  {reason.title}
+                </h3>
+                <p className="text-[16px] text-gray-600 font-light leading-6.5">
+                  {reason.text}
+                </p>
+              </div>
+            ))}
+          </div>
+        </Container>
+      </PrimarySection>
+      <PrimarySection className="py-section">
+        <Container className="rounded-3xl border border-primary-100 bg-[linear-gradient(145deg,#f5fbfb_0%,#eff7ff_55%,#fff7f0_100%)] p-8 md:p-10">
+          <SectionTitle className="mb-4">
+            Get Your Schengen Travel Insurance Policy Now
+          </SectionTitle>
+          <p className="text-[16px] md:text-[18px] text-gray-700 font-light leading-7 max-w-[820px]">
+            Don&apos;t submit your Schengen visa application without the right
+            coverage. Get an embassy-compliant travel insurance certificate in
+            minutes, accepted by VFS and BLS, valid for all Schengen countries.
+          </p>
+          <Link
+            href="#form"
+            className="inline-block mt-6 px-6 py-3 rounded-xl bg-primary-600 text-white text-[15px] font-medium hover:bg-primary-700 transition-colors"
+          >
+            Buy Travel Insurance From AED 30
+          </Link>
+        </Container>
+      </PrimarySection>
+      <PrimarySection className="py-10 lg:py-14">
+        <Container>
+          <SectionTitle className="mb-4">
+            Travelling Outside the Schengen Area?
+          </SectionTitle>
+          <p className="max-w-[820px] text-[16px] font-light leading-7 text-gray-700">
+            Schengen cover is built for European visa applications. For trips
+            anywhere else, our{' '}
+            <Link
+              href="/travel-insurance"
+              className="font-medium text-primary-700 underline underline-offset-2 hover:text-primary-800"
+            >
+              travel insurance for UAE residents
+            </Link>{' '}
+            covers single trips and annual multi-trip plans, issued by AXA and
+            delivered instantly.
+          </p>
+        </Container>
+      </PrimarySection>
+      <PrimarySection
+        id="faq"
+        className="py-section bg-gray-50/70"
+      >
+        <Container>
+          <SectionTitle align="center" className="mb-10 md:mb-12">
+            Schengen Travel Insurance: Frequently Asked Questions
+          </SectionTitle>
+          <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden [&>*:last-child]:border-b-0">
+            {faqs.map((faq, i) => (
+              <FaqAccordion key={i} question={faq.question}>
+                {faq.answer}
+              </FaqAccordion>
+            ))}
+          </div>
+        </Container>
+      </PrimarySection>
+    </>
+  );
+}

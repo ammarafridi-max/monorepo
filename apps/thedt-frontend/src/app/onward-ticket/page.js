@@ -1,0 +1,278 @@
+import { EMAIL } from '@/config/contact';
+import { faqArray, formatFaqArray } from '@/data/faqs';
+import { buildMetadata } from '@/lib/schema';
+import {
+  buildFAQPage,
+  buildGraph,
+  buildOrganization,
+  buildProduct,
+  buildService,
+  buildWebPage,
+  buildWebsite,
+} from '@/lib/schema';
+import {
+  HiCheck,
+  HiOutlineClock,
+  HiOutlineCurrencyDollar,
+} from 'react-icons/hi';
+import {
+  MdOutlineAirplaneTicket,
+  MdOutlineHealthAndSafety,
+  MdOutlineHotel,
+} from 'react-icons/md';
+import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
+import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
+import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
+import PricingTiers from '@/components/PricingTiers';
+import BookCta from '@/components/BookCta';
+import StickyBookingBar from '@travel-suite/frontend-shared/components/ui/v1/StickyBookingBar';
+import { processSteps } from '@/data/processSteps';
+import About from '@travel-suite/frontend-shared/components/sections/v1/About';
+import Benefits from '@travel-suite/frontend-shared/components/sections/v1/Benefits';
+import Testimonials from '@travel-suite/frontend-shared/components/sections/v1/Testimonials';
+import FAQ from '@travel-suite/frontend-shared/components/sections/v1/FAQ';
+import Contact from '@travel-suite/frontend-shared/components/sections/v1/Contact';
+import BlogPosts from '@travel-suite/frontend-shared/components/sections/v1/BlogPosts';
+
+const keyword = 'onward ticket';
+
+const testimonials = [
+  {
+    quote: 'The Dummy Ticket AE made my visa process incredibly smooth and totally stress-free. The booking was fast, the ticket looked real, and I had no issues at the embassy. Great service for anyone needing quick and professional travel documents on short notice.',
+    name: 'David S.',
+    location: 'Traveler from the United States',
+    stars: 5,
+  },
+  {
+    quote: 'I was in a rush and The Dummy Ticket AE delivered exactly what I needed. The process was simple, the service was reliable, and I had my ticket ready in minutes. It saved me a lot of stress when applying for my visa. Definitely using this again in the future.',
+    name: 'Maria K.',
+    location: 'Tourist from the United Kingdom',
+    stars: 5,
+  },
+  {
+    quote: 'The entire experience with The Dummy Ticket AE was seamless from start to finish. I got my onward ticket within minutes, and it worked perfectly for my Schengen visa. Fast response, clear instructions, and great support - highly recommend to travelers in need.',
+    name: 'Ahmed R.',
+    location: 'Frequent Flyer from India',
+    stars: 5,
+  },
+];
+
+export const benefits = [
+  {
+    title: 'Accepted Worldwide',
+    text: 'Our onward tickets are issued through official airline systems with a real PNR, accepted by airlines at check-in and by immigration officers at border crossings.',
+    icon: HiCheck,
+  },
+  {
+    title: 'Instant Delivery',
+    text: 'Your onward ticket is sent to your inbox within 10 to 15 minutes of payment, 24/7. No waiting for business hours.',
+    icon: HiOutlineClock,
+  },
+  {
+    title: 'Only AED 49',
+    text: 'A real onward flight can cost hundreds of dirhams with no guarantee of a refund. Our verified onward ticket costs AED 49, with zero financial risk if your plans change.',
+    icon: HiOutlineCurrencyDollar,
+  },
+  {
+    title: 'Extended Validity',
+    text: 'Our reservations stay active for 7 or 14 days from issue, far longer than standard airline holds. Plenty of time to clear immigration or complete your visa application.',
+    icon: HiOutlineClock,
+  },
+  {
+    title: 'Visa-Friendly Format',
+    text: 'Every onward ticket follows the exact itinerary format immigration officers and embassies expect, with passenger name, route, dates, and PNR clearly displayed.',
+    icon: HiCheck,
+  },
+  {
+    title: 'Specialist Support',
+    text: 'Our travel documentation team is available 24/7 and replies within 10 to 15 minutes. Need a date change, confirmation letter, or help with a specific entry requirement? We handle it.',
+    icon: HiCheck,
+  },
+];
+
+export const pageData = {
+  meta: {
+    title: 'Onward Ticket for Visa & Check-In | Real PNR, AED 49',
+    description:
+      'Proof of onward travel with a live PNR, accepted at airline check-in and by immigration officers. Verifiable on the global GDS. From AED 49, sent in minutes.',
+    canonical: 'https://www.thedummyticket.ae/onward-ticket',
+    entityName: 'Onward Ticket',
+  },
+  sections: {
+    hero: {
+      title: 'Onward Ticket From AED 49. Verified Proof of Outbound Travel.',
+      subtitle:
+        'An onward ticket is a real flight reservation with a live PNR proving you will leave the country, not a paid ticket. Airlines accept it at check-in and immigration officers accept it at the border. Verify it on the global GDS. From AED 49, delivered by email in minutes.',
+      form: <AllForms />,
+    },
+    process: {
+      title: 'How Do You Book an Onward Ticket?',
+      subtitle: 'How To Book Your Reservation',
+      keyword,
+    },
+    about: {
+      title: 'About Us',
+      text: (
+        <>
+          We have been issuing verified flight reservations since 2008. Airlines check onward travel at check-in against{' '}<a href="https://www.iata.org/en/publications/timatic/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-gray-900">IATA's Timatic database</a>, which is why a reservation with a live PNR is accepted at the desk and at the border.
+        </>
+      ),
+      services: [
+        {
+          icon: <MdOutlineAirplaneTicket />,
+          title: 'Onward Tickets',
+          description:
+            'Verifiable flight reservations with a real PNR, accepted by airlines, immigration officers, and border control worldwide. Delivered instantly and valid long enough to clear your checks.',
+        },
+        {
+          icon: <MdOutlineHealthAndSafety />,
+          title: 'Travel Insurance',
+          description:
+            'AXA-backed travel insurance for UAE residents. Covers medical emergencies, trip cancellations, and baggage loss, a practical addition to your onward ticket.',
+        },
+        {
+          icon: <MdOutlineHotel />,
+          title: 'Hotel Reservations',
+          description:
+            'We provide hotel reservations by email, formatted to meet embassy and immigration requirements, available whenever you need proof of accommodation.',
+        },
+      ],
+    },
+    benefits: {
+      title: 'Why Book Your Onward Ticket With Us?',
+      subtitle: 'Trusted supplier based in Dubai',
+      benefits,
+    },
+    testimonials: {
+      title: 'What Do Our Customers Say?',
+      subtitle: 'What our customers say about us',
+      testimonials,
+    },
+    faqs: {
+      title: 'Frequently Asked Questions',
+      subtitle: 'Common questions answered',
+      faqs: [
+        {
+          question: 'What is an onward ticket?',
+          answer:
+            'An onward ticket is a confirmed flight reservation showing you will leave your destination country. It proves to immigration officers and airlines that you have a concrete travel plan beyond your arrival, required for many visa-on-arrival countries and transit situations.',
+        },
+        {
+          question: 'Which countries require an onward ticket?',
+          answer:
+            'Many countries require proof of onward travel on arrival, including Thailand, Vietnam, Indonesia, Costa Rica, Peru, and others. Some airlines also require it before boarding. Our verified reservations are accepted across all major destinations.',
+        },
+        {
+          question:
+            'What is the difference between an onward ticket and a dummy ticket?',
+          answer:
+            'A dummy ticket is used for visa applications. It demonstrates travel intent to an embassy. An onward ticket is used at the airport. It demonstrates to immigration officers that you will leave the country. Both are verifiable reservations; the use case is different.',
+        },
+        {
+          question: 'How long is the onward ticket valid for?',
+          answer:
+            'Our onward tickets stay active for 7 or 14 days from the date of issue, depending on the option you choose at checkout. This covers standard immigration checks and short-stay visa processing timelines.',
+        },
+        {
+          question: 'Do you offer refunds if I no longer need the ticket?',
+          answer:
+            'Yes, in one case. If your visa is refused because the flight reservation we sent had expired or was invalid, email us the refusal letter and we refund the order in full. We do not refund for a change of plans or for a refusal on other grounds. If your appointment moves, we re-issue the reservation with new dates at no extra charge.',
+        },
+      ],
+    },
+    blogs: {
+      title: 'What Should You Read Next?',
+      subtitle: 'Recently published blog posts',
+    },
+  },
+};
+
+export const metadata = buildMetadata(pageData.meta);
+
+export default function Page() {
+  const graph = buildGraph([
+    buildOrganization(),
+    buildWebsite(),
+    buildWebPage(pageData.meta),
+    buildService({
+      canonical: pageData.meta.canonical,
+      name: pageData.meta.entityName,
+      description: pageData.meta.description,
+      areaServed: 'AE',
+    }),
+    buildProduct({
+      canonical: pageData.meta.canonical,
+      name: pageData.meta.entityName,
+      description: pageData.meta.description,
+      price: '49.00',
+      currency: 'AED',
+    }),
+    buildFAQPage({
+      canonical: pageData.meta.canonical,
+      title: pageData.sections.faqs.title,
+      description: pageData.meta.description,
+      faqs: pageData.sections.faqs.faqs,
+    }),
+  ]);
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(graph) }}
+      />
+      <Hero
+        title={pageData.sections.hero.title}
+        subtitle={pageData.sections.hero.subtitle}
+        form={pageData.sections.hero.form}
+        pills={[
+          'Accepted by Immigration Worldwide',
+          'Real PNR Included',
+          'Delivered in Minutes',
+          'Starts from AED 49',
+        ]}
+        breadcrumbPaths={[
+          { label: 'Home', href: '/' },
+          { label: 'Onward Ticket' },
+        ]}
+      />
+      <Process
+        title={pageData.sections.process.title}
+        subtitle={pageData.sections.process.subtitle}
+        steps={processSteps}
+      />
+
+      <PricingTiers
+        title="How Much Does an Onward Ticket Cost?"
+        keyword="onward ticket"
+      />
+      <About
+        title={pageData.sections.about.title}
+        text={pageData.sections.about.text}
+        services={pageData.sections.about.services}
+      />
+      <Benefits
+        title={pageData.sections.benefits.title}
+        subtitle={pageData.sections.benefits.subtitle}
+        benefits={pageData.sections.benefits.benefits}
+      />
+      <Testimonials
+        title={pageData.sections.testimonials.title}
+        subtitle={pageData.sections.testimonials.subtitle}
+        testimonials={pageData.sections.testimonials.testimonials}
+      />
+      <FAQ
+        title={pageData.sections.faqs.title}
+        subtitle={pageData.sections.faqs.subtitle}
+        faqs={pageData.sections.faqs.faqs}
+      />
+      <BookCta className="pb-16 md:pb-20 px-6" />
+      <BlogPosts
+        title={pageData.sections.blogs.title}
+        subtitle={pageData.sections.blogs.subtitle}
+      />
+      <Contact email={EMAIL} replyTime="within 10 to 15 minutes, 24/7" />
+      <StickyBookingBar label="Book now" />
+    </>
+  );
+}

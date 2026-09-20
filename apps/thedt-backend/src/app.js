@@ -1,0 +1,86 @@
+import express from "express";
+import cors from "cors";
+import helmet from "helmet";
+import compression from "compression";
+import cookieParser from "cookie-parser";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+import rateLimit from "express-rate-limit";
+import { randomUUID } from "crypto";
+import { logger, AppError, createErrorHandler } from "@travel-suite/utils";
+import { setupSentryErrorHandler } from "@travel-suite/utils/sentry";
+import config from "./utils/config.js";
+import indexRouter, { stripeWebhookHandler } from "./routes/index.js";
+
+const app = express();
+
+// Trust Fly.io's edge proxy so req.ip is the real client IP (from
+// X-Forwarded-For), not Fly's upstream. Without this, express-rate-limit
+// keys every request to the same proxy IP and one user's traffic 429s
+// everyone else.
+app.set("trust proxy", 1);
+
+// -- Request context -----------------------------------------------------------
+app.use((req, res, next) => {
+  req.id = req.headers["x-request-id"] || randomUUID();
+  res.setHeader("x-request-id", req.id);
+  const start = Date.now();
+  res.on("finish", () => {
+    logger.info("HTTP", {
+      method: req.method,
+      url: req.originalUrl,
+      status: res.statusCode,
+      ms: Date.now() - start,
+      requestId: req.id,
+    });
+  });
+  next();
+});
+
+// -- Stripe webhook (raw body required — must be before express.json) ----------
+app.post(
+  "/api/webhook",
+  express.raw({ type: "application/json" }),
+  stripeWebhookHandler,
+);
+
+// -- Security & parsing --------------------------------------------------------
+app.use(helmet());
+app.use(cors({ origin: config.corsOrigins, credentials: true }));
+app.use(compression());
+app.use(cookieParser());
+app.use(express.json({ limit: "10kb" }));
+
+app.use(
+  "/api",
+  rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 500,
+    standardHeaders: true,
+    legacyHeaders: false,
+  }),
+);
+
+// -- Static: airline logos -----------------------------------------------------
+app.use("/airlines", express.static(join(__dirname, "public/airlines"), {
+  setHeaders: (res) => res.set("Cross-Origin-Resource-Policy", "cross-origin"),
+}));
+
+// -- Health & routes -----------------------------------------------------------
+app.get("/health", (_req, res) =>
+  res.status(200).json({ status: "ok", brand: "thedt" }),
+);
+app.use("/api", indexRouter);
+
+// -- 404 & global error handler ------------------------------------------------
+app.all("/{*path}", (req, _res, next) =>
+  next(new AppError(`Route ${req.originalUrl} not found`, 404)),
+);
+
+// Sentry sees the error first, then the app answers the client.
+setupSentryErrorHandler(app);
+app.use(createErrorHandler({ logger, nodeEnv: config.nodeEnv }));
+
+export default app;

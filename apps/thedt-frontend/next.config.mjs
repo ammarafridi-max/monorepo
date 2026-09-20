@@ -1,0 +1,48 @@
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  output: 'standalone',
+  async redirects() {
+    return [
+      {
+        source: '/travel-insurance/schengen-visa',
+        destination: '/schengen-travel-insurance',
+        permanent: true,
+      },
+      {
+        source:
+          '/travel-insurance/:plan(medical|international|annual-multi-trip|single-trip)',
+        destination: '/travel-insurance',
+        permanent: true,
+      },
+      {
+        source: '/blog/tag/:slug',
+        destination: 'https://www.thedummyticket.ae/blog/tags/:slug',
+        permanent: true,
+      },
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'thedummyticket.ae' }],
+        destination: 'https://www.thedummyticket.ae/:path*',
+        permanent: true,
+      },
+    ];
+  },
+  outputFileTracingRoot: join(__dirname, '../../'),
+  transpilePackages: ['@travel-suite/frontend-shared'],
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
+    ],
+  },
+};
+
+export default nextConfig;

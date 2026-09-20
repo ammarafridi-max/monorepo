@@ -670,6 +670,121 @@ importers:
         specifier: ^4
         version: 4.2.2
 
+  apps/thedt-backend:
+    dependencies:
+      '@travel-suite/admin-users':
+        specifier: workspace:*
+        version: link:../../packages/domains/admin-users
+      '@travel-suite/affiliates':
+        specifier: workspace:*
+        version: link:../../packages/domains/affiliates
+      '@travel-suite/airlabs':
+        specifier: workspace:*
+        version: link:../../packages/integrations/airlabs
+      '@travel-suite/auth':
+        specifier: workspace:*
+        version: link:../../packages/domains/auth
+      '@travel-suite/blog':
+        specifier: workspace:*
+        version: link:../../packages/domains/blog
+      '@travel-suite/brevo':
+        specifier: workspace:*
+        version: link:../../packages/integrations/brevo
+      '@travel-suite/cloudinary':
+        specifier: workspace:*
+        version: link:../../packages/integrations/cloudinary
+      '@travel-suite/flights':
+        specifier: workspace:*
+        version: link:../../packages/domains/flights
+      '@travel-suite/insurance':
+        specifier: workspace:*
+        version: link:../../packages/domains/insurance
+      '@travel-suite/notifications':
+        specifier: workspace:*
+        version: link:../../packages/shared/notifications
+      '@travel-suite/payments':
+        specifier: workspace:*
+        version: link:../../packages/domains/payments
+      '@travel-suite/serpapi':
+        specifier: workspace:*
+        version: link:../../packages/integrations/serpapi
+      '@travel-suite/tickets':
+        specifier: workspace:*
+        version: link:../../packages/domains/tickets
+      '@travel-suite/utils':
+        specifier: workspace:*
+        version: link:../../packages/shared/utils
+      '@travel-suite/wis':
+        specifier: workspace:*
+        version: link:../../packages/integrations/wis
+      compression:
+        specifier: ^1.8.1
+        version: 1.8.1
+      cookie-parser:
+        specifier: ^1.4.7
+        version: 1.4.7
+      cors:
+        specifier: ^2.8.5
+        version: 2.8.6
+      express:
+        specifier: ^5.2.1
+        version: 5.2.1
+      express-rate-limit:
+        specifier: ^8.2.1
+        version: 8.7.0(express@5.2.1)
+      helmet:
+        specifier: '8.1'
+        version: 8.1.0
+      mongoose:
+        specifier: ^9.0.2
+        version: 9.4.1(socks@2.8.9)
+
+  apps/thedt-frontend:
+    dependencies:
+      '@tanstack/react-query':
+        specifier: ^5.95.2
+        version: 5.99.2(react@19.2.5)
+      '@travel-suite/config':
+        specifier: workspace:*
+        version: link:../../packages/shared/config
+      '@travel-suite/frontend-shared':
+        specifier: workspace:*
+        version: link:../../packages/frontend-shared
+      '@travel-suite/utils':
+        specifier: workspace:*
+        version: link:../../packages/shared/utils
+      lucide-react:
+        specifier: ^0.511.0
+        version: 0.511.0(react@19.2.5)
+      next:
+        specifier: 16.3.0
+        version: 16.3.0(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      react:
+        specifier: 19.2.5
+        version: 19.2.5
+      react-dom:
+        specifier: 19.2.5
+        version: 19.2.5(react@19.2.5)
+      react-ga4:
+        specifier: ^3.0.1
+        version: 3.0.1
+      react-hot-toast:
+        specifier: ^2.6.0
+        version: 2.6.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      react-icons:
+        specifier: ^5.6.0
+        version: 5.6.0(react@19.2.5)
+    devDependencies:
+      '@tailwindcss/postcss':
+        specifier: ^4
+        version: 4.2.2
+      eslint:
+        specifier: ^9
+        version: 9.39.4(jiti@2.6.1)
+      tailwindcss:
+        specifier: ^4
+        version: 4.2.2
+
   apps/travl-backend:
     dependencies:
       '@travel-suite/admin-users':
@@ -3151,9 +3266,6 @@ packages:
   '@types/d3-timer@3.0.2':
     resolution: {integrity: sha512-Ps3T8E8dZDam6fUyNiMkekK3XUsaUEik+idO9/YjPtfj2qruF8tFBXS7XhtE4iIXBLxhmLjP3SXpLhVf21I9Lw==}
 
-  '@types/estree@1.0.8':
-    resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
-
   '@types/estree@1.0.9':
     resolution: {integrity: sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg==}
 
@@ -4005,10 +4117,6 @@ packages:
   encodeurl@2.0.0:
     resolution: {integrity: sha512-Q0n9HRi4m6JuGIV1eFlmvJB7ZEVxu93IrMyiMsGC0lrMJMWzRgx6WGquyfQgZVb31vhGgXnfmPNNXmxnOkRBrg==}
     engines: {node: '>= 0.8'}
-
-  enhanced-resolve@5.20.1:
-    resolution: {integrity: sha512-Qohcme7V1inbAfvjItgw0EaxVX5q2rdVEZHRBrEQdRZTssLDGsL8Lwrznl8oQ/6kuTJONLaDcGjkNP247XEhcA==}
-    engines: {node: '>=10.13.0'}
 
   enhanced-resolve@5.24.5:
     resolution: {integrity: sha512-L1l8TNvomm6UVW5B253AGxQagSQr+vGwhMlrrfRS2qmhx46AMpMVJKQYLvWYbysTMY8VoicOvzHzoHMbyzB+4A==}
@@ -5496,10 +5604,6 @@ packages:
     resolution: {integrity: sha512-PS08Iboia9mts/2ygV3eLpY5ghnUcfLV/EXTOW1E2qYxJKGGBUtNjN76FYHnMs36RmARn41bC0AZmn+rR0OVpQ==}
     engines: {node: ^10 || ^12 || >=14}
 
-  postcss@8.5.10:
-    resolution: {integrity: sha512-pMMHxBOZKFU6HgAZ4eyGnwXF/EvPGGqUr0MnZ5+99485wwW41kW91A4LOGxSHhgugZmSChL5AlElNdwlNgcnLQ==}
-    engines: {node: ^10 || ^12 || >=14}
-
   postcss@8.5.23:
     resolution: {integrity: sha512-g50586zr4bZmwFiTlflMu8E0bDTb5I5gertgwAKmsdUlTQIhZtunzUlD1WSzwcVWPoAVpsrA6vlfCD7oXvRwgg==}
     engines: {node: ^10 || ^12 || >=14}
@@ -6021,10 +6125,6 @@ packages:
 
   tailwindcss@4.2.2:
     resolution: {integrity: sha512-KWBIxs1Xb6NoLdMVqhbhgwZf2PGBpPEiwOqgI4pFIYbNTfBXiKYyWoTsXgBQ9WFg/OlhnvHaY+AEpW7wSmFo2Q==}
-
-  tapable@2.3.2:
-    resolution: {integrity: sha512-1MOpMXuhGzGL5TTCZFItxCc0AARf1EZFQkGqMm7ERKj8+Hgr5oLvJOVFcC+lRmR8hCe2S3jC4T5D7Vg/d7/fhA==}
-    engines: {node: '>=6'}
 
   tapable@2.3.3:
     resolution: {integrity: sha512-uxc/zpqFg6x7C8vOE7lh6Lbda8eEL9zmVm/PLeTPBRhh1xCgdWaQ+J1CUieGpIfm2HdtsUpRv+HshiasBMcc6A==}
@@ -7741,7 +7841,7 @@ snapshots:
   '@tailwindcss/node@4.2.2':
     dependencies:
       '@jridgewell/remapping': 2.3.5
-      enhanced-resolve: 5.20.1
+      enhanced-resolve: 5.24.5
       jiti: 2.6.1
       lightningcss: 1.32.0
       magic-string: 0.30.21
@@ -7804,7 +7904,7 @@ snapshots:
       '@alloc/quick-lru': 5.2.0
       '@tailwindcss/node': 4.2.2
       '@tailwindcss/oxide': 4.2.2
-      postcss: 8.5.10
+      postcss: 8.5.23
       tailwindcss: 4.2.2
 
   '@tanstack/query-core@5.99.2': {}
@@ -8041,8 +8141,6 @@ snapshots:
   '@types/d3-time@3.0.4': {}
 
   '@types/d3-timer@3.0.2': {}
-
-  '@types/estree@1.0.8': {}
 
   '@types/estree@1.0.9': {}
 
@@ -8906,11 +9004,6 @@ snapshots:
 
   encodeurl@2.0.0: {}
 
-  enhanced-resolve@5.20.1:
-    dependencies:
-      graceful-fs: 4.2.11
-      tapable: 2.3.2
-
   enhanced-resolve@5.24.5:
     dependencies:
       graceful-fs: 4.2.11
@@ -9184,7 +9277,7 @@ snapshots:
       '@humanfs/node': 0.16.8
       '@humanwhocodes/module-importer': 1.0.1
       '@humanwhocodes/retry': 0.4.3
-      '@types/estree': 1.0.8
+      '@types/estree': 1.0.9
       ajv: 6.14.0
       chalk: 4.1.2
       cross-spawn: 7.0.6
@@ -10561,12 +10654,6 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
-  postcss@8.5.10:
-    dependencies:
-      nanoid: 3.3.11
-      picocolors: 1.1.1
-      source-map-js: 1.2.1
-
   postcss@8.5.23:
     dependencies:
       nanoid: 3.3.18
@@ -11257,8 +11344,6 @@ snapshots:
   tailwind-merge@3.6.0: {}
 
   tailwindcss@4.2.2: {}
-
-  tapable@2.3.2: {}
 
   tapable@2.3.3: {}
 

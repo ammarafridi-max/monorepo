@@ -1,0 +1,248 @@
+import { EMAIL } from '@/config/contact';
+import { buildMetadata } from '@/lib/schema';
+import {
+  buildFAQPage,
+  buildGraph,
+  buildOrganization,
+  buildProduct,
+  buildService,
+  buildWebPage,
+  buildWebsite,
+} from '@/lib/schema';
+import {
+  FaBolt,
+  FaCheckCircle,
+  FaClock,
+  FaFileAlt,
+  FaMoneyBillWave,
+  FaUserTie,
+} from 'react-icons/fa';
+import {
+  MdOutlineAirplaneTicket,
+  MdOutlineHealthAndSafety,
+  MdOutlineHotel,
+} from 'react-icons/md';
+import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
+import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
+import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
+import PricingTiers from '@/components/PricingTiers';
+import BookCta from '@/components/BookCta';
+import StickyBookingBar from '@travel-suite/frontend-shared/components/ui/v1/StickyBookingBar';
+import { processSteps } from '@/data/processSteps';
+import About from '@travel-suite/frontend-shared/components/sections/v1/About';
+import Benefits from '@travel-suite/frontend-shared/components/sections/v1/Benefits';
+import FAQ from '@travel-suite/frontend-shared/components/sections/v1/FAQ';
+import Contact from '@travel-suite/frontend-shared/components/sections/v1/Contact';
+import BlogPosts from '@travel-suite/frontend-shared/components/sections/v1/BlogPosts';
+
+export const benefits = [
+  {
+    title: 'Real Etihad PNR for Verification',
+    text: "Every booking includes a live 6-character PNR verifiable on Etihad's Manage My Booking page, the same system consular officers use. Your reservation looks identical to a paid ticket.",
+    icon: FaCheckCircle,
+  },
+  {
+    title: 'Pay Only AED 49',
+    text: 'A flexible Etihad ticket can cost over AED 2,500 for a single route. Our verified reservation costs just AED 49. You can fulfill the same visa requirements for less than 2% of the price.',
+    icon: FaMoneyBillWave,
+  },
+  {
+    title: 'Extended Validity',
+    text: 'Our reservations stay active for 7 or 14 days, far longer than the 24 to 72 hour holds airlines offer. This comfortably covers standard visa processing timelines.',
+    icon: FaClock,
+  },
+  {
+    title: 'Visa-Friendly Formatting',
+    text: 'Every itinerary follows the exact layout visa officers expect at VFS, BLS, and embassy counters. All required flight and passenger details are included, correctly formatted.',
+    icon: FaFileAlt,
+  },
+  {
+    title: 'Fast Delivery',
+    text: 'Your Etihad itinerary is sent to your inbox within 10 to 15 minutes of payment, 24/7. No waiting for business hours.',
+    icon: FaBolt,
+  },
+  {
+    title: 'Direct Support from a Specialist',
+    text: 'Our visa documentation specialists are available 24/7 and reply within 10 to 15 minutes. Need a confirmation letter, travel date change, or embassy-specific query? We handle it, faster than airline support.',
+    icon: FaUserTie,
+  },
+];
+
+export const pageData = {
+  meta: {
+    title: 'Etihad Dummy Ticket From AED 49 | Verifiable PNR for Visa',
+    description:
+      'Get an official Etihad Airways dummy ticket with a live, verifiable PNR for visa applications. Accepted by embassies and visa centers. Starting from AED 49.',
+    canonical: 'https://www.thedummyticket.ae/etihad-dummy-ticket',
+    entityName: 'Etihad Dummy Ticket',
+  },
+  sections: {
+    hero: {
+      title: 'Etihad Dummy Ticket From AED 49. Verified & Fast.',
+      subtitle:
+        'An Etihad dummy ticket is a real Etihad Airways reservation with a live PNR, not a paid ticket. Etihad is one of the airlines that shows it under Manage My Booking, and it is also verifiable on the global GDS embassies use. Use it for visas, check-in and immigration. From AED 49.',
+      form: <AllForms />,
+    },
+    process: {
+      title: 'How Do You Book an Etihad Dummy Ticket?',
+      subtitle:
+        'We follow a simple 3-step process to guarantee an approved Etihad flight reservation that meets your visa application requirements.',
+    },
+    about: {
+      title: 'About Us',
+      text: "We've been issuing verified flight reservations for visa applications since 2008, over 16 years of specialist experience. Every year, we issue 10,000+ dummy tickets to UAE residents and GCC citizens applying for Schengen, US, UK, Canadian, and other visas. Our Etihad reservations include a live PNR verifiable on Etihad's Manage My Booking system, the same system used by VFS, BLS, and consular officers to confirm reservations. Our documentation is accepted by embassies worldwide.",
+      services: [
+        {
+          icon: <MdOutlineAirplaneTicket />,
+          title: 'Etihad Dummy Tickets',
+          description:
+            "Genuine Etihad Airways flight reservations with a live PNR verifiable on Etihad's Manage My Booking system. Accepted by VFS, BLS, and embassies worldwide. From AED 49.",
+        },
+        {
+          icon: <MdOutlineHealthAndSafety />,
+          title: 'Travel Insurance',
+          description:
+            "AXA-backed travel insurance for UAE residents. Schengen-compliant plans available if you're applying for a European visa alongside your Etihad dummy ticket.",
+        },
+        {
+          icon: <MdOutlineHotel />,
+          title: 'Hotel Reservations',
+          description:
+            'We provide hotel reservations by email, formatted to meet embassy requirements. Available alongside your Etihad dummy ticket to complete your visa file.',
+        },
+      ],
+    },
+    benefits: {
+      title: 'Why Choose The Dummy Ticket AE for Etihad Flight Proof?',
+      subtitle:
+        'Buying a real Etihad Airways ticket before visa approval is quite risky financially. The Dummy Ticket AE provides verifiable, Etihad itineraries that keep your application strong.',
+      benefits,
+    },
+    faqs: {
+      title: 'Frequently Asked Questions',
+      subtitle: '',
+      faqs: [
+        {
+          question:
+            'Is an Etihad dummy ticket valid for a Schengen or UK visa?',
+          answer:
+            "Yes. Our Etihad dummy tickets fulfill the proof of booked flight requirement for Schengen, UK, US B1/B2, and Canadian TRV applications. Every reservation includes a live PNR verifiable on Etihad's Manage My Booking, the same reference visa officers check.",
+        },
+        {
+          question: 'What if the embassy asks for a paid receipt or ticket?',
+          answer:
+            'Embassies require proof of a concrete travel plan, not proof of payment. Our Etihad reservations display exactly like paid bookings, with a valid PNR, passenger name, route, and travel dates, giving visa officers everything they need.',
+        },
+        {
+          question:
+            "What's the difference between your service and booking directly with Etihad?",
+          answer:
+            'A flexible Etihad ticket costs AED 2,500 or more and ties up your money before visa approval. Our verified reservation costs AED 49, same verifiable PNR, zero financial risk if your visa is denied.',
+        },
+        {
+          question: 'Do you offer refunds if my visa is denied?',
+          answer:
+            'Yes, in one case. If your visa is refused because the flight reservation we sent had expired or was invalid, email us the refusal letter and we refund the order in full. We do not refund for a change of plans or for a refusal on other grounds. If your appointment moves, we re-issue the reservation with new dates at no extra charge.',
+        },
+        {
+          question: 'How long is the Etihad dummy ticket valid for?',
+          answer:
+            'Our reservations stay active for 7 or 14 days from issue, significantly longer than the 24 to 72 hour holds airlines offer. This comfortably covers Schengen, UK, US, and Canadian visa processing timelines.',
+        },
+      ],
+    },
+    contact: {
+      title: 'Book Your Etihad Dummy Ticket Confidently',
+      subtitle: '',
+      text: 'Don’t risk your visa submission with incomplete travel evidence or overpay for a flight you might not use. Get your embassy-ready, verifiable Etihad dummy ticket today at The Dummy Ticket AE.',
+    },
+  },
+};
+
+export const metadata = buildMetadata(pageData.meta);
+
+export default function Page() {
+  const graph = buildGraph([
+    buildOrganization(),
+    buildWebsite(),
+    buildWebPage(pageData.meta),
+    buildService({
+      canonical: pageData.meta.canonical,
+      name: pageData.meta.entityName,
+      description: pageData.meta.description,
+      areaServed: 'AE',
+    }),
+    buildProduct({
+      canonical: pageData.meta.canonical,
+      name: pageData.meta.entityName,
+      description: pageData.meta.description,
+      price: '49.00',
+      currency: 'AED',
+    }),
+    buildFAQPage({
+      canonical: pageData.meta.canonical,
+      title: pageData.sections.faqs.title,
+      description: pageData.meta.description,
+      faqs: pageData.sections.faqs.faqs,
+    }),
+  ]);
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(graph) }}
+      />
+      <Hero
+        title={pageData.sections.hero.title}
+        subtitle={pageData.sections.hero.subtitle}
+        form={pageData.sections.hero.form}
+        pills={[
+          'Real Etihad PNR',
+          'Verifiable on Etihad.com',
+          'Extended Validity',
+          'Starts from AED 49',
+        ]}
+        breadcrumbPaths={[
+          { label: 'Home', href: '/' },
+          { label: 'Etihad Dummy Ticket' },
+        ]}
+      />
+      <Process
+        title={pageData.sections.process.title}
+        subtitle={pageData.sections.process.subtitle}
+        steps={processSteps}
+      />
+
+      <PricingTiers
+        title="How Much Does an Etihad Dummy Ticket Cost?"
+        keyword="Etihad dummy ticket"
+      />
+      <About
+        title={pageData.sections.about.title}
+        text={pageData.sections.about.text}
+        services={pageData.sections.about.services}
+      />
+      <Benefits
+        title={pageData.sections.benefits.title}
+        subtitle={pageData.sections.benefits.subtitle}
+        benefits={pageData.sections.benefits.benefits}
+      />
+      <FAQ
+        title={pageData.sections.faqs.title}
+        subtitle={pageData.sections.faqs.subtitle}
+        faqs={pageData.sections.faqs.faqs}
+      />
+      <BookCta className="pb-16 md:pb-20 px-6" />
+      <BlogPosts />
+      <Contact
+        email={EMAIL}
+        replyTime="within 10 to 15 minutes, 24/7"
+        title={pageData.sections.contact.title}
+        subtitle={pageData.sections.contact.subtitle}
+        text={pageData.sections.contact.text}
+      />
+      <StickyBookingBar label="Book now" />
+    </>
+  );
+}

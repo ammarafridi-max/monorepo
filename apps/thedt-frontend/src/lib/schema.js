@@ -1,0 +1,47 @@
+import {
+  createSchemaBuilders,
+  buildFAQPage,
+  buildBreadcrumbList as _buildBreadcrumbList,
+  buildGraph,
+} from "@travel-suite/frontend-shared/utils/schema";
+import { buildMetadata as _buildMetadata } from "@travel-suite/frontend-shared/utils/publicMetadata";
+
+export const SITE_URL = "https://www.thedummyticket.ae";
+
+export const {
+  buildOrganization,
+  buildWebsite,
+  buildWebPage,
+  buildCollectionPage,
+  buildBlog,
+  buildBlogPosting,
+  buildService,
+  buildProduct,
+  buildPerson,
+  buildProfilePage,
+} = createSchemaBuilders({
+  siteUrl: SITE_URL,
+  siteName: "The Dummy Ticket AE",
+  logoUrl: `${SITE_URL}/logo.webp`,
+  email: "info@thedummyticket.ae",
+  address: {
+    streetAddress: "Abraj Al Mamzar",
+    addressLocality: "Al Mamzar",
+    addressRegion: "Dubai",
+    addressCountry: "AE",
+  },
+  contactPoint: {
+    email: "info@thedummyticket.ae",
+    contactType: "customer support",
+    availableLanguage: "English",
+    hoursAvailable: "Mo-Su 00:00-24:00",
+  },
+});
+
+export { buildFAQPage, buildGraph };
+
+export const buildBreadcrumbList = (opts = {}) =>
+  _buildBreadcrumbList({ baseUrl: SITE_URL, ...opts });
+
+export const buildMetadata = (opts) =>
+  _buildMetadata({ siteUrl: SITE_URL, ...opts });

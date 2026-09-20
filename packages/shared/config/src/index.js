@@ -1,11 +1,12 @@
 import { validateBrand } from './schema.js';
 import mdt from './brands/mdt.js';
+import thedt from './brands/thedt.js';
 import dt365 from './brands/dt365.js';
 import travelshield from './brands/travelshield.js';
 import travl from './brands/travl.js';
 import emirateslimo from './brands/emirateslimo.js';
 
-const brands = { mdt, dt365, travelshield, travl, emirateslimo };
+const brands = { mdt, thedt, dt365, travelshield, travl, emirateslimo };
 
 for (const config of Object.values(brands)) {
   validateBrand(config);

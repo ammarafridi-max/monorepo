@@ -1,0 +1,123 @@
+'use client';
+import { EMAIL } from '@/config/contact';
+
+import { useState } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from 'react-hot-toast';
+import { usePathname } from 'next/navigation';
+import { Mail, Plane, Rss, ShieldPlus } from 'lucide-react';
+import { TicketProvider } from '@travel-suite/frontend-shared/contexts/TicketContext';
+import { InsuranceProvider } from '@travel-suite/frontend-shared/contexts/InsuranceContext';
+import AppLayout from '@travel-suite/frontend-shared/layouts/AppLayout';
+import AnalyticsInit from '@travel-suite/frontend-shared/components/shared/AnalyticsInit';
+
+// Routes whose first section is not the dark Hero, so the transparent header
+// has to stay dark-on-light there.
+const LIGHT_HEADER_ROUTES = [
+  '/blog',
+  '/booking',
+  '/insurance-booking',
+  '/faq',
+  '/privacy-policy',
+  '/terms-and-conditions',
+];
+
+const LOGO_ALT = 'The Dummy Ticket AE Logo';
+
+const defaultPages = [
+  {
+    name: 'Dummy Tickets',
+    links: ['/', '/booking/select-flights', '/booking/review-details'],
+    icon: <Plane size={18} />,
+    subpages: [
+      { name: 'Dummy Ticket For Schengen Visa', link: '/dummy-ticket-schengen-visa' },
+      { name: 'Dummy Ticket For US Visa', link: '/dummy-ticket-us-visa' },
+      { name: 'Emirates Dummy Ticket', link: '/emirates-dummy-ticket' },
+      { name: 'Etihad Dummy Ticket', link: '/etihad-dummy-ticket' },
+      { name: 'Onward Ticket', link: '/onward-ticket' },
+      { name: 'Flight Itinerary', link: '/flight-itinerary' },
+    ],
+  },
+  {
+    name: 'Travel Insurance',
+    links: ['/travel-insurance', '/schengen-travel-insurance'],
+    icon: <ShieldPlus size={18} />,
+    subpages: [
+      { name: 'Travel Insurance for Schengen Visa', link: '/schengen-travel-insurance' },
+    ],
+  },
+  { name: 'Blog', links: ['/blog'], icon: <Rss size={18} /> },
+  { name: 'Email Us', links: [`mailto:${EMAIL}`], icon: <Mail size={18} /> },
+];
+
+const flightItineraryPages = [
+  {
+    name: 'Flight Itinerary',
+    links: ['/flight-itinerary', '/booking/select-flights', '/booking/review-details'],
+    icon: <Plane size={18} />,
+  },
+  { name: 'Travel Insurance', links: ['/schengen-travel-insurance'], icon: <ShieldPlus size={18} /> },
+  { name: 'Blog', links: ['/blog'], icon: <Rss size={18} /> },
+  { name: 'Email Us', links: [`mailto:${EMAIL}`], icon: <Mail size={18} /> },
+];
+
+export default function Providers({ children }) {
+  const pathname = usePathname();
+  const isAdminRoute = pathname?.startsWith('/admin');
+  const headerOnDark = !LIGHT_HEADER_ROUTES.some((route) => pathname?.startsWith(route));
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 300 * 1000,
+          },
+        },
+      }),
+  );
+
+  if (isAdminRoute) {
+    return (
+      <>
+        <Toaster />
+        <QueryClientProvider client={queryClient}>
+          {children}
+        </QueryClientProvider>
+      </>
+    );
+  }
+
+  if (pathname?.startsWith('/flight-itinerary')) {
+    return (
+      <>
+        <AnalyticsInit />
+        <Toaster />
+        <QueryClientProvider client={queryClient}>
+          <TicketProvider>
+            <InsuranceProvider maxStartDays={270}>
+              <AppLayout pages={flightItineraryPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark} copyrightName="The Dummy Ticket AE">
+                <main>{children}</main>
+              </AppLayout>
+            </InsuranceProvider>
+          </TicketProvider>
+        </QueryClientProvider>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <AnalyticsInit />
+      <Toaster />
+      <QueryClientProvider client={queryClient}>
+        <TicketProvider>
+          <InsuranceProvider maxStartDays={270}>
+            <AppLayout pages={defaultPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark} copyrightName="The Dummy Ticket AE">
+              <main>{children}</main>
+            </AppLayout>
+          </InsuranceProvider>
+        </TicketProvider>
+      </QueryClientProvider>
+    </>
+  );
+}
