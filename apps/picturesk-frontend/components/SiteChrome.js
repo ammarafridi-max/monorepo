@@ -6,6 +6,8 @@ import Footer from './Footer';
 import Container from './Container';
 import ProfileMenu from './ProfileMenu';
 
+const FUNNEL_BASES = ['/ai-headshot-generator', '/ai-dating-photos'];
+
 /**
  * The customer-facing chrome (topbar + footer). Mounted by the (site) route group
  * only, so the /admin subtree never renders it. `authed` is derived server-side
