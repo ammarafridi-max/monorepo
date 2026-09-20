@@ -3946,3 +3946,141 @@ button:focus-visible,
 .services-list__link:hover {
   color: var(--fg-green);
 }
+
+/* Hub hero: two service picks where the product hero has one button. */
+.hub-picks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.hub-pick {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 16px 14px;
+  border: 1px solid var(--fg-line);
+  border-radius: 8px;
+  background: #ffffff;
+  text-decoration: none;
+  color: var(--fg-ink);
+  transition: border-color 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+.hub-pick:hover {
+  border-color: var(--fg-green);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 26px -14px rgba(14, 74, 68, 0.28);
+}
+
+.hub-pick__title {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.hub-pick__who {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--fg-muted);
+}
+
+.hub-pick__cta {
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg-green);
+}
+
+.hub-pick__price {
+  font-weight: 400;
+  color: var(--fg-muted);
+}
+
+@media (max-width: 480px) {
+  .hub-picks {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Services grid on the hub. */
+.svc-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.svc {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 24px;
+  border: 1px solid var(--fg-line);
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.svc__who {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-green);
+}
+
+.svc__title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.svc__title a {
+  color: var(--fg-ink);
+  text-decoration: none;
+}
+
+.svc__title a:hover {
+  color: var(--fg-green);
+}
+
+.svc__body {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--fg-muted);
+}
+
+.svc__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 6px;
+  margin-top: 10px;
+}
+
+.svc__links {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 14px 0 0;
+  border-top: 1px solid var(--fg-line);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+}
+
+.svc__links a {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--fg-ink);
+  text-decoration: none;
+}
+
+.svc__links a:hover {
+  color: var(--fg-green);
+}

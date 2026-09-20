@@ -23,9 +23,8 @@ export const ROOTS = {
  * own `meta` and `sections`. Every landing page gets the same treatment, so a new
  * page cannot ship without a canonical, an OG card, a Product node or breadcrumbs.
  *
- * Breadcrumbs start at /ai-headshot-generator, the canonical home of the product.
- * "/" only redirects there, so a crumb pointing at it would send crawlers through
- * a 308 on every page.
+ * Breadcrumbs run Home -> product root -> page, so every landing page hangs off
+ * its product and the product off the hub.
  */
 export function landingMetadata({ meta }) {
   const canonical = `${SITE_URL}${meta.canonical}`;
@@ -55,7 +54,7 @@ export function landingMetadata({ meta }) {
 export function landingSchema({ meta, sections, productName, root = ROOTS.headshots, price = '9' }) {
   const canonical = `${SITE_URL}${meta.canonical}`;
   const faqs = sections.faq?.faqs ?? [];
-  const crumbs = [{ label: root.label, path: root.path }];
+  const crumbs = [{ label: 'Home', path: '/' }, { label: root.label, path: root.path }];
   if (meta.canonical !== root.path) crumbs.push({ label: meta.breadcrumb, path: meta.canonical });
   const { '@context': _c, ...breadcrumb } = buildBreadcrumbList({ paths: crumbs });
 

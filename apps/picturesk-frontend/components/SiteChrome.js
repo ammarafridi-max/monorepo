@@ -90,7 +90,7 @@ export default function SiteChrome({ authed, email, children }) {
         <header className="topbar topbar--funnel">
           <Container>
             <div className="topbar__inner">
-              <a className="brand" href="/ai-headshot-generator" aria-label="Picturesk.ai home">
+              <a className="brand" href="/" aria-label="Picturesk.ai home">
                 <span className="brand__word">Picturesk</span>
               </a>
               <a className="navlink" href="mailto:info@picturesk.ai">
@@ -120,7 +120,7 @@ export default function SiteChrome({ authed, email, children }) {
       <header className="topbar">
         <Container>
           <div className="topbar__inner">
-            <a className="brand" href="/ai-headshot-generator" aria-label="Picturesk.ai home">
+            <a className="brand" href="/" aria-label="Picturesk.ai home">
               <span className="brand__word">Picturesk</span>
             </a>
             <nav className="nav nav--desktop">{links('dropdown')}</nav>

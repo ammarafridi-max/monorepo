@@ -32,6 +32,7 @@ export default function Showcase({
                       alt={`${s.name} selfie ${i + 1}`}
                       className="filmstrip__shot"
                       sizes="120px"
+                      placeholder="Selfie"
                     />
                   ))}
                 </div>
@@ -57,6 +58,7 @@ export default function Showcase({
                     alt={`${s.name} headshot ${i + 1}`}
                     className="sample__shot"
                     sizes="(max-width: 760px) 50vw, 30vw"
+                    placeholder={s.placeholder || 'Sample'}
                   />
                 ))}
               </div>

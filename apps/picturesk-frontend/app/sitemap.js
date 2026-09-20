@@ -7,9 +7,8 @@ import { SITE_URL } from '../lib/seo';
 export const revalidate = 3600;
 
 const PAGES = [
-  // The product page is canonical; the root permanently redirects here, so the
-  // sitemap lists the destination, not the redirecting '/'.
-  { path: '/ai-headshot-generator', changeFrequency: 'weekly', priority: 1 },
+  { path: '/', changeFrequency: 'weekly', priority: 1 },
+  { path: '/ai-headshot-generator', changeFrequency: 'weekly', priority: 0.9 },
   { path: '/pricing', changeFrequency: 'monthly', priority: 0.9 },
   { path: '/linkedin-headshots', changeFrequency: 'monthly', priority: 0.9 },
   { path: '/real-estate-agent-headshots', changeFrequency: 'monthly', priority: 0.8 },

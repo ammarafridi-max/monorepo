@@ -3,7 +3,8 @@
 ## What this is
 
 The Next.js frontend for Picturesk.ai, an AI headshot generator that also sells AI
-dating photos. It carries the marketing pages, one funnel per product (the same
+dating photos. The root is a multi-service hub (`data/hub.js`) that links to each
+product's canonical page. It carries the marketing pages, one funnel per product (the same
 select/upload/payment steps in `components/funnel/*`, mounted under
 `/ai-headshot-generator` and `/ai-dating-photos`), the customer account area, and
 the admin dashboard. Products, their catalogues and their price ladders come from

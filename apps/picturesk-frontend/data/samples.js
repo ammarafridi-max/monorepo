@@ -39,3 +39,29 @@ export const samples = [
     after: ['/work/after-1.jpg', '/work/after-2.jpg', '/work/after-3.jpg', '/work/after-4.jpg'],
   },
 ];
+
+// Dating photos. EMPTY on purpose: the slots render as labelled placeholders until
+// a real dating set exists (the founder's own, generated through the dating
+// funnel). Fill the paths in here; nothing else changes. `hubShots` pairs one
+// real headshot with two dating slots so the hub hero reads as two products.
+export const datingShots = ['', '', ''];
+
+export const hubShots = [
+  { src: '/work/hero-2.jpg', placeholder: 'Headshot' },
+  { src: datingShots[0], placeholder: 'Dating photo' },
+  { src: datingShots[1], placeholder: 'Dating photo' },
+];
+
+export const datingSamples = [
+  {
+    name: 'Ammar Afridi',
+    role: 'Founder',
+    scenario: 'Needed dating photos that did not look like a photoshoot',
+    story:
+      'The same five selfies as the headshot set. Scenes and outfits from the dating catalogue: a coffee shop, a rooftop at golden hour, dinner out, in a linen shirt and a knit. Candid framing, natural light.',
+    used: 'Hinge, Bumble',
+    placeholder: 'Dating photo',
+    before: ['', '', ''],
+    after: ['', '', '', ''],
+  },
+];

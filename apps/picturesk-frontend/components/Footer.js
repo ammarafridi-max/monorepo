@@ -1,9 +1,6 @@
 // Site footer: brand + grouped links + contact, on the deep-green Forest & Gold
-// surface. Product links point at /ai-headshot-generator directly: linking to "/"
-// sent every internal click through a 308 and left the canonical landing page with
-// no direct inbound links at all. The brand is an ivory text wordmark (the stored logo.png is dark and
-// would vanish on green). Rendered once from the root layout, so links are absolute
-// paths (the home anchors point at /#section) and work from any page.
+// surface. The brand is an ivory text wordmark (the stored logo.png is dark and
+// would vanish on green). Links are absolute paths so it works from any page.
 import Container from './Container';
 import { services } from '../data/services';
 

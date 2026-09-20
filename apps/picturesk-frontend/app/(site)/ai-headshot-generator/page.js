@@ -22,9 +22,8 @@ import {
   buildFAQPage,
 } from '../../../lib/schema';
 
-// The AI Headshot Generator product page. This is the canonical home of the current
-// product; the root (/) permanently redirects here, so the root can later become a
-// multi-service hub without migrating this content a second time.
+// The AI Headshot Generator product page: the canonical home of the headshot
+// product. The root (/) is the multi-service hub and links here.
 //
 // Title <= 60 chars, description <= 160 chars (spaces included), both carrying the
 // primary keyword "AI Headshot Generator" and no em dashes. See CLAUDE.md.
