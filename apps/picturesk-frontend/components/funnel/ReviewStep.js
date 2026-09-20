@@ -120,7 +120,7 @@ export default function ReviewStep({ product }) {
     { k: 'Build', v: BUILD_LABEL[state.build], href: paths.about },
     {
       k: 'Photos',
-      v: reusing ? `Reusing the model from your order of ${reusable?.date ?? 'an earlier date'}` : `${state.images.length} uploaded`,
+      v: reusing ? `The ${reusable?.count ?? ''} photos from your order of ${reusable?.date ?? 'an earlier date'}` : `${state.images.length} uploaded`,
       href: paths.photos,
     },
     { k: 'Email', v: email, mask: true },

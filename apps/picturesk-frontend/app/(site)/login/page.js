@@ -16,7 +16,7 @@ export default async function LoginPage({ searchParams }) {
     <main className="page">
       <Container size="narrow">
         <h1 className="display">Welcome back.</h1>
-        <p className="lede muted">Log in to your sets and your trained model.</p>
+        <p className="lede muted">Log in to your sets and your saved photos.</p>
         {failed && (
           <p className="error">We could not sign you in. Please try again.</p>
         )}

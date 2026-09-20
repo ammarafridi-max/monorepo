@@ -116,7 +116,7 @@ export default async function AccountPage() {
                 <p>
                   <strong>Make another set.</strong>{' '}
                   {hasModel
-                    ? 'Your trained model is saved, so the next set needs no upload and is ready in minutes.'
+                    ? 'Your photos are saved, so the next set needs no upload and is ready in minutes.'
                     : 'Same account, same selfies.'}
                 </p>
                 <div className="hero__actions" style={{ marginTop: 10 }}>

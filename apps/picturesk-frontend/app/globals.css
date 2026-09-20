@@ -4481,3 +4481,11 @@ button:focus-visible,
 .card--bare .formnote {
   margin-top: 16px;
 }
+
+.reuse__photos {
+  margin-top: 18px;
+}
+
+.reuse__photos .thumbs {
+  margin-top: 10px;
+}

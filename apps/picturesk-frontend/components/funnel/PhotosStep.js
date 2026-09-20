@@ -205,7 +205,7 @@ export default function PhotosStep({ product }) {
       <h1 className="h2">{reusable ? 'Your photos.' : 'Upload your photos.'}</h1>
       <p className="section__lede">
         Your photos are the single biggest factor in how much the results look like you.
-        {reusable ? ' You already have a trained model, so you can skip the upload.' : ` Add ${QUALITY.minPhotos} to ${QUALITY.maxPhotos} recent photos of just you.`}
+        {reusable ? ' We still have the photos from your last order, so you can skip the upload.' : ` Add ${QUALITY.minPhotos} to ${QUALITY.maxPhotos} recent photos of just you.`}
       </p>
 
       {reusable && (
@@ -217,9 +217,9 @@ export default function PhotosStep({ product }) {
             aria-checked={reusing}
             onClick={() => setMode('reuse')}
           >
-            <span className="reuse__title">Use the model from your last order</span>
+            <span className="reuse__title">Use the photos from your last order</span>
             <span className="reuse__meta">
-              Trained {reusable.date} from {reusable.count} photos. Ready in minutes, no upload.
+              {reusable.count} photos from {reusable.date}. Ready in minutes, no upload.
             </span>
           </button>
           <button
@@ -230,8 +230,22 @@ export default function PhotosStep({ product }) {
             onClick={() => setMode('upload')}
           >
             <span className="reuse__title">Upload new photos</span>
-            <span className="reuse__meta">A new haircut, a new beard, or just better selfies. We train again.</span>
+            <span className="reuse__meta">A new haircut, a new beard, or just better selfies. We start fresh.</span>
           </button>
+        </div>
+      )}
+
+      {reusing && reusable.images.length > 0 && (
+        <div className="reuse__photos" data-clarity-mask="true">
+          <p className="gen-hint">The photos we will use, exactly as you uploaded them last time.</p>
+          <div className="thumbs">
+            {reusable.images.map((url, i) => (
+              <div className="thumb thumb--ok" key={url}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={url} alt={`photo ${i + 1}`} />
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

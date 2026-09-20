@@ -48,6 +48,7 @@ export async function loadFunnelSession(entryPath) {
             new Date(source.createdAt)
           ),
           count: source.uploadedImageUrls?.length ?? 0,
+          images: source.uploadedImageUrls ?? [],
         }
       : null,
   };

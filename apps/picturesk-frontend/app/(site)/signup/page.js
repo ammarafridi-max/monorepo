@@ -14,8 +14,8 @@ export default async function SignupPage({ searchParams }) {
         <h1 className="display">Create your account.</h1>
         <p className="lede muted">
           {intoFunnel
-            ? 'Your account keeps the model we train on your face, so every set after the first is faster and cheaper. Free, and your first set is on us.'
-            : 'Keep your orders and your trained model in one place. Free, and your first set is on us.'}
+            ? 'Your account keeps your photos, so every set after the first needs no upload and is ready in minutes. Free, and your first set is on us.'
+            : 'Keep your orders and your photos in one place. Free, and your first set is on us.'}
         </p>
         <SocialButtons next={next} />
         <AuthForm mode="signup" next={next} />
