@@ -39,6 +39,17 @@ import { PRODUCTS, DEFAULT_PRODUCT, productOf } from './products.js';
 /** @type {readonly Tier[]} */
 export const TIERS = Object.freeze([
   Object.freeze({
+    id: 'free',
+    product: PRODUCTS.HEADSHOTS,
+    label: 'Free',
+    priceCents: 0,
+    deliverCount: 3,
+    generateCount: 3,
+    priority: 4,
+    attireCount: 1,
+    lookCount: 1,
+  }),
+  Object.freeze({
     id: 'starter',
     product: PRODUCTS.HEADSHOTS,
     label: 'Starter',
@@ -71,6 +82,17 @@ export const TIERS = Object.freeze([
     priority: 1,
     attireCount: null,
     lookCount: null,
+  }),
+  Object.freeze({
+    id: 'dating_free',
+    product: PRODUCTS.DATING,
+    label: 'Free',
+    priceCents: 0,
+    deliverCount: 4,
+    generateCount: 4,
+    priority: 4,
+    attireCount: 1,
+    lookCount: 1,
   }),
   Object.freeze({
     id: 'dating_starter',
@@ -108,15 +130,25 @@ export const TIERS = Object.freeze([
   }),
 ]);
 
-/** The tiers sold for one product, in display order. */
+/** A free tier: one per account, no Stripe session, trains the model like any other. */
+export function isFreeTier(tier) {
+  return Boolean(tier) && tier.priceCents === 0;
+}
+
+/** The tiers sold for one product, in display order (free first). */
 export function tiersFor(product) {
   const id = productOf(product);
   return TIERS.filter((t) => t.product === id);
 }
 
-/** The cheapest tier of a product, in whole dollars, for "from $X" copy. */
+/** The paid tiers of a product, for pricing cards that lead with the price. */
+export function paidTiersFor(product) {
+  return tiersFor(product).filter((t) => !isFreeTier(t));
+}
+
+/** The cheapest PAID tier of a product, in whole dollars, for "from $X" copy. */
 export function fromPriceFor(product) {
-  return Math.round(Math.min(...tiersFor(product).map((t) => t.priceCents)) / 100);
+  return Math.round(Math.min(...paidTiersFor(product).map((t) => t.priceCents)) / 100);
 }
 
 /** The tier assumed when a request omits one (keeps old clients working). */

@@ -98,7 +98,7 @@ export default function CaptureStep({ product }) {
   useEffect(() => {
     const s = readState(product);
     if (s.looks.length === 0 || s.attire.length === 0) {
-      router.replace(paths.select);
+      router.replace(paths.plan);
       return;
     }
     setReady(true);
@@ -219,7 +219,7 @@ export default function CaptureStep({ product }) {
       // Gate here so the pay button stays fast (results are cached for /checkout).
       setPhase('checking');
       await gateUploads(images);
-      router.push(paths.payment);
+      router.push(paths.review);
     } catch (err) {
       if (err.status === 422) {
         const n = (err.body?.failures || []).length;
@@ -255,7 +255,7 @@ export default function CaptureStep({ product }) {
             <li className="reqs__bad">Take off glasses and hats, and make sure it is just you.</li>
           </ul>
           <div className="gennav">
-            <Link className="btn btn--link" href={paths.upload}>
+            <Link className="btn btn--link" href={paths.photos}>
               Prefer to upload instead
             </Link>
             <button className="btn btn--primary" type="button" onClick={startCamera}>
@@ -272,7 +272,7 @@ export default function CaptureStep({ product }) {
             instead.
           </p>
           <div className="gennav">
-            <Link className="btn btn--link" href={paths.upload}>
+            <Link className="btn btn--link" href={paths.photos}>
               Upload instead
             </Link>
             <button className="btn btn--primary" type="button" onClick={startCamera}>

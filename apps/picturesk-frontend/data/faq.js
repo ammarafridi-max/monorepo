@@ -41,7 +41,7 @@ export const faq = [
   },
   {
     q: 'Is this a subscription?',
-    a: 'No. You pick one of three plans and pay once, from nine dollars for one set of headshots. No recurring charge, and no account required to buy.',
+    a: 'No. You pick a plan and pay once, from nine dollars for a set of headshots. No recurring charge. You do create a free account: it keeps the model we train on your face so later sets need no new upload, and it gives you one free set to try first.',
   },
   {
     q: 'Are these good for LinkedIn?',

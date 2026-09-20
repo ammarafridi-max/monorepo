@@ -5,9 +5,16 @@
 The Next.js frontend for Picturesk.ai, an AI headshot generator that also sells AI
 dating photos. The root is a multi-service hub (`data/hub.js`) that links to each
 product's canonical page. It carries the marketing pages, one funnel per product (the same
-select/upload/payment steps in `components/funnel/*`, mounted under
+about/build/plan/photos/review steps in `components/funnel/*`, mounted under
 `/ai-headshot-generator` and `/ai-dating-photos`), the customer account area, and
-the admin dashboard. Products, their catalogues and their price ladders come from
+the admin dashboard.
+
+The funnel requires a signed-in account (password accounts must verify their
+email first; OAuth accounts are verified by the provider). The funnel layout
+gates this through `lib/funnelSession.js` and hands the steps a `FunnelProvider`
+with the email, whether the free plan is spent, and a reusable trained model.
+Checkout goes through `/api/checkout`, which attaches the user and forwards to
+the api with `INTERNAL_API_KEY`; the browser never calls the api's `/checkout`. Products, their catalogues and their price ladders come from
 `@travel-suite/picturesk-shared` (`products.js`, `catalog.js`, `pricing.js`);
 `lib/products.js` holds only the web-side config (paths, labels, default tier). It talks to `picturesk-backend` at
 `NEXT_PUBLIC_API_BASE_URL`; the browser uploads selfies directly to R2 via

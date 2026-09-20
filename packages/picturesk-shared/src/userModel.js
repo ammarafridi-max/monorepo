@@ -25,6 +25,12 @@ const userSchema = new Schema(
     // Which social providers have been linked to this account, if any. Purely
     // informational; the email above is still the single identity anchor.
     providers: { type: [String], default: [] },
+
+    // Email verification, required before a password account can enter a funnel.
+    // OAuth accounts are verified by the provider and get the timestamp at creation.
+    emailVerifiedAt: { type: Date, default: null },
+    verificationCodeHash: { type: String, default: null },
+    verificationExpiresAt: { type: Date, default: null },
   },
   { timestamps: true }
 );

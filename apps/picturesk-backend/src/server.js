@@ -20,8 +20,11 @@ import {
   isValidGender,
   isValidRace,
   isValidFacialHair,
+  isValidBuild,
   getTier,
   isValidTier,
+  isFreeTier,
+  TIERS,
   DEFAULT_TIER,
   isValidProduct,
   productOf,
@@ -176,6 +179,25 @@ const mongoose = await connectMongo(MONGODB_URI);
 console.log('[api] connected to MongoDB');
 
 const stripe = new Stripe(STRIPE_SECRET_KEY);
+
+// Checkout is reached only through the web app's own /api/checkout, which holds
+// the session and forwards the user id with this shared key. Without it the api
+// could not know who is buying, and the free plan could not be limited to once.
+const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || '';
+if (!INTERNAL_API_KEY) console.warn('[api] INTERNAL_API_KEY is unset; /checkout will refuse every request');
+function internalOnly(req, res, next) {
+  const key = req.headers['x-internal-key'];
+  if (!INTERNAL_API_KEY || typeof key !== 'string' || key.length !== INTERNAL_API_KEY.length) {
+    return res.status(401).json({ error: 'unauthorized' });
+  }
+  if (!timingSafeEqual(Buffer.from(key), Buffer.from(INTERNAL_API_KEY))) {
+    return res.status(401).json({ error: 'unauthorized' });
+  }
+  return next();
+}
+// A reused model has to be recent enough to still match the person.
+const MODEL_REUSE_MAX_AGE_MS = 365 * 24 * 60 * 60 * 1000;
+const FREE_TIER_IDS = TIERS.filter(isFreeTier).map((t) => t.id);
 
 // Brevo transactional email client, for the admin "resend delivery email" action.
 // null when BREVO_API_KEY is unset (same convention as the worker), which makes
@@ -613,8 +635,23 @@ app.post('/uploads/presign', presignLimiter, async (req, res) => {
 app.post('/uploads/gate', presignLimiter, async (req, res) => {
   try {
     const { uploadedImageUrls } = req.body ?? {};
-    if (!Array.isArray(uploadedImageUrls) || uploadedImageUrls.length === 0) {
+    // Photos come either as fresh uploads or by reusing an earlier order's trained
+    // model (and its reference selfies). One of the two, never neither.
+    const reusing = reuseFromOrderId != null && reuseFromOrderId !== '';
+    if (!reusing && (!Array.isArray(uploadedImageUrls) || uploadedImageUrls.length === 0)) {
       return res.status(400).json({ error: 'uploadedImageUrls must be a non-empty array' });
+    }
+    let source = null;
+    if (reusing) {
+      if (!mongoose.isValidObjectId(reuseFromOrderId)) {
+        return res.status(400).json({ error: 'reuseFromOrderId is not a valid order id' });
+      }
+      source = await Order.findOne({ _id: reuseFromOrderId, userId });
+      const trained = source?.replicate?.trainedModelVersion;
+      const at = source?.deliveredAt || source?.paidAt || source?.createdAt;
+      if (!source || !trained || !at || Date.now() - new Date(at).getTime() > MODEL_REUSE_MAX_AGE_MS) {
+        return res.status(400).json({ error: 'That order has no model we can reuse' });
+      }
     }
     const gate = await runUploadGate(uploadedImageUrls);
     if (gate) return res.status(gate.status).json(gate.body);
@@ -638,22 +675,28 @@ app.post('/uploads/gate', presignLimiter, async (req, res) => {
  *
  * Body: { email, selectedLooks[], selectedAttire[], uploadedImageUrls[] }
  */
-app.post('/checkout', checkoutLimiter, async (req, res) => {
+app.post('/checkout', checkoutLimiter, internalOnly, async (req, res) => {
   try {
     const {
       email,
+      userId,
       selectedLooks,
       selectedAttire,
       uploadedImageUrls,
+      reuseFromOrderId,
       gender,
       ageRange,
       race,
       facialHair,
+      build,
       tier,
       product: productIn,
     } = req.body ?? {};
     if (!email) {
       return res.status(400).json({ error: 'email is required' });
+    }
+    if (!userId || !mongoose.isValidObjectId(userId)) {
+      return res.status(400).json({ error: 'userId is required' });
     }
     // Optional for back-compat (absent -> headshots); a value that is present must
     // be a real product, since it picks the catalogue everything below validates against.
@@ -694,6 +737,9 @@ app.post('/checkout', checkoutLimiter, async (req, res) => {
     if (facialHair != null && facialHair !== '' && !isValidFacialHair(facialHair)) {
       return res.status(400).json({ error: 'facialHair contains an unknown option' });
     }
+    if (build != null && build !== '' && !isValidBuild(build)) {
+      return res.status(400).json({ error: 'build contains an unknown option' });
+    }
     // Pricing tier. Optional for back-compat (absent -> default tier); a value that
     // is present must be a real tier. The server owns the price via getTier below,
     // so a tampered client can at worst pick a valid tier, never set an amount.
@@ -714,6 +760,12 @@ app.post('/checkout', checkoutLimiter, async (req, res) => {
         error: `${selectedTier.label} includes up to ${selectedTier.attireCount} outfits`,
       });
     }
+    // The free plan is once per account, across both products. Checked again on
+    // insert below; this is the friendly error, the index is the guarantee.
+    const free = isFreeTier(selectedTier);
+    if (free && (await Order.exists({ userId, tier: { $in: FREE_TIER_IDS } }))) {
+      return res.status(409).json({ error: 'You have already used your free set' });
+    }
 
     // NO image screening here. Photos are gated ONCE, at the upload step
     // (POST /uploads/gate, run by /ai-headshot-generator/upload) -- face quality, content
@@ -726,6 +778,7 @@ app.post('/checkout', checkoutLimiter, async (req, res) => {
     // is written from Stripe in the webhook once payment confirms.
     const order = await Order.create({
       customerEmail: email,
+      userId,
       publicToken: randomUUID().replace(/-/g, ''),
       selectedLooks,
       selectedAttire,
@@ -733,7 +786,14 @@ app.post('/checkout', checkoutLimiter, async (req, res) => {
       ageRange,
       race: race || undefined,
       facialHair: facialHair || undefined,
-      uploadedImageUrls,
+      build: build || undefined,
+      // Reuse copies the source order's selfies (identity scoring needs them) and
+      // its trained version, so the worker's training stage sees it and skips.
+      uploadedImageUrls: reusing ? source.uploadedImageUrls : uploadedImageUrls,
+      reuseFromOrderId: reusing ? source._id : undefined,
+      replicate: reusing
+        ? { trainedModelVersion: source.replicate.trainedModelVersion, weightsUrl: source.replicate.weightsUrl }
+        : undefined,
       product,
       // Stamp the tier + a snapshot of its numeric levers so the worker delivers
       // the right count even if the catalog later changes (durable record).
@@ -742,10 +802,40 @@ app.post('/checkout', checkoutLimiter, async (req, res) => {
       generateCount: selectedTier.generateCount,
     });
     const orderId = order._id.toString();
+    const successUrl = `${WEB_BASE_URL}/success?orderId=${orderId}&t=${order.publicToken}`;
+
+    // A free set has no Stripe leg: mark it paid at zero and hand it to the
+    // pipeline here, the way the webhook would. The transition is the same
+    // idempotent guard, so a double submit cannot enqueue twice.
+    if (free) {
+      await transitionOrder(orderId, ORDER_STATES.AWAITING_PAYMENT, ORDER_STATES.PAID, {
+        amountPaidCents: 0,
+      });
+      await orderPipeline.add('process-order', { orderId }, pipelineJobOpts(orderId, selectedTier.priority));
+      console.log(`[api] order ${orderId} free set started for user ${userId}`);
+      if (emailClient) {
+        emailClient
+          .sendPaidEmail({
+            to: email,
+            resultsUrl: successUrl,
+            orderId,
+            planLabel: selectedTier.label,
+            deliverCount: selectedTier.deliverCount,
+            product,
+            free: true,
+          })
+          .catch((err) => {
+            console.error(`[api] free set email for ${orderId} failed:`, err.message);
+            captureError(err, { route: 'checkout', stage: 'free-email' });
+          });
+      }
+      return res.status(201).json({ orderId, checkoutUrl: successUrl, free: true });
+    }
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       customer_email: email,
+      allow_promotion_codes: true,
       line_items: [
         {
           quantity: 1,
@@ -761,7 +851,7 @@ app.post('/checkout', checkoutLimiter, async (req, res) => {
       metadata: { orderId },
       success_url: `${WEB_BASE_URL}/success?orderId=${orderId}&t=${order.publicToken}`,
       // Cancel returns to the payment step so they can retry (a new order).
-      cancel_url: `${WEB_BASE_URL}/${product === 'dating' ? 'ai-dating-photos' : 'ai-headshot-generator'}/payment`,
+      cancel_url: `${WEB_BASE_URL}/${product === 'dating' ? 'ai-dating-photos' : 'ai-headshot-generator'}/review`,
     });
 
     // The session id is our idempotency anchor: the webhook finds the order by it.

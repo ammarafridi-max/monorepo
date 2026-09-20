@@ -15,6 +15,7 @@ import {
   isValidAgeRange,
   isValidRace,
   isValidFacialHair,
+  isValidBuild,
 } from '@travel-suite/picturesk-shared/catalog';
 import { isValidTier, getTier } from '@travel-suite/picturesk-shared/pricing';
 import { PRODUCTS, productOf, productConfig, funnelPaths } from './products';
@@ -36,8 +37,11 @@ const emptyFor = (product) => ({
   ageRange: '',
   race: '',
   facialHair: '',
-  email: '',
+  build: '',
   images: [],
+  // Set when the customer chose to reuse the model from an earlier order instead
+  // of uploading; images stays empty in that case.
+  reuseFromOrderId: '',
   tier: productConfig(product).defaultTier,
 });
 
@@ -68,8 +72,9 @@ export function readState(product = PRODUCTS.HEADSHOTS) {
       ageRange: valid(s.ageRange, isValidAgeRange),
       race: valid(s.race, isValidRace),
       facialHair: valid(s.facialHair, isValidFacialHair),
-      email: str(s.email),
+      build: valid(s.build, isValidBuild),
       images: Array.isArray(s.images) ? s.images : [],
+      reuseFromOrderId: str(s.reuseFromOrderId),
       tier: tierOk(str(s.tier)) ? s.tier : EMPTY.tier,
     };
   } catch {
@@ -91,14 +96,17 @@ export function clearState(product = PRODUCTS.HEADSHOTS) {
 }
 
 /**
- * The three funnel steps. `pay` has no route of its own past the Stripe redirect;
- * it still renders in the stepper. Order defines "done vs upcoming".
+ * The funnel steps. `pay` has no route of its own past the Stripe redirect; it
+ * still renders in the stepper. Order defines "done vs upcoming".
  */
 export function funnelSteps(product = PRODUCTS.HEADSHOTS) {
   const paths = funnelPaths(product);
   return [
-    { key: 'select', label: 'Select', href: paths.select },
-    { key: 'upload', label: 'Upload', href: paths.upload },
+    { key: 'about', label: 'About you', href: paths.about },
+    { key: 'build', label: 'Build', href: paths.build },
+    { key: 'plan', label: 'Plan', href: paths.plan },
+    { key: 'photos', label: 'Photos', href: paths.photos },
+    { key: 'review', label: 'Review', href: paths.review },
     { key: 'pay', label: 'Pay' },
   ];
 }

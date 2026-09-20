@@ -12,16 +12,17 @@ const ICONS = { google: FcGoogle, facebook: FaFacebook, linkedin: FaLinkedin };
 // are actually configured (id + secret present), so a half-configured deploy
 // never offers a button that cannot work. Each is a plain link to the start
 // route; buying stays anonymous, this only adds another way into the account.
-export default function SocialButtons() {
+export default function SocialButtons({ next = '/account' }) {
   const providers = configuredProviders();
   if (providers.length === 0) return null;
+  const qs = `?next=${encodeURIComponent(next)}`;
 
   return (
     <div className="social">
       {providers.map((p) => {
         const Icon = ICONS[p.name];
         return (
-          <a key={p.name} className="social__btn" href={`/api/auth/oauth/${p.name}`}>
+          <a key={p.name} className="social__btn" href={`/api/auth/oauth/${p.name}${qs}`}>
             {Icon && <Icon className="social__icon" aria-hidden="true" />}
             Continue with {p.label}
           </a>

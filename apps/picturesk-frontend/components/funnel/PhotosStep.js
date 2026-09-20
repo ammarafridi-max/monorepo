@@ -8,15 +8,20 @@ import { QUALITY, detectImage, reasonFor } from '../../lib/quality';
 import { readState, writeState } from '../../lib/generator';
 import { track, EVENTS } from '../../lib/analytics';
 import { funnelPaths } from '../../lib/products';
+import { useFunnel, useNextHref } from './FunnelContext';
 
-// Step 2: upload photos. One unified grid holds both photos already uploaded on a
+// Step 4: photos. One unified grid holds both photos already uploaded on a
 // previous visit (kind 'existing', an R2 URL) and newly picked files (kind 'new',
 // checked by the client gate before upload). EVERY photo has a delete button, and
 // the dropzone stays available so more can be added. On Continue, the new files go
 // direct-to-R2 and the full set (existing + new) is carried to the pay step.
-export default function UploadStep({ product }) {
+export default function PhotosStep({ product }) {
   const paths = funnelPaths(product);
+  const nextHref = useNextHref(paths.review, paths.review);
+  const { reusable } = useFunnel();
   const router = useRouter();
+  // 'reuse' = generate from the model of an earlier order; 'upload' = fresh photos.
+  const [mode, setMode] = useState('upload');
   const [items, setItems] = useState([]); // { id, kind:'existing'|'new', url, file?, status, reason }
   const [error, setError] = useState('');
   const [dragging, setDragging] = useState(false);
@@ -25,15 +30,17 @@ export default function UploadStep({ product }) {
 
   useEffect(() => {
     const s = readState(product);
-    // Guard the funnel order: no selections means step 1 was skipped.
+    // Guard the funnel order: no selections means the plan step was skipped.
     if (s.looks.length === 0 || s.attire.length === 0) {
-      router.replace(paths.select);
+      router.replace(paths.plan);
       return;
     }
+    // Reuse is the default for anyone who has a model; a stored choice wins.
+    if (reusable && (s.reuseFromOrderId || s.images.length === 0)) setMode('reuse');
     // Seed with any already-uploaded photos so the user can keep, delete, or add to them.
     setItems(s.images.map((url) => ({ id: url, kind: 'existing', url, status: 'ok', reason: null })));
     setReady(true);
-  }, [router]);
+  }, [router, product, paths.plan, reusable]);
 
   // Keep localStorage's uploaded set in sync with the EXISTING items, so deleting
   // an already-uploaded photo sticks across a refresh. New (not-yet-uploaded) items
@@ -137,7 +144,8 @@ export default function UploadStep({ product }) {
   const badCount = items.filter((it) => it.kind === 'new' && it.status === 'bad').length;
   const countOk = items.length >= QUALITY.minPhotos && items.length <= QUALITY.maxPhotos;
   const photosReady = countOk && badCount === 0 && !checking && items.length > 0;
-  const canContinue = photosReady;
+  const reusing = mode === 'reuse' && Boolean(reusable);
+  const canContinue = reusing || photosReady;
 
   const completedRef = useRef(false);
   useEffect(() => {
@@ -165,11 +173,15 @@ export default function UploadStep({ product }) {
 
   function onContinue() {
     if (!canContinue) return;
-    // Every photo was uploaded and passed the server gate as it was added, so all
-    // items here are verified 'existing' ones. Just carry the set to the pay step.
     setError('');
-    writeState({ images: items.map((it) => it.url) }, product);
-    router.push(paths.payment);
+    if (reusing) {
+      writeState({ reuseFromOrderId: reusable.orderId }, product);
+    } else {
+      // Every photo was uploaded and passed the server gate as it was added, so all
+      // items here are verified 'existing' ones. Just carry the set to the review step.
+      writeState({ images: items.map((it) => it.url), reuseFromOrderId: '' }, product);
+    }
+    router.push(nextHref);
   }
 
   if (!ready) return null;
@@ -184,17 +196,46 @@ export default function UploadStep({ product }) {
   } else if (badCount > 0) {
     note = `${badCount} photo${badCount === 1 ? '' : 's'} need a clearer single face. Remove or replace them.`;
   } else {
-    note = `${items.length} photos ready. You pay on the next step.`;
+    note = `${items.length} photos ready.`;
   }
 
   return (
     <section>
-      <p className="eyebrow">Step 2</p>
-      <h1 className="h2">Upload your photos.</h1>
+      <p className="eyebrow">Step 4 of 5</p>
+      <h1 className="h2">{reusable ? 'Your photos.' : 'Upload your photos.'}</h1>
       <p className="section__lede">
-        Your photos are the single biggest factor in how much the results look like you. Add{' '}
-        {QUALITY.minPhotos} to {QUALITY.maxPhotos} recent photos of just you.
+        Your photos are the single biggest factor in how much the results look like you.
+        {reusable ? ' You already have a trained model, so you can skip the upload.' : ` Add ${QUALITY.minPhotos} to ${QUALITY.maxPhotos} recent photos of just you.`}
       </p>
+
+      {reusable && (
+        <div className="reuse" role="radiogroup" aria-label="Photos">
+          <button
+            type="button"
+            className={`reuse__opt${reusing ? ' reuse__opt--on' : ''}`}
+            role="radio"
+            aria-checked={reusing}
+            onClick={() => setMode('reuse')}
+          >
+            <span className="reuse__title">Use the model from your last order</span>
+            <span className="reuse__meta">
+              Trained {reusable.date} from {reusable.count} photos. Ready in minutes, no upload.
+            </span>
+          </button>
+          <button
+            type="button"
+            className={`reuse__opt${!reusing ? ' reuse__opt--on' : ''}`}
+            role="radio"
+            aria-checked={!reusing}
+            onClick={() => setMode('upload')}
+          >
+            <span className="reuse__title">Upload new photos</span>
+            <span className="reuse__meta">A new haircut, a new beard, or just better selfies. We train again.</span>
+          </button>
+        </div>
+      )}
+
+      <div hidden={reusing}>
       <ul className="reqs">
         <li className="reqs__good">
           Do: different angles and expressions, even lighting, your face clear and up close.
@@ -263,6 +304,9 @@ export default function UploadStep({ product }) {
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={it.url} alt={`photo ${i + 1}`} />
+                {it.status === 'checking' && (
+                  <span className="thumb__spinner" role="status" aria-label="Checking this photo" />
+                )}
                 {it.status === 'ok' && (
                   <span className="thumb__check" role="img" aria-label="Accepted">
                     <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true">
@@ -295,12 +339,14 @@ export default function UploadStep({ product }) {
         {error && <p className="error">{error}</p>}
       </div>
 
+      </div>
+
       <div className="gennav">
-        <Link className="btn btn--link" href={paths.select}>
+        <Link className="btn btn--link" href={paths.plan}>
           Back
         </Link>
         <button className="btn btn--primary" type="button" disabled={!canContinue} onClick={onContinue}>
-          {checking ? 'Checking your photos' : 'Continue'}
+          {!reusing && checking ? 'Checking your photos' : 'Continue'}
         </button>
       </div>
     </section>

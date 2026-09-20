@@ -13,6 +13,7 @@ import { cookies } from 'next/headers';
  */
 
 export const STATE_COOKIE = 'picturesk_oauth_state';
+export const NEXT_COOKIE = 'picturesk_oauth_next';
 
 const PROVIDERS = {
   google: {
@@ -130,5 +131,13 @@ export async function readAndClearStateCookie() {
   const jar = await cookies();
   const value = jar.get(STATE_COOKIE)?.value || null;
   jar.delete(STATE_COOKIE);
+  return value;
+}
+
+/** Where to send the browser after the callback, set by the start route. */
+export async function readAndClearNextCookie() {
+  const jar = await cookies();
+  const value = jar.get(NEXT_COOKIE)?.value || null;
+  jar.delete(NEXT_COOKIE);
   return value;
 }

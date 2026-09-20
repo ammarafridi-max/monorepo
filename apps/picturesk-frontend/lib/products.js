@@ -46,10 +46,14 @@ export function funnelPaths(product) {
   const { base } = productConfig(product);
   return {
     landing: base,
-    select: `${base}/select`,
-    upload: `${base}/upload`,
+    about: `${base}/about`,
+    build: `${base}/build`,
+    plan: `${base}/plan`,
+    photos: `${base}/photos`,
     capture: `${base}/capture`,
-    payment: `${base}/payment`,
+    review: `${base}/review`,
+    // The funnel entry every CTA points at.
+    select: `${base}/about`,
   };
 }
 
@@ -77,10 +81,13 @@ export function productForPage(pathname) {
   return null;
 }
 
-/** The nav CTA for a page: the product's funnel when the page has one, else the hub's chooser. */
+/**
+ * The nav CTA for a page: the product's funnel when the page has one, otherwise
+ * the generic "Get started" with no href, which the chrome opens as a chooser.
+ */
 export function navCtaFor(pathname) {
   const product = productForPage(pathname);
-  if (!product) return { label: 'Get started', href: '/#services' };
+  if (!product) return { label: 'Get started', href: null };
   const cfg = productConfig(product);
   return { label: `Get my ${cfg.noun}`, href: funnelPaths(product).select };
 }

@@ -387,6 +387,20 @@ export const RACES = Object.freeze([
 // clean-shaven and the trained beard shrinks or vanishes across the set. Naming it
 // in the subject anchor holds the beard steady. `clean-shaven` is a real choice,
 // not just "unset": it tells the model to KEEP the face bare instead of guessing.
+/**
+ * Body build, asked as one chip row instead of height and weight. It only exists
+ * to keep the generated body honest to the person, so the fragment names the build
+ * plainly and nothing else.
+ * @type {readonly Demographic[]}
+ */
+export const BUILDS = Object.freeze([
+  { id: 'slim', label: 'Slim', promptFragment: 'with a slim build' },
+  { id: 'average', label: 'Average', promptFragment: 'with an average build' },
+  { id: 'athletic', label: 'Athletic', promptFragment: 'with an athletic build' },
+  { id: 'broad', label: 'Broad', promptFragment: 'with a broad, solid build' },
+  { id: 'plus', label: 'Plus-size', promptFragment: 'with a plus-size build' },
+]);
+
 /** @type {readonly Demographic[]} */
 export const FACIAL_HAIR = Object.freeze([
   { id: 'clean_shaven', label: 'Clean-shaven', promptFragment: 'clean-shaven' },
@@ -418,6 +432,7 @@ const AGE_RANGES_BY_ID = Object.freeze(Object.fromEntries(AGE_RANGES.map((a) => 
 const GENDERS_BY_ID = Object.freeze(Object.fromEntries(GENDERS.map((g) => [g.id, g])));
 const RACES_BY_ID = Object.freeze(Object.fromEntries(RACES.map((r) => [r.id, r])));
 const FACIAL_HAIR_BY_ID = Object.freeze(Object.fromEntries(FACIAL_HAIR.map((f) => [f.id, f])));
+const BUILDS_BY_ID = Object.freeze(Object.fromEntries(BUILDS.map((b) => [b.id, b])));
 
 /** Is `id` a real look in the product's catalog? (Used by the api to validate /checkout.) */
 export function isValidLook(id, product = DEFAULT_PRODUCT) {
@@ -443,6 +458,10 @@ export function isValidRace(id) {
 export function isValidFacialHair(id) {
   return Object.prototype.hasOwnProperty.call(FACIAL_HAIR_BY_ID, id);
 }
+/** Is `id` a real build option? */
+export function isValidBuild(id) {
+  return Object.prototype.hasOwnProperty.call(BUILDS_BY_ID, id);
+}
 
 /**
  * Build the subject phrase that leads every prompt, from the order's demographics.
@@ -460,13 +479,15 @@ export function isValidFacialHair(id) {
  * @param {string} [opts.facialHair] - facial-hair id (optional)
  * @returns {string} the subject phrase (never empty)
  */
-export function buildSubject({ gender, ageRange, race, facialHair } = {}) {
+export function buildSubject({ gender, ageRange, race, facialHair, build } = {}) {
   let subject = GENDERS_BY_ID[gender]?.promptFragment || 'a person';
   const ageFrag = AGE_RANGES_BY_ID[ageRange]?.promptFragment;
   const raceFrag = RACES_BY_ID[race]?.promptFragment;
+  const buildFrag = BUILDS_BY_ID[build]?.promptFragment;
   const hairFrag = FACIAL_HAIR_BY_ID[facialHair]?.promptFragment;
   if (ageFrag) subject += ` ${ageFrag}`;
   if (raceFrag) subject += `, ${raceFrag}`;
+  if (buildFrag) subject += `, ${buildFrag}`;
   if (hairFrag) subject += `, ${hairFrag}`;
   return subject;
 }

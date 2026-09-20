@@ -87,7 +87,7 @@ export default function AiHeadshotGeneratorPage() {
                 title="Your headshots, in about an hour."
                 lede="Pick your looks, upload your photos, pay once. We handle the rest."
               />
-              <a className="btn btn--primary" href="/ai-headshot-generator/select">
+              <a className="btn btn--primary" href="/ai-headshot-generator/about">
                 Get my headshots <span className="btn__price">from $9</span>
               </a>
             </div>

@@ -49,11 +49,19 @@ export async function findOrCreateOAuthUser({ email, provider }) {
   const normalized = normalizeEmail(email);
   let user = await User.findOne({ email: normalized });
   if (!user) {
-    return User.create({ email: normalized, providers: [provider] });
+    return User.create({ email: normalized, providers: [provider], emailVerifiedAt: new Date() });
   }
+  let changed = false;
   if (provider && !(user.providers || []).includes(provider)) {
     user.providers = [...(user.providers || []), provider];
-    await user.save();
+    changed = true;
   }
+  // The provider just proved this inbox, which also verifies a password account
+  // that never typed its code.
+  if (!user.emailVerifiedAt) {
+    user.emailVerifiedAt = new Date();
+    changed = true;
+  }
+  if (changed) await user.save();
   return user;
 }

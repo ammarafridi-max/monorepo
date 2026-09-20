@@ -66,6 +66,9 @@ const orderSchema = new Schema(
     // checkout sets it, and signup/login back-links past orders by email. Never
     // required: buying does not need an account.
     userId: { type: Schema.Types.ObjectId, ref: 'User', default: null, index: true },
+    // Set when this order reuses the trained model of an earlier order by the same
+    // user: the worker skips training and generates from the copied version.
+    reuseFromOrderId: { type: Schema.Types.ObjectId, ref: 'Order', default: null },
 
     // Integer cents, never a float. Taken straight from Stripe amount_total.
     // Divide by 100 only at display time.
@@ -109,6 +112,7 @@ const orderSchema = new Schema(
     // falls back to a generic "a person". facialHair (optional) names the beard in
     // the prompt so it does not drift toward the base model's clean-shaven prior.
     gender: String,
+    build: String,
     ageRange: String,
     race: String,
     facialHair: String,

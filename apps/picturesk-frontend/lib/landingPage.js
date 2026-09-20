@@ -9,8 +9,8 @@ import {
   buildWebsite,
 } from './schema';
 
-const FUNNEL = '/ai-headshot-generator/select';
-const DATING_FUNNEL = '/ai-dating-photos/select';
+const FUNNEL = '/ai-headshot-generator/about';
+const DATING_FUNNEL = '/ai-dating-photos/about';
 
 // The canonical page each family of landing pages breadcrumbs from.
 export const ROOTS = {

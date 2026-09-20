@@ -20,6 +20,7 @@ export {
   GENDERS,
   RACES,
   FACIAL_HAIR,
+  BUILDS,
   buildPrompts,
   buildSubject,
   isValidLook,
@@ -28,8 +29,9 @@ export {
   isValidGender,
   isValidRace,
   isValidFacialHair,
+  isValidBuild,
 } from './catalog.js';
-export { TIERS, DEFAULT_TIER, getTier, isValidTier, tiersFor, fromPriceFor, defaultTierFor } from './pricing.js';
+export { TIERS, DEFAULT_TIER, getTier, isValidTier, isFreeTier, tiersFor, paidTiersFor, fromPriceFor, defaultTierFor } from './pricing.js';
 export { Order } from './orderModel.js';
 export { User } from './userModel.js';
 export { QUEUE_NAMES } from './queue.js';
@@ -37,4 +39,4 @@ export { connectMongo } from './db.js';
 export { transitionOrder, OrderTransitionConflictError } from './transitions.js';
 export { createRedisConnection } from './redis.js';
 export { createStorage } from './storage.js';
-export { createEmailClient, renderDeliveryEmail } from './emailClient.js';
+export { createEmailClient, renderDeliveryEmail, renderVerificationEmail } from './emailClient.js';

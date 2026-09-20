@@ -98,11 +98,78 @@ export function createEmailClient({ apiKey, sender }) {
      * The payment confirmation. Sent once from the Stripe webhook so the buyer has
      * the order id and the results link before the run finishes.
      */
-    async sendPaidEmail({ to, resultsUrl, orderId, planLabel, deliverCount, product, signal }) {
-      const { subject, html, text } = renderPaidEmail({ resultsUrl, orderId, planLabel, deliverCount, product });
+    async sendPaidEmail({ to, resultsUrl, orderId, planLabel, deliverCount, product, free, signal }) {
+      const { subject, html, text } = renderPaidEmail({ resultsUrl, orderId, planLabel, deliverCount, product, free });
+      return send({ to, subject, html, text, signal });
+    },
+
+    /** The six-digit email verification code for a password account. */
+    async sendVerificationEmail({ to, code, signal }) {
+      const { subject, html, text } = renderVerificationEmail({ code });
       return send({ to, subject, html, text, signal });
     },
   };
+}
+
+/**
+ * Render the verification email: one six-digit code, nothing else to click. The
+ * code expires in 15 minutes and the page that asked for it is where it is typed.
+ */
+export function renderVerificationEmail({ code }) {
+  const subject = `${code} is your Picturesk code`;
+  const html = `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light only" />
+  <title>${subject}</title>
+</head>
+<body style="margin:0;padding:0;background:${BONE};">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${BONE};">
+    <tr>
+      <td align="center" style="padding:40px 20px;">
+        <table role="presentation" width="520" cellpadding="0" cellspacing="0" border="0" style="width:520px;max-width:520px;background:${BONE};">
+          <tr>
+            <td style="padding:0 0 28px 0;font-family:${SANS};font-size:15px;font-weight:600;letter-spacing:0.02em;color:${INK}">
+              Picturesk.ai
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 0 14px 0;font-family:${SERIF};font-size:30px;line-height:1.2;font-weight:600;color:${INK}">
+              Your verification code.
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 0 22px 0;font-family:${SANS};font-size:16px;line-height:1.6;color:${INK}">
+              Type this code on the page you just left. It works for 15 minutes.
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 0 28px 0;font-family:${SANS};font-size:36px;font-weight:700;letter-spacing:0.18em;color:${COBALT}">
+              ${code}
+            </td>
+          </tr>
+          <tr>
+            <td style="border-top:1px solid ${LINE};padding:20px 0 0 0;font-family:${SANS};font-size:13px;line-height:1.6;color:${ASH}">
+              If you did not create a Picturesk account, ignore this email. Nobody can use the code without your password.
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+  const text = [
+    'Your Picturesk verification code:',
+    '',
+    code,
+    '',
+    'Type it on the page you just left. It works for 15 minutes.',
+    'If you did not create a Picturesk account, ignore this email.',
+  ].join('\n');
+  return { subject, html, text };
 }
 
 // Forest & Gold palette. Deep green ink on warm sand, green CTA, gold as a
@@ -261,14 +328,19 @@ export function renderDeliveryEmail({ resultsUrl, orderId, thumbnailUrls = [], l
  * table layout as the delivery email. Copy commits only to what the system does:
  * paid, training now, the link below is where the set appears, about an hour.
  */
-export function renderPaidEmail({ resultsUrl, orderId, planLabel, deliverCount, product }) {
+export function renderPaidEmail({ resultsUrl, orderId, planLabel, deliverCount, product, free = false }) {
   const noun = nounFor(product);
-  const subject = `Payment received. Your ${noun} are on the way`;
+  const subject = free ? `Your free ${noun} are on the way` : `Payment received. Your ${noun} are on the way`;
+  const heading = free ? 'Your free set is on the way.' : 'Payment received.';
   const preheader = 'We are training a model on your face now. Your set is usually ready in about an hour.';
-  const planLine =
-    planLabel && deliverCount
+  const planLine = free
+    ? `Free plan, ${deliverCount} ${noun}.`
+    : planLabel && deliverCount
       ? `${planLabel} plan, ${deliverCount} ${noun}.`
       : 'Your plan is confirmed.';
+  const guaranteeLine = free
+    ? 'Nothing to do on your side. Your trained model stays with your account for 12 months, so a paid set later needs no new upload.'
+    : 'Nothing to do on your side. If a run fails for any reason you are refunded automatically, and if the finished set does not look like you, reply to the delivery email within 3 days for a full refund.';
 
   const html = `<!doctype html>
 <html lang="en">
@@ -291,7 +363,7 @@ export function renderPaidEmail({ resultsUrl, orderId, planLabel, deliverCount, 
           </tr>
           <tr>
             <td style="padding:0 0 14px 0;font-family:${SERIF};font-size:30px;line-height:1.2;font-weight:600;color:${INK}">
-              Payment received.
+              ${heading}
             </td>
           </tr>
           <tr>
@@ -314,7 +386,7 @@ export function renderPaidEmail({ resultsUrl, orderId, planLabel, deliverCount, 
           </tr>
           <tr>
             <td style="padding:0 0 28px 0;font-family:${SANS};font-size:14px;line-height:1.6;color:${ASH}">
-              Nothing to do on your side. If a run fails for any reason you are refunded automatically, and if the finished set does not look like you, reply to the delivery email within 3 days for a full refund.
+              ${guaranteeLine}
             </td>
           </tr>
           <tr>
@@ -336,14 +408,14 @@ export function renderPaidEmail({ resultsUrl, orderId, planLabel, deliverCount, 
 </html>`;
 
   const text = [
-    'Payment received.',
+    heading,
     '',
     `${planLine} We are training a model on your face now. Most sets are ready in about an hour, and we email you again the moment yours is.`,
     '',
     'Follow your order here:',
     resultsUrl,
     '',
-    'Nothing to do on your side. If a run fails for any reason you are refunded automatically, and if the finished set does not look like you, reply to the delivery email within 3 days for a full refund.',
+    guaranteeLine,
     '',
     `Order ${orderId}`,
   ].join('\n');

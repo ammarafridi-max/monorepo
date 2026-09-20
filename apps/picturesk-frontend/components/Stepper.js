@@ -7,9 +7,9 @@ import { productForPath } from '../lib/products';
 // Which funnel step the current route is on, so the stepper can render each step
 // as done / current / upcoming. Pay has no route past the Stripe redirect.
 function currentKey(pathname) {
-  if (pathname?.endsWith('/upload') || pathname?.endsWith('/capture')) return 'upload';
-  if (pathname?.endsWith('/payment')) return 'pay';
-  return 'select';
+  const last = pathname?.split('/').pop();
+  if (last === 'capture') return 'photos';
+  return ['about', 'build', 'plan', 'photos', 'review'].includes(last) ? last : 'about';
 }
 
 export default function Stepper() {

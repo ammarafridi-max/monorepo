@@ -5,7 +5,9 @@ import {
   exchangeCodeForEmail,
   redirectUri,
   readAndClearStateCookie,
+  readAndClearNextCookie,
 } from '../../../../../../lib/oauth';
+import { safeNext } from '../../../../../../lib/redirects';
 import { dbConnect } from '../../../../../../lib/db';
 import { createSessionCookie } from '../../../../../../lib/session';
 import { findOrCreateOAuthUser, backlinkOrders } from '../../../../../../lib/auth';
@@ -22,6 +24,7 @@ export async function GET(req, { params }) {
   const code = url.searchParams.get('code');
   const returnedState = url.searchParams.get('state');
   const expectedState = await readAndClearStateCookie();
+  const next = safeNext(await readAndClearNextCookie());
 
   if (
     !getProvider(name) ||
@@ -44,5 +47,5 @@ export async function GET(req, { params }) {
     redirect('/login?error=1');
   }
 
-  redirect('/account');
+  redirect(next);
 }

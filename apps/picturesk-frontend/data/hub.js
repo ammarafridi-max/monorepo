@@ -27,7 +27,7 @@ export const hub = {
         id: 'headshots',
         title: 'Professional Headshots',
         from: 9,
-        href: '/ai-headshot-generator/select',
+        href: '/ai-headshot-generator/about',
         learn: '/ai-headshot-generator',
         who: 'For LinkedIn, CVs, company pages and speaker bios.',
         body: 'Studio backdrops, offices and outdoor looks in suits, shirts and knits. Head and shoulders, framed for a profile crop. 5, 25 or 60 headshots.',
@@ -41,7 +41,7 @@ export const hub = {
         id: 'dating',
         title: 'Dating Photos',
         from: 19,
-        href: '/ai-dating-photos/select',
+        href: '/ai-dating-photos/about',
         learn: '/ai-dating-photos',
         who: 'For Hinge, Tinder and Bumble.',
         body: 'Coffee shops, rooftops, trails and dinner tables, in clothes you actually own. Candid framing, natural light, real skin. 20, 60 or 120 photos.',
@@ -74,7 +74,7 @@ export const hub = {
       },
       {
         q: 'Is this a subscription?',
-        a: 'No. Every service is sold as one-time packs: headshots from $9, dating photos from $19. No monthly charge, no credits that expire, and no account needed to buy.',
+        a: 'No. Every service is sold as one-time packs: headshots from $9, dating photos from $19. No monthly charge and no credits that expire. Your first small set is free, once per account, so you can see the result before you pay.',
       },
       {
         q: 'How long does it take?',

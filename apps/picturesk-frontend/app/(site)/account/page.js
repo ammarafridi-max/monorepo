@@ -58,9 +58,13 @@ export default async function AccountPage() {
       ),
       tierLabel: tier.label,
       count: o.deliverCount ?? tier.deliverCount,
+      noun: o.product === 'dating' ? 'dating photos' : 'headshots',
+      publicToken: o.publicToken || '',
+      token: o.publicToken ? `&t=${o.publicToken}` : '',
       thumb: o.status === 'DELIVERED' ? o.deliveredImageUrls?.[0] || null : null,
     };
   });
+  const hasModel = orders.some((o) => o.replicate?.trainedModelVersion);
 
   return (
     <main className="page acct">
@@ -94,12 +98,34 @@ export default async function AccountPage() {
           <div>
             {view.length === 0 ? (
               <div className="acct__card acct__empty">
-                <p>No orders yet.</p>
-                <a className="btn btn--primary" href="/ai-headshot-generator/select">
-                  Start your first set <span className="btn__price">from $9</span>
-                </a>
+                <p>No orders yet. Your first set is free.</p>
+                <div className="hero__actions" style={{ marginTop: 12 }}>
+                  <a className="btn btn--primary" href="/ai-headshot-generator/about">
+                    Headshots
+                  </a>
+                  <a className="btn btn--primary" href="/ai-dating-photos/about">
+                    Dating photos
+                  </a>
+                </div>
               </div>
             ) : (
+              <>
+              <div className="acct__card acct__again">
+                <p>
+                  <strong>Make another set.</strong>{' '}
+                  {hasModel
+                    ? 'Your trained model is saved, so the next set needs no upload and is ready in minutes.'
+                    : 'Same account, same selfies.'}
+                </p>
+                <div className="hero__actions" style={{ marginTop: 10 }}>
+                  <a className="btn btn--primary" href="/ai-headshot-generator/about">
+                    Headshots
+                  </a>
+                  <a className="btn btn--primary" href="/ai-dating-photos/about">
+                    Dating photos
+                  </a>
+                </div>
+              </div>
               <ul className="ords">
                 {view.map((o) => (
                   <li className="ord" key={o.orderId}>
@@ -113,7 +139,7 @@ export default async function AccountPage() {
                     </div>
                     <div className="ord__body">
                       <p className="ord__title">
-                        {o.tierLabel} · {o.count} headshots
+                        {o.tierLabel} · {o.count} {o.noun}
                       </p>
                       <p className="ord__sub muted">
                         Ordered {o.date} · #{o.short}
@@ -123,11 +149,11 @@ export default async function AccountPage() {
                       {STATUS_LABEL[o.status] || o.status}
                     </span>
                     <div className="ord__actions">
-                      <a className="btn btn--link" href={`/success?orderId=${o.orderId}`}>
+                      <a className="btn btn--link" href={`/success?orderId=${o.orderId}${o.token}`}>
                         View
                       </a>
                       {o.delivered && (
-                        <a className="btn btn--link" href={downloadAllUrl(o.orderId)}>
+                        <a className="btn btn--link" href={downloadAllUrl(o.orderId, o.publicToken)}>
                           Download
                         </a>
                       )}
@@ -138,6 +164,7 @@ export default async function AccountPage() {
                   </li>
                 ))}
               </ul>
+              </>
             )}
           </div>
 

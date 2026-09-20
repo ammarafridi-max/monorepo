@@ -1,5 +1,6 @@
-import UploadStep from '../../../../../components/funnel/UploadStep';
+import { redirect } from 'next/navigation';
 
-export default function Page() {
-  return <UploadStep product="dating" />;
+export default async function Page({ searchParams }) {
+  const qs = new URLSearchParams(await searchParams).toString();
+  redirect(`/ai-dating-photos/photos${qs ? `?${qs}` : ''}`);
 }

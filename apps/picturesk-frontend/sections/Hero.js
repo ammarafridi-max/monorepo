@@ -39,7 +39,7 @@ export default function Hero() {
             subscription.
           </p>
           <div className="hero__actions">
-            <a className="btn btn--primary" href="/ai-headshot-generator/select">
+            <a className="btn btn--primary" href="/ai-headshot-generator/about">
               Get my headshots <span className="btn__price">from $9</span>
             </a>
           </div>

@@ -2,6 +2,7 @@ import { User } from '@travel-suite/picturesk-shared';
 import { dbConnect } from '../../../../lib/db';
 import { createSessionCookie } from '../../../../lib/session';
 import { verifyPassword, normalizeEmail, backlinkOrders } from '../../../../lib/auth';
+import { needsVerification } from '../../../../lib/verification';
 
 // POST /api/auth/login { email, password } -> verifies credentials and starts a
 // session. Also back-links any past anonymous orders sharing this email.
@@ -22,5 +23,5 @@ export async function POST(req) {
   await backlinkOrders(user._id, normalized);
   await createSessionCookie(user);
 
-  return Response.json({ ok: true });
+  return Response.json({ ok: true, verify: needsVerification(user) });
 }

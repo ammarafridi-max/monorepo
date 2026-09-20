@@ -1,4 +1,4 @@
-import { tiersFor, fromPriceFor } from '@travel-suite/picturesk-shared/pricing';
+import { tiersFor, fromPriceFor, isFreeTier } from '@travel-suite/picturesk-shared/pricing';
 import { planNotes } from '../data/landing';
 import Check from '../components/Check';
 import Container from '../components/Container';
@@ -33,7 +33,7 @@ export default function Pricing({
   lede = 'Every plan trains a model on your own face and delivers at full resolution. What changes is how many headshots you get and how much of the catalogue you can pick from.',
   cta = 'Get my headshots',
   product = 'headshots',
-  href = '/ai-headshot-generator/select',
+  href = '/ai-headshot-generator/about',
 }) {
   const tiers = tiersFor(product);
   const from = fromPriceFor(product);
@@ -48,13 +48,14 @@ export default function Pricing({
             return (
               <a
                 className={`plan plan--link${t.popular ? ' plan--on' : ''}`}
-                href={`/ai-headshot-generator/select?tier=${t.id}`}
+                href={`/ai-headshot-generator/about?tier=${t.id}`}
                 key={t.id}
                 aria-label={`Choose ${t.label}, ${usd(t.priceCents)}`}
               >
                 {t.popular && <span className="plan__badge">Most popular</span>}
+                {isFreeTier(t) && <span className="plan__badge plan__badge--free">Once per account</span>}
                 <span className="plan__name">{t.label}</span>
-                <span className="plan__price">{usd(t.priceCents)}</span>
+                <span className="plan__price">{isFreeTier(t) ? '$0' : usd(t.priceCents)}</span>
 
                 <ul className="plan__includes">
                   {includesFor(t).map((item) => (

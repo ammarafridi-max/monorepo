@@ -124,6 +124,14 @@ export const testimonials = [
 // the tier data, so the counts on the card can never disagree with what is sold.
 // Keyed by the tier ids in @travel-suite/picturesk-shared/pricing.
 export const planNotes = {
+  free: {
+    best: 'Best for seeing whether it looks like you before you spend anything.',
+    cons: ['One background, one outfit, and once per account'],
+  },
+  dating_free: {
+    best: 'Best for a first look at the style before you buy a pack.',
+    cons: ['One scene, one outfit, and once per account'],
+  },
   starter: {
     best: 'Best for one profile photo you need today.',
     cons: ['One outfit means one look across the whole set'],

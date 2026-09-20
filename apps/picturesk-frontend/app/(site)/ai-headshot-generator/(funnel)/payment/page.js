@@ -1,5 +1,6 @@
-import PaymentStep from '../../../../../components/funnel/PaymentStep';
+import { redirect } from 'next/navigation';
 
-export default function Page() {
-  return <PaymentStep product="headshots" />;
+export default async function Page({ searchParams }) {
+  const qs = new URLSearchParams(await searchParams).toString();
+  redirect(`/ai-headshot-generator/review${qs ? `?${qs}` : ''}`);
 }

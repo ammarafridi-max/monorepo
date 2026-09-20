@@ -38,35 +38,38 @@ export async function putToStorage(uploadUrl, file) {
 }
 
 /**
- * Create the order + Stripe session from the selections AND the already-uploaded
- * photos (payment is the last step). Returns { orderId, checkoutUrl }. On a gate
- * failure throws with err.status === 422 and err.body.failures (per-photo reasons)
- * so the UI can flag which photos to swap.
+ * Create the order and, for a paid plan, the Stripe session. Goes through the web
+ * app's own /api/checkout, which attaches the signed-in user. Returns
+ * { orderId, checkoutUrl, free? }: for a free plan checkoutUrl is already the
+ * success page. Throws with err.status on 401/403 (sign in / verify), 409 (free
+ * plan already used) and 422 (gate failures, err.body.failures).
  */
 export async function createCheckout({
-  email,
   selectedLooks,
   selectedAttire,
   gender,
   ageRange,
   race,
   facialHair,
+  build,
   uploadedImageUrls,
+  reuseFromOrderId,
   tier,
   product,
 }) {
-  const res = await fetch(`${API_BASE}/checkout`, {
+  const res = await fetch('/api/checkout', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      email,
       selectedLooks,
       selectedAttire,
       gender,
       ageRange,
       race,
       facialHair,
+      build,
       uploadedImageUrls,
+      reuseFromOrderId,
       tier,
       product,
     }),

@@ -109,6 +109,7 @@ function toAdminOrderDetail(order) {
     tier: order.tier ?? null,
     customerEmail: order.customerEmail,
     userId: order.userId ? order.userId.toString() : null,
+    reuseFromOrderId: order.reuseFromOrderId ? order.reuseFromOrderId.toString() : null,
 
     amountPaidCents: order.amountPaidCents ?? null,
     computeCostCents: order.computeCostCents ?? 0,
@@ -120,6 +121,7 @@ function toAdminOrderDetail(order) {
     gender: order.gender ?? null,
     ageRange: order.ageRange ?? null,
     race: order.race ?? null,
+    build: order.build ?? null,
     facialHair: order.facialHair ?? null,
     derivedFacialHair: order.derivedFacialHair ?? null,
 

@@ -6,6 +6,7 @@ import Footer from './Footer';
 import Container from './Container';
 import ProfileMenu from './ProfileMenu';
 import ServicesMenu from './ServicesMenu';
+import ServicePicker from './ServicePicker';
 import { navCtaFor } from '../lib/products';
 
 const FUNNEL_BASES = ['/ai-headshot-generator', '/ai-dating-photos'];
@@ -42,12 +43,16 @@ function Burger({ open, onClick }) {
 
 export default function SiteChrome({ authed, email, children }) {
   const [open, setOpen] = useState(false);
+  const [picking, setPicking] = useState(false);
   const pathname = usePathname();
   const inFunnel = FUNNEL_BASES.some((base) => pathname?.startsWith(`${base}/`));
   const cta = navCtaFor(pathname);
 
-  // Navigating with the drawer open would otherwise leave it open on the new page.
-  useEffect(() => setOpen(false), [pathname]);
+  // Navigating with the drawer or picker open would otherwise leave it open on the new page.
+  useEffect(() => {
+    setOpen(false);
+    setPicking(false);
+  }, [pathname]);
 
   // Escape closes it, and the page behind must not scroll while it is over the top.
   useEffect(() => {
@@ -80,9 +85,22 @@ export default function SiteChrome({ authed, email, children }) {
           Log in
         </a>
       )}
-      <a className="navcta" href={cta.href}>
-        {cta.label}
-      </a>
+      {cta.href ? (
+        <a className="navcta" href={cta.href}>
+          {cta.label}
+        </a>
+      ) : (
+        <button
+          type="button"
+          className="navcta"
+          onClick={() => {
+            setOpen(false);
+            setPicking(true);
+          }}
+        >
+          {cta.label}
+        </button>
+      )}
     </>
   );
 
@@ -137,6 +155,7 @@ export default function SiteChrome({ authed, email, children }) {
         </div>
       </header>
       {open && <div className="drawer__scrim" onClick={() => setOpen(false)} aria-hidden="true" />}
+      <ServicePicker open={picking} onClose={() => setPicking(false)} />
       {children}
       <Footer />
     </>

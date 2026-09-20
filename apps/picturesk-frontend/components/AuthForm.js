@@ -4,8 +4,9 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 // Shared credentials form for /login and /signup. Posts to the matching route
-// handler, then sends the user to their account on success.
-export default function AuthForm({ mode }) {
+// handler, then sends the user on: to /verify when the account still has to prove
+// its inbox (carrying `next`), otherwise to `next` or their account.
+export default function AuthForm({ mode, next = '/account' }) {
   const router = useRouter();
   const isSignup = mode === 'signup';
   const [email, setEmail] = useState('');
@@ -29,7 +30,7 @@ export default function AuthForm({ mode }) {
         setBusy(false);
         return;
       }
-      router.push('/account');
+      router.push(body.verify ? `/verify?next=${encodeURIComponent(next)}` : next);
       router.refresh();
     } catch {
       setError('Something went wrong. Please try again.');

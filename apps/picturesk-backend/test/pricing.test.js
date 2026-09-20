@@ -1,16 +1,21 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { TIERS, DEFAULT_TIER, getTier, isValidTier, tiersFor } from '@travel-suite/picturesk-shared/pricing';
+import { TIERS, DEFAULT_TIER, getTier, isValidTier, isFreeTier, tiersFor, paidTiersFor, fromPriceFor } from '@travel-suite/picturesk-shared/pricing';
 
-test('TIERS holds three one-time tiers per product, each ladder priced low to high', () => {
+test('TIERS holds a free tier plus three paid tiers per product, priced low to high', () => {
   assert.deepEqual(
     tiersFor('headshots').map((t) => [t.id, t.priceCents]),
-    [['starter', 900], ['pro', 2900], ['premium', 4900]]
+    [['free', 0], ['starter', 900], ['pro', 2900], ['premium', 4900]]
   );
   assert.deepEqual(
     tiersFor('dating').map((t) => [t.id, t.priceCents]),
-    [['dating_starter', 1900], ['dating_pro', 3900], ['dating_premium', 5900]]
+    [['dating_free', 0], ['dating_starter', 1900], ['dating_pro', 3900], ['dating_premium', 5900]]
   );
+  assert.deepEqual(paidTiersFor('headshots').map((t) => t.id), ['starter', 'pro', 'premium']);
+  assert.equal(fromPriceFor('headshots'), 9);
+  assert.equal(fromPriceFor('dating'), 19);
+  assert.ok(isFreeTier(getTier('free')) && isFreeTier(getTier('dating_free')));
+  assert.ok(!isFreeTier(getTier('starter')));
   for (const product of ['headshots', 'dating']) {
     const tiers = tiersFor(product);
     const prices = tiers.map((t) => t.priceCents);
@@ -20,7 +25,7 @@ test('TIERS holds three one-time tiers per product, each ladder priced low to hi
   // Every tier must be internally coherent: integer cents, deliver <= generate,
   // a valid BullMQ priority, a known product.
   for (const t of TIERS) {
-    assert.ok(Number.isInteger(t.priceCents) && t.priceCents > 0, `${t.id} priceCents`);
+    assert.ok(Number.isInteger(t.priceCents) && t.priceCents >= 0, `${t.id} priceCents`);
     assert.ok(t.deliverCount > 0 && t.deliverCount <= t.generateCount, `${t.id} deliver<=generate`);
     assert.ok(Number.isInteger(t.priority) && t.priority >= 1, `${t.id} priority`);
     assert.ok(['headshots', 'dating'].includes(t.product), `${t.id} product`);

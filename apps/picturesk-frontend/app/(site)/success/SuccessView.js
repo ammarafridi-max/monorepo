@@ -128,7 +128,7 @@ export default function SuccessView() {
     if (!purchasedRef.current && order && PAID_STATES.has(order.status)) {
       purchasedRef.current = true;
       track(EVENTS.PURCHASE_COMPLETED);
-      clearState();
+      clearState(order.product);
     }
   }, [order]);
 

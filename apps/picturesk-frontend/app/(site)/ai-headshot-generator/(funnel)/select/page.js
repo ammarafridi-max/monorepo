@@ -1,5 +1,6 @@
-import SelectStep from '../../../../../components/funnel/SelectStep';
+import { redirect } from 'next/navigation';
 
-export default function Page() {
-  return <SelectStep product="headshots" />;
+export default async function Page({ searchParams }) {
+  const qs = new URLSearchParams(await searchParams).toString();
+  redirect(`/ai-headshot-generator/about${qs ? `?${qs}` : ''}`);
 }
