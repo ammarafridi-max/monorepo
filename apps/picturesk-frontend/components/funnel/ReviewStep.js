@@ -13,7 +13,7 @@ import {
   HEIGHTS,
 } from '@travel-suite/picturesk-shared/catalog';
 import { getTier, isFreeTier } from '@travel-suite/picturesk-shared/pricing';
-import { readState } from '../../lib/generator';
+import { readState, writeState } from '../../lib/generator';
 import { createCheckout } from '../../lib/api';
 import { track, EVENTS } from '../../lib/analytics';
 import { funnelPaths, productConfig } from '../../lib/products';
@@ -88,6 +88,12 @@ export default function ReviewStep({ product }) {
       window.location.href = checkoutUrl;
     } catch (err) {
       if (err.status === 401) return router.push(`/login?next=${encodeURIComponent(paths.review)}`);
+      if (err.status === 409 && reusing) {
+        writeState({ reuseFromOrderId: '' }, product);
+        setError(`${err.message} `);
+        setBusy(false);
+        return;
+      }
       if (err.status === 403) return router.push(`/verify?next=${encodeURIComponent(paths.review)}`);
       if (err.status === 422) {
         const body = err.body || {};

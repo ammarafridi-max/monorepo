@@ -235,17 +235,25 @@ export default function PhotosStep({ product }) {
         </div>
       )}
 
-      {reusing && reusable.images.length > 0 && (
+      {reusing && (
         <div className="reuse__photos" data-clarity-mask="true">
-          <p className="gen-hint">The photos we will use, exactly as you uploaded them last time.</p>
-          <div className="thumbs">
-            {reusable.images.map((url, i) => (
-              <div className="thumb thumb--ok" key={url}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={url} alt={`photo ${i + 1}`} />
+          {reusable.images.length > 0 ? (
+            <>
+              <p className="gen-hint">The photos we will use, exactly as you uploaded them last time.</p>
+              <div className="thumbs">
+                {reusable.images.map((url, i) => (
+                  <div className="thumb thumb--ok" key={url}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={url} alt={`photo ${i + 1}`} />
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </>
+          ) : (
+            <p className="gen-hint">
+              Your {reusable.count} original photos are on file. They will appear on this order once it starts.
+            </p>
+          )}
         </div>
       )}
 

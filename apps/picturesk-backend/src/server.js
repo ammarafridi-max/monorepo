@@ -39,6 +39,7 @@ import { detectFaces } from './faceDetector.js';
 import { assessPhoto } from './photoGate.js';
 import { moderateImage, MODERATION_REASON } from './contentModerator.js';
 import { QUALITY, evaluateImages, countError } from './uploadGate.js';
+import { resolveReusableSelfies } from './reuse.js';
 import { RATE_LIMITS, createRateLimiters } from './rateLimit.js';
 import { createBlogRouter, createBlogTagRouter } from '@travel-suite/blog';
 import { createAffiliatesRouter } from '@travel-suite/affiliates';
@@ -651,7 +652,7 @@ app.post('/uploads/gate', presignLimiter, async (req, res) => {
       const trained = source?.replicate?.trainedModelVersion;
       const at = source?.deliveredAt || source?.paidAt || source?.createdAt;
       if (!source || !trained || !at || Date.now() - new Date(at).getTime() > MODEL_REUSE_MAX_AGE_MS) {
-        return res.status(400).json({ error: 'That order has no model we can reuse' });
+        return res.status(400).json({ error: 'That order has no photos we can reuse' });
       }
     }
     const gate = await runUploadGate(uploadedImageUrls);
@@ -781,7 +782,19 @@ app.post('/checkout', checkoutLimiter, internalOnly, async (req, res) => {
 
     // Create the order in AWAITING_PAYMENT with selections + images. amountPaidCents
     // is written from Stripe in the webhook once payment confirms.
+    // The id is minted up front so restored selfies can be keyed under it.
+    const newOrderId = new mongoose.Types.ObjectId();
+    let reusedSelfies = null;
+    if (reusing) {
+      if (!adminStorage) return res.status(500).json({ error: 'Storage is not configured' });
+      reusedSelfies = await resolveReusableSelfies(adminStorage, source, newOrderId.toString());
+      if (!reusedSelfies) {
+        return res.status(409).json({ error: 'We no longer have the photos from that order. Please upload again.' });
+      }
+    }
+
     const order = await Order.create({
+      _id: newOrderId,
       customerEmail: email,
       userId,
       publicToken: randomUUID().replace(/-/g, ''),
@@ -795,7 +808,7 @@ app.post('/checkout', checkoutLimiter, internalOnly, async (req, res) => {
       height: height || undefined,
       // Reuse copies the source order's selfies (identity scoring needs them) and
       // its trained version, so the worker's training stage sees it and skips.
-      uploadedImageUrls: reusing ? source.uploadedImageUrls : uploadedImageUrls,
+      uploadedImageUrls: reusing ? reusedSelfies : uploadedImageUrls,
       reuseFromOrderId: reusing ? source._id : undefined,
       replicate: reusing
         ? { trainedModelVersion: source.replicate.trainedModelVersion, weightsUrl: source.replicate.weightsUrl }
