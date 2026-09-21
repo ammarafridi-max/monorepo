@@ -49,9 +49,9 @@ export default function LinkedInPhotoAnalyzerPage() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
       <main>
-        <section className="hero hero--landing">
-          <Container className="hero__inner hero__inner--single">
-            <div className="hero__copy">
+        <section className="hero hero--landing hero--tool">
+          <Container>
+            <div className="hero__copy hero__copy--center">
               <p className="eyebrow">{hero.eyebrow}</p>
               <h1 className="display hero__title">{hero.title}</h1>
               <p className="lede">{hero.lede}</p>
