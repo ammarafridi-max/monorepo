@@ -28,6 +28,10 @@ export const services = [
       { label: 'AI Dating Photos vs Photographer', href: '/ai-dating-photos-vs-photographer' },
     ],
   },
+];
+
+// The Tools menu: free tools, grouped the same way so the footer can list them.
+export const tools = [
   {
     id: 'tools',
     label: 'Free Tools',

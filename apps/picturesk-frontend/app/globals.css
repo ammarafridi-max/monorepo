@@ -3882,7 +3882,7 @@ button:focus-visible,
   left: 50%;
   transform: translateX(-50%);
   display: grid;
-  grid-template-columns: repeat(3, minmax(220px, max-content));
+  grid-template-columns: repeat(2, minmax(280px, max-content));
   gap: 8px;
   padding: 20px 22px 22px;
   background: #ffffff;
@@ -4699,4 +4699,8 @@ button:focus-visible,
     grid-template-columns: 1fr auto;
     align-items: start;
   }
+}
+
+.services__panel--single {
+  grid-template-columns: minmax(260px, max-content);
 }

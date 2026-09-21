@@ -2,7 +2,7 @@
 // surface. The brand is an ivory text wordmark (the stored logo.png is dark and
 // would vanish on green). Links are absolute paths so it works from any page.
 import Container from './Container';
-import { services } from '../data/services';
+import { services, tools } from '../data/services';
 
 export default function Footer() {
   return (
@@ -14,7 +14,7 @@ export default function Footer() {
         </div>
 
         <nav className="footer__cols" aria-label="Footer">
-          {services.map((group) => (
+          {[...services, ...tools].map((group) => (
             <div className="footer__col" key={group.id}>
               <p className="footer__coltitle">{group.label}</p>
               {group.pages.map((p) => (

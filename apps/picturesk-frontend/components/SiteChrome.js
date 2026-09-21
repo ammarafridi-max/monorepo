@@ -6,6 +6,7 @@ import Footer from './Footer';
 import Container from './Container';
 import ProfileMenu from './ProfileMenu';
 import ServicesMenu from './ServicesMenu';
+import { tools } from '../data/services';
 import ServicePicker from './ServicePicker';
 import { navCtaFor } from '../lib/products';
 
@@ -72,6 +73,7 @@ export default function SiteChrome({ authed, email, children }) {
   const links = (variant) => (
     <>
       <ServicesMenu variant={variant} />
+      <ServicesMenu variant={variant} label="Tools" groups={tools} />
       <a className="navlink" href="/pricing">
         Pricing
       </a>

@@ -29,7 +29,7 @@ function ChevronDown({ open }) {
 // per product; in the mobile drawer the same groups rendered as plain lists, since
 // a dropdown inside a drawer is two menus deep. Opens on hover, click and focus,
 // closes on Escape and outside click, the same contract as ProfileMenu.
-export default function ServicesMenu({ variant = 'dropdown' }) {
+export default function ServicesMenu({ variant = 'dropdown', label = 'Services', groups = services }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -52,7 +52,7 @@ export default function ServicesMenu({ variant = 'dropdown' }) {
   if (variant === 'list') {
     return (
       <div className="services-list">
-        {services.map((group) => (
+        {groups.map((group) => (
           <div className="services-list__group" key={group.id}>
             <p className="services-list__title">{group.label}</p>
             {group.pages.map((p) => (
@@ -81,12 +81,12 @@ export default function ServicesMenu({ variant = 'dropdown' }) {
         onClick={() => setOpen((v) => !v)}
         onFocus={() => setOpen(true)}
       >
-        Services
+        {label}
         <ChevronDown open={open} />
       </button>
 
-      <div className="services__panel" hidden={!open}>
-        {services.map((group) => (
+      <div className={`services__panel${groups.length === 1 ? ' services__panel--single' : ''}`} hidden={!open}>
+        {groups.map((group) => (
           <div className="services__group" key={group.id}>
             <a className="services__head" href={group.href}>
               <span className="services__label">{group.label}</span>
