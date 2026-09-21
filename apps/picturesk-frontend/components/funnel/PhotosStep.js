@@ -118,10 +118,22 @@ export default function PhotosStep({ product }) {
       }
       // Passed the real gate -> promote to a verified 'existing' item (green tick).
       setItems((prev) => prev.map((it) => (it.id === item.id ? accept(it, url) : it)));
-    } catch {
-      updateItem(item.id, { status: 'bad', reason: 'Upload failed, remove and try again' });
+    } catch (err) {
+      const reason =
+        err?.status === 429
+          ? 'Too many uploads at once. Wait a minute, then remove and re-add this photo.'
+          : 'Upload failed, remove and try again';
+      updateItem(item.id, { status: 'bad', reason, transient: true });
     }
   }
+
+  const removeAll = useCallback(() => {
+    setItems((prev) => {
+      for (const it of prev) if (it.kind === 'new') URL.revokeObjectURL(it.url);
+      return [];
+    });
+    checkedRef.current.clear();
+  }, []);
 
   const removeAt = useCallback((id) => {
     setItems((prev) => {
@@ -195,7 +207,11 @@ export default function PhotosStep({ product }) {
   } else if (checking) {
     note = 'Checking your photos.';
   } else if (badCount > 0) {
-    note = `${badCount} photo${badCount === 1 ? '' : 's'} need a clearer single face. Remove or replace them.`;
+    const transient = items.filter((it) => it.kind === 'new' && it.status === 'bad' && it.transient).length;
+    note =
+      transient === badCount
+        ? `${badCount} photo${badCount === 1 ? '' : 's'} did not upload. Remove and try again.`
+        : `${badCount} photo${badCount === 1 ? '' : 's'} need a clearer single face. Remove or replace them.`;
   } else {
     note = `${items.length} photos ready.`;
   }
@@ -357,7 +373,17 @@ export default function PhotosStep({ product }) {
           </div>
         )}
 
-        <p className="formnote">{note}</p>
+        <p className="formnote">
+          {note}
+          {items.length > 0 && (
+            <>
+              {' '}
+              <button type="button" className="linkbtn" onClick={removeAll}>
+                Remove all photos
+              </button>
+            </>
+          )}
+        </p>
         {error && <p className="error">{error}</p>}
       </div>
 

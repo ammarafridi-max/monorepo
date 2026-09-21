@@ -27,7 +27,11 @@ function num(v, fallback) {
 export const RATE_LIMITS = Object.freeze({
   windowMs: num(process.env.RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000), // 15 min
   globalMax: num(process.env.RATE_LIMIT_MAX, 600), // ~40/min: well above polling
-  presignMax: num(process.env.RATE_LIMIT_PRESIGN_MAX, 20),
+  // One presign and one gate call per photo, up to 15 photos per set, plus
+  // retries and a second set in the same window: the budget has to hold a full
+  // upload several times over, not one.
+  presignMax: num(process.env.RATE_LIMIT_PRESIGN_MAX, 150),
+  gateMax: num(process.env.RATE_LIMIT_GATE_MAX, 150),
   checkoutMax: num(process.env.RATE_LIMIT_CHECKOUT_MAX, 10),
 });
 
@@ -38,7 +42,7 @@ const TOO_MANY = Object.freeze({
 });
 
 /**
- * Build the three limiters from a config object. A factory (not module-level
+ * Build the limiters from a config object. A factory (not module-level
  * singletons) so tests can construct tiny limits without 600 requests.
  * @param {typeof RATE_LIMITS} cfg
  */
@@ -55,6 +59,7 @@ export function createRateLimiters(cfg = RATE_LIMITS) {
   return {
     globalLimiter: make(cfg.globalMax),
     presignLimiter: make(cfg.presignMax),
+    gateLimiter: make(cfg.gateMax),
     checkoutLimiter: make(cfg.checkoutMax),
   };
 }

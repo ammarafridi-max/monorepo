@@ -428,7 +428,7 @@ const app = express();
 const TRUST_PROXY_HOPS = Number.parseInt(process.env.TRUST_PROXY_HOPS, 10);
 app.set('trust proxy', Number.isFinite(TRUST_PROXY_HOPS) ? TRUST_PROXY_HOPS : 1);
 
-const { globalLimiter, presignLimiter, checkoutLimiter } = createRateLimiters(RATE_LIMITS);
+const { globalLimiter, presignLimiter, gateLimiter, checkoutLimiter } = createRateLimiters(RATE_LIMITS);
 
 // The web app is a separate origin (localhost:3000 in dev). Allow it to call
 // the JSON endpoints. credentials:true lets the browser send the admin session
@@ -634,7 +634,7 @@ app.post('/uploads/presign', presignLimiter, async (req, res) => {
  *
  * Body: { uploadedImageUrls: [] }
  */
-app.post('/uploads/gate', presignLimiter, async (req, res) => {
+app.post('/uploads/gate', gateLimiter, async (req, res) => {
   try {
     const { uploadedImageUrls } = req.body ?? {};
     // Photos come either as fresh uploads or by reusing an earlier order's trained
