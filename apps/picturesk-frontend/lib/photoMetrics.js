@@ -1,8 +1,10 @@
 // Browser-side measurements for the free photo tools. Everything here runs on a
 // canvas in the visitor's tab, so it costs nothing and the photo does not have to
-// leave the device for it. Face detection uses the same optional FaceDetector
-// the upload step uses; without it the face fields are null and the server's
-// judgment carries more weight.
+// leave the device for it. Face detection is MediaPipe BlazeFace (lib/faceDetect.js),
+// which works in every modern browser; if it fails to load the face fields are
+// null and the server's judgment carries more weight.
+
+import { detectFaces } from './faceDetect';
 
 const MAX_SIDE = 1024;
 
@@ -58,26 +60,18 @@ function exposureOf(ctx, w, h) {
   return { brightness: Math.round(mean), contrast: Math.round(Math.sqrt(sumSq / n - mean * mean)) };
 }
 
-async function faceOf(bitmap, w, h, scaleToCanvas) {
-  if (typeof window === 'undefined' || !('FaceDetector' in window)) return { faceCount: null };
-  try {
-    // eslint-disable-next-line no-undef
-    const detector = new window.FaceDetector({ fastMode: false, maxDetectedFaces: 5 });
-    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 4000));
-    const faces = await Promise.race([detector.detect(bitmap), timeout]);
-    if (!faces.length) return { faceCount: 0 };
-    const b = faces[0].boundingBox;
-    const box = { x: b.x * scaleToCanvas, y: b.y * scaleToCanvas, width: b.width * scaleToCanvas, height: b.height * scaleToCanvas };
-    return {
-      faceCount: faces.length,
-      faceRatio: box.height / h,
-      eyeLine: (box.y + box.height * 0.4) / h,
-      faceCenterX: (box.x + box.width / 2) / w,
-      box,
-    };
-  } catch {
-    return { faceCount: null };
-  }
+async function faceOf(canvas, w, h) {
+  const faces = await detectFaces(canvas);
+  if (faces == null) return { faceCount: null };
+  if (!faces.length) return { faceCount: 0 };
+  const box = faces[0];
+  return {
+    faceCount: faces.length,
+    faceRatio: box.height / h,
+    eyeLine: (box.y + box.height * 0.4) / h,
+    faceCenterX: (box.x + box.width / 2) / w,
+    box,
+  };
 }
 
 function framingScore({ faceCount, faceRatio, eyeLine, faceCenterX }) {
@@ -109,7 +103,7 @@ function lightingScore({ brightness, contrast, sharpness }) {
  */
 export async function measurePhoto(file) {
   const { canvas, ctx, w, h, naturalW, naturalH, bitmap } = await toBitmap(file);
-  const face = await faceOf(bitmap, w, h, w / naturalW);
+  const face = await faceOf(canvas, w, h);
   const sharpness = sharpnessOf(ctx, w, h);
   const { brightness, contrast } = exposureOf(ctx, w, h);
   bitmap.close?.();
