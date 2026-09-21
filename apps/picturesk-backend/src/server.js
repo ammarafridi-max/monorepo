@@ -637,23 +637,8 @@ app.post('/uploads/presign', presignLimiter, async (req, res) => {
 app.post('/uploads/gate', gateLimiter, async (req, res) => {
   try {
     const { uploadedImageUrls } = req.body ?? {};
-    // Photos come either as fresh uploads or by reusing an earlier order's trained
-    // model (and its reference selfies). One of the two, never neither.
-    const reusing = reuseFromOrderId != null && reuseFromOrderId !== '';
-    if (!reusing && (!Array.isArray(uploadedImageUrls) || uploadedImageUrls.length === 0)) {
+    if (!Array.isArray(uploadedImageUrls) || uploadedImageUrls.length === 0) {
       return res.status(400).json({ error: 'uploadedImageUrls must be a non-empty array' });
-    }
-    let source = null;
-    if (reusing) {
-      if (!mongoose.isValidObjectId(reuseFromOrderId)) {
-        return res.status(400).json({ error: 'reuseFromOrderId is not a valid order id' });
-      }
-      source = await Order.findOne({ _id: reuseFromOrderId, userId });
-      const trained = source?.replicate?.trainedModelVersion;
-      const at = source?.deliveredAt || source?.paidAt || source?.createdAt;
-      if (!source || !trained || !at || Date.now() - new Date(at).getTime() > MODEL_REUSE_MAX_AGE_MS) {
-        return res.status(400).json({ error: 'That order has no photos we can reuse' });
-      }
     }
     const gate = await runUploadGate(uploadedImageUrls);
     if (gate) return res.status(gate.status).json(gate.body);
@@ -713,8 +698,23 @@ app.post('/checkout', checkoutLimiter, internalOnly, async (req, res) => {
     if (!Array.isArray(selectedAttire) || selectedAttire.length === 0) {
       return res.status(400).json({ error: 'selectedAttire must be a non-empty array' });
     }
-    if (!Array.isArray(uploadedImageUrls) || uploadedImageUrls.length === 0) {
+    // Photos come either as fresh uploads or by reusing an earlier order's trained
+    // model (and its reference selfies). One of the two, never neither.
+    const reusing = reuseFromOrderId != null && reuseFromOrderId !== '';
+    if (!reusing && (!Array.isArray(uploadedImageUrls) || uploadedImageUrls.length === 0)) {
       return res.status(400).json({ error: 'uploadedImageUrls must be a non-empty array' });
+    }
+    let source = null;
+    if (reusing) {
+      if (!mongoose.isValidObjectId(reuseFromOrderId)) {
+        return res.status(400).json({ error: 'reuseFromOrderId is not a valid order id' });
+      }
+      source = await Order.findOne({ _id: reuseFromOrderId, userId });
+      const trained = source?.replicate?.trainedModelVersion;
+      const at = source?.deliveredAt || source?.paidAt || source?.createdAt;
+      if (!source || !trained || !at || Date.now() - new Date(at).getTime() > MODEL_REUSE_MAX_AGE_MS) {
+        return res.status(400).json({ error: 'That order has no photos we can reuse' });
+      }
     }
     // Validate selections against the shared catalog so a tampered client cannot
     // store junk ids the worker would later fail to turn into prompts.
