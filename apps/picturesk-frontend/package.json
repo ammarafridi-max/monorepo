@@ -8,6 +8,7 @@
     "start": "next start -p 3000"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.127.0",
     "@sentry/nextjs": "^10.64.0",
     "@tanstack/react-query": "^5.95.2",
     "@travel-suite/frontend-shared": "workspace:*",

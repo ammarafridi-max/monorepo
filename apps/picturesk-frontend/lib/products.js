@@ -2,7 +2,7 @@
 // called, and where the landing page is. The catalogue and tiers themselves come
 // from picturesk-shared so the web can never sell something the worker cannot make.
 
-import { PRODUCTS, productOf } from '@travel-suite/picturesk-shared/products';
+import { PRODUCTS, productOf, isValidProduct } from '@travel-suite/picturesk-shared/products';
 import { services } from '../data/services';
 
 export { PRODUCTS, productOf };
@@ -75,7 +75,7 @@ export function productForPage(pathname) {
     if (pathname === cfg.base || pathname.startsWith(`${cfg.base}/`)) return cfg.id;
   }
   for (const group of services) {
-    if (group.pages.some((p) => p.href === pathname)) return group.id;
+    if (group.pages.some((p) => p.href === pathname)) return isValidProduct(group.id) ? group.id : null;
   }
   return null;
 }

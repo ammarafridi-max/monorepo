@@ -9,6 +9,7 @@ export const revalidate = 3600;
 const PAGES = [
   { path: '/', changeFrequency: 'weekly', priority: 1 },
   { path: '/ai-headshot-generator', changeFrequency: 'weekly', priority: 0.9 },
+  { path: '/tools/linkedin-photo-analyzer', changeFrequency: 'monthly', priority: 0.7 },
   { path: '/pricing', changeFrequency: 'monthly', priority: 0.9 },
   { path: '/linkedin-headshots', changeFrequency: 'monthly', priority: 0.9 },
   { path: '/real-estate-agent-headshots', changeFrequency: 'monthly', priority: 0.8 },

@@ -37,6 +37,13 @@ const userSchema = new Schema(
       height: { type: String, default: '' },
     },
 
+    // The last result from a free tool, so the funnel can refer back to it.
+    lastAnalysis: {
+      tool: { type: String, default: '' },
+      score: { type: Number, default: null },
+      at: { type: Date, default: null },
+    },
+
     // Email verification, required before a password account can enter a funnel.
     // OAuth accounts are verified by the provider and get the timestamp at creation.
     emailVerifiedAt: { type: Date, default: null },

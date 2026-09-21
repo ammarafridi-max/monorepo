@@ -28,4 +28,11 @@ export const services = [
       { label: 'AI Dating Photos vs Photographer', href: '/ai-dating-photos-vs-photographer' },
     ],
   },
+  {
+    id: 'tools',
+    label: 'Free Tools',
+    tagline: 'Check your photo before you replace it.',
+    href: '/tools/linkedin-photo-analyzer',
+    pages: [{ label: 'LinkedIn Photo Analyzer', href: '/tools/linkedin-photo-analyzer' }],
+  },
 ];
