@@ -13,22 +13,45 @@ LinkedIn shows the photo small and cropped to a circle. What works: one person, 
 
 Scoring: 90 to 100 is a photo a recruiter would not think twice about. 70 to 89 is fine with one clear thing to improve. 50 to 69 is holding the profile back. Under 50 needs replacing. Be honest; most phone photos land between 45 and 75.
 
-Write in plain, conversational English. No em dashes. Each fix is one concrete sentence a person could act on today. Verdict is one sentence.`;
+Write in plain, conversational English. No em dashes. All scores are integers from 0 to 100. Give one to three fixes, each one concrete sentence a person could act on today, and up to two strengths. Verdict is one sentence.`;
 
+const SUB = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['score', 'note'],
+  properties: { score: { type: 'integer' }, note: { type: 'string' } },
+};
+
+// Structured outputs accept the shape but not numeric or length bounds, so the
+// ranges live in the prompt and are clamped below.
 const SCHEMA = {
   type: 'object',
   additionalProperties: false,
   required: ['score', 'verdict', 'background', 'expression', 'attire', 'fixes', 'strengths'],
   properties: {
-    score: { type: 'integer', minimum: 0, maximum: 100 },
+    score: { type: 'integer' },
     verdict: { type: 'string' },
-    background: { type: 'object', additionalProperties: false, required: ['score', 'note'], properties: { score: { type: 'integer', minimum: 0, maximum: 100 }, note: { type: 'string' } } },
-    expression: { type: 'object', additionalProperties: false, required: ['score', 'note'], properties: { score: { type: 'integer', minimum: 0, maximum: 100 }, note: { type: 'string' } } },
-    attire: { type: 'object', additionalProperties: false, required: ['score', 'note'], properties: { score: { type: 'integer', minimum: 0, maximum: 100 }, note: { type: 'string' } } },
-    fixes: { type: 'array', minItems: 1, maxItems: 3, items: { type: 'string' } },
-    strengths: { type: 'array', minItems: 0, maxItems: 2, items: { type: 'string' } },
+    background: SUB,
+    expression: SUB,
+    attire: SUB,
+    fixes: { type: 'array', items: { type: 'string' } },
+    strengths: { type: 'array', items: { type: 'string' } },
   },
 };
+
+const clamp = (n) => Math.max(0, Math.min(100, Math.round(Number(n) || 0)));
+function tidy(r) {
+  const sub = (x) => ({ score: clamp(x?.score), note: String(x?.note || '') });
+  return {
+    score: clamp(r.score),
+    verdict: String(r.verdict || ''),
+    background: sub(r.background),
+    expression: sub(r.expression),
+    attire: sub(r.attire),
+    fixes: (Array.isArray(r.fixes) ? r.fixes : []).map(String).filter(Boolean).slice(0, 3),
+    strengths: (Array.isArray(r.strengths) ? r.strengths : []).map(String).filter(Boolean).slice(0, 2),
+  };
+}
 
 let client;
 function anthropic() {
@@ -74,5 +97,5 @@ export async function analyzeLinkedInPhoto(image, metrics) {
 
   if (response.stop_reason === 'refusal') return null;
   const text = response.content.find((b) => b.type === 'text')?.text;
-  return text ? JSON.parse(text) : null;
+  return text ? tidy(JSON.parse(text)) : null;
 }
