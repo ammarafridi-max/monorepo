@@ -58,9 +58,9 @@ export default function PhotosStep({ product }) {
   const startedRef = useRef(false);
   const addFiles = useCallback((fileList) => {
     const all = Array.from(fileList);
-    // Browsers cannot show HEIC and the gate cannot read it. The picker asks for
-    // JPEG/PNG/WebP (which makes iPhones convert on the way out); one that arrives
-    // anyway, by drag and drop, is shown with a reason rather than dropped silently.
+    // Browsers cannot show HEIC. The picker asks for JPEG/PNG/WebP (which makes
+    // iPhones convert on the way out); one that arrives anyway, by drag and drop,
+    // is accepted and converted server-side during the check.
     const isHeic = (f) => /\.hei[cf]$/i.test(f.name) || /^image\/hei[cf]$/i.test(f.type);
     const picked = all.filter((f) => f.type.startsWith('image/') || isHeic(f));
     if (picked.length && !startedRef.current) {
@@ -73,19 +73,9 @@ export default function PhotosStep({ product }) {
       for (const file of picked) {
         if (next.length >= QUALITY.maxPhotos) break;
         const url = URL.createObjectURL(file);
-        if (isHeic(file)) {
-          next.push({
-            id: url,
-            kind: 'new',
-            url,
-            file,
-            status: 'bad',
-            reason: 'HEIC is not supported. Export it as JPEG and add it again.',
-            heic: true,
-          });
-          continue;
-        }
-        next.push({ id: url, kind: 'new', url, file, status: 'checking', reason: null });
+        // HEIC cannot be previewed here; the server converts it to JPEG during the
+        // check and the tile switches to the converted image once it passes.
+        next.push({ id: url, kind: 'new', url, file, status: 'checking', reason: null, heic: isHeic(file) });
       }
       return next;
     });
@@ -108,22 +98,27 @@ export default function PhotosStep({ product }) {
 
   async function verifyItem(item) {
     // 1) Fast client pre-check (Chromium-only; defers to the server otherwise).
-    try {
-      const reason = reasonFor(await detectImage(item.file));
-      if (reason) {
-        updateItem(item.id, { status: 'bad', reason });
-        return;
+    if (!item.heic) {
+      try {
+        const reason = reasonFor(await detectImage(item.file));
+        if (reason) {
+          updateItem(item.id, { status: 'bad', reason });
+          return;
+        }
+      } catch {
+        /* browser detector unavailable/flaky -> defer to the server gate below */
       }
-    } catch {
-      /* browser detector unavailable/flaky -> defer to the server gate below */
     }
     // 2) Upload, then the REAL server gate. Only a server pass earns the tick.
     try {
-      const { uploads } = await presignUploads([item.file]);
-      await putToStorage(uploads[0].uploadUrl, item.file);
-      const url = uploads[0].publicUrl;
+      const file = item.heic && !item.file.type ? new File([item.file], item.file.name, { type: 'image/heic' }) : item.file;
+      const { uploads } = await presignUploads([file]);
+      await putToStorage(uploads[0].uploadUrl, file);
+      let url = uploads[0].publicUrl;
       try {
-        await gateUploads([url]);
+        const gated = await gateUploads([url]);
+        // The server may have converted the upload (HEIC -> JPEG); keep its URL.
+        if (Array.isArray(gated?.urls) && gated.urls[0]) url = gated.urls[0];
       } catch (err) {
         if (err.status === 422) {
           const reason =
@@ -198,7 +193,7 @@ export default function PhotosStep({ product }) {
   // URL, shows the green tick, and is never re-uploaded or re-screened again.
   const accept = (it, url) => {
     URL.revokeObjectURL(it.url);
-    return { ...it, kind: 'existing', url, file: undefined, status: 'ok', reason: null };
+    return { ...it, kind: 'existing', url, file: undefined, status: 'ok', reason: null, heic: false };
   };
 
   function onContinue() {

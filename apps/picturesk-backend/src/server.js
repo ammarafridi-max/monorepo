@@ -40,6 +40,7 @@ import { assessPhoto } from './photoGate.js';
 import { moderateImage, MODERATION_REASON } from './contentModerator.js';
 import { QUALITY, evaluateImages, countError } from './uploadGate.js';
 import { resolveReusableSelfies } from './reuse.js';
+import { normalizeUpload } from './normalizeUpload.js';
 import { RATE_LIMITS, createRateLimiters } from './rateLimit.js';
 import { createBlogRouter, createBlogTagRouter } from '@travel-suite/blog';
 import { createAffiliatesRouter } from '@travel-suite/affiliates';
@@ -82,6 +83,7 @@ const IMAGE_EXT = {
   'image/bmp': 'bmp',
   'image/tiff': 'tiff',
   'image/heic': 'heic',
+  'image/heif': 'heif',
   'image/heif': 'heif',
   'image/avif': 'avif',
 };
@@ -642,9 +644,14 @@ app.post('/uploads/gate', gateLimiter, async (req, res) => {
     if (!Array.isArray(uploadedImageUrls) || uploadedImageUrls.length === 0) {
       return res.status(400).json({ error: 'uploadedImageUrls must be a non-empty array' });
     }
-    const gate = await runUploadGate(uploadedImageUrls, { enforceCount: false });
+    // HEIC and friends become JPEG before screening; the client swaps to the
+    // returned URL so the order never carries a format the pipeline cannot read.
+    const normalized = adminStorage
+      ? await Promise.all(uploadedImageUrls.map((u) => normalizeUpload(adminStorage, u).catch(() => u)))
+      : uploadedImageUrls;
+    const gate = await runUploadGate(normalized, { enforceCount: false });
     if (gate) return res.status(gate.status).json(gate.body);
-    return res.json({ ok: true });
+    return res.json({ ok: true, urls: normalized });
   } catch (err) {
     console.error('[api] POST /uploads/gate failed:', err);
     captureError(err, { route: 'uploads/gate' });
