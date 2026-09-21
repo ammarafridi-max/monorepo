@@ -57,7 +57,12 @@ export default function PhotosStep({ product }) {
 
   const startedRef = useRef(false);
   const addFiles = useCallback((fileList) => {
-    const picked = Array.from(fileList).filter((f) => f.type.startsWith('image/'));
+    const all = Array.from(fileList);
+    // Browsers cannot show HEIC and the gate cannot read it. The picker asks for
+    // JPEG/PNG/WebP (which makes iPhones convert on the way out); one that arrives
+    // anyway, by drag and drop, is shown with a reason rather than dropped silently.
+    const isHeic = (f) => /\.hei[cf]$/i.test(f.name) || /^image\/hei[cf]$/i.test(f.type);
+    const picked = all.filter((f) => f.type.startsWith('image/') || isHeic(f));
     if (picked.length && !startedRef.current) {
       startedRef.current = true;
       track(EVENTS.UPLOAD_STARTED, { product });
@@ -68,6 +73,18 @@ export default function PhotosStep({ product }) {
       for (const file of picked) {
         if (next.length >= QUALITY.maxPhotos) break;
         const url = URL.createObjectURL(file);
+        if (isHeic(file)) {
+          next.push({
+            id: url,
+            kind: 'new',
+            url,
+            file,
+            status: 'bad',
+            reason: 'HEIC is not supported. Export it as JPEG and add it again.',
+            heic: true,
+          });
+          continue;
+        }
         next.push({ id: url, kind: 'new', url, file, status: 'checking', reason: null });
       }
       return next;
@@ -319,7 +336,7 @@ export default function PhotosStep({ product }) {
           <input
             ref={inputRef}
             type="file"
-            accept="image/*"
+            accept="image/jpeg,image/png,image/webp"
             multiple
             hidden
             onChange={(e) => {
@@ -340,8 +357,12 @@ export default function PhotosStep({ product }) {
                 }${it.status === 'ok' ? ' thumb--ok' : ''}`}
                 key={it.id}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={it.url} alt={`photo ${i + 1}`} />
+                {it.heic ? (
+                  <span className="thumb__ph">HEIC</span>
+                ) : (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={it.url} alt={`photo ${i + 1}`} />
+                )}
                 {it.status === 'checking' && (
                   <span className="thumb__spinner" role="status" aria-label="Checking this photo" />
                 )}

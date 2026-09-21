@@ -366,10 +366,12 @@ async function cachedDetect(url) {
   return res;
 }
 
-async function runUploadGate(uploadedImageUrls) {
+async function runUploadGate(uploadedImageUrls, { enforceCount = true } = {}) {
   if (!(UPLOAD_QUALITY_GATE || UPLOAD_MODERATION)) return null;
 
-  const nErr = countError(uploadedImageUrls.length);
+  // The set size is a property of the whole order, so the per-photo call from
+  // the upload step skips it; checkout enforces it once on the full set.
+  const nErr = enforceCount ? countError(uploadedImageUrls.length) : null;
   if (nErr) {
     return { status: 422, body: { error: 'quality_gate', countError: nErr, failures: [], rules: QUALITY } };
   }
@@ -640,7 +642,7 @@ app.post('/uploads/gate', gateLimiter, async (req, res) => {
     if (!Array.isArray(uploadedImageUrls) || uploadedImageUrls.length === 0) {
       return res.status(400).json({ error: 'uploadedImageUrls must be a non-empty array' });
     }
-    const gate = await runUploadGate(uploadedImageUrls);
+    const gate = await runUploadGate(uploadedImageUrls, { enforceCount: false });
     if (gate) return res.status(gate.status).json(gate.body);
     return res.json({ ok: true });
   } catch (err) {
@@ -773,12 +775,15 @@ app.post('/checkout', checkoutLimiter, internalOnly, async (req, res) => {
       return res.status(409).json({ error: 'You have already used your free set' });
     }
 
-    // NO image screening here. Photos are gated ONCE, at the upload step
-    // (POST /uploads/gate, run by /ai-headshot-generator/upload) -- face quality, content
-    // moderation, and the 5-to-15 count all happen there. Checkout only creates the
-    // Stripe session, so the pay step returns the payment URL immediately with zero
-    // Replicate calls and no stall. (uploadedImageUrls is already validated as a
-    // non-empty array above.)
+    // Photos were screened one by one at the upload step (POST /uploads/gate:
+    // face quality and content moderation). Only the set size is checked here,
+    // so checkout returns the payment URL with zero Replicate calls.
+    if (!reusing) {
+      const nErr = countError(uploadedImageUrls.length);
+      if (nErr) {
+        return res.status(422).json({ error: 'quality_gate', countError: nErr, failures: [], rules: QUALITY });
+      }
+    }
 
     // Create the order in AWAITING_PAYMENT with selections + images. amountPaidCents
     // is written from Stripe in the webhook once payment confirms.

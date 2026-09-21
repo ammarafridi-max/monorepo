@@ -4489,3 +4489,14 @@ button:focus-visible,
 .reuse__photos .thumbs {
   margin-top: 10px;
 }
+
+.thumb__ph {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--ash);
+  background: var(--line);
+}
