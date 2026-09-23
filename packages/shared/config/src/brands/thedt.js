@@ -12,8 +12,8 @@ const thedt = {
     noReply: 'info@thedummyticket.ae',
   },
   theme: {
-    primaryColor: '#14948f',
-    accentColor: '#ff603a',
+    primaryColor: '#053d6c',
+    accentColor: '#de3700',
   },
   features: {
     dummyTickets: true,

@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { ChevronDown, Mail, Plane, Rss, ShieldPlus } from 'lucide-react';
 import Container from './Container';
 import Currency from '../flight/Currency';
+import BrandMark from './BrandMark';
 
 export const defaultPages = [
   {
@@ -30,28 +31,40 @@ export const defaultPages = [
 
 ];
 
-export default function Navigation({ pages = defaultPages, logoAlt = 'Logo', onDark = false }) {
+export default function Navigation({ pages = defaultPages, logoAlt = 'Logo', onDark = false, logoSrc, logoSrcOnDark, brandName }) {
   const pathname = usePathname();
 
   return (
     <header className="hidden lg:block absolute top-0 left-0 right-0 z-50 bg-transparent">
       <Container>
         <nav className="flex items-center justify-between py-3 font-outfit">
-          <div className="w-40 shrink-0">
-            <Link href="/" className="block">
-              <Image
-                src="/logo.webp"
-                alt={logoAlt}
-                title={logoAlt}
-                width={224}
-                height={60}
-                priority
-                style={{ height: 'auto' }}
-                className={`w-full h-auto object-contain ${onDark ? 'brightness-0 invert' : ''}`}
-                style={{ height: 'auto' }}
-              />
-            </Link>
-          </div>
+          {brandName ? (
+            <BrandMark
+              logoSrc={logoSrc}
+              logoSrcOnDark={logoSrcOnDark}
+              brandName={brandName}
+              logoAlt={logoAlt}
+              onDark={onDark}
+              size={36}
+              priority
+              className="shrink-0"
+            />
+          ) : (
+            <div className="w-40 shrink-0">
+              <Link href="/" className="block">
+                <Image
+                  src="/logo.webp"
+                  alt={logoAlt}
+                  title={logoAlt}
+                  width={224}
+                  height={60}
+                  priority
+                  style={{ height: 'auto' }}
+                  className={`w-full h-auto object-contain ${onDark ? 'brightness-0 invert' : ''}`}
+                />
+              </Link>
+            </div>
+          )}
 
           <div className="flex items-center gap-1 rounded-2xl bg-transparent p-1">
             {pages.map((page, i) => (

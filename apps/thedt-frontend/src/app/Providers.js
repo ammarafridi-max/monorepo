@@ -23,6 +23,13 @@ const LIGHT_HEADER_ROUTES = [
 ];
 
 const LOGO_ALT = 'The Dummy Ticket AE Logo';
+const LOGO_SRC = '/logo-dark.png';
+const LOGO_SRC_ON_DARK = '/logo-light.png';
+const BRAND_NAME = (
+  <>
+    the<span style={{ color: '#a0e0f1' }}>dummy</span>ticket
+  </>
+);
 
 const defaultPages = [
   {
@@ -95,7 +102,7 @@ export default function Providers({ children }) {
         <QueryClientProvider client={queryClient}>
           <TicketProvider>
             <InsuranceProvider maxStartDays={270}>
-              <AppLayout pages={flightItineraryPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark} copyrightName="The Dummy Ticket AE">
+              <AppLayout logoSrc={LOGO_SRC} logoSrcOnDark={LOGO_SRC_ON_DARK} brandName={BRAND_NAME} pages={flightItineraryPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark} copyrightName="The Dummy Ticket AE">
                 <main>{children}</main>
               </AppLayout>
             </InsuranceProvider>
@@ -112,7 +119,7 @@ export default function Providers({ children }) {
       <QueryClientProvider client={queryClient}>
         <TicketProvider>
           <InsuranceProvider maxStartDays={270}>
-            <AppLayout pages={defaultPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark} copyrightName="The Dummy Ticket AE">
+            <AppLayout logoSrc={LOGO_SRC} logoSrcOnDark={LOGO_SRC_ON_DARK} brandName={BRAND_NAME} pages={defaultPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark} copyrightName="The Dummy Ticket AE">
               <main>{children}</main>
             </AppLayout>
           </InsuranceProvider>

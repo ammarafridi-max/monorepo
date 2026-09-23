@@ -74,7 +74,7 @@ function OrderBadge({ status }) {
 }
 
 
-function DummyTicketsContent() {
+function DummyTicketsContent({ basePath, heading, itemNoun }) {
   const router       = useRouter();
   const pathname     = usePathname();
   const searchParams = useSearchParams();
@@ -236,9 +236,9 @@ function DummyTicketsContent() {
 
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-extrabold text-gray-900">Dummy Tickets</h2>
+          <h2 className="text-2xl font-extrabold text-gray-900">{heading}</h2>
           <p className="text-sm text-gray-500 mt-0.5">
-            {isLoadingDummyTickets ? 'Loading…' : `${total} ticket${total !== 1 ? 's' : ''} total`}
+            {isLoadingDummyTickets ? 'Loading…' : `${total} ${itemNoun}${total !== 1 ? 's' : ''} total`}
           </p>
         </div>
       </div>
@@ -418,7 +418,7 @@ function DummyTicketsContent() {
 
                       <td className="px-4 py-3">
                         <Link
-                          href={`/admin/dummy-tickets/${item?.sessionId}`}
+                          href={`${basePath}/${item?.sessionId}`}
                           className="block font-semibold text-gray-900 capitalize leading-snug hover:text-primary-700 hover:underline transition-colors"
                         >
                           {String(item?.leadPassenger ?? '—').toLowerCase()}
@@ -473,7 +473,7 @@ function DummyTicketsContent() {
                       <td className="px-4 py-3 w-20">
                         <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                           <Link
-                            href={`/admin/dummy-tickets/${item?.sessionId}`}
+                            href={`${basePath}/${item?.sessionId}`}
                             className="p-1.5 rounded-lg text-gray-400 hover:text-primary-700 hover:bg-primary-50 transition"
                             title="View details"
                           >
@@ -522,14 +522,14 @@ function DummyTicketsContent() {
   );
 }
 
-export default function AdminDummyTicketsPage() {
+export default function AdminDummyTicketsPage({ basePath = '/admin/dummy-tickets', heading = 'Dummy Tickets', itemNoun = 'ticket' }) {
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center min-h-[60vh]">
         <Loader2 size={24} className="animate-spin text-gray-300" />
       </div>
     }>
-      <DummyTicketsContent />
+      <DummyTicketsContent basePath={basePath} heading={heading} itemNoun={itemNoun} />
     </Suspense>
   );
 }

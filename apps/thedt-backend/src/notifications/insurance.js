@@ -11,7 +11,7 @@ const customer = createNotificationsService({
   brand: {
     name: "The Dummy Ticket AE",
     adminEmail: config.adminEmail,
-    theme: { primaryColor: "#14948f", linkColor: "#14948f" },
+    theme: { primaryColor: "#053d6c", linkColor: "#053d6c" },
   },
 });
 

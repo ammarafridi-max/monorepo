@@ -94,7 +94,7 @@ function ErrorState({ supportEmail, sessionId, pending = false }) {
   );
 }
 
-function SuccessContent({ sessionId, dummyTicket, onPurchaseEvent, supportEmail, upsells }) {
+function SuccessContent({ sessionId, dummyTicket, onPurchaseEvent, supportEmail, productNoun, upsells }) {
   const { pricing } = useDummyTicketPricing();
 
   const type = dummyTicket?.type;
@@ -290,8 +290,8 @@ function SuccessContent({ sessionId, dummyTicket, onPurchaseEvent, supportEmail,
                   </p>
                   <p className="text-sm text-gray-500 mt-0.5 leading-relaxed">
                     {isImmediate
-                      ? "A receipt and your dummy ticket arrive in two separate emails, usually within 15 minutes, any time of day."
-                      : `Your dummy ticket will be emailed to you on ${deliveryDate ? formatDate(deliveryDate) : "the scheduled date"}.`}
+                      ? `A receipt and your ${productNoun} arrive in two separate emails, usually within 15 minutes, any time of day.`
+                      : `Your ${productNoun} will be emailed to you on ${deliveryDate ? formatDate(deliveryDate) : "the scheduled date"}.`}
                   </p>
                 </div>
               </div>
@@ -343,7 +343,7 @@ function SuccessContent({ sessionId, dummyTicket, onPurchaseEvent, supportEmail,
   );
 }
 
-function PaymentSuccessContent({ onPurchaseEvent, supportEmail, upsells }) {
+function PaymentSuccessContent({ onPurchaseEvent, supportEmail, upsells, productNoun }) {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("sessionId") || "";
   const paymentMethod = searchParams.get("paymentMethod") || "card";
@@ -396,11 +396,12 @@ function PaymentSuccessContent({ onPurchaseEvent, supportEmail, upsells }) {
       onPurchaseEvent={onPurchaseEvent}
       supportEmail={supportEmail}
       upsells={upsells}
+      productNoun={productNoun}
     />
   );
 }
 
-export default function TicketPaymentPage({ onPurchaseEvent, supportEmail, upsells = [] }) {
+export default function TicketPaymentPage({ onPurchaseEvent, supportEmail, upsells = [], productNoun = 'dummy ticket' }) {
   return (
     <Suspense
       fallback={
@@ -413,6 +414,7 @@ export default function TicketPaymentPage({ onPurchaseEvent, supportEmail, upsel
         onPurchaseEvent={onPurchaseEvent}
         supportEmail={supportEmail}
         upsells={upsells}
+        productNoun={productNoun}
       />
     </Suspense>
   );

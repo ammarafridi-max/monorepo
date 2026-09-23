@@ -21,6 +21,7 @@ export default {
   jwtCookieExpiresInDays: parseNumber(process.env.JWT_COOKIE_EXPIRES_IN, 30),
 
   brevoApiKey: process.env.BREVO_API_KEY,
+  brevoTicketListId: process.env.BREVO_TICKET_LIST_ID,
   adminEmail: process.env.ADMIN_EMAIL ?? "info@travl.ae",
 
   corsOrigins: parseList(process.env.CORS_ORIGINS, [
@@ -42,6 +43,9 @@ export default {
 
   airlabs: {
     apiKey: process.env.AIRLABS_API_KEY,
+  },
+  serpapi: {
+    apiKey: process.env.SERPAPI_API_KEY,
   },
 
   stripe: {

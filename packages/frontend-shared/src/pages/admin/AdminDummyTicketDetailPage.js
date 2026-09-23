@@ -279,7 +279,7 @@ function DeliverySection({ ticket, canEdit }) {
   );
 }
 
-export default function AdminDummyTicketDetailPage() {
+export default function AdminDummyTicketDetailPage({ basePath = '/admin/dummy-tickets', backLabel = 'Back to dummy tickets' }) {
   const { sessionId } = useParams();
   const { adminUser } = useAdminAuth();
   const isAgent = adminUser?.role === 'agent';
@@ -319,8 +319,8 @@ export default function AdminDummyTicketDetailPage() {
             <p className="text-sm font-bold text-gray-700">Ticket not found</p>
             <p className="text-xs text-gray-400 mt-1">This ticket may have been deleted.</p>
           </div>
-          <Link href="/admin/dummy-tickets" className="flex items-center gap-1.5 text-xs font-semibold text-primary-700 hover:underline">
-            <ArrowLeft size={13} /> Back to dummy tickets
+          <Link href={basePath} className="flex items-center gap-1.5 text-xs font-semibold text-primary-700 hover:underline">
+            <ArrowLeft size={13} /> {backLabel}
           </Link>
         </div>
       </div>

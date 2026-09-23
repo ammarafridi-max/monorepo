@@ -5,10 +5,14 @@ import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import { randomUUID } from 'crypto';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { logger, AppError, createErrorHandler } from '@travel-suite/utils';
 import { setupSentryErrorHandler } from '@travel-suite/utils/sentry';
 import config from './utils/config.js';
 import indexRouter, { stripeWebhookHandler } from './routes/index.js';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 
@@ -37,6 +41,12 @@ app.use(cookieParser());
 app.use(express.json({ limit: '2mb' }));
 
 app.use('/api', rateLimit({ windowMs: 60 * 60 * 1000, max: 500, standardHeaders: true, legacyHeaders: false }));
+
+// Airline logos, referenced by the `logo` path stored on each airline record
+// and loaded cross-origin by the frontend.
+app.use('/airlines', express.static(join(__dirname, 'public/airlines'), {
+  setHeaders: (res) => res.set('Cross-Origin-Resource-Policy', 'cross-origin'),
+}));
 
 app.get('/health', (_req, res) => res.status(200).json({ status: 'ok', brand: 'travl' }));
 app.use('/api', indexRouter);

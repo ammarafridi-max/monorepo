@@ -9,10 +9,13 @@ import {
   FaCircle,
 } from 'react-icons/fa';
 import Container from './Container';
+import BrandMark from './BrandMark';
 
 export default function Footer({
   logoAlt,
   email,
+  logoSrc,
+  brandName,
   disclaimer = 'Disclaimer: This service provides a flight itinerary with booking details and a verifiable PNR. It is not a paid airline ticket.',
   copyrightName,
 }) {
@@ -21,13 +24,17 @@ export default function Footer({
       <Container className="py-10 md:py-12">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-8 pb-7 border-b border-white/10">
           <div className="max-w-lg">
-            <Image
-              src="/logo.webp"
-              alt={logoAlt}
-              width={160}
-              height={48}
-              className="w-40 h-auto object-contain brightness-0 invert"
-            />
+            {brandName ? (
+              <BrandMark logoSrc={logoSrc} brandName={brandName} logoAlt={logoAlt} onDark size={38} />
+            ) : (
+              <Image
+                src="/logo.webp"
+                alt={logoAlt}
+                width={160}
+                height={48}
+                className="w-40 h-auto object-contain brightness-0 invert"
+              />
+            )}
             <p className="mt-3 text-[14px] md:text-[15px] text-gray-400 leading-6">
               Genuine flight itineraries with verifiable PNR details, emailed within 10 to 15 minutes, day or night.
             </p>

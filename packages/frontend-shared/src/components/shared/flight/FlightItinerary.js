@@ -3,14 +3,22 @@ import { format } from "date-fns";
 import { FaArrowRightLong } from "react-icons/fa6";
 import { formatISODuration } from "../../../utils/dates.js";
 
+// Logos are stored per airline: a Cloudinary URL on brands that have migrated,
+// a backend-relative path like /airlines/EK.png on those that have not.
+function resolveLogo(logo) {
+  if (!logo) return '';
+  if (/^https?:\/\//.test(logo)) return logo;
+  return `${process.env.NEXT_PUBLIC_BACKEND_URL}${logo}`;
+}
+
 export default function FlightItinerary({ itinerary, airlineInfo }) {
-  const imgSrc = `${process.env.NEXT_PUBLIC_BACKEND_URL}${airlineInfo.logo}`;
+  const imgSrc = resolveLogo(airlineInfo.logo);
 
   return (
     <div className="w-full bg-white py-4 flex items-center justify-between lg:justify-center gap-9 lg:gap-10 nth-of-type-[2]:border-t nth-of-type-[2]:border-t-gray-300">
       <div className="w-[50px] h-[50px] flex flex-col justify-center align-middle">
         <img
-          src={imgSrc || ""}
+          src={imgSrc}
           alt={`${airlineInfo.commonName}`}
           className="object-contain text-[10px] "
         />

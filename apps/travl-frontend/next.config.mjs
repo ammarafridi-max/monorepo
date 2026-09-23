@@ -68,6 +68,18 @@ const nextConfig = {
   output: 'standalone',
   // Trace from the monorepo root so workspace packages are included in standalone output
   outputFileTracingRoot: join(__dirname, '../../'),
+  // /lp/* is noindex at the meta level too; the header covers any asset or
+  // fetch that skips the HTML. robots.txt deliberately does not disallow /lp,
+  // because a blocked URL can still be listed from external links while a
+  // crawlable noindex one cannot.
+  async headers() {
+    return [
+      {
+        source: '/lp/:path*',
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' }],
+      },
+    ];
+  },
   async redirects() {
     return [
       ...MOVED_TO_VISAWADI.map((slug) => ({

@@ -7,6 +7,10 @@ import { createBlogRouter, createBlogTagRouter } from "@travel-suite/blog";
 import { createItinerariesRouter } from "@travel-suite/itineraries";
 import { createLocationsRouter } from "@travel-suite/locations";
 import { createAirLabsClient } from "@travel-suite/airlabs";
+import { createFlightRouter, createAirportsRouter } from "@travel-suite/flights";
+import { createSerpApiClient } from "@travel-suite/serpapi";
+import { createTicketsRouter } from "@travel-suite/tickets";
+import { createAffiliatesRouter, AffiliateSchema } from "@travel-suite/affiliates";
 import { createNotificationsService } from "@travel-suite/notifications";
 import {
   createStripeClient,
@@ -26,6 +30,16 @@ import { sendEmail } from "../utils/email.js";
 import { insurancePaymentCompletionEmail, policyIssuedEmail } from "../notifications/insurance.js";
 import { itineraryPaymentCustomerEmail } from "../notifications/itinerary.js";
 import config from "../utils/config.js";
+
+// -- Model pre-registration (ORDER CRITICAL) ----------------------------------
+function getOrRegisterModel(conn, name, schema) {
+  try {
+    return conn.model(name);
+  } catch {
+    return conn.model(name, schema);
+  }
+}
+const AffiliateModel = getOrRegisterModel(db, "Affiliate", AffiliateSchema);
 
 const router = Router();
 const brevo = createBrevoClient({ apiKey: config.brevoApiKey, logger });
@@ -71,6 +85,18 @@ const airlabs = createAirLabsClient({ apiKey: config.airlabs.apiKey });
 const citiesOnlyLocations = Router();
 citiesOnlyLocations.get("/cities", createLocationsRouter({ airlabs }));
 router.use("/locations", citiesOnlyLocations);
+router.use("/airports", createAirportsRouter({ airlabs }));
+const serpapi = createSerpApiClient({ apiKey: config.serpapi.apiKey });
+// Airline logos: uploaded from the admin screen and stored on the airline
+// record, so a new logo needs no deploy.
+const airlineLogoStorage = createCloudinaryStorage({
+  cloudName: config.cloudinary.cloudName,
+  apiKey: config.cloudinary.apiKey,
+  apiSecret: config.cloudinary.apiSecret,
+  logger,
+  folder: "travl/airlines",
+});
+router.use("/flights", createFlightRouter({ db, airlabs, serpapi, auth, logoStorage: airlineLogoStorage }));
 
 
 const notifications = createNotificationsService({
@@ -84,6 +110,7 @@ const notifications = createNotificationsService({
     paymentsSenderName: "Travl Payments",
     deliverySenderName: "Travl Delivery",
     customerSenderName: "Travl",
+    productNoun: "flight reservation",
     theme: { primaryColor: "#1a1a2e", accentColor: "#e94560", linkColor: "#0f3460" },
   },
 });
@@ -131,6 +158,39 @@ const { router: itinerariesRouter, handleStripeSuccess: handleItinerarySuccess }
 });
 router.use("/itineraries", itinerariesRouter);
 
+// -- Flight reservations -------------------------------------------------------
+// Reservation PDFs are uploaded to travl/flight-reservations/<sessionId>/ on
+// Cloudinary, then attached to the customer email by URL.
+const reservationStorage = createCloudinaryStorage({
+  cloudName: config.cloudinary.cloudName,
+  apiKey: config.cloudinary.apiKey,
+  apiSecret: config.cloudinary.apiSecret,
+  logger,
+  folder: "travl/flight-reservations",
+});
+
+const {
+  router: ticketsRouter,
+  pricingRouter,
+  handleStripeSuccess: handleTicketSuccess,
+  TicketModel,
+} = createTicketsRouter({
+  db,
+  auth,
+  stripe,
+  notifications,
+  frontendUrl: config.frontendUrl,
+  AffiliateModel,
+  brevo,
+  reviewListId: config.brevoTicketListId,
+  reservationStorage,
+  sendEmail,
+});
+router.use("/tickets", ticketsRouter);
+router.use("/pricing", pricingRouter);
+
+router.use("/affiliates", createAffiliatesRouter({ db, auth, TicketModel }));
+
 const paymentService = createPaymentService({ stripe, db, PaymentLinkSchema, ProductSchema });
 const paymentsController = createPaymentsController({ service: paymentService });
 router.use("/payments", createPaymentsAdminRouter({ controller: paymentsController, auth }));
@@ -162,6 +222,7 @@ export const stripeWebhookHandler = createStripeWebhookHandler({
   webhookSecret: config.stripe.webhookSecret,
   db,
   handlers: {
+    ticket: handleTicketSuccess,
     itinerary: handleItinerarySuccess,
     "payment-link": handlePaymentLinkSuccess,
   },

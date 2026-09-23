@@ -21,6 +21,8 @@ import { formatDate, formatToDDMMM, formatToDDMMMYYYYMixed, extractIataCode } fr
 
 export function createNotificationsService({ sendEmail, logger, brand }) {
   const log = logger?.error?.bind(logger) ?? console.error;
+  // What the brand calls the product in customer-facing copy.
+  const productNoun = brand.productNoun ?? 'dummy ticket';
 
   async function sendInsuranceFormSubmission({ passengers }) {
     try {
@@ -96,12 +98,12 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
         : data.leadPassenger || '—';
 
       const subject = isScheduled
-        ? `Order confirmed — your dummy ticket is scheduled for ${deliveryDate}`
-        : `Order confirmed — we're preparing your dummy ticket`;
+        ? `Order confirmed — your ${productNoun} is scheduled for ${deliveryDate}`
+        : `Order confirmed — we're preparing your ${productNoun}`;
 
       const whatHappensNext = isScheduled
-        ? `What happens next\nWe'll email your dummy ticket to this address on the morning of your chosen delivery date. You don't need to do anything until then.`
-        : `What happens next\nYou'll receive your dummy ticket by email shortly. Most orders are delivered within 15 minutes, any time of day.`;
+        ? `What happens next\nWe'll email your ${productNoun} to this address on the morning of your chosen delivery date. You don't need to do anything until then.`
+        : `What happens next\nYou'll receive your ${productNoun} by email shortly. Most orders are delivered within 15 minutes, any time of day.`;
 
       const orderLines = [
         `- Route: ${fromCode} → ${toCode} (Departure ${depFull})`,
@@ -119,8 +121,8 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
         `Hi ${firstName},`,
         ``,
         isScheduled
-          ? `Thanks for your order. We've received your payment and your dummy ticket is scheduled for delivery on ${deliveryDate}.`
-          : `Thanks for your order. We've received your payment and our team is preparing your dummy ticket now.`,
+          ? `Thanks for your order. We've received your payment and your ${productNoun} is scheduled for delivery on ${deliveryDate}.`
+          : `Thanks for your order. We've received your payment and our team is preparing your ${productNoun} now.`,
         ``,
         whatHappensNext,
         ``,

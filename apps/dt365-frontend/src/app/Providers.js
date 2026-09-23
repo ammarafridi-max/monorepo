@@ -25,6 +25,8 @@ const LIGHT_HEADER_ROUTES = [
 ];
 
 const LOGO_ALT = 'DT365 Logo';
+const LOGO_SRC = '/logo-icon.png';
+const BRAND_NAME = 'Dummy Ticket 365';
 
 const defaultPages = [
   {
@@ -101,7 +103,7 @@ export default function Providers({ children }) {
           <CurrencyProvider>
             <TicketProvider>
               <InsuranceProvider>
-                <AppLayout pages={flightItineraryPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark}>
+                <AppLayout logoSrc={LOGO_SRC} brandName={BRAND_NAME} pages={flightItineraryPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark}>
                   <main>{children}</main>
                 </AppLayout>
                 <StickyWhatsApp phoneNumber={WHATSAPP_NUMBER} />
@@ -121,7 +123,7 @@ export default function Providers({ children }) {
         <CurrencyProvider>
           <TicketProvider>
             <InsuranceProvider>
-              <AppLayout pages={defaultPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark}>
+              <AppLayout logoSrc={LOGO_SRC} brandName={BRAND_NAME} pages={defaultPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark}>
                 <main>{children}</main>
               </AppLayout>
               <StickyWhatsApp phoneNumber={WHATSAPP_NUMBER} />

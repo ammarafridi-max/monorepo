@@ -11,8 +11,9 @@ import { CgMenuRightAlt } from 'react-icons/cg';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import Container from './Container';
 import Currency from '../flight/Currency';
+import BrandMark from './BrandMark';
 
-export default function MobileNavigation({ pages = travlDefaultPages, logoAlt = 'Logo', onDark = false }) {
+export default function MobileNavigation({ pages = travlDefaultPages, logoAlt = 'Logo', onDark = false, logoSrc, logoSrcOnDark, brandName }) {
   const pathname = usePathname();
   const wrapperRef = useRef(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -23,19 +24,31 @@ export default function MobileNavigation({ pages = travlDefaultPages, logoAlt = 
   return (
     <nav className="block lg:hidden absolute top-0 left-0 right-0 z-9999 bg-transparent py-3">
       <Container className="flex justify-between items-center">
-        <Link href="/" className="w-40 h-auto flex items-center">
-          {/* 160x28 matches the logo's real aspect ratio, so the header does not
-              shift as the image loads. */}
-          <Image
-            src="/logo.webp"
-            alt={logoAlt}
-            width={160}
-            height={28}
+        {brandName ? (
+          <BrandMark
+            logoSrc={logoSrc}
+            logoSrcOnDark={logoSrcOnDark}
+            brandName={brandName}
+            logoAlt={logoAlt}
+            onDark={onDark}
+            size={32}
             priority
-            style={{ height: 'auto' }}
-            className={`w-full h-auto object-contain ${onDark ? 'brightness-0 invert' : ''}`}
           />
-        </Link>
+        ) : (
+          <Link href="/" className="w-40 h-auto flex items-center">
+            {/* 160x28 matches the logo's real aspect ratio, so the header does not
+                shift as the image loads. */}
+            <Image
+              src="/logo.webp"
+              alt={logoAlt}
+              width={160}
+              height={28}
+              priority
+              style={{ height: 'auto' }}
+              className={`w-full h-auto object-contain ${onDark ? 'brightness-0 invert' : ''}`}
+            />
+          </Link>
+        )}
 
         <button
           type="button"

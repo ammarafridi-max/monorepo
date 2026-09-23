@@ -23,6 +23,7 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 # Every package the backend pulls in (direct + transitive workspace deps)
 COPY packages/domains/auth/package.json            packages/domains/auth/package.json
 COPY packages/domains/admin-users/package.json     packages/domains/admin-users/package.json
+COPY packages/domains/affiliates/package.json      packages/domains/affiliates/package.json
 COPY packages/domains/blog/package.json            packages/domains/blog/package.json
 COPY packages/integrations/brevo/package.json      packages/integrations/brevo/package.json
 COPY packages/integrations/cloudinary/package.json      packages/integrations/cloudinary/package.json
@@ -35,6 +36,7 @@ COPY packages/domains/insurance/package.json       packages/domains/insurance/pa
 COPY packages/integrations/wis/package.json        packages/integrations/wis/package.json
 COPY packages/shared/notifications/package.json   packages/shared/notifications/package.json
 COPY packages/domains/payments/package.json        packages/domains/payments/package.json
+COPY packages/domains/tickets/package.json         packages/domains/tickets/package.json
 COPY packages/domains/itineraries/package.json     packages/domains/itineraries/package.json
 COPY packages/domains/users/package.json           packages/domains/users/package.json
 COPY packages/shared/utils/package.json           packages/shared/utils/package.json

@@ -55,12 +55,12 @@ function segmentFromSerp(f) {
   };
 }
 
-function attachAirlines(flights) {
+function attachAirlines(flights, logoFor = airlineLogo) {
   const detailFor = (code, nameByCode) => ({
     iataCode: code,
     businessName: nameByCode[code] || code,
     commonName: nameByCode[code] || code,
-    logo: airlineLogo(code),
+    logo: logoFor(code),
   });
 
   return flights
@@ -125,10 +125,43 @@ function wrapFlight(itineraries) {
   return { itineraries, validatingAirlineCodes };
 }
 
-export function createFlightService({ Airline, airlabs, serpapi }) {
+const LOGO_CACHE_TTL_MS = 10 * 60 * 1000;
+
+export function createFlightService({ Airline, airlabs, serpapi, logoStorage, logoCacheTtlMs = LOGO_CACHE_TTL_MS }) {
   function requireAirLabs() {
     if (!airlabs) throw new AppError('Airport search is not configured on this server', 503);
   }
+
+  // Logos live on the airline record so they can be changed without a deploy.
+  // AIRLINE_LOGO_EXT stays as the fallback for brands whose rows predate that.
+  let logoCache = new Map();
+  let logoCacheExpiry = 0;
+
+  const refreshLogoCache = async () => {
+    if (!Airline) return logoCache;
+    const rows = await Airline.find({ logo: { $nin: [null, ''] } })
+      .select('iataCode logo')
+      .lean();
+    logoCache = new Map(rows.map((r) => [r.iataCode, r.logo]));
+    logoCacheExpiry = Date.now() + logoCacheTtlMs;
+    return logoCache;
+  };
+
+  const getLogoResolver = async () => {
+    if (Airline && Date.now() >= logoCacheExpiry) {
+      try {
+        await refreshLogoCache();
+      } catch {
+        // A lookup failure must not fail the search; fall through to the map.
+        logoCacheExpiry = Date.now() + logoCacheTtlMs;
+      }
+    }
+    return (code) => logoCache.get(code) ?? airlineLogo(code);
+  };
+
+  const invalidateLogoCache = () => {
+    logoCacheExpiry = 0;
+  };
 
   const addAirlineByCode = async (airlineCode) => {
     requireAirLabs();
@@ -145,6 +178,50 @@ export function createFlightService({ Airline, airlabs, serpapi }) {
       commonName: data.name,
       logo: airlineLogo(data.iata_code),
     });
+  };
+
+  const listAirlines = async () => {
+    if (!Airline) throw new AppError('Airline management is not configured on this server', 503);
+    return Airline.find().select('iataCode icaoCode businessName commonName logo').sort({ iataCode: 1 }).lean();
+  };
+
+  const IATA_PATTERN = /^[A-Z0-9]{2}$/;
+
+  const normaliseCode = (value) => {
+    const code = String(value || '').trim().toUpperCase();
+    if (!IATA_PATTERN.test(code)) throw new AppError('Provide a valid two-character IATA code', 400);
+    return code;
+  };
+
+  // The stored public_id is the bare code, so re-uploading an airline replaces
+  // its image in place rather than accumulating versions.
+  const setAirlineLogo = async ({ iataCode, buffer, mimetype }) => {
+    if (!Airline) throw new AppError('Airline management is not configured on this server', 503);
+    if (!logoStorage) throw new AppError('Logo storage is not configured on this server', 503);
+    const code = normaliseCode(iataCode);
+    if (!buffer?.length) throw new AppError('Please attach an image file', 400);
+    if (!/^image\//.test(mimetype || '')) throw new AppError('The logo must be an image file', 400);
+
+    const airline = await Airline.findOne({ iataCode: code });
+    if (!airline) throw new AppError('No airline found for that code', 404);
+
+    airline.logo = await logoStorage.saveFile(buffer, code);
+    await airline.save();
+    invalidateLogoCache();
+    return airline;
+  };
+
+  const removeAirlineLogo = async (iataCode) => {
+    if (!Airline) throw new AppError('Airline management is not configured on this server', 503);
+    const code = normaliseCode(iataCode);
+    const airline = await Airline.findOne({ iataCode: code });
+    if (!airline) throw new AppError('No airline found for that code', 404);
+
+    if (airline.logo && logoStorage) await logoStorage.deleteImage(airline.logo);
+    airline.logo = null;
+    await airline.save();
+    invalidateLogoCache();
+    return airline;
   };
 
   // Frontend contract: itineraries[0] is the outbound, itineraries[1] the return.
@@ -198,7 +275,7 @@ export function createFlightService({ Airline, airlabs, serpapi }) {
 
     try {
       const serpFlights = await buildSerpApiFlights({ type, origin, dest, departureDate, returnDate });
-      if (serpFlights.length) return attachAirlines(serpFlights);
+      if (serpFlights.length) return attachAirlines(serpFlights, await getLogoResolver());
     } catch (err) {
       console.error('[flights] serpapi search failed:', err.message);
     }
@@ -250,5 +327,14 @@ export function createFlightService({ Airline, airlabs, serpapi }) {
       }));
   };
 
-  return { addAirlineByCode, searchFlights, fetchAirports, fetchCities };
+  return {
+    addAirlineByCode,
+    listAirlines,
+    setAirlineLogo,
+    removeAirlineLogo,
+    searchFlights,
+    fetchAirports,
+    fetchCities,
+    invalidateLogoCache,
+  };
 }

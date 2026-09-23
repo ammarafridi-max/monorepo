@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { UserAuthContext } from '@travel-suite/frontend-shared/contexts/AuthContextBase';
 import { InsuranceProvider } from '@travel-suite/frontend-shared/contexts/InsuranceContext';
+import { TicketProvider } from '@travel-suite/frontend-shared/contexts/TicketContext';
 import AppMegaLayout from '@travel-suite/frontend-shared/layouts/AppMegaLayout';
 import Footer from '@travel-suite/frontend-shared/components/sections/v2/Footer';
 import StickyWhatsApp from '@travel-suite/frontend-shared/components/ui/v2/StickyWhatsApp';
@@ -163,6 +164,7 @@ export default function Providers({ children }) {
       <Toaster />
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
+            <TicketProvider>
             <InsuranceProvider maxStartDays={270}>
               <AppMegaLayout
                 pages={defaultPages}
@@ -179,6 +181,7 @@ export default function Providers({ children }) {
                 hidePathPrefixes={['/insurance-booking', '/apply']}
               />
             </InsuranceProvider>
+            </TicketProvider>
         </AuthProvider>
       </QueryClientProvider>
     </>

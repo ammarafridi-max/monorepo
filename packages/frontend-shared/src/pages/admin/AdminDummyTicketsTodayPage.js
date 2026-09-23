@@ -76,7 +76,7 @@ function OrderBadge({ status }) {
   );
 }
 
-function TodayDeliveriesContent() {
+function TodayDeliveriesContent({ basePath }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -178,7 +178,7 @@ function TodayDeliveriesContent() {
                     >
                       <td className="px-4 py-3">
                         <Link
-                          href={`/admin/dummy-tickets/${item?.sessionId}`}
+                          href={`${basePath}/${item?.sessionId}`}
                           className="block font-semibold text-gray-900 capitalize leading-snug hover:text-primary-700 hover:underline transition-colors"
                         >
                           {String(item?.leadPassenger ?? "—").toLowerCase()}
@@ -244,7 +244,7 @@ function TodayDeliveriesContent() {
                       <td className="px-4 py-3 w-20">
                         <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                           <Link
-                            href={`/admin/dummy-tickets/${item?.sessionId}`}
+                            href={`${basePath}/${item?.sessionId}`}
                             className="p-1.5 rounded-lg text-gray-400 hover:text-primary-700 hover:bg-primary-50 transition"
                             title="View details"
                           >
@@ -288,7 +288,7 @@ function TodayDeliveriesContent() {
   );
 }
 
-export default function AdminDummyTicketsTodayPage() {
+export default function AdminDummyTicketsTodayPage({ basePath = '/admin/dummy-tickets' }) {
   return (
     <Suspense
       fallback={
@@ -297,7 +297,7 @@ export default function AdminDummyTicketsTodayPage() {
         </div>
       }
     >
-      <TodayDeliveriesContent />
+      <TodayDeliveriesContent basePath={basePath} />
     </Suspense>
   );
 }

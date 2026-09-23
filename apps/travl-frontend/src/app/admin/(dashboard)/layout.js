@@ -18,8 +18,10 @@ const nav = [
   {
     section: 'Orders',
     items: [
-      { label: 'Insurance', href: '/admin/insurance-applications', mobile: 2, icon: 'ShieldCheck', roles: ['admin', 'agent'] },
-      { label: 'Itineraries', href: '/admin/itineraries', mobile: 3, mobileLabel: 'Trips', icon: 'MapPin', roles: ['admin', 'agent'] },
+      { label: 'Flight Reservations', href: '/admin/flight-reservations', mobile: 2, mobileLabel: 'Flights', icon: 'Ticket', exact: true, badge: 'pendingDummyTickets', roles: ['admin', 'agent'] },
+      { label: "Today's Deliveries", href: '/admin/flight-reservations/today', icon: 'CalendarCheck', roles: ['admin', 'agent'] },
+      { label: 'Insurance', href: '/admin/insurance-applications', mobile: 3, icon: 'ShieldCheck', roles: ['admin', 'agent'] },
+      { label: 'Itineraries', href: '/admin/itineraries', mobileLabel: 'Trips', icon: 'MapPin', roles: ['admin', 'agent'] },
     ],
   },
   {
@@ -36,6 +38,12 @@ const nav = [
       { label: 'Payment Links', href: '/admin/payment-links', icon: 'Link2', roles: ['admin', 'agent'] },
       { label: 'Products', href: '/admin/products', icon: 'Package', roles: ['admin', 'agent'] },
       { label: 'Pricing', href: '/admin/pricing', icon: 'DollarSign', roles: ['admin'] },
+    ],
+  },
+  {
+    section: 'Catalogue',
+    items: [
+      { label: 'Airline Logos', href: '/admin/airline-logos', icon: 'Plane', roles: ['admin'] },
     ],
   },
   {

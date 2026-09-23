@@ -40,6 +40,12 @@ const nav = [
     ],
   },
   {
+    section: 'Catalogue',
+    items: [
+      { label: 'Airline Logos', href: '/admin/airline-logos', icon: 'Plane', roles: ['admin'] },
+    ],
+  },
+  {
     section: 'People',
     items: [
       { label: 'Admin Users', href: '/admin/users', icon: 'Users', roles: ['admin'] },

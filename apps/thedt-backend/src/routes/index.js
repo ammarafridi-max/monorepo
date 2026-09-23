@@ -80,7 +80,16 @@ router.use("/blog-tags", createBlogTagRouter({ db, auth }));
 // -- Flights -------------------------------------------------------------------
 const airlabs = createAirLabsClient({ apiKey: config.airlabs.apiKey });
 const serpapi = createSerpApiClient({ apiKey: config.serpapi.apiKey });
-router.use("/flights", createFlightRouter({ db, airlabs, serpapi, auth }));
+// Airline logos: uploaded from the admin screen and stored on the airline
+// record, so a new logo needs no deploy.
+const airlineLogoStorage = createCloudinaryStorage({
+  cloudName: config.cloudinary.cloudName,
+  apiKey: config.cloudinary.apiKey,
+  apiSecret: config.cloudinary.apiSecret,
+  logger,
+  folder: "thedt/airlines",
+});
+router.use("/flights", createFlightRouter({ db, airlabs, serpapi, auth, logoStorage: airlineLogoStorage }));
 router.use("/airports", createAirportsRouter({ airlabs }));
 
 // -- Insurance -----------------------------------------------------------------
@@ -109,9 +118,9 @@ const notifications = createNotificationsService({
     deliverySenderName: "The Dummy Ticket AE Delivery",
     customerSenderName: "The Dummy Ticket AE",
     theme: {
-      primaryColor: "#14948f",
-      accentColor: "#ff603a",
-      linkColor: "#14948f",
+      primaryColor: "#053d6c",
+      accentColor: "#de3700",
+      linkColor: "#053d6c",
     },
   },
 });

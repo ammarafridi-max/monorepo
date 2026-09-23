@@ -11,9 +11,9 @@ function getOrRegisterModel(conn, name, schema) {
   }
 }
 
-export function createFlightRouter({ db, airlabs, serpapi, auth }) {
+export function createFlightRouter({ db, airlabs, serpapi, auth, logoStorage }) {
   const Airline = getOrRegisterModel(db, 'airline', AirlineSchema);
-  const service = createFlightService({ Airline, airlabs, serpapi });
+  const service = createFlightService({ Airline, airlabs, serpapi, logoStorage });
   const controller = createFlightController({ service });
   return createFlightRouterFromParts({ controller, auth });
 }

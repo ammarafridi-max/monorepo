@@ -42,6 +42,12 @@ const nav = [
       { label: 'Payment Links', href: '/admin/payment-links', icon: 'Link2', roles: ['admin', 'agent'] },
       { label: 'Products', href: '/admin/products', icon: 'Package', roles: ['admin', 'agent'] },
       { label: 'Pricing', href: '/admin/pricing', icon: 'DollarSign', roles: ['admin'] },
+    ],
+  },
+  {
+    section: 'Catalogue',
+    items: [
+      { label: 'Airline Logos', href: '/admin/airline-logos', icon: 'Plane', roles: ['admin'] },
       { label: 'Currencies', href: '/admin/currencies', icon: 'CircleDollarSign', roles: ['admin'] },
     ],
   },

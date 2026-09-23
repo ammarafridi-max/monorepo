@@ -23,6 +23,8 @@ const LIGHT_HEADER_ROUTES = [
 ];
 
 const LOGO_ALT = 'MDT Logo';
+const LOGO_SRC = '/logo-icon.png';
+const BRAND_NAME = 'My Dummy Ticket';
 
 const defaultPages = [
   {
@@ -95,7 +97,7 @@ export default function Providers({ children }) {
         <QueryClientProvider client={queryClient}>
           <TicketProvider>
             <InsuranceProvider maxStartDays={270}>
-              <AppLayout pages={flightItineraryPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark} copyrightName="My Dummy Ticket">
+              <AppLayout logoSrc={LOGO_SRC} brandName={BRAND_NAME} pages={flightItineraryPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark} copyrightName="My Dummy Ticket">
                 <main>{children}</main>
               </AppLayout>
             </InsuranceProvider>
@@ -112,7 +114,7 @@ export default function Providers({ children }) {
       <QueryClientProvider client={queryClient}>
         <TicketProvider>
           <InsuranceProvider maxStartDays={270}>
-            <AppLayout pages={defaultPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark} copyrightName="My Dummy Ticket">
+            <AppLayout logoSrc={LOGO_SRC} brandName={BRAND_NAME} pages={defaultPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark} copyrightName="My Dummy Ticket">
               <main>{children}</main>
             </AppLayout>
           </InsuranceProvider>

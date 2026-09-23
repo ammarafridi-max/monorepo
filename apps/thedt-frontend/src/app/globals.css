@@ -14,31 +14,33 @@
      12px helper text it is used for. */
   --color-gray-400: #6a7282;
 
-  --color-primary-50:  #dbeff1;
-  --color-primary-100: #b8e0e2;
-  --color-primary-200: #8eced0;
-  --color-primary-300: #5dbbbd;
-  --color-primary-400: #34a8a9;
-  --color-primary-500: #14948f;
-  --color-primary-600: #117f7a;
-  --color-primary-700: #0d6a66;
-  --color-primary-800: #0a5552;
-  --color-primary-900: #073f3d;
-  --color-primary-950: #041f1e;
+  --color-primary-50:  #eef8ff;
+  --color-primary-100: #ddedff;
+  --color-primary-200: #c2dcf7;
+  --color-primary-300: #9fc4eb;
+  --color-primary-400: #709fd0;
+  /* 500 carries body text on white in a few places, so it is pulled dark
+     enough to clear 4.5:1 rather than sitting midway in the ramp. */
+  --color-primary-500: #4679ae;
+  --color-primary-600: #2e6296;
+  --color-primary-700: #053d6c;
+  --color-primary-800: #002f57;
+  --color-primary-900: #002243;
+  --color-primary-950: #00132c;
 
-  --color-accent-50:  #fff5f2;
-  --color-accent-100: #ffece8;
-  --color-accent-200: #ffd0c5;
-  --color-accent-300: #ffb3a1;
-  --color-accent-400: #ff8f75;
-  /* 500 and darker carry white text on solid CTAs, so each step clears 4.5:1
-     against white. The old #ff603a scored 3.01 and failed WCAG AA. */
-  --color-accent-500: #c9421c;
-  --color-accent-600: #a93617;
-  --color-accent-700: #8a2c12;
-  --color-accent-800: #6d2210;
-  --color-accent-900: #4d180b;
-  --color-accent-950: #3d0d00;
+  --color-accent-50:  #ffeee7;
+  --color-accent-100: #ffdcce;
+  --color-accent-200: #ffbda7;
+  --color-accent-300: #ff9778;
+  --color-accent-400: #ff643f;
+  /* Buttons put white text-sm on 500, so it is the brightest, most saturated
+     orange at this hue that still clears 4.5:1 against white. */
+  --color-accent-500: #de3700;
+  --color-accent-600: #c02100;
+  --color-accent-700: #9e0d00;
+  --color-accent-800: #7b0500;
+  --color-accent-900: #590100;
+  --color-accent-950: #360000;
 
   /* font-outfit, font-nunito and font-merriweather are legacy utility names
      still used across frontend-shared; they all resolve to Commissioner here. */
