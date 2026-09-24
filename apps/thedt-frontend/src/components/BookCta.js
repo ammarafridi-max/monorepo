@@ -4,7 +4,7 @@ import { CURRENCY, PRICING_OPTIONS } from '@/config';
 const lowest = Math.min(...PRICING_OPTIONS.map((o) => o.price));
 
 export default function BookCta({
-  text = 'Ready when you are. Search a flight, add passenger names, pay, and your reservation lands in your inbox within 10 to 15 minutes.',
+  text = 'Pick your flight, add the passenger names, pay. The reservation is in your inbox within 10 to 15 minutes, whatever time it is where you are.',
   className = '',
 }) {
   return (

@@ -104,7 +104,7 @@ export default function PricingTiers({
 
         <BookCta
           className="mt-8"
-          text="Every option is the same real reservation with a live PNR. Only the validity period changes."
+          text="Every option is the same reservation with the same live PNR. The only thing you are choosing is how long it stays active."
         />
       </Container>
     </PrimarySection>

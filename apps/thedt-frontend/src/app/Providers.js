@@ -39,8 +39,6 @@ const defaultPages = [
     subpages: [
       { name: 'Dummy Ticket For Schengen Visa', link: '/dummy-ticket-schengen-visa' },
       { name: 'Dummy Ticket For US Visa', link: '/dummy-ticket-us-visa' },
-      { name: 'Emirates Dummy Ticket', link: '/emirates-dummy-ticket' },
-      { name: 'Etihad Dummy Ticket', link: '/etihad-dummy-ticket' },
       { name: 'Onward Ticket', link: '/onward-ticket' },
       { name: 'Flight Itinerary', link: '/flight-itinerary' },
     ],

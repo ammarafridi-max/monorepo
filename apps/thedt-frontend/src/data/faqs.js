@@ -2,66 +2,67 @@ export const faqArray = [
   {
     question: 'What is a {keyword}?',
     answer:
-      'A {keyword} is a genuine booking issued on airline systems with a valid PNR, commonly used to demonstrate confirmed travel plans for trip-planning purposes.',
+      'A {keyword} is a real airline reservation that holds a seat under a live PNR without you paying the fare. It exists in the same booking systems a paid ticket lives in, which is why an embassy can check it. The only difference is that nobody has settled the fare, so the seat releases itself once the hold runs out.',
   },
   {
     question: 'How can I verify the {keyword}?',
     answer:
-      'Every booking is a real reservation with a live PNR. It can be verified through the global distribution systems (Amadeus, Sabre, Travelport) that embassies, airlines and travel agents use. With selected airlines, including Emirates and Etihad, you can also check it directly on their website under Manage Booking. Not every airline shows unpaid reservations on its own site, so the GDS check is the one that always works.',
+      'Take the PNR we email you and look it up in Amadeus, Sabre or Travelport, the systems embassies and travel agents already use. Some airlines, Emirates and Etihad among them, will also show it under Manage Booking on their own site. Plenty of airlines never display an unpaid hold publicly, so treat the GDS lookup as the reliable check and the airline website as a bonus.',
   },
   {
     question: 'How much does a {keyword} cost?',
     answer:
-      'Pricing depends on the validity period you select, not on availability. A {keyword} valid for 2 days is AED 49, 7 days is AED 69, and 14 days is AED 79. The same price covers both one way and return {keyword}s, per person.',
+      'You pay for how long the reservation stays live, not for the route. Two days is AED 49, seven days is AED 69, fourteen days is AED 79. One way and return cost the same, and the price is per traveller.',
   },
   {
     question: 'How long is your {keyword} valid for?',
     answer:
-      'You choose the validity period at checkout. A {keyword} can be valid for 2 days at AED 49, 7 days at AED 69, or 14 days at AED 79.',
+      'For as long as you choose at checkout: 2 days at AED 49, 7 days at AED 69, or 14 days at AED 79. Pick the window that covers your appointment and any follow-up the consulate might ask for, not the length of your holiday.',
   },
   {
     question: 'How long does it take to receive my {keyword}?',
     answer:
-      'All of our {keyword}s are created and sent within 10 to 15 minutes of payment, 24 hours a day, 7 days a week. If you need it faster, email us with your order reference and we will prioritise it.',
+      'Between 10 and 15 minutes from payment, at any hour. If your appointment is sooner than that and you are watching the clock, reply to your order email and we will push it to the front.',
   },
   {
     question: 'Do {keyword}s work for Schengen applications?',
     answer:
-      'Yes. Our {keyword}s meet documentation requirements requested by embassies and application centers, including VFS. They provide verified proof of travel intent and itinerary, increasing your chances of approval.',
+      'Yes. Article 14 of the EU Visa Code asks for evidence of your transport arrangements, not for a paid ticket, and a reservation with a live PNR answers that. VFS and BLS centres handle these every day.',
   },
   {
     question: 'Will my application get rejected due to {keyword}s?',
     answer:
-      'Not at all. {keyword}s are completely fine and accepted by VFS and embassies. They will improve your chances of getting your application approved.',
+      'Not for using one. Consulates expect a reservation at this stage, which is why they ask for an itinerary rather than a receipt. Refusals turn on things like funds, ties to your home country, or an inconsistent story, so put your effort there.',
   },
   {
     question: 'I need hotel reservations too. Can you provide that?',
     answer:
-      "Yes, we do. We specialize in all kinds of travel documentation and assistance, which means that we provide flight reservations, hotel reservations, travel insurance, trip itinerary and all other related documents needed to get your applications approved. Please send us an email with the trip details and we'll be happy to make you a hotel reservation.",
+      'Yes. Email us the cities and dates and we will send back a hotel reservation laid out the way visa officers expect to see it. We would rather do it by email than through a form, because accommodation details change more often than flights do.',
   },
   {
     question: 'What payment methods do you accept?',
     answer:
-      "We accept multiple payment methods. You can choose to pay on our website through Stripe's secure Checkout application or transfer money through a payment link (available on request).",
+      'Cards through Stripe Checkout, which is what the site uses by default. If you would rather pay from a different account or need an invoice first, ask us for a payment link.',
   },
   {
     question: 'Is the {keyword} suitable for all travel applications?',
     answer:
-      'Yes, our {keyword}s are suitable and acceptable for all kinds of travel applications, including but not limited to Schengen, Turkey, Canada, Thailand, UAE, and UK.',
+      'It works anywhere the requirement is proof of intended travel, which covers Schengen, the UK, Canada, Turkey, Thailand and the UAE among others. The one case it does not cover is an airline asking for a paid onward ticket at the gate, because that is a fare, not evidence.',
   },
   {
     question: 'What additional services do you offer?',
     answer:
-      'Besides {keyword}s, we also offer hotel reservations, travel insurance (genuine and official), travel documentation assistance, and airport transfer arrangement.',
+      'Hotel reservations, genuine AXA travel insurance, help assembling the rest of a visa file, and airport transfers when you need one.',
   },
   {
     question: 'How can I contact customer support?',
-    answer: 'Email us at info@thedummyticket.ae. Support is available 24/7 and replies within 10 to 15 minutes.',
+    answer:
+      'Email info@thedummyticket.ae. Someone is on it around the clock and replies usually land inside 10 to 15 minutes.',
   },
   {
     question: 'Is there a money-back guarantee?',
     answer:
-      'Yes, in one case. If your visa is refused because the flight reservation we sent had expired or was invalid, email us the refusal letter and we refund the order in full. We do not refund for a change of plans or for a refusal on other grounds. If your appointment moves, we re-issue the reservation with new dates at no extra charge.',
+      'One clear case: if the refusal letter says your flight reservation had expired or could not be verified, send it to us and we refund the order in full. A change of heart or a refusal on other grounds is not covered. If your appointment simply moves, tell us and we reissue with new dates for free.',
   },
 ];
 
@@ -69,72 +70,72 @@ export const insuranceFaqs = [
   {
     question: 'Is travel insurance mandatory for UAE residents?',
     answer:
-      'Yes, many countries require valid travel insurance, especially Schengen states and other visa-based international destinations.',
+      'It depends where you are going. Schengen states make it a condition of the visa, and a handful of other countries do too. Everywhere else it is optional on paper, though a hospital bill abroad has a way of making the argument for you.',
   },
   {
     question: 'Does this travel insurance meet Schengen visa requirements?',
     answer:
-      'Yes, our plans include minimum €30,000 medical coverage required for Schengen visa applications and embassy approval.',
+      'Yes. Every plan we issue carries at least EUR 30,000 of medical cover and is valid across all Schengen member states, which is the threshold consulates check against.',
   },
   {
     question: 'How quickly will I receive my insurance policy?',
     answer:
-      'Your travel insurance policy is issued instantly and delivered to your email within minutes after successful payment.',
+      'The policy is issued the moment payment clears and arrives by email within a few minutes, with the certificate attached in the format visa centres accept.',
   },
   {
     question: 'Can UAE residents purchase travel insurance online?',
     answer:
-      'Yes, UAE residents can purchase and receive fully valid travel insurance online without visiting any office.',
+      'Yes, start to finish, with nothing to sign in person and no branch visit.',
   },
   {
     question: 'What does the travel insurance cover?',
     answer:
-      'Coverage includes emergency medical expenses, hospitalization, trip cancellation, baggage loss, and other unexpected travel incidents.',
+      'Emergency medical treatment and hospital stays, repatriation, trip cancellation, and lost or delayed baggage. The policy wording sets out the limits for each, and it is worth two minutes of your time before you travel.',
   },
   {
     question: 'Is COVID-19 covered under the travel insurance?',
     answer:
-      'Yes, most plans include COVID-19 medical coverage during your international trip, subject to policy terms.',
+      'Most plans treat it as any other illness needing emergency medical care while you are abroad, subject to the policy terms.',
   },
   {
     question: 'Can I buy travel insurance after booking my flight?',
     answer:
-      'Yes, you can purchase travel insurance anytime before your departure date, even after flight confirmation.',
+      'Yes, any time before you depart. Buying earlier is the better move, since cancellation cover only helps for things that go wrong after the policy starts.',
   },
   {
     question: 'How do I buy travel insurance online in the UAE?',
     answer:
-      'Select your trip dates and destination, add traveler details, and complete secure payment online to receive your travel insurance policy instantly by email.',
+      'Enter your destination and travel dates, add each traveller, and pay. The policy is emailed to you straight after, ready to attach to a visa file.',
   },
   {
     question: 'Do you offer instant travel insurance for visa applications?',
     answer:
-      'Yes, we provide travel insurance with instant policy delivery that is suitable for embassy and visa applications, including Schengen requirements.',
+      'Yes. Delivery is immediate and the certificate meets embassy requirements, Schengen included.',
   },
   {
     question: 'Is this travel insurance valid worldwide?',
     answer:
-      'Yes, coverage is available for most international destinations depending on your selected region and policy type.',
+      'Cover follows the region you select at checkout. Worldwide options are available, so pick the one that actually matches your route rather than the cheapest line on the page.',
   },
   {
     question: 'Can I get travel insurance for family or group travel?',
     answer:
-      'Yes, you can insure multiple travelers in one booking by selecting the number of adults, children, and seniors during checkout.',
+      'Yes. Add every traveller to the same booking and each one gets their own certificate under one payment.',
   },
   {
     question: 'Can I extend my travel insurance policy?',
     answer:
-      'Yes, policy extensions are possible before expiry, subject to insurer approval and eligibility conditions.',
+      'Usually, as long as you ask before the current policy expires and the insurer agrees. Once it lapses you are buying a new one instead.',
   },
   {
     question: 'What documents are required to purchase travel insurance?',
     answer:
-      'You only need basic travel details, passport information, destination country, and confirmed travel dates.',
+      'Passport details for each traveller, your destination, and your travel dates. Nothing else.',
   },
   {
     question: 'Is travel insurance refundable if my visa is rejected?',
     answer:
-      'Some plans offer refunds after visa rejection, depending on policy terms and supporting documentation.',
+      'Some plans refund the premium if you send the refusal letter, others do not. Check the wording on the plan you pick before you buy, and ask us if it is unclear.',
   },
 ];
 
@@ -153,41 +154,41 @@ export const homepageFaqs = [
   {
     question: 'What is a dummy ticket and do I need one for my visa?',
     answer:
-      'A dummy ticket is a genuine flight reservation with a verifiable PNR, used to show proof of travel intent for a visa application. Most embassies and visa centres accept them in place of a fully paid ticket.',
+      'It is a real flight reservation with a verifiable PNR that shows where you intend to travel, without you paying the fare. Most consulates and visa centres ask for exactly this at the application stage, because buying a ticket before a decision is a risk they do not expect you to take.',
   },
   {
     question: 'Do your dummy tickets work for Schengen visa applications?',
     answer:
-      'Yes. Our dummy tickets meet the documentation requirements for Schengen applications and are accepted by VFS, BLS, and embassies. They include a verifiable PNR and are formatted to match what visa officers expect.',
+      'Yes, and it is the most common reason people order one. The reservation carries a live PNR that VFS, BLS and consulate staff can verify, and it is laid out the way they expect to receive it.',
   },
   {
     question: 'Can you provide hotel reservations for a visa application?',
     answer:
-      'Yes. We provide hotel reservations on request, formatted to meet embassy requirements. Send us your trip details and we will prepare the reservation for you.',
+      'Yes, on request. Send us your cities and dates by email and we will prepare a reservation formatted for a visa file.',
   },
   {
     question: 'Does your travel insurance meet Schengen requirements?',
     answer:
-      'Yes. Our travel insurance plans include the mandatory minimum medical coverage and are valid across all 26 Schengen member states.',
+      'Yes. Every plan carries the mandatory minimum medical cover and is valid across all Schengen member states.',
   },
   {
     question: 'How quickly will I receive my documents?',
     answer:
-      'Dummy tickets and travel insurance are delivered to your inbox within minutes of payment. Hotel reservations are processed on request and typically delivered within a few hours during working hours.',
+      'Dummy tickets and insurance policies arrive within minutes of payment, at any hour. Hotel reservations are put together by hand, so those usually come back the same working day.',
   },
   {
     question: 'What visa types do your services support?',
     answer:
-      'Our services are suitable for a wide range of visa applications, including Schengen, UK, Canada, Australia, Turkey, Thailand, and more.',
+      'Anything that asks for proof of intended travel: Schengen, UK, Canada, Australia, Turkey, Thailand and more.',
   },
   {
     question: 'What payment methods do you accept?',
     answer:
-      "We accept card payments through Stripe's secure checkout. Payment links are also available on request.",
+      'Cards through Stripe Checkout, with payment links available if you ask for one.',
   },
   {
     question: 'Is visa assistance available?',
     answer:
-      'We are launching a full visa assistance service soon. In the meantime, we can help with all the supporting documents your application needs.',
+      'Full visa assistance is on the way. Until it launches we can still help you put together every supporting document an application needs.',
   },
 ];

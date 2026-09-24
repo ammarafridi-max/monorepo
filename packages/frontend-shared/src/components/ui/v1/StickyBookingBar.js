@@ -29,15 +29,15 @@ export default function StickyBookingBar({ targetId = 'form', label = 'Book now'
   return (
     <div
       aria-hidden={!visible}
-      className={`fixed inset-x-0 bottom-0 z-40 lg:hidden transition-transform duration-300 ${
+      className={`fixed inset-x-0 bottom-0 z-40 max-w-full lg:hidden transition-transform duration-300 ${
         visible ? 'translate-y-0' : 'translate-y-full'
       }`}
     >
-      <div className="mx-3 mb-3 flex items-center justify-between gap-3 rounded-2xl bg-white px-4 py-3 shadow-[0_-4px_24px_rgba(0,0,0,0.12)] border border-gray-200">
+      <div className="mx-3 mb-3 flex items-center justify-between gap-3 overflow-hidden rounded-2xl bg-white px-4 py-3 shadow-[0_-4px_24px_rgba(0,0,0,0.12)] border border-gray-200">
         <div className="min-w-0">
-          <p className="text-[11px] uppercase tracking-wide text-gray-500">Verifiable {product}</p>
+          <p className="truncate text-[11px] uppercase tracking-wide text-gray-500">Verifiable {product}</p>
           {price && (
-            <p className="text-base font-semibold text-gray-900">
+            <p className="truncate text-base font-semibold text-gray-900">
               From {price.code || selectedCurrency?.code || 'AED'}{' '}
               {Number(price.amount).toLocaleString('en', { maximumFractionDigits: 2 })}
             </p>

@@ -12,7 +12,7 @@ const upsells = [
     icon: <Ticket size={15} />,
     title: 'Need a Dummy Ticket?',
     description:
-      'Get a verifiable flight reservation accepted by embassies and visa centers for your application.',
+      'Add a flight reservation with a live PNR, the other document consulates ask for.',
     priceCaption: 'from',
     price: 'AED 49',
     href: '/',

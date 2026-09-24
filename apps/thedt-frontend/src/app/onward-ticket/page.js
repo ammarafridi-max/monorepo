@@ -27,6 +27,7 @@ import PricingTiers from '@/components/PricingTiers';
 import BookCta from '@/components/BookCta';
 import StickyBookingBar from '@travel-suite/frontend-shared/components/ui/v1/StickyBookingBar';
 import { processSteps } from '@/data/processSteps';
+import { testimonials, formatTestimonialsArray } from '@/data/testimonials';
 import About from '@travel-suite/frontend-shared/components/sections/v1/About';
 import Benefits from '@travel-suite/frontend-shared/components/sections/v1/Benefits';
 import Testimonials from '@travel-suite/frontend-shared/components/sections/v1/Testimonials';
@@ -36,85 +37,64 @@ import BlogPosts from '@travel-suite/frontend-shared/components/sections/v1/Blog
 
 const keyword = 'onward ticket';
 
-const testimonials = [
-  {
-    quote: 'The Dummy Ticket AE made my visa process incredibly smooth and totally stress-free. The booking was fast, the ticket looked real, and I had no issues at the embassy. Great service for anyone needing quick and professional travel documents on short notice.',
-    name: 'David S.',
-    location: 'Traveler from the United States',
-    stars: 5,
-  },
-  {
-    quote: 'I was in a rush and The Dummy Ticket AE delivered exactly what I needed. The process was simple, the service was reliable, and I had my ticket ready in minutes. It saved me a lot of stress when applying for my visa. Definitely using this again in the future.',
-    name: 'Maria K.',
-    location: 'Tourist from the United Kingdom',
-    stars: 5,
-  },
-  {
-    quote: 'The entire experience with The Dummy Ticket AE was seamless from start to finish. I got my onward ticket within minutes, and it worked perfectly for my Schengen visa. Fast response, clear instructions, and great support - highly recommend to travelers in need.',
-    name: 'Ahmed R.',
-    location: 'Frequent Flyer from India',
-    stars: 5,
-  },
-];
-
 export const benefits = [
   {
-    title: 'Accepted Worldwide',
-    text: 'Our onward tickets are issued through official airline systems with a real PNR, accepted by airlines at check-in and by immigration officers at border crossings.',
+    title: 'Holds up at the desk',
+    text: 'The reservation sits in the airline system under a live PNR, which is what a check-in agent or a border officer is actually looking for when they ask how you are leaving.',
     icon: HiCheck,
   },
   {
-    title: 'Instant Delivery',
-    text: 'Your onward ticket is sent to your inbox within 10 to 15 minutes of payment, 24/7. No waiting for business hours.',
+    title: 'Ready before your taxi is',
+    text: 'Ten to fifteen minutes from payment, round the clock. Useful when you find out at the airport that you needed one.',
     icon: HiOutlineClock,
   },
   {
-    title: 'Only AED 49',
-    text: 'A real onward flight can cost hundreds of dirhams with no guarantee of a refund. Our verified onward ticket costs AED 49, with zero financial risk if your plans change.',
+    title: 'AED 49 instead of a fare',
+    text: 'A throwaway flight costs hundreds of dirhams and refunds are a coin toss. This costs AED 49 and you lose nothing if your plans shift.',
     icon: HiOutlineCurrencyDollar,
   },
   {
-    title: 'Extended Validity',
-    text: 'Our reservations stay active for 7 or 14 days from issue, far longer than standard airline holds. Plenty of time to clear immigration or complete your visa application.',
+    title: 'Stays live for days, not hours',
+    text: 'Seven or fourteen days from issue, well past the usual airline hold. Long enough to clear immigration or sit in a processing queue.',
     icon: HiOutlineClock,
   },
   {
-    title: 'Visa-Friendly Format',
-    text: 'Every onward ticket follows the exact itinerary format immigration officers and embassies expect, with passenger name, route, dates, and PNR clearly displayed.',
+    title: 'Reads like an itinerary should',
+    text: 'Passenger name, route, dates and PNR where an officer expects to find them, so nobody has to hunt around your screen.',
     icon: HiCheck,
   },
   {
-    title: 'Specialist Support',
-    text: 'Our travel documentation team is available 24/7 and replies within 10 to 15 minutes. Need a date change, confirmation letter, or help with a specific entry requirement? We handle it.',
+    title: 'Someone answers',
+    text: 'Date change, confirmation letter, an odd entry rule for one country. Email us and a reply lands in 10 to 15 minutes, whatever time it is.',
     icon: HiCheck,
   },
 ];
 
 export const pageData = {
   meta: {
-    title: 'Onward Ticket for Visa & Check-In | Real PNR, AED 49',
+    title: 'Onward Ticket From AED 49 | Live PNR for Check-In',
     description:
-      'Proof of onward travel with a live PNR, accepted at airline check-in and by immigration officers. Verifiable on the global GDS. From AED 49, sent in minutes.',
+      'Proof you are leaving, held under a real PNR that airlines and immigration can verify. AED 49, emailed in 10 to 15 minutes, no fare to write off.',
     canonical: 'https://www.thedummyticket.ae/onward-ticket',
     entityName: 'Onward Ticket',
   },
   sections: {
     hero: {
-      title: 'Onward Ticket From AED 49. Verified Proof of Outbound Travel.',
+      title: 'Proof you are leaving, without buying a flight you will not take.',
       subtitle:
-        'An onward ticket is a real flight reservation with a live PNR proving you will leave the country, not a paid ticket. Airlines accept it at check-in and immigration officers accept it at the border. Verify it on the global GDS. From AED 49, delivered by email in minutes.',
+        'Some countries will not let you in until you show how you are getting out, and some airlines will not board you without it. An onward ticket is a genuine reservation under a live PNR that answers the question at check-in and at the border. AED 49, in your inbox within minutes.',
       form: <AllForms />,
     },
     process: {
       title: 'How Do You Book an Onward Ticket?',
-      subtitle: 'How To Book Your Reservation',
+      subtitle: 'Two minutes of typing, then wait for the email',
       keyword,
     },
     about: {
       title: 'About Us',
       text: (
         <>
-          We have been issuing verified flight reservations since 2008. Airlines check onward travel at check-in against{' '}<a href="https://www.iata.org/en/publications/timatic/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-gray-900">IATA's Timatic database</a>, which is why a reservation with a live PNR is accepted at the desk and at the border.
+          We have been issuing flight reservations since 2008, long enough to have seen every version of this go wrong. Airlines check onward travel at the desk against{' '}<a href="https://www.iata.org/en/publications/timatic/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-gray-900">IATA's Timatic database</a>, so what counts is that the booking genuinely exists in the system. A live PNR does. A printed PDF does not.
         </>
       ),
       services: [
@@ -122,67 +102,67 @@ export const pageData = {
           icon: <MdOutlineAirplaneTicket />,
           title: 'Onward Tickets',
           description:
-            'Verifiable flight reservations with a real PNR, accepted by airlines, immigration officers, and border control worldwide. Delivered instantly and valid long enough to clear your checks.',
+            'A held seat under a live PNR that a check-in agent or border officer can verify. Sent within minutes and live long enough to get you through the checks.',
         },
         {
           icon: <MdOutlineHealthAndSafety />,
           title: 'Travel Insurance',
           description:
-            'AXA-backed travel insurance for UAE residents. Covers medical emergencies, trip cancellations, and baggage loss, a practical addition to your onward ticket.',
+            'Genuine AXA cover for UAE residents: medical emergencies, cancellation and baggage. Sensible company for a one-way trip into a country you do not know yet.',
         },
         {
           icon: <MdOutlineHotel />,
           title: 'Hotel Reservations',
           description:
-            'We provide hotel reservations by email, formatted to meet embassy and immigration requirements, available whenever you need proof of accommodation.',
+            'Border officers sometimes ask where you are staying, not just how you are leaving. Email us the dates and we prepare it.',
         },
       ],
     },
     benefits: {
-      title: 'Why Book Your Onward Ticket With Us?',
-      subtitle: 'Trusted supplier based in Dubai',
+      title: 'Why Book It Here?',
+      subtitle: 'Dubai based, awake at the hours people actually need this',
       benefits,
     },
     testimonials: {
       title: 'What Do Our Customers Say?',
-      subtitle: 'What our customers say about us',
-      testimonials,
+      subtitle: 'People who needed one before a flight or an appointment',
+      testimonials: formatTestimonialsArray(testimonials, keyword),
     },
     faqs: {
       title: 'Frequently Asked Questions',
-      subtitle: 'Common questions answered',
+      subtitle: 'What it is, who asks for it, and how long it lasts',
       faqs: [
         {
           question: 'What is an onward ticket?',
           answer:
-            'An onward ticket is a confirmed flight reservation showing you will leave your destination country. It proves to immigration officers and airlines that you have a concrete travel plan beyond your arrival, required for many visa-on-arrival countries and transit situations.',
+            'It is a confirmed reservation for a flight out of the country you are entering. Immigration officers use it to confirm you are not planning to overstay, and airlines check it before boarding because they carry the cost of flying you back if you are refused entry.',
         },
         {
           question: 'Which countries require an onward ticket?',
           answer:
-            'Many countries require proof of onward travel on arrival, including Thailand, Vietnam, Indonesia, Costa Rica, Peru, and others. Some airlines also require it before boarding. Our verified reservations are accepted across all major destinations.',
+            'Thailand, Vietnam, Indonesia, the Philippines, Costa Rica and Peru are the ones travellers get caught by most often, but the list moves. The airline can also ask independently of the country, so check both before you fly.',
         },
         {
           question:
             'What is the difference between an onward ticket and a dummy ticket?',
           answer:
-            'A dummy ticket is used for visa applications. It demonstrates travel intent to an embassy. An onward ticket is used at the airport. It demonstrates to immigration officers that you will leave the country. Both are verifiable reservations; the use case is different.',
+            'Same kind of document, different audience. A dummy ticket goes into a visa file to show a consulate where you intend to go. An onward ticket is shown at an airport to prove you are leaving again. Both are genuine reservations with a live PNR.',
         },
         {
           question: 'How long is the onward ticket valid for?',
           answer:
-            'Our onward tickets stay active for 7 or 14 days from the date of issue, depending on the option you choose at checkout. This covers standard immigration checks and short-stay visa processing timelines.',
+            'Seven or fourteen days from issue, whichever you pick at checkout. Time it so the reservation is still live on the day you fly, not the day you booked it.',
         },
         {
           question: 'Do you offer refunds if I no longer need the ticket?',
           answer:
-            'Yes, in one case. If your visa is refused because the flight reservation we sent had expired or was invalid, email us the refusal letter and we refund the order in full. We do not refund for a change of plans or for a refusal on other grounds. If your appointment moves, we re-issue the reservation with new dates at no extra charge.',
+            'One case, clearly: if a refusal letter says the reservation had expired or could not be verified, send it over and we refund in full. Changed plans or a refusal on other grounds is not covered. If your date moves, we reissue with new dates for free.',
         },
       ],
     },
     blogs: {
       title: 'What Should You Read Next?',
-      subtitle: 'Recently published blog posts',
+      subtitle: 'Guides on entry rules and visa paperwork',
     },
   },
 };

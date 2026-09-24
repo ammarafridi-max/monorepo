@@ -1,0 +1,30 @@
+name: The Dummy Ticket Blog
+
+on:
+  # Every third morning, matching the dates in targets/thedt/topics.json. The
+  # queue is the selector, not the date: a failed day is retried on the next run.
+  schedule:
+    - cron: '0 5 */3 * *' # 09:00 Asia/Dubai
+  workflow_dispatch:
+    inputs:
+      status:
+        description: Publish immediately or stage as a draft
+        type: choice
+        options: [published, draft]
+        default: draft
+
+# The failure reporter in _automation.yml opens an issue, and a called workflow
+# cannot request more than its caller holds. The repo default is read-only, so
+# the caller has to grant it here.
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  generate:
+    uses: ./.github/workflows/_automation.yml
+    secrets: inherit
+    with:
+      job: blog-generate
+      target: thedt
+      args: --status ${{ inputs.status || 'draft' }}

@@ -1,14 +1,14 @@
 export const processSteps = [
   {
-    title: 'Tell us what you need',
-    text: 'Fill in your trip details, travel dates, and traveler information using our simple online form. The whole process takes less than two minutes.',
+    title: 'Send us the trip',
+    text: 'Route, dates, and who is travelling. That is all the form asks for, and it takes about two minutes to fill in.',
   },
   {
-    title: 'Choose your service',
-    text: 'Select a dummy ticket or travel insurance, then pick the validity period that works best for your visa application. Need a hotel reservation too? Email us the trip details and we will arrange it for you.',
+    title: 'Pick how long you need it live',
+    text: 'Two days, seven days, or fourteen. Match it to your appointment date rather than your actual trip, because the reservation only has to be valid while someone is looking at it.',
   },
   {
-    title: 'Pay and receive instantly',
-    text: 'Complete your secure payment and your documents arrive in your inbox within 10 to 15 minutes, any time of day. No office visits, no waiting around.',
+    title: 'Pay, then check your inbox',
+    text: 'The reservation lands within 10 to 15 minutes, day or night, with the PNR ready to verify before you upload anything.',
   },
 ];

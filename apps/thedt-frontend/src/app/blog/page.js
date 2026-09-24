@@ -13,14 +13,14 @@ import BlogPage from '@travel-suite/frontend-shared/pages/client/BlogPage';
 const meta = {
   title: 'Dummy Ticket & Visa Travel Blog | Tips, Guides & Updates',
   description:
-    'Read practical visa travel guides, dummy ticket tips, and latest updates to prepare stronger documentation for your next application.',
+    'Practical guides to visa paperwork, written by the people who prepare it every day. What consulates ask for, and what they do not.',
   canonical: `${SITE_URL}/blog`,
 };
 
 const hero = {
   title: 'Blog',
   subtitle:
-    'Our blog covers everything you need to know about dummy tickets, including how they work, when to use them, and why they are commonly required for visa and immigration purposes. We also share tips, updates, and best practices to help you avoid mistakes and apply with confidence.',
+    'How flight reservations work, when a consulate actually needs one, and the small mistakes that send a file back. Written from what we see in applications every week rather than from a rulebook.',
 };
 
 const breadcrumbPaths = [

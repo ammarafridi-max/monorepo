@@ -1,20 +1,23 @@
 export const testimonials = [
   {
-    quote: 'The Dummy Ticket AE made my visa process incredibly smooth and totally stress-free. The booking was fast, the ticket looked real, and I had no issues at the embassy. Great service for anyone needing quick and professional travel documents on short notice.',
-    name: 'David S.',
-    location: 'Traveler from the United States',
+    quote:
+      'I left my Schengen appointment three days out with no flight booked and no intention of paying for one. Sent the form at midnight, had the reservation before I finished making tea. The VFS officer scanned it, said nothing, moved on. That is exactly what I wanted.',
+    name: 'Priya N.',
+    location: 'Applied for a Schengen visa from Dubai',
     stars: 5,
   },
   {
-    quote: 'I was in a rush and The Dummy Ticket AE delivered exactly what I needed. The process was simple, the service was reliable, and I had my ticket ready in minutes. It saved me a lot of stress when applying for my visa. Definitely using this again in the future.',
-    name: 'Maria K.',
-    location: 'Tourist from the United Kingdom',
+    quote:
+      'What sold me was being able to pull the PNR up myself before I submitted anything. I checked it, my wife checked it, then we uploaded it. No guessing whether it was real.',
+    name: 'Tomasz W.',
+    location: 'Sharjah resident, travelling to Poland',
     stars: 5,
   },
   {
-    quote: 'The entire experience with The Dummy Ticket AE was seamless from start to finish. I got my {keyword} within minutes, and it worked perfectly for my Schengen visa. Fast response, clear instructions, and great support, highly recommend to travelers in need.',
-    name: 'Ahmed R.',
-    location: 'Frequent Flyer from India',
+    quote:
+      'My interview got pushed back by two weeks and I assumed I would have to buy again. One email and they reissued it with the new dates, no charge, no argument. Small thing, but it is the reason I am writing this.',
+    name: 'Grace O.',
+    location: 'Abu Dhabi, applied for a UK visa',
     stars: 5,
   },
 ];

@@ -22,6 +22,7 @@ import {
   buildWebsite,
 } from '@/lib/schema';
 import { faqArray, formatFaqArray } from '@/data/faqs';
+import { testimonials } from '@/data/testimonials';
 import { Check, Clock, DollarSign } from 'lucide-react';
 import {
   MdOutlineAirplaneTicket,
@@ -31,70 +32,50 @@ import {
 
 const keyword = 'dummy ticket';
 
-const testimonials = [
-  {
-    quote: 'The Dummy Ticket AE made my visa process incredibly smooth and totally stress-free. The booking was fast, the ticket looked real, and I had no issues at the embassy. Great service for anyone needing quick and professional travel documents on short notice.',
-    name: 'David S.',
-    location: 'Traveler from the United States',
-    stars: 5,
-  },
-  {
-    quote: 'I was in a rush and The Dummy Ticket AE delivered exactly what I needed. The process was simple, the service was reliable, and I had my ticket ready in minutes. It saved me a lot of stress when applying for my visa. Definitely using this again in the future.',
-    name: 'Maria K.',
-    location: 'Tourist from the United Kingdom',
-    stars: 5,
-  },
-  {
-    quote: 'The entire experience with The Dummy Ticket AE was seamless from start to finish. I got my dummy ticket within minutes, and it worked perfectly for my Schengen visa. Fast response, clear instructions, and great support - highly recommend to travelers in need.',
-    name: 'Ahmed R.',
-    location: 'Frequent Flyer from India',
-    stars: 5,
-  },
-];
-
 const benefits = [
   {
-    title: 'Accepted by VFS',
-    text: 'We issue dummy tickets through official airline systems, ensuring they are 100% genuine, verifiable, and widely accepted by embassies and consulates.',
+    title: 'Checks out at the counter',
+    text: 'Every reservation is made in the airline systems consulates already query, so when VFS or BLS look up the PNR it is simply there.',
     icon: Check,
   },
   {
-    title: 'Instant Delivery',
-    text: 'Your dummy ticket is sent to your inbox within 10 to 15 minutes of payment, 24 hours a day, 7 days a week. No waiting for business hours.',
+    title: 'In your inbox in minutes',
+    text: 'Ten to fifteen minutes from payment, whatever the hour. Appointments get booked at odd times and so do we.',
     icon: Clock,
   },
   {
-    title: 'Great Value',
-    text: 'Starting from just AED 49, we offer high-quality, embassy-compliant dummy tickets at an affordable price, so you save money without sacrificing reliability.',
+    title: 'AED 49, and that is the whole price',
+    text: 'You pay for the validity window you pick. No surcharge for a return leg, no fee that appears at checkout.',
     icon: DollarSign,
   },
 ];
 
 const pageData = {
   meta: {
-    title: 'Dummy Ticket in UAE From AED 49 | Verifiable PNR',
+    title: 'Dummy Ticket UAE From AED 49 | Live PNR You Can Check',
     description:
-      'Book embassy-ready dummy tickets from AED 49 with verifiable PNR references and fast delivery for visa applications from the UAE.',
+      'A real flight reservation with a PNR you can verify yourself, from AED 49 and emailed in 10 to 15 minutes. Built for visa files submitted from the UAE.',
     canonical: SITE_URL,
     entityName: 'Dummy Ticket',
   },
   sections: {
     hero: {
-      title: 'Dummy Ticket From AED 49. Verifiable and Legit.',
+      title: 'A flight reservation your consulate can look up. From AED 49.',
       subtitle:
-        'A dummy ticket is a real flight reservation with a live PNR, not a purchased ticket. Use it for visa applications, airline check-in, proof of onward travel, and immigration checks. Verify it on the global GDS that embassies use. From AED 49, delivered by email in minutes.',
+        'Not a paid ticket and not a mock-up. We hold a real seat under a live PNR, you check it yourself in the same systems embassies use, then attach it to your visa file. It reaches your inbox 10 to 15 minutes after payment, any hour of the day.',
     },
     process: {
       title: 'How Do You Book a Dummy Ticket?',
       subtitle:
-        'How it Works with quick steps and clear guidance from search to delivery',
+        'Three steps, about two minutes of typing, and no phone call at any point',
     },
     about: {
       title: 'About Us',
       text: (
         <>
-          Embassies ask for evidence of transport as part of a visa file. Article 14
-          of the{' '}
+          No consulate expects you to buy a ticket before they have decided
+          anything. What they ask for is evidence of how you intend to travel, and
+          Article 14 of the{' '}
         <a
           href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32009R0810"
           target="_blank"
@@ -103,8 +84,8 @@ const pageData = {
         >
           EU Visa Code
         </a>{' '}
-          sets that out for Schengen applications, and a reservation with a live PNR
-          satisfies it without buying a ticket.
+          spells that out for Schengen applications. A reservation carrying a live
+          PNR answers it in full, which is the whole reason this service exists.
         </>
       ),
       services: [
@@ -112,44 +93,44 @@ const pageData = {
           icon: <MdOutlineAirplaneTicket />,
           title: 'Dummy Tickets',
           description:
-            'Genuine flight reservations with a verifiable PNR code, issued through official airline systems. Accepted by VFS, BLS, and embassies worldwide. Perfect proof of onward travel for your visa application.',
+            'A held seat under a live PNR, made in the airline systems consulates already search. Use it for a visa file, for proof of onward travel, or for a border officer who wants to see how you are leaving.',
         },
         {
           icon: <MdOutlineHotel />,
           title: 'Hotel Reservations',
           description:
-            'Need proof of accommodation for your visa application? We provide hotel reservations by email, formatted to meet embassy requirements. Just reach out and we\'ll have it ready for you quickly.',
+            'Where you are staying, laid out the way a visa officer expects to read it. Email us the cities and dates and we put it together by hand, usually the same day.',
         },
         {
           icon: <MdOutlineHealthAndSafety />,
           title: 'Travel Insurance',
           description:
-            'Schengen-compliant travel insurance meeting the required EUR 30,000 medical coverage. Genuine AXA-backed policies issued instantly, bundled or standalone alongside your dummy ticket.',
+            'Genuine AXA policies with the EUR 30,000 of medical cover Schengen consulates insist on. Issued the moment you pay, on its own or alongside a reservation.',
         },
       ],
     },
     benefits: {
-      title: 'Why Choose The Dummy Ticket AE?',
+      title: 'Why Book It Here?',
       subtitle:
-        'Trusted supplier based in Dubai with proven customer reliability and support quality',
+        'Run out of Dubai, answering email at three in the morning because that is when appointments get confirmed',
       benefits,
     },
     testimonials: {
       title: 'What Do Our Customers Say?',
       subtitle:
-        'What our customers say about us after successful visa use and approvals',
+        'People who had an appointment to get to and a reservation to hand over',
       testimonials,
     },
     faqs: {
       title: 'Frequently Asked Questions',
       subtitle:
-        'Common questions answered about booking, delivery, and verification for every traveler',
+        'Validity, verification, delivery, and what happens if your appointment moves',
       faqs: formatFaqArray(faqArray, keyword),
     },
     blogs: {
       title: 'What Should You Read Next?',
       subtitle:
-        'Recently published blog posts with practical visa travel insights and useful updates',
+        'Guides on visa paperwork, written by people who deal with it daily',
     },
   },
 };
@@ -213,10 +194,10 @@ export default function HomePage() {
         subtitle={pageData.sections.hero.subtitle}
         form={<AllForms />}
         pills={[
-          'Accepted by VFS & BLS',
-          'Verifiable PNR Code',
-          'Delivered in Minutes',
-          'Starts from AED 49',
+          'Verify the PNR yourself',
+          'Handled daily by VFS and BLS',
+          'Emailed in 10 to 15 minutes',
+          'From AED 49 per traveller',
         ]}
       />
       <Process

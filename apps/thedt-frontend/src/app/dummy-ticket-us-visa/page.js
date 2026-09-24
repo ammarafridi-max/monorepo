@@ -1,5 +1,6 @@
 import { EMAIL } from '@/config/contact';
 import { faqArray, formatFaqArray } from '@/data/faqs';
+import { testimonials } from '@/data/testimonials';
 import { buildMetadata } from '@/lib/schema';
 import {
   buildFAQPage,
@@ -39,87 +40,66 @@ import BlogPosts from '@travel-suite/frontend-shared/components/sections/v1/Blog
 
 const keyword = 'dummy ticket';
 
-const testimonials = [
-  {
-    quote: 'The Dummy Ticket AE made my US visa process incredibly smooth and totally stress-free. The booking was fast, the dummy ticket looked genuine, and I had no issues at the embassy. Great service for anyone needing quick and professional US visa travel documents.',
-    name: 'David S.',
-    location: 'Traveler from the United States',
-    stars: 5,
-  },
-  {
-    quote: 'I was in a rush for my US visa appointment and The Dummy Ticket AE delivered exactly what I needed. The process was simple, reliable, and my dummy ticket was ready in minutes. It saved me a lot of stress during my application. Definitely using this again.',
-    name: 'Maria K.',
-    location: 'Tourist from the United Kingdom',
-    stars: 5,
-  },
-  {
-    quote: 'The entire experience with The Dummy Ticket AE was seamless from start to finish. I got my dummy ticket for US visa within minutes and it worked perfectly for my submission. Fast response, clear instructions, and great support - highly recommend.',
-    name: 'Ahmed R.',
-    location: 'Frequent Flyer from India',
-    stars: 5,
-  },
-];
-
 export const benefits = [
   {
     title: 'Verifiable PNRs',
-    text: 'Every dummy ticket for your US visa includes a genuine airline reservation with a live PNR. Visa officers can confirm it through the global distribution systems (Amadeus, Sabre, Travelport) that embassies and travel agents use. With selected airlines, including Emirates and Etihad, you can also check it on their website under Manage Booking. Not every airline shows unpaid reservations on its own site, so the GDS check is the one that always works.',
+    text: 'The reservation is genuine and the PNR is live, so a consular officer can pull it up in Amadeus, Sabre or Travelport. Some airlines show it under Manage Booking too, but plenty never display an unpaid hold, so the GDS lookup is the one to rely on.',
     icon: FaCheckCircle,
   },
   {
-    title: 'Accepted Formats',
-    text: 'Our dummy tickets for US visa applications are formatted professionally with accurate routes, timings, and traveler details. The structured presentation aligns with embassy expectations and keeps your documentation clear and easy to review.',
+    title: 'Nothing for the officer to decode',
+    text: 'Route, timings and traveller details set out plainly, the way a consular officer expects to see an itinerary. An interview is short and your paperwork should not slow it down.',
     icon: FaFileAlt,
   },
   {
-    title: 'Low-Risk Travel Solution',
-    text: 'Buying a real ticket before US visa approval can be risky and expensive. Our dummy ticket removes that financial risk by giving you a confirmed reservation without paying for the full flight, while still allowing adjustments if needed.',
+    title: 'You are not betting on the outcome',
+    text: 'US visa decisions are not guaranteed and long-haul fares are not cheap. A reservation gives you the document without asking you to gamble the airfare on a yes.',
     icon: FaShieldAlt,
   },
   {
-    title: 'Affordable Service',
-    text: 'Hire a licensed travel agency in Dubai trusted by applicants worldwide for credible US visa travel documents. With packages starting from AED 49, you get an affordable dummy ticket solution without compromising professionalism or authenticity.',
+    title: 'AED 49, from a Dubai agency',
+    text: 'A licensed travel agency here in Dubai, issuing the reservation through the same channels as any other booking. The price starts at AED 49 and nothing about the document is second rate.',
     icon: FaMoneyBillWave,
   },
   {
-    title: 'Instant Delivery',
-    text: 'We deliver your dummy ticket quickly, often within minutes, so you’re never left waiting before submission. Our UAE-based support team is responsive, helpful, and ready 24/7 to assist with verification or changes.',
+    title: 'Minutes, not office hours',
+    text: 'It lands in your inbox within 10 to 15 minutes of payment. If something needs changing or an officer queries it, the UAE based team replies around the clock.',
     icon: FaHeadset,
   },
   {
-    title: 'Flexible Validity Options',
-    text: 'Choose the validity that suits your US visa appointment schedule. Pick 2 days at AED 49, 7 days at AED 69, or 14 days at AED 79. The price follows the validity period you select, not availability.',
+    title: 'Validity that fits your interview date',
+    text: 'Two days at AED 49, seven at AED 69, fourteen at AED 79. US interview slots move around, so buy the window that still covers you if yours does.',
     icon: FaCalendarAlt,
   },
 ];
 
 export const pageData = {
   meta: {
-    title: 'Dummy Ticket for US Visa from AED 49 | Verifiable, Instant',
+    title: 'Dummy Ticket for US Visa From AED 49 | Real PNR',
     description:
-      'Book verified dummy tickets for a US visa with real PNR. Our reservations are accepted by all US embassies across the world. Instant delivery.',
+      'A genuine flight reservation with a live PNR for your B1/B2 interview. AED 49, emailed in minutes, and you can verify it before you submit anything.',
     canonical: 'https://www.thedummyticket.ae/dummy-ticket-us-visa',
     entityName: 'Dummy Ticket for US Visa',
     keywords: 'dummy ticket for us visa',
   },
   sections: {
     hero: {
-      title: 'Verifiable Dummy Tickets for US Visa from AED 49.',
+      title: 'Show your travel plan without buying the flight.',
       subtitle:
-        'A dummy ticket for a US visa is a real flight reservation with a live PNR, not a paid ticket. It covers the travel-plan evidence B1/B2 applicants are asked for, and works for check-in and immigration too. Verify it on the global GDS embassies use. From AED 49, delivered in minutes.',
+        'A B1/B2 interview asks what you intend to do and when. A reservation under a live PNR answers the travel half of that without you paying a long-haul fare months before a decision. Verify it yourself in the systems consulates use. AED 49, delivered in minutes.',
       form: <AllForms />,
     },
     process: {
       title: 'How Do You Book a Dummy Ticket for a US Visa?',
       subtitle:
-        'Get a verified dummy ticket for US visa quickly with secure booking, instant email delivery, embassy acceptance, and responsive support',
+        'Fill in the trip, pick a validity window, pay, and watch your inbox',
       keyword,
     },
     about: {
       title: 'About Us',
       text: (
         <>
-          A US visitor visa application asks for your intended travel plan. The official{' '}<a href="https://www.ustraveldocs.com/ae/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-gray-900">US visa information service for UAE applicants</a>{' '}sets out what a B1/B2 file needs. Our reservations follow accepted airline formats and carry a live PNR, so you can show the plan without paying for the flight.
+          A US visitor visa interview turns on your intentions: where you are going, for how long, and why you are coming back. The official{' '}<a href="https://www.ustraveldocs.com/ae/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-gray-900">US visa information service for UAE applicants</a>{' '}sets out what a B1/B2 file needs. A reservation carrying a live PNR lets you put the travel part of that on paper without buying a fare you may not use.
         </>
       ),
       services: [
@@ -127,42 +107,42 @@ export const pageData = {
           icon: <MdOutlineAirplaneTicket />,
           title: 'Dummy Tickets for US Visa',
           description:
-            'Verifiable flight reservations with a real PNR code, in the format required for a US B1/B2 visa application. Issued through official airline systems and delivered instantly.',
+            'A held seat with a real PNR, set out the way a B1/B2 file needs it. Made through airline systems and sent straight to your inbox.',
         },
         {
           icon: <MdOutlineHealthAndSafety />,
           title: 'Travel Insurance',
           description:
-            'Genuine AXA-backed travel insurance for UAE residents. Covers medical emergencies, trip cancellations, and baggage loss, delivered instantly after payment.',
+            'Genuine AXA cover for UAE residents: emergency medical, cancellation and baggage. Not required for a US visa, but worth having before a long trip.',
         },
         {
           icon: <MdOutlineHotel />,
           title: 'Hotel Reservations',
           description:
-            'We provide hotel reservations by email, formatted to meet embassy requirements. A practical solution when your US visa application needs proof of accommodation.',
+            'Where you are staying, prepared by email and formatted for a visa file. Send us the cities and dates.',
         },
       ],
     },
     benefits: {
-      title: 'Why Choose The Dummy Ticket AE for Your US Visa?',
+      title: 'Why Book It Here for a US Visa?',
       subtitle:
-        'Enjoy a reliable dummy ticket for US visa with verified PNR, instant delivery, affordable pricing, trusted service, and dedicated customer support',
+        'Six things that matter when your interview is booked and the clock is running',
       benefits,
     },
     testimonials: {
-      title: 'What Travelers Say About Our Dummy Tickets',
+      title: 'What Travellers Say',
       subtitle:
-        'Real customers share how our fast, reliable, and embassy-accepted dummy tickets helped them submit stronger US visa applications confidently',
+        'People who had an appointment to get to and a reservation to hand over',
       testimonials,
     },
     faqs: {
       title: 'Frequently Asked Questions',
-      subtitle: 'Common questions answered',
+      subtitle: 'Validity, verification, and what happens if your date moves',
       faqs: formatFaqArray(faqArray, keyword),
     },
     blogs: {
       title: 'What Should You Read Next?',
-      subtitle: 'Recently published blog posts',
+      subtitle: 'Guides on visa paperwork, written by people who deal with it daily',
     },
   },
 };

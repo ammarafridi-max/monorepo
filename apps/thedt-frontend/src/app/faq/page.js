@@ -16,7 +16,7 @@ export const faqPageData = {
   meta: {
     title: 'Dummy Ticket FAQ | Common Questions Answered',
     description:
-      'Get clear answers to common questions about dummy ticket validity, verification, delivery time, refunds, and visa document usage.',
+      'How long a reservation stays live, how to verify the PNR yourself, what delivery actually takes, and when we refund. Answered plainly.',
     canonical: 'https://www.thedummyticket.ae/faq',
   },
   breadcrumb: [
@@ -27,7 +27,7 @@ export const faqPageData = {
     hero: {
       title: 'Frequently Asked Questions',
       subtitle:
-        'Our FAQs section answers the most common questions about dummy tickets, including validity, usage, and verification. It’s designed to give you clear, quick, and reliable information so you can proceed with confidence.',
+        'The questions people actually email us before they book: how long it lasts, how to check it is real, what happens when an appointment moves, and when we give money back. If yours is not here, write to us and we will answer it.',
     },
   },
 };

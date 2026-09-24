@@ -12,7 +12,7 @@ import BlogTagsPage from '@travel-suite/frontend-shared/pages/client/BlogTagsPag
 const meta = {
   title: 'Blog Tags | The Dummy Ticket AE',
   description:
-    'Browse blog categories to find published posts about visas, dummy tickets, travel insurance, and related topics.',
+    'Browse by topic to find guides on visas, flight reservations and travel insurance.',
   canonical: `${SITE_URL}/blog/tags`,
 };
 

@@ -24,43 +24,43 @@ import {
 
 export const processSteps = [
   {
-    title: 'Enter Your Trip Details',
-    text: 'Select your trip start and end dates, choose your destination region, and enter the number of travelers by age group. Whether you are traveling solo or with family, the form adjusts to your exact needs.',
+    title: 'Tell us where and when',
+    text: 'Travel dates, destination region, and how many of you there are by age group. The form grows or shrinks to match, whether that is one traveller or a family of six.',
   },
   {
     title: 'Fill in Passenger Details',
-    text: "Enter each traveler's full name, date of birth, nationality, and passport number exactly as they appear on the passport. Accurate details ensure your policy is issued correctly and accepted without issues at any embassy or visa center.",
+    text: 'Name, date of birth, nationality and passport number, copied exactly as they appear in the passport. A single transposed digit is the usual reason a visa centre sends a policy back, so it is worth the extra minute.',
   },
   {
-    title: 'Pay and Receive Your Policy',
-    text: 'Review your selected plan, complete your payment securely online, and receive your travel insurance policy by email within minutes. It is ready to download immediately for visa submission or travel.',
+    title: 'Pay and it is issued',
+    text: 'Check the plan, pay, and the certificate arrives by email within minutes, ready to attach to a visa file or keep on your phone for the trip.',
   },
 ];
 
 const reasons = [
   {
-    title: 'Genuine Policy, Not a Reservation',
-    text: 'Our travel insurance is a fully valid, legally issued policy backed by a licensed insurer. It is not a placeholder or a reservation.',
+    title: 'A real policy, not a placeholder',
+    text: 'This one is worth being clear about. Unlike a flight reservation, insurance is a live contract with a licensed insurer that pays out if something happens. You are buying cover, not a document.',
   },
   {
-    title: 'Embassy-Compliant Coverage',
-    text: 'Our plans meet official visa requirements, including the minimum EUR 30,000 medical coverage required for Schengen visa applications.',
+    title: 'Clears the Schengen threshold',
+    text: 'Every plan carries at least EUR 30,000 of medical cover, valid across all member states, which is the number consulates check for.',
   },
   {
-    title: 'Instant Policy Delivery',
-    text: 'Once your payment is confirmed, your policy is issued and delivered to your inbox within minutes. No office visit and no waiting.',
+    title: 'Issued the moment you pay',
+    text: 'The certificate is generated and emailed within minutes. No branch visit, no callback, no waiting for underwriting.',
   },
   {
-    title: 'Covers the Full Trip',
-    text: 'Coverage includes emergency medical expenses, hospitalization, trip cancellations, baggage loss, travel delays, and COVID-19 medical coverage (as per policy terms).',
+    title: 'Covers more than the visa needs',
+    text: 'Emergency treatment and hospital stays, cancellation, delays, lost baggage, and COVID-19 handled as any other illness. Limits are in the policy wording and worth two minutes of your time.',
   },
   {
-    title: 'Affordable Rates for Every Trip',
-    text: 'We offer competitive pricing for single-trip and annual plans, giving UAE residents strong coverage with practical pricing.',
+    title: 'Priced for the trip you are taking',
+    text: 'Rates track your destination, dates and ages rather than a flat headline number, so a short European hop does not cost what a month in the US does.',
   },
   {
-    title: 'Single and Annual Plans Available',
-    text: 'Choose a single-trip plan for one-off travel or an annual multi-trip plan if you travel frequently.',
+    title: 'Single trip or the whole year',
+    text: 'One trip, or an annual multi-trip policy if you are in and out of the country often. If you travel more than twice a year, do the sum before you pick.',
   },
 ];
 
@@ -69,32 +69,32 @@ export const faqs = [
     question:
       'Is travel insurance mandatory for UAE residents traveling abroad?',
     answer:
-      'Yes, many countries require valid travel insurance as part of the visa application process. Schengen states in particular make it a strict requirement.',
+      'It depends on the destination. Schengen states treat it as a hard requirement and will refuse a file without it. Plenty of other countries leave it to you, which is a different question from whether it is a good idea.',
   },
   {
     question: 'Does your travel insurance meet Schengen visa requirements?',
     answer:
-      'Yes. Our plans include the minimum EUR 30,000 medical coverage required by Schengen consulates and are suitable for embassy, VFS, and BLS submissions.',
+      'Yes. Every plan clears the EUR 30,000 medical minimum and is valid across the member states, which is what consulates, VFS and BLS check for.',
   },
   {
     question: 'Is this a real insurance policy or a dummy document?',
     answer:
-      'This is a fully genuine, underwritten insurance policy issued by a licensed insurer. It is not a dummy document.',
+      'Real, underwritten, and issued by a licensed insurer. Worth separating from the flight reservation in your head: the reservation is evidence of a plan, this is cover that pays a hospital.',
   },
   {
     question: 'How quickly will I receive my policy after payment?',
     answer:
-      'Your policy is issued instantly and delivered to your email within minutes of successful payment.',
+      'Minutes. The policy is issued the moment payment clears and the certificate emails itself to you.',
   },
   {
     question: 'Can I buy travel insurance online as a UAE resident?',
     answer:
-      'Yes. UAE residents and citizens can purchase and receive a fully valid travel insurance policy entirely online.',
+      'Yes, start to finish, with no branch visit and nothing to sign in person.',
   },
   {
     question: 'What does the travel insurance policy cover?',
     answer:
-      'Coverage includes emergency medical expenses, hospital stays, trip cancellations, baggage loss, travel delays, and COVID-19 related medical treatment during your trip.',
+      'Emergency medical costs and hospital stays, cancellation, delayed or lost baggage, travel delays, and COVID-19 treated as any other illness abroad. Each has its own limit, set out in the policy wording.',
   },
 ];
 
@@ -102,27 +102,27 @@ export const pageData = {
   meta: {
     title: 'Travel Insurance for UAE Residents | Instant Policy Delivery',
     description:
-      'Get real, embassy-compliant travel insurance online with instant policy delivery for UAE residents and citizens.',
+      'Genuine AXA travel insurance for UAE residents, meeting the EUR 30,000 Schengen minimum. Bought online, issued in minutes, valid the moment you pay.',
     canonical: 'https://www.thedummyticket.ae/travel-insurance',
     entityName: 'Travel Insurance',
   },
   sections: {
     hero: {
-      title: 'Travel Insurance for UAE Residents',
+      title: 'Real cover, issued in minutes, accepted by consulates.',
       subtitle:
-        'Travel insurance for UAE residents is a genuine AXA-backed policy, not a placeholder document. It covers emergency medical treatment, hospitalisation, repatriation, cancellations and baggage, and meets the requirements embassies set for visa applications. Buy online and the certificate reaches your inbox in minutes.',
+        'This is a genuine AXA policy that pays out, not a document you wave at a visa officer. Emergency medical, hospitalisation, repatriation, cancellation and baggage, at the EUR 30,000 minimum Schengen insists on. Buy it online and the certificate is in your inbox before you have closed the tab.',
       form: <AllForms defaultTab="insurance" />,
     },
     process: {
       title: 'How Do You Buy Travel Insurance?',
-      subtitle: 'Get covered in 3 quick steps',
+      subtitle: 'Three steps, and you are covered by the end of them',
       steps: processSteps,
     },
     about: {
       title: 'About Our Travel Insurance',
       text: (
         <>
-          We provide travel insurance for residents and citizens in Dubai, Abu Dhabi and across the UAE, with instant policy delivery. Article 15 of the{' '}<a href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32009R0810" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-gray-900">EU Visa Code</a>{' '}sets the EUR 30,000 medical minimum a Schengen application has to meet, and every plan we issue clears it.
+          We cover residents and citizens across Dubai, Abu Dhabi and the rest of the UAE, with the policy issued on the spot. Article 15 of the{' '}<a href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32009R0810" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-gray-900">EU Visa Code</a>{' '}fixes the EUR 30,000 medical minimum for a Schengen application, and every plan here clears it without you having to check the small print.
         </>
       ),
       services: [
@@ -130,19 +130,19 @@ export const pageData = {
           icon: <MdOutlineHealthAndSafety />,
           title: 'Travel Insurance',
           description:
-            'Genuine AXA-backed travel insurance for UAE residents. Every plan meets embassy requirements, covers medical emergencies and trip cancellations, and is delivered instantly after payment.',
+            'Genuine AXA cover for UAE residents. Meets embassy requirements, pays for medical emergencies and cancellations, and is issued the moment you pay.',
         },
         {
           icon: <MdOutlineAirplaneTicket />,
           title: 'Dummy Tickets',
           description:
-            'Verifiable flight reservations with a real PNR code, accepted by VFS, BLS, and embassies. Often needed alongside insurance for a complete Schengen or UK visa application.',
+            'A held seat under a live PNR. Consulates usually want this in the same file as the insurance, so most people order both together.',
         },
         {
           icon: <MdOutlineHotel />,
           title: 'Hotel Reservations',
           description:
-            'Need proof of accommodation for your visa? We provide hotel reservations by email, formatted to meet embassy requirements and ready to submit with your application.',
+            'The third document in most visa files. Email us your cities and dates and we prepare it to match the rest of your application.',
         },
       ],
     },

@@ -1,15 +1,13 @@
 /**
  * Offers shown beside and inside a blog post.
  *
- * The Dummy Ticket AE sells two things: dummy tickets from AED 49 and AXA travel
- * insurance from AED 30. The ticket card follows the post's subject, resolved
- * from the slug because tags never name a destination or airline.
+ * Two products: reservations from AED 49 and AXA travel insurance from AED 30.
+ * The ticket card follows the post's subject, resolved from the slug because
+ * tags never name a destination or airline.
  */
 
 // Order matters: the first token found in the slug wins.
 const TICKET_BY_SLUG_TOKEN = [
-  { tokens: ['etihad'], href: '/etihad-dummy-ticket', eyebrow: 'Etihad dummy ticket' },
-  { tokens: ['emirates-'], href: '/emirates-dummy-ticket', eyebrow: 'Emirates dummy ticket' },
   { tokens: ['schengen'], href: '/dummy-ticket-schengen-visa', eyebrow: 'Dummy ticket for Schengen visa' },
   { tokens: ['us-visa', 'usa', 'b1b2'], href: '/dummy-ticket-us-visa', eyebrow: 'Dummy ticket for US visa' },
   { tokens: ['onward', 'return-ticket', 'proof-of-onward'], href: '/onward-ticket', eyebrow: 'Onward ticket' },
@@ -50,7 +48,7 @@ export function getBlogOffers(blog) {
       tone: 'brand',
       eyebrow: ticket.eyebrow,
       price: 'From AED 49',
-      note: 'A real airline reservation with a verifiable PNR, delivered by email in 10 to 15 minutes.',
+      note: 'A genuine held seat under a live PNR, emailed to you in 10 to 15 minutes.',
       href: ticket.href,
       cta: 'Get your ticket',
     },
@@ -59,7 +57,7 @@ export function getBlogOffers(blog) {
       tone: 'plain',
       eyebrow: insurance.eyebrow,
       price: 'From AED 30',
-      note: 'AXA-backed cover that meets Schengen visa requirements, issued the same day.',
+      note: 'Genuine AXA cover that clears the Schengen medical minimum, issued the same day.',
       href: insurance.href,
       cta: 'Get insured',
     },
@@ -72,7 +70,7 @@ export function getBlogInlineOffer(blog) {
     const insurance = resolveInsurance(blog);
     return {
       headline: 'Need visa-compliant travel insurance?',
-      note: 'AXA-backed cover from AED 30, issued the same day and accepted by VFS and BLS.',
+      note: 'Genuine AXA cover from AED 30, issued on the spot and handled daily at VFS and BLS.',
       href: insurance.href,
       cta: 'Get insured',
     };
@@ -81,7 +79,7 @@ export function getBlogInlineOffer(blog) {
   const ticket = resolveTicket(blog);
   return {
     headline: 'Need proof of a booked flight?',
-    note: 'A verifiable PNR for your visa file from AED 49, without paying for a ticket you might not use.',
+    note: 'A PNR your consulate can look up, from AED 49, with no fare to write off if the answer is no.',
     href: ticket.href,
     cta: 'Get your ticket',
   };

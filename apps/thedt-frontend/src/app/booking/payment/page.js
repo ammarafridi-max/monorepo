@@ -10,7 +10,7 @@ const upsells = [
     icon: <LuShieldPlus size={15} />,
     title: 'Add Travel Insurance?',
     description:
-      'Get a genuine travel insurance policy accepted by embassies for visa applications. Exclusively for UAE residents.',
+      'Add genuine AXA cover to the same file. Meets the Schengen medical minimum, for UAE residents.',
     href: '/travel-insurance',
     badge: 'Recommended',
     price: 'AED 30',

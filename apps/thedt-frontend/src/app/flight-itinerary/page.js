@@ -26,18 +26,18 @@ const keyword = 'flight reservation';
 
 export const benefits = [
   {
-    title: 'Airline Booking Format',
-    text: 'We provide a real itinerary with a verifiable PNR and clear trip details in standard airline booking format.',
+    title: 'The format everyone recognises',
+    text: 'A real itinerary with a live PNR, set out the way airlines issue them, so whoever you hand it to already knows how to read it.',
     icon: HiCheck,
   },
   {
-    title: 'Instant Delivery',
-    text: 'Your flight itinerary is sent to your inbox within 10 to 15 minutes of payment, 24 hours a day, 7 days a week. No waiting for business hours.',
+    title: 'In your inbox in minutes',
+    text: 'Ten to fifteen minutes from payment, at any hour. Nothing here waits for an office to open.',
     icon: HiOutlineClock,
   },
   {
-    title: 'Great Value',
-    text: 'Starting from just AED 49, we provide professionally prepared flight itineraries at an affordable price with fast delivery and clear booking details.',
+    title: 'AED 49',
+    text: 'That is the whole price for a prepared itinerary with the booking details laid out properly. No extra for a return leg.',
     icon: HiOutlineCurrencyDollar,
   },
 ];
@@ -46,35 +46,35 @@ export const pageData = {
   meta: {
     title: 'Flight Itinerary From AED 49 | Instant Delivery With PNR',
     description:
-      'Get a real flight itinerary with a valid PNR issued in standard airline booking format.',
+      'A real flight itinerary under a live PNR, issued in standard airline format and emailed within minutes. From AED 49.',
     canonical: 'https://www.thedummyticket.ae/flight-itinerary',
     entityName: 'Flight Itinerary',
   },
   sections: {
     hero: {
-      title: 'Flight Itineraries for Travel from AED 49',
+      title: 'A flight itinerary you can hand over with confidence.',
       subtitle:
-        'Receive a real itinerary in standard booking format with a valid PNR and trip details delivered by email.',
+        'Booking reference, route, times and passenger details in the format airlines issue and everyone else expects. Held under a live PNR, so it holds up when someone checks. From AED 49, emailed within minutes.',
       form: <AllForms />,
     },
     process: {
       title: 'How To Get Your Flight Itinerary?',
-      subtitle: 'Get your itinerary in 3 easy and simple steps',
+      subtitle: 'Three steps, about two minutes of typing',
       keyword,
     },
     benefits: {
-      title: 'Why Choose Us?',
-      subtitle: 'Fast and reliable flight itinerary service',
+      title: 'Why Book It Here?',
+      subtitle: 'Quick to arrive, correct in the details, easy to verify',
       benefits,
     },
     testimonials: {
-      title: 'Testimonials',
-      subtitle: 'What our customers say about us',
+      title: 'What Travellers Say',
+      subtitle: 'People who needed one before an appointment or a flight',
       testimonials,
     },
     contact: {
-      title: '24/7 Customer Support',
-      text: 'Need help with your booking? Our support team is available 24/7 and replies within 10 to 15 minutes.',
+      title: 'Questions Before You Book?',
+      text: 'Email us the route and the date you need it live, and we will tell you which option fits. Replies land within 10 to 15 minutes, day or night.',
     },
   },
 };

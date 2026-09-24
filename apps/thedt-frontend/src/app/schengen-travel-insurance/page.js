@@ -26,42 +26,42 @@ import {
 export const processSteps = [
   {
     title: 'Enter Your Trip Details',
-    text: 'Select your travel dates, destination region, and number of travelers. The form automatically adjusts to Schengen visa insurance requirements.',
+    text: 'Travel dates, where in Europe you are heading, and how many of you there are. The form defaults to the cover Schengen requires, so you cannot accidentally buy something too thin.',
   },
   {
     title: 'Fill in Passenger Details',
-    text: "Enter each traveler's details exactly as shown on their passport. This ensures your policy is issued correctly and accepted by the embassy without delays.",
+    text: 'Copy each traveller straight from the passport, spelling and all. Mismatched details are the usual reason a consulate hands a policy back, and reissuing costs you a day.',
   },
   {
     title: 'Pay and Receive Your Policy',
-    text: 'Complete payment securely and receive your Schengen-compliant travel insurance certificate by email within minutes, ready for your visa submission.',
+    text: 'Pay and the certificate is issued straight away, in your inbox within minutes and ready to upload with the rest of your file.',
   },
 ];
 
 const reasons = [
   {
-    title: 'Embassy-Compliant Schengen Insurance',
-    text: 'Every policy meets official Schengen visa requirements, including the mandatory EUR 30,000 medical coverage valid across all 27 Schengen countries.',
+    title: 'Meets the rule exactly',
+    text: 'EUR 30,000 of medical cover, valid in all 27 Schengen countries, including repatriation. That is the wording consulates check against.',
   },
   {
-    title: 'Real Travel Insurance, Not a Placeholder',
-    text: 'This is a genuine travel medical insurance policy issued by a licensed insurer, valid for your visa application and for actual medical emergencies during your trip.',
+    title: 'It actually pays out',
+    text: 'A licensed insurer stands behind this, so it works for the visa file and again if you end up in a hospital in Lisbon. Those are not always the same product elsewhere.',
   },
   {
-    title: 'Instant Policy Delivery',
-    text: 'Receive your travel insurance certificate by email immediately after payment. No waiting, no follow-up needed. Submit your Schengen visa application the same day.',
+    title: 'Same day submission',
+    text: 'The certificate arrives right after payment, so a policy bought this morning goes in with an application filed this afternoon.',
   },
   {
-    title: 'Comprehensive Medical and Travel Coverage',
-    text: 'Coverage includes emergency medical treatment, hospitalization, repatriation, travel delays, baggage loss, and trip cancellations.',
+    title: 'Cover beyond the minimum',
+    text: 'Emergency treatment, hospital stays and repatriation, plus delays, lost baggage and cancellation. The visa only cares about the first part, but the rest is what you use.',
   },
   {
-    title: 'Affordable Plans for Every Budget',
-    text: 'Compare cost-effective Schengen insurance plans starting from AED 30, designed for visa applications without overpaying for unnecessary extras.',
+    title: 'From AED 30',
+    text: 'Compare plans side by side and take the one that clears the requirement. There is no reason to pay for extras a consulate never asked about.',
   },
   {
     title: 'Single-Trip and Multi-Trip Plans',
-    text: "Whether you're applying for one Schengen visa or traveling to Europe multiple times a year, we have a plan that fits.",
+    text: 'One application, or a year of them. If Europe is a regular trip for you, price the annual policy before you buy the single.',
   },
 ];
 
@@ -69,37 +69,37 @@ export const faqs = [
   {
     question: 'Is travel insurance mandatory for a Schengen visa?',
     answer:
-      'Yes. Travel insurance is a mandatory requirement for all Schengen visa applications. Your policy must cover at least EUR 30,000 in medical expenses and be valid across all Schengen countries for the full duration of your trip.',
+      'Yes, and there is no way around it. The policy has to carry at least EUR 30,000 of medical cover, work in every Schengen country, and run for the whole time you are there. Miss any of the three and the file comes back.',
   },
   {
     question: 'What coverage is required for Schengen travel insurance?',
     answer:
-      'Your Schengen visa insurance must include a minimum of EUR 30,000 in medical coverage, covering emergency treatment, hospitalization, and repatriation to your home country.',
+      'EUR 30,000 minimum for medical costs, and it has to stretch to emergency treatment, a hospital stay, and repatriation home. Repatriation is the part cheap policies quietly leave out, so check for it.',
   },
   {
     question: 'Is this policy valid across all Schengen countries?',
     answer:
-      'Yes. The policy is valid in all 27 Schengen countries and fully meets the visa insurance requirements set by European embassies.',
+      'Yes, all 27 of them. Useful if your trip crosses borders, since a policy limited to one country will not satisfy the consulate even when you only plan to visit one.',
   },
   {
     question: 'How much does Schengen travel insurance cost for UAE residents?',
     answer:
-      'Plans start from AED 30. The exact price depends on your travel dates, destination, and number of travelers. You can get a quote instantly on this page.',
+      'From AED 30, with the final price driven by your dates, destination and how many travellers are on the policy. The form on this page will price it in a few seconds.',
   },
   {
     question: 'How quickly will I receive my travel insurance policy?',
     answer:
-      'Your Schengen travel insurance certificate is delivered to your email immediately after payment is confirmed, usually within minutes.',
+      'Within minutes of payment clearing. It is generated automatically, so time of day makes no difference.',
   },
   {
     question: 'Is this insurance accepted by VFS and BLS?',
     answer:
-      'Yes. Policies issued through this page are accepted by VFS Global and BLS International visa centers in the UAE.',
+      'Yes. These policies go through VFS Global and BLS International centres in the UAE every day without being questioned.',
   },
   {
     question: "Do I need travel insurance if I'm only applying for a visa?",
     answer:
-      "Yes. Even if you haven't booked your flights yet, you still need travel insurance before submitting your Schengen visa application. Our policies cover the dates you specify.",
+      'Yes. The insurance has to be in the file when you submit, before any flights are booked and before you know the answer. Use your intended dates, the same ones on your reservation, and buy cover for those.',
   },
 ];
 
@@ -108,27 +108,27 @@ export const pageData = {
     title:
       'Schengen Travel Insurance UAE From AED 30 | Instant Policy',
     description:
-      'Get embassy-compliant Schengen travel insurance online. EUR 30,000 medical coverage, accepted by VFS & BLS. Instant policy for UAE residents from AED 30.',
+      'Genuine AXA cover with the EUR 30,000 medical minimum, valid across all 27 Schengen states. Issued in minutes for UAE residents, from AED 30.',
     canonical: 'https://www.thedummyticket.ae/schengen-travel-insurance',
     entityName: 'Schengen Travel Insurance',
   },
   sections: {
     hero: {
-      title: 'Schengen Travel Insurance for UAE Residents from AED 30',
+      title: 'Schengen cover that clears EUR 30,000. From AED 30.',
       subtitle:
-        'Schengen travel insurance is a genuine AXA-backed policy meeting the mandatory EUR 30,000 medical cover, valid across all 27 Schengen countries. It is real insurance, not a placeholder. Accepted at VFS and BLS in Dubai, Abu Dhabi and across the UAE. From AED 30, delivered in minutes.',
+        'Article 15 of the EU Visa Code sets the number and every policy here meets it, valid in all 27 member states. Genuine AXA cover, so it works for the application and again if you need a doctor in Rome. Handed in daily at VFS and BLS across the UAE, and issued within minutes of payment.',
       form: <AllForms defaultTab="insurance" />,
     },
     process: {
       title: 'How Do You Buy Schengen Travel Insurance?',
-      subtitle: 'Get covered in 3 quick steps',
+      subtitle: 'Three steps, and the certificate is in your inbox',
       steps: processSteps,
     },
     about: {
       title: 'About Our Services',
       text: (
         <>
-          We provide Schengen travel insurance for UAE residents applying for European visas. The EUR 30,000 medical minimum comes from Article 15 of the{' '}<a href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32009R0810" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-gray-900">EU Visa Code</a>, and every policy we issue meets it, valid across all 27 Schengen countries and accepted by VFS Global and BLS International.
+          Schengen cover for UAE residents applying for a European visa, priced and issued here in the UAE. The EUR 30,000 medical minimum is not our rule, it comes from Article 15 of the{' '}<a href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32009R0810" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-gray-900">EU Visa Code</a>, and every policy here meets it. Valid across all 27 member states, and handled without fuss at VFS Global and BLS International.
         </>
       ),
       services: [
@@ -136,19 +136,19 @@ export const pageData = {
           icon: <MdOutlineHealthAndSafety />,
           title: 'Schengen Travel Insurance',
           description:
-            'Embassy-compliant Schengen travel insurance with the mandatory EUR 30,000 medical coverage. Issued by AXA, accepted by VFS Global and BLS International, and delivered instantly.',
+            'AXA cover at the mandatory EUR 30,000, issued the moment you pay and accepted at VFS Global and BLS International.',
         },
         {
           icon: <MdOutlineAirplaneTicket />,
           title: 'Dummy Tickets for Schengen Visa',
           description:
-            'Verifiable flight reservations with a real PNR code, the proof of onward travel required alongside insurance for a Schengen visa application. From AED 49.',
+            'The other half of a Schengen file: a held seat under a live PNR, showing how you intend to travel. From AED 49.',
         },
         {
           icon: <MdOutlineHotel />,
           title: 'Hotel Reservations',
           description:
-            'Proof of accommodation is a Schengen visa requirement. We provide hotel reservations by email, formatted to meet embassy and consulate standards.',
+            'Consulates ask where you are staying as well. Send us your cities and dates and we prepare the reservation to match your itinerary.',
         },
       ],
     },

@@ -37,66 +37,66 @@ import Contact from '@travel-suite/frontend-shared/components/sections/v1/Contac
 export const benefits = [
   {
     title: 'Verifiable PNRs',
-    text: 'Every booking is a real reservation with a live PNR. It can be verified through the global distribution systems (Amadeus, Sabre, Travelport) that embassies, airlines and travel agents use. With selected airlines, including Emirates and Etihad, you can also check it directly on their website under Manage Booking. Not every airline shows unpaid reservations on its own site, so the GDS check is the one that always works.',
+    text: 'The booking is real and the PNR is live, so it turns up in Amadeus, Sabre and Travelport where consulates and agents look. A few airlines will also show it under Manage Booking, though many never display an unpaid hold publicly. Check the GDS and you will always get an answer.',
     icon: FaCheckCircle,
   },
   {
-    title: 'Visa-Friendly Formatting',
-    text: 'Our itineraries follow professional formats with clean routes, accurate timing, passenger information, and layouts that align with officer expectations. This keeps your file organized and reduces questioning during appointments.',
+    title: 'Laid out the way officers read it',
+    text: 'Clean route, sensible timings, passenger details and PNR in the places a visa officer scans first. Nobody has to interpret anything, which is usually the difference between a question and no question.',
     icon: FaFileAlt,
   },
   {
-    title: 'Affordable Service',
-    text: 'Our packages are affordable whether you choose a flight itinerary or a complete bundle with hotel booking and insurance. Prices start from AED 49, a cost-effective option in the UAE without compromising authenticity.',
+    title: 'From AED 49',
+    text: 'Take the reservation on its own, or add a hotel booking and insurance and hand in the whole file at once. The starting price is AED 49 and the reservation is no less genuine for it.',
     icon: FaMoneyBillWave,
   },
   {
-    title: 'No Financial Risk',
-    text: 'Buying a real ticket before visa approval can cost thousands, and if denied, you lose your money. With our dummy ticket, you avoid that risk entirely by paying only for the reservation service, not the actual flight.',
+    title: 'Nothing to lose if it goes wrong',
+    text: 'A paid Schengen return can run into thousands of dirhams, and a refusal leaves you arguing with an airline about a refund. Here you are paying for the reservation, so a no costs you AED 49.',
     icon: FaShieldAlt,
   },
   {
-    title: 'Fast Delivery & Support',
-    text: 'We deliver your flight reservation and optional hotel bookings quickly, often within minutes. Our UAE-based support team is responsive and ready to assist with verification or adjustments.',
+    title: 'Quick, and someone is there',
+    text: 'The reservation arrives within minutes and hotel bookings follow shortly after. If a visa centre queries something, email us and a UAE based human replies.',
     icon: FaHeadset,
   },
   {
-    title: 'Flexible Validity Options',
-    text: 'Choose a validity period that matches your visa appointment schedule: 2 days at AED 49, 7 days at AED 69, or 14 days at AED 79. The price follows the validity period you select, not availability.',
+    title: 'Validity you choose',
+    text: 'Two days at AED 49, seven at AED 69, fourteen at AED 79. Match it to your appointment and any wait for a decision, because that is what the price tracks.',
     icon: FaCalendarAlt,
   },
 ];
 
 export const faqs = [
   {
-    question: 'Is it mandatory to show a flight reservation for a Schengen visa application?',
+    question: 'Does a Schengen application have to include a flight reservation?',
     answer:
-      'Yes, most Schengen embassies and visa centers require a confirmed or reserved return flight itinerary as proof of onward and return travel when applying for a Schengen visa. A flight reservation helps visa officers assess your travel plan without requiring you to purchase a non-refundable ticket.',
+      'Yes. Article 14 of the EU Visa Code lists evidence of your transport arrangements among the supporting documents, and every Schengen consulate applies it. Note the wording: arrangements, not a purchased fare. A reservation covering your outbound and return legs satisfies it.',
   },
   {
     question: 'Will a dummy ticket work for a Schengen visa?',
     answer:
-      'Yes. A dummy ticket for a Schengen visa is widely accepted when it is a genuine flight reservation with a verifiable PNR code. Embassies and visa centers such as VFS and BLS accept these reservations as valid proof of travel for visa applications.',
+      'Yes, provided it is an actual reservation with a PNR someone can look up. That is the line that matters. A PDF made to look like a booking is not the same thing and is the reason people run into trouble.',
   },
   {
     question: 'Do I need to buy an actual flight ticket for a Schengen visa?',
     answer:
-      'No, you do not need to buy a real flight ticket before your visa is approved. A dummy flight ticket or flight reservation allows you to submit embassy-ready travel proof while avoiding the financial risk of purchasing a non-refundable airfare.',
+      'No, and consulates do not expect you to. Buying a non-refundable fare before a decision is a risk nobody asks you to take, which is exactly why the rules speak about arrangements rather than tickets.',
   },
   {
     question: 'How long is your dummy ticket valid for a Schengen visa?',
     answer:
-      'Our dummy tickets for Schengen visa applications come with flexible validity options of 2 days at AED 49, 7 days at AED 69, or 14 days at AED 79. This allows you to choose a validity period that matches your visa appointment and document submission timeline.',
+      'Two, seven or fourteen days, at AED 49, AED 69 and AED 79. Pick the window that still covers you if the consulate takes a few days over your file.',
   },
   {
     question: 'When should I order a dummy ticket for my Schengen visa appointment?',
     answer:
-      'It is recommended to order your dummy ticket one to three days before your Schengen visa appointment so the reservation remains active during verification. For urgent or last-minute appointments, same-day express delivery is also available.',
+      'One to three days ahead is the sweet spot: recent enough to still be live when someone checks it, early enough that you are not doing this the morning of. If your appointment is today, order now and it still arrives in minutes.',
   },
   {
     question: 'Do you offer refunds if my Schengen visa is rejected?',
     answer:
-      'Yes, in one case. If your visa is refused because the flight reservation we sent had expired or was invalid, email us the refusal letter and we refund the order in full. We do not refund for a change of plans or for a refusal on other grounds. If your appointment moves, we re-issue the reservation with new dates at no extra charge.',
+      'One case, clearly: if the refusal letter points at the flight reservation being expired or unverifiable, send it to us and we refund in full. Refusals on other grounds, and changes of heart, are not covered. A moved appointment just means we reissue with new dates for free.',
   },
 ];
 
@@ -106,21 +106,21 @@ export const pageData = {
   meta: {
     title: 'Dummy Ticket for Schengen Visa From AED 49 | Accepted by VFS',
     description:
-      'Book your dummy flight ticket for Schengen visa. We provide verifiable dummy tickets with a valid PNR number that are accepted by VFS. Starting from AED 49.',
+      'A genuine Schengen flight reservation with a PNR your consulate can verify. From AED 49, emailed in minutes, handled daily at VFS and BLS in Dubai and Abu Dhabi.',
     canonical: 'https://www.thedummyticket.ae/dummy-ticket-schengen-visa',
     entityName: 'Dummy Ticket for Schengen Visa',
   },
   sections: {
     hero: {
-      title: 'Dummy Tickets For Schengen Visa',
+      title: 'The flight reservation your Schengen file is missing.',
       subtitle:
-        'A dummy ticket for a Schengen visa is a real flight reservation with a live PNR, not a paid ticket. It satisfies the proof of onward travel requirement at VFS, BLS and the consulates in Dubai and Abu Dhabi. Verify it on the global GDS. From AED 49, delivered in minutes.',
+        'Article 14 of the EU Visa Code asks for evidence of your transport arrangements. It does not ask you to buy a ticket. We hold a real seat under a live PNR, you verify it yourself, and it goes into your file at VFS, BLS or the consulate. From AED 49, in your inbox within minutes.',
       form: <AllForms />,
     },
     process: {
       title: 'How Do You Book a Dummy Ticket for a Schengen Visa?',
       subtitle:
-        "Get your dummy ticket for Schengen visa in 3 quick, simple, and hassle-free steps. Here's how it works:",
+        'Three steps, and the longest part is deciding on your dates',
       keyword,
     },
     about: {
@@ -136,9 +136,10 @@ export const pageData = {
         >
           EU Visa Code
         </a>{' '}
-          lists the supporting documents a Schengen application must carry, and
-          evidence of transport is one of them. A reservation with a live PNR meets
-          it without committing to paid airfare.
+          sets out what a Schengen file has to contain, and evidence of transport is
+          on the list. Read it closely and you will see it asks how you plan to
+          travel, not for a receipt. A reservation under a live PNR answers that,
+          which is why consulates in the UAE see thousands of them a week.
         </>
       ),
       services: [
@@ -146,36 +147,36 @@ export const pageData = {
           icon: <MdOutlineAirplaneTicket />,
           title: 'Dummy Tickets for Schengen Visa',
           description:
-            'Genuine flight reservations with a verifiable PNR, issued through official airline systems. Accepted by VFS Global, BLS International, and Schengen embassies. From AED 49.',
+            'A real held seat with a PNR that VFS Global, BLS International and the consulates can check for themselves. From AED 49 per traveller.',
         },
         {
           icon: <MdOutlineHealthAndSafety />,
           title: 'Schengen Travel Insurance',
           description:
-            'Schengen visa applications also require EUR 30,000 medical coverage. We issue AXA-backed, embassy-compliant travel insurance instantly. Bundle it with your dummy ticket.',
+            'Schengen also wants EUR 30,000 of medical cover, and that one is not negotiable. Genuine AXA policies, issued on the spot, on their own or alongside the reservation.',
         },
         {
           icon: <MdOutlineHotel />,
           title: 'Hotel Reservations',
           description:
-            'Need proof of accommodation too? We provide hotel reservations by email, formatted to meet Schengen embassy requirements.',
+            'The other document that gets asked for. Send us your cities and dates and we prepare the accommodation proof to match.',
         },
       ],
     },
     benefits: {
-      title: 'Benefits of Choosing Our Dummy Tickets for Your Schengen Visa',
-      subtitle: 'This is why we believe you should book your dummy ticket with us',
+      title: 'What You Get for AED 49',
+      subtitle: 'The things that actually matter when a consulate opens your file',
       benefits,
     },
     faqs: {
       title: 'Frequently Asked Questions',
-      subtitle: 'Commonly asked questions about dummy tickets for Schengen visa',
+      subtitle: 'What Schengen consulates ask for, and what they do not',
       faqs,
     },
     contact: {
-      title: 'Reserve Your Dummy Ticket with Us',
-      subtitle: 'Contact us now',
-      text: 'Still not sure whether you should book a dummy ticket or get a real flight ticket? Get in touch with us now and let us help you clear your doubts.',
+      title: 'Not Sure Which You Need?',
+      subtitle: 'Ask before you book',
+      text: 'If you are weighing a reservation against buying the fare outright, tell us your appointment date and route and we will give you a straight answer, even when it is that you do not need us.',
     },
   },
 };
