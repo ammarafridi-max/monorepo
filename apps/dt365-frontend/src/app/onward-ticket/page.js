@@ -61,8 +61,8 @@ const benefits = [
     icon: HiOutlineClock,
   },
   {
-    title: 'Three Validity Tiers From $13',
-    text: 'Pick the validity that fits how long you need proof of onward travel: 2 days for $13, 7 days for $20, or 14 days for $23. All tiers include the same verifiable PNR and instant email delivery.',
+    title: 'Three Validity Tiers From USD 13',
+    text: 'Pick the validity that fits how long you need proof of onward travel: 2 days for USD 13, 7 days for USD 20, or 14 days for USD 23. All tiers include the same verifiable PNR and instant email delivery.',
     icon: HiOutlineCurrencyDollar,
   },
 ];
@@ -71,7 +71,7 @@ const pageData = {
   meta: {
     title: 'Onward Ticket From USD 13 | Instant, Genuine, & Affordable',
     description:
-      'Onward ticket with a verifiable PNR for airline check-in and immigration. Three validity tiers: 2 days $13, 7 days $20, 14 days $23. Delivered in minutes.',
+      'Onward ticket with a verifiable PNR for airline check-in and immigration. Tiers from USD 13 for 2 days to USD 23 for 14 days. Delivered in minutes.',
     canonical: 'https://www.dummyticket365.com/onward-ticket',
     productName: 'Onward Ticket',
   },
@@ -79,7 +79,7 @@ const pageData = {
     hero: {
       title: 'Book Your Onward Ticket From USD 13',
       subtitle:
-        'Proof of onward travel is a flight reservation showing you will leave the destination country within the permitted stay. Airlines and immigration officers accept a real reservation with a verifiable PNR and do not require a paid ticket. Ours is issued on Amadeus, Sabre, and Travelport in three validity tiers: 2 days $13, 7 days $20, 14 days $23.',
+        'Proof of onward travel is a flight reservation showing you will leave the destination country within the permitted stay. Airlines and immigration officers accept a real reservation with a verifiable PNR and do not require a paid ticket. Ours is issued on Amadeus, Sabre, and Travelport in three validity tiers: 2 days USD 13, 7 days USD 20, 14 days USD 23.',
       form: <AllForms forms={['ticket']} />,
     },
     process: {
@@ -148,7 +148,7 @@ export default function Page() {
       description: pageData.meta.description,
     }),
     // Inline Product node with AggregateOffer — onward tickets are priced
-    // in three validity tiers ($13 / $20 / $23) and the shared buildProduct
+    // in three validity tiers (USD 13 / USD 20 / USD 23) and the shared buildProduct
     // helper only supports a single Offer. Mirrors buildProduct's shape
     // (Organization @id refs) so it integrates cleanly with the graph.
     {
@@ -189,7 +189,7 @@ export default function Page() {
         subtitle={pageData.sections.hero.subtitle}
         form={pageData.sections.hero.form}
         pills={[
-          'Onward tickets from $13',
+          'Onward tickets from USD 13',
           'Issued via global GDS platforms',
           'Valid, verifiable PNR',
           'Delivered in minutes',

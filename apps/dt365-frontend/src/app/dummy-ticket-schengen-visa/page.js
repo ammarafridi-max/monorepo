@@ -48,8 +48,8 @@ const benefits = [
     icon: HiOutlineArrowsRightLeft,
   },
   {
-    title: 'Three Validity Tiers From $13',
-    text: 'Pick the tier that matches your appointment and review window: 2 days for $13, 7 days for $20, 14 days for $23. All tiers include the same verifiable PNR and the same accepted format. Reissue available if processing runs longer.',
+    title: 'Three Validity Tiers From USD 13',
+    text: 'Pick the tier that matches your appointment and review window: 2 days for USD 13, 7 days for USD 20, 14 days for USD 23. All tiers include the same verifiable PNR and the same accepted format. Reissue available if processing runs longer.',
     icon: HiOutlineBanknotes,
   },
   {
@@ -83,7 +83,7 @@ const faqs = [
   {
     question: 'How do I book a dummy ticket for a Schengen visa?',
     answer:
-      'Three steps. Enter your route, travel dates, and passenger details. Pick a validity tier (2 days for $13, 7 days for $20, 14 days for $23). Pay online. The PDF arrives by email within minutes with the PNR ready to submit.',
+      'Three steps. Enter your route, travel dates, and passenger details. Pick a validity tier (2 days for USD 13, 7 days for USD 20, 14 days for USD 23). Pay online. The PDF arrives by email within minutes with the PNR ready to submit.',
   },
   {
     question: 'Is the reservation verifiable?',
@@ -109,17 +109,17 @@ const faqs = [
 
 const pageData = {
   meta: {
-    title: 'Dummy Ticket for Schengen Visa From $13 | Verifiable PNR',
+    title: 'Dummy Ticket for Schengen Visa From USD 13 | Verifiable PNR',
     description:
-      'Secure a dummy ticket for Schengen visa applications with a verifiable PNR, accepted for visa submissions. Budget-friendly pricing from $13.',
+      'Secure a dummy ticket for Schengen visa applications with a verifiable PNR, accepted for visa submissions. Budget-friendly pricing from USD 13.',
     canonical: 'https://www.dummyticket365.com/dummy-ticket-schengen-visa',
     productName: 'Dummy Ticket for Schengen Visa',
   },
   sections: {
     hero: {
-      title: 'Book Your Dummy Ticket For Schengen Visa From $13',
+      title: 'Book Your Dummy Ticket For Schengen Visa From USD 13',
       subtitle:
-        'Schengen embassies and visa centres accept a flight reservation in place of a paid ticket at the application stage, and EU Visa Code Article 14 lists it among the supporting documents. Our dummy ticket carries a verifiable PNR on Amadeus, Sabre, and Travelport, so consulates, VFS, and BLS can confirm it directly. From $13.',
+        'Schengen embassies and visa centres accept a flight reservation in place of a paid ticket at the application stage, and EU Visa Code Article 14 lists it among the supporting documents. Our dummy ticket carries a verifiable PNR on Amadeus, Sabre, and Travelport, so consulates, VFS, and BLS can confirm it directly. From USD 13.',
       form: <AllForms forms={['ticket']} />,
     },
     process: {
@@ -211,7 +211,7 @@ export default function Page() {
         subtitle={pageData.sections.hero.subtitle}
         form={pageData.sections.hero.form}
         pills={[
-          'Dummy tickets from $13',
+          'Dummy tickets from USD 13',
           'Verifiable PNR included',
           'Accepted by VFS and BLS',
           'Delivered in minutes',

@@ -40,8 +40,8 @@ export default function FlightForm() {
   const [errors, setErrors] = useState({});
   const formRef = useRef(null);
   const { createDummyTicket, isCreatingDummyTicket } = useCreateDummyTicket();
-  const { pricing } = useDummyTicketPricing();
   const { selectedCurrency, formatMoney } = useCurrency();
+  const { pricing } = useDummyTicketPricing(selectedCurrency?.code);
   const {
     type,
     from,
@@ -77,10 +77,10 @@ export default function FlightForm() {
     return (pricingOptions.length > 0 ? pricingOptions : PRICING_OPTIONS).map(
       (option) => ({
         ...option,
-        price: formatMoney(option.price, 'AED').amount,
+        price: formatMoney(option.price, pricing?.currency).amount,
       }),
     );
-  }, [formatMoney, pricingOptions]);
+  }, [formatMoney, pricing, pricingOptions]);
 
   useEffect(() => {
     if (quantity && passengers.length === 0) {

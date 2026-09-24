@@ -111,17 +111,17 @@ const faqs = [
 
 const pageData = {
   meta: {
-    title: 'Book a Dummy Ticket on Lufthansa from $13 | Verifiable PNR',
+    title: 'Lufthansa Dummy Ticket from USD 13 | Verifiable PNR',
     description:
-      'Lufthansa dummy ticket with a verifiable PNR from $13. Real LH flight numbers, issued through Amadeus, Sabre and Travelport, delivered in minutes.',
+      'Lufthansa dummy ticket with a verifiable PNR from USD 13. Real LH flight numbers, issued through Amadeus, Sabre and Travelport, delivered in minutes.',
     canonical: 'https://www.dummyticket365.com/lufthansa-dummy-ticket',
     productName: 'Lufthansa Dummy Ticket',
   },
   sections: {
     hero: {
-      title: 'Book a Dummy Ticket on Lufthansa from $13',
+      title: 'Book a Dummy Ticket on Lufthansa from USD 13',
       subtitle:
-        'We issue Lufthansa flight reservations through global GDS platforms (Amadeus, Sabre, Travelport) with a six-character PNR that German consulates and travel agents can confirm during validity. Real LH flight numbers, Frankfurt or Munich routing, no paid ticket required. Schengen-ready and accepted at VFS and TLScontact German visa centres. From $13.',
+        'We issue Lufthansa flight reservations through global GDS platforms (Amadeus, Sabre, Travelport) with a six-character PNR that German consulates and travel agents can confirm during validity. Real LH flight numbers, Frankfurt or Munich routing, no paid ticket required. Schengen-ready and accepted at VFS and TLScontact German visa centres. From USD 13.',
       form: <AllForms forms={['ticket']} />,
     },
     process: {
@@ -137,7 +137,7 @@ const pageData = {
           icon: <MdOutlineAirplaneTicket />,
           title: 'Lufthansa Dummy Ticket',
           description:
-            'A round-trip flight reservation on Lufthansa with a verifiable PNR. The reservation is created through recognized GDS platforms (Amadeus, Sabre, Travelport) so consulates and travel agents can confirm the booking during validity. Instant delivery from $13.',
+            'A round-trip flight reservation on Lufthansa with a verifiable PNR. The reservation is created through recognized GDS platforms (Amadeus, Sabre, Travelport) so consulates and travel agents can confirm the booking during validity. Instant delivery from USD 13.',
         },
         {
           icon: <MdOutlineHealthAndSafety />,
@@ -216,7 +216,7 @@ export default function Page() {
         subtitle={pageData.sections.hero.subtitle}
         form={pageData.sections.hero.form}
         pills={[
-          'Dummy tickets from $13',
+          'Dummy tickets from USD 13',
           'Verifiable PNR on GDS',
           '220+ destinations in 70 countries',
           'Delivered in minutes',

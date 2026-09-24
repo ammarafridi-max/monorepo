@@ -71,6 +71,8 @@ const flightItineraryPages = [
 export default function Providers({ children }) {
   const pathname = usePathname();
   const isAdminRoute = pathname?.startsWith('/admin');
+  // The locale variant exists to show rupees, so it seeds the switcher.
+  const defaultCurrency = pathname === '/in' || pathname?.startsWith('/in/') ? 'INR' : undefined;
   const headerOnDark = !LIGHT_HEADER_ROUTES.some((route) => pathname?.startsWith(route));
   const [queryClient] = useState(
     () =>
@@ -100,7 +102,7 @@ export default function Providers({ children }) {
         <AnalyticsInit />
         <Toaster />
         <QueryClientProvider client={queryClient}>
-          <CurrencyProvider>
+          <CurrencyProvider defaultCode={defaultCurrency}>
             <TicketProvider>
               <InsuranceProvider>
                 <AppLayout logoSrc={LOGO_SRC} brandName={BRAND_NAME} pages={flightItineraryPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark}>
@@ -120,7 +122,7 @@ export default function Providers({ children }) {
       <AnalyticsInit />
       <Toaster />
       <QueryClientProvider client={queryClient}>
-        <CurrencyProvider>
+        <CurrencyProvider defaultCode={defaultCurrency}>
           <TicketProvider>
             <InsuranceProvider>
               <AppLayout logoSrc={LOGO_SRC} brandName={BRAND_NAME} pages={defaultPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark}>

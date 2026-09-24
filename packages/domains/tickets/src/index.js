@@ -25,7 +25,7 @@ export function createTicketsRouter({ db, auth, stripe, paypal, notifications, f
   const TicketPricing = getOrRegisterModel(db, 'dummy-ticket-pricing', TicketPricingSchema);
   const Currency = getOrRegisterModel(db, 'Currency', CurrencySchema);
 
-  const pricingService = createPricingService({ TicketPricing });
+  const pricingService = createPricingService({ TicketPricing, Currency });
   const currencyService = createCurrencyService({ Currency });
 
   const paidOrderBus = createPaidOrderBus();

@@ -49,8 +49,8 @@ const benefits = [
     icon: HiOutlineCalendarDays,
   },
   {
-    title: "Cost-Effective Starting at $13",
-    text: "Japan visa applicants already face costs for the visa fee, accommodation, travel insurance, and document preparation. Our dummy ticket from $13 meets the flight reservation requirement without adding a long-haul airfare to your upfront expenses before approval.",
+    title: "Cost-Effective Starting at USD 13",
+    text: "Japan visa applicants already face costs for the visa fee, accommodation, travel insurance, and document preparation. Our dummy ticket from USD 13 meets the flight reservation requirement without adding a long-haul airfare to your upfront expenses before approval.",
     icon: HiOutlineBanknotes,
   },
   {
@@ -102,17 +102,17 @@ const faqs = [
 
 const pageData = {
   meta: {
-    title: "Dummy Ticket for Japan Visa From $13 | Verifiable PNR",
+    title: "Dummy Ticket for Japan Visa From USD 13 | Verifiable PNR",
     description:
-      "Secure a dummy ticket for your Japan visa application with a verifiable PNR. Formatted for embassy and eVISA submissions, from $13.",
+      "Secure a dummy ticket for your Japan visa application with a verifiable PNR. Formatted for embassy and eVISA submissions, from USD 13.",
     canonical: "https://www.dummyticket365.com/dummy-ticket-japan-visa",
     productName: 'Dummy Ticket for Japan Visa',
   },
   sections: {
     hero: {
-      title: "Book Your Dummy Ticket For Japan Visa From $13",
+      title: "Book Your Dummy Ticket For Japan Visa From USD 13",
       subtitle:
-        "Japanese embassies and the Ministry of Foreign Affairs list a round-trip flight reservation among the required documents for a tourist or business visa, including JAPAN eVISA applications. You do not need a paid ticket. Our dummy ticket carries a verifiable PNR on Amadeus, Sabre, and Travelport and arrives in minutes, from $13.",
+        "Japanese embassies and the Ministry of Foreign Affairs list a round-trip flight reservation among the required documents for a tourist or business visa, including JAPAN eVISA applications. You do not need a paid ticket. Our dummy ticket carries a verifiable PNR on Amadeus, Sabre, and Travelport and arrives in minutes, from USD 13.",
       form: <AllForms forms={["ticket"]} />,
     },
     process: {
@@ -207,7 +207,7 @@ export default function Page() {
         subtitle={pageData.sections.hero.subtitle}
         form={pageData.sections.hero.form}
         pills={[
-          "Dummy tickets from $13",
+          "Dummy tickets from USD 13",
           "Verifiable PNR included",
           "Round-trip format for Japan visa",
           "Delivered in minutes",

@@ -111,17 +111,17 @@ const faqs = [
 
 const pageData = {
   meta: {
-    title: 'Book a Dummy Ticket on Air France from $13 | Verifiable PNR',
+    title: 'Air France Dummy Ticket from USD 13 | Verifiable PNR',
     description:
-      'Air France dummy ticket with a verifiable PNR from $13. Real AF flight numbers, issued through Amadeus, Sabre and Travelport, delivered in minutes.',
+      'Air France dummy ticket with a verifiable PNR from USD 13. Real AF flight numbers, issued through Amadeus, Sabre and Travelport, delivered in minutes.',
     canonical: 'https://www.dummyticket365.com/air-france-dummy-ticket',
     productName: 'Air France Dummy Ticket',
   },
   sections: {
     hero: {
-      title: 'Book a Dummy Ticket on Air France from $13',
+      title: 'Book a Dummy Ticket on Air France from USD 13',
       subtitle:
-        "We issue Air France flight reservations through global GDS platforms (Amadeus, Sabre, Travelport) with a six-character PNR your consulate or any travel agent can look up during validity. Real AF flight numbers, real CDG routing, no paid ticket required. Suitable for Schengen visa files and any embassy that asks for proof of travel. From $13.",
+        "We issue Air France flight reservations through global GDS platforms (Amadeus, Sabre, Travelport) with a six-character PNR your consulate or any travel agent can look up during validity. Real AF flight numbers, real CDG routing, no paid ticket required. Suitable for Schengen visa files and any embassy that asks for proof of travel. From USD 13.",
       form: <AllForms forms={['ticket']} />,
     },
     process: {
@@ -137,7 +137,7 @@ const pageData = {
           icon: <MdOutlineAirplaneTicket />,
           title: 'Air France Dummy Ticket',
           description:
-            'A round-trip flight reservation on Air France with a verifiable PNR. The reservation is created through recognized GDS platforms (Amadeus, Sabre, Travelport) so consulates and travel agents can confirm the booking during validity. Instant delivery from $13.',
+            'A round-trip flight reservation on Air France with a verifiable PNR. The reservation is created through recognized GDS platforms (Amadeus, Sabre, Travelport) so consulates and travel agents can confirm the booking during validity. Instant delivery from USD 13.',
         },
         {
           icon: <MdOutlineHealthAndSafety />,
@@ -216,7 +216,7 @@ export default function Page() {
         subtitle={pageData.sections.hero.subtitle}
         form={pageData.sections.hero.form}
         pills={[
-          'Dummy tickets from $13',
+          'Dummy tickets from USD 13',
           'Verifiable PNR on GDS',
           '190+ destinations worldwide',
           'Delivered in minutes',

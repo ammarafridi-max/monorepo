@@ -121,7 +121,7 @@ export default function Page() {
         subtitle={pageData.sections.hero.subtitle}
         form={pageData.sections.hero.form}
         pills={[
-          'Flight itineraries from $13',
+          'Flight itineraries from USD 13',
           'Valid PNR included',
           'Standard booking format',
           'Delivered by email',

@@ -49,8 +49,8 @@ const benefits = [
     icon: HiOutlineClock,
   },
   {
-    title: "Cost-Effective Starting at $13",
-    text: "Between the $100 CAD IRCC fee and the $85 CAD biometrics charge, Canada visa costs add up quickly. Our dummy ticket from $13 meets the flight itinerary requirement without committing to a $500 to $1,500 airline ticket months before your visa decision.",
+    title: "Cost-Effective Starting at USD 13",
+    text: "Between the CAD 100 IRCC fee and the CAD 85 biometrics charge, Canada visa costs add up quickly. Our dummy ticket from USD 13 meets the flight itinerary requirement without committing to a USD 500 to 1,500 airline ticket months before your visa decision.",
     icon: HiOutlineBanknotes,
   },
   {
@@ -85,7 +85,7 @@ const faqs = [
   {
     question: "Can I use this dummy ticket for a Super Visa application?",
     answer:
-      "Yes. The Super Visa for parents and grandparents of Canadian citizens and permanent residents requires a travel itinerary as part of the application. Our dummy ticket provides the flight details needed. Note that Super Visa applications also require proof of Canadian medical insurance with a minimum coverage of $100,000 CAD, which is a separate requirement from the flight reservation.",
+      "Yes. The Super Visa for parents and grandparents of Canadian citizens and permanent residents requires a travel itinerary as part of the application. Our dummy ticket provides the flight details needed. Note that Super Visa applications also require proof of Canadian medical insurance with a minimum coverage of CAD 100,000, which is a separate requirement from the flight reservation.",
   },
   {
     question:
@@ -102,17 +102,17 @@ const faqs = [
 
 const pageData = {
   meta: {
-    title: "Dummy Ticket for Canada Visa From $13 | Verifiable PNR",
+    title: "Dummy Ticket for Canada Visa From USD 13 | Verifiable PNR",
     description:
-      "Secure a dummy ticket for your Canada visitor visa or TRV application with a verifiable PNR. Aligned with IRCC guidance, from $13.",
+      "Secure a dummy ticket for your Canada visitor visa or TRV application with a verifiable PNR. Aligned with IRCC guidance, from USD 13.",
     canonical: "https://www.dummyticket365.com/dummy-ticket-canada-visa",
     productName: 'Dummy Ticket for Canada Visa',
   },
   sections: {
     hero: {
-      title: "Book Your Dummy Ticket For Canada Visa From $13",
+      title: "Book Your Dummy Ticket For Canada Visa From USD 13",
       subtitle:
-        "IRCC asks for travel dates and a flight itinerary in the visitor visa application, and at the same time advises against booking flights before approval. A dummy ticket fits that guidance exactly. You get a verifiable PNR on global GDS platforms for the file, without locking in a paid ticket while IRCC reviews. From $13.",
+        "IRCC asks for travel dates and a flight itinerary in the visitor visa application, and at the same time advises against booking flights before approval. A dummy ticket fits that guidance exactly. You get a verifiable PNR on global GDS platforms for the file, without locking in a paid ticket while IRCC reviews. From USD 13.",
       form: <AllForms forms={["ticket"]} />,
     },
     process: {
@@ -207,7 +207,7 @@ export default function Page() {
         subtitle={pageData.sections.hero.subtitle}
         form={pageData.sections.hero.form}
         pills={[
-          "Dummy tickets from $13",
+          "Dummy tickets from USD 13",
           "Verifiable PNR included",
           "Formatted for IRCC applications",
           "Delivered in minutes",

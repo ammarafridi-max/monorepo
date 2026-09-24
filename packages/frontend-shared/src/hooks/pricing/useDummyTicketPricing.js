@@ -2,10 +2,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { getDummyTicketPricingApi } from '../../services/apiPricing.js';
 
-export function useDummyTicketPricing() {
+export function useDummyTicketPricing(currency) {
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ['dummy-ticket-pricing'],
-    queryFn: getDummyTicketPricingApi,
+    queryKey: ['dummy-ticket-pricing', currency || null],
+    queryFn: () => getDummyTicketPricingApi(currency),
   });
 
   return {

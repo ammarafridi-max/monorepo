@@ -72,6 +72,23 @@ function applyDeliveryDateFilter(queryObj, deliveryDate) {
 }
 
 export function createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, paypal, notifications, frontendUrl, brevo, reviewListId, paidOrderBus, reservationStorage, sendEmail }) {
+  // A price book set for the requested currency is the price. Fall back to FX
+  // only when that currency has no book, otherwise the page would quote a local
+  // price and the gateway would charge the converted one.
+  const resolveTicketAmount = async ({ validity, passengers, targetCode }) => {
+    const { currency: bookCurrency, unitPrice, isExact } = await pricingService.getUnitPrice(
+      validity,
+      targetCode,
+    );
+    const bookTotal = Number((unitPrice * passengers).toFixed(2));
+    if (isExact) return { totalAmount: bookTotal, currencyCode: bookCurrency };
+    const { amount, currencyCode } = await currencyService.convertFromBase({
+      amount: bookTotal,
+      targetCode: targetCode || bookCurrency,
+    });
+    return { totalAmount: amount, currencyCode };
+  };
+
   const getAllTickets = async (query) => {
     const queryObj = { ...query };
     ['page', 'limit', 'search', 'createdAt', 'deliveryDate'].forEach((f) => delete queryObj[f]);
@@ -257,10 +274,12 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     const children = Number(ticket.quantity?.children || 0);
     if (adults + children < 1) throw new AppError('At least 1 passenger is required for checkout', 400);
 
-    const { currency: baseCurrency, unitPrice } = await pricingService.getUnitPrice(ticket.ticketValidity);
-    const baseTotalAmount = Number((unitPrice * (adults + children)).toFixed(2));
-    const requestedCode = String(formData?.currencyCode || ticket.currency || baseCurrency || 'AED').toUpperCase();
-    const { amount: totalAmount, currencyCode } = await currencyService.convertFromBase({ amount: baseTotalAmount, targetCode: requestedCode });
+    const requestedCode = String(formData?.currencyCode || ticket.currency || '').toUpperCase();
+    const { totalAmount, currencyCode } = await resolveTicketAmount({
+      validity: ticket.ticketValidity,
+      passengers: adults + children,
+      targetCode: requestedCode,
+    });
 
     await Ticket.findOneAndUpdate({ sessionId }, { $set: { totalAmount, currency: currencyCode } });
 
@@ -406,11 +425,9 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     const children = Number(ticket.quantity?.children || 0);
     if (adults + children < 1) throw new AppError('At least 1 passenger is required for checkout', 400);
 
-    const { currency: baseCurrency, unitPrice } = await pricingService.getUnitPrice(ticket.ticketValidity);
-    const baseTotalAmount = Number((unitPrice * (adults + children)).toFixed(2));
-
-    const { amount: totalAmount, currencyCode } = await currencyService.convertFromBase({
-      amount: baseTotalAmount,
+    const { totalAmount, currencyCode } = await resolveTicketAmount({
+      validity: ticket.ticketValidity,
+      passengers: adults + children,
       targetCode: 'USD',
     });
 

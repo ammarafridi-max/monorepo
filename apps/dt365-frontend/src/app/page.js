@@ -18,6 +18,7 @@ import {
   buildWebPage,
   buildWebsite,
 } from "@/lib/schema";
+import { hreflangAlternates } from "@/lib/locales";
 import {
   HiArrowsRightLeft,
   HiCheckBadge,
@@ -116,7 +117,7 @@ const faqs = [
   {
     question: "How much does a dummy ticket cost?",
     answer:
-      "A dummy ticket costs $13 for 2 days validity, $20 for 7 days, or $23 for 14 days. All three tiers include the same verifiable PNR and the same accepted format, so pick the validity that matches your appointment or travel window.",
+      "A dummy ticket costs USD 13 for 2 days validity, USD 20 for 7 days, or USD 23 for 14 days. All three tiers include the same verifiable PNR and the same accepted format, so pick the validity that matches your appointment or travel window.",
   },
   {
     question: "Is a dummy ticket suitable for immigration checks?",
@@ -135,9 +136,9 @@ const pageData = {
   },
   sections: {
     hero: {
-      title: "Dummy Tickets for Visa, Onward Travel From $13",
+      title: "Dummy Tickets for Visa, Onward Travel From USD 13",
       subtitle:
-        "A dummy ticket is a real flight reservation with a verifiable PNR, created through global GDS platforms (Amadeus, Sabre, Travelport). Use it for visa applications, airline check-in, proof of onward travel, and immigration checks. You pay for the reservation document, not the flight, from $13, delivered by email in minutes.",
+        "A dummy ticket is a real flight reservation with a verifiable PNR, created through global GDS platforms (Amadeus, Sabre, Travelport). Use it for visa applications, airline check-in, proof of onward travel, and immigration checks. You pay for the reservation document, not the flight, from USD 13, delivered by email in minutes.",
       form: <AllForms />,
     },
     process: {
@@ -199,6 +200,7 @@ export const metadata = {
   description: pageData.meta.description,
   alternates: {
     canonical: pageData.meta.canonical,
+    languages: hreflangAlternates(),
   },
   robots: {
     index: true,
@@ -252,7 +254,7 @@ export default function HomePage() {
         subtitle={pageData.sections.hero.subtitle}
         form={<AllForms forms={["ticket"]} />}
         pills={[
-          "Dummy tickets from $13",
+          "Dummy tickets from USD 13",
           "Valid 6-digit PNR",
           "Accepted worldwide",
           "Delivered in minutes",
@@ -310,7 +312,7 @@ export default function HomePage() {
           {
             anchor: "Onward ticket for airline check-in",
             href: "/onward-ticket",
-            blurb: "Proof of onward travel in three validity tiers from $13.",
+            blurb: "Proof of onward travel in three validity tiers from USD 13.",
           },
         ]}
       />

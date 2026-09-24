@@ -22,7 +22,7 @@ export const faqArray = [
   {
     question: 'How much does a {keyword} cost?',
     answer:
-      'A {keyword} costs $13 for 2 days validity, $20 for 7 days, or $23 for 14 days. All three tiers include the same verifiable PNR and the same accepted format, so pick the validity that matches your appointment or travel window.',
+      'A {keyword} costs USD 13 for 2 days validity, USD 20 for 7 days, or USD 23 for 14 days. All three tiers include the same verifiable PNR and the same accepted format, so pick the validity that matches your appointment or travel window.',
   },
   {
     question: 'How long is a {keyword} valid for?',

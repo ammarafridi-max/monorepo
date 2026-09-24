@@ -49,8 +49,8 @@ const benefits = [
     icon: HiOutlineClock,
   },
   {
-    title: "Cost-Effective Starting at $13",
-    text: "The Subclass 600 application fee starts at AUD 195 and biometrics, document prep, and translation costs stack up. Our dummy ticket from $13 satisfies the flight requirement without committing to a $600 to $2,000 airline ticket.",
+    title: "Cost-Effective Starting at USD 13",
+    text: "The Subclass 600 application fee starts at AUD 195 and biometrics, document prep, and translation costs stack up. Our dummy ticket from USD 13 satisfies the flight requirement without committing to a USD 600 to 2,000 airline ticket.",
     icon: HiOutlineBanknotes,
   },
   {
@@ -104,17 +104,17 @@ const faqs = [
 
 const pageData = {
   meta: {
-    title: "Dummy Ticket for Australia Visa From $13 | Verifiable PNR",
+    title: "Dummy Ticket for Australia Visa From USD 13 | Verifiable PNR",
     description:
-      "Secure a dummy ticket for your Australia Subclass 600 visa application with a verifiable PNR. Ready for ImmiAccount upload, from $13.",
+      "Secure a dummy ticket for your Australia Subclass 600 visa application with a verifiable PNR. Ready for ImmiAccount upload, from USD 13.",
     canonical: "https://www.dummyticket365.com/dummy-ticket-australia-visa",
     productName: 'Dummy Ticket for Australia Visa',
   },
   sections: {
     hero: {
-      title: "Book Your Dummy Ticket For Australia Visa From $13",
+      title: "Book Your Dummy Ticket For Australia Visa From USD 13",
       subtitle:
-        "The Department of Home Affairs asks for travel dates and a flight itinerary on the Subclass 600 application, while also telling applicants not to finalise travel until the visa is granted. A dummy ticket satisfies both: a real reservation with a verifiable PNR for your ImmiAccount file, with no expensive ticket bought before a decision. From $13.",
+        "The Department of Home Affairs asks for travel dates and a flight itinerary on the Subclass 600 application, while also telling applicants not to finalise travel until the visa is granted. A dummy ticket satisfies both: a real reservation with a verifiable PNR for your ImmiAccount file, with no expensive ticket bought before a decision. From USD 13.",
       form: <AllForms forms={["ticket"]} />,
     },
     process: {
@@ -209,7 +209,7 @@ export default function Page() {
         subtitle={pageData.sections.hero.subtitle}
         form={pageData.sections.hero.form}
         pills={[
-          "Dummy tickets from $13",
+          "Dummy tickets from USD 13",
           "Verifiable PNR included",
           "Formatted for ImmiAccount upload",
           "Delivered in minutes",

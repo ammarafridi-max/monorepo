@@ -13,13 +13,15 @@ const PricingOptionSchema = new mongoose.Schema(
 const TicketPricingSchema = new mongoose.Schema(
   {
     key: { type: String, required: true, default: 'dummy-ticket', enum: ['dummy-ticket'] },
-    currency: { type: String, default: 'AED', uppercase: true, trim: true },
+    currency: { type: String, required: true, default: 'AED', uppercase: true, trim: true },
     options: { type: [PricingOptionSchema], default: [] },
     updatedBy: { type: mongoose.Schema.ObjectId, ref: 'admin-user', default: null },
   },
   { timestamps: true },
 );
 
-TicketPricingSchema.index({ key: 1 }, { unique: true });
+// One price book per currency. A plain unique index on key would cap the
+// collection at a single book and silently reject the second currency.
+TicketPricingSchema.index({ key: 1, currency: 1 }, { unique: true });
 
 export default TicketPricingSchema;

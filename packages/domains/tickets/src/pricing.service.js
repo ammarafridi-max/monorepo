@@ -32,38 +32,114 @@ function sanitizeOptions(options = []) {
   return sortOptions(sanitized);
 }
 
-export function createPricingService({ TicketPricing }) {
-  async function ensurePricing() {
-    let config = await TicketPricing.findOne({ key: 'dummy-ticket' });
-    if (config) return config;
-    return TicketPricing.create({ key: 'dummy-ticket', currency: 'AED', options: DEFAULT_OPTIONS });
-  }
+const normalizeCode = (code) => String(code || '').trim().toUpperCase();
 
-  const getPricingPublic = async () => {
-    const config = await ensurePricing();
-    return { currency: config.currency, options: sortOptions(config.options).filter((o) => o.isActive) };
+export function createPricingService({ TicketPricing, Currency }) {
+  const getBaseCode = async () => {
+    const base = await Currency?.findOne({ isBaseCurrency: true }).lean();
+    return base?.code || 'AED';
   };
 
-  const getPricingAdmin = async () => {
-    const config = await ensurePricing();
-    return { currency: config.currency, options: sortOptions(config.options), updatedAt: config.updatedAt };
+  // Only the base currency's book is auto-created. Every other currency is
+  // opt-in, so a missing book means "fall back", never "invent a price".
+  async function ensureDefaultBook() {
+    const code = await getBaseCode();
+    const onBase = await TicketPricing.findOne({ key: 'dummy-ticket', currency: code });
+    if (onBase) return onBase;
+    const any = await TicketPricing.findOne({ key: 'dummy-ticket' });
+    if (any) return any;
+    return TicketPricing.create({ key: 'dummy-ticket', currency: code, options: DEFAULT_OPTIONS });
+  }
+
+  const findBook = async (code) => {
+    const c = normalizeCode(code);
+    return c ? TicketPricing.findOne({ key: 'dummy-ticket', currency: c }) : null;
+  };
+
+  const getPricingPublic = async (currency) => {
+    const book = (await findBook(currency)) || (await ensureDefaultBook());
+    return {
+      currency: book.currency,
+      options: sortOptions(book.options).filter((o) => o.isActive),
+    };
+  };
+
+  const getPricingAdmin = async (currency) => {
+    const requested = normalizeCode(currency);
+    const exact = await findBook(requested);
+    if (requested && !exact) {
+      return { currency: requested, options: [], updatedAt: null, exists: false };
+    }
+    const book = exact || (await ensureDefaultBook());
+    return {
+      currency: book.currency,
+      options: sortOptions(book.options),
+      updatedAt: book.updatedAt,
+      exists: true,
+    };
+  };
+
+  const listPriceBooks = async () => {
+    const [books, baseCode] = await Promise.all([
+      TicketPricing.find({ key: 'dummy-ticket' }).lean(),
+      getBaseCode(),
+    ]);
+    return books
+      .map((b) => ({
+        currency: b.currency,
+        options: sortOptions(b.options),
+        updatedAt: b.updatedAt,
+        isBaseCurrency: b.currency === baseCode,
+      }))
+      .sort((a, b) =>
+        a.isBaseCurrency !== b.isBaseCurrency
+          ? Number(b.isBaseCurrency) - Number(a.isBaseCurrency)
+          : a.currency.localeCompare(b.currency),
+      );
   };
 
   const updatePricing = async ({ currency, options, updatedBy }) => {
-    const config = await ensurePricing();
-    config.currency = String(currency || config.currency || 'AED').toUpperCase();
-    config.options = sanitizeOptions(options);
-    config.updatedBy = updatedBy || null;
-    await config.save();
-    return { currency: config.currency, options: sortOptions(config.options), updatedAt: config.updatedAt };
+    const code = normalizeCode(currency) || (await getBaseCode());
+    // A book for a currency the brand does not list could never be charged,
+    // and a typo would create one nobody notices.
+    if (Currency && !(await Currency.exists({ code }))) {
+      throw new AppError(`Unknown currency: ${code}`, 400);
+    }
+    const book = await TicketPricing.findOneAndUpdate(
+      { key: 'dummy-ticket', currency: code },
+      { $set: { options: sanitizeOptions(options), updatedBy: updatedBy || null } },
+      { new: true, upsert: true },
+    );
+    return { currency: book.currency, options: sortOptions(book.options), updatedAt: book.updatedAt };
   };
 
-  const getUnitPrice = async (ticketValidity) => {
-    const config = await ensurePricing();
-    const option = config.options.find((o) => o.validity === ticketValidity && o.isActive);
+  const deletePriceBook = async (currency) => {
+    const code = normalizeCode(currency);
+    if (!code) throw new AppError('Currency is required', 400);
+    if (code === (await getBaseCode())) {
+      throw new AppError('Cannot delete the base currency price book', 400);
+    }
+    const res = await TicketPricing.deleteOne({ key: 'dummy-ticket', currency: code });
+    if (!res.deletedCount) throw new AppError(`No price book for ${code}`, 404);
+    return { currency: code, deleted: true };
+  };
+
+  // isExact tells checkout whether this price was set for the requested
+  // currency or merely fell back, which decides if FX conversion applies.
+  const getUnitPrice = async (ticketValidity, requestedCurrency) => {
+    const exact = await findBook(requestedCurrency);
+    const book = exact || (await ensureDefaultBook());
+    const option = book.options.find((o) => o.validity === ticketValidity && o.isActive);
     if (!option) throw new AppError(`Pricing not configured for ${ticketValidity}`, 400);
-    return { currency: config.currency || 'AED', unitPrice: option.price };
+    return { currency: book.currency, unitPrice: option.price, isExact: Boolean(exact) };
   };
 
-  return { getPricingPublic, getPricingAdmin, updatePricing, getUnitPrice };
+  return {
+    getPricingPublic,
+    getPricingAdmin,
+    listPriceBooks,
+    updatePricing,
+    deletePriceBook,
+    getUnitPrice,
+  };
 }

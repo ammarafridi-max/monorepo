@@ -62,7 +62,7 @@ export default function TicketReviewDetailsPage({ onBeginCheckout, enablePayPal 
   }, []);
   const { type } = useContext(TicketContext);
   const { selectedCurrency, formatMoney } = useCurrency();
-  const { pricing } = useDummyTicketPricing();
+  const { pricing } = useDummyTicketPricing(selectedCurrency?.code);
   const { createStripePayment, isLoadingStripePaymentURL, isErrorStripePaymentURL } = useStripePaymentURL();
   const { createPayPalOrder, isLoadingPayPalOrder } = usePayPalOrder();
   const { dummyTicket, isLoadingDummyTicket, isErrorDummyTicket } = useGetDummyTicket(sessionId);
@@ -73,7 +73,7 @@ export default function TicketReviewDetailsPage({ onBeginCheckout, enablePayPal 
     Number(dummyTicket?.quantity?.adults || 0) +
     Number(dummyTicket?.quantity?.children || 0);
   const baseTicketPrice = getTicketPriceByValidity(pricing, dummyTicket?.ticketValidity);
-  const ticketPrice = formatMoney(baseTicketPrice, 'AED').amount;
+  const ticketPrice = formatMoney(baseTicketPrice, pricing?.currency).amount;
   const totalAmount = ticketPrice * totalQuantity;
   const currencyCode = selectedCurrency?.code || 'AED';
 

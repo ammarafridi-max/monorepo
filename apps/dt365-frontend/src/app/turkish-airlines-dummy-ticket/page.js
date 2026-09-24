@@ -111,17 +111,17 @@ const faqs = [
 
 const pageData = {
   meta: {
-    title: 'Turkish Airlines Dummy Ticket from $13 | Verifiable PNR',
+    title: 'Turkish Airlines Dummy Ticket from USD 13 | Verifiable PNR',
     description:
-      'Turkish Airlines dummy ticket with a verifiable PNR from $13. Real TK flight numbers, issued through Amadeus, Sabre and Travelport, delivered in minutes.',
+      'Turkish Airlines dummy ticket with a verifiable PNR from USD 13. Real TK flight numbers, issued through Amadeus, Sabre and Travelport, delivered in minutes.',
     canonical: 'https://www.dummyticket365.com/turkish-airlines-dummy-ticket',
     productName: 'Turkish Airlines Dummy Ticket',
   },
   sections: {
     hero: {
-      title: 'Book a Dummy Ticket on Turkish Airlines from $13',
+      title: 'Book a Dummy Ticket on Turkish Airlines from USD 13',
       subtitle:
-        'We issue Turkish Airlines flight reservations through global GDS platforms (Amadeus, Sabre, Travelport) with a six-character PNR your consulate or any travel agent can look up during validity. Real TK flight numbers, Istanbul routing, no paid ticket required. Accepted on Schengen, UK, US, Canadian, and many other visa files. From $13.',
+        'We issue Turkish Airlines flight reservations through global GDS platforms (Amadeus, Sabre, Travelport) with a six-character PNR your consulate or any travel agent can look up during validity. Real TK flight numbers, Istanbul routing, no paid ticket required. Accepted on Schengen, UK, US, Canadian, and many other visa files. From USD 13.',
       form: <AllForms forms={['ticket']} />,
     },
     process: {
@@ -137,7 +137,7 @@ const pageData = {
           icon: <MdOutlineAirplaneTicket />,
           title: 'Turkish Airlines Dummy Ticket',
           description:
-            'A round-trip flight reservation on Turkish Airlines with a verifiable PNR. The reservation is created through recognized GDS platforms (Amadeus, Sabre, Travelport) so consulates and travel agents can confirm the booking during validity. Instant delivery from $13.',
+            'A round-trip flight reservation on Turkish Airlines with a verifiable PNR. The reservation is created through recognized GDS platforms (Amadeus, Sabre, Travelport) so consulates and travel agents can confirm the booking during validity. Instant delivery from USD 13.',
         },
         {
           icon: <MdOutlineHealthAndSafety />,
@@ -216,7 +216,7 @@ export default function Page() {
         subtitle={pageData.sections.hero.subtitle}
         form={pageData.sections.hero.form}
         pills={[
-          'Dummy tickets from $13',
+          'Dummy tickets from USD 13',
           'Verifiable PNR on GDS',
           '340+ destinations worldwide',
           'Delivered in minutes',

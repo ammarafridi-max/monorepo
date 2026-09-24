@@ -7,10 +7,10 @@ import { normalizePricingOptions } from '../../../utils/dummyTicketPricing';
 
 export default function StickyBookingBar({ targetId = 'form', label = 'Book now', product = 'dummy ticket' }) {
   const [visible, setVisible] = useState(false);
-  const { pricing } = useDummyTicketPricing();
   const { selectedCurrency, formatMoney } = useCurrency();
+  const { pricing } = useDummyTicketPricing(selectedCurrency?.code);
   const lowest = normalizePricingOptions(pricing)[0];
-  const price = lowest ? formatMoney(lowest.price, 'AED') : null;
+  const price = lowest ? formatMoney(lowest.price, pricing?.currency) : null;
 
   useEffect(() => {
     const target = document.getElementById(targetId);

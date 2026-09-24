@@ -35,8 +35,8 @@ const benefits = [
     icon: HiOutlineCheckBadge,
   },
   {
-    title: 'Cost-Effective Starting at Just $13',
-    text: 'Our dummy tickets start from $13, allowing applicants to meet UK visa requirements without purchasing a full-priced, non-refundable airline ticket.',
+    title: 'Cost-Effective Starting at Just USD 13',
+    text: 'Our dummy tickets start from USD 13, allowing applicants to meet UK visa requirements without purchasing a full-priced, non-refundable airline ticket.',
     icon: HiOutlineBanknotes,
   },
   {
@@ -80,7 +80,7 @@ const faqs = [
   {
     question: 'How much does a dummy ticket for a UK visa cost?',
     answer:
-      'Pricing starts from $13 and may vary based on the selected validity and itinerary type.',
+      'Pricing starts from USD 13 and may vary based on the selected validity and itinerary type.',
   },
   {
     question: 'Can I use this dummy ticket to board a flight?',
@@ -91,17 +91,17 @@ const faqs = [
 
 const pageData = {
   meta: {
-    title: 'Dummy Ticket for UK Visa From $13 | Verifiable PNR',
+    title: 'Dummy Ticket for UK Visa From USD 13 | Verifiable PNR',
     description:
-      'Secure a dummy ticket for UK visa applications with a verifiable PNR. Accepted for visa submissions and available from $13.',
+      'Secure a dummy ticket for UK visa applications with a verifiable PNR. Accepted for visa submissions and available from USD 13.',
     canonical: 'https://www.dummyticket365.com/dummy-ticket-uk-visa',
     productName: 'Dummy Ticket for UK Visa',
   },
   sections: {
     hero: {
-      title: 'Book Your Dummy Ticket for UK Visa from $13',
+      title: 'Book Your Dummy Ticket for UK Visa from USD 13',
       subtitle:
-        'UKVI does not list a flight booking as a required document for the Standard Visitor visa, but a flight itinerary helps caseworkers see your intended dates and route. A dummy ticket with a verifiable PNR meets that bar without you paying for a non-refundable ticket months before a decision. From $13.',
+        'UKVI does not list a flight booking as a required document for the Standard Visitor visa, but a flight itinerary helps caseworkers see your intended dates and route. A dummy ticket with a verifiable PNR meets that bar without you paying for a non-refundable ticket months before a decision. From USD 13.',
       form: <AllForms forms={['ticket']} />,
     },
     process: {
@@ -191,7 +191,7 @@ export default function Page() {
         subtitle={pageData.sections.hero.subtitle}
         form={pageData.sections.hero.form}
         pills={[
-          'Dummy tickets from $13',
+          'Dummy tickets from USD 13',
           'Verifiable PNR included',
           'Accepted for UK visa submissions',
           'Delivered in minutes',

@@ -12,7 +12,7 @@ function readStoredCurrency() {
   return localStorage.getItem(SELECTED_CURRENCY_KEY);
 }
 
-export function CurrencyProvider({ children }) {
+export function CurrencyProvider({ children, defaultCode }) {
   const { currencies: apiCurrencies = [] } = useGetCurrencies();
   const [selectedCurrencyCode, setSelectedCurrencyCode] = useState(null);
 
@@ -26,12 +26,14 @@ export function CurrencyProvider({ children }) {
   useEffect(() => {
     if (!apiCurrencies.length || selectedCurrencyCode) return;
 
+    const known = (code) => apiCurrencies.find((currency) => currency.code === code)?.code;
     setSelectedCurrencyCode(
-      apiCurrencies.find((currency) => currency.isBaseCurrency)?.code ||
+      known(defaultCode) ||
+        apiCurrencies.find((currency) => currency.isBaseCurrency)?.code ||
         apiCurrencies[0]?.code ||
         null,
     );
-  }, [apiCurrencies, selectedCurrencyCode]);
+  }, [apiCurrencies, defaultCode, selectedCurrencyCode]);
 
   const selectedCurrency = useMemo(
     () =>

@@ -10,12 +10,12 @@ import { useCurrency } from "../../../contexts/CurrencyContext.js";
 import { TicketContext } from "../../../contexts/TicketContext.js";
 
 export default function FlightCard({ flight, isExpanded, onSelectFlight }) {
-  const { pricing } = useDummyTicketPricing();
   const { selectedCurrency, formatMoney } = useCurrency();
+  const { pricing } = useDummyTicketPricing(selectedCurrency?.code);
   const { ticketValidity } = useContext(TicketContext);
 
   const basePrice = getTicketPriceByValidity(pricing, ticketValidity);
-  const displayPrice = formatMoney(basePrice, "AED");
+  const displayPrice = formatMoney(basePrice, pricing?.currency);
 
   return (
     <div className="w-full rounded-2xl bg-white mb-5 p-3 lg:p-3.75 transition-[box-shadow_0.3s_ease] shadow-(--flight-shadow) hover:shadow-(--flight-shadow-hover)">
