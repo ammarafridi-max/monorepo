@@ -58,6 +58,10 @@ const {
   jwtExpiresIn: config.jwtExpiresIn,
   cookieExpiresInDays: config.jwtCookieExpiresInDays,
   nodeEnv: config.nodeEnv,
+  sendEmail,
+  brandName: "My Dummy Ticket",
+  loginUrl: `${config.frontendUrl}/admin/login`,
+  logger,
 });
 
 router.use("/auth", authRouter);

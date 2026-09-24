@@ -59,6 +59,10 @@ const {
   jwtExpiresIn: config.jwtExpiresIn,
   cookieExpiresInDays: config.jwtCookieExpiresInDays,
   nodeEnv: config.nodeEnv,
+  sendEmail,
+  brandName: "Dummy Ticket 365",
+  loginUrl: `${config.frontendUrl}/admin/login`,
+  logger,
 });
 
 router.use("/auth", authRouter);

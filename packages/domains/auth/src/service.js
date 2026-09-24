@@ -38,6 +38,16 @@ export function createAuthService({ AdminUser }) {
     return user;
   };
 
+  const resetPassword = async ({ userId, password }) => {
+    const user = await AdminUser.findById(userId).select('+password');
+    if (!user) throw new AppError('Admin user not found', 404);
+    // The pre-save hook hashes and stamps passwordChangedAt, which the auth
+    // middleware uses to reject tokens issued before the change.
+    user.password = password;
+    await user.save();
+    return user;
+  };
+
   const getCurrentUser = async (userId) => {
     const user = await AdminUser.findById(userId);
     if (!user) throw new AppError('Your data was not found. Please try again later.', 404);
@@ -72,5 +82,5 @@ export function createAuthService({ AdminUser }) {
     return AdminUser.findByIdAndUpdate(userId, filtered, { new: true, runValidators: true });
   };
 
-  return { login, updatePassword, getCurrentUser, updateCurrentUser };
+  return { login, updatePassword, resetPassword, getCurrentUser, updateCurrentUser };
 }

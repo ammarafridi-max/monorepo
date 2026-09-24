@@ -2,6 +2,8 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 import { Plane } from 'lucide-react';
 import AdminLoginForm from './AdminLoginForm';
+import AdminOtpLoginForm from './AdminOtpLoginForm';
+import AdminForgotPasswordForm from './AdminForgotPasswordForm';
 
 const DEFAULT_HIGHLIGHTS = [
   { label: 'Dummy Tickets', value: 'Order management' },
@@ -16,6 +18,15 @@ const DEFAULT_HIGHLIGHTS = [
  * they manage a ticketing platform.
  */
 export default function AdminLoginPage({
+  // Off by default: a brand whose backend has no mailer wired would otherwise
+  // show a code form that can only ever 503.
+  useOtp = false,
+  // 'login' or 'forgot'. The marketing half is identical either way, so the
+  // reset flow reuses this shell rather than duplicating it.
+  variant = 'login',
+  // The reset route is per app, so a brand that has not added
+  // /admin/forgot-password must not be given a link to it.
+  showForgotLink = useOtp,
   siteName = 'Admin',
   icon: Icon = Plane,
   headline = (
@@ -88,9 +99,15 @@ export default function AdminLoginPage({
           </div>
 
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8">
-            <h2 className="text-2xl font-extrabold text-gray-900 mb-1">Sign in</h2>
+            <h2 className="text-2xl font-extrabold text-gray-900 mb-1">
+              {variant === 'forgot' ? 'Reset password' : 'Sign in'}
+            </h2>
             <p className="text-sm text-gray-500 mb-7">
-              Enter your admin credentials to continue.
+              {variant === 'forgot'
+                ? 'We will email you a code so you can set a new password.'
+                : useOtp
+                  ? 'Enter your email and we will send you a sign-in code.'
+                  : 'Enter your admin credentials to continue.'}
             </p>
 
             <Suspense
@@ -100,7 +117,13 @@ export default function AdminLoginPage({
                 </div>
               }
             >
-              <AdminLoginForm />
+              {variant === 'forgot' ? (
+                  <AdminForgotPasswordForm />
+                ) : useOtp ? (
+                  <AdminOtpLoginForm showForgotLink={showForgotLink} />
+                ) : (
+                  <AdminLoginForm showForgotLink={showForgotLink} />
+                )}
             </Suspense>
           </div>
 

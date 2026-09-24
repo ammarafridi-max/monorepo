@@ -12,6 +12,38 @@ export async function loginApi(credentials) {
   });
 }
 
+export async function requestAdminOtpApi({ email }) {
+  return await apiFetch('/api/auth/otp/request', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function verifyAdminOtpApi({ email, code }) {
+  return await apiFetch('/api/auth/otp/verify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, code }),
+  });
+}
+
+export async function forgotAdminPasswordApi({ email }) {
+  return await apiFetch('/api/auth/password/forgot', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function resetAdminPasswordApi({ email, code, password }) {
+  return await apiFetch('/api/auth/password/reset', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, code, password }),
+  });
+}
+
 export async function getAdminMeApi() {
   return await apiFetch('/api/admin-users/me');
 }

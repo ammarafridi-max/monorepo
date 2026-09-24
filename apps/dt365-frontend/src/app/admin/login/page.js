@@ -6,5 +6,5 @@ export const metadata = {
 };
 
 export default function Page() {
-  return <AdminLoginPage siteName="Dummy Ticket 365" />;
+  return <AdminLoginPage siteName="Dummy Ticket 365" useOtp />;
 }

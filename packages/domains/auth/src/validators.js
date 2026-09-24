@@ -61,3 +61,27 @@ export const updateCurrentAdminSchema = (body = {}) => {
 
   return payload;
 };
+
+export const otpRequestSchema = (body = {}) => ({
+  email: normalizeEmail(body.email),
+});
+
+export const otpVerifySchema = (body = {}) => {
+  const code = String(body.code || '').trim();
+  if (!/^\d{6}$/.test(code)) throw new AppError('Enter the 6-digit code from your email', 400);
+  return { email: normalizeEmail(body.email), code };
+};
+
+export const forgotPasswordSchema = (body = {}) => ({
+  email: normalizeEmail(body.email),
+});
+
+export const resetPasswordSchema = (body = {}) => {
+  const code = String(body.code || '').trim();
+  if (!/^\d{6}$/.test(code)) throw new AppError('Enter the 6-digit code from your email', 400);
+  return {
+    email: normalizeEmail(body.email),
+    code,
+    password: normalizePassword(body.password, 'New password'),
+  };
+};

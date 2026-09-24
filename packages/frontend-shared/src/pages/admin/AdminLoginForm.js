@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { useLogin } from '../../hooks/useLogin';
 
-export default function AdminLoginForm() {
+export default function AdminLoginForm({ showForgotLink = false }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get('next');
@@ -102,6 +102,15 @@ export default function AdminLoginForm() {
           </>
         )}
       </button>
+
+      {showForgotLink && (
+        <a
+          href="/admin/forgot-password"
+          className="text-center text-xs font-semibold text-gray-500 hover:text-gray-700 transition"
+        >
+          Forgot your password?
+        </a>
+      )}
     </form>
   );
 }
