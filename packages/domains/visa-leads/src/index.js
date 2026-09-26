@@ -12,11 +12,11 @@ function getOrRegisterModel(conn, name, schema) {
   }
 }
 
-export function createVisaLeadRouter({ db, auth, notificationsService }) {
+export function createVisaLeadRouter({ db, auth, notificationsService, metaCapi, frontendUrl }) {
   const VisaLead = getOrRegisterModel(db, 'visa-lead', VisaLeadSchema);
   const Visa     = getOrRegisterModel(db, 'Visa', VisaSchema);
 
-  const service    = createVisaLeadService({ VisaLead, Visa, notificationsService });
+  const service    = createVisaLeadService({ VisaLead, Visa, notificationsService, metaCapi, frontendUrl });
   const controller = createVisaLeadController({ service });
   return createVisaLeadRouterFromParts({ controller, auth });
 }

@@ -24,6 +24,8 @@ export function createVisaLeadController({ service }) {
       source:           req.body.source,
       ipAddress,
       userAgent,
+      fbp:              typeof req.body.fbp === 'string' ? req.body.fbp.slice(0, 200) : undefined,
+      fbc:              typeof req.body.fbc === 'string' ? req.body.fbc.slice(0, 500) : undefined,
     });
 
     res.status(201).json({ status: 'success', data: { id: lead._id } });

@@ -7,6 +7,7 @@ import { X, Loader2, CheckCircle2 } from 'lucide-react';
 import { useCreateVisaLead } from '../../../hooks/visa-leads/useCreateVisaLead.js';
 import { NATIONALITIES } from '../../../data/nationalities.js';
 import { trackVisaLeadSubmit } from '../../../utils/analytics.js';
+import { getMetaBrowserIds, pixelEvent } from '../../../utils/pixel.js';
 import NationalitySelect from '../../form-elements/v1/NationalitySelect.js';
 import PhoneInput from '../../form-elements/v1/PhoneInput.js';
 
@@ -163,10 +164,12 @@ export default function LeadFormModal({ isOpen, onClose, visa, defaultPackage = 
       visaSlug:         visa?.slug || '',
       source,
       website:          data.website,
+      ...getMetaBrowserIds(),
     };
 
     try {
-      await createVisaLeadAsync(payload);
+      const created = await createVisaLeadAsync(payload);
+      if (created?.id) pixelEvent('Lead', { content_name: visa?.slug || '' }, `visa-lead:${created.id}`);
       trackVisaLeadSubmit({
         visaSlug: visa?.slug || '',
         packageRequested: data.packageRequested,

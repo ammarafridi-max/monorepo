@@ -22,12 +22,12 @@ function isValidPhone(phone) {
   }
 }
 
-export function createVisaLeadService({ VisaLead, Visa, notificationsService }) {
+export function createVisaLeadService({ VisaLead, Visa, notificationsService, metaCapi, frontendUrl }) {
 
   const submitLead = async ({
     firstName, lastName, nationality, email, phone,
     packageRequested, applicantCount, visaSlug, source,
-    ipAddress, userAgent,
+    ipAddress, userAgent, fbp, fbc,
   }) => {
 
     if (!firstName?.trim()) throw new AppError('First name is required', 400);
@@ -97,6 +97,29 @@ export function createVisaLeadService({ VisaLead, Visa, notificationsService }) 
         visaCountryName:  lead.visaCountryName,
       }).catch((err) => {
         console.error('[visa-leads] customer email failed', err?.message);
+      });
+    }
+
+    if (metaCapi?.isConfigured?.()) {
+      metaCapi.sendEvent({
+        eventName:      'Lead',
+        eventId:        `visa-lead:${lead._id}`,
+        eventTime:      lead.createdAt,
+        eventSourceUrl: frontendUrl || undefined,
+        user: {
+          email:      lead.email,
+          phone:      lead.phone,
+          firstName:  lead.firstName,
+          lastName:   lead.lastName,
+          externalId: lead.email || lead.phone,
+          clientIp:   ipAddress !== 'unknown' ? ipAddress : undefined,
+          userAgent,
+          fbp,
+          fbc,
+        },
+        customData: { content_name: visaSlug },
+      }).catch((err) => {
+        console.error('[visa-leads] Meta lead event failed', err?.message);
       });
     }
 

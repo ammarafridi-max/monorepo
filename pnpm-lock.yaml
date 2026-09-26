@@ -953,6 +953,9 @@ importers:
       '@travel-suite/cloudinary':
         specifier: workspace:*
         version: link:../../packages/integrations/cloudinary
+      '@travel-suite/meta-capi':
+        specifier: workspace:*
+        version: link:../../packages/integrations/meta-capi
       '@travel-suite/notifications':
         specifier: workspace:*
         version: link:../../packages/shared/notifications

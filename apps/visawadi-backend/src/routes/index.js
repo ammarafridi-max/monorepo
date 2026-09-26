@@ -4,6 +4,7 @@ import { createAdminUsersRouter } from "@travel-suite/admin-users";
 import { createBlogRouter, createBlogTagRouter } from "@travel-suite/blog";
 import { createVisaRouter } from "@travel-suite/visa";
 import { createVisaLeadRouter } from "@travel-suite/visa-leads";
+import { createMetaCapiClient } from "@travel-suite/meta-capi";
 import { createVisaRequirementsRouter } from "@travel-suite/visa-requirements";
 import { createUsersRouter } from "@travel-suite/users";
 import { createVisaApplicationsRouter } from "@travel-suite/visa-applications";
@@ -74,7 +75,20 @@ const notifications = createNotificationsService({
   },
 });
 
-router.use("/visa-leads", createVisaLeadRouter({ db, auth, notificationsService: notifications }));
+const metaCapi = createMetaCapiClient({
+  pixelId: config.meta.pixelId,
+  accessToken: config.meta.capiAccessToken,
+  testEventCode: config.meta.testEventCode,
+  logger,
+});
+if (!metaCapi.isConfigured()) {
+  logger.warn("[meta-capi] Pixel ID or access token not configured — server-side lead events disabled");
+}
+
+router.use(
+  "/visa-leads",
+  createVisaLeadRouter({ db, auth, notificationsService: notifications, metaCapi, frontendUrl: config.frontendUrl }),
+);
 
 // Visa requirement checker. Runs on our own curated rules. The service takes an
 // ordered provider list, so a third-party source can be added later without
