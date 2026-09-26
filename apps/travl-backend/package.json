@@ -20,6 +20,7 @@
     "@travel-suite/insurance": "workspace:*",
     "@travel-suite/itineraries": "workspace:*",
     "@travel-suite/locations": "workspace:*",
+    "@travel-suite/meta-capi": "workspace:*",
     "@travel-suite/notifications": "workspace:*",
     "@travel-suite/serpapi": "workspace:*",
     "@travel-suite/tickets": "workspace:*",

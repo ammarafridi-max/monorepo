@@ -284,6 +284,9 @@ importers:
       '@travel-suite/locations':
         specifier: workspace:*
         version: link:../../packages/domains/locations
+      '@travel-suite/meta-capi':
+        specifier: workspace:*
+        version: link:../../packages/integrations/meta-capi
       '@travel-suite/notifications':
         specifier: workspace:*
         version: link:../../packages/shared/notifications
@@ -471,6 +474,9 @@ importers:
       '@travel-suite/insurance':
         specifier: workspace:*
         version: link:../../packages/domains/insurance
+      '@travel-suite/meta-capi':
+        specifier: workspace:*
+        version: link:../../packages/integrations/meta-capi
       '@travel-suite/notifications':
         specifier: workspace:*
         version: link:../../packages/shared/notifications
@@ -832,6 +838,9 @@ importers:
       '@travel-suite/locations':
         specifier: workspace:*
         version: link:../../packages/domains/locations
+      '@travel-suite/meta-capi':
+        specifier: workspace:*
+        version: link:../../packages/integrations/meta-capi
       '@travel-suite/notifications':
         specifier: workspace:*
         version: link:../../packages/shared/notifications

@@ -73,6 +73,8 @@ export async function finalizeInsuranceApi({
   city,
   country,
   currency,
+  fbp,
+  fbc,
 }) {
   return await apiFetch(`${URL}/finalize`, {
     method: 'POST',
@@ -94,6 +96,8 @@ export async function finalizeInsuranceApi({
       city,
       country,
       currency,
+      fbp,
+      fbc,
     }),
   });
 }

@@ -18,6 +18,7 @@ import {
 import { InsuranceContext } from '../../../contexts/InsuranceContext.js';
 import { useFinalizeInsurance } from '../../../hooks/insurance/useFinalizeInsurance.js';
 import { trackBeginCheckout } from '../../../utils/analytics';
+import { getMetaBrowserIds, pixelInitiateCheckout } from '../../../utils/pixel';
 import {
   calcDays,
   formatPremium,
@@ -257,8 +258,14 @@ export default function ReviewSummary() {
       days,
       totalTravellers,
     });
+    pixelInitiateCheckout({
+      currency: selectedQuote.currency,
+      value: Number(selectedQuote.premium),
+      numItems: totalTravellers,
+    });
     finalizeInsurance(
       {
+        ...getMetaBrowserIds(),
         sessionId,
         quoteId,
         schemeId,

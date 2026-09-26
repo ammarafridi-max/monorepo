@@ -7,6 +7,7 @@ import { useLocalStorage } from '@travel-suite/frontend-shared/hooks/general/use
 import { FaCheck, FaX } from 'react-icons/fa6';
 import { format } from 'date-fns';
 import { trackPurchaseEvent } from '@/lib/analytics';
+import { pixelPurchase } from '@travel-suite/frontend-shared/utils/pixel';
 import PrimarySection from '@/components/PrimarySection';
 import Container from '@/components/Container';
 import Loading from '@/components/Loading';
@@ -96,6 +97,9 @@ function Success({ booking }) {
       transactionId: payment?.transactionId,
       items,
     });
+    if (booking?._id) {
+      pixelPurchase({ currency: payment?.currency, value: payment?.amount, eventId: `limo-booking:${booking._id}` });
+    }
     deleteLocalStorage('bookingData');
   }, [
     pickup?.type,
@@ -103,6 +107,7 @@ function Success({ booking }) {
     payment?.currency,
     payment?.amount,
     payment?.transactionId,
+    booking?._id,
     deleteLocalStorage,
   ]);
 

@@ -13,6 +13,7 @@ function redactForPublic(booking) {
       : b.payment,
     handledBy: undefined,
     notes: undefined,
+    metaAttribution: undefined,
   };
 }
 
@@ -39,7 +40,14 @@ export function createBookingController({ service }) {
   });
 
   const createBooking = catchAsync(async (req, res) => {
-    const booking = await service.createBooking(req.validatedBody);
+    const booking = await service.createBooking({
+      ...req.validatedBody,
+      metaAttribution: {
+        ...req.validatedBody.metaAttribution,
+        clientIp: req.ip,
+        userAgent: req.get('user-agent')?.slice(0, 500),
+      },
+    });
     res.status(201).json({ status: 'success', data: booking });
   });
 

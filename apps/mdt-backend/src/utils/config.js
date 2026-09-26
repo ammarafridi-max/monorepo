@@ -53,4 +53,10 @@ export default {
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
   },
 
+  meta: {
+    pixelId: process.env.META_PIXEL_ID,
+    capiAccessToken: process.env.META_CAPI_ACCESS_TOKEN,
+    testEventCode: process.env.META_TEST_EVENT_CODE,
+  },
+
 };

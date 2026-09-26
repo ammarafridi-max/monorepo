@@ -209,7 +209,12 @@ export function createInsuranceController({ service, wis, Nationality, Insurance
     const { policy_id, premium, directpay } = await wis.finalizeWISInsurance(data);
     const currency = req.body.currency || 'AED';
 
-    await service.finalizeInsuranceMongoDbDocument(sessionId, policy_id, premium, currency, paymentSyncToken);
+    await service.finalizeInsuranceMongoDbDocument(sessionId, policy_id, premium, currency, paymentSyncToken, {
+      fbp: typeof req.body.fbp === 'string' ? req.body.fbp.slice(0, 200) : undefined,
+      fbc: typeof req.body.fbc === 'string' ? req.body.fbc.slice(0, 500) : undefined,
+      clientIp: req.ip,
+      userAgent: req.get('user-agent')?.slice(0, 500),
+    });
 
     res.status(200).json({
       message: 'Insurance finalized successfully',

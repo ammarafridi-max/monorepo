@@ -20,6 +20,7 @@ import { createZonesRouter } from "@travel-suite/zones";
 import { createPricingRulesRouter } from "@travel-suite/pricing-rules";
 import { createAvailabilityRulesRouter } from "@travel-suite/availability-rules";
 import { createBookingsRouter, createBookingPaymentHandler } from "@travel-suite/limo-bookings";
+import { createMetaCapiClient } from "@travel-suite/meta-capi";
 import { db } from "../utils/db.js";
 import { sendEmail } from "../utils/email.js";
 import { createLimoNotifications, bookingNotifications } from "../notifications/booking.js";
@@ -114,13 +115,28 @@ async function handlePaymentLinkSuccess(session) {
 // -- Notifications -------------------------------------------------------------
 const notifications = createLimoNotifications({ sendEmail });
 
+const metaCapi = createMetaCapiClient({
+  pixelId: config.meta.pixelId,
+  accessToken: config.meta.capiAccessToken,
+  testEventCode: config.meta.testEventCode,
+  logger,
+});
+if (!metaCapi.isConfigured()) {
+  logger.warn("[meta-capi] Pixel ID or access token not configured — server-side purchase events disabled");
+}
+
 // -- Stripe webhook handler (mounted in app.js before JSON middleware) ----------
 export const stripeWebhookHandler = createStripeWebhookHandler({
   stripe,
   webhookSecret: config.stripe.webhookSecret,
   db,
   handlers: {
-    booking: createBookingPaymentHandler({ db, notifications: bookingNotifications(notifications) }),
+    booking: createBookingPaymentHandler({
+      db,
+      notifications: bookingNotifications(notifications),
+      metaCapi,
+      frontendUrl: config.frontendUrl,
+    }),
     "payment-link": handlePaymentLinkSuccess,
   },
 });

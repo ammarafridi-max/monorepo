@@ -279,8 +279,8 @@ export default function PaymentSuccess({ upsells = [] }) {
           dedupeKey: `insurance:${sessionId}`,
           items: [{ item_name: 'Travel Insurance Policy', quantity: 1, price: amount }],
         });
+        pixelPurchase({ currency, value: amount, eventId: `insurance:${sessionId}` });
       }
-      pixelPurchase({ currency, value: amount });
     },
   });
 

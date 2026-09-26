@@ -19,6 +19,7 @@ COPY packages/integrations/airlabs/package.json    packages/integrations/airlabs
 COPY packages/integrations/serpapi/package.json    packages/integrations/serpapi/package.json
 COPY packages/domains/insurance/package.json       packages/domains/insurance/package.json
 COPY packages/integrations/wis/package.json        packages/integrations/wis/package.json
+COPY packages/integrations/meta-capi/package.json  packages/integrations/meta-capi/package.json
 COPY packages/shared/notifications/package.json   packages/shared/notifications/package.json
 COPY packages/domains/payments/package.json        packages/domains/payments/package.json
 COPY packages/domains/tickets/package.json         packages/domains/tickets/package.json

@@ -22,6 +22,7 @@ COPY packages/domains/zones/package.json                 packages/domains/zones/
 COPY packages/domains/pricing-rules/package.json         packages/domains/pricing-rules/package.json
 COPY packages/domains/availability-rules/package.json    packages/domains/availability-rules/package.json
 COPY packages/domains/limo-bookings/package.json         packages/domains/limo-bookings/package.json
+COPY packages/integrations/meta-capi/package.json        packages/integrations/meta-capi/package.json
 COPY apps/emirateslimo-backend/package.json              apps/emirateslimo-backend/package.json
 
 RUN pnpm install --frozen-lockfile

@@ -10,8 +10,36 @@ function getOrRegisterModel(conn, name, schema) {
   }
 }
 
-export function createBookingPaymentHandler({ db, notifications }) {
+export function createBookingPaymentHandler({ db, notifications, metaCapi, frontendUrl }) {
   const Booking = getOrRegisterModel(db, 'Booking', BookingSchema);
+
+  // Never throws: a Meta outage must not fail the webhook and make Stripe resend a paid booking.
+  const reportPurchaseToMeta = async (booking) => {
+    if (!metaCapi?.isConfigured?.()) return;
+    const { firstName, lastName, email, phoneNumber } = booking.bookingDetails || {};
+    const phone = phoneNumber?.code && phoneNumber?.number ? `${phoneNumber.code}${phoneNumber.number}` : undefined;
+    try {
+      await metaCapi.trackPurchase({
+        eventId: `limo-booking:${booking._id}`,
+        eventSourceUrl: frontendUrl ? `${frontendUrl}/payment` : undefined,
+        value: booking.payment.amount,
+        currency: booking.payment.currency,
+        user: {
+          email,
+          phone,
+          firstName,
+          lastName,
+          externalId: email?.toLowerCase(),
+          clientIp: booking.metaAttribution?.clientIp,
+          userAgent: booking.metaAttribution?.userAgent,
+          fbp: booking.metaAttribution?.fbp,
+          fbc: booking.metaAttribution?.fbc,
+        },
+      });
+    } catch (err) {
+      logger.warn('[limo-bookings] Meta purchase event failed', { bookingId: String(booking._id), error: err.message });
+    }
+  };
 
   return async (session) => {
     const bookingId = session.metadata?.bookingId;
@@ -30,5 +58,7 @@ export function createBookingPaymentHandler({ db, notifications }) {
     await booking.save();
 
     await deliverPaymentConfirmations({ Booking, booking, notifications });
+
+    await reportPurchaseToMeta(booking);
   };
 }

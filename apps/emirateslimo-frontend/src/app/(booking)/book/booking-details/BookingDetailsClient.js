@@ -6,6 +6,7 @@ import { useCreateBooking } from '@travel-suite/frontend-shared/hooks/limo-booki
 import { useLimoBooking } from '@travel-suite/frontend-shared/contexts/LimoBookingContext';
 import { FaStripe, FaLock } from 'react-icons/fa6';
 import { trackBeginCheckout, trackBookingDetailsEntered } from '@/lib/analytics';
+import { getMetaBrowserIds, pixelInitiateCheckout } from '@travel-suite/frontend-shared/utils/pixel';
 import SectionTitle from '@/components/SectionTitle';
 import Input from '@/components/FormElements/Input';
 import BookingSummary from '@/components/BookingSummary';
@@ -75,7 +76,16 @@ export default function BookingDetails() {
       value: orderSummary?.total,
       items,
     });
-    createBooking({ ...bookingData, payment: { ...payment, method: 'stripe' } });
+    pixelInitiateCheckout({
+      currency: orderSummary?.currency?.toUpperCase(),
+      value: orderSummary?.total,
+      numItems: 1,
+    });
+    createBooking({
+      ...bookingData,
+      payment: { ...payment, method: 'stripe' },
+      metaAttribution: getMetaBrowserIds(),
+    });
   }
 
   return (

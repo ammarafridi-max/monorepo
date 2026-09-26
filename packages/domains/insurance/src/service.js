@@ -8,6 +8,8 @@ export function createInsuranceService({
   brevo,
   logger,
   notifications,
+  metaCapi,
+  frontendUrl,
 }) {
   const validateForm = (body) => {
     const { adults = 0, children = 0, seniors = 0 } = body.quantity || {};
@@ -99,6 +101,7 @@ export function createInsuranceService({
         ? application.toObject()
         : { ...application };
     delete payload.paymentSyncToken;
+    delete payload.metaAttribution;
     if (syncStatus) payload.syncStatus = syncStatus;
     return payload;
   };
@@ -232,6 +235,7 @@ export function createInsuranceService({
     premium,
     currency,
     paymentSyncToken,
+    metaAttribution,
   ) => {
     const normalizedAmount = premium != null ? Number(premium) : undefined;
     const normalizedCurrency =
@@ -248,6 +252,7 @@ export function createInsuranceService({
           paymentReturnStatus: "PENDING",
           paymentVerifiedAt: null,
           issuedAt: null,
+          ...(metaAttribution ? { metaAttribution } : {}),
           ...(normalizedAmount !== undefined && !Number.isNaN(normalizedAmount)
             ? {
                 amountPaid: {
@@ -268,6 +273,37 @@ export function createInsuranceService({
       );
 
     return application;
+  };
+
+  // Never throws: a Meta outage must not turn an issued policy into a failed confirmation.
+  const reportPurchaseToMeta = async (application) => {
+    if (!metaCapi?.isConfigured?.()) return;
+    const lead = application.passengers?.[0];
+    const phone = application.mobile?.code && application.mobile?.digits
+      ? `${application.mobile.code}${application.mobile.digits}`
+      : undefined;
+    try {
+      await metaCapi.trackPurchase({
+        eventId: `insurance:${application.sessionId}`,
+        eventTime: application.issuedAt ?? new Date(),
+        eventSourceUrl: frontendUrl ? `${frontendUrl}/insurance-booking/payment` : undefined,
+        value: application.amountPaid?.amount,
+        currency: application.amountPaid?.currency,
+        user: {
+          email: application.email,
+          phone,
+          firstName: lead?.firstName,
+          lastName: lead?.lastName,
+          externalId: application.email?.toLowerCase(),
+          clientIp: application.metaAttribution?.clientIp,
+          userAgent: application.metaAttribution?.userAgent,
+          fbp: application.metaAttribution?.fbp,
+          fbc: application.metaAttribution?.fbc,
+        },
+      });
+    } catch (err) {
+      logger?.warn("[insurance] Meta purchase event failed", { sessionId: application.sessionId, error: err.message });
+    }
   };
 
   const confirmDirectPayInsurance = async (
@@ -391,6 +427,8 @@ export function createInsuranceService({
     }
 
     await sendPolicyEmail(updated);
+
+    await reportPurchaseToMeta(updated);
 
     await notifications.insurancePaymentCompletionEmail({
       leadTraveler: updated?.leadPassenger,

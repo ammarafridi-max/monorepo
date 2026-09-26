@@ -59,6 +59,12 @@ const BookingSchema = new mongoose.Schema(
       currency: { type: String, default: 'AED' },
       transactionId: { type: String },
     },
+    metaAttribution: {
+      fbp: { type: String },
+      fbc: { type: String },
+      clientIp: { type: String },
+      userAgent: { type: String },
+    },
     orderSummary: {
       baseFare: { type: Number, default: 0 },
       distanceCharge: { type: Number, default: 0 },

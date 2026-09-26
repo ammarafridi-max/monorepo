@@ -22,6 +22,8 @@ export function useFinalizeInsurance() {
       city,
       country,
       currency,
+      fbp,
+      fbc,
     }) =>
       finalizeInsuranceApi({
         sessionId,
@@ -40,6 +42,8 @@ export function useFinalizeInsurance() {
         city,
         country,
         currency,
+        fbp,
+        fbc,
       }),
     onError: (err) => {
       toast.error(err.message || 'Something went wrong. Please try again.');

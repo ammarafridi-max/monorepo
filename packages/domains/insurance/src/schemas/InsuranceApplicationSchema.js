@@ -86,6 +86,12 @@ const InsuranceApplicationSchema = new mongoose.Schema(
     },
 
     transactionId:   { type: String, trim: true },
+    metaAttribution: {
+      fbp:       { type: String },
+      fbc:       { type: String },
+      clientIp:  { type: String },
+      userAgent: { type: String },
+    },
     reviewEmailSent: { type: Boolean, default: false },
     policyEmail: {
       status: { type: String, enum: ['NOT_SENT', 'SENT', 'FAILED'], default: 'NOT_SENT' },

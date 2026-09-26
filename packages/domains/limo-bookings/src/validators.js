@@ -61,6 +61,12 @@ export const createBookingSchema = z
         currency: z.string().optional(),
       })
       .optional(),
+    metaAttribution: z
+      .object({
+        fbp: z.string().max(200).optional(),
+        fbc: z.string().max(500).optional(),
+      })
+      .optional(),
     orderSummary: z
       .object({
         baseFare: z.number().optional(),
