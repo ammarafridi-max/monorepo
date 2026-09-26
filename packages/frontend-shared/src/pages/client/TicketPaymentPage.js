@@ -18,6 +18,7 @@ import UpsellCard from "../../components/shared/UpsellCard.js";
 import { useGetDummyTicket } from "../../hooks/dummy-tickets/useGetDummyTicket";
 import { useDummyTicketPricing } from "../../hooks/pricing/useDummyTicketPricing";
 import { formatAmount } from "../../utils/currency";
+import { pixelPurchase } from "../../utils/pixel";
 import { formatDate } from "../../utils/dates";
 import { getTicketPriceByValidity } from "../../utils/dummyTicketPricing";
 
@@ -146,6 +147,7 @@ function SuccessContent({ sessionId, dummyTicket, onPurchaseEvent, supportEmail,
         },
       ],
     });
+    pixelPurchase({ currency, value: amount, eventId: `dummy-ticket:${sessionId}` });
   }, [amount, currency, price, totalPassengers, sessionId, type, onPurchaseEvent]);
 
   useEffect(() => {

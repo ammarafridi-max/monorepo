@@ -163,6 +163,9 @@ importers:
       '@travel-suite/flights':
         specifier: workspace:*
         version: link:../../packages/domains/flights
+      '@travel-suite/meta-capi':
+        specifier: workspace:*
+        version: link:../../packages/integrations/meta-capi
       '@travel-suite/notifications':
         specifier: workspace:*
         version: link:../../packages/shared/notifications
@@ -1577,6 +1580,8 @@ importers:
       cloudinary:
         specifier: ^2.9.0
         version: 2.9.0
+
+  packages/integrations/meta-capi: {}
 
   packages/integrations/paypal: {}
 

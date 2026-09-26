@@ -71,7 +71,7 @@ function applyDeliveryDateFilter(queryObj, deliveryDate) {
   queryObj.paymentStatus = 'PAID';
 }
 
-export function createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, paypal, notifications, frontendUrl, brevo, reviewListId, paidOrderBus, reservationStorage, sendEmail }) {
+export function createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, paypal, notifications, frontendUrl, brevo, reviewListId, paidOrderBus, reservationStorage, sendEmail, metaCapi }) {
   // A price book set for the requested currency is the price. Fall back to FX
   // only when that currency has no book, otherwise the page would quote a local
   // price and the gateway would charge the converted one.
@@ -281,7 +281,14 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       targetCode: requestedCode,
     });
 
-    await Ticket.findOneAndUpdate({ sessionId }, { $set: { totalAmount, currency: currencyCode } });
+    const metaAttribution = {
+      fbp: typeof formData.fbp === 'string' ? formData.fbp.slice(0, 200) : undefined,
+      fbc: typeof formData.fbc === 'string' ? formData.fbc.slice(0, 500) : undefined,
+      clientIp: formData.clientIp,
+      userAgent: typeof formData.userAgent === 'string' ? formData.userAgent.slice(0, 500) : undefined,
+    };
+
+    await Ticket.findOneAndUpdate({ sessionId }, { $set: { totalAmount, currency: currencyCode, metaAttribution } });
 
     return stripe.checkout.sessions.create({
       mode: 'payment',
@@ -313,6 +320,37 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       success_url: `${frontendUrl}/booking/payment?sessionId=${sessionId}`,
       cancel_url: `${frontendUrl}/booking/review-details`,
     }, { idempotencyKey: sessionId });
+  };
+
+  // Never throws: a Meta outage must not fail the webhook and make Stripe resend a paid order.
+  const reportPurchaseToMeta = async (ticket) => {
+    if (!metaCapi?.isConfigured?.()) return;
+    const lead = ticket.passengers?.[0];
+    const phone = ticket.phoneNumber?.code && ticket.phoneNumber?.digits
+      ? `${ticket.phoneNumber.code}${ticket.phoneNumber.digits}`
+      : undefined;
+    try {
+      await metaCapi.trackPurchase({
+        eventId: `dummy-ticket:${ticket.sessionId}`,
+        eventTime: ticket.paidAt ?? new Date(),
+        eventSourceUrl: `${frontendUrl}/booking/payment`,
+        value: ticket.amountPaid?.amount,
+        currency: ticket.amountPaid?.currency,
+        user: {
+          email: ticket.email,
+          phone,
+          firstName: lead?.firstName,
+          lastName: lead?.lastName,
+          externalId: ticket.email?.toLowerCase(),
+          clientIp: ticket.metaAttribution?.clientIp,
+          userAgent: ticket.metaAttribution?.userAgent,
+          fbp: ticket.metaAttribution?.fbp,
+          fbc: ticket.metaAttribution?.fbc,
+        },
+      });
+    } catch (err) {
+      logger.warn('[tickets] Meta purchase event failed', { sessionId: ticket.sessionId, error: err.message });
+    }
   };
 
   const handleStripeSuccess = async (session) => {
@@ -398,6 +436,8 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       ticketDelivery: ticket.ticketDelivery,
     });
 
+    await reportPurchaseToMeta(ticket);
+
     try {
       await brevo?.addContactToReviewList?.({
         email: ticket.email,
@@ -431,7 +471,14 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       targetCode: 'USD',
     });
 
-    await Ticket.findOneAndUpdate({ sessionId }, { $set: { totalAmount, currency: currencyCode } });
+    const metaAttribution = {
+      fbp: typeof formData.fbp === 'string' ? formData.fbp.slice(0, 200) : undefined,
+      fbc: typeof formData.fbc === 'string' ? formData.fbc.slice(0, 500) : undefined,
+      clientIp: formData.clientIp,
+      userAgent: typeof formData.userAgent === 'string' ? formData.userAgent.slice(0, 500) : undefined,
+    };
+
+    await Ticket.findOneAndUpdate({ sessionId }, { $set: { totalAmount, currency: currencyCode, metaAttribution } });
 
     return paypal.createOrder({
       amount: totalAmount.toFixed(2),

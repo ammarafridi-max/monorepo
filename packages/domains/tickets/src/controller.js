@@ -99,7 +99,11 @@ export function createTicketController({ service, paidOrderBus }) {
 
   const createStripePaymentUrl = async (req, res, next) => {
     try {
-      const session = await service.createStripePaymentUrl(req.body);
+      const session = await service.createStripePaymentUrl({
+        ...req.body,
+        clientIp: req.ip,
+        userAgent: req.get('user-agent'),
+      });
       res.json({ status: 'success', data: session.url });
     } catch (err) {
       next(err);

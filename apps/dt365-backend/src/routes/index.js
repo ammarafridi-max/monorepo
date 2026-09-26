@@ -30,6 +30,7 @@ import {
 import { createPayPalClient } from "@travel-suite/paypal";
 import { db } from "../utils/db.js";
 import { createBrevoClient } from "@travel-suite/brevo";
+import { createMetaCapiClient } from "@travel-suite/meta-capi";
 import { sendEmail } from "../utils/email.js";
 import config from "../utils/config.js";
 import { logger } from "@travel-suite/utils";
@@ -143,6 +144,16 @@ if (config.paypal.clientId && config.paypal.clientSecret) {
 // -- Tickets -------------------------------------------------------------------
 // Reservation PDFs are uploaded to dt365/dummy-tickets/<sessionId>/reservation-file.pdf
 // on Cloudinary, then attached to the customer email by URL.
+const metaCapi = createMetaCapiClient({
+  pixelId: config.meta.pixelId,
+  accessToken: config.meta.capiAccessToken,
+  testEventCode: config.meta.testEventCode,
+  logger,
+});
+if (!metaCapi.isConfigured()) {
+  logger.warn("[meta-capi] Pixel ID or access token not configured — server-side purchase events disabled");
+}
+
 const reservationStorage = createCloudinaryStorage({
   cloudName: config.cloudinary.cloudName,
   apiKey: config.cloudinary.apiKey,
@@ -167,6 +178,7 @@ const {
   reviewListId: config.brevoTicketListId,
   reservationStorage,
   sendEmail,
+  metaCapi,
 });
 router.use("/tickets", ticketsRouter);
 router.use("/pricing", pricingRouter);

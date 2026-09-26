@@ -19,7 +19,7 @@ function getOrRegisterModel(conn, name, schema) {
   }
 }
 
-export function createTicketsRouter({ db, auth, stripe, paypal, notifications, frontendUrl, AffiliateModel, brevo, reviewListId, reservationStorage, sendEmail }) {
+export function createTicketsRouter({ db, auth, stripe, paypal, notifications, frontendUrl, AffiliateModel, brevo, reviewListId, reservationStorage, sendEmail, metaCapi }) {
   const Ticket = getOrRegisterModel(db, 'dummy-ticket', TicketSchema);
   const Affiliate = AffiliateModel ?? getOrRegisterModel(db, 'Affiliate', AffiliateSchema);
   const TicketPricing = getOrRegisterModel(db, 'dummy-ticket-pricing', TicketPricingSchema);
@@ -30,7 +30,7 @@ export function createTicketsRouter({ db, auth, stripe, paypal, notifications, f
 
   const paidOrderBus = createPaidOrderBus();
 
-  const service = createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, paypal, notifications, frontendUrl, brevo, reviewListId, paidOrderBus, reservationStorage, sendEmail });
+  const service = createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, paypal, notifications, frontendUrl, brevo, reviewListId, paidOrderBus, reservationStorage, sendEmail, metaCapi });
   const controller = createTicketController({ service, paidOrderBus });
   const router = createTicketRouter({ controller, auth });
 
