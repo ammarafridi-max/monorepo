@@ -1,28 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Script from 'next/script';
-import { GA_ID, CLARITY_ID, gaEnabled, clarityEnabled } from '../lib/analytics';
+import AnalyticsInit from '@travel-suite/frontend-shared/components/shared/AnalyticsInit';
+import { analyticsEnabled } from '../lib/analytics';
 
-// Where the visitor's cookie choice is remembered. localStorage (not a cookie) so
-// storing the choice itself sets nothing that would need consent.
-const CONSENT_KEY = 'picturesk.consent'; // 'granted' | 'denied'
+// localStorage rather than a cookie, so storing the choice sets nothing that would itself need consent.
+const CONSENT_KEY = 'picturesk.consent';
 
-// Loads analytics scripts ONLY for the providers configured at build time, and only
-// with the visitor's consent. Google Analytics 4 and Microsoft Clarity both set
-// cookies, so they sit behind an opt-in banner (applied to everyone, the strictest
-// common rule for an international audience). track() (lib/analytics.js) fans custom
-// funnel events out to whichever script ends up loaded; before consent those calls
-// are safe no-ops.
 export default function Analytics() {
-  const ga = gaEnabled();
-  const clarity = clarityEnabled();
+  const enabled = analyticsEnabled();
 
-  // Cookie-setting tools that require opt-in.
-  const needsConsent = ga || clarity;
-
-  // null = undecided (also the server-render value, so nothing consent-gated renders
-  // until the client has read the saved choice, avoiding a hydration mismatch).
+  // null until the client reads the saved choice, so the server render and hydration agree.
   const [consent, setConsent] = useState(null);
   const [ready, setReady] = useState(false);
 
@@ -41,32 +29,13 @@ export default function Analytics() {
     setConsent(value);
   }
 
-  if (!ga && !clarity) return null;
+  if (!enabled) return null;
 
-  const consented = consent === 'granted';
-  const showBanner = ready && needsConsent && consent === null;
+  const showBanner = ready && consent === null;
 
   return (
     <>
-      {/* GA4: cookie-based, loads only after opt-in. */}
-      {ga && consented && (
-        <>
-          <Script
-            src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-            strategy="afterInteractive"
-          />
-          <Script id="ga-init" strategy="afterInteractive">
-            {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_ID}');`}
-          </Script>
-        </>
-      )}
-
-      {/* Microsoft Clarity: session replay + heatmaps, cookie-based, loads only after opt-in. */}
-      {clarity && consented && (
-        <Script id="clarity-init" strategy="afterInteractive">
-          {`(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script","${CLARITY_ID}");`}
-        </Script>
-      )}
+      <AnalyticsInit enabled={consent === 'granted'} />
 
       {showBanner && (
         <div className="consent" role="dialog" aria-label="Cookie choices" aria-live="polite">

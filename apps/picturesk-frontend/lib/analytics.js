@@ -1,29 +1,11 @@
-// Funnel analytics: GA4 for counts and Microsoft Clarity for session replay. Both
-// set cookies, so components/Analytics.js loads them only after the visitor opts
-// in. Enabled ONLY when the matching NEXT_PUBLIC_* id is set at build time; unset
-// means no script loads and every track() below is a no-op, so local dev stays
-// clean with nothing phoning home.
-
-// GA4 measurement ID (G-XXXXXXXXXX). track() fans out to whichever script is present.
-export const GA_ID = process.env.NEXT_PUBLIC_GA_ID || '';
-
-// Microsoft Clarity project id. Same opt-in, build-time-inlined shape as GA4.
-// Clarity is session replay + heatmaps, NOT just counts: enabling it records
-// REPLAYS of real sessions, so anything sensitive (the face photos and email on
-// the upload/capture/pay pages) must be masked in the Clarity project's privacy
-// settings (and/or via data-clarity-mask on those elements).
-export const CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_ID || '';
-
-export function gaEnabled() {
-  return Boolean(GA_ID);
-}
-
-export function clarityEnabled() {
-  return Boolean(CLARITY_ID);
-}
-
+// Scripts load through the shared AnalyticsInit once the visitor consents (components/Analytics.js).
+// Clarity records session replays, so the face photos and email must stay masked in the Clarity project settings.
 export function analyticsEnabled() {
-  return gaEnabled() || clarityEnabled();
+  return Boolean(
+    process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID ||
+      process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID ||
+      process.env.NEXT_PUBLIC_META_PIXEL_ID,
+  );
 }
 
 /**

@@ -613,9 +613,9 @@ training.
 Two complementary tools, both **disabled by default** and both keeping **PII out of
 events** (no email, no image data, no order contents):
 
-- **GA4** (`NEXT_PUBLIC_GA_ID`): the funnel + the `purchase_completed` conversion,
+- **GA4** (`NEXT_PUBLIC_GA4_MEASUREMENT_ID`): the funnel + the `purchase_completed` conversion,
   imported into Google Ads.
-- **Microsoft Clarity** (`NEXT_PUBLIC_CLARITY_ID`): session replay + heatmaps, with
+- **Microsoft Clarity** (`NEXT_PUBLIC_CLARITY_PROJECT_ID`): session replay + heatmaps, with
   the face photos and email masked (`data-clarity-mask`) so a replay never records a
   customer's face.
 
