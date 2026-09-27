@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useGetBooking } from '@travel-suite/frontend-shared/hooks/bookings/useGetBooking';
 import { useUpdateBookingStatus } from '@travel-suite/frontend-shared/hooks/bookings/useUpdateBookingStatus';
+import AttributionCard from '@travel-suite/frontend-shared/components/admin/AttributionCard';
 
 const STATUSES = ['pending_payment', 'paid', 'confirmed', 'completed', 'cancelled'];
 
@@ -205,6 +206,10 @@ export default function AdminBookingDetailPage() {
             <InfoRow label="Booking ID" value={<span className="font-mono text-xs text-gray-500">{id}</span>} />
           </CardBody>
         </Card>
+
+        <div className="lg:col-span-2">
+          <AttributionCard attribution={booking.attribution} />
+        </div>
 
       </div>
     </div>

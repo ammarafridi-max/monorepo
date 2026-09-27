@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { attributionSchemaField } from '@travel-suite/utils';
 
 const { Schema, Types: { ObjectId } } = mongoose;
 
@@ -42,6 +43,7 @@ const visaLeadSchema = new Schema(
     },
     ipAddress: { type: String },
     userAgent: { type: String },
+    attribution: attributionSchemaField(),
 
     status: {
       type: String,

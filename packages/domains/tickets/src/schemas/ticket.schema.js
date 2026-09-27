@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { attributionSchemaField } from '@travel-suite/utils';
 import { v4 as uuidv4 } from 'uuid';
 
 const PassengerSchema = new mongoose.Schema({
@@ -60,6 +61,7 @@ const TicketSchema = new mongoose.Schema(
     affiliateId: { type: String, trim: true, default: null, match: [/^\d{9}$/, 'Affiliate ID must be exactly 9 digits'] },
     affiliateCapturedAt: { type: Date, default: null },
     affiliate: { type: mongoose.Schema.ObjectId, ref: 'Affiliate', default: null },
+    attribution: attributionSchemaField(),
     metaAttribution: {
       fbp: { type: String },
       fbc: { type: String },

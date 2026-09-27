@@ -1,4 +1,5 @@
 import { apiFetch, apiFetchPublic } from './apiClient.js';
+import { getAttribution } from '../utils/attribution.js';
 
 const URL = `/api/visa-leads`;
 
@@ -6,7 +7,7 @@ export function createVisaLeadApi(data) {
   return apiFetchPublic(`${URL}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
+    body: JSON.stringify({ ...data, attribution: getAttribution() }),
   });
 }
 

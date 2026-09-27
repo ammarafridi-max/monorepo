@@ -1,4 +1,5 @@
 import { apiFetch } from './apiClient.js';
+import { getAttribution } from '../utils/attribution.js';
 
 const URL = '/api/bookings';
 
@@ -45,7 +46,7 @@ export async function createBookingApi(bookingData) {
   return await apiFetch(URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(bookingData),
+    body: JSON.stringify({ ...bookingData, attribution: getAttribution() }),
   });
 }
 

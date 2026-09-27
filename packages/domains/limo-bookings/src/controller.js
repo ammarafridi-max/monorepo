@@ -1,4 +1,4 @@
-import { catchAsync } from '@travel-suite/utils';
+import { catchAsync, sanitizeAttribution } from '@travel-suite/utils';
 
 function redactForPublic(booking) {
   if (!booking) return booking;
@@ -14,6 +14,7 @@ function redactForPublic(booking) {
     handledBy: undefined,
     notes: undefined,
     metaAttribution: undefined,
+    attribution: undefined,
   };
 }
 
@@ -42,6 +43,7 @@ export function createBookingController({ service }) {
   const createBooking = catchAsync(async (req, res) => {
     const booking = await service.createBooking({
       ...req.validatedBody,
+      attribution: sanitizeAttribution(req.validatedBody.attribution),
       metaAttribution: {
         ...req.validatedBody.metaAttribution,
         clientIp: req.ip,

@@ -1,4 +1,5 @@
 import { apiFetch } from './apiClient.js';
+import { getAttribution } from '../utils/attribution.js';
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -52,6 +53,7 @@ export async function createInsuranceApplicationApi({
       addressLine2,
       city,
       country,
+      attribution: getAttribution(),
     }),
   });
 }

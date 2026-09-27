@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { initializeGA } from '../../utils/analytics';
 import { initializeClarity } from '../../utils/clarity';
 import { initializeMetaPixel } from '../../utils/pixel';
+import { captureAttribution } from '../../utils/attribution';
 
 export default function AnalyticsInit({ enabled = true }) {
   const pathname = usePathname();
@@ -12,6 +13,8 @@ export default function AnalyticsInit({ enabled = true }) {
 
   useEffect(() => {
     if (!enabled || isAdminRoute) return undefined;
+
+    captureAttribution();
 
     // GA4, Clarity and the Meta Pixel share one idle-time init so every brand gets all three from one mount.
     const init = () => {

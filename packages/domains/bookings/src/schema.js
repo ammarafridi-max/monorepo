@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { attributionSchemaField } from '@travel-suite/utils';
 
 const BookingSchema = new mongoose.Schema(
   {
@@ -32,6 +33,7 @@ const BookingSchema = new mongoose.Schema(
     },
     bookingRef:      { type: String },
     stripeSessionId: { type: String },
+    attribution:     attributionSchemaField(),
   },
   { timestamps: true },
 );

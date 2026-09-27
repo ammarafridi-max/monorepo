@@ -1,5 +1,5 @@
 import { randomBytes } from "crypto";
-import { AppError, coverEndDate } from "@travel-suite/utils";
+import { AppError, coverEndDate, sanitizeAttribution } from "@travel-suite/utils";
 
 export function createInsuranceService({
   InsuranceApplication,
@@ -102,6 +102,7 @@ export function createInsuranceService({
         : { ...application };
     delete payload.paymentSyncToken;
     delete payload.metaAttribution;
+    delete payload.attribution;
     if (syncStatus) payload.syncStatus = syncStatus;
     return payload;
   };
@@ -225,6 +226,7 @@ export function createInsuranceService({
       city: body.city,
       country: body.country,
       mobile: body.mobile,
+      attribution: sanitizeAttribution(body.attribution),
       paymentStatus: "UNPAID",
     });
   };

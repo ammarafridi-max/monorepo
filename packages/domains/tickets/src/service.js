@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
-import { AppError, logger } from '@travel-suite/utils';
+import { AppError, logger, sanitizeAttribution } from '@travel-suite/utils';
 
 const AFFILIATE_ATTRIBUTION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const AFFILIATE_CAPTURE_FUTURE_TOLERANCE_MS = 5 * 60 * 1000;
@@ -260,6 +260,7 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       affiliateId: affiliateDoc ? affiliateDoc.affiliateId : null,
       affiliateCapturedAt,
       affiliate: affiliateDoc ? affiliateDoc._id : null,
+      attribution: sanitizeAttribution(payload?.attribution),
     });
   };
 

@@ -1,4 +1,5 @@
 import { apiFetch, apiFetchPublic } from './apiClient.js';
+import { getAttribution } from '../utils/attribution.js';
 
 const BASE = '/api/bookings';
 
@@ -6,7 +7,7 @@ export async function createBookingApi({ trip, vehicle, passenger }) {
   return await apiFetchPublic(BASE, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ trip, vehicle, passenger }),
+    body: JSON.stringify({ trip, vehicle, passenger, attribution: getAttribution() }),
   });
 }
 

@@ -1,4 +1,4 @@
-import { AppError, logger } from '@travel-suite/utils';
+import { AppError, logger, sanitizeAttribution } from '@travel-suite/utils';
 import { validateItinerary, computeMainDestination, computeReturnHome } from './validation.js';
 import { isValidDateString, inclusiveDayCount } from './dates.js';
 
@@ -278,7 +278,8 @@ export function createItineraryService({
 
   async function createOrder(payload, ipAddress, files) {
     const input = normalizeInput(payload);
-    const order = await Order.create({ input, ipAddress, price, currency, status: 'GENERATING' });
+    const attribution = sanitizeAttribution(payload?.attribution);
+    const order = await Order.create({ input, ipAddress, attribution, price, currency, status: 'GENERATING' });
     runGeneration(order);
     if (files?.length) runSupportingDocsUpload(order.sessionId, files);
     return order;

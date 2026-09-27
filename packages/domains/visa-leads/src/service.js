@@ -1,5 +1,5 @@
 import { parsePhoneNumber } from 'libphonenumber-js';
-import { AppError } from '@travel-suite/utils';
+import { AppError, sanitizeAttribution } from '@travel-suite/utils';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const VALID_SOURCES = ['hero_cta', 'package_card', 'final_cta', 'sticky_bar', 'inline_cta'];
@@ -27,7 +27,7 @@ export function createVisaLeadService({ VisaLead, Visa, notificationsService, me
   const submitLead = async ({
     firstName, lastName, nationality, email, phone,
     packageRequested, applicantCount, visaSlug, source,
-    ipAddress, userAgent, fbp, fbc,
+    ipAddress, userAgent, fbp, fbc, attribution,
   }) => {
 
     if (!firstName?.trim()) throw new AppError('First name is required', 400);
@@ -68,6 +68,7 @@ export function createVisaLeadService({ VisaLead, Visa, notificationsService, me
       source,
       ipAddress,
       userAgent,
+      attribution: sanitizeAttribution(attribution),
     });
 
     if (notificationsService?.sendVisaLeadToAdmin) {

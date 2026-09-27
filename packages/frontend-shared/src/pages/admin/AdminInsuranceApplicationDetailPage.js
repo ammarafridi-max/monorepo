@@ -13,6 +13,7 @@ import { useUpdateInsuranceApplication } from '../../hooks/insurance/useUpdateIn
 import { useDeleteInsuranceApplication } from '../../hooks/insurance/useDeleteInsuranceApplication';
 import { useGetInsuranceDocuments } from '../../hooks/insurance/useGetInsuranceDocuments';
 import { useResendPolicyEmail } from '../../hooks/insurance/useResendPolicyEmail';
+import AttributionCard from '../../components/admin/AttributionCard';
 
 const PAYMENT_CFG = {
   PAID:     { dot: 'bg-green-500',  cls: 'bg-green-50   text-green-700   border-green-200'  },
@@ -393,6 +394,8 @@ export default function AdminInsuranceApplicationDetailPage() {
             <InfoRow label="Seniors" value={app.quantity?.seniors  ?? 0} />
             <InfoRow label="Total"   value={totalPassengers} />
           </Card>
+
+          <AttributionCard attribution={app.attribution} />
 
           <Card title="Record" icon={Hash}>
             <InfoRow label="Created"   value={fmtDatetime(app.createdAt)} />

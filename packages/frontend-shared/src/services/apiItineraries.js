@@ -1,4 +1,5 @@
 import { apiFetchPublic } from './apiClient.js';
+import { getAttribution } from '../utils/attribution.js';
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -7,7 +8,8 @@ const URL = '/api/itineraries';
 // Generation runs an AI call plus a server-side PDF render, so it needs a long timeout.
 const GENERATE_TIMEOUT_MS = 60_000;
 
-export async function createItineraryApi(input, files) {
+export async function createItineraryApi(data, files) {
+  const input = { ...data, attribution: getAttribution() };
   if (files && files.length) {
     const form = new FormData();
     form.append('data', JSON.stringify(input));

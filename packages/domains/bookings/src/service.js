@@ -16,7 +16,7 @@ export function createBookingService({ Booking, stripe }) {
     return { bookings, total, page, limit };
   }
 
-  async function createBooking({ trip, vehicle, passenger }) {
+  async function createBooking({ trip, vehicle, passenger, attribution }) {
     const resolved = resolveVehicle(vehicle);
     if (!resolved) throw new AppError('Unknown vehicle selection', 400);
     const trustedVehicle = {
@@ -25,7 +25,7 @@ export function createBookingService({ Booking, stripe }) {
       class: resolved.class,
       price: resolved.price,
     };
-    const booking = await Booking.create({ trip, vehicle: trustedVehicle, passenger });
+    const booking = await Booking.create({ trip, vehicle: trustedVehicle, passenger, attribution });
     return booking;
   }
 

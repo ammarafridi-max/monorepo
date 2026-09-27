@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { attributionSchemaField } from '@travel-suite/utils';
 
 const locationType = {
   type: String,
@@ -59,6 +60,7 @@ const BookingSchema = new mongoose.Schema(
       currency: { type: String, default: 'AED' },
       transactionId: { type: String },
     },
+    attribution: attributionSchemaField(),
     metaAttribution: {
       fbp: { type: String },
       fbc: { type: String },

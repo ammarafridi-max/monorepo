@@ -19,6 +19,7 @@ import { useGetBooking } from '../../hooks/limo-bookings/useGetBooking';
 import { useUpdateBooking } from '../../hooks/limo-bookings/useUpdateBooking';
 import { useDeleteBooking } from '../../hooks/limo-bookings/useDeleteBooking';
 import { useRefundBooking } from '../../hooks/limo-bookings/useRefundBooking';
+import AttributionCard from '../../components/admin/AttributionCard';
 
 const STATUSES = [
   'pending',
@@ -310,6 +311,10 @@ export default function AdminLimoBookingDetailPage() {
             />
           </CardBody>
         </Card>
+
+        <div className="lg:col-span-2">
+          <AttributionCard attribution={booking.attribution} />
+        </div>
       </div>
     </div>
   );

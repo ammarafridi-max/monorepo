@@ -12,6 +12,7 @@ import { useItineraryOrderDetail } from '../../hooks/itineraries/useItineraryOrd
 import { useDeleteItineraryOrder } from '../../hooks/itineraries/useDeleteItineraryOrder';
 import { convertToDubaiDate, convertToDubaiTime } from '../../utils/dates';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
+import AttributionCard from '../../components/admin/AttributionCard';
 
 const PAYMENT_CFG = {
   PAID:     { dot: 'bg-green-500', cls: 'bg-green-50 text-green-700 border-green-200' },
@@ -350,6 +351,8 @@ export default function AdminItineraryDetailPage() {
               )}
             </div>
           </Card>
+
+          <AttributionCard attribution={order.attribution} />
 
           <Card title="Record" icon={Hash}>
             <InfoRow label="Status" value={order.status} />

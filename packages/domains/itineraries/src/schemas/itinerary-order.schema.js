@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { attributionSchemaField } from '@travel-suite/utils';
 import { v4 as uuidv4 } from 'uuid';
 
 const PlaceSchema = new mongoose.Schema(
@@ -114,6 +115,7 @@ const ItineraryOrderSchema = new mongoose.Schema(
     paidAt: { type: Date, default: null },
 
     ipAddress: { type: String, default: null },
+    attribution: attributionSchemaField(),
     lastError: { type: String, default: null },
   },
   { timestamps: true },

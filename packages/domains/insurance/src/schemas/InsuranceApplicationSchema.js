@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { attributionSchemaField } from '@travel-suite/utils';
 import { v4 as uuidv4 } from 'uuid';
 
 const PassengerSchema = new mongoose.Schema(
@@ -86,6 +87,7 @@ const InsuranceApplicationSchema = new mongoose.Schema(
     },
 
     transactionId:   { type: String, trim: true },
+    attribution: attributionSchemaField(),
     metaAttribution: {
       fbp:       { type: String },
       fbc:       { type: String },

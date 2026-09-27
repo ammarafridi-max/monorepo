@@ -14,6 +14,7 @@ import { useAddVisaLeadNote }        from '../../hooks/visa-leads/useAddVisaLead
 import { useDeleteVisaLead }         from '../../hooks/visa-leads/useDeleteVisaLead.js';
 import { useGetAdminUsers }          from '../../hooks/admin-users/useGetAdminUsers.js';
 import { useAdminAuth }              from '../../contexts/AdminAuthContext.js';
+import AttributionCard from '../../components/admin/AttributionCard';
 
 const STATUSES = ['new', 'contacted', 'qualified', 'converted', 'lost'];
 
@@ -408,6 +409,8 @@ export default function AdminVisaLeadDetailPage() {
         </div>
 
         <div className="space-y-4">
+
+          <AttributionCard attribution={lead.attribution} />
 
           <Card>
             <CardHeader>Status</CardHeader>

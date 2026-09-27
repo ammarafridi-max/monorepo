@@ -1,4 +1,4 @@
-import { catchAsync, AppError } from '@travel-suite/utils';
+import { catchAsync, AppError, sanitizeAttribution } from '@travel-suite/utils';
 
 function redactForPublic(booking) {
   if (!booking) return booking;
@@ -9,6 +9,7 @@ function redactForPublic(booking) {
     ...b,
     passenger: { firstName, flightNumber },
     stripeSessionId: undefined,
+    attribution: undefined,
   };
 }
 
@@ -37,7 +38,12 @@ export function createBookingController({ service }) {
     if (!trip || !vehicle || !passenger) {
       return next(new AppError('Missing required booking data', 400));
     }
-    const booking = await service.createBooking({ trip, vehicle, passenger });
+    const booking = await service.createBooking({
+      trip,
+      vehicle,
+      passenger,
+      attribution: sanitizeAttribution(req.body.attribution),
+    });
     res.status(201).json({ status: 'success', data: booking });
   });
 
