@@ -10,6 +10,10 @@ export const revalidate = 3600;
 const staticPages = [
   { url: '/', changeFrequency: 'weekly', priority: 1.0 },
   { url: '/in', changeFrequency: 'weekly', priority: 0.9 },
+  { url: '/ca', changeFrequency: 'weekly', priority: 0.9 },
+  { url: '/ae', changeFrequency: 'weekly', priority: 0.9 },
+  { url: '/uk', changeFrequency: 'weekly', priority: 0.9 },
+  { url: '/sa', changeFrequency: 'weekly', priority: 0.9 },
   { url: '/dummy-ticket-australia-visa', changeFrequency: 'monthly', priority: 0.9 },
   { url: '/dummy-ticket-canada-visa', changeFrequency: 'monthly', priority: 0.9 },
   { url: '/dummy-ticket-japan-visa', changeFrequency: 'monthly', priority: 0.9 },

@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { usePathname } from 'next/navigation';
+import { localeCurrency } from '@/lib/locales';
 import { HelpCircle, Mail, Plane, Rss } from 'lucide-react';
 import { CurrencyProvider } from '@travel-suite/frontend-shared/contexts/CurrencyContext';
 import { TicketProvider } from '@travel-suite/frontend-shared/contexts/TicketContext';
@@ -71,8 +72,7 @@ const flightItineraryPages = [
 export default function Providers({ children }) {
   const pathname = usePathname();
   const isAdminRoute = pathname?.startsWith('/admin');
-  // The locale variant exists to show rupees, so it seeds the switcher.
-  const defaultCurrency = pathname === '/in' || pathname?.startsWith('/in/') ? 'INR' : undefined;
+  const defaultCurrency = localeCurrency(pathname);
   const headerOnDark = !LIGHT_HEADER_ROUTES.some((route) => pathname?.startsWith(route));
   const [queryClient] = useState(
     () =>
