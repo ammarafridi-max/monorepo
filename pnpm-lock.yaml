@@ -169,6 +169,9 @@ importers:
       '@travel-suite/notifications':
         specifier: workspace:*
         version: link:../../packages/shared/notifications
+      '@travel-suite/openai-capi':
+        specifier: workspace:*
+        version: link:../../packages/integrations/openai-capi
       '@travel-suite/payments':
         specifier: workspace:*
         version: link:../../packages/domains/payments
@@ -480,6 +483,9 @@ importers:
       '@travel-suite/notifications':
         specifier: workspace:*
         version: link:../../packages/shared/notifications
+      '@travel-suite/openai-capi':
+        specifier: workspace:*
+        version: link:../../packages/integrations/openai-capi
       '@travel-suite/payments':
         specifier: workspace:*
         version: link:../../packages/domains/payments
@@ -1594,6 +1600,8 @@ importers:
         version: 2.9.0
 
   packages/integrations/meta-capi: {}
+
+  packages/integrations/openai-capi: {}
 
   packages/integrations/paypal: {}
 

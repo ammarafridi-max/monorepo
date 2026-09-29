@@ -1,6 +1,6 @@
 const TOUCH_KEYS = [
   'source', 'medium', 'campaign', 'term', 'content',
-  'gclid', 'gbraid', 'wbraid', 'fbclid', 'msclkid', 'ttclid',
+  'gclid', 'gbraid', 'wbraid', 'fbclid', 'msclkid', 'ttclid', 'oppref',
   'landingPage', 'referrer',
 ];
 

@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { initializeGA } from '../../utils/analytics';
 import { initializeClarity } from '../../utils/clarity';
 import { initializeMetaPixel } from '../../utils/pixel';
+import { initializeOpenAIPixel } from '../../utils/openaiPixel';
 import { captureAttribution } from '../../utils/attribution';
 
 export default function AnalyticsInit({ enabled = true }) {
@@ -16,11 +17,12 @@ export default function AnalyticsInit({ enabled = true }) {
 
     captureAttribution();
 
-    // GA4, Clarity and the Meta Pixel share one idle-time init so every brand gets all three from one mount.
+    // Every analytics and ad pixel shares one idle-time init so a brand gets them all from one mount.
     const init = () => {
       initializeGA();
       initializeClarity();
       initializeMetaPixel();
+      initializeOpenAIPixel();
     };
 
     if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {

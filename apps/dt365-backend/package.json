@@ -16,6 +16,7 @@
     "@travel-suite/blog": "workspace:*",
     "@travel-suite/brevo": "workspace:*",
     "@travel-suite/meta-capi": "workspace:*",
+    "@travel-suite/openai-capi": "workspace:*",
     "@travel-suite/cloudinary": "workspace:*",
     "@travel-suite/conversations": "workspace:*",
     "@travel-suite/currencies": "workspace:*",

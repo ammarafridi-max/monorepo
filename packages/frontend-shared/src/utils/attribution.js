@@ -13,6 +13,7 @@ const PARAMS = {
   fbclid: 'fbclid',
   msclkid: 'msclkid',
   ttclid: 'ttclid',
+  oppref: 'oppref',
 };
 
 // Returning from a payment or sign-in page must not overwrite the touch that brought the customer in.
@@ -89,6 +90,7 @@ export function describeChannel(touch) {
   if (touch.gclid || touch.gbraid || touch.wbraid) return 'Google Ads';
   if (touch.msclkid) return 'Microsoft Ads';
   if (touch.ttclid) return 'TikTok Ads';
+  if (touch.oppref) return 'ChatGPT Ads';
   if (touch.fbclid && PAID_MEDIUMS.test(touch.medium || '')) return 'Meta Ads';
   if (touch.source) {
     const paid = PAID_MEDIUMS.test(touch.medium || '');

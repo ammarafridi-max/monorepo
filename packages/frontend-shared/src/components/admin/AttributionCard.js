@@ -10,6 +10,7 @@ const CLICK_IDS = [
   ['fbclid', 'Meta click ID'],
   ['msclkid', 'Microsoft click ID'],
   ['ttclid', 'TikTok click ID'],
+  ['oppref', 'ChatGPT ad click ID'],
 ];
 
 function fmtDatetime(value) {

@@ -31,6 +31,7 @@ import { createPayPalClient } from "@travel-suite/paypal";
 import { db } from "../utils/db.js";
 import { createBrevoClient } from "@travel-suite/brevo";
 import { createMetaCapiClient } from "@travel-suite/meta-capi";
+import { createOpenAICapiClient } from "@travel-suite/openai-capi";
 import { sendEmail } from "../utils/email.js";
 import config from "../utils/config.js";
 import { logger } from "@travel-suite/utils";
@@ -154,6 +155,15 @@ if (!metaCapi.isConfigured()) {
   logger.warn("[meta-capi] Pixel ID or access token not configured — server-side purchase events disabled");
 }
 
+const openaiCapi = createOpenAICapiClient({
+  pixelId: config.openai.pixelId,
+  apiKey: config.openai.capiApiKey,
+  logger,
+});
+if (!openaiCapi.isConfigured()) {
+  logger.warn("[openai-capi] Pixel ID or API key not configured — server-side order events disabled");
+}
+
 const reservationStorage = createCloudinaryStorage({
   cloudName: config.cloudinary.cloudName,
   apiKey: config.cloudinary.apiKey,
@@ -179,6 +189,7 @@ const {
   reservationStorage,
   sendEmail,
   metaCapi,
+  openaiCapi,
 });
 router.use("/tickets", ticketsRouter);
 router.use("/pricing", pricingRouter);

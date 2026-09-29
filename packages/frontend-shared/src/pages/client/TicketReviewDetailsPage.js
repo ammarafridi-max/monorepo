@@ -22,6 +22,7 @@ import { usePayPalOrder } from '../../hooks/dummy-tickets/usePayPalOrder';
 import { useDummyTicketPricing } from '../../hooks/pricing/useDummyTicketPricing';
 import { formatAmount } from '../../utils/currency';
 import { getMetaBrowserIds, pixelInitiateCheckout } from '../../utils/pixel';
+import { getOpenAIBrowserIds, openaiCheckoutStarted } from '../../utils/openaiPixel';
 import { formatDate } from '../../utils/dates';
 import { getTicketPriceByValidity } from '../../utils/dummyTicketPricing';
 import PageLoader from '../../components/ui/v1/PageLoader';
@@ -98,10 +99,11 @@ export default function TicketReviewDetailsPage({ onBeginCheckout, enablePayPal 
       items: [{ item_name: `${type} flight reservation`, price: ticketPrice, quantity: totalQuantity }],
     });
     pixelInitiateCheckout({ currency: currencyCode, value: totalAmount, numItems: totalQuantity });
+    openaiCheckoutStarted({ currency: currencyCode, value: totalAmount });
     if (enablePayPal && paymentMethod === 'paypal') {
       createPayPalOrder({ sessionId });
     } else {
-      createStripePayment({ ...dummyTicket, totalAmount, currencyCode, ...getMetaBrowserIds() });
+      createStripePayment({ ...dummyTicket, totalAmount, currencyCode, ...getMetaBrowserIds(), ...getOpenAIBrowserIds() });
     }
   };
 

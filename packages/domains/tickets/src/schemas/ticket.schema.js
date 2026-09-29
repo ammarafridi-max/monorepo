@@ -62,6 +62,10 @@ const TicketSchema = new mongoose.Schema(
     affiliateCapturedAt: { type: Date, default: null },
     affiliate: { type: mongoose.Schema.ObjectId, ref: 'Affiliate', default: null },
     attribution: attributionSchemaField(),
+    openaiAttribution: {
+      oppref: { type: String },
+      obref: { type: String },
+    },
     metaAttribution: {
       fbp: { type: String },
       fbc: { type: String },

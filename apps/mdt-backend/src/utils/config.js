@@ -53,6 +53,11 @@ export default {
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
   },
 
+  openai: {
+    pixelId: process.env.OPENAI_PIXEL_ID,
+    capiApiKey: process.env.OPENAI_CAPI_API_KEY,
+  },
+
   meta: {
     pixelId: process.env.META_PIXEL_ID,
     capiAccessToken: process.env.META_CAPI_ACCESS_TOKEN,

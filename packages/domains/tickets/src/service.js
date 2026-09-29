@@ -71,7 +71,7 @@ function applyDeliveryDateFilter(queryObj, deliveryDate) {
   queryObj.paymentStatus = 'PAID';
 }
 
-export function createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, paypal, notifications, frontendUrl, brevo, reviewListId, paidOrderBus, reservationStorage, sendEmail, metaCapi }) {
+export function createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, paypal, notifications, frontendUrl, brevo, reviewListId, paidOrderBus, reservationStorage, sendEmail, metaCapi, openaiCapi }) {
   // A price book set for the requested currency is the price. Fall back to FX
   // only when that currency has no book, otherwise the page would quote a local
   // price and the gateway would charge the converted one.
@@ -288,8 +288,12 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       clientIp: formData.clientIp,
       userAgent: typeof formData.userAgent === 'string' ? formData.userAgent.slice(0, 500) : undefined,
     };
+    const openaiAttribution = {
+      oppref: typeof formData.oppref === 'string' ? formData.oppref.slice(0, 500) : undefined,
+      obref: typeof formData.obref === 'string' ? formData.obref.slice(0, 200) : undefined,
+    };
 
-    await Ticket.findOneAndUpdate({ sessionId }, { $set: { totalAmount, currency: currencyCode, metaAttribution } });
+    await Ticket.findOneAndUpdate({ sessionId }, { $set: { totalAmount, currency: currencyCode, metaAttribution, openaiAttribution } });
 
     return stripe.checkout.sessions.create({
       mode: 'payment',
@@ -323,7 +327,36 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     }, { idempotencyKey: sessionId });
   };
 
-  // Never throws: a Meta outage must not fail the webhook and make Stripe resend a paid order.
+  // Neither ad report throws: a platform outage must not fail the webhook and make Stripe resend a paid order.
+  const reportPurchaseToOpenAI = async (ticket) => {
+    if (!openaiCapi?.isConfigured?.()) return;
+    const lead = ticket.passengers?.[0];
+    try {
+      await openaiCapi.trackOrder({
+        eventId: `dummy-ticket:${ticket.sessionId}`,
+        eventTime: ticket.paidAt ?? new Date(),
+        sourceUrl: `${frontendUrl}/booking/payment`,
+        value: ticket.amountPaid?.amount,
+        currency: ticket.amountPaid?.currency,
+        user: {
+          email: ticket.email,
+          phone: ticket.phoneNumber?.code && ticket.phoneNumber?.digits
+            ? `${ticket.phoneNumber.code}${ticket.phoneNumber.digits}`
+            : undefined,
+          firstName: lead?.firstName,
+          lastName: lead?.lastName,
+          externalId: ticket.email?.toLowerCase(),
+          clientIp: ticket.metaAttribution?.clientIp,
+          userAgent: ticket.metaAttribution?.userAgent,
+          oppref: ticket.openaiAttribution?.oppref,
+          obref: ticket.openaiAttribution?.obref,
+        },
+      });
+    } catch (err) {
+      logger.warn('[tickets] OpenAI order event failed', { sessionId: ticket.sessionId, error: err.message });
+    }
+  };
+
   const reportPurchaseToMeta = async (ticket) => {
     if (!metaCapi?.isConfigured?.()) return;
     const lead = ticket.passengers?.[0];
@@ -438,6 +471,7 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     });
 
     await reportPurchaseToMeta(ticket);
+    await reportPurchaseToOpenAI(ticket);
 
     try {
       await brevo?.addContactToReviewList?.({
@@ -478,8 +512,12 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       clientIp: formData.clientIp,
       userAgent: typeof formData.userAgent === 'string' ? formData.userAgent.slice(0, 500) : undefined,
     };
+    const openaiAttribution = {
+      oppref: typeof formData.oppref === 'string' ? formData.oppref.slice(0, 500) : undefined,
+      obref: typeof formData.obref === 'string' ? formData.obref.slice(0, 200) : undefined,
+    };
 
-    await Ticket.findOneAndUpdate({ sessionId }, { $set: { totalAmount, currency: currencyCode, metaAttribution } });
+    await Ticket.findOneAndUpdate({ sessionId }, { $set: { totalAmount, currency: currencyCode, metaAttribution, openaiAttribution } });
 
     return paypal.createOrder({
       amount: totalAmount.toFixed(2),
