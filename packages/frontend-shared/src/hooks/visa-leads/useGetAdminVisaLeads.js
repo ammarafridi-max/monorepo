@@ -3,11 +3,11 @@ import { useQuery } from '@tanstack/react-query';
 import { getAdminVisaLeadsApi } from '../../services/apiVisaLeads.js';
 
 export function useGetAdminVisaLeads(filters = {}, options = {}) {
-  const { page = 1, limit = 20, status, visaSlug, nationality, assignedTo, dateFrom, dateTo, search } = filters;
+  const { page = 1, limit = 20, status, visaSlug, nationality, assignedTo, dateFrom, dateTo, search, channel } = filters;
 
   const { data, isLoading: isLoadingLeads, isError: isErrorLeads, refetch } = useQuery({
-    queryKey: ['visa-leads', 'admin', { page, limit, status, visaSlug, nationality, assignedTo, dateFrom, dateTo, search }],
-    queryFn: () => getAdminVisaLeadsApi({ page, limit, status, visaSlug, nationality, assignedTo, dateFrom, dateTo, search }),
+    queryKey: ['visa-leads', 'admin', { page, limit, status, visaSlug, nationality, assignedTo, dateFrom, dateTo, search, channel }],
+    queryFn: () => getAdminVisaLeadsApi({ page, limit, status, visaSlug, nationality, assignedTo, dateFrom, dateTo, search, channel }),
     refetchInterval: 30_000,
     ...options,
   });

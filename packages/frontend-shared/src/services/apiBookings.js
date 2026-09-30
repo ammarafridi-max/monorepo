@@ -28,9 +28,10 @@ export async function createBookingCheckoutApi({ vehicle, passenger, bookingId, 
   });
 }
 
-export async function listBookingsApi({ page = 1, limit = 20, status } = {}) {
+export async function listBookingsApi({ page = 1, limit = 20, status, channel } = {}) {
   const qs = new URLSearchParams({ page: String(page), limit: String(limit) });
   if (status) qs.set('status', status);
+  if (channel) qs.set('channel', channel);
   return await apiFetch(`${BASE}?${qs}`);
 }
 

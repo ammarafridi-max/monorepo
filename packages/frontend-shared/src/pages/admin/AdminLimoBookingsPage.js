@@ -9,8 +9,12 @@ import {
   ChevronRight,
   Loader2,
   MapPin,
+  Megaphone,
 } from 'lucide-react';
 import { useGetBookings } from '../../hooks/limo-bookings/useGetBookings';
+import FilterMenu from '../../components/admin/FilterMenu';
+import SourceBadge from '../../components/admin/SourceBadge';
+import { CHANNEL_OPTIONS } from '../../utils/attribution';
 
 function fmtDate(iso) {
   if (!iso) return '—';
@@ -56,9 +60,10 @@ function PaymentPill({ status }) {
 
 export default function AdminLimoBookingsPage() {
   const [page, setPage] = useState(1);
+  const [channel, setChannel] = useState('');
   const limit = 20;
 
-  const { bookings = [], isLoadingBookings } = useGetBookings({ page, limit });
+  const { bookings = [], isLoadingBookings } = useGetBookings({ page, limit, channel });
 
   return (
     <div className="max-w-7xl mx-auto space-y-5">
@@ -69,12 +74,21 @@ export default function AdminLimoBookingsPage() {
             {bookings.length} {bookings.length === 1 ? 'booking' : 'bookings'} on this page
           </p>
         </div>
-        <Link
-          href="/admin/bookings/calendar"
-          className="flex items-center gap-2 bg-primary-700 hover:bg-primary-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors"
-        >
-          <CalendarDays size={14} /> Calendar
-        </Link>
+        <div className="flex items-center gap-4">
+          <FilterMenu
+            value={channel}
+            onChange={(value) => { setChannel(value); setPage(1); }}
+            options={[{ value: '', label: 'All sources' }, ...CHANNEL_OPTIONS]}
+            label="Filter by source"
+            icon={Megaphone}
+          />
+          <Link
+            href="/admin/bookings/calendar"
+            className="flex items-center gap-2 bg-primary-700 hover:bg-primary-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors"
+          >
+            <CalendarDays size={14} /> Calendar
+          </Link>
+        </div>
       </div>
 
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
@@ -88,18 +102,18 @@ export default function AdminLimoBookingsPage() {
               <Car size={22} className="text-gray-400" />
             </div>
             <div>
-              <p className="text-sm font-bold text-gray-600">No bookings yet</p>
+              <p className="text-sm font-bold text-gray-600">{channel ? 'No bookings from this source' : 'No bookings yet'}</p>
               <p className="text-xs text-gray-400 mt-1">
-                Bookings will appear here once customers make them.
+                {channel ? 'Try another source.' : 'Bookings will appear here once customers make them.'}
               </p>
             </div>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[760px]">
+            <table className="w-full text-sm min-w-[900px]">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50/60">
-                  {['Booking', 'Trip', 'Amount'].map((h, i) => (
+                  {['Booking', 'Trip', 'Source', 'Amount'].map((h, i) => (
                     <th
                       key={i}
                       className={`text-[11px] font-bold text-gray-400 uppercase tracking-wide px-4 py-3 whitespace-nowrap ${
@@ -160,6 +174,10 @@ export default function AdminLimoBookingsPage() {
                             {b.vehicle?.brand} {b.vehicle?.model}
                           </div>
                         </div>
+                      </td>
+
+                      <td className="px-4 py-3 align-top">
+                        <SourceBadge attribution={b.attribution} />
                       </td>
 
                       <td className="px-4 py-3 align-top">

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Plane, ChevronLeft, ChevronRight, Loader2, ArrowUpRight, Download, Trash2,
-  ClipboardList, CalendarDays,
+  ClipboardList, CalendarDays, Megaphone,
 } from 'lucide-react';
 import { useItineraryOrders } from '../../hooks/itineraries/useItineraryOrders';
 import { useDeleteItineraryOrder } from '../../hooks/itineraries/useDeleteItineraryOrder';
@@ -14,6 +14,8 @@ import { convertToDubaiDate } from '../../utils/dates';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 import AdminSearchInput from '../../components/admin/AdminSearchInput';
 import FilterMenu from '../../components/admin/FilterMenu';
+import SourceBadge from '../../components/admin/SourceBadge';
+import { CHANNEL_OPTIONS } from '../../utils/attribution';
 
 const PAYMENT_OPTIONS = [
   { value: '',       label: 'All payments' },
@@ -92,6 +94,7 @@ function ItinerariesContent() {
   const paymentFilter = searchParams.get('paymentStatus') ?? '';
   const statusFilter  = searchParams.get('status')        ?? '';
   const createdAt     = searchParams.get('createdAt')     ?? 'all_time';
+  const channel       = searchParams.get('channel')       ?? '';
   const totalPages    = pagination?.totalPages            ?? 1;
   const total         = pagination?.total                 ?? 0;
 
@@ -147,6 +150,13 @@ function ItinerariesContent() {
           label="Filter by date"
           icon={CalendarDays}
         />
+        <FilterMenu
+          value={channel}
+          onChange={(value) => setParam('channel', value)}
+          options={[{ value: '', label: 'All sources' }, ...CHANNEL_OPTIONS]}
+          label="Filter by source"
+          icon={Megaphone}
+        />
       </div>
 
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
@@ -174,10 +184,10 @@ function ItinerariesContent() {
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm min-w-[900px]">
+              <table className="w-full text-sm min-w-[1000px]">
                 <thead>
                   <tr className="border-b border-gray-100 bg-gray-50/60">
-                    {['Traveller', 'Email', 'Applying To', 'Route', 'Travel Dates', 'Status', 'Payment', 'Amount', 'Created', ''].map((hd, i) => (
+                    {['Traveller', 'Email', 'Applying To', 'Route', 'Travel Dates', 'Status', 'Payment', 'Amount', 'Source', 'Created', ''].map((hd, i) => (
                       <th key={i} className="text-left text-xs font-bold text-gray-400 uppercase tracking-wide px-4 py-3 whitespace-nowrap">
                         {hd}
                       </th>
@@ -234,6 +244,10 @@ function ItinerariesContent() {
 
                         <td className="px-4 py-3 text-sm text-gray-700 font-semibold whitespace-nowrap">
                           {fmtAmount(item)}
+                        </td>
+
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <SourceBadge attribution={item?.attribution} />
                         </td>
 
                         <td className="px-4 py-3 text-sm text-gray-400 whitespace-nowrap">

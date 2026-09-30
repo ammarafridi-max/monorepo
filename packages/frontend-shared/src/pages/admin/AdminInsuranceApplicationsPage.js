@@ -19,6 +19,8 @@ import { useDeleteInsuranceApplication } from "../../hooks/insurance/useDeleteIn
 import { useCreateNationalities } from "../../hooks/insurance/useCreateNationalities";
 import { useGetInsuranceApplicationsSummary } from "../../hooks/insurance/useGetInsuranceApplicationsSummary";
 import AdminSearchInput from '../../components/admin/AdminSearchInput';
+import SourceBadge from '../../components/admin/SourceBadge';
+import { CHANNEL_OPTIONS } from '../../utils/attribution';
 
 const PAYMENT_TABS = [
   { value: "", label: "All" },
@@ -143,11 +145,13 @@ function ApplicationsContent() {
   const urlPayment = searchParams.get("paymentStatus") || "";
   const urlJourney = searchParams.get("journeyType") || "";
   const urlCreatedAt = searchParams.get("createdAt") ?? "all_time";
+  const urlChannel = searchParams.get("channel") ?? "";
 
   const [localSearch, setLocalSearch] = useState(urlSearch);
   const [localPayment, setLocalPayment] = useState(urlPayment);
   const [localJourney, setLocalJourney] = useState(urlJourney);
   const [localCreatedAt, setLocalCreatedAt] = useState(urlCreatedAt);
+  const [localChannel, setLocalChannel] = useState(urlChannel);
 
   const [filtersOpen, setFiltersOpen] = useState(false);
 
@@ -155,6 +159,7 @@ function ApplicationsContent() {
   useEffect(() => setLocalPayment(urlPayment), [urlPayment]);
   useEffect(() => setLocalJourney(urlJourney), [urlJourney]);
   useEffect(() => setLocalCreatedAt(urlCreatedAt), [urlCreatedAt]);
+  useEffect(() => setLocalChannel(urlChannel), [urlChannel]);
 
   function pushParams(p) {
     p.delete("page");
@@ -190,6 +195,7 @@ function ApplicationsContent() {
     localPayment !== "",
     localJourney !== "",
     localCreatedAt !== "all_time",
+    localChannel !== "",
   ].filter(Boolean).length;
 
   const selectCls =
@@ -232,6 +238,24 @@ function ApplicationsContent() {
           </option>
         ),
       )}
+    </select>
+  );
+
+  const sourceControl = (className = "") => (
+    <select
+      value={localChannel}
+      onChange={(e) => {
+        setLocalChannel(e.target.value);
+        setParam("channel", e.target.value);
+      }}
+      className={`${selectCls} ${className}`}
+    >
+      <option value="">All sources</option>
+      {CHANNEL_OPTIONS.map(({ value, label }) => (
+        <option key={value} value={value}>
+          {label}
+        </option>
+      ))}
     </select>
   );
 
@@ -402,6 +426,13 @@ function ApplicationsContent() {
               {timeControl("w-full")}
             </div>
 
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                Source
+              </label>
+              {sourceControl("w-full")}
+            </div>
+
             <button
               onClick={() => setFiltersOpen(false)}
               className="w-full py-2.5 text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 rounded-xl transition"
@@ -434,7 +465,7 @@ function ApplicationsContent() {
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm min-w-[860px]">
+              <table className="w-full text-sm min-w-[960px]">
                 <thead>
                   <tr className="border-b border-gray-100 bg-gray-50/60">
                     {[
@@ -445,6 +476,7 @@ function ApplicationsContent() {
                       "Dates",
                       "Amount",
                       "Status",
+                      "Source",
                       "Created",
                       "",
                     ].map((h, i) => (
@@ -499,6 +531,10 @@ function ApplicationsContent() {
 
                       <td className="px-4 py-3 whitespace-nowrap">
                         <PaymentBadge status={app.paymentStatus} />
+                      </td>
+
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <SourceBadge attribution={app.attribution} />
                       </td>
 
                       <td className="px-4 py-3 text-sm text-gray-400 whitespace-nowrap">

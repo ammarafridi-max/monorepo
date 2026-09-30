@@ -1,7 +1,7 @@
 'use client';
 
 import { Megaphone } from 'lucide-react';
-import { describeChannel } from '../../utils/attribution';
+import { CHANNEL_LABELS, describeChannel } from '../../utils/attribution';
 
 const CLICK_IDS = [
   ['gclid', 'Google click ID'],
@@ -39,7 +39,7 @@ function Touch({ heading, touch }) {
         <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">{heading}</p>
         <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border bg-primary-50 text-primary-700 border-primary-200">
           <span className="w-1.5 h-1.5 rounded-full bg-primary-500" />
-          {describeChannel(touch)}
+          {CHANNEL_LABELS[touch.channel] ?? describeChannel(touch)}
         </span>
       </div>
       <Row label="Source" value={touch.source} />

@@ -1,5 +1,5 @@
 import { parsePhoneNumber } from 'libphonenumber-js';
-import { AppError, sanitizeAttribution } from '@travel-suite/utils';
+import { AppError, sanitizeAttribution, attributionChannelFilter } from '@travel-suite/utils';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const VALID_SOURCES = ['hero_cta', 'package_card', 'final_cta', 'sticky_bar', 'inline_cta'];
@@ -129,11 +129,11 @@ export function createVisaLeadService({ VisaLead, Visa, notificationsService, me
 
   const getAdminLeads = async ({
     page, limit, status, visaSlug, nationality, assignedTo,
-    dateFrom, dateTo, search,
+    dateFrom, dateTo, search, channel,
   }) => {
     let currentPage = Math.max(1, parseInt(page, 10) || 1);
     const pageSize  = Math.max(1, Math.min(100, parseInt(limit, 10) || 20));
-    const filter = {};
+    const filter = { ...attributionChannelFilter(channel) };
 
     if (status && status !== 'all') {
       if (!VALID_STATUSES.includes(status)) throw new AppError(`Invalid status filter`, 400);

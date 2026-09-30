@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { AppError, catchAsync } from '@travel-suite/utils';
+import { AppError, catchAsync, attributionChannelFilter } from '@travel-suite/utils';
 
 function escapeRegex(value = '') {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -8,10 +8,10 @@ function escapeRegex(value = '') {
 function buildApplicationsFilter(query = {}) {
   const queryObj = { ...query };
   const { createdAt, search } = queryObj;
-  ['page', 'limit', 'search', 'createdAt'].forEach((f) => delete queryObj[f]);
+  ['page', 'limit', 'search', 'createdAt', 'channel'].forEach((f) => delete queryObj[f]);
   Object.keys(queryObj).forEach((k) => queryObj[k] === 'all' && delete queryObj[k]);
 
-  const filter = { ...queryObj };
+  const filter = { ...queryObj, ...attributionChannelFilter(query.channel) };
 
   if (createdAt && createdAt !== 'all_time') {
     const now = new Date();

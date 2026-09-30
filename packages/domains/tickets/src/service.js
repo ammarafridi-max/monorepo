@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
-import { AppError, logger, sanitizeAttribution } from '@travel-suite/utils';
+import { AppError, logger, sanitizeAttribution, attributionChannelFilter } from '@travel-suite/utils';
 
 const AFFILIATE_ATTRIBUTION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const AFFILIATE_CAPTURE_FUTURE_TOLERANCE_MS = 5 * 60 * 1000;
@@ -91,9 +91,10 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
 
   const getAllTickets = async (query) => {
     const queryObj = { ...query };
-    ['page', 'limit', 'search', 'createdAt', 'deliveryDate'].forEach((f) => delete queryObj[f]);
+    ['page', 'limit', 'search', 'createdAt', 'deliveryDate', 'channel'].forEach((f) => delete queryObj[f]);
     Object.keys(queryObj).forEach((k) => queryObj[k] === 'all' && delete queryObj[k]);
     applyDeliveryDateFilter(queryObj, query.deliveryDate);
+    Object.assign(queryObj, attributionChannelFilter(query.channel));
     // On a paid-only list, "recent" means recently paid, not recently created: someone can start an order at 1pm and pay at 6pm.
     const paidOnly = queryObj.paymentStatus === 'PAID';
     const recency = buildRecencyFilter(query.createdAt, paidOnly);

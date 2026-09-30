@@ -3,15 +3,15 @@ import { useQuery } from '@tanstack/react-query';
 import { listBookingsApi } from '../../services/apiBookings.js';
 
 export function useGetBookings(params = {}) {
-  const { page, limit, status } = params;
+  const { page, limit, status, channel } = params;
 
   const {
     data,
     isLoading: isLoadingBookings,
     isError: isErrorBookings,
   } = useQuery({
-    queryKey: ['bookings', 'list', { page, limit, status }],
-    queryFn: () => listBookingsApi({ page, limit, status }),
+    queryKey: ['bookings', 'list', { page, limit, status, channel }],
+    queryFn: () => listBookingsApi({ page, limit, status, channel }),
     placeholderData: (prev) => prev,
   });
 

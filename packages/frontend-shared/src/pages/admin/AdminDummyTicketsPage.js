@@ -16,6 +16,8 @@ import { convertToDubaiDate } from '../../utils/dates';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 import AdminSearchInput from '../../components/admin/AdminSearchInput';
 import FilterMenu from '../../components/admin/FilterMenu';
+import SourceBadge from '../../components/admin/SourceBadge';
+import { CHANNEL_OPTIONS } from '../../utils/attribution';
 
 const PAYMENT_TABS = [
   { value: '',       label: 'All'      },
@@ -92,12 +94,14 @@ function DummyTicketsContent({ basePath, heading, itemNoun }) {
   const urlSearch       = searchParams.get('search')               ?? '';
   const urlDeliveryDate = searchParams.get('deliveryDate')         ?? '';
   const urlCreatedAt    = searchParams.get('createdAt')            ?? 'all_time';
+  const urlChannel      = searchParams.get('channel')              ?? '';
 
   const [localSearch,       setLocalSearch]       = useState(urlSearch);
   const [localPayment,      setLocalPayment]      = useState(urlPayment);
   const [localOrder,        setLocalOrder]        = useState(urlOrder);
   const [localCreatedAt,    setLocalCreatedAt]    = useState(urlCreatedAt);
   const [localDeliveryDate, setLocalDeliveryDate] = useState(urlDeliveryDate);
+  const [localChannel,      setLocalChannel]      = useState(urlChannel);
 
   const [filtersOpen, setFiltersOpen] = useState(false);
 
@@ -106,6 +110,7 @@ function DummyTicketsContent({ basePath, heading, itemNoun }) {
   useEffect(() => { setLocalOrder(urlOrder);               }, [urlOrder]);
   useEffect(() => { setLocalCreatedAt(urlCreatedAt);       }, [urlCreatedAt]);
   useEffect(() => { setLocalDeliveryDate(urlDeliveryDate); }, [urlDeliveryDate]);
+  useEffect(() => { setLocalChannel(urlChannel);           }, [urlChannel]);
 
   // Agents are locked to the last 4 hours unless searching; the backend enforces the same rule.
   const hasSearch       = localSearch.trim().length > 0;
@@ -159,6 +164,7 @@ function DummyTicketsContent({ basePath, heading, itemNoun }) {
     localOrder !== '',
     !agentTimeLocked && localCreatedAt !== 'all_time',
     localDeliveryDate !== '',
+    localChannel !== '',
   ].filter(Boolean).length;
 
   const selectCls = 'px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white';
@@ -184,6 +190,19 @@ function DummyTicketsContent({ basePath, heading, itemNoun }) {
     >
       <option value="">All orders</option>
       {ORDER_TABS.filter(({ value }) => value !== '').map(({ value, label }) => (
+        <option key={value} value={value}>{label}</option>
+      ))}
+    </select>
+  );
+
+  const sourceControl = (className = '') => (
+    <select
+      value={localChannel}
+      onChange={(e) => { setLocalChannel(e.target.value); setParam('channel', e.target.value); }}
+      className={`${selectCls} ${className}`}
+    >
+      <option value="">All sources</option>
+      {CHANNEL_OPTIONS.map(({ value, label }) => (
         <option key={value} value={value}>{label}</option>
       ))}
     </select>
@@ -289,6 +308,13 @@ function DummyTicketsContent({ basePath, heading, itemNoun }) {
               ...ORDER_TABS.filter(({ value }) => value !== ''),
             ]}
           />
+          <FilterMenu
+            variant="text"
+            value={localChannel}
+            onChange={(value) => { setLocalChannel(value); setParam('channel', value); }}
+            label="Filter by source"
+            options={[{ value: '', label: 'All sources' }, ...CHANNEL_OPTIONS]}
+          />
           {agentTimeLocked ? (
             <span
               className="text-sm font-medium text-gray-600"
@@ -358,6 +384,11 @@ function DummyTicketsContent({ basePath, heading, itemNoun }) {
             </div>
 
             <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Source</label>
+              {sourceControl('w-full')}
+            </div>
+
+            <div className="space-y-1.5">
               <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Time</label>
               {timeControl('w-full')}
             </div>
@@ -402,10 +433,10 @@ function DummyTicketsContent({ basePath, heading, itemNoun }) {
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm min-w-[900px]">
+              <table className="w-full text-sm min-w-[1000px]">
                 <thead>
                   <tr className="border-b border-gray-100 bg-gray-50/60">
-                    {['Passenger', 'Email', 'Route', 'Type', 'Delivery', 'Handled By', 'Payment', 'Order', 'Date', ''].map((h, i) => (
+                    {['Passenger', 'Email', 'Route', 'Type', 'Delivery', 'Handled By', 'Payment', 'Order', 'Source', 'Date', ''].map((h, i) => (
                       <th key={i} className="text-left text-xs font-bold text-gray-400 uppercase tracking-wide px-4 py-3 whitespace-nowrap">
                         {h}
                       </th>
@@ -464,6 +495,10 @@ function DummyTicketsContent({ basePath, heading, itemNoun }) {
 
                       <td className="px-4 py-3 whitespace-nowrap">
                         <OrderBadge status={item?.orderStatus} />
+                      </td>
+
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <SourceBadge attribution={item?.attribution} />
                       </td>
 
                       <td className="px-4 py-3 text-sm text-gray-400 whitespace-nowrap">

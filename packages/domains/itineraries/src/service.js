@@ -1,4 +1,4 @@
-import { AppError, logger, sanitizeAttribution } from '@travel-suite/utils';
+import { AppError, logger, sanitizeAttribution, attributionChannelFilter } from '@travel-suite/utils';
 import { validateItinerary, computeMainDestination, computeReturnHome } from './validation.js';
 import { isValidDateString, inclusiveDayCount } from './dates.js';
 
@@ -352,6 +352,7 @@ export function createItineraryService({
     if (query.paymentStatus && query.paymentStatus !== 'all') queryObj.paymentStatus = query.paymentStatus;
     if (query.status && query.status !== 'all') queryObj.status = query.status;
     applyItineraryCreatedAtFilter(queryObj, query.createdAt);
+    Object.assign(queryObj, attributionChannelFilter(query.channel));
     const finalQuery = { ...queryObj, ...itinerarySearchFilter(query.search) };
 
     let page = Math.max(1, parseInt(query.page, 10) || 1);

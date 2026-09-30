@@ -35,11 +35,11 @@ export function createVisaLeadController({ service }) {
   const getAdminLeads = catchAsync(async (req, res) => {
     const {
       page = 1, limit = 20, status, visaSlug, nationality,
-      assignedTo, dateFrom, dateTo, search,
+      assignedTo, dateFrom, dateTo, search, channel,
     } = req.query;
 
     const result = await service.getAdminLeads({
-      page, limit, status, visaSlug, nationality, assignedTo, dateFrom, dateTo, search,
+      page, limit, status, visaSlug, nationality, assignedTo, dateFrom, dateTo, search, channel,
     });
 
     res.status(200).json({

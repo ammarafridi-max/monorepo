@@ -1,4 +1,4 @@
-import { AppError } from '@travel-suite/utils';
+import { AppError, attributionChannelFilter } from '@travel-suite/utils';
 import { resolveVehicle } from './catalog.js';
 
 function generateBookingRef() {
@@ -6,8 +6,8 @@ function generateBookingRef() {
 }
 
 export function createBookingService({ Booking, stripe }) {
-  async function listBookings({ page = 1, limit = 20, status } = {}) {
-    const filter = status ? { status } : {};
+  async function listBookings({ page = 1, limit = 20, status, channel } = {}) {
+    const filter = { ...(status ? { status } : {}), ...attributionChannelFilter(channel) };
     const skip = (page - 1) * limit;
     const [bookings, total] = await Promise.all([
       Booking.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),

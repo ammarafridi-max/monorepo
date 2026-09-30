@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Loader2, Inbox, ChevronLeft, ChevronRight, Stamp, UserCheck,
+  Loader2, Inbox, ChevronLeft, ChevronRight, Stamp, UserCheck, Megaphone,
 } from 'lucide-react';
 import { useGetAdminVisaLeads } from '../../hooks/visa-leads/useGetAdminVisaLeads.js';
 import { useGetAdminVisas }     from '../../hooks/visa/useGetAdminVisas.js';
@@ -11,6 +11,8 @@ import { useGetAdminUsers }     from '../../hooks/admin-users/useGetAdminUsers.j
 import Link from 'next/link';
 import AdminSearchInput from '../../components/admin/AdminSearchInput';
 import FilterMenu from '../../components/admin/FilterMenu';
+import SourceBadge from '../../components/admin/SourceBadge';
+import { CHANNEL_OPTIONS } from '../../utils/attribution';
 
 const STATUSES = ['new', 'contacted', 'qualified', 'converted', 'lost'];
 
@@ -95,6 +97,14 @@ function Filters({ filters, setFilters, visas = [], adminUsers = [] }) {
         ]}
       />
 
+      <FilterMenu
+        value={filters.channel || 'all'}
+        onChange={(value) => set('channel', value)}
+        icon={Megaphone}
+        label="Filter by source"
+        options={[{ value: 'all', label: 'All sources' }, ...CHANNEL_OPTIONS]}
+      />
+
       <div className="flex items-center gap-1.5 shrink-0">
         <input
           type="date"
@@ -118,7 +128,7 @@ function Filters({ filters, setFilters, visas = [], adminUsers = [] }) {
 
 const DEFAULT_FILTERS = {
   page: 1, limit: 25, status: 'all', visaSlug: 'all',
-  nationality: '', assignedTo: 'all', dateFrom: '', dateTo: '', search: '',
+  nationality: '', assignedTo: 'all', dateFrom: '', dateTo: '', search: '', channel: 'all',
 };
 
 export default function AdminVisaLeadsPage() {
@@ -135,6 +145,7 @@ export default function AdminVisaLeadsPage() {
     dateFrom:   filters.dateFrom || undefined,
     dateTo:     filters.dateTo   || undefined,
     search:     filters.search.trim() || undefined,
+    channel:    filters.channel !== 'all' ? filters.channel : undefined,
   });
 
   const { visas = [] } = useGetAdminVisas({ limit: 100 });
@@ -194,10 +205,10 @@ export default function AdminVisaLeadsPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[900px]">
+            <table className="w-full text-sm min-w-[1000px]">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50/60">
-                  {['Name', 'Nationality', 'Visa', 'Package', 'Status', 'Assigned to', 'Submitted', ''].map((h, i) => (
+                  {['Name', 'Nationality', 'Visa', 'Package', 'Status', 'Source', 'Assigned to', 'Submitted', ''].map((h, i) => (
                     <th key={i} className="text-left text-[11px] font-bold text-gray-400 uppercase tracking-wide px-4 py-3 whitespace-nowrap">
                       {h}
                     </th>
@@ -252,6 +263,10 @@ export default function AdminVisaLeadsPage() {
 
                       <td className="px-4 py-3 whitespace-nowrap">
                         <StatusBadge status={lead.status} />
+                      </td>
+
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <SourceBadge attribution={lead.attribution} />
                       </td>
 
                       <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">

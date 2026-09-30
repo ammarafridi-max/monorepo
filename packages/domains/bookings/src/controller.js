@@ -18,7 +18,8 @@ export function createBookingController({ service }) {
     const page  = Math.max(1, parseInt(req.query.page)  || 1);
     const limit = Math.min(100, parseInt(req.query.limit) || 20);
     const status = req.query.status || undefined;
-    const result = await service.listBookings({ page, limit, status });
+    const channel = typeof req.query.channel === 'string' ? req.query.channel : undefined;
+    const result = await service.listBookings({ page, limit, status, channel });
     res.json({ status: 'success', data: result });
   });
 

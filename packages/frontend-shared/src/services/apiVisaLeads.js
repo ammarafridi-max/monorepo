@@ -21,6 +21,7 @@ export function getAdminVisaLeadsApi({
   dateFrom,
   dateTo,
   search,
+  channel,
 } = {}) {
   const params = new URLSearchParams({ page, limit });
   if (status && status !== 'all')       params.append('status', status);
@@ -30,6 +31,7 @@ export function getAdminVisaLeadsApi({
   if (dateFrom)                          params.append('dateFrom', dateFrom);
   if (dateTo)                            params.append('dateTo', dateTo);
   if (search)                            params.append('search', search);
+  if (channel)                           params.append('channel', channel);
   return apiFetch(`${URL}/admin/list?${params.toString()}`);
 }
 

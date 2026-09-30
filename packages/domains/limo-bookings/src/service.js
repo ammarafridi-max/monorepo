@@ -1,5 +1,5 @@
 import { randomBytes } from 'crypto';
-import { AppError } from '@travel-suite/utils';
+import { AppError, attributionChannelFilter } from '@travel-suite/utils';
 
 function idOf(ref) {
   const id = ref?._id ?? ref;
@@ -24,11 +24,11 @@ export function createBookingService({ Booking, stripe, frontendUrl, pricing }) 
       vehicleId: idOf(booking?.vehicle),
     });
 
-  const getBookings = async ({ page = 1, limit = 20 } = {}) => {
+  const getBookings = async ({ page = 1, limit = 20, channel } = {}) => {
     const currentPage = Number(page) * 1 || 1;
     const perPage = Number(limit) * 1 || 20;
     const skip = (currentPage - 1) * perPage;
-    const bookings = await Booking.find().sort({ createdAt: -1 }).skip(skip).limit(perPage);
+    const bookings = await Booking.find(attributionChannelFilter(channel)).sort({ createdAt: -1 }).skip(skip).limit(perPage);
     return { bookings, page: currentPage };
   };
 

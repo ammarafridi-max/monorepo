@@ -110,3 +110,27 @@ export function describeChannel(touch) {
   for (const [key, name] of Object.entries(SOCIAL)) if (host === key || host.split('.').includes(key)) return `${name} (social)`;
   return `Referral: ${host}`;
 }
+
+export const CHANNEL_LABELS = {
+  google_ads: 'Google Ads',
+  meta_ads: 'Meta Ads',
+  chatgpt_ads: 'ChatGPT Ads',
+  microsoft_ads: 'Microsoft Ads',
+  tiktok_ads: 'TikTok Ads',
+  other_paid: 'Other paid',
+  organic_search: 'Organic search',
+  ai_assistant: 'AI assistants',
+  social: 'Social',
+  email: 'Email',
+  referral: 'Referral',
+  other_campaign: 'Other campaign',
+  direct: 'Direct',
+};
+
+export const CHANNEL_OPTIONS = Object.entries(CHANNEL_LABELS).map(([value, label]) => ({ value, label }));
+
+export function sourceLabel(attribution) {
+  const last = attribution?.last ?? attribution?.first;
+  if (!last) return null;
+  return CHANNEL_LABELS[last.channel] ?? describeChannel(last);
+}

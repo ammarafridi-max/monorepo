@@ -8,8 +8,12 @@ import {
   ChevronRight,
   Loader2,
   MapPin,
+  Megaphone,
 } from 'lucide-react';
 import { useGetBookings } from '@travel-suite/frontend-shared/hooks/bookings/useGetBookings';
+import FilterMenu from '@travel-suite/frontend-shared/components/admin/FilterMenu';
+import SourceBadge from '@travel-suite/frontend-shared/components/admin/SourceBadge';
+import { CHANNEL_OPTIONS } from '@travel-suite/frontend-shared/utils/attribution';
 
 const STATUSES = ['all', 'pending_payment', 'paid', 'confirmed', 'completed', 'cancelled'];
 
@@ -48,11 +52,13 @@ const LIMIT = 20;
 export default function AdminBookingsPage() {
   const [page, setPage]     = useState(1);
   const [filter, setFilter] = useState('all');
+  const [channel, setChannel] = useState('');
 
   const { bookings, total, isLoadingBookings } = useGetBookings({
     page,
     limit: LIMIT,
     status: filter === 'all' ? undefined : filter,
+    channel: channel || undefined,
   });
 
   function handleFilter(s) {
@@ -71,21 +77,30 @@ export default function AdminBookingsPage() {
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {STATUSES.map((s) => (
-          <button
-            key={s}
-            onClick={() => handleFilter(s)}
-            className={[
-              'rounded-xl border px-3.5 py-1.5 text-xs font-bold capitalize transition-colors',
-              filter === s
-                ? 'border-primary-600 bg-primary-600 text-white'
-                : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700',
-            ].join(' ')}
-          >
-            {s === 'all' ? 'All' : (STATUS_CFG[s]?.label ?? s)}
-          </button>
-        ))}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap gap-2">
+          {STATUSES.map((s) => (
+            <button
+              key={s}
+              onClick={() => handleFilter(s)}
+              className={[
+                'rounded-xl border px-3.5 py-1.5 text-xs font-bold capitalize transition-colors',
+                filter === s
+                  ? 'border-primary-600 bg-primary-600 text-white'
+                  : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700',
+              ].join(' ')}
+            >
+              {s === 'all' ? 'All' : (STATUS_CFG[s]?.label ?? s)}
+            </button>
+          ))}
+        </div>
+        <FilterMenu
+          value={channel}
+          onChange={(value) => { setChannel(value); setPage(1); }}
+          options={[{ value: '', label: 'All sources' }, ...CHANNEL_OPTIONS]}
+          label="Filter by source"
+          icon={Megaphone}
+        />
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
@@ -99,14 +114,14 @@ export default function AdminBookingsPage() {
               <Car size={22} className="text-gray-400" />
             </div>
             <p className="text-sm font-bold text-gray-600">No bookings found</p>
-            <p className="text-xs text-gray-400">Try a different status filter.</p>
+            <p className="text-xs text-gray-400">Try a different status or source filter.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] text-sm">
+            <table className="w-full min-w-[880px] text-sm">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50/60">
-                  {['Ref', 'Customer', 'Trip', 'Date booked', 'Status', 'Amount'].map((h, i) => (
+                  {['Ref', 'Customer', 'Trip', 'Date booked', 'Status', 'Source', 'Amount'].map((h, i) => (
                     <th
                       key={i}
                       className={`px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-gray-400 ${h === 'Amount' ? 'text-right' : 'text-left'}`}
@@ -161,6 +176,9 @@ export default function AdminBookingsPage() {
                       </td>
                       <td className="px-4 py-3">
                         <StatusPill status={b.status} />
+                      </td>
+                      <td className="px-4 py-3">
+                        <SourceBadge attribution={b.attribution} />
                       </td>
                       <td className="px-4 py-3 text-right whitespace-nowrap">
                         <span className="font-semibold text-gray-900">
