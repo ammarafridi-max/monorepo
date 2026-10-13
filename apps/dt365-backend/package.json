@@ -15,12 +15,16 @@
     "@travel-suite/auth": "workspace:*",
     "@travel-suite/blog": "workspace:*",
     "@travel-suite/brevo": "workspace:*",
-    "@travel-suite/meta-capi": "workspace:*",
-    "@travel-suite/openai-capi": "workspace:*",
     "@travel-suite/cloudinary": "workspace:*",
     "@travel-suite/conversations": "workspace:*",
     "@travel-suite/currencies": "workspace:*",
     "@travel-suite/flights": "workspace:*",
+    "@travel-suite/hotel-bookings": "workspace:^",
+    "@travel-suite/liteapi": "workspace:^",
+    "@travel-suite/meta-capi": "workspace:*",
+    "@travel-suite/openai-ads": "workspace:*",
+    "@travel-suite/openai-ads-admin": "workspace:*",
+    "@travel-suite/openai-capi": "workspace:*",
     "@travel-suite/notifications": "workspace:*",
     "@travel-suite/payments": "workspace:*",
     "@travel-suite/paypal": "workspace:*",
@@ -36,7 +40,6 @@
     "helmet": "8.1",
     "mongoose": "^9.0.2"
   },
-  "devDependencies": {},
   "engines": {
     "node": "22.x"
   }

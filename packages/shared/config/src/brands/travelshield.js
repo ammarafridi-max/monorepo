@@ -18,7 +18,7 @@ const travelshield = {
   features: {
     dummyTickets: false,
     insurance: true,
-    hotelVouchers: false,
+    hotelBookings: false,
   },
   seo: {
     titleTemplate: '%s | TravelShield',

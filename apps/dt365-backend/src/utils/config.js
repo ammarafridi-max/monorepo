@@ -58,6 +58,8 @@ export default {
   openai: {
     pixelId: process.env.OPENAI_PIXEL_ID,
     capiApiKey: process.env.OPENAI_CAPI_API_KEY,
+    adsApiKey: process.env.OPENAI_ADS_API_KEY,
+    adsMaxDailyBudget: parseNumber(process.env.OPENAI_ADS_MAX_DAILY_BUDGET, 200),
   },
 
   meta: {
@@ -70,6 +72,10 @@ export default {
     clientId: process.env.PAYPAL_CLIENT_ID,
     clientSecret: process.env.PAYPAL_CLIENT_SECRET,
     mode: process.env.PAYPAL_MODE ?? 'sandbox',
+  },
+
+  liteapi: {
+    apiKey: process.env.LITEAPI_API_KEY,
   },
 
 };

@@ -33,6 +33,14 @@ export const JOBS = {
     // Reads the backend to compute the schedule even when it writes nothing.
     dryRunEnv: [],
   },
+  'hotel-cancellations': {
+    describe: 'Cancel refundable hotel reservations before their free window closes',
+    module: join(JOBS_DIR, 'hotel-cancellations', 'index.mjs'),
+    needsTarget: false,
+    env: ['MONGO_URI', 'LITEAPI_API_KEY', 'BREVO_API_KEY'],
+    // A dry run still reads the database and the deadlines; it only skips cancelling and emailing.
+    dryRunEnv: ['MONGO_URI'],
+  },
   'pricing-sync': {
     describe: 'Sync limo pricing rules from the Google Sheet',
     module: join(JOBS_DIR, 'pricing-sync', 'index.mjs'),

@@ -18,7 +18,7 @@ const thedt = {
   features: {
     dummyTickets: true,
     insurance: true,
-    hotelVouchers: false,
+    hotelBookings: false,
   },
   seo: {
     titleTemplate: '%s | The Dummy Ticket AE',

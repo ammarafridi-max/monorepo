@@ -40,13 +40,13 @@ export async function apiFetch(path, options = {}) {
   return await returnData(res);
 }
 
-export async function apiFetchPublic(path, options = {}) {
+export async function apiFetchPublic(path, { timeoutMs = 8000, ...options } = {}) {
   const res = await fetch(`${BACKEND}${path}`, {
     ...options,
     headers: {
       ...(options.headers || {}),
     },
-    signal: options.signal ?? AbortSignal.timeout(8000),
+    signal: options.signal ?? AbortSignal.timeout(timeoutMs),
   });
 
   await checkError(res);

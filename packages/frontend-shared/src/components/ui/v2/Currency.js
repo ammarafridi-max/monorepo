@@ -6,9 +6,12 @@ import { useCurrency } from '../../../contexts/CurrencyContext.js';
 
 export default function Currency({ className = 'hidden sm:block' }) {
   const { currencies = [], selectedCurrency: currency, setCurrency } = useCurrency();
-  // A brand with no currency switcher renders nothing rather than an empty menu.
-  if (!currencies?.length) return null;
   const [open, setOpen] = useState(false);
+
+  // A brand with no currency switcher renders nothing rather than an empty menu.
+  // This has to stay below every hook: currencies arrive asynchronously, so an
+  // early return above them changes the hook count between renders.
+  if (!currencies?.length) return null;
 
   return (
     <div className={`relative ${className}`}>

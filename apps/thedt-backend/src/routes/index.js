@@ -28,6 +28,7 @@ import {
 import { db } from "../utils/db.js";
 import { wis } from "../utils/wis.js";
 import { createBrevoClient } from "@travel-suite/brevo";
+import { createMetaCapiClient } from "@travel-suite/meta-capi";
 import { sendEmail } from "../utils/email.js";
 import { insurancePaymentCompletionEmail, policyIssuedEmail } from "../notifications/insurance.js";
 import config from "../utils/config.js";
@@ -96,6 +97,16 @@ const airlineLogoStorage = createCloudinaryStorage({
 router.use("/flights", createFlightRouter({ db, airlabs, serpapi, auth, logoStorage: airlineLogoStorage }));
 router.use("/airports", createAirportsRouter({ airlabs }));
 
+const metaCapi = createMetaCapiClient({
+  pixelId: config.meta.pixelId,
+  accessToken: config.meta.capiAccessToken,
+  testEventCode: config.meta.testEventCode,
+  logger,
+});
+if (!metaCapi.isConfigured()) {
+  logger.warn("[meta-capi] Pixel ID or access token not configured — server-side purchase events disabled");
+}
+
 // -- Insurance -----------------------------------------------------------------
 router.use(
   "/insurance",
@@ -106,6 +117,8 @@ router.use(
     auth,
     Affiliate: AffiliateModel,
     notifications: { insurancePaymentCompletionEmail, policyIssuedEmail },
+    metaCapi,
+    frontendUrl: config.frontendUrl,
   }),
 );
 
@@ -163,6 +176,7 @@ const {
   reviewListId: config.brevoTicketListId,
   reservationStorage,
   sendEmail,
+  metaCapi,
 });
 router.use("/tickets", ticketsRouter);
 router.use("/pricing", pricingRouter);

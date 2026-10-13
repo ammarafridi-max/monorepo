@@ -8,6 +8,10 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.117.1",
+    "@travel-suite/brevo": "workspace:*",
+    "@travel-suite/config": "workspace:*",
+    "@travel-suite/hotel-bookings": "workspace:*",
+    "@travel-suite/liteapi": "workspace:*",
     "@travel-suite/pricing-rules": "workspace:*",
     "@travel-suite/vehicles": "workspace:*",
     "@travel-suite/zones": "workspace:*",

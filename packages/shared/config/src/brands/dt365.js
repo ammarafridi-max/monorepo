@@ -18,7 +18,7 @@ const dt365 = {
   features: {
     dummyTickets: true,
     insurance: false,
-    hotelVouchers: false,
+    hotelBookings: true,
   },
   seo: {
     titleTemplate: '%s | Dummy Ticket 365',

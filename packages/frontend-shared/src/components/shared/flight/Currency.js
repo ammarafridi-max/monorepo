@@ -7,12 +7,15 @@ import { useOutsideClick } from '../../../hooks/general/useOutsideClick.js';
 
 export default function Currency({ onDark = false }) {
   const { selectedCurrency, currencies, setCurrency } = useCurrency();
-  // A brand with no currency switcher renders nothing rather than an empty menu.
-  if (!currencies?.length) return null;
   const [showCurrencies, setShowCurrencies] = useState(false);
   const wrapperRef = useRef(null);
 
   useOutsideClick(wrapperRef, () => setShowCurrencies(false));
+
+  // A brand with no currency switcher renders nothing rather than an empty menu.
+  // This has to stay below every hook: currencies arrive asynchronously, so an
+  // early return above them changes the hook count between renders.
+  if (!currencies?.length) return null;
 
   return (
     <div className="relative" ref={wrapperRef}>

@@ -18,7 +18,7 @@ const mdt = {
   features: {
     dummyTickets: true,
     insurance: true,
-    hotelVouchers: false,
+    hotelBookings: false,
   },
   seo: {
     titleTemplate: '%s | My Dummy Ticket',

@@ -3,7 +3,7 @@ const REQUIRED_STRINGS = [
 ];
 const REQUIRED_EMAILS = ['from', 'support', 'noReply'];
 const REQUIRED_THEME = ['primaryColor', 'accentColor'];
-const REQUIRED_FEATURES = ['dummyTickets', 'insurance', 'hotelVouchers'];
+const REQUIRED_FEATURES = ['dummyTickets', 'insurance', 'hotelBookings'];
 const REQUIRED_SEO = ['titleTemplate', 'defaultTitle', 'defaultDescription', 'ogImage'];
 const REQUIRED_LEGAL = ['companyName', 'address'];
 

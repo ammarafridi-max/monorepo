@@ -163,12 +163,24 @@ importers:
       '@travel-suite/flights':
         specifier: workspace:*
         version: link:../../packages/domains/flights
+      '@travel-suite/hotel-bookings':
+        specifier: workspace:^
+        version: link:../../packages/domains/hotel-bookings
+      '@travel-suite/liteapi':
+        specifier: workspace:^
+        version: link:../../packages/integrations/liteapi
       '@travel-suite/meta-capi':
         specifier: workspace:*
         version: link:../../packages/integrations/meta-capi
       '@travel-suite/notifications':
         specifier: workspace:*
         version: link:../../packages/shared/notifications
+      '@travel-suite/openai-ads':
+        specifier: workspace:*
+        version: link:../../packages/integrations/openai-ads
+      '@travel-suite/openai-ads-admin':
+        specifier: workspace:*
+        version: link:../../packages/domains/openai-ads
       '@travel-suite/openai-capi':
         specifier: workspace:*
         version: link:../../packages/integrations/openai-capi
@@ -723,6 +735,9 @@ importers:
       '@travel-suite/insurance':
         specifier: workspace:*
         version: link:../../packages/domains/insurance
+      '@travel-suite/meta-capi':
+        specifier: workspace:*
+        version: link:../../packages/integrations/meta-capi
       '@travel-suite/notifications':
         specifier: workspace:*
         version: link:../../packages/shared/notifications
@@ -1072,6 +1087,18 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.117.1
         version: 0.117.1(zod@4.3.6)
+      '@travel-suite/brevo':
+        specifier: workspace:*
+        version: link:../packages/integrations/brevo
+      '@travel-suite/config':
+        specifier: workspace:*
+        version: link:../packages/shared/config
+      '@travel-suite/hotel-bookings':
+        specifier: workspace:*
+        version: link:../packages/domains/hotel-bookings
+      '@travel-suite/liteapi':
+        specifier: workspace:*
+        version: link:../packages/integrations/liteapi
       '@travel-suite/pricing-rules':
         specifier: workspace:*
         version: link:../packages/domains/pricing-rules
@@ -1244,6 +1271,25 @@ importers:
         specifier: ^1.4.5-lts.1
         version: 1.4.5-lts.2
 
+  packages/domains/hotel-bookings:
+    dependencies:
+      '@travel-suite/liteapi':
+        specifier: workspace:*
+        version: link:../../integrations/liteapi
+      '@travel-suite/utils':
+        specifier: workspace:*
+        version: link:../../shared/utils
+      uuid:
+        specifier: ^11.0.0
+        version: 11.1.0
+    devDependencies:
+      express:
+        specifier: ^5.2.1
+        version: 5.2.1
+      mongoose:
+        specifier: ^9.0.2
+        version: 9.4.1(socks@2.8.9)
+
   packages/domains/insurance:
     dependencies:
       '@travel-suite/utils':
@@ -1330,6 +1376,19 @@ importers:
       '@travel-suite/utils':
         specifier: workspace:*
         version: link:../../shared/utils
+    devDependencies:
+      express:
+        specifier: ^5.2.1
+        version: 5.2.1
+
+  packages/domains/openai-ads:
+    dependencies:
+      '@travel-suite/utils':
+        specifier: workspace:*
+        version: link:../../shared/utils
+      multer:
+        specifier: ^1.4.5-lts.1
+        version: 1.4.5-lts.2
     devDependencies:
       express:
         specifier: ^5.2.1
@@ -1599,7 +1658,11 @@ importers:
         specifier: ^2.9.0
         version: 2.9.0
 
+  packages/integrations/liteapi: {}
+
   packages/integrations/meta-capi: {}
+
+  packages/integrations/openai-ads: {}
 
   packages/integrations/openai-capi: {}
 

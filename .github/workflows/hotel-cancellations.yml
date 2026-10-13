@@ -1,0 +1,26 @@
+name: Hotel Cancellations
+
+on:
+  schedule:
+    - cron: '17 * * * *' # hourly, off the hour to avoid the platform's busiest minute
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Report what would be cancelled without cancelling
+        type: boolean
+        default: false
+
+# The failure reporter in _automation.yml opens an issue, and a called workflow
+# cannot request more than its caller holds. The repo default is read-only, so
+# the caller has to grant it here.
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  cancel:
+    uses: ./.github/workflows/_automation.yml
+    secrets: inherit
+    with:
+      job: hotel-cancellations
+      dry_run: ${{ inputs.dry_run || false }}

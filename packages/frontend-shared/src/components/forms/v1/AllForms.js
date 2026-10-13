@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
-import { Plane, ShieldPlus } from 'lucide-react';
+import { Plane, ShieldPlus, BedDouble } from 'lucide-react';
 
 // Split so only the visible tab ships. Both forms used to sit in the entry
 // bundle on every page, which meant the insurance form and the tooltip library
@@ -17,9 +17,13 @@ const TicketForm = dynamic(() => import('./TicketForm'), {
 const TravelInsuranceForm = dynamic(() => import('./TravelInsuranceForm'), {
   loading: FormFallback,
 });
+const HotelForm = dynamic(() => import('./HotelForm'), {
+  loading: FormFallback,
+});
 
 const ALL_TABS = [
   { name: 'ticket', label: 'Ticket', Icon: Plane },
+  { name: 'hotel', label: 'Hotel', Icon: BedDouble },
   { name: 'insurance', label: 'Travel Insurance', Icon: ShieldPlus },
 ];
 
@@ -31,6 +35,7 @@ export default function AllForms({ forms = ['ticket', 'insurance'], defaultTab }
     return (
       <>
         {activeForm === 'ticket' && <TicketForm />}
+        {activeForm === 'hotel' && <HotelForm />}
         {activeForm === 'insurance' && <TravelInsuranceForm />}
       </>
     );
@@ -38,7 +43,7 @@ export default function AllForms({ forms = ['ticket', 'insurance'], defaultTab }
 
   return (
     <>
-      <div className="flex lg:hidden items-center gap-3 mb-3 py-2 overflow-x-auto">
+      <div className="flex items-center gap-3 mb-3 py-2 overflow-x-auto">
         {tabs.map(({ name, label, Icon }) => (
           <button
             key={name}
@@ -59,6 +64,7 @@ export default function AllForms({ forms = ['ticket', 'insurance'], defaultTab }
       </div>
 
       {activeForm === 'ticket' && <TicketForm />}
+      {activeForm === 'hotel' && <HotelForm />}
       {activeForm === 'insurance' && <TravelInsuranceForm />}
     </>
   );

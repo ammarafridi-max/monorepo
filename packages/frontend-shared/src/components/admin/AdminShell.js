@@ -15,6 +15,7 @@ const DEFAULT_ROLE_DEFAULT_PATH = {
 const DEFAULT_ROLE_ROUTE_RULES = [
 
   { prefix: '/admin/dummy-tickets',           roles: ['admin', 'agent'] },
+  { prefix: '/admin/hotel-bookings',      roles: ['admin', 'agent'] },
   { prefix: '/admin/chat',                    roles: ['admin', 'agent'] },
   { prefix: '/admin/emails',                  roles: ['admin', 'agent'] },
   { prefix: '/admin/payment-links',           roles: ['admin', 'agent'] },

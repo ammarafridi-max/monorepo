@@ -64,6 +64,8 @@ jobs:
           PRICING_SHEET_ID: ${{ secrets.PRICING_SHEET_ID }}
           PRICING_SHEET_TAB: ${{ secrets.PRICING_SHEET_TAB }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          LITEAPI_API_KEY: ${{ secrets.LITEAPI_API_KEY }}
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
         run: |
           node src/cli.mjs "${{ inputs.job }}" \
             ${{ inputs.target && format('--target {0}', inputs.target) || '' }} \

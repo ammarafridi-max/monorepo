@@ -18,7 +18,7 @@ const emirateslimo = {
   features: {
     dummyTickets: false,
     insurance: false,
-    hotelVouchers: false,
+    hotelBookings: false,
   },
   seo: {
     titleTemplate: "%s | Emirates Limo",

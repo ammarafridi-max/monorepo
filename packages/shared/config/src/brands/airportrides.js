@@ -18,7 +18,7 @@ const airportrides = {
   features: {
     dummyTickets: true,
     insurance: false,
-    hotelVouchers: false,
+    hotelBookings: false,
   },
   seo: {
     titleTemplate: "%s | Airport Rides",

@@ -15,6 +15,8 @@ import {
 import { createAirLabsClient } from "@travel-suite/airlabs";
 import { createSerpApiClient } from "@travel-suite/serpapi";
 import { createTicketsRouter } from "@travel-suite/tickets";
+import { createHotelBookingsRouter } from "@travel-suite/hotel-bookings";
+import { createLiteApiClient } from "@travel-suite/liteapi";
 import { createConversationsRouter } from "@travel-suite/conversations";
 import { createWhatsAppClient } from "@travel-suite/whatsapp";
 import { createNotificationsService } from "@travel-suite/notifications";
@@ -32,6 +34,8 @@ import { db } from "../utils/db.js";
 import { createBrevoClient } from "@travel-suite/brevo";
 import { createMetaCapiClient } from "@travel-suite/meta-capi";
 import { createOpenAICapiClient } from "@travel-suite/openai-capi";
+import { createOpenAIAdsClient } from "@travel-suite/openai-ads";
+import { createOpenAIAdsRouter } from "@travel-suite/openai-ads-admin";
 import { sendEmail } from "../utils/email.js";
 import config from "../utils/config.js";
 import { logger } from "@travel-suite/utils";
@@ -194,8 +198,72 @@ const {
 router.use("/tickets", ticketsRouter);
 router.use("/pricing", pricingRouter);
 
+// -- Hotel reservations --------------------------------------------------------
+// Registered by the tickets factory above, so this lookup has to stay after it.
+const CurrencyModel = db.models.Currency ?? null;
+const liteapiConfigured = Boolean(config.liteapi.apiKey);
+let handleHotelStripeSuccess = null;
+
+if (liteapiConfigured) {
+  const {
+    router: hotelBookingsRouter,
+    pricingRouter: hotelPricingRouter,
+    handleStripeSuccess: onHotelPaid,
+  } = createHotelBookingsRouter({
+    db,
+    auth,
+    stripe,
+    supplier: createLiteApiClient({ apiKey: config.liteapi.apiKey, logger }),
+    // Adapted here so the hotel domain stays provider-agnostic: it asks for a name
+    // plus an ISO country code and does not know AirLabs exists.
+    citySuggest: async (search) =>
+      (await airlabs.suggestCities(search))
+        .filter((c) => c?.city_code)
+        .sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0))
+        .map((c) => ({ name: c.name, countryCode: c.country_code, cityCode: c.city_code })),
+    notifications,
+    frontendUrl: config.frontendUrl,
+    AffiliateModel,
+    CurrencyModel,
+  });
+  handleHotelStripeSuccess = onHotelPaid;
+  router.use("/hotel-bookings", hotelBookingsRouter);
+  router.use("/hotel-booking-pricing", hotelPricingRouter);
+} else {
+  logger.warn("[hotel-bookings] LITEAPI_API_KEY not configured — hotel reservations disabled");
+}
+
 // -- Affiliates ----------------------------------------------------------------
 router.use("/affiliates", createAffiliatesRouter({ db, auth, TicketModel }));
+
+// -- OpenAI Ads ----------------------------------------------------------------
+const { router: openaiAdsRouter } = createOpenAIAdsRouter({
+  adsClient: createOpenAIAdsClient({ apiKey: config.openai.adsApiKey, logger }),
+  auth,
+  maxDailyBudget: config.openai.adsMaxDailyBudget,
+  logger,
+  countOwnConversions: async ({ from, to }) => {
+    const rows = await TicketModel.aggregate([
+      {
+        $match: {
+          paymentStatus: "PAID",
+          paidAt: { $gte: from, $lt: to },
+          $or: [
+            { "attribution.last.channel": "chatgpt_ads" },
+            { "attribution.last.oppref": { $nin: [null, ""] } },
+            { "openaiAttribution.oppref": { $nin: [null, ""] } },
+          ],
+        },
+      },
+      { $group: { _id: "$amountPaid.currency", orders: { $sum: 1 }, amount: { $sum: "$amountPaid.amount" } } },
+    ]);
+    return {
+      orders: rows.reduce((n, r) => n + r.orders, 0),
+      revenue: rows.map((r) => ({ currency: r._id, amount: Math.round(r.amount * 100) / 100 })),
+    };
+  },
+});
+router.use("/openai-ads", openaiAdsRouter);
 
 // -- Payments (admin: revenue dashboard + custom payment links) ---------------
 const paymentService = createPaymentService({
@@ -272,6 +340,7 @@ export const stripeWebhookHandler = createStripeWebhookHandler({
   handlers: {
     ticket: handleStripeSuccess,
     "payment-link": handlePaymentLinkSuccess,
+    ...(handleHotelStripeSuccess ? { "hotel-booking": handleHotelStripeSuccess } : {}),
   },
 });
 
