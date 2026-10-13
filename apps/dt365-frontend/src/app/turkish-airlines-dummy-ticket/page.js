@@ -18,7 +18,9 @@ import {
   HiOutlineCurrencyDollar,
   HiOutlineUserGroup,
 } from 'react-icons/hi2';
-import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineHotel } from 'react-icons/md';
+import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety } from 'react-icons/md';
+import QuickAnswer from '@/components/QuickAnswer';
+import { USD_TIERS } from '@/lib/tiers';
 import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
@@ -145,12 +147,6 @@ const pageData = {
           description:
             `Genuine travel insurance for visa applicants. Schengen-compliant plans with the required EUR 30,000 minimum medical coverage are available if your Turkish Airlines itinerary includes European destinations. Arranged on request, so email your trip details to ${EMAIL}.`,
         },
-        {
-          icon: <MdOutlineHotel />,
-          title: 'Hotel Reservations',
-          description:
-            `Temporary hotel reservations formatted to embassy and consulate standards. These are real reservations, not paid bookings, so your visa file is complete without locking in non-refundable nights before approval. Prepared on request, so email your trip details to ${EMAIL}.`,
-        },
       ],
     },
     benefits: {
@@ -225,6 +221,11 @@ export default function Page() {
       />
 
 
+      <QuickAnswer
+        question="Can you get a dummy ticket on Turkish Airlines?"
+        answer="Yes. Turkish Airlines inventory sits on Amadeus, Sabre and Travelport like any other carrier, so the reservation we issue carries a genuine six-character PNR an agent or consulate can retrieve. Do not expect it on the airline's own site: carrier websites generally show only bookings that have been ticketed."
+        tiers={USD_TIERS}
+      />
       <Process
         title={pageData.sections.process.title}
         subtitle={pageData.sections.process.subtitle}

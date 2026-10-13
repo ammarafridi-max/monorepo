@@ -20,9 +20,10 @@ import {
 } from "react-icons/hi2";
 import {
   MdOutlineAirplaneTicket,
-  MdOutlineHotel,
   MdOutlineHealthAndSafety,
 } from "react-icons/md";
+import QuickAnswer from '@/components/QuickAnswer';
+import { USD_TIERS } from '@/lib/tiers';
 import Hero from "@travel-suite/frontend-shared/components/sections/v1/Hero";
 import AllForms from "@travel-suite/frontend-shared/components/forms/v1/AllForms";
 import Process from "@travel-suite/frontend-shared/components/sections/v1/Process";
@@ -131,12 +132,6 @@ const pageData = {
             "Round-trip flight reservation with a verifiable PNR, formatted to support Canadian TRV and Super Visa applications. Includes IATA codes for major Canadian airports. From USD 13.",
         },
         {
-          icon: <MdOutlineHotel />,
-          title: "Hotel Reservations",
-          description:
-            `Hotel reservations accepted as proof of accommodation for Canada visa applications, with no upfront payment to hotels. Prepared on request, so send your trip details to ${EMAIL}.`,
-        },
-        {
           icon: <MdOutlineHealthAndSafety />,
           title: "Travel Insurance",
           description:
@@ -216,6 +211,11 @@ export default function Page() {
       />
 
 
+      <QuickAnswer
+        question="Is a dummy ticket accepted for a Canada visa?"
+        answer="Yes, for a visitor visa. The application asks you to set out your travel plan and does not require a purchased ticket at the point of applying, so a flight reservation with a verifiable PNR is enough. Booking a fare before approval is the risk, since processing times vary and a refusal leaves the cost with you."
+        tiers={USD_TIERS}
+      />
       <Process
         title={pageData.sections.process.title}
         subtitle={pageData.sections.process.subtitle}

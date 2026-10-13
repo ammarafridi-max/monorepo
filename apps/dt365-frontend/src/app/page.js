@@ -1,4 +1,6 @@
 import { EMAIL, WHATSAPP_NUMBER } from '@/config/contact';
+import QuickAnswer from '@/components/QuickAnswer';
+import { USD_TIERS } from '@/lib/tiers';
 import Hero from "@travel-suite/frontend-shared/components/sections/v1/Hero";
 import AllForms from "@travel-suite/frontend-shared/components/forms/v1/AllForms";
 import Process from "@travel-suite/frontend-shared/components/sections/v1/Process";
@@ -30,7 +32,6 @@ import {
 import {
   MdOutlineAirplaneTicket,
   MdOutlineHealthAndSafety,
-  MdOutlineHotel,
 } from "react-icons/md";
 
 const keyword = "dummy ticket";
@@ -139,7 +140,7 @@ const pageData = {
       title: "Dummy Tickets for Visa, Onward Travel From USD 13",
       subtitle:
         "A dummy ticket is a real flight reservation with a verifiable PNR, created through global GDS platforms (Amadeus, Sabre, Travelport). Use it for visa applications, airline check-in, proof of onward travel, and immigration checks. You pay for the reservation document, not the flight, from USD 13, delivered by email in minutes.",
-      form: <AllForms />,
+      form: <AllForms forms={["ticket"]} />,
     },
     process: {
       title: "Get Your Dummy Ticket in 3 Simple Steps",
@@ -156,12 +157,6 @@ const pageData = {
           title: "Dummy Tickets",
           description:
             "Verifiable flight reservations with a real PNR code, accepted by embassies and visa centres worldwide. Used by thousands of travellers each year for Schengen, UK, US, Canadian, and other visa applications.",
-        },
-        {
-          icon: <MdOutlineHotel />,
-          title: "Hotel Reservations",
-          description:
-            `Temporary hotel reservations for visa applications, formatted to meet embassy and consulate requirements. These are real reservations, not paid bookings. We prepare them on request, so send your trip details to ${EMAIL} and we will have yours ready.`,
         },
         {
           icon: <MdOutlineHealthAndSafety />,
@@ -259,6 +254,11 @@ export default function HomePage() {
           "Accepted worldwide",
           "Delivered in minutes",
         ]}
+      />
+      <QuickAnswer
+        question="What is a dummy ticket?"
+        answer="A dummy ticket is a real but unticketed flight reservation carrying a verifiable six-character PNR, issued on Amadeus, Sabre or Travelport. Travellers use it for visa applications, airline check-in and proof of onward travel, where a reservation is what is asked for and a purchased ticket is not. It starts at USD 13 and arrives by email in minutes."
+        tiers={USD_TIERS}
       />
       <Process
         title={pageData.sections.process.title}

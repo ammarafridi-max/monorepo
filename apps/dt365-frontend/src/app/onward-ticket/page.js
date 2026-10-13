@@ -11,7 +11,9 @@ import {
   buildWebsite,
 } from '@/lib/schema';
 import { HiCheck, HiOutlineClock, HiOutlineCurrencyDollar } from 'react-icons/hi';
-import { MdOutlineHealthAndSafety, MdOutlineHotel, MdOutlineLuggage } from 'react-icons/md';
+import { MdOutlineHealthAndSafety, MdOutlineLuggage } from 'react-icons/md';
+import QuickAnswer from '@/components/QuickAnswer';
+import { USD_TIERS } from '@/lib/tiers';
 import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
@@ -95,11 +97,6 @@ const pageData = {
           icon: <MdOutlineLuggage />,
           title: "Onward Tickets",
           description: "Verifiable flight reservations accepted by airlines and immigration officers worldwide. Includes a valid PNR, follows accepted airline formats, and is delivered instantly, without financial risk.",
-        },
-        {
-          icon: <MdOutlineHotel />,
-          title: "Hotel Reservations",
-          description: `Temporary hotel reservations formatted to embassy and consulate standards. These are real reservations, not paid bookings, so your visa file is complete without locking in non-refundable nights before approval. Prepared on request, so email your trip details to ${EMAIL}.`,
         },
         {
           icon: <MdOutlineHealthAndSafety />,
@@ -195,6 +192,11 @@ export default function Page() {
           'Delivered in minutes',
         ]}
         breadcrumbPaths={breadcrumbPaths}
+      />
+      <QuickAnswer
+        question="What counts as proof of onward travel?"
+        answer="A flight reservation showing you will leave the country within the permitted stay. Airlines check for it at the counter when you hold a one-way booking, and immigration officers may ask at the border. A live reservation with a verifiable PNR satisfies both without you buying a second fare you never intend to fly."
+        tiers={USD_TIERS}
       />
       <Process
         title={pageData.sections.process.title}

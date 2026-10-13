@@ -22,7 +22,32 @@ import { trackAddToCart } from '../../../utils/analytics';
 import { pixelLead } from '../../../utils/pixel';
 import { normalizePricingOptions } from '../../../utils/dummyTicketPricing';
 import { useCurrency } from '../../../contexts/CurrencyContext.js';
-import { todayDateOnly } from '../../../utils/dates';
+import { todayDateOnly, compareDateOnly } from '../../../utils/dates';
+
+const validityDays = (value) => parseInt(String(value), 10) || 0;
+
+// Validity runs from delivery, so a tier longer than the wait to departure is
+// time the traveller cannot use. The shortest tier always stays selectable,
+// otherwise a same-week flight would have nothing left to buy.
+function withAvailability(options, daysToDeparture) {
+  if (daysToDeparture === null || options.length === 0) {
+    return options.map((option) => ({ ...option, disabled: false }));
+  }
+  const shortest = options.reduce((a, b) =>
+    validityDays(a.value) <= validityDays(b.value) ? a : b,
+  );
+  return options.map((option) => {
+    const disabled =
+      option.value !== shortest.value && validityDays(option.value) > daysToDeparture;
+    return {
+      ...option,
+      disabled,
+      disabledReason: disabled
+        ? `Your departure is in ${daysToDeparture} day${daysToDeparture === 1 ? '' : 's'}, so a ${option.label} reservation would outlast the flight.`
+        : undefined,
+    };
+  });
+}
 
 const PRICING_OPTIONS = [
   { value: '2 Days', label: '2 Days', price: 49 },
@@ -74,6 +99,9 @@ export default function FlightForm() {
     () => normalizePricingOptions(pricing),
     [pricing],
   );
+  const daysToDeparture = departureDate
+    ? Math.round((new Date(departureDate) - new Date(todayDateOnly())) / 86_400_000)
+    : null;
   const displayPricingOptions = useMemo(() => {
     return (pricingOptions.length > 0 ? pricingOptions : PRICING_OPTIONS).map(
       (option) => ({
@@ -82,6 +110,10 @@ export default function FlightForm() {
       }),
     );
   }, [formatMoney, pricing, pricingOptions]);
+  const availableOptions = useMemo(
+    () => withAvailability(displayPricingOptions, daysToDeparture),
+    [displayPricingOptions, daysToDeparture],
+  );
 
   useEffect(() => {
     if (quantity && passengers.length === 0) {
@@ -106,8 +138,20 @@ export default function FlightForm() {
     if (!email) next.email = 'Enter your email address';
     else if (!isEmail(email)) next.email = 'Enter a valid email address';
     if (!phoneNumber.code || !phoneNumber.digits) next.phone = 'Enter your phone number';
-    if (!receiveNow && !deliveryDate) next.deliveryDate = 'Choose a delivery date';
+    const deliveryErr = deliveryDateError();
+    if (deliveryErr) next.deliveryDate = deliveryErr;
     return next;
+  }
+
+  // A ticket delivered after take-off is useless, and its validity window
+  // starts on delivery, so the flight date is the hard ceiling.
+  function deliveryDateError() {
+    if (receiveNow) return null;
+    if (!deliveryDate) return 'Choose a delivery date';
+    if (departureDate && compareDateOnly(deliveryDate, departureDate) > 0) {
+      return 'Delivery must be on or before your departure date';
+    }
+    return null;
   }
 
   function clearError(key) {
@@ -135,16 +179,34 @@ export default function FlightForm() {
     });
     if (email && isEmail(email)) clearError('email');
     if (phoneNumber.code && phoneNumber.digits) clearError('phone');
-    if (receiveNow || deliveryDate) clearError('deliveryDate');
-  }, [passengers, email, phoneNumber, receiveNow, deliveryDate]);
+    const deliveryErr = deliveryDateError();
+    setErrors((prev) => {
+      if (!deliveryErr) {
+        if (!prev.deliveryDate) return prev;
+        const { deliveryDate: _removed, ...rest } = prev;
+        void _removed;
+        return rest;
+      }
+      if (!prev.deliveryDate || prev.deliveryDate === deliveryErr) return prev;
+      return { ...prev, deliveryDate: deliveryErr };
+    });
+  }, [passengers, email, phoneNumber, receiveNow, deliveryDate, departureDate]);
 
   useEffect(() => {
     const options =
-      displayPricingOptions.length > 0
-        ? displayPricingOptions
-        : PRICING_OPTIONS;
+      availableOptions.length > 0
+        ? availableOptions
+        : withAvailability(PRICING_OPTIONS, daysToDeparture);
+    const current = options.find((option) => option.value === ticketValidity);
+    const enabled = options.filter((option) => !option.disabled);
+    // A tier that just became unavailable must not stay selected, or the
+    // traveller pays for validity the form is telling them they cannot have.
     const selectedOption =
-      options.find((option) => option.value === ticketValidity) || options[0];
+      current && !current.disabled
+        ? current
+        : current
+          ? enabled[enabled.length - 1] || options[0]
+          : enabled[0] || options[0];
 
     if (!selectedOption) return;
 
@@ -152,7 +214,7 @@ export default function FlightForm() {
       ticketValidity: selectedOption.value,
       ticketPrice: selectedOption.price,
     });
-  }, [displayPricingOptions, ticketValidity, updatePricing]);
+  }, [availableOptions, daysToDeparture, ticketValidity, updatePricing]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -234,9 +296,9 @@ export default function FlightForm() {
       <TicketValidityOptions
         ticketValidity={ticketValidity}
         updatePricing={updatePricing}
-        options={displayPricingOptions}
+        options={availableOptions}
         currencyCode={selectedCurrency?.code || 'AED'}
-        departureDate={departureDate}
+        daysToDeparture={daysToDeparture}
       />
 
       <TicketDelivery
@@ -244,6 +306,7 @@ export default function FlightForm() {
         setReceiveNow={setReceiveNow}
         deliveryDate={deliveryDate}
         setDeliveryDate={setDeliveryDate}
+        departureDate={departureDate}
         error={errors.deliveryDate}
       />
 
@@ -341,12 +404,11 @@ function TicketValidityOptions({
   updatePricing,
   options,
   currencyCode,
-  departureDate,
+  daysToDeparture,
 }) {
-  const daysToDeparture = departureDate
-    ? Math.round((new Date(departureDate) - new Date(todayDateOnly())) / 86_400_000)
-    : null;
-  const shortNotice = daysToDeparture !== null && daysToDeparture <= 30;
+  const shortNotice =
+    daysToDeparture !== null && daysToDeparture <= 30 && options.some((o) => !o.disabled && validityDays(o.value) >= 14);
+  const blocked = options.filter((o) => o.disabled);
 
   const handleChange = (option) => {
     updatePricing({ ticketValidity: option.value, ticketPrice: option.price });
@@ -362,6 +424,14 @@ function TicketValidityOptions({
         onChange={handleChange}
         currencyCode={currencyCode}
       />
+      {blocked.length > 0 && (
+        <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-800">
+          You fly in {daysToDeparture} day{daysToDeparture === 1 ? '' : 's'}, so the{' '}
+          {blocked.map((o) => o.label).join(' and ')} option
+          {blocked.length === 1 ? '' : 's'} would outlast your flight and{' '}
+          {blocked.length === 1 ? 'is' : 'are'} not available.
+        </p>
+      )}
       {shortNotice && (
         <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-800">
           Your departure is within 30 days, so we cannot guarantee a 14 day reservation on this
@@ -380,6 +450,7 @@ function TicketDelivery({
   deliveryDate,
   setReceiveNow,
   setDeliveryDate,
+  departureDate,
   error,
 }) {
   return (
@@ -435,6 +506,7 @@ function TicketDelivery({
               value={deliveryDate}
               onChange={setDeliveryDate}
               minDate={todayDateOnly()}
+              maxDate={departureDate || undefined}
               placeholder="Select delivery date"
               error={error}
             />

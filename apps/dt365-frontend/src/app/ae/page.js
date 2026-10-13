@@ -8,10 +8,12 @@ import Testimonials from '@travel-suite/frontend-shared/components/sections/v1/T
 import FAQ from '@travel-suite/frontend-shared/components/sections/v1/FAQ';
 import Contact from '@travel-suite/frontend-shared/components/sections/v1/Contact';
 import BlogPosts from '@travel-suite/frontend-shared/components/sections/v1/BlogPosts';
+import QuickAnswer from '@/components/QuickAnswer';
 import RelatedPages from '@/components/RelatedPages';
 import { testimonials } from '@/data/testimonials';
 import { getDummyTicketPricingServerApi } from '@travel-suite/frontend-shared/services/apiPricing';
 import { hreflangAlternates } from '@/lib/locales';
+import { tiersFrom } from '@/lib/tiers';
 import {
   SITE_URL,
   buildFAQPage,
@@ -30,7 +32,7 @@ import {
   HiOutlineCurrencyDollar,
   HiShieldCheck,
 } from 'react-icons/hi2';
-import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineHotel } from 'react-icons/md';
+import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety } from 'react-icons/md';
 
 const CANONICAL = `${SITE_URL}/ae`;
 const FALLBACK = { '2 Days': 49, '7 Days': 69, '14 Days': 79 };
@@ -55,7 +57,7 @@ export async function generateMetadata() {
   const p = await getAedPrices();
   return {
     title: `Dummy Ticket for UAE Residents from ${aed(p['2 Days'])} | Visa & Check-In`,
-    description: `Living in the Emirates and applying on a passport from elsewhere? Get a flight reservation with a GDS PNR for your Schengen, UK, US or Canadian file. Dirham pricing from ${aed(p['2 Days'])}.`,
+    description: `Flight reservations with a verifiable GDS PNR for Schengen, UK, US and Canadian files put together in the Emirates. Priced in dirhams from ${aed(p['2 Days'])}.`,
     alternates: { canonical: CANONICAL, languages: hreflangAlternates() },
     robots: { index: true, follow: true },
     openGraph: {
@@ -178,6 +180,11 @@ export default async function Page() {
           'Delivered in minutes',
         ]}
       />
+      <QuickAnswer
+        question="How much does a dummy ticket cost in the UAE?"
+        answer={`A dummy ticket costs ${aed(p['2 Days'])} for 2 days validity, ${aed(p['7 Days'])} for 7 days and ${aed(p['14 Days'])} for 14 days. Those are dirham prices billed in dirhams, so a UAE-issued card picks up no foreign currency markup. Each reservation carries a verifiable PNR on Amadeus, Sabre or Travelport.`}
+        tiers={tiersFrom(p, aed)}
+      />
       <Process
         title="Get Your Dummy Ticket in 3 Simple Steps"
         subtitle="Enter your route and travel dates, pick a validity that covers your appointment window, and pay in dirhams. The PDF arrives by email with the PNR ready to submit."
@@ -190,11 +197,6 @@ export default async function Page() {
             icon: <MdOutlineAirplaneTicket />,
             title: 'Dummy Tickets',
             description: `Verifiable flight reservations with a real PNR, accepted by consulates and visa application centres across the Emirates. Priced in dirhams from ${from}.`,
-          },
-          {
-            icon: <MdOutlineHotel />,
-            title: 'Hotel Reservations',
-            description: `Temporary hotel reservations for visa applications, formatted to meet consulate requirements. These are real reservations, not paid bookings. We prepare them on request, so send your trip details to ${EMAIL} and we will have yours ready.`,
           },
           {
             icon: <MdOutlineHealthAndSafety />,

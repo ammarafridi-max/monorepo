@@ -89,11 +89,6 @@ export const homepageFaqs = [
       'Yes. Our dummy tickets meet the documentation requirements for Schengen applications and are accepted by VFS, BLS, and embassies. They include a verifiable PNR and are formatted to match what visa officers expect.',
   },
   {
-    question: 'Can you provide hotel reservations for a visa application?',
-    answer:
-      'Yes. We provide hotel reservations on request, formatted to meet embassy requirements. Send us your trip details and we will prepare the reservation for you.',
-  },
-  {
     question: 'Does your travel insurance meet Schengen requirements?',
     answer:
       'Yes. Our travel insurance plans include the mandatory minimum medical coverage and are valid across all 26 Schengen member states.',
@@ -101,7 +96,7 @@ export const homepageFaqs = [
   {
     question: 'How quickly will I receive my documents?',
     answer:
-      'Dummy tickets and travel insurance are delivered to your inbox within minutes of payment. Hotel reservations are processed on request and typically delivered within a few hours during working hours.',
+      'Dummy tickets are delivered to your inbox within minutes of payment. Travel insurance is arranged on request and typically issued the same working day.',
   },
   {
     question: 'What visa types do your services support?',

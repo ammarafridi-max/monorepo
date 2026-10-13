@@ -18,7 +18,9 @@ import {
   HiOutlineClock,
   HiOutlineCalendarDays,
 } from 'react-icons/hi2';
-import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineHotel } from 'react-icons/md';
+import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety } from 'react-icons/md';
+import QuickAnswer from '@/components/QuickAnswer';
+import { USD_TIERS } from '@/lib/tiers';
 import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
@@ -58,8 +60,8 @@ const benefits = [
     icon: HiOutlineCalendarDays,
   },
   {
-    title: 'Hotel Reservations and Insurance on Request',
-    text: 'Schengen files need three things: flight reservation, accommodation proof, and EUR 30,000 medical insurance. You can book the flight reservation here. Ask us for the other two by email and we will prepare them for your appointment.',
+    title: 'Travel Insurance on Request',
+    text: 'A Schengen file needs a flight reservation, proof of accommodation and EUR 30,000 of medical cover. You can book the flight reservation here and ask us for the insurance by email. Accommodation you arrange yourself.',
     icon: HiOutlineClock,
   },
 ];
@@ -93,7 +95,7 @@ const faqs = [
   {
     question: 'Do I also need proof of accommodation for a Schengen visa?',
     answer:
-      'Yes. Consulates require hotel reservations or a host invitation for the full duration of the stay. We issue temporary hotel reservations in the same way as dummy tickets, real reservations not paid bookings, ready to submit alongside the flight reservation.',
+      'Yes. Consulates want proof of where you will stay, either a booking or a host invitation, covering the full duration of the trip. You arrange that yourself. We cover the flight reservation side of the file, with dates you can match to your accommodation.',
   },
   {
     question: 'How long should the reservation stay valid for my appointment?',
@@ -140,11 +142,6 @@ const pageData = {
           icon: <MdOutlineHealthAndSafety />,
           title: "Schengen Travel Insurance",
           description: `Schengen visa applications require EUR 30,000 minimum medical coverage. We arrange genuine AXA-backed, embassy-compliant policies on request. Email your trip details to ${EMAIL} and we will prepare your cover.`,
-        },
-        {
-          icon: <MdOutlineHotel />,
-          title: "Hotel Reservations",
-          description: `Temporary hotel reservations formatted to meet Schengen embassy and consulate requirements. These are real reservations, not paid bookings. We prepare them on request, so send your trip details to ${EMAIL}.`,
         },
       ],
     },
@@ -220,6 +217,11 @@ export default function Page() {
       />
 
 
+      <QuickAnswer
+        question="Is a dummy ticket accepted for a Schengen visa?"
+        answer="Yes. EU Visa Code Article 14 lists a flight reservation among the supporting documents for a short stay visa, not a purchased ticket. VFS Global, BLS International and TLScontact centres accept a reservation with a verifiable PNR. The booking has to still be live when the consulate opens your file, so match the validity to your appointment."
+        tiers={USD_TIERS}
+      />
       <Process
         title={pageData.sections.process.title}
         subtitle={pageData.sections.process.subtitle}

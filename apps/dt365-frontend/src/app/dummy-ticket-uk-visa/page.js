@@ -18,7 +18,9 @@ import {
   HiOutlineClock,
   HiOutlineCalendarDays,
 } from 'react-icons/hi2';
-import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineHotel } from 'react-icons/md';
+import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety } from 'react-icons/md';
+import QuickAnswer from '@/components/QuickAnswer';
+import { USD_TIERS } from '@/lib/tiers';
 import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
@@ -118,11 +120,6 @@ const pageData = {
           description: "Verifiable flight reservation with a real PNR, formatted to meet UK visa requirements. Accepted by UKVI and visa centres. Instant delivery from USD 13.",
         },
         {
-          icon: <MdOutlineHotel />,
-          title: "Hotel Reservations",
-          description: `Temporary hotel reservations formatted to UK visa standards. These are real reservations, not paid bookings, so your UKVI file is complete without locking in non-refundable nights before approval. Prepared on request, so email your trip details to ${EMAIL}.`,
-        },
-        {
           icon: <MdOutlineHealthAndSafety />,
           title: "Travel Insurance",
           description: `Genuine AXA-backed travel insurance for visa applicants and travellers. Schengen-compliant plans are available if your itinerary includes European destinations. Arranged on request, so email your trip details to ${EMAIL}.`,
@@ -200,6 +197,11 @@ export default function Page() {
       />
 
 
+      <QuickAnswer
+        question="Do you need a flight booking for a UK visa?"
+        answer="You need evidence of your travel plans, not a paid ticket. A Standard Visitor application asks what you intend to do and when, and a flight reservation with a verifiable PNR shows it. Buying a fare before a decision carries real risk, because a refusal can leave you holding travel you cannot fully recover."
+        tiers={USD_TIERS}
+      />
       <Process
         title={pageData.sections.process.title}
         subtitle={pageData.sections.process.subtitle}

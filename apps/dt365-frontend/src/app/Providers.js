@@ -32,7 +32,7 @@ const BRAND_NAME = 'Dummy Ticket 365';
 const defaultPages = [
   {
     name: 'Dummy Tickets',
-    links: ['/', '/booking/select-flights', '/booking/review-details'],
+    links: ['/', '/booking/select-flights', '/booking/review-details', '/dummy-ticket-for-visa', '/verifiable-dummy-ticket', '/multi-city-dummy-ticket', '/dummy-ticket-14-days'],
     icon: <Plane size={18} />,
     subpages: [
       { name: 'Dummy Ticket For Australia Visa', link: '/dummy-ticket-australia-visa' },
@@ -42,6 +42,10 @@ const defaultPages = [
       { name: 'Dummy Ticket For UK Visa', link: '/dummy-ticket-uk-visa' },
       { name: 'Onward Ticket', link: '/onward-ticket' },
       { name: 'Flight Itinerary', link: '/flight-itinerary' },
+      { name: 'Dummy Ticket For Any Visa', link: '/dummy-ticket-for-visa' },
+      { name: 'Verifiable Dummy Ticket', link: '/verifiable-dummy-ticket' },
+      { name: 'Multi City Dummy Ticket', link: '/multi-city-dummy-ticket' },
+      { name: 'Dummy Ticket Valid 14 Days', link: '/dummy-ticket-14-days' },
     ],
   },
   {
@@ -104,12 +108,12 @@ export default function Providers({ children }) {
         <QueryClientProvider client={queryClient}>
           <CurrencyProvider defaultCode={defaultCurrency}>
             <TicketProvider>
-              <InsuranceProvider>
-                <AppLayout logoSrc={LOGO_SRC} brandName={BRAND_NAME} pages={flightItineraryPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark}>
-                  <main>{children}</main>
-                </AppLayout>
-                <StickyWhatsApp phoneNumber={WHATSAPP_NUMBER} />
-              </InsuranceProvider>
+                <InsuranceProvider>
+                  <AppLayout logoSrc={LOGO_SRC} brandName={BRAND_NAME} pages={flightItineraryPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark}>
+                    <main>{children}</main>
+                  </AppLayout>
+                  <StickyWhatsApp phoneNumber={WHATSAPP_NUMBER} />
+                </InsuranceProvider>
             </TicketProvider>
           </CurrencyProvider>
         </QueryClientProvider>
@@ -124,12 +128,12 @@ export default function Providers({ children }) {
       <QueryClientProvider client={queryClient}>
         <CurrencyProvider defaultCode={defaultCurrency}>
           <TicketProvider>
-            <InsuranceProvider>
-              <AppLayout logoSrc={LOGO_SRC} brandName={BRAND_NAME} pages={defaultPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark}>
-                <main>{children}</main>
-              </AppLayout>
-              <StickyWhatsApp phoneNumber={WHATSAPP_NUMBER} />
-            </InsuranceProvider>
+              <InsuranceProvider>
+                <AppLayout logoSrc={LOGO_SRC} brandName={BRAND_NAME} pages={defaultPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark}>
+                  <main>{children}</main>
+                </AppLayout>
+                <StickyWhatsApp phoneNumber={WHATSAPP_NUMBER} />
+              </InsuranceProvider>
           </TicketProvider>
         </CurrencyProvider>
       </QueryClientProvider>

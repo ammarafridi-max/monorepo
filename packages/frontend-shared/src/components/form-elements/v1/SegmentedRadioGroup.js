@@ -8,15 +8,19 @@ function SegmentedRadioGroup({ name, value, options, onChange, textAlign = 'left
     <div className="block lg:flex rounded-lg overflow-hidden border border-gray-300 divide-x divide-gray-200">
       {options.map((option, index) => {
         const isSelected = value === option.value;
+        const isDisabled = Boolean(option.disabled);
 
         return (
           <label
             key={index}
-            className={`relative flex flex-1 cursor-pointer transition-colors duration-200
+            title={isDisabled ? option.disabledReason : undefined}
+            className={`relative flex flex-1 transition-colors duration-200
                 ${
-                  isSelected
-                    ? 'bg-primary-100'
-                    : 'bg-white text-gray-800 hover:bg-gray-100 active:bg-gray-200'
+                  isDisabled
+                    ? 'cursor-not-allowed bg-gray-50 text-gray-400'
+                    : isSelected
+                      ? 'cursor-pointer bg-primary-100'
+                      : 'cursor-pointer bg-white text-gray-800 hover:bg-gray-100 active:bg-gray-200'
                 }`}
           >
             <input
@@ -24,7 +28,10 @@ function SegmentedRadioGroup({ name, value, options, onChange, textAlign = 'left
               name={name}
               value={option.value}
               checked={isSelected}
-              onChange={() => onChange(option)}
+              disabled={isDisabled}
+              onChange={() => {
+                if (!isDisabled) onChange(option);
+              }}
               className="absolute opacity-0"
             />
 

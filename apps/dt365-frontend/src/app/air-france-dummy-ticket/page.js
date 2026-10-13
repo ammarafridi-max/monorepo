@@ -18,7 +18,9 @@ import {
   HiOutlineMapPin,
   HiOutlineUserGroup,
 } from 'react-icons/hi2';
-import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineHotel } from 'react-icons/md';
+import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety } from 'react-icons/md';
+import QuickAnswer from '@/components/QuickAnswer';
+import { USD_TIERS } from '@/lib/tiers';
 import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
@@ -145,12 +147,6 @@ const pageData = {
           description:
             `Genuine Schengen-compliant travel insurance with the required EUR 30,000 minimum medical coverage. Air France itineraries are most commonly used for Schengen applications, where compliant insurance is mandatory. Arranged on request, so email your trip details to ${EMAIL}.`,
         },
-        {
-          icon: <MdOutlineHotel />,
-          title: 'Hotel Reservations',
-          description:
-            `Temporary hotel reservations formatted to Schengen embassy and consulate standards. These are real reservations, not paid bookings, so your French visa file is complete without locking in non-refundable nights before approval. Prepared on request, so email your trip details to ${EMAIL}.`,
-        },
       ],
     },
     benefits: {
@@ -225,6 +221,11 @@ export default function Page() {
       />
 
 
+      <QuickAnswer
+        question="Can you get a dummy ticket on Air France?"
+        answer="Yes. An Air France reservation is made through the same global systems that travel agents book through, so it carries a real six-character PNR that stays retrievable for the validity you pick. Airline websites usually list only ticketed bookings, so verification is done on the GDS rather than on airfrance.com."
+        tiers={USD_TIERS}
+      />
       <Process
         title={pageData.sections.process.title}
         subtitle={pageData.sections.process.subtitle}

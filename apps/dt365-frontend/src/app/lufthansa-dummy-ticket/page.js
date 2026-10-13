@@ -18,7 +18,9 @@ import {
   HiOutlineMapPin,
   HiOutlineUserGroup,
 } from 'react-icons/hi2';
-import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineHotel } from 'react-icons/md';
+import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety } from 'react-icons/md';
+import QuickAnswer from '@/components/QuickAnswer';
+import { USD_TIERS } from '@/lib/tiers';
 import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
@@ -145,12 +147,6 @@ const pageData = {
           description:
             `Genuine Schengen-compliant travel insurance with the required EUR 30,000 minimum medical coverage. Lufthansa itineraries are most commonly used for Schengen applications, where compliant insurance is mandatory. Arranged on request, so email your trip details to ${EMAIL}.`,
         },
-        {
-          icon: <MdOutlineHotel />,
-          title: 'Hotel Reservations',
-          description:
-            `Temporary hotel reservations formatted to Schengen embassy and consulate standards. These are real reservations, not paid bookings, so your visa file is complete without locking in non-refundable nights before approval. Prepared on request, so email your trip details to ${EMAIL}.`,
-        },
       ],
     },
     benefits: {
@@ -225,6 +221,11 @@ export default function Page() {
       />
 
 
+      <QuickAnswer
+        question="Can you get a dummy ticket on Lufthansa?"
+        answer="Yes. A Lufthansa reservation is created on the same global distribution systems as any other carrier, so it carries a real six-character PNR for the validity you choose. Most airlines only expose ticketed bookings through their own Manage Booking page, so verification happens on the GDS, where the record actually lives."
+        tiers={USD_TIERS}
+      />
       <Process
         title={pageData.sections.process.title}
         subtitle={pageData.sections.process.subtitle}

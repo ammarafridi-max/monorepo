@@ -20,9 +20,10 @@ import {
 } from "react-icons/hi2";
 import {
   MdOutlineAirplaneTicket,
-  MdOutlineHotel,
   MdOutlineHealthAndSafety,
 } from "react-icons/md";
+import QuickAnswer from '@/components/QuickAnswer';
+import { USD_TIERS } from '@/lib/tiers';
 import Hero from "@travel-suite/frontend-shared/components/sections/v1/Hero";
 import AllForms from "@travel-suite/frontend-shared/components/forms/v1/AllForms";
 import Process from "@travel-suite/frontend-shared/components/sections/v1/Process";
@@ -133,12 +134,6 @@ const pageData = {
             "Round-trip flight reservation with a verifiable PNR, formatted to support Subclass 600 Visitor Visa applications. Includes IATA codes for major Australian airports. From USD 13.",
         },
         {
-          icon: <MdOutlineHotel />,
-          title: "Hotel Reservations",
-          description:
-            `Hotel reservations accepted as proof of accommodation for Australia visa applications, with no upfront payment to hotels. Prepared on request, so send your trip details to ${EMAIL}.`,
-        },
-        {
           icon: <MdOutlineHealthAndSafety />,
           title: "Travel Insurance",
           description:
@@ -218,6 +213,11 @@ export default function Page() {
       />
 
 
+      <QuickAnswer
+        question="Do you need a flight booking for an Australian visitor visa?"
+        answer="Not a purchased one. A Subclass 600 application asks you to describe your intended travel, and a flight reservation with a verifiable PNR uploaded to ImmiAccount evidences it. Buying a fare before the visa is granted is unnecessary and risky, because processing times vary from weeks to months."
+        tiers={USD_TIERS}
+      />
       <Process
         title={pageData.sections.process.title}
         subtitle={pageData.sections.process.subtitle}

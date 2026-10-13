@@ -56,6 +56,44 @@ function getDubaiDateString() {
   return `${y}-${m}-${d}`;
 }
 
+const VALIDITY_DAYS = { '2 Days': 2, '7 Days': 7, '14 Days': 14 };
+const SHORTEST_VALIDITY = '2 Days';
+
+function dateOnly(value) {
+  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value) ? value.slice(0, 10) : '';
+}
+
+function daysBetweenDateOnly(fromStr, toStr) {
+  const from = Date.parse(`${fromStr}T00:00:00Z`);
+  const to = Date.parse(`${toStr}T00:00:00Z`);
+  if (Number.isNaN(from) || Number.isNaN(to)) return null;
+  return Math.round((to - from) / 86_400_000);
+}
+
+// The browser blocks both of these, so anything reaching here skipped the form.
+function assertDeliveryAndValidity(payload) {
+  const departure = dateOnly(payload?.departureDate);
+  if (!departure) return;
+
+  const delivery = payload?.ticketDelivery?.immediate
+    ? ''
+    : dateOnly(payload?.ticketDelivery?.deliveryDate);
+  if (delivery && daysBetweenDateOnly(delivery, departure) < 0) {
+    throw new AppError('Delivery date cannot be after the departure date', 400);
+  }
+
+  const validity = payload?.ticketValidity;
+  const needed = VALIDITY_DAYS[validity];
+  if (!needed || validity === SHORTEST_VALIDITY) return;
+  const daysToDeparture = daysBetweenDateOnly(getDubaiDateString(), departure);
+  if (daysToDeparture === null) return;
+  // One day of slack: the client counts from its own timezone, and rejecting a
+  // legitimate order over a date-line disagreement costs more than it saves.
+  if (needed > daysToDeparture + 1) {
+    throw new AppError(`A ${validity} reservation would outlast a departure ${daysToDeparture} day${daysToDeparture === 1 ? '' : 's'} away`, 400);
+  }
+}
+
 function isDeliveryDayReached(ticket) {
   if (ticket?.ticketDelivery?.immediate) return true;
   const scheduled = ticket?.ticketDelivery?.deliveryDate?.slice(0, 10);
@@ -235,6 +273,7 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
   };
 
   const createTicketRequest = async (payload) => {
+    assertDeliveryAndValidity(payload);
     const normalizedEmail = normalizeEmail(payload?.email);
     const incomingAffiliateId = payload?.affiliateId;
     const isValidAffiliateId = /^\d{9}$/.test(incomingAffiliateId || '');

@@ -20,9 +20,10 @@ import {
 } from "react-icons/hi2";
 import {
   MdOutlineAirplaneTicket,
-  MdOutlineHotel,
   MdOutlineHealthAndSafety,
 } from "react-icons/md";
+import QuickAnswer from '@/components/QuickAnswer';
+import { USD_TIERS } from '@/lib/tiers';
 import Hero from "@travel-suite/frontend-shared/components/sections/v1/Hero";
 import AllForms from "@travel-suite/frontend-shared/components/forms/v1/AllForms";
 import Process from "@travel-suite/frontend-shared/components/sections/v1/Process";
@@ -45,7 +46,7 @@ const benefits = [
   },
   {
     title: "Formatted to Japanese Embassy Standards",
-    text: "Japan's Ministry of Foreign Affairs requires flight details and hotel bookings to match precisely. Our reservations are issued in a clean, professional airline format that aligns with embassy documentation standards, whether you apply in person or through the JAPAN eVISA portal.",
+    text: "Japan's Ministry of Foreign Affairs requires your flight details and accommodation dates to match precisely. Our reservations are issued in a clean, professional airline format that aligns with embassy documentation standards, whether you apply in person or through the JAPAN eVISA portal.",
     icon: HiOutlineCalendarDays,
   },
   {
@@ -88,12 +89,6 @@ const faqs = [
       "Yes. The JAPAN eVISA portal requires applicants to enter flight reservation details during the online application. Our dummy ticket provides the flight information, airline details, and booking reference you need to complete those fields. The eVISA system is currently available for single-entry tourism visas for eligible nationalities.",
   },
   {
-    question:
-      "My Japan visa requires a hotel booking that matches my flight dates. Can you help?",
-    answer:
-      "Yes. We issue verified hotel reservations alongside dummy tickets. Japanese consulates check that your hotel booking and flight itinerary match in dates and duration, so ordering both together keeps your travel dates consistent across all documents. Hotel reservations are delivered by email in the same format embassies expect.",
-  },
-  {
     question: "Can I use this dummy ticket to board a flight to Japan?",
     answer:
       "No. A dummy ticket is a temporary reservation for visa application purposes only. It does not include a paid e-ticket, so it cannot be used for airline check-in or boarding. Once your Japan visa is approved, purchase your actual flight ticket for travel.",
@@ -131,16 +126,10 @@ const pageData = {
             "Round-trip flight reservation with a verifiable PNR, formatted to meet Japanese embassy and eVISA requirements. Includes IATA codes for major Japanese airports. From USD 13.",
         },
         {
-          icon: <MdOutlineHotel />,
-          title: "Hotel Reservations",
-          description:
-            `Hotel reservations accepted as proof of accommodation for Japan visa applications, with dates aligned to your flight reservation. Prepared on request, so send your trip details to ${EMAIL}.`,
-        },
-        {
           icon: <MdOutlineHealthAndSafety />,
           title: "Travel Insurance",
           description:
-            `Genuine travel insurance for your Japan trip. Visitors to Japan need their own medical cover, and a clean certificate alongside your dummy ticket and hotel reservation rounds out the visa file. Arranged on request, so email your trip details to ${EMAIL}.`,
+            `Genuine travel insurance for your Japan trip. Visitors to Japan need their own medical cover, and a clean certificate alongside your dummy ticket rounds out the visa file. Arranged on request, so email your trip details to ${EMAIL}.`,
         },
       ],
     },
@@ -216,6 +205,11 @@ export default function Page() {
       />
 
 
+      <QuickAnswer
+        question="Do you need a flight reservation for a Japan visa?"
+        answer="Yes, as part of your itinerary. A Japanese tourist visa application asks for a daily schedule together with a flight reservation covering entry and departure, and an unticketed reservation with a verifiable PNR satisfies that. The dates on the reservation must match the schedule you submit alongside it."
+        tiers={USD_TIERS}
+      />
       <Process
         title={pageData.sections.process.title}
         subtitle={pageData.sections.process.subtitle}

@@ -6,6 +6,7 @@ import PrimarySection from '../../components/shared/layout/PrimarySection';
 export default function BlogTagsPage({
   tags = [],
   hero,
+  intro,
   breadcrumbPaths = [],
   schema,
   breadcrumbJsonLd,
@@ -44,6 +45,7 @@ export default function BlogTagsPage({
 
       <PrimarySection className="py-12">
         <Container>
+          {intro && <div className="mb-10 max-w-3xl">{intro}</div>}
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
             {tags.map((tag) => (
               <Link

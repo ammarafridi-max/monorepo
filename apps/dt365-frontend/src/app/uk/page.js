@@ -8,10 +8,12 @@ import Testimonials from '@travel-suite/frontend-shared/components/sections/v1/T
 import FAQ from '@travel-suite/frontend-shared/components/sections/v1/FAQ';
 import Contact from '@travel-suite/frontend-shared/components/sections/v1/Contact';
 import BlogPosts from '@travel-suite/frontend-shared/components/sections/v1/BlogPosts';
+import QuickAnswer from '@/components/QuickAnswer';
 import RelatedPages from '@/components/RelatedPages';
 import { testimonials } from '@/data/testimonials';
 import { getDummyTicketPricingServerApi } from '@travel-suite/frontend-shared/services/apiPricing';
 import { hreflangAlternates } from '@/lib/locales';
+import { tiersFrom } from '@/lib/tiers';
 import {
   SITE_URL,
   buildFAQPage,
@@ -30,7 +32,7 @@ import {
   HiOutlineCurrencyDollar,
   HiShieldCheck,
 } from 'react-icons/hi2';
-import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety, MdOutlineHotel } from 'react-icons/md';
+import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety } from 'react-icons/md';
 
 const CANONICAL = `${SITE_URL}/uk`;
 const FALLBACK = { '2 Days': 10, '7 Days': 15, '14 Days': 17 };
@@ -178,6 +180,11 @@ export default async function Page() {
           'Delivered in minutes',
         ]}
       />
+      <QuickAnswer
+        question="How much does a dummy ticket cost in the UK?"
+        answer={`A dummy ticket costs ${gbp(p['2 Days'])} for 2 days validity, ${gbp(p['7 Days'])} for 7 days and ${gbp(p['14 Days'])} for 14 days. Those are sterling prices charged in sterling, so no non-sterling transaction fee applies. Each reservation carries a verifiable PNR on Amadeus, Sabre or Travelport.`}
+        tiers={tiersFrom(p, gbp)}
+      />
       <Process
         title="Get Your Dummy Ticket in 3 Simple Steps"
         subtitle="Enter your route and travel dates, pick a validity that covers your appointment window, and pay in pounds. The PDF arrives by email with the PNR ready to submit."
@@ -190,11 +197,6 @@ export default async function Page() {
             icon: <MdOutlineAirplaneTicket />,
             title: 'Dummy Tickets',
             description: `Verifiable flight reservations with a real PNR, accepted by consulates and airline staff. Priced in pounds from ${from}.`,
-          },
-          {
-            icon: <MdOutlineHotel />,
-            title: 'Hotel Reservations',
-            description: `Temporary hotel reservations for visa applications, formatted to meet consulate requirements. These are real reservations, not paid bookings. We prepare them on request, so send your trip details to ${EMAIL} and we will have yours ready.`,
           },
           {
             icon: <MdOutlineHealthAndSafety />,

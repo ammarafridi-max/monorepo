@@ -3,7 +3,7 @@ export default function robots() {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/admin', '/booking'],
+      disallow: ['/admin', '/booking', '/insurance-booking'],
     },
     sitemap: 'https://www.dummyticket365.com/sitemap.xml',
   };
