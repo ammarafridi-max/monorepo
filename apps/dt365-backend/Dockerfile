@@ -27,6 +27,8 @@ COPY packages/integrations/meta-capi/package.json  packages/integrations/meta-ca
 COPY packages/integrations/openai-capi/package.json  packages/integrations/openai-capi/package.json
 COPY packages/integrations/openai-ads/package.json  packages/integrations/openai-ads/package.json
 COPY packages/domains/openai-ads/package.json  packages/domains/openai-ads/package.json
+COPY packages/domains/hotel-bookings/package.json  packages/domains/hotel-bookings/package.json
+COPY packages/integrations/liteapi/package.json    packages/integrations/liteapi/package.json
 COPY packages/domains/users/package.json           packages/domains/users/package.json
 COPY packages/shared/utils/package.json           packages/shared/utils/package.json
 COPY apps/dt365-backend/package.json       apps/dt365-backend/package.json
