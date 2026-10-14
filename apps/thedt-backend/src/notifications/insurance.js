@@ -15,8 +15,6 @@ const customer = createNotificationsService({
   },
 });
 
-// The dummy ticket is our own product. Visa assistance is VisaWadi's, a
-// deliberate exception to brand neutrality confined to this app.
 const UPSELLS = [
   {
     title: "Book a Dummy Ticket",
@@ -25,14 +23,6 @@ const UPSELLS = [
     price: "AED 49",
     ctaLabel: "Book now",
     href: SITE,
-  },
-  {
-    title: "Get Visa Assistance",
-    brand: "VisaWadi",
-    description: "Schengen, UK, US and Saudi visas, handled end to end.",
-    price: "AED 299",
-    ctaLabel: "Get assistance",
-    href: "https://www.visawadi.com/uae",
   },
 ];
 
