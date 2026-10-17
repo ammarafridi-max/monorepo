@@ -10,6 +10,10 @@ export function createAdminSubsystem({
   nodeEnv,
   adminToken,
   isTokenAuthorized,
+  sendEmail,
+  brandName,
+  loginUrl,
+  logger,
 }) {
   const authEnabled = Boolean(jwtSecret);
 
@@ -19,7 +23,17 @@ export function createAdminSubsystem({
   let AdminUser = null;
 
   if (authEnabled) {
-    const built = createAuthRouter({ db, jwtSecret, jwtExpiresIn, cookieExpiresInDays, nodeEnv });
+    const built = createAuthRouter({
+      db,
+      jwtSecret,
+      jwtExpiresIn,
+      cookieExpiresInDays,
+      nodeEnv,
+      sendEmail,
+      brandName,
+      loginUrl,
+      logger,
+    });
     authRouter = built.router;
     protect = built.middleware.protect;
     restrictTo = built.middleware.restrictTo;

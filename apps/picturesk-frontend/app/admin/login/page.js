@@ -10,6 +10,7 @@ export default function Page() {
   return (
     <AdminLoginPage
       siteName="Picturesk"
+      useOtp
       icon={Camera}
       headline={
         <>

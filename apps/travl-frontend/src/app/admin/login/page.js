@@ -6,5 +6,5 @@ export const metadata = {
 };
 
 export default function Page() {
-  return <AdminLoginPage siteName="Travl" />;
+  return <AdminLoginPage siteName="Travl" useOtp />;
 }

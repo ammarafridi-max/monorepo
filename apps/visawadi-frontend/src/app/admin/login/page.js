@@ -6,5 +6,5 @@ export const metadata = {
 };
 
 export default function Page() {
-  return <AdminLoginPage siteName="VisaWadi" />;
+  return <AdminLoginPage siteName="VisaWadi" useOtp />;
 }

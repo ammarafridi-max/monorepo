@@ -36,6 +36,12 @@ const {
   jwtExpiresIn: config.jwtExpiresIn,
   cookieExpiresInDays: config.jwtCookieExpiresInDays,
   nodeEnv: config.nodeEnv,
+  // Without sendEmail the OTP service reports itself disabled and every
+  // /auth/otp/* call answers 503, which is what these routes did until now.
+  sendEmail,
+  brandName: "Airport Rides",
+  loginUrl: `${config.frontendUrl}/admin/login`,
+  logger,
 });
 
 router.use("/auth", authRouter);

@@ -392,6 +392,14 @@ app.get('/health', (req, res) => {
 
 app.use(globalLimiter);
 
+// The auth domain expects sendEmail({ email, name, subject, htmlContent }). The
+// Picturesk client is a factory with named senders, so adapt rather than
+// reshape a client the pipeline and worker also use.
+const sendAdminEmail = emailClient
+  ? async ({ email, subject, htmlContent }) =>
+      emailClient.sendRawEmail({ to: email, subject, html: htmlContent })
+  : undefined;
+
 const admin = createAdminSubsystem({
   db: mongoose.connection,
   jwtSecret,
@@ -400,6 +408,10 @@ const admin = createAdminSubsystem({
   nodeEnv: NODE_ENV,
   adminToken: ADMIN_TOKEN,
   isTokenAuthorized: adminAuthorized,
+  sendEmail: sendAdminEmail,
+  brandName: 'Picturesk',
+  loginUrl: `${WEB_BASE_URL}/admin/login`,
+  logger: console,
 });
 const { guard: adminGuard, restrictTo } = admin;
 

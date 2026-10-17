@@ -58,6 +58,12 @@ export function createEmailClient({ apiKey, sender }) {
       return send({ to, subject, html, text, signal });
     },
 
+    /** Pre-rendered HTML from a caller that owns its own template, such as the
+     *  admin one-time code. */
+    async sendRawEmail({ to, subject, html, text, signal }) {
+      return send({ to, subject, html, text, signal });
+    },
+
     async sendVerificationEmail({ to, code, signal }) {
       const { subject, html, text } = renderVerificationEmail({ code });
       return send({ to, subject, html, text, signal });
