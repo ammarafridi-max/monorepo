@@ -44,3 +44,11 @@ migration-output/
 # contain customer data, so they must never reach the remote.
 backups/
 *-backup-*.json
+
+# Written and re-added by `next dev` (see node_modules/next/dist/server/lib/
+# generate-agent-files.js), not by us. It points agents at the Next docs bundled
+# in node_modules, which in this repo describe APIs that do not exist, so it
+# stays out of the tree rather than becoming permanent instructions. The
+# hand-written apps/*/CLAUDE.md files are unaffected and stay tracked.
+AGENTS.md
+apps/dt365-frontend/CLAUDE.md
