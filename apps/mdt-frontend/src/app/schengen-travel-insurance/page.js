@@ -6,6 +6,8 @@ import PrimarySection from '@travel-suite/frontend-shared/components/shared/layo
 import SectionTitle from '@travel-suite/frontend-shared/components/shared/layout/SectionTitle';
 import About from '@travel-suite/frontend-shared/components/sections/v1/About';
 import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
+import QuickAnswer from '@travel-suite/frontend-shared/components/sections/v1/QuickAnswer';
+import { QUICK_ANSWERS } from '@/data/quickAnswers';
 import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
 import {
   MdOutlineAirplaneTicket,
@@ -204,6 +206,10 @@ export default function Page() {
           { label: 'Home', href: '/' },
           { label: 'Schengen Travel Insurance' },
         ]}
+      />
+      <QuickAnswer
+        question={QUICK_ANSWERS.schengenInsurance.question}
+        answer={QUICK_ANSWERS.schengenInsurance.answer}
       />
       <Process
         title={pageData.sections.process.title}

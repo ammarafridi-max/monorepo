@@ -2,6 +2,9 @@ import Container from '@travel-suite/frontend-shared/components/shared/layout/Co
 import FaqAccordion from '@travel-suite/frontend-shared/components/ui/v1/FaqAccordion';
 import PrimarySection from '@travel-suite/frontend-shared/components/shared/layout/PrimarySection';
 import PageHero from '@travel-suite/frontend-shared/components/sections/v1/PageHero';
+import QuickAnswer from '@travel-suite/frontend-shared/components/sections/v1/QuickAnswer';
+import { QUICK_ANSWERS } from '@/data/quickAnswers';
+import { AED_TIERS } from '@/lib/tiers';
 import { faqArray, formatFaqArray } from '@/data/faqs';
 import { buildMetadata } from '@/lib/schema';
 import {
@@ -58,6 +61,11 @@ export default function Page() {
         paths={faqPageData?.breadcrumb}
         title={faqPageData?.sections?.hero?.title}
         subtitle={faqPageData?.sections?.hero?.subtitle}
+      />
+      <QuickAnswer
+        question={QUICK_ANSWERS.faq.question}
+        answer={QUICK_ANSWERS.faq.answer}
+        tiers={AED_TIERS}
       />
       <PrimarySection className="py-10 lg:py-15 bg-white">
         <Container>

@@ -21,6 +21,9 @@ import {
   MdOutlineHotel,
 } from 'react-icons/md';
 import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
+import QuickAnswer from '@travel-suite/frontend-shared/components/sections/v1/QuickAnswer';
+import { QUICK_ANSWERS } from '@/data/quickAnswers';
+import { AED_TIERS } from '@/lib/tiers';
 import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
 import PricingTiers from '@/components/PricingTiers';
@@ -235,6 +238,11 @@ export default function Page() {
           { label: 'Home', href: '/' },
           { label: 'Onward Ticket' },
         ]}
+      />
+      <QuickAnswer
+        question={QUICK_ANSWERS.onward.question}
+        answer={QUICK_ANSWERS.onward.answer}
+        tiers={AED_TIERS}
       />
       <Process
         title={pageData.sections.process.title}

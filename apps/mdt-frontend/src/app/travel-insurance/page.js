@@ -6,6 +6,8 @@ import PrimarySection from '@travel-suite/frontend-shared/components/shared/layo
 import SectionTitle from '@travel-suite/frontend-shared/components/shared/layout/SectionTitle';
 import About from '@travel-suite/frontend-shared/components/sections/v1/About';
 import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
+import QuickAnswer from '@travel-suite/frontend-shared/components/sections/v1/QuickAnswer';
+import { QUICK_ANSWERS } from '@/data/quickAnswers';
 import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
 import {
   MdOutlineAirplaneTicket,
@@ -190,6 +192,10 @@ export default function Page() {
           { label: 'Home', href: '/' },
           { label: 'Travel Insurance' },
         ]}
+      />
+      <QuickAnswer
+        question={QUICK_ANSWERS.insurance.question}
+        answer={QUICK_ANSWERS.insurance.answer}
       />
       <Process
         title={pageData.sections.process.title}

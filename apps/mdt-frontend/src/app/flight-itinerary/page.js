@@ -15,6 +15,9 @@ import {
   HiOutlineCurrencyDollar,
 } from 'react-icons/hi2';
 import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
+import QuickAnswer from '@travel-suite/frontend-shared/components/sections/v1/QuickAnswer';
+import { QUICK_ANSWERS } from '@/data/quickAnswers';
+import { AED_TIERS } from '@/lib/tiers';
 import BookCta from '@/components/BookCta';
 import StickyBookingBar from '@travel-suite/frontend-shared/components/ui/v1/StickyBookingBar';
 import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
@@ -124,6 +127,11 @@ export default function Page() {
           { label: 'Home', href: '/' },
           { label: 'Flight Itinerary' },
         ]}
+      />
+      <QuickAnswer
+        question={QUICK_ANSWERS.itinerary.question}
+        answer={QUICK_ANSWERS.itinerary.answer}
+        tiers={AED_TIERS}
       />
       <Process
         title={pageData.sections.process.title}
