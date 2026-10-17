@@ -15,19 +15,13 @@ import {
   buildWebPage,
   buildWebsite,
 } from '@/lib/schema';
-import VisaDetailPage from '@travel-suite/frontend-shared/pages/client/VisaDetailPage';
+import VisaDetailAppPage from '@/components/app/VisaDetailAppPage';
 import { LIVE_COUNTRIES, countryBySlug } from '@/config/countries';
 import { WHATSAPP_URL } from '@/config/contact';
 import { TRUST_ASSURANCES, TRUST_SUBTITLE, HERO_TRUST_ITEMS } from '@/config/trust';
 
-// Nothing on this route's ancestor chain (including app/loading.js) may define a
-// loading.js. A loading.js opens a Suspense boundary, so Next flushes the HTML
-// shell with a 200 before this component runs and notFound() can no longer set
-// the status — that is what turned bad slugs into indexable soft 404s.
 export const revalidate = 300;
 
-/** Every live country crossed with the destinations it actually serves. A
- *  destination with no overlay for a country is not a page in that country. */
 export async function generateStaticParams() {
   const params = [];
   for (const c of LIVE_COUNTRIES) {
@@ -36,18 +30,11 @@ export async function generateStaticParams() {
       const visas = Array.isArray(res) ? res : res?.data || [];
       for (const v of visas) if (v?.slug) params.push({ country: c.slug, slug: v.slug });
     } catch {
-      // Backend unreachable at build time — fall back to on-demand rendering.
     }
   }
   return params;
 }
 
-/**
- * Deduped across generateMetadata and the page body. Without this the route
- * fetches twice per request, and if the two calls disagree the metadata can
- * say index while the body throws notFound(), which makes Next inject a
- * `robots: noindex` tag alongside the real one.
- */
 const load = cache(async (countrySlug, slug) => {
   const c = countryBySlug(countrySlug);
   if (!c?.isLive) return { c: null, visa: null };
@@ -104,7 +91,6 @@ export default async function Page({ params }) {
       canonical,
       name: `${visa.countryName} Visa Assistance for ${c.residents}`,
       description,
-      // The audience is where the applicant lives, not where they are going.
       areaServed: c.code,
       offers: visa.packages ?? [],
     }),
@@ -114,7 +100,7 @@ export default async function Page({ params }) {
   ]);
 
   return (
-    <VisaDetailPage
+    <VisaDetailAppPage
       visa={visa}
       schema={graph}
       breadcrumbJsonLd={buildBreadcrumbList({ paths: breadcrumbPaths })}

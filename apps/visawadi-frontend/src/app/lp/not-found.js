@@ -1,8 +1,6 @@
 import Link from 'next/link';
 import { LP_BRAND } from '@/lib/lp';
 
-// Overrides the root not-found for this segment: the root one is serialised
-// into every /lp payload and names the word these pages exist to avoid.
 export const metadata = { title: { absolute: `Page not found | ${LP_BRAND}` }, robots: { index: false, follow: false } };
 
 export default function NotFound() {

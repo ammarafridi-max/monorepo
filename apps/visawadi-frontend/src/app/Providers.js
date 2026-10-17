@@ -7,6 +7,8 @@ import { usePathname } from "next/navigation";
 import { Globe } from "lucide-react";
 import { UserAuthContext } from "@travel-suite/frontend-shared/contexts/AuthContextBase";
 import AppMegaLayout from "@travel-suite/frontend-shared/layouts/AppMegaLayout";
+import MobileTabBar from "@/components/app/MobileTabBar";
+import ServiceWorker from "@/components/app/ServiceWorker";
 import { LP_BRAND } from "@/lib/lp";
 import { UserAuthProvider } from "@travel-suite/frontend-shared/contexts/UserAuthProvider";
 import Footer from "@travel-suite/frontend-shared/components/sections/v2/Footer";
@@ -26,7 +28,6 @@ const BRAND = "VisaWadi";
 const visawadiFooter = (
   <Footer
     brand={BRAND}
-    // Light logo on the footer's gray-900 ground; dark logo on the white navbar.
     logoSrc="/logo-light.png"
     logoWidth={1000}
     logoHeight={179}
@@ -172,12 +173,7 @@ function GuestAuthProvider({ children }) {
 export default function Providers({ children }) {
   const pathname = usePathname();
   const isAdminRoute = pathname?.startsWith("/admin");
-  // Ad landing pages carry no site chrome: the navbar and footer name the
-  // brand and the word the pages exist to avoid, and an ad click should have
-  // one exit, the lead form.
   const isLandingRoute = pathname?.startsWith("/lp/");
-  // Real customer auth only on the /apply visa-application routes; every other
-  // public page keeps the guest provider.
   const isApplyRoute = pathname?.startsWith("/apply");
   const AuthProvider = isApplyRoute ? UserAuthProvider : GuestAuthProvider;
 
@@ -240,25 +236,23 @@ export default function Providers({ children }) {
             logoHeight={176}
             logoAlt={BRAND}
             footer={visawadiFooter}
-            // We never quote a converted price, so the currency switcher has no
-            // job here and the currencies fetch it triggers is dead weight.
             showCurrency={false}
-            // Sign Up / Log In are hidden for now. Customers reach their
-            // application through the emailed link, not a public account area.
-            // Restore by pointing these at "/apply/signup" and "/apply/login".
             loginHref={null}
             signupHref={null}
-            // The bar was logo, one link and dead space. A tool is a lower
-            // commitment ask than a consultation and the checker routes to the
-            // money page once it has an answer, so intent arrives qualified.
             cta={{ label: "Check your visa", href: "/visa-check" }}
+            // The bottom tab bar carries Check on phones, so the navbar CTA
+            // is desktop only.
+            ctaOnMobile={false}
           >
-            <main>{children}</main>
+            <main className={isApplyRoute ? undefined : "has-tabbar"}>{children}</main>
           </AppMegaLayout>
+          {!isApplyRoute && <MobileTabBar />}
+          <ServiceWorker />
           {WHATSAPP_NUMBER && (
             <StickyWhatsApp
               phoneNumber={WHATSAPP_NUMBER}
               hidePathPrefixes={["/apply"]}
+              bottomOffset="calc(124px + env(safe-area-inset-bottom, 0px))"
             />
           )}
         </AuthProvider>

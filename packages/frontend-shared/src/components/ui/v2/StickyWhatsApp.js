@@ -8,12 +8,11 @@ export default function StickyWhatsApp({
   phoneNumber,
   label = 'Chat with us on WhatsApp',
   hidePathPrefixes = [],
+  bottomOffset,
 }) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
 
-  // Sits over the hero's bottom-right corner at phone widths, so wait until
-  // the first scroll before showing it.
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 80);
     onScroll();
@@ -42,7 +41,8 @@ export default function StickyWhatsApp({
       rel="noopener noreferrer"
       aria-label={label}
       title={label}
-      className={`fixed bottom-4 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 ${
+      style={bottomOffset ? { bottom: bottomOffset } : undefined}
+      className={`fixed right-4 z-40 flex h-14 w-14 ${bottomOffset ? '' : 'bottom-4'} items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 ${
         scrolled ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-4 opacity-0 md:pointer-events-auto md:translate-y-0 md:opacity-100'
       }`}
     >

@@ -10,13 +10,13 @@ import Currency from "../../ui/v2/Currency.js";
 
 export default function MobileNavigation({
   pages = [],
-  // Brands without prices (visa assistance, for example) pass showCurrency={false}
-  // and loginHref={null} to drop the switcher and the auth link from the menu.
   showCurrency = true,
   loginHref = "/login",
-  // Same optional { label, href } the desktop bar takes; shown as a full-width
-  // button at the top of the sheet, where a thumb actually lands.
   cta = null,
+  // A brand with its own bottom tab bar already has the primary action in the
+  // thumb zone, so repeating it beside the hamburger is clutter that also
+  // overflows the bar at narrow widths.
+  showCta = true,
 }) {
   const { user, isAuthenticated } = useAuth();
 
@@ -27,7 +27,7 @@ export default function MobileNavigation({
     <>
       <div className="lg:hidden flex items-center gap-1">
         {showCurrency && <Currency className="block" />}
-        {cta?.href && cta?.label && !open ? (
+        {showCta && cta?.href && cta?.label && !open ? (
           <Link
             href={cta.href}
             className="inline-flex min-h-11 items-center rounded-lg bg-primary-700 px-3 text-[13px] font-semibold text-white transition-colors hover:bg-primary-800"
@@ -59,7 +59,7 @@ export default function MobileNavigation({
               </button>
             </div>
 
-            {cta?.href && cta?.label ? (
+            {showCta && cta?.href && cta?.label ? (
               <Link
                 href={cta.href}
                 onClick={() => setOpen(false)}

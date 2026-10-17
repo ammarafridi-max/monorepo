@@ -133,8 +133,6 @@ function GuestAuthProvider({ children }) {
 export default function Providers({ children }) {
   const pathname = usePathname();
   const isAdminRoute = pathname?.startsWith('/admin');
-  // Travl has no customer accounts since /apply moved to VisaWadi, so every
-  // public route is a guest route.
   const AuthProvider = GuestAuthProvider;
   const [queryClient] = useState(
     () =>
@@ -173,6 +171,7 @@ export default function Providers({ children }) {
                 loginHref={null}
                 signupHref={null}
                 cta={{ label: 'Get a Quote', href: '/insurance-booking/quote' }}
+                ctaOnMobile={false}
               >
                 <main>{children}</main>
               </AppMegaLayout>

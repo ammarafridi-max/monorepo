@@ -1,8 +1,3 @@
-/**
- * Vocabulary for the /lp ad landing pages, which must not carry the word
- * "visa" anywhere, brand name included. Change these two and every /lp page
- * follows.
- */
 export const LP_BRAND = 'Wadi';
 export const LP_TERM = 'permit';
 
@@ -15,8 +10,6 @@ function matchCase(source, replacement) {
   return replacement;
 }
 
-// Image and link URLs are left alone: rewriting a Cloudinary path breaks the
-// image, and the folder name is not reader-facing text.
 const isUrl = (s) => /^(https?:\/\/|\/)\S*$/.test(s);
 
 export function scrubText(value) {
@@ -24,7 +17,6 @@ export function scrubText(value) {
   return value.replace(BRAND_RE, LP_BRAND).replace(TERM_RE, (m) => matchCase(m, LP_TERM));
 }
 
-/** Walks any JSON-shaped value and scrubs every string in it. */
 export function scrubDeep(value) {
   if (typeof value === 'string') return scrubText(value);
   if (Array.isArray(value)) return value.map(scrubDeep);

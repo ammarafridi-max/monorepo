@@ -11,9 +11,6 @@ import { LP_BRAND, LP_TERM, scrubDeep, scrubText } from '@/lib/lp';
 
 export const revalidate = 300;
 
-// Ad landing pages: the /uae/visa/<slug> page with every occurrence of the
-// word "visa" replaced, brand included. Not indexed, no schema, no site chrome,
-// and no guide links out: an ad click should stay on this page.
 const load = cache(async (slug) => {
   const res = await getPublicVisaForResidenceApi(slug, DEFAULT_COUNTRY.code).catch(nullOn404);
   const visa = res?.data ?? res ?? null;
@@ -32,7 +29,6 @@ export async function generateMetadata({ params }) {
     description,
     alternates: { canonical: `${SITE_URL}/lp/${slug}` },
     robots: { index: false, follow: false },
-    // siteName is inherited from the root layout otherwise, and that carries the brand.
     openGraph: { siteName: LP_BRAND, title, description, images: [visa.heroImageUrl || `${SITE_URL}/og-image.png`] },
   };
 }

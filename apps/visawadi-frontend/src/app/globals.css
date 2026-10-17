@@ -48,7 +48,8 @@
      is named for its role, not the face, so swapping fonts is one line in
      layout.js and nothing here. */
   --font-sans:         var(--font-brand), ui-sans-serif, system-ui, sans-serif;
-  --font-mono:         var(--font-geist-mono), ui-monospace, monospace;
+  /* IBM Plex Mono, set in layout.js. Figures only: fees, deadlines, dates. */
+  --font-mono:         var(--font-data), var(--font-geist-mono), ui-monospace, monospace;
   --font-nunito:       var(--font-brand), sans-serif;
   --font-merriweather: var(--font-brand), sans-serif;
   --font-outfit:       var(--font-brand), sans-serif;
@@ -293,4 +294,24 @@ a {
   @media (min-width: 1024px) {
     padding-block: 96px;
   }
+}
+
+/* Figures: fees, deadlines, dates, reference numbers.
+   The family is repeated here rather than left to Tailwind's `font-mono`
+   utility because the `*` rule at the top of this file is unlayered, and
+   unlayered declarations beat everything in @layer utilities no matter how
+   specific. Removing that `*` rule would be the better fix; it is load-bearing
+   for every other brand page, so this stays scoped to the figure class. */
+.font-mono {
+  font-family: var(--font-data), ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The tab bar is fixed, so every public page needs to end above it. Applied in
+   Providers rather than on body, because /admin and /apply have no tab bar. */
+.has-tabbar {
+  padding-bottom: calc(58px + env(safe-area-inset-bottom, 0px));
+}
+@media (min-width: 1024px) {
+  .has-tabbar { padding-bottom: 0; }
 }

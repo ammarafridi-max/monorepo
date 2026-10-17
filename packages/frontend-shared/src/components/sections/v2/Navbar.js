@@ -25,11 +25,9 @@ export default function Navbar({
   logoAlt = "Logo",
   loginHref = "/login",
   signupHref = "/signup",
-  // Pass showCurrency={false} on brands that never quote a price.
   showCurrency = true,
-  // Optional primary action, { label, href }. Renders nothing when absent, so
-  // brands that have not defined one look exactly as they did.
   cta = null,
+  ctaOnMobile = true,
 }) {
   const { user, isAuthenticated } = useAuth();
   const pathname = usePathname();
@@ -44,7 +42,6 @@ export default function Navbar({
 
   function openMega(i) {
     clearTimeout(megaTimer.current);
-    // megaTab is shared across menus, so reset it when switching menu.
     if (megaOpen !== i) setMegaTab(0);
     setMegaOpen(i);
   }
@@ -122,7 +119,6 @@ export default function Navbar({
                   )}
                 </Link>
 
-                {/* Mega panel */}
                 {isMegaItem && megaOpen === i && (
                   <div
                     onMouseEnter={() => openMega(i)}
@@ -285,7 +281,6 @@ export default function Navbar({
                   </div>
                 )}
 
-                {/* Simple dropdown */}
                 {isDropItem && dropdownOpen === i && (
                   <div
                     onMouseEnter={() => openDrop(i)}
@@ -319,9 +314,7 @@ export default function Navbar({
           })}
         </nav>
 
-        {/* Right side: auth + mobile nav */}
         <div className="flex items-center gap-2">
-          {/* User menu / Login */}
           {isAuthenticated ? (
             <div className="hidden lg:block relative">
               <button
@@ -433,6 +426,7 @@ export default function Navbar({
             showCurrency={showCurrency}
             loginHref={loginHref}
             cta={cta}
+            showCta={ctaOnMobile}
           />
         </div>
       </Container>
