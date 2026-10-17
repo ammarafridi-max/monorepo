@@ -8,8 +8,6 @@ export async function searchHotelOffersApi(payload) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
-    // A city search asks the supplier for rates across ~50 hotels and has been
-    // measured near 10s, so the 8s default aborts a request that would have worked.
     timeoutMs: 45000,
   });
 }

@@ -1,19 +1,3 @@
-/**
- * Writes metaTitle, metaDescription and an intro for the six tag pages with
- * fewer than four posts. All six had empty metaTitle and metaDescription, so
- * they fell back to the "<Tag> | Blog Tag | VisaWadi" template and had no
- * unique description at all.
- *
- * metaTitle is kept at or under 49 characters because the layout template
- * appends " | VisaWadi", and the rendered <title> should stay under 60.
- *
- * us-visa has no posts yet and is left listed on purpose; the copy is written
- * so the page reads as a section that is being built rather than an error.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/write-thin-tag-copy.mjs          # dry run
- *   node --env-file=.env.production scripts/write-thin-tag-copy.mjs --apply
- */
 
 import mongoose from 'mongoose';
 

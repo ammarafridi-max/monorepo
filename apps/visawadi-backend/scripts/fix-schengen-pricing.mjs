@@ -1,15 +1,3 @@
-/**
- * H3. Reconciles the Schengen page's pricing to the confirmed tiers:
- * Basic AED 299, Standard AED 599, Concierge AED 699.
- *
- * The breakdown previously advertised a service fee of AED 499 and a note
- * naming an "Express" tier at AED 899 and a Concierge at AED 1,799. None of
- * those are products; they are pre-migration Travl figures.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/fix-schengen-pricing.mjs          # dry run
- *   node --env-file=.env.production scripts/fix-schengen-pricing.mjs --apply
- */
 
 import mongoose from 'mongoose';
 import VisaSchema from '@travel-suite/visa/schema';
@@ -31,7 +19,6 @@ const Overlay = conn.model('visa-overlay', VisaOverlaySchema);
 
 console.log(APPLY ? '=== APPLY ===' : '=== DRY RUN (pass --apply to execute) ===');
 
-/** The overlay is what the page actually renders, so both layers need fixing. */
 for (const [label, doc] of [
   ['base', await Visa.findOne({ slug: 'schengen' })],
   ['AE overlay', await Overlay.findOne({ residence: 'AE', visaSlug: 'schengen' })],

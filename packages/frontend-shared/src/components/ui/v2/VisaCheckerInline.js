@@ -20,13 +20,8 @@ const OUTCOME_ICON = {
 
 export default function VisaCheckerInline({
   consultHref = '/visa',
-  // Brands that segment visa pages by residence country pass the segment here,
-  // e.g. basePath="/uae" to link /uae/visa/<slug>.
   basePath = '',
   extraDestinations = [SCHENGEN_OPTION],
-  // When set, a successful check navigates to `${resultPath}/<destination>`
-  // with the answer's inputs as params, instead of rendering the result inline.
-  // The API call still runs first, so the query log is unaffected.
   resultPath = null,
   className = '',
 }) {
@@ -78,7 +73,6 @@ export default function VisaCheckerInline({
             {v.result.note ? <p className={`mt-2 text-sm ${tone.text}`}>{v.result.note}</p> : null}
           </div>
 
-          {/* Only sell when action is needed and we actually handle it. */}
           {needsAction && v.result.isServiced && (
             <div className="mt-5 rounded-2xl border border-primary-200 bg-white p-5 shadow-[0_4px_20px_rgba(16,24,40,0.06)]">
               <p className="text-base font-bold text-gray-900">We handle this one.</p>

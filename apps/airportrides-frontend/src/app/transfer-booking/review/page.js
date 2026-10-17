@@ -90,10 +90,6 @@ export default function ReviewPage() {
   actionRef.current = async () => {
     setError(null);
 
-    // Hard stop: no stored booking, no payment. The webhook that confirms the
-    // booking and emails the customer only runs off the bookingId in the Stripe
-    // session metadata, so opening checkout without one can only ever produce a
-    // charge with nothing behind it.
     if (!bookingId) {
       const message = 'We could not find your saved booking. Please go back to passenger details and continue again.';
       setError(message);
@@ -168,9 +164,6 @@ export default function ReviewPage() {
     );
   }
 
-  // Details were entered but nothing came back from the booking API, so there is
-  // no record for the payment webhook to attach to. Send them back rather than
-  // showing a payable summary.
   if (!bookingId) {
     return (
       <div className="py-20 text-center">

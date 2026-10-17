@@ -1,9 +1,3 @@
-/**
- * FAQ content. Single source of truth for the FAQ section, structured for direct,
- * verdict-first answers (good for people and for AI citation). Every answer is
- * truthful to how the system actually works: the refund maps to a failed run, not
- * to taste, and we do not claim to auto-delete photos.
- */
 export const faq = [
   {
     q: 'Do the headshots actually look like me?',
@@ -73,11 +67,4 @@ export const faq = [
   },
 ];
 
-/**
- * The six questions the home page asks, flagged with `home: true` above. These are
- * the ones a buyer raises BEFORE paying: likeness, the guarantee, how many photos,
- * how long, what happens to the photos, and what they may do with the results.
- * The full list stays on /faq, and the home page's FAQPage schema is built from
- * this subset so the markup matches what is actually visible there.
- */
 export const homeFaq = faq.filter((item) => item.home);

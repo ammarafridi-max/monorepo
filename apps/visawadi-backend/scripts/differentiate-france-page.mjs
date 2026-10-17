@@ -1,23 +1,3 @@
-/**
- * Template for de-duplicating the Schengen country pages.
- *
- * france-visa shared three FAQ answers verbatim with schengen (country name
- * swapped) and inherited everything else, so the two pages competed for the
- * same queries while saying the same thing. This writes the France overlay
- * with what is actually specific to a France application from the UAE.
- *
- * Facts checked 2026-09-01 against france-visas.gouv.fr and VFS Global:
- *   - France-Visas (france-visas.gouv.fr) is a mandatory first step. The
- *     reference number it issues is required to book at VFS.
- *   - The Consulate General in Dubai has had no visa section since 2019.
- *     Applications are decided by the consular section in Abu Dhabi, though
- *     documents can be submitted at either VFS centre.
- *   - Short-stay consular fee is EUR 90 for adults.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/differentiate-france-page.mjs          # dry run
- *   node --env-file=.env.production scripts/differentiate-france-page.mjs --apply
- */
 
 import mongoose from 'mongoose';
 

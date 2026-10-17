@@ -41,8 +41,6 @@ export function createAuthService({ AdminUser }) {
   const resetPassword = async ({ userId, password }) => {
     const user = await AdminUser.findById(userId).select('+password');
     if (!user) throw new AppError('Admin user not found', 404);
-    // The pre-save hook hashes and stamps passwordChangedAt, which the auth
-    // middleware uses to reject tokens issued before the change.
     user.password = password;
     await user.save();
     return user;

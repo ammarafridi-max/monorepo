@@ -8,8 +8,6 @@ import { track, EVENTS } from '../../../lib/analytics';
 import Lightbox from '../../../components/Lightbox';
 import Container from '../../../components/Container';
 
-// A small download glyph (arrow into a tray). Inline so it inherits currentColor
-// and needs no asset request. Decorative; the control carries its own aria-label.
 function DownloadIcon() {
   return (
     <svg
@@ -30,7 +28,6 @@ function DownloadIcon() {
   );
 }
 
-// An eye glyph for "view larger". Same inline style as DownloadIcon.
 function EyeIcon() {
   return (
     <svg
@@ -50,12 +47,8 @@ function EyeIcon() {
   );
 }
 
-// Payment succeeded and the order is progressing or done. FAILED is excluded: it
-// was paid but is being refunded, so counting it as a completed purchase would
-// inflate the funnel.
 const PAID_STATES = new Set(['PAID', 'TRAINING', 'GENERATING', 'DELIVERED']);
 
-// The pipeline order. AWAITING_PAYMENT sits before the first visible step.
 const nounFor = (order) => (order?.product === 'dating' ? 'dating photos' : 'headshots');
 const landingFor = (order) => (order?.product === 'dating' ? '/ai-dating-photos' : '/ai-headshot-generator');
 
@@ -83,7 +76,6 @@ const SUBCOPY = {
   DELIVERED: 'They came out well. View and download them below.',
 };
 
-// FAILED copy is calm and depends on whether the refund has gone through.
 function failedSubcopy(order) {
   const noun = nounFor(order);
   return order.refunded
@@ -96,8 +88,6 @@ function currentIndex(status) {
   return STEPS.findIndex((s) => s.key === status);
 }
 
-// Format a millisecond duration as a compact clock: "m:ss", or "h:mm:ss" past an
-// hour. Returns null for missing/negative input so callers can skip rendering.
 function fmtDuration(ms) {
   if (ms == null || !Number.isFinite(ms) || ms < 0) return null;
   const total = Math.floor(ms / 1000);
@@ -111,18 +101,13 @@ function fmtDuration(ms) {
 export default function SuccessView() {
   const params = useSearchParams();
   const orderId = params.get('orderId');
-  // The order's access token, from the Stripe success_url or the delivery email.
   const token = params.get('t');
 
   const [order, setOrder] = useState(null);
   const [error, setError] = useState('');
-  // The delivered image currently open in the lightbox (null = closed).
   const [preview, setPreview] = useState(null);
-  // Ticks once a second so the "elapsed" clock advances between the 4s status polls.
   const [now, setNow] = useState(() => Date.now());
 
-  // Fire purchase_completed exactly once, when the polled order first shows that
-  // payment has gone through. No PII in the event.
   const purchasedRef = useRef(false);
   useEffect(() => {
     if (!purchasedRef.current && order && PAID_STATES.has(order.status)) {
@@ -132,8 +117,6 @@ export default function SuccessView() {
     }
   }, [order]);
 
-  // Advance the elapsed clock every second while the order is still processing.
-  // Stops once terminal (DELIVERED/FAILED), where the time is frozen at the total.
   const processing = order && order.status !== 'DELIVERED' && order.status !== 'FAILED';
   useEffect(() => {
     if (!processing) return;
@@ -154,7 +137,6 @@ export default function SuccessView() {
         const data = await getOrder(orderId, token);
         if (!alive) return;
         setOrder(data);
-        // Stop polling once the order is in a terminal state.
         if (data.status !== 'DELIVERED' && data.status !== 'FAILED') {
           timer = setTimeout(tick, 4000);
         }
@@ -206,9 +188,6 @@ export default function SuccessView() {
   const isGenerating = status === 'GENERATING';
   const wide = isDelivered && (order.resultImageUrls?.length ?? 0) > 0;
 
-  // Processing time: counts up live while the order runs, then freezes at the total
-  // once delivered. Anchored on paidAt (when the worker starts), falling back to
-  // createdAt if the webhook has not stamped paidAt yet.
   const startMs = order.paidAt
     ? new Date(order.paidAt).getTime()
     : order.createdAt
@@ -226,10 +205,6 @@ export default function SuccessView() {
     }
   }
 
-  // Live generation progress as a percentage. We show a percentage rather than a
-  // raw "X of N" because we deliberately over-generate and then curate: "7 of 10"
-  // would read as "3 failed" when nothing failed. Null total means generation has
-  // only just started, so the bar runs in a calm indeterminate state instead.
   const pct =
     isGenerating && order.totalCount > 0
       ? Math.min(100, Math.round((order.generatedCount / order.totalCount) * 100))
@@ -281,8 +256,6 @@ export default function SuccessView() {
                 </a>
               )}
             </div>
-            {/* data-clarity-mask: the delivered headshots are the customer's face; never
-                record them in Clarity session replay. */}
             <div className="gallery__grid" data-clarity-mask="true">
               {(order.resultImageUrls || []).map((url, i) => (
                 <figure className="shot" key={url}>

@@ -12,12 +12,6 @@ import { dbConnect } from '../../../../../../lib/db';
 import { createSessionCookie } from '../../../../../../lib/session';
 import { findOrCreateOAuthUser, backlinkOrders } from '../../../../../../lib/auth';
 
-// GET /api/auth/oauth/:provider/callback -> finish the flow: verify the CSRF state,
-// exchange the code for the account email, upsert the User, back-link any past
-// anonymous orders sharing that email, and start the session. Anything wrong (user
-// denied consent, missing code, state mismatch, provider error) fails closed to
-// login with no session created. redirect() is kept outside the try so its
-// internal NEXT_REDIRECT is never swallowed by the catch.
 export async function GET(req, { params }) {
   const name = (await params).provider;
   const url = new URL(req.url);

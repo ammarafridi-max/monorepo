@@ -11,7 +11,6 @@ export async function createBookingApi({ trip, vehicle, passenger }) {
   });
 }
 
-// `credentials: include` is what lets an admin see the unredacted booking; anonymous callers send no cookie.
 export async function getBookingApi(id) {
   return await apiFetchPublic(`${BASE}/${id}`, { credentials: 'include' });
 }

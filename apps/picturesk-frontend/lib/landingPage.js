@@ -12,20 +12,11 @@ import {
 const FUNNEL = '/ai-headshot-generator/about';
 const DATING_FUNNEL = '/ai-dating-photos/about';
 
-// The canonical page each family of landing pages breadcrumbs from.
 export const ROOTS = {
   headshots: { label: 'AI Headshot Generator', path: '/ai-headshot-generator' },
   dating: { label: 'AI Dating Photos', path: '/ai-dating-photos' },
 };
 
-/**
- * Metadata and the JSON-LD graph for a keyword landing page, built from the page's
- * own `meta` and `sections`. Every landing page gets the same treatment, so a new
- * page cannot ship without a canonical, an OG card, a Product node or breadcrumbs.
- *
- * Breadcrumbs run Home -> product root -> page, so every landing page hangs off
- * its product and the product off the hub.
- */
 export function landingMetadata({ meta }) {
   const canonical = `${SITE_URL}${meta.canonical}`;
   const image = `${SITE_URL}/og-image.png`;

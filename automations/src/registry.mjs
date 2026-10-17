@@ -7,14 +7,6 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 export const TARGETS_DIR = join(HERE, '..', 'targets');
 const JOBS_DIR = join(HERE, '..', 'jobs');
 
-/**
- * The index of what can run. Adding an automation means adding one entry here
- * and one thin caller workflow; nothing else in this package changes.
- *
- * `env` is what the job needs beyond the target's own credential vars, and is
- * checked before the job starts so a missing secret fails in the first second
- * rather than halfway through a paid API call.
- */
 export const JOBS = {
   'blog-generate': {
     describe: 'Generate and publish one blog post from the target\'s topic schedule',
@@ -22,7 +14,6 @@ export const JOBS = {
     needsTarget: true,
     env: ['ANTHROPIC_API_KEY'],
     optionalEnv: ['RECRAFT_API_KEY'],
-    // A dry run renders the prompt and exits without calling anything.
     dryRunEnv: [],
   },
   'blog-schedule': {
@@ -30,7 +21,6 @@ export const JOBS = {
     module: join(JOBS_DIR, 'blog-schedule', 'index.mjs'),
     needsTarget: true,
     env: [],
-    // Reads the backend to compute the schedule even when it writes nothing.
     dryRunEnv: [],
   },
   'hotel-cancellations': {
@@ -38,7 +28,6 @@ export const JOBS = {
     module: join(JOBS_DIR, 'hotel-cancellations', 'index.mjs'),
     needsTarget: false,
     env: ['MONGO_URI', 'LITEAPI_API_KEY', 'BREVO_API_KEY'],
-    // A dry run still reads the database and the deadlines; it only skips cancelling and emailing.
     dryRunEnv: ['MONGO_URI'],
   },
   'pricing-sync': {
@@ -47,7 +36,6 @@ export const JOBS = {
     needsTarget: false,
     env: ['MONGO_URI', 'PRICING_SHEET_ID', 'GOOGLE_SERVICE_ACCOUNT_JSON'],
     optionalEnv: ['PRICING_SHEET_TAB'],
-    // A dry run still reads the sheet and the database; it only skips the writes.
     dryRunEnv: ['MONGO_URI', 'PRICING_SHEET_ID', 'GOOGLE_SERVICE_ACCOUNT_JSON'],
   },
 };
@@ -60,10 +48,6 @@ export function listTargets() {
     .sort();
 }
 
-/**
- * Load and validate one target. `dir` is injected so a job resolves its data
- * files from the target's own folder rather than a filename in shared code.
- */
 export async function loadTarget(key, { job = null } = {}) {
   const available = listTargets();
   if (!available.includes(key)) {
@@ -75,12 +59,6 @@ export async function loadTarget(key, { job = null } = {}) {
   return validateTarget(target, { job });
 }
 
-/**
- * Fail before doing any work (or spending anything) if a secret is missing.
- *
- * A dry run is checked against `dryRunEnv` instead, so `--dry-run` stays runnable
- * with no credentials at all. That is what lets CI exercise it on every PR.
- */
 export function assertEnv(job, target = null, { dryRun = false } = {}) {
   const spec = JOBS[job];
   const required = dryRun ? (spec.dryRunEnv ?? []) : (spec.env ?? []);

@@ -1,6 +1,3 @@
-// Site footer: brand + grouped links + contact, on the deep-green Forest & Gold
-// surface. The brand is an ivory text wordmark (the stored logo.png is dark and
-// would vanish on green). Links are absolute paths so it works from any page.
 import Container from './Container';
 import { services, tools } from '../data/services';
 

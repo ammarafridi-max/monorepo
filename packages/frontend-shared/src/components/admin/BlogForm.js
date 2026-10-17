@@ -141,8 +141,6 @@ export default function BlogForm({ initialData, onSubmit, isPending }) {
       scheduledAt: initialData?.scheduledAt
         ? format(new Date(initialData.scheduledAt), "yyyy-MM-dd'T'HH:mm")
         : "",
-      // Tags arrive populated on migrated brands and as names elsewhere; carry
-      // ids where we have them so the form always submits something resolvable.
       tags: (initialData?.tags || [])
         .map((t) => (typeof t === 'string' ? t : t?._id))
         .filter(Boolean),

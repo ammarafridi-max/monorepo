@@ -39,8 +39,6 @@ const FALLBACK = { '2 Days': 49, '7 Days': 69, '14 Days': 79 };
 
 export const revalidate = 300;
 
-// Prices come from the SAR price book so the title can never drift from what
-// checkout charges.
 async function getSarPrices() {
   try {
     const data = await getDummyTicketPricingServerApi('SAR');

@@ -35,8 +35,6 @@ function lightingWords(m) {
   return 'Exposure and sharpness are fine.';
 }
 
-// The tool. Layer one (measurements) is instant and free; layer two (the model)
-// runs on request. The circle preview is centred on the face box when we have one.
 export default function LinkedInAnalyzer() {
   const [file, setFile] = useState(null);
   const [url, setUrl] = useState('');
@@ -101,8 +99,6 @@ export default function LinkedInAnalyzer() {
     }
   }
 
-  // Hand the photo into the funnel: upload it the way the Photos step does, run it
-  // through the same gate, and seed the headshot funnel with it.
   async function startFunnel() {
     track('tool_cta_click', { tool: TOOL, score: result?.score ?? null });
     try {
@@ -114,7 +110,6 @@ export default function LinkedInAnalyzer() {
         writeState({ images: [kept], reuseFromOrderId: '' }, 'headshots');
       }
     } catch {
-      /* the funnel works without the seed */
     }
     window.location.href = FUNNEL;
   }
@@ -123,7 +118,6 @@ export default function LinkedInAnalyzer() {
   const b = overall != null ? band(overall) : null;
   const measuredOnly = metrics ? Math.round(((metrics.framingScore ?? 60) + metrics.lightingScore) / 2) : null;
 
-  // Circle preview: LinkedIn's crop is roughly 2.6 face-heights across, centred on the face.
   let circleStyle;
   if (metrics?.box && metrics.width) {
     const canvasW = metrics.width * (1024 / Math.max(metrics.width, metrics.height));

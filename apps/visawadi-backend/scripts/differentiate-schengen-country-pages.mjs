@@ -1,34 +1,3 @@
-/**
- * Differentiates Germany, Italy, Spain and Greece from each other and from the
- * Schengen page, following the France template.
- *
- * These five pages were generated from one template with the country name
- * swapped, so they carried identical FAQ answers, identical process steps and
- * identical requirements. Each now leads on what actually differs: the form,
- * the centre, who decides, and the rule that catches applicants out.
- *
- * Facts checked 2026-09-01 against the missions and their visa centres:
- *   DE  VIDEX (videx.diplo.de) is the application form. The German Consulate
- *       General in Dubai decides every UAE application. Emirate of residence
- *       fixes the centre: Dubai and the Northern Emirates submit in Dubai,
- *       Abu Dhabi and Al Ain in Abu Dhabi. No applying more than 180 days out.
- *   IT  VFS Italy. Fees are paid at the counter on the day, not online.
- *       Biometrics are held in the VIS for five years. No submitting earlier
- *       than six months before travel.
- *   ES  BLS International, not VFS. Applicants need their own BLS account and
- *       the Annex A form, and fees are paid online at booking. Indian
- *       nationals face extra residency and employment evidence.
- *   GR  VFS Greece at Wafi Mall, submissions 09:00-15:00. Emirate on the
- *       Emirates ID fixes the centre. Insurance must cover all 29 states.
- *
- * Consular fee amounts are deliberately absent from this copy: the
- * pricingBreakdown still quotes EUR 80 when the current fee is EUR 90, and
- * repeating a figure that is under review would only spread the error.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/differentiate-schengen-country-pages.mjs          # dry run
- *   node --env-file=.env.production scripts/differentiate-schengen-country-pages.mjs --apply
- */
 
 import mongoose from 'mongoose';
 

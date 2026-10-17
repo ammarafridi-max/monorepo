@@ -150,8 +150,6 @@ function DocRow({ doc, applicantName, actions, allDocs, onView }) {
           {uploaded && !satisfied && (
             <button onClick={() => onView(doc, selectedVersion === doc.version ? undefined : selectedVersion)} className="inline-flex items-center gap-1 text-[12px] font-medium text-gray-500 hover:text-gray-700 px-1.5"><Eye size={13} /> View</button>
           )}
-          {/* Review inline for staff-produced (AGENT) docs. CUSTOMER uploads are
-              reviewed in the View modal (Approve / Reject / Replace) instead. */}
           {uploaded && !satisfied && doc.source !== 'CUSTOMER' && doc.status !== 'APPROVED' && (
             <button onClick={() => actions.review.mutate({ documentId: doc._id, decision: 'APPROVED' })} disabled={actions.review.isPending}
               className="inline-flex items-center gap-1 rounded-lg bg-green-50 text-green-700 border border-green-200 px-2.5 py-1 text-[12px] font-semibold hover:bg-green-100 transition"><Check size={12} /> Approve</button>
@@ -159,7 +157,6 @@ function DocRow({ doc, applicantName, actions, allDocs, onView }) {
           {uploaded && !satisfied && doc.source !== 'CUSTOMER' && doc.status !== 'REJECTED' && (
             <button onClick={() => setRejecting((r) => !r)} className="inline-flex items-center gap-1 rounded-lg bg-red-50 text-red-700 border border-red-200 px-2.5 py-1 text-[12px] font-semibold hover:bg-red-100 transition"><X size={12} /> Reject</button>
           )}
-          {/* Staff upload — AGENT rows only (customers upload their own). */}
           {!satisfied && doc.source !== 'IN_PERSON' && doc.source !== 'CUSTOMER' && (
             <>
               <button onClick={() => uploadRef.current?.click()} disabled={actions.upload.isPending}
@@ -170,17 +167,14 @@ function DocRow({ doc, applicantName, actions, allDocs, onView }) {
                 onChange={(e) => { const file = e.target.files?.[0]; if (file) actions.upload.mutate({ documentId: doc._id, file }); e.target.value = ''; }} />
             </>
           )}
-          {/* IN_PERSON mark complete */}
           {doc.source === 'IN_PERSON' && doc.status !== 'APPROVED' && (
             <button onClick={() => setMarking((m) => !m)} className="inline-flex items-center gap-1 rounded-lg bg-green-50 text-green-700 border border-green-200 px-2.5 py-1 text-[12px] font-semibold hover:bg-green-100 transition"><Check size={12} /> Mark done</button>
           )}
-          {/* Link / unlink satisfied-by */}
           {satisfied ? (
             <button onClick={() => actions.link.mutate({ documentId: doc._id, sourceDocumentId: null })} className="inline-flex items-center gap-1 text-[12px] font-medium text-gray-500 hover:text-gray-700 px-1.5"><Link2 size={13} /> Unlink</button>
           ) : (!uploaded && doc.source !== 'IN_PERSON' && candidates.length > 0 && (
             <button onClick={() => setLinking((l) => !l)} className="inline-flex items-center gap-1 text-[12px] font-medium text-gray-500 hover:text-gray-700 px-1.5"><Link2 size={13} /> Link</button>
           ))}
-          {/* Waive / remove */}
           <button onClick={() => { if (confirm('Remove/waive this document row?')) actions.remove.mutate({ documentId: doc._id }); }} title="Waive / remove"
             className="p-1 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition"><Trash2 size={13} /></button>
         </div>
@@ -445,7 +439,7 @@ export default function AdminApplicationDetailPage() {
       const blob = await adminGetDocumentStreamBlobApi(doc._id, version);
       const objectUrl = URL.createObjectURL(blob);
       setViewer((prev) => { if (prev?.url) URL.revokeObjectURL(prev.url); return { url: objectUrl, mimeType: blob.type, label: doc.label || doc.docTypeKey, version: version ?? doc.version, doc }; });
-    } catch { /* toast upstream */ }
+    } catch {  }
   }
   function closeViewer() { setViewer((prev) => { if (prev?.url) URL.revokeObjectURL(prev.url); return null; }); }
   useEffect(() => () => { if (viewer?.url) URL.revokeObjectURL(viewer.url); }, [viewer?.url]);
@@ -507,7 +501,6 @@ export default function AdminApplicationDetailPage() {
             </div>
           </Card>
 
-          {/* Applicants — a grey card per traveller; click to edit their details */}
           <Card title="Applicants" icon={User}>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {applicants.map((a) => {
@@ -535,7 +528,6 @@ export default function AdminApplicationDetailPage() {
             </div>
           </Card>
 
-          {/* Documents — grouped by source */}
           <Card title="Document file" icon={FileText} action={<AddDocumentControl applicants={applicants} add={addRow} documentTypes={documentTypes} />}>
             <div className="space-y-5">
               {['CUSTOMER', 'AGENT', 'IN_PERSON'].map((source) => {

@@ -1,30 +1,8 @@
-/**
- * The results showcase (the portfolio) and the hero cluster.
- *
- * Every image here is a REAL delivered headshot, pulled from order
- * 6a65d0c58ec905bea226eb20 and picked by its identity-fidelity score (the higher
- * the score, the more the candidate matches the customer's own selfies). The
- * seven shots below are the top scorers, spread across all six of that order's
- * look-and-outfit combinations so the page does not show the same photo twice.
- *
- * Only add a person here with their permission, and only with their real photos.
- * This section is proof, so an invented entry would undo the point of it.
- *
- * ONE CAVEAT on the before/after pairing: the customer selfies from that order
- * have since been cleared out of R2, so the `before` filmstrip is the same
- * person's real uploads from an earlier order. Same person, same product, a
- * different run. Re-shoot the pairing from one order when a set with live uploads
- * is available.
- */
 
-// The hero cluster: the three highest-scoring shots, one per background, so the
-// first screen shows range rather than three versions of the same photo. The
-// library shot leads (the large portrait frame); hero-1 was moved off the lead
-// slot after the 15/09 UX audit.
 export const heroShots = [
-  '/work/hero-2.jpg', // library, polo, 0.943
-  '/work/hero-1.jpg', // greenery, turtleneck, 0.947
-  '/work/hero-3.jpg', // office, polo, 0.941
+  '/work/hero-2.jpg', 
+  '/work/hero-1.jpg', 
+  '/work/hero-3.jpg', 
 ];
 
 export const samples = [
@@ -40,10 +18,6 @@ export const samples = [
   },
 ];
 
-// Dating photos. EMPTY on purpose: the slots render as labelled placeholders until
-// a real dating set exists (the founder's own, generated through the dating
-// funnel). Fill the paths in here; nothing else changes. `hubShots` pairs one
-// real headshot with two dating slots so the hub hero reads as two products.
 export const datingShots = ['', '', ''];
 
 export const hubShots = [

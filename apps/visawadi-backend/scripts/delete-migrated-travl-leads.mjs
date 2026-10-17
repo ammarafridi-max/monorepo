@@ -1,11 +1,3 @@
-/**
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/delete-migrated-travl-leads.mjs          # dry run
- *   node --env-file=.env.production scripts/delete-migrated-travl-leads.mjs --apply
- *
- * --apply permanently deletes the Travl-sourced leads; it refuses to run without
- * the backup file at migration-output/travl-visa-leads-export.json.
- */
 
 import fs from 'node:fs';
 import path from 'node:path';

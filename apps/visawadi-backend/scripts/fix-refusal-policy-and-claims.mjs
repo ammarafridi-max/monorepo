@@ -1,19 +1,3 @@
-/**
- * Three content corrections across the visa pages, from the 12/09/2026 UX audit:
- *
- * 1. Refusal policy. Pages promised a free resubmission on Concierge. The real
- *    policy: the service fee covers the work, approval is never guaranteed, and
- *    we help dispute a refusal only where the embassy offers that route. Saudi
- *    is the one exception (full refund on rejection) and is left untouched.
- * 2. VFS/BLS fee. One page said AED 95, another AED 146.74. The real charge is
- *    AED 110 to 150 depending on the country and centre, so show the range.
- * 3. Unsourced trust claims in whyUs ("3-minute response time", "Licensed Dubai
- *    office") replaced or removed, plus the Schengen hero sub-line rewrite.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/fix-refusal-policy-and-claims.mjs          # dry run
- *   node --env-file=.env.production scripts/fix-refusal-policy-and-claims.mjs --apply
- */
 
 import mongoose from 'mongoose';
 

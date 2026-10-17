@@ -1,25 +1,8 @@
-/**
- * Three corrections flagged in the SEO audit.
- *
- *   1. "We have a high success rate on second applications" on the Schengen
- *      page. Unsourced, and it sits in an FAQ, so it ships inside FAQPage
- *      schema where an answer engine can quote it. Replaced with what we can
- *      actually stand behind. Present on both the base visa and its overlay;
- *      the overlay wins at render time, so both are rewritten.
- *   2. "VisaWadi.ae" anchor text in the BLS post. The domain is .com.
- *   3. Six overlay metaTitles push the rendered <title> past 60 characters once
- *      the " | VisaWadi" template is applied. Trimmed to keep the
- *      differentiating term (VIDEX, Annex A, Wafi) and lose the filler.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/fix-credibility-and-titles.mjs          # dry run
- *   node --env-file=.env.production scripts/fix-credibility-and-titles.mjs --apply
- */
 
 import mongoose from 'mongoose';
 
 const APPLY = process.argv.includes('--apply');
-const SUFFIX = 11; // " | VisaWadi"
+const SUFFIX = 11; 
 
 const CLAIM = 'We have a high success rate on second applications when the first was professionally reanalysed.';
 const CLAIM_FIX = 'A refusal is not a bar to reapplying, and the grounds on your refusal notice tell us exactly what the next file has to answer.';

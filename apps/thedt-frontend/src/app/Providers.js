@@ -11,8 +11,6 @@ import { InsuranceProvider } from '@travel-suite/frontend-shared/contexts/Insura
 import AppLayout from '@travel-suite/frontend-shared/layouts/AppLayout';
 import AnalyticsInit from '@travel-suite/frontend-shared/components/shared/AnalyticsInit';
 
-// Routes whose first section is not the dark Hero, so the transparent header
-// has to stay dark-on-light there.
 const LIGHT_HEADER_ROUTES = [
   '/blog',
   '/booking',

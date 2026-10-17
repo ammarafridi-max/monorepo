@@ -1,6 +1,3 @@
-// Renders a data-driven list of content sections (see data/legal.js). Each section
-// is a real <h2> with paragraphs, an optional bullet list, and an optional single
-// cross-link line. Real headings keep the pages readable and citable (GEO).
 export default function Sections({ sections }) {
   return sections.map((s) => (
     <section className="prose__block" key={s.h}>

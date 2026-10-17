@@ -3,24 +3,10 @@ import mongoose from 'mongoose';
 import { Order, ORDER_STATES } from '@travel-suite/picturesk-shared';
 import { AppError, catchAsync } from '@travel-suite/utils';
 
-/** A user-typed search term goes into a RegExp, so its metacharacters must not. */
 function escapeRegex(value = '') {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-/**
- * Phase B: the READ-ONLY admin data surface, mounted at /admin. Every route is
- * behind the injected `guard` (admin cookie session OR the ADMIN_TOKEN break-glass
- * header) and `restrictTo('admin','support')` — both staff roles can view.
- *
- *   GET /admin/orders        paged list (?status, ?stuck, ?search, ?page, ?limit), with stuck + margin
- *   GET /admin/orders/:id     full detail (images, replicate ids, scores, error)
- *   GET /admin/stats          revenue / compute cost / margin / counts / stuck
- *   GET /admin/customers      per-email order counts, spend, last order, account?
- *
- * The projections live here (not the public server routes) so nothing customer-
- * facing can ever accidentally return margin/Stripe/Replicate internals.
- */
 
 const STUCK_AFTER_MS = (Number(process.env.ADMIN_STUCK_MINUTES) || 30) * 60 * 1000;
 const NON_TERMINAL = [
@@ -30,8 +16,6 @@ const NON_TERMINAL = [
   ORDER_STATES.GENERATING,
 ];
 
-// When did the order ENTER its current state? Used to measure how long it has
-// been sitting there (only meaningful for non-terminal states).
 function enteredCurrentStateAt(order) {
   switch (order.status) {
     case ORDER_STATES.AWAITING_PAYMENT:
@@ -43,7 +27,7 @@ function enteredCurrentStateAt(order) {
     case ORDER_STATES.GENERATING:
       return order.generatingStartedAt || order.createdAt;
     default:
-      return null; // terminal: DELIVERED / FAILED
+      return null; 
   }
 }
 
@@ -76,7 +60,6 @@ function marginCents(order) {
     : null;
 }
 
-/** The LIST projection: one row per order, enough to scan for stalls + margin. */
 function toAdminOrder(order) {
   const ms = stuckForMs(order);
   return {
@@ -99,7 +82,6 @@ function toAdminOrder(order) {
   };
 }
 
-/** The DETAIL projection: everything an admin needs to debug one order. */
 function toAdminOrderDetail(order) {
   const ms = stuckForMs(order);
   return {
@@ -115,7 +97,6 @@ function toAdminOrderDetail(order) {
     computeCostCents: order.computeCostCents ?? 0,
     marginCents: marginCents(order),
 
-    // The customer's choices.
     selectedLooks: order.selectedLooks ?? [],
     selectedAttire: order.selectedAttire ?? [],
     gender: order.gender ?? null,
@@ -126,7 +107,6 @@ function toAdminOrderDetail(order) {
     facialHair: order.facialHair ?? null,
     derivedFacialHair: order.derivedFacialHair ?? null,
 
-    // Every image artifact, in pipeline order.
     uploadedImageUrls: order.uploadedImageUrls ?? [],
     resultImageUrls: order.resultImageUrls ?? [],
     candidateScores: order.candidateScores ?? [],
@@ -134,12 +114,10 @@ function toAdminOrderDetail(order) {
     enhancedImageUrls: order.enhancedImageUrls ?? [],
     deliveredImageUrls: order.deliveredImageUrls ?? [],
 
-    // External job + payment ids (admin-only; never in the public view).
     replicate: order.replicate ?? null,
     stripeSessionId: order.stripeSessionId ?? null,
     stripePaymentIntentId: order.stripePaymentIntentId ?? null,
 
-    // Lifecycle.
     stuckForMs: ms,
     stuckForMinutes: ms == null ? null : Math.round(ms / 60000),
     stuck: ms != null && ms > STUCK_AFTER_MS,
@@ -156,19 +134,11 @@ function toAdminOrderDetail(order) {
   };
 }
 
-/**
- * @param {{ guard: Function, restrictTo: (...roles: string[]) => Function }} deps
- * @returns {import('express').Router}
- */
 export function createAdminDataRouter({ guard, restrictTo }) {
   const router = Router();
 
-  // Every route below is read-only staff access.
   router.use(guard, restrictTo('admin', 'support'));
 
-  // GET /admin/orders  --  operational list, newest first, paged on the server.
-  // ?status and ?stuck=1 filter, ?search matches customer email or an exact order
-  // id, ?page and ?limit page. stuckCount is the GLOBAL count, not this page's.
   router.get(
     '/orders',
     catchAsync(async (req, res) => {
@@ -180,9 +150,6 @@ export function createAdminDataRouter({ guard, restrictTo }) {
       const limit = Math.min(Math.max(Number.parseInt(req.query.limit, 10) || 25, 1), 100);
       const filter = status ? { status } : {};
 
-      // Searching and the stuck filter both have to happen in the query, not on the
-      // page: the list is paged, so filtering client-side would only ever see one
-      // page of orders.
       const search = String(req.query.search ?? '').trim();
       if (search) {
         const or = [{ customerEmail: new RegExp(escapeRegex(search), 'i') }];
@@ -191,7 +158,6 @@ export function createAdminDataRouter({ guard, restrictTo }) {
       }
       if (req.query.stuck === '1') Object.assign(filter, stuckFilter());
 
-      // The summary cards need the whole filtered set, not the page in view.
       const [total, orders, stuckCount, [totals]] = await Promise.all([
         Order.countDocuments(filter),
         Order.find(filter)
@@ -249,7 +215,6 @@ export function createAdminDataRouter({ guard, restrictTo }) {
     })
   );
 
-  // GET /admin/orders/:id  --  full detail for one order.
   router.get(
     '/orders/:id',
     catchAsync(async (req, res) => {
@@ -264,7 +229,6 @@ export function createAdminDataRouter({ guard, restrictTo }) {
     })
   );
 
-  // GET /admin/stats  --  revenue / compute cost / margin / counts / stuck.
   router.get(
     '/stats',
     catchAsync(async (req, res) => {
@@ -292,8 +256,6 @@ export function createAdminDataRouter({ guard, restrictTo }) {
             },
           ]),
           Order.countDocuments({ refundedAt: { $ne: null } }),
-          // Non-terminal orders are few; load them to count stalls precisely with
-          // the same per-state definition the list uses.
           Order.find({ status: { $in: NON_TERMINAL } }).select(
             'status createdAt paidAt trainingStartedAt generatingStartedAt'
           ),
@@ -320,10 +282,8 @@ export function createAdminDataRouter({ guard, restrictTo }) {
         data: {
           totalOrders,
           byStatus,
-          // All figures integer cents; divide by 100 at display time.
           revenueCents: totals.revenueCents,
           computeCostCents: totals.computeCostCents,
-          // Realized margin: only on DELIVERED orders (the compute actually ran).
           deliveredCount: dt.count,
           deliveredRevenueCents: dt.deliveredRevenueCents,
           deliveredMarginCents: dt.deliveredRevenueCents - dt.deliveredComputeCents,
@@ -335,7 +295,6 @@ export function createAdminDataRouter({ guard, restrictTo }) {
     })
   );
 
-  // GET /admin/customers  --  one row per customer email: orders, delivered, spend.
   router.get(
     '/customers',
     catchAsync(async (req, res) => {

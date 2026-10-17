@@ -16,10 +16,6 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 
-// Behind Fly's edge proxy (one hop). Trust it so req.ip is the real client IP —
-// required for express-rate-limit to key on the client (not the proxy) and to
-// silence ERR_ERL_UNEXPECTED_X_FORWARDED_FOR. Use 1, not true, so the hop count
-// is fixed and the forwarded chain can't be spoofed.
 app.set('trust proxy', 1);
 
 app.use((req, res, next) => {
@@ -42,8 +38,6 @@ app.use(express.json({ limit: '2mb' }));
 
 app.use('/api', rateLimit({ windowMs: 60 * 60 * 1000, max: 500, standardHeaders: true, legacyHeaders: false }));
 
-// Airline logos, referenced by the `logo` path stored on each airline record
-// and loaded cross-origin by the frontend.
 app.use('/airlines', express.static(join(__dirname, 'public/airlines'), {
   setHeaders: (res) => res.set('Cross-Origin-Resource-Policy', 'cross-origin'),
 }));
@@ -53,7 +47,6 @@ app.use('/api', indexRouter);
 
 app.all('/{*path}', (req, _res, next) => next(new AppError(`Route ${req.originalUrl} not found`, 404)));
 
-// Sentry sees the error first, then the app answers the client.
 setupSentryErrorHandler(app);
 app.use(createErrorHandler({ logger, nodeEnv: config.nodeEnv }));
 

@@ -3,11 +3,6 @@ import Frame from '../components/Frame';
 import Container from '../components/Container';
 import SectionHeading from '../components/SectionHeading';
 
-// The results showcase: the loudest section on the page, built as a photography
-// studio's portfolio. Each sample is a real scenario, showing the ordinary selfies
-// it started from (a small filmstrip), what the person needed the set for, and the
-// wall of studio prints they got back. Data-driven from data/samples.js so new
-// identities are pure content edits.
 export default function Showcase({
   eyebrow = 'The work',
   title = 'Real people, real selfies, real sets.',

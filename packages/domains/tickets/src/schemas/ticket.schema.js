@@ -40,7 +40,6 @@ const TicketSchema = new mongoose.Schema(
     },
     message: { type: String },
     paymentStatus: { type: String, enum: ['UNPAID', 'PAID', 'REFUNDED'], default: 'UNPAID' },
-    // Claimed once at the payment transition, never rewritten: a resent webhook must not move a ticket up the admin list.
     paidAt: { type: Date, default: null },
     ticketValidity: { type: String, enum: ['2 Days', '7 Days', '14 Days'], default: '2 Days' },
     ticketDelivery: { immediate: { type: Boolean }, deliveryDate: { type: String } },

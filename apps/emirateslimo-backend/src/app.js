@@ -13,7 +13,6 @@ import indexRouter, { stripeWebhookHandler } from "./routes/index.js";
 const app = express();
 app.set("trust proxy", 1);
 
-// -- Request context -----------------------------------------------------------
 app.use((req, res, next) => {
   req.id = req.headers["x-request-id"] || randomUUID();
   res.setHeader("x-request-id", req.id);
@@ -37,7 +36,6 @@ app.post(
   stripeWebhookHandler,
 );
 
-// -- Security & parsing --------------------------------------------------------
 app.use(helmet());
 app.use(cors({ origin: config.corsOrigins, credentials: true }));
 app.use(compression());
@@ -55,18 +53,15 @@ app.use(
   }),
 );
 
-// -- Health & routes -----------------------------------------------------------
 app.get("/health", (_req, res) =>
   res.status(200).json({ status: "ok", brand: "emirateslimo" }),
 );
 app.use("/api", indexRouter);
 
-// -- 404 & global error handler ------------------------------------------------
 app.all("/{*path}", (req, _res, next) =>
   next(new AppError(`Route ${req.originalUrl} not found`, 404)),
 );
 
-// Sentry sees the error first, then the app answers the client.
 setupSentryErrorHandler(app);
 app.use(createErrorHandler({ logger, nodeEnv: config.nodeEnv }));
 

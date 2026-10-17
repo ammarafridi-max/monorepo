@@ -12,8 +12,6 @@ export function createHotelPricingService({ HotelBookingPricing, Currency }) {
     return base?.code || 'AED';
   };
 
-  // Only the base currency's book is auto-created. Every other currency is
-  // opt-in, so a missing book means "fall back", never "invent a price".
   async function ensureDefaultBook() {
     const code = await getBaseCode();
     const onBase = await HotelBookingPricing.findOne({ key: KEY, currency: code });

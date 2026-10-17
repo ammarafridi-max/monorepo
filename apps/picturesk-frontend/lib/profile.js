@@ -7,8 +7,6 @@ import {
   isValidHeight,
 } from '@travel-suite/picturesk-shared/catalog';
 
-// The saved profile: the funnel's About and Build answers, validated against the
-// catalogue so nothing unknown is stored. Unknown or empty values read as ''.
 const FIELDS = {
   gender: isValidGender,
   ageRange: isValidAgeRange,

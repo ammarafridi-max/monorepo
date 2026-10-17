@@ -3,12 +3,6 @@ import Container from '@travel-suite/frontend-shared/components/shared/layout/Co
 import PrimarySection from '@travel-suite/frontend-shared/components/shared/layout/PrimarySection';
 import SectionTitle from '@travel-suite/frontend-shared/components/shared/layout/SectionTitle';
 
-// "Related pages" block: 3-4 inline-contextual internal links rendered as
-// cards near the bottom of each landing page (before the contact CTA).
-// Distinct from header/footer nav — these are body-content links with
-// descriptive anchor text, which crawl + rank better and pass real
-// internal PageRank to siblings (especially the under-impressioned
-// AUS/CAN/JPN visa pages).
 export default function RelatedPages({
   title = 'Related Pages',
   subtitle,

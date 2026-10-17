@@ -1,16 +1,6 @@
 import 'server-only';
 import { cookies } from 'next/headers';
 
-/**
- * Hand-rolled OAuth 2.0 / OIDC sign-in for Google, Facebook, and LinkedIn, in the
- * same minimal style as the rest of the auth layer (no NextAuth adapter owning its
- * own collections). A successful flow upserts the same User and issues the same
- * jose session cookie as email + password; social login is just another way in.
- *
- * One code path for all three: after the token exchange we call the provider's
- * userinfo endpoint with the access token to read the email. That avoids having to
- * verify an id_token JWT signature, and every provider here exposes an email there.
- */
 
 export const STATE_COOKIE = 'picturesk_oauth_state';
 export const NEXT_COOKIE = 'picturesk_oauth_next';
@@ -35,7 +25,6 @@ const PROVIDERS = {
     secretEnv: 'FACEBOOK_CLIENT_SECRET',
   },
   linkedin: {
-    // Uses "Sign In with LinkedIn using OpenID Connect".
     label: 'LinkedIn',
     authUrl: 'https://www.linkedin.com/oauth/v2/authorization',
     tokenUrl: 'https://www.linkedin.com/oauth/v2/accessToken',
@@ -54,7 +43,6 @@ export function getProvider(name) {
   return PROVIDERS[name] || null;
 }
 
-/** A provider is offered only when BOTH its id and secret are configured. */
 export function isConfigured(name) {
   const p = PROVIDERS[name];
   if (!p) return false;
@@ -62,7 +50,6 @@ export function isConfigured(name) {
   return Boolean(clientId && clientSecret);
 }
 
-/** The providers we can actually offer, for the login/signup UI. */
 export function configuredProviders() {
   return Object.entries(PROVIDERS)
     .filter(([name]) => isConfigured(name))
@@ -73,7 +60,6 @@ function baseUrl(req) {
   return (process.env.WEB_BASE_URL || new URL(req.url).origin).replace(/\/+$/, '');
 }
 
-/** The exact redirect_uri to register with the provider and reuse on callback. */
 export function redirectUri(req, name) {
   return `${baseUrl(req)}/api/auth/oauth/${name}/callback`;
 }
@@ -90,11 +76,6 @@ export function authorizeUrl(name, state, redirect) {
   return u.toString();
 }
 
-/**
- * Exchange the authorization code for an access token, then read the account
- * email from the provider's userinfo endpoint. Throws on any failure so the
- * caller can fail closed (no session).
- */
 export async function exchangeCodeForEmail(name, code, redirect) {
   const p = PROVIDERS[name];
   const { clientId, clientSecret } = creds(p);
@@ -126,7 +107,6 @@ export async function exchangeCodeForEmail(name, code, redirect) {
   return email;
 }
 
-/** Read the one-time CSRF state cookie and clear it (call once, on callback). */
 export async function readAndClearStateCookie() {
   const jar = await cookies();
   const value = jar.get(STATE_COOKIE)?.value || null;
@@ -134,7 +114,6 @@ export async function readAndClearStateCookie() {
   return value;
 }
 
-/** Where to send the browser after the callback, set by the start route. */
 export async function readAndClearNextCookie() {
   const jar = await cookies();
   const value = jar.get(NEXT_COOKIE)?.value || null;

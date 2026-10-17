@@ -1,12 +1,3 @@
-/**
- * H4. The Schengen-family packages include the flight reservation, but the
- * flight FAQ told applicants they arrange it themselves. The packages are
- * correct, so the FAQ is what changes.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/fix-flight-reservation-faq.mjs          # dry run
- *   node --env-file=.env.production scripts/fix-flight-reservation-faq.mjs --apply
- */
 
 import mongoose from 'mongoose';
 
@@ -15,11 +6,6 @@ const APPLY = process.argv.includes('--apply');
 const OLD = 'We tell you exactly what format your embassy expects, though you arrange the reservation itself separately.';
 const NEW = 'Your package includes the flight reservation, so we book it in the format your embassy expects and hand it over ready to submit.';
 
-/**
- * Schengen-family only. The UK, US and Canada packages offer guidance on the
- * reservation rather than the reservation itself, so the original wording is
- * accurate there and must stay.
- */
 const SLUGS = ['schengen', 'france-visa', 'germany-visa', 'italy-visa', 'spain-visa', 'greece-visa'];
 
 await mongoose.connect(process.env.MONGO_URI);

@@ -1,12 +1,5 @@
-/**
- * /dating-profile-photos-for-men
- *
- * The INTENT page for the primary buyer: a man who knows his photos are the
- * problem and does not want a photographer. Links out to the three app pages.
- */
 export const datingProfilePhotosForMen = {
   meta: {
-    // 51 chars / 157 chars
     title: 'Dating Profile Photos for Men | AI, No Photographer',
     description:
       'Dating profile photos for men with no photographer and no friend with a camera. Upload selfies, get candid photos that look like you in an hour, from $19.',

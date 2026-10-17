@@ -28,7 +28,6 @@ import config from "../utils/config.js";
 
 const router = Router();
 
-// -- Auth (registers the shared admin-user model; returns protect/restrictTo) ---
 const { router: authRouter, middleware: auth, AdminUser } = createAuthRouter({
   db,
   jwtSecret: config.jwtSecret,
@@ -38,10 +37,8 @@ const { router: authRouter, middleware: auth, AdminUser } = createAuthRouter({
 });
 router.use("/auth", authRouter);
 
-// -- Admin users (mounted at /admin-users to match the shared admin frontend) ---
 router.use("/admin-users", createAdminUsersRouter({ AdminUser, auth }));
 
-// -- Cloudinary (shared image store) -------------------------------------------
 const blogImageStorage = createCloudinaryStorage({
   cloudName: config.cloudinary.cloudName,
   apiKey: config.cloudinary.apiKey,
@@ -50,9 +47,6 @@ const blogImageStorage = createCloudinaryStorage({
   folder: "emirateslimo/blog",
 });
 
-// Vehicle images need full-folder upload + folder cleanup, so adapt the shared
-// store to the { uploadImage, deleteImage, deleteFolder } contract the vehicles
-// package expects. Base folder "emirateslimo" namespaces all assets.
 const vehicleStorage = createCloudinaryStorage({
   cloudName: config.cloudinary.cloudName,
   apiKey: config.cloudinary.apiKey,
@@ -66,14 +60,11 @@ const vehicleImages = {
   deleteFolder: (folder) => vehicleStorage.deleteFolder(`emirateslimo/${folder}`),
 };
 
-// -- Blog ----------------------------------------------------------------------
 router.use("/blogs", createBlogRouter({ db, auth, imageStorage: blogImageStorage, anthropicApiKey: config.anthropicApiKey }));
 router.use("/blog-tags", createBlogTagRouter({ db, auth }));
 
-// -- Currencies ----------------------------------------------------------------
 router.use("/currencies", createCurrenciesRouter({ db, auth }));
 
-// -- Locations (Google Maps autocomplete, coordinates, distance, IP geo) -------
 router.use(
   "/locations",
   createLocationsRouter({
@@ -82,22 +73,18 @@ router.use(
   }),
 );
 
-// -- Fleet: vehicles, zones, pricing & availability rules ----------------------
 router.use("/vehicles", createVehiclesRouter({ db, auth, images: vehicleImages }));
 router.use("/zones", createZonesRouter({ db, auth }));
 router.use("/pricing-rules", createPricingRulesRouter({ db, auth }));
 router.use("/availability-rules", createAvailabilityRulesRouter({ db, auth }));
 
-// -- Stripe --------------------------------------------------------------------
 const stripe = createStripeClient({ secretKey: config.stripe.secretKey });
 
-// -- Bookings (limo) -----------------------------------------------------------
 router.use(
   "/bookings",
   createBookingsRouter({ db, auth, stripe, frontendUrl: config.frontendUrl }),
 );
 
-// -- Payments (admin: revenue dashboard + custom payment links) ----------------
 const paymentService = createPaymentService({ stripe, db, PaymentLinkSchema, ProductSchema });
 const paymentsController = createPaymentsController({ service: paymentService });
 router.use("/payments", createPaymentsAdminRouter({ controller: paymentsController, auth }));
@@ -112,7 +99,6 @@ async function handlePaymentLinkSuccess(session) {
   }
 }
 
-// -- Notifications -------------------------------------------------------------
 const notifications = createLimoNotifications({ sendEmail });
 
 const metaCapi = createMetaCapiClient({
@@ -125,7 +111,6 @@ if (!metaCapi.isConfigured()) {
   logger.warn("[meta-capi] Pixel ID or access token not configured — server-side purchase events disabled");
 }
 
-// -- Stripe webhook handler (mounted in app.js before JSON middleware) ----------
 export const stripeWebhookHandler = createStripeWebhookHandler({
   stripe,
   webhookSecret: config.stripe.webhookSecret,

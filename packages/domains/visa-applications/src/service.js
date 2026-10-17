@@ -105,7 +105,6 @@ export function createVisaApplicationService({
     return neededProfileFields(template.rules || [], ctx).filter((f) => f !== 'accommodationType');
   }
 
-  // Never delete or alter an UPLOADED / APPROVED / REJECTED row, or a manually-added one.
   async function reconcileChecklistForApplicant(applicant, application) {
     const app = application || (await VisaApplication.findById(applicant.application));
     if (!app) return false;
@@ -164,7 +163,6 @@ export function createVisaApplicationService({
     for (const a of applicants) await reconcileChecklistForApplicant(a, application);
   }
 
-  // Atomically claimed so this staff email fires exactly once per application.
   async function notifyStaffFileReady(application) {
     const claimed = await VisaApplication.findOneAndUpdate(
       { _id: application._id, $or: [{ customerCompleteNotifiedAt: null }, { customerCompleteNotifiedAt: { $exists: false } }] },

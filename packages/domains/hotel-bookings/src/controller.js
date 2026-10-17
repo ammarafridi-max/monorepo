@@ -143,7 +143,6 @@ export function createHotelBookingController({ service, pricingService, paidOrde
 
   const cancelReservation = async (req, res, next) => {
     try {
-      // Forcing past the deadline means accepting the fee, so it stays an admin decision.
       const force = req.body?.force === true && req.user?.role === 'admin';
       const cancelled = await service.cancelReservation(req.params.sessionId, { force });
       res.json({ status: 'success', data: cancelled });

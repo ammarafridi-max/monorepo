@@ -1,28 +1,3 @@
-/**
- * The 35 posts migrated from Travl carry Travl's products, and the migration
- * renamed the brand in some sentences but not others. Live posts ended up
- * claiming VisaWadi sells AXA insurance and dummy tickets, and quoting Dummy
- * Ticket 365 in dirhams.
- *
- * Who owns what (owner's call, 2026-08-16):
- *   VisaWadi         visa assistance in the UAE, nothing else
- *   Travl            travel insurance (from AED 30) and travel itineraries.
- *                    Itineraries may be mentioned but NEVER linked.
- *   Dummy Ticket 365 flight reservations, aka flight itineraries, aka dummy
- *                    tickets. Priced USD 13 / 20 / 23 for 2 / 7 / 14 days
- *                    validity. Never priced in dirhams.
- *
- * Travl and Dummy Ticket 365 are therefore deliberate cross-brand exceptions
- * here. See apps/visawadi-frontend/CLAUDE.md.
- *
- * Sentences that credit one brand with another's product in a way no rule can
- * settle are left untouched and listed under review for a human.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/fix-cross-brand-blog-content.mjs                # dry run
- *   node --env-file=.env.production scripts/fix-cross-brand-blog-content.mjs --report=r.md
- *   node --env-file=.env.production scripts/fix-cross-brand-blog-content.mjs --apply
- */
 
 import mongoose from 'mongoose';
 import { writeFileSync } from 'node:fs';
@@ -34,33 +9,18 @@ const DT_BRAND = 'Dummy Ticket 365';
 const DT_FROM_PRICE = 'USD 13';
 
 const INSURANCE_RE = /\binsurance\b|\bAXA\b|\bpolicy\b|\bcoverage\b/i;
-/** Dummy Ticket 365's product, under all three of its names. */
 const DT_PRODUCT_RE = /dummy ticket|flight reservation|flight itinerar/i;
-/** Travl's itinerary product, as opposed to the generic phrase "travel itinerary". */
 const TRAVL_ITINERARY_RE = /itinerary generator|travel itinerary document|itinerary tool|day-by-day (?:travel )?itinerary/i;
-/** "the VisaWadi FAQ page" — our own property, never rebrand. */
-/** VisaWadi's own service. A sentence claiming both this and insurance needs splitting by hand. */
 const VISA_SERVICE_RE = /visa assistance|visa application support|help(?:s)? (?:you )?(?:with )?your visa|handles? your (?:visa|application)/i;
 const OWN_PROPERTY_RE = /VisaWadi(?:\.ae)?(?:'s|’s)?\s+(?:FAQ|blog|site|website|page|team)/i;
 const COMPETITOR_RE = /\bmydummyticket\.ae\b/gi;
-/** AED 49 only ever meant the dummy-ticket price. AED 30 is insurance, AED 90+ are embassy fees. */
 const DT_AED_PRICE_RE = /\bAED\s*49\b/gi;
 
-/**
- * One sentence sells two brands' products in one breath, so no rule settles
- * them. Hand-written, applied after the automated passes (which have already
- * turned AED 49 into USD 13, hence the price in the patterns below).
- */
 const MANUAL_FIXES = [
-  // Credits Travl with flight itineraries, which are Dummy Ticket 365's product.
   [
     /Travl offers both[^.]*?insurance from AED 30\.?/gi,
     'Dummy Ticket 365 issues flight itineraries from USD 13, and Travl covers the Schengen-compliant AXA insurance from AED 30.',
   ],
-  // Credit VisaWadi with the visa work and Travl with the insurance. Phrase-level
-  // so any surrounding link survives.
-  // Both of these run "VisaWadi offers <visa link> and <insurance link>" across
-  // two anchors, so the fix is the connective between them, not the sentence.
   [
     /<\/a>\s+and\s+(?=<a\s+href="https:\/\/www\.travl\.ae\/travel-insurance)/gi,
     '</a>, and Travl provides ',
@@ -82,7 +42,6 @@ const REPOINT = [
 
 const strip = (h) => (h || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 
-/** Split a block's inner HTML into sentences without cutting inside a tag. */
 function splitSentences(html) {
   const parts = [];
   let depth = 0, buf = '';
@@ -99,7 +58,6 @@ function splitSentences(html) {
   return parts;
 }
 
-/** Unwrap <a>…</a> whose href matches, keeping the anchor text. */
 function unwrapLinks(html, hrefRe) {
   return html.replace(
     /<a\s+[^>]*href\s*=\s*["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi,
@@ -107,12 +65,11 @@ function unwrapLinks(html, hrefRe) {
   );
 }
 
-/** Rebrand a brand name without touching URLs. */
 function rebrand(html, to) {
   return html.replace(/VisaWadi(?:\.ae)?(?:'s|’s)?/g, (m, off, s) => {
     const before = s.slice(Math.max(0, off - 80), off);
-    if (/https?:\/\/[^\s"'<>]*$/.test(before)) return m;      // inside a URL
-    if (/href\s*=\s*["'][^"']*$/i.test(before)) return m;     // inside an href
+    if (/https?:\/\/[^\s"'<>]*$/.test(before)) return m;      
+    if (/href\s*=\s*["'][^"']*$/i.test(before)) return m;     
     const possessive = /['’]s$/.test(m);
     return possessive ? `${to}'s` : to;
   });
@@ -129,14 +86,9 @@ function classify(sentenceHtml) {
   const insurance = INSURANCE_RE.test(text);
   const travlItinerary = TRAVL_ITINERARY_RE.test(text);
 
-  // Claiming visa assistance AND insurance in one breath is the only case no
-  // rule settles: the sentence has to be split, which is a human's job.
   if (namesVisaWadi && !isOwnProperty && insurance && VISA_SERVICE_RE.test(text)) return 'review';
-  // "Travl offers both — flight itineraries from AED 49 and AXA insurance"
   if (/\bTravl\b/i.test(text) && dtProduct && !travlHrefs.some((h) => KEEP_HREF_RE.test(h)) && /offers?\s+both/i.test(text)) return 'review';
 
-  // Insurance wins over a passing mention of a ticket: "insurance from VisaWadi,
-  // and a reservation from Dummy Ticket 365" only misattributes the insurance.
   if (namesVisaWadi && !isOwnProperty && dtProduct && !insurance) return 'dt';
   if (namesVisaWadi && !isOwnProperty && (insurance || travlItinerary)) return 'travl';
   return 'keep';
@@ -153,11 +105,6 @@ function transformSentence(html, verdict, log) {
   return out;
 }
 
-/**
- * Applied to whole documents, not sentences, so list items and FAQ answers are
- * covered too. AED 49 only ever meant the dummy-ticket price in this corpus,
- * verified across all 35 occurrences before this was made unconditional.
- */
 function normalise(text, log, where) {
   let out = text || '';
   const competitors = (out.match(COMPETITOR_RE) || []).length;

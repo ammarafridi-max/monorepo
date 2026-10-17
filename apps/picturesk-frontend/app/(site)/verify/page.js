@@ -10,8 +10,6 @@ import VerifyForm from './VerifyForm';
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Verify your email. Picturesk.ai', robots: { index: false, follow: false } };
 
-// Where a password account proves its inbox before its first set. Already
-// verified (or an OAuth account) goes straight on to `next`.
 export default async function VerifyPage({ searchParams }) {
   const next = safeNext((await searchParams)?.next);
   const session = await getSession();

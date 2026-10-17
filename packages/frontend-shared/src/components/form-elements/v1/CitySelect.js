@@ -38,7 +38,6 @@ export default function CitySelect({
       setResults([]);
       return;
     }
-    // Abort in flight so a slow early keystroke cannot overwrite a newer result.
     const controller = new AbortController();
     const timer = setTimeout(async () => {
       setLoading(true);

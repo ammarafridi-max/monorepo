@@ -61,10 +61,6 @@ export function useAdminCustomers(params = {}) {
   return { customers: data?.customers ?? [], isLoadingCustomers: isLoading };
 }
 
-/**
- * Order actions. Every one of these moves money or re-runs a paid job, so the
- * caller confirms first; this layer only reports the outcome and refetches.
- */
 function useOrderAction(fn, successMessage) {
   const queryClient = useQueryClient();
 
@@ -97,10 +93,6 @@ export function useResendOrderEmail() {
   return { resend, isResending };
 }
 
-/**
- * Bulk delete. The endpoint is best effort per order, so a partial result is a
- * normal outcome and must be reported rather than swallowed as success.
- */
 export function useBulkDeleteOrders() {
   const queryClient = useQueryClient();
   const { mutate, isPending } = useMutation({

@@ -5,12 +5,6 @@ import { homeFaq } from '../data/faq';
 import Container from '../components/Container';
 import SectionHeading from '../components/SectionHeading';
 
-// The FAQ, using the SAME shared accordion MDT and DT365 use
-// (@travel-suite/frontend-shared ui/v1/FaqAccordion), so the interaction and the
-// look stay identical across the brands. It is a Tailwind component and this site
-// is plain CSS, so app/(site)/shared-ui.css compiles the handful of utilities it
-// needs and maps `primary` to Picturesk's green; `.shared-ui` carries the few
-// Preflight resets it assumes.
 export default function Faq({
   eyebrow = 'FAQ',
   title = 'Questions, answered.',
@@ -22,8 +16,6 @@ export default function Faq({
       <Container>
         <SectionHeading eyebrow={eyebrow} title={title} lede={lede} />
 
-        {/* One grouped, grey-bordered card, the way MDT and DT365 present theirs
-            (frontend-shared sections/v2/Faqs), spanning the full container. */}
         <div className="faq__list shared-ui">
           {faqs.map((item) => (
             <FaqAccordion key={item.q} question={item.q}>

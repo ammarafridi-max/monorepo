@@ -112,7 +112,6 @@ function DummyTicketsContent({ basePath, heading, itemNoun }) {
   useEffect(() => { setLocalDeliveryDate(urlDeliveryDate); }, [urlDeliveryDate]);
   useEffect(() => { setLocalChannel(urlChannel);           }, [urlChannel]);
 
-  // Agents are locked to the last 4 hours unless searching; the backend enforces the same rule.
   const hasSearch       = localSearch.trim().length > 0;
   const agentTimeLocked = isAgent && !hasSearch;
   const createdAt       = agentTimeLocked ? '4_hours' : localCreatedAt;
@@ -263,7 +262,6 @@ function DummyTicketsContent({ basePath, heading, itemNoun }) {
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
-        {/* Search + (phones only) filter button, in one row */}
         <div className="flex items-center gap-3 w-full sm:w-auto sm:flex-1 sm:max-w-sm">
           <AdminSearchInput
             value={localSearch}
@@ -286,7 +284,6 @@ function DummyTicketsContent({ basePath, heading, itemNoun }) {
           </button>
         </div>
 
-        {/* Inline filter bar — sm and up only */}
         <div className="hidden sm:flex flex-wrap items-center gap-5">
           <FilterMenu
             variant="text"
@@ -353,7 +350,6 @@ function DummyTicketsContent({ basePath, heading, itemNoun }) {
         </div>
       </div>
 
-      {/* Filter modal — phones only. Bottom sheet with the same controls. */}
       {filtersOpen && (
         <div
           className="sm:hidden fixed inset-0 z-50 flex items-end justify-center bg-black/40"

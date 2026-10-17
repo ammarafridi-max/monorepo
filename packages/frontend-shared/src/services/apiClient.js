@@ -15,7 +15,6 @@ async function checkError(res) {
   }
 }
 
-// A 404 on an ISR route gets cached, so only swallow genuine 404s and let other errors throw.
 export function nullOn404(error) {
   if (error?.status === 404) return null;
   throw error;

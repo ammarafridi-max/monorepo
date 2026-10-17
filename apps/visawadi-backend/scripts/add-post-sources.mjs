@@ -1,23 +1,3 @@
-/**
- * Adds a Sources block to the 32 published posts that cite no official
- * authority. Visa content is judged on provenance, and these state fees,
- * processing times and document rules flatly with nothing behind them.
- *
- * What this block does NOT claim: that every sentence in the post has been
- * verified against the source on a given date. It names the authority that
- * governs the subject and tells the reader to confirm before applying. A
- * "last checked" stamp belongs only on posts a human has actually re-checked,
- * which so far is the three rewritten on 2026-09-08.
- *
- * Every URL below returned 200 on 2026-09-08, except france-visas.gouv.fr,
- * mfa.gr and travel.state.gov, which return 403 to automated requests and
- * resolve normally in a browser.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/add-post-sources.mjs           # dry run
- *   node --env-file=.env.production scripts/add-post-sources.mjs --apply
- *   node --env-file=.env.production scripts/add-post-sources.mjs --remove --apply
- */
 
 import mongoose from 'mongoose';
 

@@ -3,7 +3,6 @@ import { pdf as pdfToImages } from 'pdf-to-img';
 import { createCanvas, loadImage } from '@napi-rs/canvas';
 import { buildItineraryDocument } from './itinerary-document.js';
 
-// Pure-Node rendering via @react-pdf. Do not reintroduce a headless browser.
 async function stitchVertically(pngBuffers) {
   if (pngBuffers.length === 1) return pngBuffers[0];
   const images = await Promise.all(pngBuffers.map((buf) => loadImage(buf)));
@@ -34,7 +33,6 @@ export function createPdfRenderer({ brand } = {}) {
     return renderToBuffer(buildItineraryDocument({ order, watermark: false, brand }));
   }
 
-  // Kept for interface compatibility with the previous (browser-backed) renderer.
   async function close() {}
 
   return { renderPreviewImage, renderCleanPdf, close };

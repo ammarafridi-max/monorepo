@@ -12,11 +12,6 @@ import { EVENTS } from '../../../lib/analytics';
 import { aiDatingPhotos as page } from '../../../data/pages/ai-dating-photos';
 import { DATING_FUNNEL, ROOTS, landingMetadata, landingSchema } from '../../../lib/landingPage';
 
-// The AI Dating Photos product page: the canonical home of the second product, and
-// the root the dating landing pages breadcrumb from. Same section order as the
-// headshot page (hero, process, pricing, why us, who it is for, what people say,
-// FAQ, CTA). There is no Showcase yet: it needs a real delivered dating set, and
-// the section must not ship with headshot output standing in for it.
 export const metadata = landingMetadata(page);
 
 const schema = landingSchema({

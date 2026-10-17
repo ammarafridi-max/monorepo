@@ -4,8 +4,6 @@ import { createSessionCookie } from '../../../../lib/session';
 import { verifyPassword, normalizeEmail, backlinkOrders } from '../../../../lib/auth';
 import { needsVerification } from '../../../../lib/verification';
 
-// POST /api/auth/login { email, password } -> verifies credentials and starts a
-// session. Also back-links any past anonymous orders sharing this email.
 export async function POST(req) {
   const { email, password } = await req.json().catch(() => ({}));
   const normalized = normalizeEmail(email);
@@ -13,9 +11,6 @@ export async function POST(req) {
   await dbConnect();
   const user = await User.findOne({ email: normalized });
 
-  // One generic message whether the email is unknown, the account has no password
-  // (social-only sign-in), or the password is wrong, so we neither reveal which
-  // emails have accounts nor which sign-in method they use.
   if (!user || !user.passwordHash || !(await verifyPassword(password || '', user.passwordHash))) {
     return Response.json({ error: 'Email or password is incorrect' }, { status: 401 });
   }

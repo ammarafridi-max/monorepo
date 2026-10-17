@@ -1,14 +1,5 @@
-/**
- * /real-estate-agent-headshots
- *
- * Same shape as every landing page: `meta` plus `sections`, all rendered through
- * props. A vertical page, so the copy has to be about the job rather than the
- * product. If it reads like the home page with the word "agent" pasted in, it is
- * competing with /ai-headshot-generator instead of adding to it.
- */
 export const realEstateAgentHeadshots = {
   meta: {
-    // 56 chars / 155 chars
     title: 'Real Estate Agent Headshots From Selfies | From $9',
     description:
       'Realtor headshots that look like you, from your own selfies. Warm, credible photos for listings, signage and your brokerage page. About an hour, from $9.',

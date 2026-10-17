@@ -1,14 +1,3 @@
-/**
- * Generates and publishes one blog post for a target, from that target's topic
- * schedule. Everything target-specific lives in ../../targets/<key>/.
- *
- * Usage:
- *   pnpm automation blog-generate --target travl
- *   pnpm automation blog-generate --target visawadi --dry-run
- *
- * Env: ANTHROPIC_API_KEY, RECRAFT_API_KEY, and the target's admin credentials
- * (named by adminEmailEnv / adminPasswordEnv in its config).
- */
 
 import Anthropic from "@anthropic-ai/sdk";
 import { readFileSync, writeFileSync, existsSync } from "fs";
@@ -39,15 +28,11 @@ import { verifyDraft, assertVerification, reportVerification, needsRevision, bui
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-/** Overridable per target via `model` in its config. */
 const DEFAULT_MODEL = "claude-sonnet-4-6";
 const modelFor = (target) => target?.model ?? DEFAULT_MODEL;
-/** Stop after the draft is written, before any fact-check spend. */
 const GENERATE_ONLY = process.argv.includes("--generate-only");
-/** One fact-check pass, report the verdict, no revision and no publish. */
 const VERIFY_ONLY = process.argv.includes("--verify-only");
 
-/** Publish immediately by default; --status draft stages it for review instead. */
 function parseFlag(argv, name) {
   const i = argv.indexOf(`--${name}`);
   if (i !== -1 && argv[i + 1]) return argv[i + 1];
@@ -64,7 +49,6 @@ function parseStatusArg(argv) {
   return v;
 }
 
-/** Set from the CLI context; the process.argv read keeps standalone runs working. */
 let DRY_RUN = process.argv.includes("--dry-run");
 
 function getTodayUAE() {
@@ -260,8 +244,6 @@ ${faqExamples}
 All values must be strings or arrays of strings/objects as shown. The "content" and "ctaBlock" fields must each be a single string of HTML. The "faqs" field must be an array of exactly ${faqCount} objects each with "question" and "answer" string fields.`;
 
   if (DRY_RUN) {
-    // Prints the exact prompt the model would receive, so a brand pack can be
-    // reviewed without spending a generation or publishing anything.
     console.log("=== SYSTEM PROMPT ===");
     console.log(systemPrompt);
     console.log("=== USER PROMPT ===");
@@ -271,9 +253,6 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
 
   console.log(`Generating content for: ${topic.title}`);
 
-  // A revision starts from the rejected draft plus the fact-checker's verdict.
-  // Real URLs, retrieved and liveness-checked before generation, so the model
-  // cites from this list rather than from memory.
   const sourcesBlock = formatSourcesBlock(sources);
 
   let feedback = revision
@@ -281,8 +260,6 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
     : "";
   let lastValidationError;
   let lastGoodDraft = null;
-  // Accumulated, not replaced: a retry that fixes the newest complaint while
-  // forgetting the previous one just trades one failure for another.
   const failures = [];
 
   for (let round = 1; round <= 4; round++) {
@@ -373,12 +350,6 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
   return parsed;
   }
 
-  // Every round failed. If the only thing wrong is invented URLs, unwrap them and
-  // publish the post without those links rather than publishing nothing — but only
-  // while enough real sources survive to meet the format's citation floor.
-  // Not gated on the last error naming dead links. On 2026-09-02 the final
-  // round failed on a different rule, so this never ran even though invented
-  // URLs were the recurring problem across all three rounds.
   if (format && lastGoodDraft?.content) {
     const citations = extractCitations(lastGoodDraft?.content ?? "", brand);
     const dead = await findDeadCitations(citations);
@@ -389,9 +360,6 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
         })
       : null;
     if (repaired) {
-      // Dropping links fixes only the links. Re-run every other rule against
-      // the repaired draft, or a post that also broke a brand rule (pricing,
-      // forbidden links, field lengths) would slip out through this door.
       const candidate = { ...lastGoodDraft, content: repaired.content, __citations: repaired.citations };
       try {
         validateFieldLengths(candidate);
@@ -460,9 +428,6 @@ async function postDraft({ brand, api, token, topic, content, availableTags, sta
   const blogId = body?.data?._id || body?.data?.id;
   const slug = body?.data?.slug;
 
-  // The backend de-duplicates by appending a suffix. If that happened, the URL
-  // we planned is not the URL we got, and any internal link pointing at it is
-  // already wrong.
   if (topic.slug && slug !== topic.slug) {
     throw new Error(
       `Requested slug "${topic.slug}" but the post was created as "${slug}". ` +
@@ -473,9 +438,6 @@ async function postDraft({ brand, api, token, topic, content, availableTags, sta
   return body.data;
 }
 
-/**
- * @param {{ target: object, dryRun: boolean, argv: string[] }} ctx
- */
 export async function run({ target, dryRun }) {
   const brand = target;
   DRY_RUN = DRY_RUN || dryRun;
@@ -486,8 +448,6 @@ export async function run({ target, dryRun }) {
 
   const dateArg = parseDateArg(process.argv.slice(2));
 
-  // A dry run renders the prompt and exits, so it needs no credentials and
-  // never touches the backend.
   if (DRY_RUN) {
     const topic = dateArg
       ? getTopicForDate(brand, dateArg)
@@ -541,10 +501,6 @@ export async function run({ target, dryRun }) {
     ? JSON.parse(readFileSync(draftCache, "utf8"))
     : null;
 
-  // A cached draft belongs to the topic it was written for. Pairing it with
-  // today's slot would publish one article under another's title and slug.
-  // Fail closed: a draft with no recorded topic cannot be shown to belong to
-  // this one, and publishing it would put one article under another's title.
   if (cached && cached.__topicTitle !== topic.title) {
     throw new Error(
       `Saved draft is for ${cached.__topicTitle ? `"${cached.__topicTitle}"` : "an unrecorded topic"}, ` +
@@ -553,8 +509,6 @@ export async function run({ target, dryRun }) {
   }
   if (cached) console.log(`Reusing saved draft: ${draftCache}`);
 
-  // Retrieved once and reused for any revision: the sources do not change
-  // between rounds, and searching again would just cost more.
   const sources = cached
     ? []
     : await gatherSources({
@@ -585,9 +539,6 @@ export async function run({ target, dryRun }) {
     return;
   }
 
-  // Fact-check, then revise against the verdict and re-check. Without the
-  // revise step the check can only ever block: a first draft routinely makes
-  // claims that are true but absent from the pages it happened to cite.
   const MAX_REVISIONS = 2;
   let verification = null;
 

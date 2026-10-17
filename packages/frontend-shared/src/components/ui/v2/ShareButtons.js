@@ -6,7 +6,6 @@ import { Link2, Check } from "lucide-react";
 const FB_BASE       = "https://www.facebook.com/sharer/sharer.php?u=";
 const LI_BASE       = "https://www.linkedin.com/sharing/share-offsite/?url=";
 const WA_BASE       = "https://wa.me/?text=";
-// Set NEXT_PUBLIC_SITE_URL so the SSR-rendered share URL uses the right origin.
 const SITE_ORIGIN   = process.env.NEXT_PUBLIC_SITE_URL || "";
 
 const platforms = [

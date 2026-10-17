@@ -36,8 +36,6 @@ export default function MobileNavigation({ pages = travlDefaultPages, logoAlt = 
           />
         ) : (
           <Link href="/" className="w-40 h-auto flex items-center">
-            {/* 160x28 matches the logo's real aspect ratio, so the header does not
-                shift as the image loads. */}
             <Image
               src="/logo.webp"
               alt={logoAlt}

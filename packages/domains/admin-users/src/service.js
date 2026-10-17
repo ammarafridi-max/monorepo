@@ -22,7 +22,6 @@ async function ensureUsernameIsUnique(AdminUser, username, excludeId = null) {
   if (existing) throw new AppError('Username is already in use by another admin user.', 400);
 }
 
-/** Only the byline data. Never email, role, or status. */
 const PUBLIC_AUTHOR_FIELDS = 'name authorProfile updatedAt';
 
 async function ensureAuthorSlugIsUnique(AdminUser, slug, excludeId = null) {
@@ -180,7 +179,6 @@ export function createAdminUsersService({ AdminUser }) {
       throw new AppError('Use the change-my-password flow to update your own password.', 400);
     }
 
-    // Must be save(), not updateOne: the pre-save hook hashes and stamps passwordChangedAt.
     user.password = password;
     await user.save();
     return user;

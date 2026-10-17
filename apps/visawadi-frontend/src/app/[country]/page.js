@@ -18,22 +18,10 @@ import {
 import { LIVE_COUNTRIES, countryBySlug } from '@/config/countries';
 import { EMAIL } from '@/config/contact';
 
-// Nothing on this route's ancestor chain (including app/loading.js) may define a
-// loading.js. A loading.js opens a Suspense boundary, so Next flushes the HTML
-// shell with a 200 before this component runs and notFound() can no longer set
-// the status — that is what turned bad slugs into indexable soft 404s.
 export const revalidate = 300;
 
-/**
- * A root-level [country] segment matches every unmatched top-level path, so
- * without this /anything-at-all would resolve here and we'd be hand-rolling
- * 404s for the whole site. The country list is finite and lives in config, so
- * pinning the params to it lets the router 404 properly for everything else.
- */
 export const dynamicParams = false;
 
-/** Only live countries get a route. An unlaunched one 404s rather than
- *  rendering an empty hub. */
 export function generateStaticParams() {
   return LIVE_COUNTRIES.map((c) => ({ country: c.slug }));
 }

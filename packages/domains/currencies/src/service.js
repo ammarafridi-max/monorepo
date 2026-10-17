@@ -17,7 +17,6 @@ function buildSort(sort = 'base_first') {
   return map[sort] || map.base_first;
 }
 
-// Must run BEFORE persisting a new base: the partial unique index rejects a second isBaseCurrency:true doc.
 async function demoteOtherBases(Currency, keepId) {
   const filter = { isBaseCurrency: true };
   if (keepId) filter._id = { $ne: keepId };

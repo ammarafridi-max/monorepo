@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { AGE_RANGES, GENDERS, RACES, FACIAL_HAIR, BUILDS, HEIGHTS } from '@travel-suite/picturesk-shared/catalog';
 import { ChoiceRow } from '../../../components/funnel/controls';
 
-// The saved About and Build answers, editable. Same chips as the funnel, one save.
 export default function ProfileForm({ initial }) {
   const [p, setP] = useState(initial);
   const [busy, setBusy] = useState(false);

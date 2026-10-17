@@ -8,8 +8,6 @@ export function createAuthController({ service, otpService, jwtUtils }) {
     res.cookie('jwt', token, createCookieOptions());
     const userObj = user.toObject();
     delete userObj.password;
-    // Set in memory by the pre-save hook on any password change; it is internal
-    // bookkeeping for token invalidation, not something a client needs.
     delete userObj.passwordChangedAt;
     res.status(statusCode).json({ status: 'success', data: userObj });
   };
@@ -21,7 +19,6 @@ export function createAuthController({ service, otpService, jwtUtils }) {
 
   const requestOtp = catchAsync(async (req, res) => {
     await otpService.requestOtp({ email: req.body.email, ip: req.ip });
-    // Same body whether or not the account exists.
     res.status(200).json({
       status: 'success',
       message: 'If that email belongs to an admin account, a code is on its way.',
@@ -48,8 +45,6 @@ export function createAuthController({ service, otpService, jwtUtils }) {
       purpose: 'reset',
     });
     const user = await service.resetPassword({ userId: verified._id, password: req.body.password });
-    // Changing the password invalidates every existing session, so issue a fresh
-    // token rather than logging out the person who just reset it.
     sendToken(user, 200, res);
   });
 

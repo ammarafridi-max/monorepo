@@ -20,7 +20,7 @@ export default function SelectHours({
 
   useOutsideClick(wrapperRef, () => setShowOptions(false));
 
-  const hours = Array.from({ length: 8 }, (_, i) => i + 1); // 1 to 8 hours
+  const hours = Array.from({ length: 8 }, (_, i) => i + 1); 
 
   return (
     <div className="relative w-full" ref={wrapperRef}>
@@ -51,7 +51,6 @@ export default function SelectHours({
         </div>
       </div>
 
-      {/* Dropdown */}
       <AnimatePresence>
         {showOptions && (
           <motion.div

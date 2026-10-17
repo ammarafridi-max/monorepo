@@ -1,18 +1,5 @@
-/**
- * /ai-dating-photos
- *
- * The canonical product page for dating photos, in the same shape as the other
- * landing pages: `meta` for metadata and schema, `sections` for everything the
- * page renders. Every claim must stay true to what the product does: the same
- * upload gate, a model trained on the customer's own face, one-time payment,
- * automatic refund on a failed run, and the 3-day look-like-you refund.
- *
- * TESTIMONIALS below are PLACEHOLDERS, invented so the section can be designed,
- * and must be replaced with real, attributable quotes.
- */
 export const aiDatingPhotos = {
   meta: {
-    // 52 chars / 159 chars
     title: 'AI Dating Photos That Look Like You | From $19, Once',
     description:
       'AI dating photos for Hinge, Tinder and Bumble, trained on your own selfies. Candid, natural, and yours in about an hour. One payment from $19, no subscription.',

@@ -5,7 +5,7 @@ import { Controller } from 'react-hook-form';
 const CheckboxGroup = ({
   name,
   control,
-  options = [], // array of { value: string, label: string }
+  options = [], 
   className = '',
   disabled = false,
 }) => {
@@ -19,10 +19,8 @@ const CheckboxGroup = ({
 
         const handleToggle = (optionValue) => {
           if (selectedValues.includes(optionValue)) {
-            // remove
             onChange(selectedValues.filter((v) => v !== optionValue));
           } else {
-            // add
             onChange([...selectedValues, optionValue]);
           }
         };

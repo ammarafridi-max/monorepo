@@ -70,7 +70,6 @@ export function TicketProvider({ children }) {
       for (let i = 0; i < count; i++) {
         newPassengers.push({
           type,
-          // Intentionally empty: submission is gated on the customer picking a title.
           title: '',
           firstName: '',
           lastName: '',
@@ -93,7 +92,6 @@ export function TicketProvider({ children }) {
     setTicketPrice(ticketPrice);
   }, []);
 
-  // Search fields live in sessionStorage so a refresh or back-navigation inside the booking flow keeps them.
   useEffect(() => {
     try {
       const saved = JSON.parse(sessionStorage.getItem(SEARCH_STORAGE_KEY) || 'null');

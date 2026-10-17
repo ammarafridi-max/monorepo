@@ -1,11 +1,3 @@
-// Usage: node --env-file=.env.production scripts/seo-blog-wave2.mjs [--apply]
-//
-// SEO batch 2. Adds contextual links to the four money pages that sat on one
-// inbound, adds one outbound authority citation to each of the nine posts that
-// had none, and rewrites flat section headings as questions on three posts.
-// Writes straight to the collection: the blog service regenerates slug and
-// readingTime on save, which would churn published URLs. updatedAt is left
-// alone so these edits do not read as a freshness signal.
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -15,15 +7,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const APPLY = process.argv.includes('--apply');
 
 const A = (href, text) => `<a href="${href}">${text}</a>`;
-// Every URL below returned 200 when checked. Wizz Air was dropped: it answers
-// automated requests with 405, so it cannot be verified and is not cited.
 const EURLEX = 'https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32009R0810';
 const VFS = 'https://www.vfsglobal.com/en/individuals/index.html';
 const IATA = 'https://www.iata.org/en/programs/passenger/';
 const TURKEY = 'https://www.evisa.gov.tr/en/';
 const RYANAIR = 'https://www.ryanair.com/gb/en/useful-info/help-centre/faq-overview/Bags';
 
-// [find, replace] applied in order. Find strings were all confirmed present.
 const EDITS = {
   'do-embassies-accept-dummy-tickets-in-2026': [
     ['United States</li>', `${A('/dummy-ticket-us-visa', 'United States')}</li>`],
@@ -75,7 +64,6 @@ const EDITS = {
   ],
 };
 
-// Flat section headings rewritten as questions.
 const HEADINGS = {
   'budget-airlines-uae-to-europe-2026-guide': [
     ['What to Expect from Budget Airlines on UAE to Europe Routes', 'What Should You Expect from Budget Airlines on UAE to Europe Routes?'],

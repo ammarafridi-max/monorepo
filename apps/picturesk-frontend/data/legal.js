@@ -1,25 +1,7 @@
-/**
- * Copy for the content pages (privacy, terms, refunds, contact), kept out of JSX
- * so the wording is editable without touching layout. Everything here is written
- * to match how Picturesk ACTUALLY works, not generic template text:
- *
- *  - Real processors: Stripe (payment), Cloudflare R2 (storage), Replicate (model
- *    training + image generation), Brevo (email).
- *  - Two refunds exist: the FAILED-order auto-refund, and the 3-day look-like-you
- *    guarantee on a delivered set. Keep both in step with data/faq.js and the emails.
- *  - We do not claim photo auto-deletion or a retention schedule the system does not
- *    enforce; see the TODO markers where a human needs to confirm policy.
- *
- * Each doc is { updated, lede, sections: [{ h, body: string[], list?: string[],
- * link?: { text, href } }] }, rendered by app/Sections.js.
- */
 
 export const LAST_UPDATED = 'September 17, 2026';
-// The privacy policy carries its own date so an analytics/cookies change does not
-// imply the terms or refund policy also changed.
 export const PRIVACY_UPDATED = 'September 20, 2026';
 
-// Support inbox, mirrored in the footer.
 export const CONTACT_EMAIL = 'info@picturesk.ai';
 export const RESPONSE_TIME = 'within two business days';
 
@@ -86,9 +68,7 @@ export const privacy = {
       h: 'Where your data is stored',
       body: [
         'Uploaded photos, generated images and the model trained on your face are stored with Cloudflare R2. Model training and image generation run on Replicate, which also holds a copy of your trained model. Payment data is held by Stripe.',
-        // TODO: confirm data storage region(s) with each provider and state them here.
         'We keep the model trained on your face for 12 months from your order, so you can order another set without uploading again. It is used only for your own orders and never to train a shared model. Your photos and results stay in storage for as long as we need them to provide and support your order; we do not currently run automatic deletion of those.',
-        // TODO: confirm retention policy (whether/when uploads and results are auto-deleted).
         'If you want any of it removed sooner, contact us and we will delete your photos, your results and your trained model, including the copy held on Replicate.',
       ],
     },

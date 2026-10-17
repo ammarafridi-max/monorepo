@@ -8,14 +8,6 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import { createAuthRouter } from '@travel-suite/auth';
 import { connectMongo } from '@travel-suite/picturesk-shared';
 
-/**
- * End-to-end admin auth: a real Express app + in-memory Mongo. Exercises the whole
- * flow the way the browser will: login sets the httpOnly cookie, /auth/me reads it,
- * bad credentials and an inactive account are rejected, and role guards work.
- *
- * Auth is the shared @travel-suite/auth domain, so the cookie is `jwt`, the model
- * registers as `admin-user`, and the password field is `password`.
- */
 
 let mongod;
 let server;
@@ -34,7 +26,6 @@ before(async () => {
   const { protect, restrictTo } = built.middleware;
   AdminUser = built.AdminUser;
 
-  // The pre-save hook hashes `password`, so the plaintext goes in.
   await AdminUser.create({
     name: 'Test Admin',
     username: 'testadmin1',
@@ -45,7 +36,6 @@ before(async () => {
   });
 
   app.use('/auth', built.router);
-  // A stand-in for a protected data route, to prove the returned guards work.
   app.get('/admin/ping', protect, restrictTo('admin'), (req, res) =>
     res.json({ status: 'success', data: { who: req.user.email, role: req.user.role } })
   );

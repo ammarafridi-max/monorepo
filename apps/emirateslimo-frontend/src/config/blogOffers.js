@@ -1,13 +1,4 @@
-/**
- * Offers shown beside and inside a blog post.
- *
- * Emirates Limo sells one product family: private chauffeur-driven rides. The
- * card follows the post's subject, resolved from the slug because tags are
- * broad. Only the hourly service has a public price; every other fare is
- * fixed on the booking form, so the other cards carry no price.
- */
 
-// Order matters: the first token found in the slug wins.
 const SERVICE_BY_SLUG_TOKEN = [
   { tokens: ['abu-dhabi-to-dubai-airport', 'abu-dhabi-to-dxb', 'abu-dhabi-to-dwc'], href: '/abu-dhabi-airport-to-dubai-transfer', eyebrow: 'Abu Dhabi to Dubai airport transfer' },
   { tokens: ['auh', 'zayed-international', 'abu-dhabi-airport'], href: '/abu-dhabi-airport-transfer', eyebrow: 'Abu Dhabi airport transfer' },
@@ -28,7 +19,6 @@ function resolveService(blog) {
   return match || { href: '/chauffeur-service', eyebrow: 'Chauffeur service Dubai' };
 }
 
-/** Cards for the sticky rail. */
 export function getBlogOffers(blog) {
   const service = resolveService(blog);
 
@@ -53,7 +43,6 @@ export function getBlogOffers(blog) {
   ];
 }
 
-/** The single mid-article unit. */
 export function getBlogInlineOffer(blog) {
   const service = resolveService(blog);
   return {

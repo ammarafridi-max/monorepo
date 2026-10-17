@@ -364,8 +364,6 @@ function PaymentSuccessContent({ onPurchaseEvent, supportEmail, upsells, product
     capturePayPalOrder({ sessionId, orderId: paypalOrderId });
   }, [isPayPal, sessionId, paypalOrderId, capturePayPalOrder]);
 
-  // Stripe redirects the browser before its webhook lands, so an UNPAID ticket right after
-  // checkout is normal. Poll for up to a minute before treating it as a failure.
   const [pollTimedOut, setPollTimedOut] = useState(false);
   useEffect(() => {
     const t = setTimeout(() => setPollTimedOut(true), 60_000);

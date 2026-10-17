@@ -15,13 +15,8 @@ import indexRouter, { stripeWebhookHandler, whatsappWebhookHandlers } from './ro
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 
-// Trust Fly.io's edge proxy so req.ip is the real client IP (from
-// X-Forwarded-For), not Fly's upstream. Without this, express-rate-limit
-// keys every request to the same proxy IP and one user's traffic 429s
-// everyone else.
 app.set('trust proxy', 1);
 
-// -- Request context -----------------------------------------------------------
 app.use((req, res, next) => {
   req.id = req.headers['x-request-id'] || randomUUID();
   res.setHeader('x-request-id', req.id);
@@ -41,7 +36,6 @@ if (whatsappWebhookHandlers) {
   app.post('/api/whatsapp/webhook', express.raw({ type: 'application/json' }), whatsappWebhookHandlers.receive);
 }
 
-// -- Security & parsing --------------------------------------------------------
 app.use(helmet());
 app.use(cors({ origin: config.corsOrigins, credentials: true }));
 app.use(compression());
@@ -50,19 +44,15 @@ app.use(express.json({ limit: '10kb' }));
 
 app.use('/api', rateLimit({ windowMs: 60 * 60 * 1000, max: 500, standardHeaders: true, legacyHeaders: false }));
 
-// -- Static: airline logos -----------------------------------------------------
 app.use('/airlines', express.static(join(__dirname, 'public/airlines'), {
   setHeaders: (res) => res.set('Cross-Origin-Resource-Policy', 'cross-origin'),
 }));
 
-// -- Health & routes -----------------------------------------------------------
 app.get('/health', (_req, res) => res.status(200).json({ status: 'ok', brand: 'dt365' }));
 app.use('/api', indexRouter);
 
-// -- 404 & global error handler ------------------------------------------------
 app.all('/{*path}', (req, _res, next) => next(new AppError(`Route ${req.originalUrl} not found`, 404)));
 
-// Sentry sees the error first, then the app answers the client.
 setupSentryErrorHandler(app);
 app.use(createErrorHandler({ logger, nodeEnv: config.nodeEnv }));
 

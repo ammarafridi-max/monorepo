@@ -1,4 +1,3 @@
-// First import on purpose: Sentry must initialise before express loads.
 import "@travel-suite/utils/sentry";
 import cron from "node-cron";
 import { logger } from "@travel-suite/utils";
@@ -7,9 +6,6 @@ import config from "./utils/config.js";
 import app from "./app.js";
 import { runVisaReminderSweep } from "./routes/index.js";
 
-// Next occurrence of `hour`:00 wall-clock in the given IANA timezone, as a real
-// UTC instant. Uses Intl (bundled ICU) to read the current wall-clock and derive
-// the zone offset — no dependency on system tzdata and DST-safe (Dubai has none).
 function nextDailyRun(hour, timeZone) {
   const now = new Date();
   const parts = new Intl.DateTimeFormat('en-US', {
@@ -21,7 +17,7 @@ function nextDailyRun(hour, timeZone) {
   const wallNow = Date.UTC(+parts.year, +parts.month - 1, +parts.day, hr, +parts.minute, +parts.second);
   const offsetMs = wallNow - now.getTime();
   let wallTarget = Date.UTC(+parts.year, +parts.month - 1, +parts.day, hour, 0, 0);
-  if (wallTarget <= wallNow) wallTarget += 86400000; // already past today → tomorrow
+  if (wallTarget <= wallNow) wallTarget += 86400000; 
   return new Date(wallTarget - offsetMs);
 }
 
@@ -36,8 +32,6 @@ const start = async () => {
   });
 
 
-  // Daily visa-application reminder sweep at 09:00 Asia/Dubai. Guarded by
-  // ENABLE_REMINDER_CRON so it runs on exactly one instance (never fan out).
   // The sweep is idempotent, but running it from a single machine avoids waste.
   if (config.enableReminderCron) {
     cron.schedule(
@@ -53,9 +47,6 @@ const start = async () => {
       },
       { timezone: 'Asia/Dubai' },
     );
-    // Log the resolved next run in BOTH Asia/Dubai and UTC. If the timezone ever
-    // silently fell back to UTC, these two strings would be identical — surfacing
-    // the problem in Fly logs instead of it going unnoticed.
     const nextRun = nextDailyRun(9, 'Asia/Dubai');
     const fmt = (tz) => new Intl.DateTimeFormat('en-GB', { timeZone: tz, dateStyle: 'medium', timeStyle: 'short', hour12: false }).format(nextRun);
     logger.info('[visa-reminders] daily reminder cron scheduled (09:00 Asia/Dubai)', {

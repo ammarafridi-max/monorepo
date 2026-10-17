@@ -1,8 +1,3 @@
-// Browser-side measurements for the free photo tools. Everything here runs on a
-// canvas in the visitor's tab, so it costs nothing and the photo does not have to
-// leave the device for it. Face detection is MediaPipe BlazeFace (lib/faceDetect.js),
-// which works in every modern browser; if it fails to load the face fields are
-// null and the server's judgment carries more weight.
 
 import { detectFaces } from './faceDetect';
 
@@ -25,7 +20,6 @@ function luminance(data, i) {
   return 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
 }
 
-// Variance of a Laplacian over a grey copy: the classic blur measure.
 function sharpnessOf(ctx, w, h) {
   const { data } = ctx.getImageData(0, 0, w, h);
   const grey = new Float32Array(w * h);
@@ -97,10 +91,6 @@ function lightingScore({ brightness, contrast, sharpness }) {
   return Math.max(0, s);
 }
 
-/**
- * Measure a photo. Returns numbers only; the page turns them into words.
- * @param {File} file
- */
 export async function measurePhoto(file) {
   const { canvas, ctx, w, h, naturalW, naturalH, bitmap } = await toBitmap(file);
   const face = await faceOf(canvas, w, h);
@@ -117,7 +107,6 @@ export async function measurePhoto(file) {
   };
   metrics.framingScore = framingScore(face);
   metrics.lightingScore = lightingScore(metrics);
-  // A JPEG copy for the server call, capped in size.
   const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
   return { metrics, jpegBase64: dataUrl.split(',')[1] };
 }

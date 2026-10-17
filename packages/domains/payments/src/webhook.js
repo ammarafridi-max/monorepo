@@ -5,7 +5,6 @@ function getOrRegisterModel(conn, name, schema) {
   try { return conn.model(name); } catch { return conn.model(name, schema); }
 }
 
-// Must be mounted with express.raw() BEFORE the JSON body parser.
 export function createStripeWebhookHandler({ stripe, webhookSecret, db, handlers = {} }) {
   const StripeWebhookEvent = getOrRegisterModel(db, 'stripe-webhook-event', StripeWebhookEventSchema);
 
@@ -39,7 +38,6 @@ export function createStripeWebhookHandler({ stripe, webhookSecret, db, handlers
         return res.json({ received: true, duplicate: true });
       }
 
-      // Atomic claim on the unique eventId index: exactly one of Stripe's duplicate deliveries runs the handler; a claim older than STALE_MS is reclaimable.
       const STALE_MS = 5 * 60 * 1000;
       const staleBefore = new Date(Date.now() - STALE_MS);
       try {
@@ -80,7 +78,6 @@ export function createStripeWebhookHandler({ stripe, webhookSecret, db, handlers
 
       const handler = handlers[productType];
       if (!handler) {
-        // Never mark an unhandled event as succeeded — that would permanently swallow a real payment.
         await StripeWebhookEvent.updateOne({ eventId: event.id }, { $set: { processingAt: null } });
         logger.error('[payments] No handler for productType', { productType, sessionId, eventId: event.id });
         return res.json({ received: true, unhandled: true });

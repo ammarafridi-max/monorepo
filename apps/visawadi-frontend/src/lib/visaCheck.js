@@ -1,11 +1,3 @@
-/**
- * Shared helpers for the /visa-check pages.
- *
- * Country names come from Intl.DisplayNames rather than a bundled list: the
- * rules store ISO codes only, and a hand-maintained name table would drift.
- * There is no demonym in Intl, so copy says "holders of a Pakistan passport"
- * rather than "Pakistani nationals" — accurate for every code, no lookup.
- */
 
 import { COUNTRIES } from '@travel-suite/frontend-shared/data/countries';
 
@@ -21,33 +13,17 @@ export const countryName = (code) => {
   }
 };
 
-/** XS is the Schengen area, which Intl does not know about. */
 const SPECIAL = { XS: 'Schengen Area' };
 export const destinationLabel = (code, fallback) => SPECIAL[code] || fallback || countryName(code);
 
-/**
- * Names that read with a definite article: "the United States", "the
- * Netherlands". Covers the recurring shapes rather than enumerating every
- * country, which would be another list to maintain.
- */
 const TAKES_THE = /^(United|Republic|Democratic|Netherlands|Philippines|Bahamas|Maldives|Gambia|Comoros|Czech|Schengen)\b|Islands$/;
 export const withArticle = (code) => {
   const n = destinationLabel(code);
   return TAKES_THE.test(n) ? `the ${n}` : n;
 };
 
-/**
- * "India passport holders" rather than "holders of a India passport": using the
- * country as a modifier sidesteps a/an agreement without needing a demonym
- * table, which Intl does not provide.
- */
 export const passportPhrase = (code) => `${countryName(code)} passport holders`;
 
-/**
- * Resolves one nationality against a rule the same way the checker's curated
- * provider does: a residence override wins over the outcome groups, and the
- * groups win over the rule's default.
- */
 export function resolveForNationality(rule, nationality, residence) {
   const nat = String(nationality || '').toUpperCase();
   const res = String(residence || '').toUpperCase();
@@ -80,15 +56,6 @@ export function resolveForNationality(rule, nationality, residence) {
   return { outcome: rule.defaultOutcome, maxStayDays: null, note: '', basis: 'default' };
 }
 
-/**
- * Every nationality, not only the ones the rule names. A rule lists exceptions
- * and leaves the rest to defaultOutcome, so a table built from the rule alone
- * answers for 93 of 239 passports on France and stays silent on the rest, which
- * is precisely the reader the page is for.
- *
- * Resolution order matches the checker: residence override, then outcome group,
- * then the rule's default.
- */
 export function buildNationalityTable(rule, { residence } = {}) {
   const res = residence ? String(residence).toUpperCase() : null;
 
@@ -112,7 +79,6 @@ export function buildNationalityTable(rule, { residence } = {}) {
   }
 
   return COUNTRIES
-    // A destination is not a nationality for its own page.
     .filter((c) => c.code !== rule.destination)
     .map((c) => {
       const hit = fromOverride.get(c.code) || fromGroups.get(c.code);

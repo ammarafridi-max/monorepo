@@ -121,14 +121,11 @@ export const metadata = {
 
 export const revalidate = 300;
 
-// Lead with demand rather than the alphabetical order the API returns.
 const DESTINATION_ORDER = [
   "schengen",
   "united-kingdom",
   "usa",
   "canada",
-  // Saudi is the current launch priority, so it sits inside the six the
-  // homepage shows. Reorder here to change what gets homepage placement.
   "saudi-arabia",
   "germany-visa",
   "france-visa",
@@ -153,17 +150,17 @@ function VisaDestinations({ visas }) {
     <PrimarySection className="py-14 md:py-25">
       <Container>
         <div className="mb-10 max-w-2xl">
-          <h2 className="text-3xl font-bold text-gray-900 md:text-4xl">
+          <h2 className="text-xl font-bold text-gray-900 md:text-4xl">
             Visas We Handle
           </h2>
-          <p className="mt-3 leading-relaxed text-gray-500">
+          <p className="text-sm md:text-base mt-3 leading-relaxed text-gray-500">
             Full application support for the destinations UAE residents apply to
             most. Every package includes document review, file preparation and
             appointment booking.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {visas.map((visa, i) => (
             <VisaCard
               key={visa.slug}
@@ -205,15 +202,16 @@ export default async function HomePage() {
       name: "Visa Assistance for UAE Residents",
       description: pageData.meta.description,
       areaServed: "AE",
-      // Cheapest package per destination, so the homepage advertises the same
-      // "from" prices the cards show rather than a separate set of numbers.
       offers: list
         .map((v) => {
           const cheapest = (v.packages ?? []).reduce(
-            (min, p) => (min == null || Number(p.price) < Number(min.price) ? p : min),
+            (min, p) =>
+              min == null || Number(p.price) < Number(min.price) ? p : min,
             null,
           );
-          return cheapest ? { ...cheapest, name: `${v.countryName} visa assistance` } : null;
+          return cheapest
+            ? { ...cheapest, name: `${v.countryName} visa assistance` }
+            : null;
         })
         .filter(Boolean),
     }),
@@ -240,7 +238,11 @@ export default async function HomePage() {
         dark
         below={
           <>
-            <VisaCheckerInline basePath={`/${DEFAULT_COUNTRY.slug}`} consultHref={`/${DEFAULT_COUNTRY.slug}`} resultPath="/visa-check" />
+            <VisaCheckerInline
+              basePath={`/${DEFAULT_COUNTRY.slug}`}
+              consultHref={`/${DEFAULT_COUNTRY.slug}`}
+              resultPath="/visa-check"
+            />
             <p className="mt-4 text-center text-sm text-gray-300">
               Already know you need a visa?{" "}
               <Link

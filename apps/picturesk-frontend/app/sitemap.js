@@ -3,7 +3,6 @@ import { getBlogTagsApi } from '@travel-suite/frontend-shared/services/apiBlogTa
 import { getAuthorsApi } from '@travel-suite/frontend-shared/services/apiAuthors';
 import { SITE_URL } from '../lib/seo';
 
-// Revalidated hourly so a newly published post reaches the sitemap without a deploy.
 export const revalidate = 3600;
 
 const PAGES = [
@@ -44,7 +43,6 @@ export default async function sitemap() {
         priority: 0.7,
       }));
   } catch {
-    // An api blip must not break the sitemap; the static pages still ship.
   }
 
   let tags = [];

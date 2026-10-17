@@ -6,7 +6,6 @@ const ConversationSchema = new mongoose.Schema(
     profileName: { type: String, trim: true, default: null },
     lastMessageAt: { type: Date, default: null },
     lastMessagePreview: { type: String, default: null },
-    // Replies are only allowed for 24h after the customer's last inbound message.
     lastInboundAt: { type: Date, default: null },
     unreadCount: { type: Number, default: 0 },
     status: { type: String, enum: ['OPEN', 'CLOSED'], default: 'OPEN' },

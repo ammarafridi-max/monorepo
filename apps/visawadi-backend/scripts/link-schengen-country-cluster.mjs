@@ -1,18 +1,3 @@
-/**
- * Cross-links the Schengen country guides so they form a cluster.
- *
- * relatedPosts on the post page is derived from tags, and all seven of these
- * resolve to "Schengen Visa", a 27-post pool, so they almost never surface each
- * other. The blog schema has no manual related-posts field, so the links go in
- * `content` behind a marker attribute, which makes the block idempotent and
- * removable with --remove.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/link-schengen-country-cluster.mjs           # dry run
- *   node --env-file=.env.production scripts/link-schengen-country-cluster.mjs --apply
- *   node --env-file=.env.production scripts/link-schengen-country-cluster.mjs --remove --apply
- *   ... add --only <slug> to act on one post
- */
 
 import mongoose from 'mongoose';
 

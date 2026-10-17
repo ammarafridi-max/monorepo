@@ -1,11 +1,3 @@
-/**
- * Usage: node targets/thedt/drafts/import.mjs --token <jwt> [--dry-run] [--start 2026-09-29]
- *
- * Posts the hand-written drafts to the live blog API as scheduled posts, using
- * the same FormData shape blog-generate uses, so an imported post is
- * indistinguishable from a generated one: ctaBlock appended to the body, tags
- * by name, cover image uploaded as a file.
- */
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -20,7 +12,6 @@ const arg = (name) => {
 const DRY = process.argv.includes('--dry-run');
 const TOKEN = arg('token');
 const EVERY_DAYS = Number(arg('every') ?? 3);
-/** 05:00 UTC is 09:00 in Dubai, matching blogSchedule.start. */
 const START = new Date(`${arg('start') ?? '2026-09-29'}T05:00:00Z`);
 
 if (!TOKEN && !DRY) {
@@ -61,7 +52,6 @@ for (const [i, d] of drafts.entries()) {
     const form = new FormData();
     form.append('title', d.topic);
     form.append('slug', d.slug);
-    // The schema has no ctaBlock field; blog-generate appends it to the body.
     form.append('content', `${d.content}\n${d.ctaBlock}`);
     form.append('excerpt', d.excerpt);
     form.append('quickAnswer', d.quickAnswer);

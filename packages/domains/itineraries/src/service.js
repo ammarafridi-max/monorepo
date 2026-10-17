@@ -285,7 +285,6 @@ export function createItineraryService({
     return order;
   }
 
-  // Atomic $set: must not clobber fields the concurrent generation is writing.
   function runSupportingDocsUpload(sessionId, files) {
     return (async () => {
       const docs = [];

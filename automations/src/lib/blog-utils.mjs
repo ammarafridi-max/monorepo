@@ -1,10 +1,3 @@
-/**
- * Brand-neutral helpers for the blog generators.
- *
- * Everything brand-specific — backend URL, admin credential env vars, internal
- * link rules, CTA wording — lives in ./brands/<key>.mjs. Nothing in this file
- * may name a brand.
- */
 
 const RECRAFT_API_KEY = process.env.RECRAFT_API_KEY;
 
@@ -34,11 +27,6 @@ export const BANNED_WORDS = [
   "unlock",
 ];
 
-/**
- * Everything that talks to a brand's backend. The brand supplies the base URL
- * and the names of its admin credential env vars, so two brands never share a
- * login by accident.
- */
 export function createApiClient(brand) {
   const BACKEND_URL = brand.backendUrl;
 
@@ -101,7 +89,6 @@ export function createApiClient(brand) {
     return tags.map((t) => t.name);
   }
 
-  /** Published posts, for the internal-linking section of the prompt. */
   async function fetchPublishedPosts(token) {
     const data = await apiFetch("/api/blogs?limit=50&page=1", {
       headers: { Cookie: `jwt=${token}` },
@@ -110,7 +97,6 @@ export function createApiClient(brand) {
     return posts.map((p) => ({ title: p.title, slug: p.slug }));
   }
 
-  /** Draft and scheduled posts count too, so a re-run never double-publishes. */
   async function fetchExistingTitles(token) {
     const data = await apiFetch("/api/blogs/admin/list?page=1&limit=1000", {
       headers: { Cookie: `jwt=${token}` },
@@ -174,7 +160,6 @@ export function validateRequiredLinks(parsed, requiredLinks) {
   }
 }
 
-/** True when a URL points at one of the brand's approved official sources. */
 export function isCitationUrl(url, brand) {
   let host;
   try {
@@ -187,13 +172,6 @@ export function isCitationUrl(url, brand) {
   );
 }
 
-/**
- * The Blog schema's own maxlength caps, mirrored here so an over-long field is
- * caught in the generation retry loop (where the model can fix it) instead of at
- * POST time, where Mongoose rejects it and the backend renders a bare 500.
- *
- * Keep in step with packages/domains/blog/src/schemas/blog.schema.js.
- */
 export const FIELD_LIMITS = {
   title: 200,
   quickAnswer: 500,
@@ -223,16 +201,11 @@ export function validateFieldLengths(parsed) {
   }
 }
 
-/** Every official-source link in the post, deduplicated, in document order. */
 export function extractCitations(html, brand) {
   const urls = [...(html || "").matchAll(/href\s*=\s*["']([^"']+)["']/gi)].map((m) => m[1]);
   return [...new Set(urls.filter((u) => isCitationUrl(u, brand)))];
 }
 
-/**
- * A YMYL post with no attributed sources is the failure mode we are trying to
- * prevent, so too few citations is a hard failure rather than a warning.
- */
 export function validateCitations(parsed, brand, { minCitations }) {
   const citations = extractCitations(parsed.content, brand);
   if (citations.length < minCitations) {
@@ -248,18 +221,6 @@ export function validateCitations(parsed, brand, { minCitations }) {
   return citations;
 }
 
-/**
- * House style forbids em dashes and the model keeps producing them anyway.
- * Cheaper to fix mechanically than to fail an otherwise good post over
- * punctuation. A dash between clauses becomes a comma; a dash used as a range
- * or a bullet marker becomes a plain hyphen.
- */
-/**
- * Catches invented citation URLs. Gates on 404/410 only: official sites like
- * travel.state.gov and uscode.house.gov block automated requests and answer
- * 403 or nothing at all, so treating any non-200 as broken would reject real
- * sources. A 404 means the server looked and the page is not there.
- */
 export async function findDeadCitations(urls, { timeoutMs = 15000 } = {}) {
   const dead = [];
   await Promise.all(
@@ -273,14 +234,12 @@ export async function findDeadCitations(urls, { timeoutMs = 15000 } = {}) {
         });
         if (res.status === 404 || res.status === 410) dead.push({ url, status: res.status });
       } catch {
-        // Blocked, throttled or timed out. Not evidence the page is missing.
       }
     }),
   );
   return dead;
 }
 
-/** Throwing form, used inside the generation retry loop. */
 export async function verifyCitationUrls(urls, opts) {
   const dead = await findDeadCitations(urls, opts);
   if (dead.length) {
@@ -291,12 +250,6 @@ export async function verifyCitationUrls(urls, opts) {
   console.log(`✓ ${urls.length} cited URLs checked, none returned 404`);
 }
 
-/**
- * Last resort when the model will not stop inventing a URL: unwrap the dead
- * links, keeping their anchor text, so the sentence survives without a broken
- * link. Returns null when doing so would drop the post below its citation floor
- * — a post with too few real sources should still fail rather than publish.
- */
 export function dropDeadCitations(content, deadUrls, { minCitations, brand }) {
   let out = content;
   for (const url of new Set(deadUrls)) {
@@ -311,7 +264,6 @@ export function dropDeadCitations(content, deadUrls, { minCitations, brand }) {
   return { content: out, citations: remaining };
 }
 
-/** Abbreviations that would otherwise be read as sentence ends. */
 const ABBREVIATIONS = /\b(?:U\.S|U\.K|U\.A\.E|e\.g|i\.e|etc|vs|Mr|Mrs|Ms|Dr|No|Approx|Inc|Ltd)\./gi;
 
 export function countSentences(text) {
@@ -322,7 +274,6 @@ export function countSentences(text) {
     .filter(Boolean).length;
 }
 
-/** Sentence-level split that keeps abbreviations intact. */
 export function splitSentencesText(text) {
   const masked = (text || '').replace(ABBREVIATIONS, (m) => m.replace(/\./g, '\u0001'));
   return masked
@@ -331,15 +282,6 @@ export function splitSentencesText(text) {
     .filter(Boolean);
 }
 
-/**
- * Splits only paragraphs that exceed the ceiling, and splits them as evenly as
- * possible. Paragraphs already within budget keep the model's own grouping,
- * because it groups by idea and a blind every-two-sentences chop would sever
- * claims from the conditions that qualify them.
- *
- * Done mechanically because the model will not do it reliably: asked to fix its
- * own long paragraphs it went 7 -> 1 -> 5 -> 1 across four attempts.
- */
 export function splitLongParagraphs(html, { maxSentences = 3 } = {}) {
   let splits = 0;
   const out = (html || '').replace(/<p>([\s\S]*?)<\/p>/gi, (whole, inner) => {
@@ -362,11 +304,6 @@ export function splitLongParagraphs(html, { maxSentences = 3 } = {}) {
   return out;
 }
 
-/**
- * One idea per paragraph. The prompt has asked for short paragraphs since the
- * beginning and the model has never obeyed it — measured 15 of 25 paragraphs at
- * three sentences and 7 above that. Rules that are not enforced are decoration.
- */
 export function validateParagraphs(parsed, { maxSentences = 3 } = {}) {
   const offenders = [];
 
@@ -400,16 +337,15 @@ export function stripEmDashes(value) {
   if (typeof value !== "string") return value;
   return value
     .replace(/&mdash;|&#8212;/gi, "—")
-    .replace(/(<\/strong>)\s*—\s+/gi, "$1: ")  // "<strong>Label</strong> — detail" reads as a colon
-    .replace(/\s+—\s+/g, ", ")     // clause break: "the fee — AED 30 — is" → ", "
-    .replace(/—/g, "-")             // anything left is a range or a compound
+    .replace(/(<\/strong>)\s*—\s+/gi, "$1: ")  
+    .replace(/\s+—\s+/g, ", ")     
+    .replace(/—/g, "-")             
     .replace(/,\s*,/g, ",")
     .replace(/,\s*([.;:!?])/g, "$1")
     .replace(/\s+,/g, ",")
     .replace(/,\s*(<\/(?:p|li|h2|h3|td|th)>)/gi, "$1");
 }
 
-/** Applied to every field that reaches a reader. */
 export function stripEmDashesFromPost(parsed) {
   for (const key of ["metaTitle", "metaDescription", "excerpt", "quickAnswer", "content", "ctaBlock"]) {
     if (parsed[key]) parsed[key] = stripEmDashes(parsed[key]);
@@ -434,11 +370,6 @@ export function countWords(html) {
   return text ? text.split(/\s+/).length : 0;
 }
 
-/**
- * `minWords` overrides the tier default. A brand using formats sets its own
- * floor from the format, which may not match the tier it is mapped from — a
- * Sourced Guide on a `long` topic targets 1400–2500, not the tier's 2000.
- */
 export function validateContentQuality(parsed, lengthTier, brand, { minWords: floor } = {}) {
   const content = parsed.content;
   const text = stripHtmlToText(content);
@@ -462,8 +393,6 @@ export function validateContentQuality(parsed, lengthTier, brand, { minWords: fl
     const allowed =
       url.startsWith("/") ||
       url.startsWith("#") ||
-      // mailto:/tel: are not links to another site. Rejecting the brand's own
-      // address as a "forbidden external link" burned a retry on 2026-09-02.
       /^(?:mailto|tel):/i.test(url) ||
       brand.allowedLinkPrefixes.some((prefix) => url.startsWith(prefix)) ||
       isCitationUrl(url, brand);
@@ -481,8 +410,6 @@ export function validateContentQuality(parsed, lengthTier, brand, { minWords: fl
     );
   }
 
-  // Brands can forbid specific link targets outright (a partner product we may
-  // name but not link, a legacy path that only redirects).
   for (const rule of brand.forbiddenLinkPatterns ?? []) {
     const offenders = (content.match(/href\s*=\s*["']([^"']+)["']/gi) || []).filter((h) =>
       rule.pattern.test(h),
@@ -494,8 +421,6 @@ export function validateContentQuality(parsed, lengthTier, brand, { minWords: fl
     }
   }
 
-  // Brands can forbid specific claims in the prose — a partner's product
-  // attributed to the wrong brand, or priced in the wrong currency.
   const faqText = stripHtmlToText(
     (parsed.faqs ?? []).map((f) => `${f.question} ${f.answer}`).join(" "),
   );
@@ -508,8 +433,6 @@ export function validateContentQuality(parsed, lengthTier, brand, { minWords: fl
     }
   }
 
-  // A post whose title is a product page's H1 competes with the page it should
-  // be sending readers to.
   for (const check of brand.titleChecks ?? []) {
     const title = String(parsed.title ?? "");
     if (check.pattern.test(title)) {

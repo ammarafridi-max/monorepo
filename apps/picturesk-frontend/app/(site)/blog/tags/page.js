@@ -10,7 +10,6 @@ import {
   buildWebsite,
 } from '../../../../lib/schema';
 
-// The tag index, rendered by the shared BlogTagsPage the travel brands use.
 
 const meta = {
   title: 'Blog Topics | Picturesk',
@@ -31,7 +30,6 @@ const breadcrumbPaths = [
 
 export const metadata = buildMetadata(meta);
 
-// Same rule as the other blog routes under (site): the layout reads the session cookie, so this cannot be static.
 export const dynamic = 'force-dynamic';
 
 export default async function Page() {

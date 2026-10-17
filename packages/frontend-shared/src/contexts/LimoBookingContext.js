@@ -61,7 +61,6 @@ export function LimoBookingProvider({ children }) {
   const [bookingData, setBookingData] = useState(initialBookingData);
   const [isHydrated, setIsHydrated] = useState(false);
 
-  // Read the saved booking after mount so the server and first client render match.
   useEffect(() => {
     try {
       const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));

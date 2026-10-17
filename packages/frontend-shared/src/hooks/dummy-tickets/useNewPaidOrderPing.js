@@ -5,7 +5,6 @@ import { useQueryClient } from '@tanstack/react-query';
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL;
 
-// Browsers block audio until the user has interacted with the page, so the first ping may be silent.
 function playPing() {
   if (typeof window === 'undefined') return;
   const AudioCtx = window.AudioContext || window.webkitAudioContext;

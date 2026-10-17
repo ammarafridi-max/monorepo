@@ -142,10 +142,6 @@ export const metadata = {
 
 export const revalidate = 300;
 
-/**
- * The plans people actually shop for. Deliberately a short list: the full
- * catalogue lives on /travel-insurance, which stays the hub for comparison.
- */
 const PLANS = [
   {
     name: "Single Trip",

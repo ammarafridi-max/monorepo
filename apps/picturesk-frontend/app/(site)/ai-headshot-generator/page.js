@@ -22,11 +22,6 @@ import {
   buildFAQPage,
 } from '../../../lib/schema';
 
-// The AI Headshot Generator product page: the canonical home of the headshot
-// product. The root (/) is the multi-service hub and links here.
-//
-// Title <= 60 chars, description <= 160 chars (spaces included), both carrying the
-// primary keyword "AI Headshot Generator" and no em dashes. See CLAUDE.md.
 const TITLE = 'AI Headshot Generator | Studio Headshots from Selfies';
 const DESCRIPTION =
   'Picturesk is an AI Headshot Generator that turns a few selfies into studio-quality professional headshots for LinkedIn. One price, delivered in about an hour.';
@@ -67,8 +62,6 @@ export default function AiHeadshotGeneratorPage() {
       />
       <TrackEvent event={EVENTS.LANDING_VIEW} />
       <main>
-        {/* Hero, then the page answers, in order: how it works, what it costs, why us,
-            who it is for, proof, what customers say, and the leftovers. */}
         <Hero />
         <HowItWorks />
         <Pricing />

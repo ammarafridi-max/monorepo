@@ -1,13 +1,3 @@
-/**
- * The visa pages carried testimonials with no source. Replace the featured set
- * on every published visa with three real Trustpilot reviews (quoted as
- * written, one trimmed with an ellipsis to fit the 600-char field). Old
- * entries are kept but unfeatured. No Trustpilot logo or images are used.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/replace-testimonials-with-trustpilot.mjs          # dry run
- *   node --env-file=.env.production scripts/replace-testimonials-with-trustpilot.mjs --apply
- */
 
 import mongoose from 'mongoose';
 

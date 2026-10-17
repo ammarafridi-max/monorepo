@@ -1,21 +1,3 @@
-/**
- * Seeds one visa rule per Schengen member state.
- *
- * The 29 members share ONE visa policy, so the nationality lists below are
- * common to all of them and are derived from Annex II of Regulation (EU)
- * 2018/1806 (the official list of visa-exempt third countries), plus EU/EEA/CH
- * nationals who travel under free movement rather than a visa waiver.
- *
- * Two deliberate adjustments to the 2018 text, both post-dating it:
- *   + GB  British citizens became visa-exempt third-country nationals after Brexit
- *   - VU  Vanuatu's exemption is suspended
- * Kosovo is deliberately absent: it gained visa-free travel in 2024 but has no
- * ISO 3166-1 alpha-2 code in our country list, so it needs handling separately.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/seed-schengen-visa-rules.mjs          # dry run
- *   node --env-file=.env.production scripts/seed-schengen-visa-rules.mjs --apply
- */
 
 import mongoose from 'mongoose';
 
@@ -23,7 +5,6 @@ const APPLY = process.argv.includes('--apply');
 
 const EU_SOURCE_URL = 'https://home-affairs.ec.europa.eu/policies/schengen/visa-policy_en';
 
-/** No Schengen visa needed for a short stay: Annex II third countries + EU/EEA/CH. */
 const NO_VISA_NEEDED = [
   'AD', 'AE', 'AG', 'AL', 'AR', 'AT', 'AU', 'BA', 'BB', 'BE',
   'BG', 'BN', 'BR', 'BS', 'CA', 'CH', 'CL', 'CO', 'CR', 'CY',
@@ -37,11 +18,6 @@ const NO_VISA_NEEDED = [
   'VC', 'VE', 'WS',
 ];
 
-/**
- * Annex I nationalities that make up most of the UAE's resident population.
- * They need a Schengen visa regardless of UAE residence; what UAE residence
- * changes is where they file and which documents they bring.
- */
 const UAE_RESIDENT_NATIONALITIES = ['IN', 'PK', 'BD', 'PH', 'EG', 'LK', 'NP', 'JO', 'LB', 'SY'];
 
 const MEMBERS = [
@@ -146,7 +122,6 @@ for (const m of MEMBERS) {
   }
 }
 
-// The Schengen Area pseudo-destination shares the same policy.
 const areaDoc = buildRule({
   code: 'XS',
   name: 'Schengen Area',

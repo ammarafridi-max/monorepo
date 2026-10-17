@@ -62,8 +62,6 @@ export default function Hero({
             <div className="relative mt-10 max-w-4xl lg:mx-auto">{below}</div>
           )}
 
-          {/* Below the search bar: the tool is what people came for, so nothing
-              sits between it and the headline. */}
           {pills.length > 0 && (
             <div className="mt-8 flex flex-wrap gap-2.5 lg:justify-center">
               {pills.map((pill) => (

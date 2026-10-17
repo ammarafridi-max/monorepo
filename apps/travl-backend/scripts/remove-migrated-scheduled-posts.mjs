@@ -1,11 +1,3 @@
-/**
- * Usage, from apps/travl-backend:
- *   node --env-file=.env.production scripts/remove-migrated-scheduled-posts.mjs          # dry run
- *   node --env-file=.env.production scripts/remove-migrated-scheduled-posts.mjs --apply
- *
- * --apply deletes the posts; it refuses unless each is still scheduled, never
- * published, and already present in the export file.
- */
 
 import fs from 'node:fs';
 import path from 'node:path';

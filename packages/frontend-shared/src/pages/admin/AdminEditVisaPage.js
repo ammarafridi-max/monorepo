@@ -123,7 +123,6 @@ export default function AdminEditVisaPage({ countries = [], siteUrl = '' }) {
           </div>
         ) : (
           <VisaOverlayForm
-            // Remount on tab change so each country gets its own form state.
             key={active.slug}
             base={visa}
             country={active}

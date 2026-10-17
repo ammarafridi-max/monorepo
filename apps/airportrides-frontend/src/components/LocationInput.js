@@ -13,15 +13,6 @@ const TYPE_ICONS = {
 const defaultInputCls =
   'w-full rounded-xl border border-sand-300 bg-white px-4 py-3 pr-9 text-[15px] text-ink placeholder:text-ink-mute focus:border-clay-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-clay-500/20 transition-colors';
 
-/**
- * LocationInput — combobox for picking a location from Google Places suggestions.
- *
- * Props
- *   value          { name, address, id, type } | null — controlled selected value
- *   onChange       (suggestion | null) => void
- *   placeholder    string
- *   inputClassName string — replaces the default input classes entirely
- */
 export default function LocationInput({
   value,
   onChange,
@@ -39,15 +30,12 @@ export default function LocationInput({
 
   const { suggestions, isLoadingSuggestions } = useLocationSuggestions(query);
 
-  // Keep valueRef current without re-subscribing effects
   useEffect(() => { valueRef.current = value; }, [value]);
 
-  // When parent clears the value externally, clear the input text too
   useEffect(() => {
     if (!value) setQuery('');
   }, [value]);
 
-  // Close on outside click; restore the committed text so the input isn't left dirty
   useEffect(() => {
     function handleOutsideClick(e) {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
@@ -60,7 +48,6 @@ export default function LocationInput({
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
 
-  // Scroll the highlighted item into view when navigating by keyboard
   useEffect(() => {
     if (highlighted < 0 || !listRef.current) return;
     const item = listRef.current.children[highlighted];
@@ -115,7 +102,6 @@ export default function LocationInput({
   return (
     <div className="relative" ref={containerRef}>
 
-      {/* ── Text input ─────────────────────────────────────────────────── */}
       <div className="relative">
         <input
           ref={inputRef}
@@ -130,7 +116,6 @@ export default function LocationInput({
           className={inputClassName ?? defaultInputCls}
         />
 
-        {/* Right adornment: spinner while loading, clear-X when there's text */}
         <div className="absolute right-3 top-1/2 -translate-y-1/2">
           {isLoadingSuggestions ? (
             <Loader2 size={15} className="animate-spin text-ink-mute" />
@@ -147,7 +132,6 @@ export default function LocationInput({
         </div>
       </div>
 
-      {/* ── Dropdown ───────────────────────────────────────────────────── */}
       {showDropdown && (
         <ul
           ref={listRef}

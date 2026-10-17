@@ -31,8 +31,6 @@ export async function deleteAdminDummyTicketPricingApi(currency) {
   });
 }
 
-// Server components need the public client: apiFetch sends credentials, which
-// is a browser concept, and carries no timeout.
 export async function getDummyTicketPricingServerApi(currency, { revalidate = 300 } = {}) {
   return await apiFetchPublic(withCurrency(`${URL}/dummy-ticket`, currency), {
     next: { revalidate },

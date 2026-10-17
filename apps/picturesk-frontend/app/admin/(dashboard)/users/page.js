@@ -2,7 +2,6 @@ import AdminUsersPage from '@travel-suite/frontend-shared/pages/admin/AdminUsers
 
 export const metadata = { title: 'Team' };
 
-// Picturesk staff are admin (full access) or support (read-only).
 export default function Page() {
   return <AdminUsersPage roles={['admin', 'support']} />;
 }

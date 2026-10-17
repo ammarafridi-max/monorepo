@@ -1,8 +1,3 @@
-/**
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/import-visa-leads-from-travl.mjs          # dry run
- *   node --env-file=.env.production scripts/import-visa-leads-from-travl.mjs --apply
- */
 
 import fs from 'node:fs';
 import path from 'node:path';

@@ -190,7 +190,6 @@ function DashboardContent() {
 
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_280px] gap-6">
 
-        {/* Recent Insurance Applications */}
         <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
             <div>

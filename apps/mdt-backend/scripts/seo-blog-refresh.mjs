@@ -1,21 +1,3 @@
-// Usage: node --env-file=.env.production scripts/seo-blog-refresh.mjs [--apply]
-//
-// Content refresh for the three posts that decayed over the last quarter:
-//   how-do-dummy-tickets-work            134 -> 56 clicks,  position 5.86 -> 7.97
-//   are-dummy-tickets-legal...           150 -> 81 clicks,  position 4.58 -> 12.86
-//   how-long-should-a-dummy-ticket...    162 -> 108 clicks, position 4.37 -> 5.36
-//
-// Two problems. They are thin (745 to 1,024 words against a ~1,650 word house
-// benchmark), and all three opened with their own "What is a Dummy Ticket?"
-// definition, competing for the same cluster that collapsed ("dummy ticket
-// meaning" fell 5.96 to 12.02, "what is a dummy ticket" 7.89 to 10.71).
-//
-// So: how-do-dummy-tickets-work keeps and deepens the definition, the other two
-// hand it off with a link and spend their words on the intent they actually own.
-// Each post gains a comparison table, which is the format AI answers lift.
-//
-// updatedAt IS bumped here, unlike the earlier href and heading migrations.
-// This is a real revision, so the freshness signal is honest.
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -41,7 +23,6 @@ const A = (href, text) => `<a href="${href}">${text}</a>`;
 
 const GDS = 'global distribution systems (Amadeus, Sabre, Travelport)';
 
-// ---------------------------------------------------------------- post A
 const A_NOT =
   H3('What a Dummy Ticket Is Not') +
   P(`A dummy ticket is not a picture of a ticket, and it is not something a free "generator" produces. Those tools output a PDF that looks like a booking but has no record behind it. Nothing is held in an airline system, so the reference fails the moment anyone checks it. A real dummy ticket is an actual reservation sitting in a booking system that has simply not been paid for.`) +
@@ -74,7 +55,6 @@ const A_VERIFY =
   ]) +
   P('That last line is the one people worry about. It shows the booking is unticketed, which is exactly what a reservation is. Embassies ask for evidence of your travel plan, not proof that you have already spent the money.');
 
-// ---------------------------------------------------------------- post B
 const B_DEF_NEW =
   H2('Is a Dummy Ticket the Same as a Fake Ticket?') +
   P(`No, and the distinction is the whole answer to the legality question. A dummy ticket is a real reservation held in an airline's system with a genuine PNR that has not been paid for. A fake ticket is a document someone made up. One is a booking. The other is a forgery.`) +
@@ -105,7 +85,6 @@ const B_FRAUD =
   ) +
   P('Notice that four of those five have nothing to do with whether the ticket was paid for. They are about whether the document is genuine and whether it still holds when someone looks. Get a real reservation, keep the details matching your passport, and make sure it is live on the day of your appointment.');
 
-// ---------------------------------------------------------------- post C
 const C_DEF_NEW =
   H2('What Does Validity Actually Mean Here?') +
   P(`Validity is the window during which your reservation stays live in the airline system and returns a result when someone checks it. Before it expires, an officer running your PNR through the ${GDS} sees a confirmed booking. After it expires, they see nothing, and an expired reservation is treated the same as no reservation at all.`) +
@@ -154,7 +133,6 @@ const C_RESCHEDULE =
   H3('If It Expires Before Submission') +
   P('Book a new one. It is a fresh reservation with a new PNR, so update any document that quotes the old reference, and check that the dates still line up with the rest of your application. Nothing carries over from the expired booking.');
 
-// ---------------------------------------------------------------- plan
 const EDITS = {
   'how-do-dummy-tickets-work': [
     { before: H2('Types of Dummy Tickets'), insert: A_NOT },
@@ -206,7 +184,6 @@ for (const slug of slugs) {
     }
   }
 
-  // Only one post should still define the term, so the cluster stops competing.
   const defines = /<h2[^>]*>What [Ii]s a Dummy Ticket\?<\/h2>/.test(c);
   if (slug === 'how-do-dummy-tickets-work' && !defines) { console.error(`${slug} should keep the definition H2`); failures++; }
   if (slug !== 'how-do-dummy-tickets-work' && defines) { console.error(`${slug} still owns a duplicate definition H2`); failures++; }

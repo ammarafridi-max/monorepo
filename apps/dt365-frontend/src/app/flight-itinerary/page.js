@@ -78,8 +78,6 @@ export const pageData = {
   },
 };
 
-// Kept live for Google Ads landing traffic, but excluded from search: the page
-// is thin and was cannibalising /blog/what-is-a-flight-itinerary-for-a-schengen-visa.
 export const metadata = {
   ...buildMetadata(pageData.meta),
   robots: { index: false, follow: true },

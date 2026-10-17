@@ -24,7 +24,6 @@ export function createBookingRouterFromParts({ controller, auth }) {
 
   router.route('/available-vehicles').get(controller.getVehicles);
 
-  // Staff only: booking refs are short and sequential, so an open endpoint could be walked to harvest customer data.
   router.route('/reference/:ref').get(protect, restrictTo('admin', 'agent'), controller.getBookingByReference);
 
   router

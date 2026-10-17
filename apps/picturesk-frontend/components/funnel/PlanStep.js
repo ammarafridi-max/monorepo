@@ -15,8 +15,6 @@ const usd = (cents) => `$${Math.round(cents / 100)}`;
 const plural = (n, noun) => `${n} ${noun}${n === 1 ? '' : 's'}`;
 const scope = (n, noun) => (n == null ? `All ${noun}s` : plural(n, noun));
 
-// What a plan includes and does not, as one checklist, so the cards compare
-// line for line. Built from the tier data so it can never drift from what is sold.
 const featuresFor = (t, lookNoun) => [
   { ok: true, text: `${t.deliverCount} photos` },
   { ok: true, text: scope(t.attireCount, 'outfit') },
@@ -25,8 +23,6 @@ const featuresFor = (t, lookNoun) => [
   { ok: !isFreeTier(t), text: 'Look-like-you money-back guarantee' },
 ];
 
-// Step 3: plan, then scenes and outfits within that plan's caps. Everything
-// persists to localStorage as it changes.
 export default function PlanStep({ product }) {
   const paths = funnelPaths(product);
   const cfg = productConfig(product);
@@ -36,7 +32,6 @@ export default function PlanStep({ product }) {
   const LOOK_OPTIONS = withPreview(catalog.looks);
   const ATTIRE_OPTIONS = withPreview(catalog.attire);
   const lookNoun = cfg.lookNoun;
-  // The free plan is once per account; after that it is simply not offered.
   const TIERS = tiersFor(product).filter((t) => !(freeUsed && isFreeTier(t)));
 
   const [looks, setLooks] = useState([]);

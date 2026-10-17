@@ -11,7 +11,6 @@ function getOrRegisterModel(conn, name, schema) {
   catch { return conn.model(name, schema); }
 }
 
-// TicketModel/InsuranceApplicationModel must come from the host backend; registering them here blocks the full schema registration.
 export function createAffiliatesRouter({ db, auth, TicketModel = null, InsuranceApplicationModel = null }) {
   const Affiliate = getOrRegisterModel(db, 'Affiliate', AffiliateSchema);
 

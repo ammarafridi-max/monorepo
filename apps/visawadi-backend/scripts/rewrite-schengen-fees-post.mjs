@@ -1,25 +1,3 @@
-/**
- * Rewrites the Schengen fees post around the fee/cost query cluster it already
- * ranks for (positions 4.6 to 13.6, 2 clicks across 22 queries), and removes the
- * stale AED figures that update-schengen-visa-fee.mjs could not reach.
- *
- * That script only rewrites `content`. The stale numbers on this post live in
- * `quickAnswer` ("approximately AED 360") and `faqs[].answer` ("AED 355 to 370"),
- * which is why its blog edits report MISSING and the figures survived. This one
- * rewrites all four fields together.
- *
- * AED_ADULT is the single source of truth for the dirham figure; the child fee
- * and the table are derived from it. EUR 90 at EUR/AED 4.269 (8 September 2026)
- * is AED 384, so 385 is used, matching every Schengen money page.
- *
- * Sources: European Commission, "Schengen visa fee increased as of 11 June 2024"
- * (EUR 80 to EUR 90 adults, EUR 40 to EUR 45 for children aged six to below 12);
- * VFS Global Germany UAE one-pager (AED 146.74 service fee, Dubai and Abu Dhabi).
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/rewrite-schengen-fees-post.mjs          # dry run
- *   node --env-file=.env.production scripts/rewrite-schengen-fees-post.mjs --apply
- */
 
 import mongoose from 'mongoose';
 
@@ -36,9 +14,6 @@ const CHECKED = '8 September 2026';
 const SRC_EC =
   'https://home-affairs.ec.europa.eu/news/schengen-visa-fee-increased-11-june-2024-2024-06-13_en';
 const SRC_VFS = 'https://visa.vfsglobal.com/one-pager/germany/uae/english/';
-// Kept as factual references, not purchase CTAs. Travl owns insurance and
-// Dummy Ticket 365 owns flight reservations; both are named because the reader
-// needs to know what the documents are, not because we want the click.
 const REF_INSURANCE =
   'https://www.travl.ae/blog/schengen-visa-travel-insurance-requirements-minimum-coverage-explained';
 const REF_TICKET = 'https://www.dummyticket365.com';
@@ -185,8 +160,6 @@ console.log(`  added:   ${nowL.filter((l) => !wasL.includes(l)).join(', ') || 'n
 
 console.log(`\n--- stale figure sweep on the new copy ---`);
 const all = [metaTitle, metaDescription, quickAnswer, content, ...faqs.map((f) => f.answer)].join(' ');
-// "rose from EUR 80" and "still quoting EUR 80" are the deliberate historical
-// mentions; anything else matching is a leftover.
 const sweep = all.replace(/rose from EUR 80|still quoting EUR 80/g, '');
 const stale = [...sweep.matchAll(/AED ?(?:350|355|360|370|380)\b|EUR ?(?:80|40)(?!,|\d)|6 to 12|—/g)].map((m) => m[0]);
 console.log(`  ${stale.length ? 'STALE: ' + [...new Set(stale)].join(', ') : 'clean (no AED 350/355/360/370/380, no EUR 80/40, no "6 to 12", no em dash)'}`);

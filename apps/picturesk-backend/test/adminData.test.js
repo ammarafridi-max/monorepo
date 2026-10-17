@@ -8,12 +8,6 @@ import { connectMongo, Order, ORDER_STATES } from '@travel-suite/picturesk-share
 import { createAdminSubsystem } from '../src/admin/index.js';
 import { createAdminDataRouter } from '../src/admin/adminData.js';
 
-/**
- * End-to-end Phase B: the read-only admin data routes over an in-memory Mongo,
- * behind the same combined guard the server uses (ADMIN_TOKEN header OR admin
- * cookie session). Verifies auth paths, the list/detail projections, the stats
- * aggregation math, and the customers grouping.
- */
 
 const CONFIG = { jwtSecret: 'test-secret', jwtExpiresIn: '7d', cookieExpiresInDays: 7, nodeEnv: 'test' };
 const ADMIN_TOKEN = 'test-admin-token';
@@ -51,8 +45,8 @@ before(async () => {
   const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
   const a = await Order.create({ customerEmail: 'alice@x.com', status: ORDER_STATES.DELIVERED, amountPaidCents: 3500, computeCostCents: 500, deliveredAt: new Date(), paidAt: new Date(), uploadedImageUrls: ['https://r2/a1.jpg'], deliveredImageUrls: ['https://cdn/a1.jpg'] });
   await Order.create({ customerEmail: 'alice@x.com', status: ORDER_STATES.DELIVERED, amountPaidCents: 3500, computeCostCents: 700, deliveredAt: new Date(), paidAt: new Date() });
-  await Order.create({ customerEmail: 'bob@x.com', status: ORDER_STATES.PAID, amountPaidCents: 3500, computeCostCents: 0, paidAt: twoHoursAgo, userId: bobUserId }); // stuck (PAID 2h)
-  await Order.create({ customerEmail: 'carol@x.com', status: ORDER_STATES.AWAITING_PAYMENT }); // fresh, not stuck
+  await Order.create({ customerEmail: 'bob@x.com', status: ORDER_STATES.PAID, amountPaidCents: 3500, computeCostCents: 0, paidAt: twoHoursAgo, userId: bobUserId }); 
+  await Order.create({ customerEmail: 'carol@x.com', status: ORDER_STATES.AWAITING_PAYMENT }); 
   await Order.create({ customerEmail: 'dave@x.com', status: ORDER_STATES.FAILED, amountPaidCents: 3500, computeCostCents: 0, refundedAt: new Date(), failedAt: new Date() });
   orderAId = a._id.toString();
 
@@ -98,7 +92,7 @@ test('list works with the ADMIN_TOKEN break-glass header', async () => {
   const body = await res.json();
   assert.equal(body.status, 'success');
   assert.equal(body.data.orders.length, 5);
-  assert.equal(body.data.stuckCount, 1); // the PAID-2h order
+  assert.equal(body.data.stuckCount, 1); 
 });
 
 test('list works with an admin cookie session', async () => {
@@ -127,7 +121,7 @@ test('detail returns the full projection incl. admin-only fields', async () => {
   const { data } = await res.json();
   assert.equal(data.status, ORDER_STATES.DELIVERED);
   assert.equal(data.customerEmail, 'alice@x.com');
-  assert.equal(data.marginCents, 3000); // 3500 - 500
+  assert.equal(data.marginCents, 3000); 
   assert.deepEqual(data.uploadedImageUrls, ['https://r2/a1.jpg']);
   assert.deepEqual(data.deliveredImageUrls, ['https://cdn/a1.jpg']);
 });
@@ -149,11 +143,11 @@ test('stats aggregates revenue, cost, margin, counts, and stuck', async () => {
   assert.equal(data.byStatus.AWAITING_PAYMENT, 1);
   assert.equal(data.byStatus.FAILED, 1);
   assert.equal(data.byStatus.GENERATING, 0);
-  assert.equal(data.revenueCents, 14000); // 3500 x 4 paid orders (carol never paid)
-  assert.equal(data.computeCostCents, 1200); // 500 + 700
+  assert.equal(data.revenueCents, 14000); 
+  assert.equal(data.computeCostCents, 1200); 
   assert.equal(data.deliveredCount, 2);
   assert.equal(data.deliveredRevenueCents, 7000);
-  assert.equal(data.deliveredMarginCents, 5800); // 7000 - 1200
+  assert.equal(data.deliveredMarginCents, 5800); 
   assert.equal(data.refundedCount, 1);
   assert.equal(data.stuckCount, 1);
 });
@@ -168,6 +162,6 @@ test('customers groups by email with orders, delivered, spend, account flag', as
   assert.equal(byEmail['alice@x.com'].delivered, 2);
   assert.equal(byEmail['alice@x.com'].totalPaidCents, 7000);
   assert.equal(byEmail['alice@x.com'].hasAccount, false);
-  assert.equal(byEmail['bob@x.com'].hasAccount, true); // userId set
+  assert.equal(byEmail['bob@x.com'].hasAccount, true); 
   assert.equal(byEmail['carol@x.com'].totalPaidCents, 0);
 });

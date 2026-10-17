@@ -1,7 +1,3 @@
-// The USD validity tiers, in one place so a price change is one edit rather
-// than fifteen. Locale pages build their own from the price book they fetch,
-// because quoting dollars to a rupee buyer is the problem those pages exist to
-// solve.
 export const USD_TIERS = [
   { label: '2 days', price: 'USD 13' },
   { label: '7 days', price: 'USD 20' },

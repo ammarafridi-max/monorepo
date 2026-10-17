@@ -126,7 +126,6 @@ export default function BlogPostPage({
 
             <AuthorBox author={blog.author} />
 
-            {/* Desktop rail carries the contents, so offers live here on mobile only. */}
             {offers.length > 0 && (
               <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:hidden">
                 {offers.map((offer) => (
@@ -236,7 +235,6 @@ function QuickAnswer({ answer, offer }) {
         {answer}
       </p>
 
-      {/* Desktop keeps this text-only — the sticky rail is already asking. */}
       {offer?.href && offer?.cta && (
         <div className="relative mt-5 lg:hidden">
           {offer.external ? (
@@ -271,7 +269,6 @@ function TagPills({ tags, allBlogTags }) {
   return (
     <div className="mt-10 flex flex-wrap items-center gap-1.5">
       {tags.map((tag, index) => {
-        // Populated reference, or a bare name on a brand not yet migrated.
         const tagName = typeof tag === 'string' ? tag : tag?.name;
         const tagObj =
           typeof tag === 'string'

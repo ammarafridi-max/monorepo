@@ -14,8 +14,6 @@ import Loading from '@/components/Loading';
 import PageHeading from '@/components/PageHeading';
 import { WHATSAPP_URL } from '@/components/WhatsAppCTA';
 
-// Stripe redirects here before its webhook has usually reached the backend, so a
-// pending booking is polled for a while before anyone is told something failed.
 const CONFIRM_WINDOW_MS = 60000;
 
 export default function PaymentClient() {

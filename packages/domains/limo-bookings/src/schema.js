@@ -113,7 +113,6 @@ BookingSchema.index({ pickupTime: 1 });
 BookingSchema.index({ status: 1 });
 BookingSchema.index({ 'payment.status': 1 });
 BookingSchema.index({ createdAt: -1 });
-// Recovery query used by scripts/resend-booking-confirmations.js in the brand app.
 BookingSchema.index({ 'payment.status': 1, 'notifications.paymentConfirmation.customer.status': 1 });
 BookingSchema.index({ handledBy: 1 });
 

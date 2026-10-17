@@ -1,37 +1,3 @@
-/**
- * Fact-checks the Schengen cluster against the Visa Code and stamps a verified
- * date only on the posts actually checked.
- *
- * Checked against Regulation (EC) No 810/2009 consolidated to 02.02.2020, read
- * from the EUR-Lex PDF, and Annex 25 of the Practical Handbook (reference
- * amounts notified by member states), version 01/04/2026:
- *
- *   Art. 15(3)  travel medical insurance, minimum EUR 30 000
- *   Art. 23(1)  decided within 15 CALENDAR days of lodging
- *   Art. 23(2)  extendable to a maximum of 45 calendar days
- *   Art. 24(2)  multiple-entry cascade, five-year ceiling
- *   Annex 25    per-country means of subsistence
- *
- * Three corrections, all of them claims the regulation contradicts:
- *
- *   1. "10 to 15 working days" on the Italy, Germany and France posts. Article
- *      23 counts calendar days; 15 working days is about 21 calendar days, so
- *      the posts promised a slower decision than the law allows and framed a
- *      breach of the deadline as normal.
- *   2. "up to 30 days for complex cases and up to 60 days in exceptional
- *      circumstances". There is no 30-day tier and 60 exceeds the legal
- *      maximum outright.
- *   3. "EUR 50 to EUR 100 per day" as the funds guideline, on three posts.
- *      Annex 25 puts Germany at EUR 45 and Spain at EUR 122.10 with a
- *      EUR 1 098.90 floor, so the range is wrong at both ends.
- *
- * The stamp reads "requirements checked", not "everything in this post checked":
- * partner pricing and service claims are not covered by these sources.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/verify-schengen-claims.mjs          # dry run
- *   node --env-file=.env.production scripts/verify-schengen-claims.mjs --apply
- */
 
 import mongoose from 'mongoose';
 
@@ -69,9 +35,6 @@ const FIXES = {
     ['As a working guideline, most consulates expect to see roughly <strong>EUR 50 to EUR 100 per day</strong> of your planned trip, after accounting for accommodation and flights.',
      `On how much, ${FUNDS_FIX}.`],
   ],
-  // Both of these already carried a checked date from the earlier pass, which
-  // verified the articles that pass added and not this figure. Correcting them
-  // is what makes those existing stamps true.
   'schengen-visa-interview-questions-how-to-prepare-from-the-uae': [
     ['As a guideline, EUR 50 to EUR 100 per day is what most consulates expect to see covered',
      'Thresholds are set per country, from EUR 45 a day for Germany to EUR 122.10 for Spain, so check the one you are applying to'],
@@ -86,7 +49,6 @@ const FIXES = {
   ],
 };
 
-/** Posts whose Schengen requirement claims were read against the sources above. */
 const VERIFIED = [
   ...Object.keys(FIXES),
   'switzerland-visa-from-uae-requirements-for-schengen-applicants',
@@ -123,7 +85,6 @@ for (const slug of [...new Set(VERIFIED)]) {
     console.log(`  ${slug}\n     fixed: ${from.slice(0, 78)}`);
   }
 
-  // Stamp inside the existing Sources block so provenance stays in one place.
   if (!/Requirements checked/.test(content)) {
     const anchor = '</ul>\n</div>';
     if (content.includes(anchor)) {

@@ -1,12 +1,3 @@
-/**
- * Picturesk — an AI headshot generator, and nothing else.
- *
- * The rules below are enforced rather than left to the prompt, for the same
- * reason they are on the other targets: a wrong price, an invented subscription,
- * or a mention of another brand in this company's portfolio would each undo the
- * page it lands on. Picturesk is the one brand here that must never name the
- * others, so that is a hard content check, not a suggestion.
- */
 
 const SITE = 'https://www.picturesk.ai';
 const page = (path) => `${SITE}${path}`;
@@ -14,8 +5,6 @@ const page = (path) => `${SITE}${path}`;
 export const TARGET = {
   key: 'picturesk',
   name: 'Picturesk',
-  // Overridable so a hand-written batch can be posted through a local api with a
-  // real staff session (which sets the author) rather than the break-glass token.
   backendUrl: process.env.PICTURESK_BACKEND_URL || 'https://api.picturesk.ai',
   siteUrl: SITE,
 
@@ -24,53 +13,37 @@ export const TARGET = {
 
   ctaClass: 'picturesk-cta',
 
-  /** No tags exist yet; the job creates the ones in topics.json as it publishes. */
   excludedTags: [],
 
-  /** First slot for blog-schedule, and posts it must leave where they are. */
   blogSchedule: {
     start: '2026-09-15T05:00:00Z',
     excludeSlugs: [],
   },
 
-  /**
-   * Format per length tier. `long` maps to sourced-guide rather than
-   * field-report because field-report requires first-party numbers, and there is
-   * no aggregate order data to report yet. Flip it once there is.
-   */
   formatsByTier: {
     short: 'quick-answer',
     medium: 'sourced-guide',
     long: 'sourced-guide',
   },
 
-  /**
-   * The only domains a post may cite. Headshots are not a regulated topic, so
-   * "official" here means the platforms and institutions whose guidance actually
-   * governs the outcome: LinkedIn's own help and business pages for anything
-   * about profile photos, the realtor and HR bodies for their professions, and
-   * peer-reviewed or institutional research on first impressions. No blogs, no
-   * competitors, no photography retailers.
-   */
   citationDomains: [
-    'linkedin.com',            // help centre, business.linkedin.com, engineering blog
-    'nar.realtor',             // National Association of Realtors
-    'shrm.org',                // Society for Human Resource Management
-    'hbr.org',                 // Harvard Business Review
-    'apa.org',                 // American Psychological Association
+    'linkedin.com',            
+    'nar.realtor',             
+    'shrm.org',                
+    'hbr.org',                 
+    'apa.org',                 
     'psychologicalscience.org',
     'pnas.org',
-    'princeton.edu',           // Todorov lab, first-impression research
+    'princeton.edu',           
     'nature.com',
     'sciencedirect.com',
     'pewresearch.org',
-    'bls.gov',                 // occupational data
+    'bls.gov',                 
     'ons.gov.uk',
-    'ico.org.uk',              // biometric and image data guidance
+    'ico.org.uk',              
     'gdpr.eu',
   ],
 
-  /** Picturesk links only to Picturesk. */
   allowedLinkPrefixes: [
     'https://www.picturesk.ai',
     'https://picturesk.ai',
@@ -91,10 +64,8 @@ export const TARGET = {
     },
   ],
 
-  /** Checked against the article text, not its markup. */
   contentChecks: [
     {
-      // Brand neutrality is strict: Picturesk names only itself.
       pattern: /\b(?:Travl|Dummy ?Ticket ?365|DT365|MDT|My ?Dummy ?Ticket|VisaWadi|Emirates ?Limo|AirportRides|Airport ?Rides)\b/i,
       message: 'Picturesk must never mention another brand in this portfolio',
     },
@@ -103,7 +74,6 @@ export const TARGET = {
       message: 'Picturesk is a one-time payment: no subscription, no credits, no monthly plan',
     },
     {
-      // Any dollar figure attributed to Picturesk must be one of the three prices.
       pattern: /\bPicturesk\b[^.]{0,80}\$(?!9\b|29\b|49\b)\d+|\$(?!9\b|29\b|49\b)\d+[^.]{0,60}\b(?:from|with|at) Picturesk\b/i,
       message: 'Picturesk prices are $9, $29 and $49 only',
     },
@@ -117,16 +87,9 @@ export const TARGET = {
     },
   ],
 
-  /**
-   * Cover image prompt. The shared default asks for travel photography, which is
-   * wrong here. Covers are editorial scenes around the act of getting a photo
-   * (a phone by a window, a studio, a desk), never a finished headshot: a cover
-   * that looked like a customer result would read as a claim about our output.
-   */
   imagePrompt(title) {
     const t = title.toLowerCase();
     const scene =
-      // 'old' before the generic 'photos' branch, or it never matches.
       t.includes('old') ? 'a box of printed photographs and a modern phone on a table, warm afternoon light'
       : t.includes('background') ? 'a photographer adjusting a plain grey studio backdrop beside a large window, camera on a tripod'
       : t.includes('wear') ? 'a rail of smart work outfits, shirts, blazers and knitwear, in a bright dressing area near a window'
@@ -170,11 +133,6 @@ Example shape (write your own copy, do not reuse this wording verbatim):
   <p>Upload five to fifteen selfies, pick your backgrounds and outfits, and Picturesk trains a model on your face and emails a full set in about an hour. <a href="https://www.picturesk.ai/linkedin-headshots">Get your LinkedIn headshots</a> from $9, one payment, no subscription. If they do not look like you, you get a full refund.</p>
 </div>`,
 
-  /**
-   * Which Picturesk pages an article MUST link, inferred from its title. Most
-   * specific first, so a "LinkedIn headshot cost" post links the LinkedIn page
-   * and the pricing page rather than only the generic product page.
-   */
   getRequiredLinks(topic) {
     const title = topic.title;
     const lower = title.toLowerCase();
@@ -217,7 +175,6 @@ Example shape (write your own copy, do not reuse this wording verbatim):
       });
     }
 
-    // Every article links the product itself, so the piece is never a dead end.
     links.push({
       url: page('/ai-headshot-generator'),
       anchor_hint: "varied: e.g. 'AI headshot generator', 'a set of AI headshots from your selfies', 'Picturesk'",

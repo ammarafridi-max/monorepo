@@ -12,19 +12,6 @@ import { navCtaFor } from '../lib/products';
 
 const FUNNEL_BASES = ['/ai-headshot-generator', '/ai-dating-photos'];
 
-/**
- * The customer-facing chrome (topbar + footer). Mounted by the (site) route group
- * only, so the /admin subtree never renders it. `authed` is derived server-side
- * (the session cookie) and passed down so this client component stays serializable.
- *
- * The nav ends with the one primary action on the site, so a visitor can start the
- * funnel from any page without scrolling back to a section CTA. It shows for signed
- * in customers too: buying again is a normal thing to do.
- *
- * Below 820px the links collapse into a drawer behind a burger. Before this the bar
- * hid items by media query as it narrowed, which meant a phone simply could not
- * reach Blog or Sign Up at all.
- */
 function Burger({ open, onClick }) {
   return (
     <button
@@ -49,13 +36,11 @@ export default function SiteChrome({ authed, email, children }) {
   const inFunnel = FUNNEL_BASES.some((base) => pathname?.startsWith(`${base}/`));
   const cta = navCtaFor(pathname);
 
-  // Navigating with the drawer or picker open would otherwise leave it open on the new page.
   useEffect(() => {
     setOpen(false);
     setPicking(false);
   }, [pathname]);
 
-  // Escape closes it, and the page behind must not scroll while it is over the top.
   useEffect(() => {
     if (!open) return undefined;
     const onKey = (e) => {

@@ -21,7 +21,6 @@ export default {
   jwtCookieExpiresInDays: parseNumber(process.env.JWT_COOKIE_EXPIRES_IN, 30),
 
   brevoApiKey: process.env.BREVO_API_KEY,
-  // Recipient + sender identity for transactional emails.
   contactEmail: process.env.CONTACT_EMAIL ?? "contact@emirateslimo.com",
 
   corsOrigins: parseList(process.env.CORS_ORIGINS, ["http://localhost:5173"]),
@@ -54,7 +53,6 @@ export default {
     testEventCode: process.env.META_TEST_EVENT_CODE,
   },
 
-  // Used by the standalone blog-generation script (relocated in Phase 3).
   anthropicApiKey: process.env.ANTHROPIC_API_KEY,
   openaiApiKey: process.env.OPENAI_API_KEY,
 };

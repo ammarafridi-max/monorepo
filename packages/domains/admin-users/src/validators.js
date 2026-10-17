@@ -90,7 +90,6 @@ function normalizeAuthorUrl(value) {
   return url;
 }
 
-/** Every field is optional: an author profile can be filled in a piece at a time. */
 export function normalizeAuthorProfile(value = {}) {
   if (typeof value !== 'object' || Array.isArray(value)) {
     throw new AppError('authorProfile must be an object', 400);
@@ -146,7 +145,6 @@ export const updateAdminUserSchema = (body = {}) => {
   if (Object.prototype.hasOwnProperty.call(body, 'status')) payload.status = normalizeStatus(body.status);
   if (Object.prototype.hasOwnProperty.call(body, 'authorProfile')) {
     const profile = normalizeAuthorProfile(body.authorProfile);
-    // Dotted keys so a partial update never wipes the fields it left out.
     for (const [key, val] of Object.entries(profile)) payload[`authorProfile.${key}`] = val;
   }
 

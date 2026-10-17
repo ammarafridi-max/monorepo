@@ -11,14 +11,8 @@ import { getBlogOffers, getBlogInlineOffer } from '@/config/blogOffers';
 
 const { SITE_URL } = schema;
 
-// Related posts prefer the most specific of these tags; anything else falls
-// back to the post's first tag.
 const TAG_PRIORITY = ['Dummy Ticket', 'Flight Itinerary', 'Schengen Visa', 'Visa Documents'];
 
-// Nothing on this route's ancestor chain (including app/loading.js) may define a
-// loading.js. A loading.js opens a Suspense boundary, so Next flushes the HTML
-// shell with a 200 before this component runs and notFound() can no longer set
-// the status, which turns bad slugs into indexable soft 404s.
 export const revalidate = 300;
 
 export const generateStaticParams = blogPostStaticParams;

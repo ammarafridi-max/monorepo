@@ -7,7 +7,6 @@ export const metadata = {
   description:
     'Enter your trip details and generate an embassy-ready, day-by-day travel itinerary for your visa application.',
   alternates: { canonical: 'https://www.travl.ae/itinerary-booking/form' },
-  // Funnel step — the SEO entry points are the /travel-itinerary landing pages.
   robots: { index: false, follow: false },
 };
 

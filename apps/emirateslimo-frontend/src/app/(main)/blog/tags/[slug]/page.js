@@ -13,9 +13,6 @@ import {
 } from '@/lib/schema';
 import BlogTagDetailPage from '@travel-suite/frontend-shared/pages/client/BlogTagDetailPage';
 
-// Nothing on this route's ancestor chain may define a loading.js. A loading.js opens a
-// Suspense boundary, so Next flushes a 200 shell before notFound() can set the status,
-// which turns bad slugs into indexable soft 404s.
 export const revalidate = 300;
 
 const tagMeta = (tag, slug) => ({

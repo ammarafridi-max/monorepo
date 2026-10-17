@@ -280,7 +280,6 @@ export default function ZoneForm({ initialData = null, onSubmit, isPending }) {
       return;
     }
 
-    // Normalize winding (outer CCW, holes CW) so MongoDB 2dsphere reads it correctly.
     const geometry = rewind(combined).geometry;
     onSubmit({ name: zoneName.trim(), geometry });
   }

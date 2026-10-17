@@ -66,7 +66,6 @@ export function createWhatsAppClient({ accessToken, phoneNumberId, logger } = {}
     return json?.id ?? null;
   };
 
-  // WhatsApp routes media by kind, and only documents carry a filename.
   const mediaKindFor = (mimeType = '') => {
     if (mimeType.startsWith('image/')) return 'image';
     if (mimeType.startsWith('video/')) return 'video';
@@ -110,7 +109,6 @@ export function createWhatsAppClient({ accessToken, phoneNumberId, logger } = {}
       await post('markRead', { status: 'read', message_id: wamid });
       return true;
     } catch {
-      // Read receipts are cosmetic; a failure must never block the agent's reply.
       return false;
     }
   };

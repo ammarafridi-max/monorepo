@@ -92,16 +92,12 @@ router.use("/blogs", createBlogRouter({ db, auth, imageStorage, anthropicApiKey:
 router.use("/blog-tags", createBlogTagRouter({ db, auth }));
 
 
-// Only /cities is exposed: the other four locations routes need Google Maps /
-// ipinfo keys that Travl does not have, so mounting them would only ever 500.
 const airlabs = createAirLabsClient({ apiKey: config.airlabs.apiKey });
 const citiesOnlyLocations = Router();
 citiesOnlyLocations.get("/cities", createLocationsRouter({ airlabs }));
 router.use("/locations", citiesOnlyLocations);
 router.use("/airports", createAirportsRouter({ airlabs }));
 const serpapi = createSerpApiClient({ apiKey: config.serpapi.apiKey });
-// Airline logos: uploaded from the admin screen and stored on the airline
-// record, so a new logo needs no deploy.
 const airlineLogoStorage = createCloudinaryStorage({
   cloudName: config.cloudinary.cloudName,
   apiKey: config.cloudinary.apiKey,
@@ -131,10 +127,6 @@ const notifications = createNotificationsService({
 
 const stripe = createStripeClient({ secretKey: config.stripe.secretKey });
 
-// -- Travel itinerary generator ------------------------------------------------
-// AI writes content only -> code validates -> watermarked preview -> pay to unlock.
-// Per-IP limiter on generation routes (each generation is a paid AI call);
-// per-session regeneration caps live inside the domain service.
 const itineraryGenerateLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 20,
@@ -171,9 +163,6 @@ const { router: itinerariesRouter, handleStripeSuccess: handleItinerarySuccess }
 });
 router.use("/itineraries", itinerariesRouter);
 
-// -- Flight reservations -------------------------------------------------------
-// Reservation PDFs are uploaded to travl/flight-reservations/<sessionId>/ on
-// Cloudinary, then attached to the customer email by URL.
 const reservationStorage = createCloudinaryStorage({
   cloudName: config.cloudinary.cloudName,
   apiKey: config.cloudinary.apiKey,

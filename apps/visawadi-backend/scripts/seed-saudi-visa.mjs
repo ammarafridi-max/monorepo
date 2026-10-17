@@ -1,24 +1,3 @@
-/**
- * Creates the Saudi Arabia visa landing page and its UAE overlay.
- *
- * One package only: the tourist eVisa for GCC residents, AED 700. Note that
- * GCC *citizens* need no visa at all — this page sells to expatriates holding a
- * GCC residence permit, which is a different audience and the copy says so.
- *
- * Facts checked 2026-08-31:
- *   Fragomen, "Saudi Arabia: E-Visa Eligibility Expanded to GCC Residents of
- *     All Professions" — all GCC residents eligible regardless of profession
- *     since March 2023; residence permit valid 3+ months, passport 6+ months;
- *     fee SAR 300; health insurance required before issue.
- *   Visit Saudi (visa.visitsaudi.com) — one year, multiple entry, up to 90 days
- *     total stay; tourism, family visits, events and Umrah outside Hajj season.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/seed-saudi-visa.mjs             # dry run
- *   node --env-file=.env.production scripts/seed-saudi-visa.mjs --apply     # write, as draft
- *   node --env-file=.env.production scripts/seed-saudi-visa.mjs --apply --publish
- *   node --env-file=.env.production scripts/seed-saudi-visa.mjs --apply --overwrite
- */
 
 import mongoose from 'mongoose';
 import VisaSchema from '@travel-suite/visa/schema';
@@ -260,13 +239,11 @@ const VISA = {
   finalCtaText:
     'Send us your passport and residence permit copies. We will confirm whether you qualify before you pay anything.',
 
-  // No brand suffix: the root layout's title template already appends it.
   metaTitle: 'Saudi Tourist Visa for GCC Residents',
   metaDescription:
     'Saudi tourist eVisa for GCC residents. One year, multiple entry, no embassy visit. VisaWadi checks your eligibility and files it for you, AED 700.',
 };
 
-/** Only what actually differs for a UAE resident. Everything else inherits. */
 const OVERLAY = {
   residence: 'AE',
   residenceName: 'United Arab Emirates',

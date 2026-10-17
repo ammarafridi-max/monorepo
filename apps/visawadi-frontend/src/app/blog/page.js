@@ -37,8 +37,6 @@ const breadcrumbPaths = [
 const pageNumberFrom = (searchParams) =>
   Math.max(1, Number(searchParams?.page || 1) || 1);
 
-// Paginated listings must be self-canonical. Pointing page 2+ at /blog told
-// Google they were duplicates and suppressed the posts only reachable there.
 const canonicalForPage = (page) =>
   page > 1 ? `${meta.canonical}?page=${page}` : meta.canonical;
 

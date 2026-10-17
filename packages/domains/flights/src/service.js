@@ -33,7 +33,6 @@ function splitFlightNumber(fn) {
     : { carrierCode: '', number: String(fn || '').trim() };
 }
 
-// SerpApi returns "YYYY-MM-DD HH:MM"; transformItinerary splits on 'T'.
 function serpTimeToISO(t) {
   const s = String(t || '').trim();
   if (!s) return s;
@@ -50,7 +49,6 @@ function segmentFromSerp(f) {
     carrierCode,
     number,
     ...(f.airplane ? { aircraft: { code: f.airplane } } : {}),
-    // Consumed by attachAirlines, then stripped. IATA-code lookups are ambiguous, so prefer this.
     airlineName: f.airline || null,
   };
 }
@@ -88,7 +86,6 @@ function attachAirlines(flights, logoFor = airlineLogo) {
     .sort((a, b) => {
       const sa = stopProfile(a);
       const sb = stopProfile(b);
-      // Worst leg first: a return trip is only "direct" if both legs are.
       return sa.worst - sb.worst || sa.total - sb.total;
     });
 }
@@ -102,7 +99,6 @@ function stopProfile(flight) {
   return { worst: Math.max(...perLeg), total: perLeg.reduce((a, b) => a + b, 0) };
 }
 
-/** Fewest stops first, then shortest, so slicing keeps the best options rather than the first ones. */
 function rankOffers(offers) {
   return [...offers].sort(
     (a, b) =>
@@ -132,8 +128,6 @@ export function createFlightService({ Airline, airlabs, serpapi, logoStorage, lo
     if (!airlabs) throw new AppError('Airport search is not configured on this server', 503);
   }
 
-  // Logos live on the airline record so they can be changed without a deploy.
-  // AIRLINE_LOGO_EXT stays as the fallback for brands whose rows predate that.
   let logoCache = new Map();
   let logoCacheExpiry = 0;
 
@@ -152,7 +146,6 @@ export function createFlightService({ Airline, airlabs, serpapi, logoStorage, lo
       try {
         await refreshLogoCache();
       } catch {
-        // A lookup failure must not fail the search; fall through to the map.
         logoCacheExpiry = Date.now() + logoCacheTtlMs;
       }
     }
@@ -193,8 +186,6 @@ export function createFlightService({ Airline, airlabs, serpapi, logoStorage, lo
     return code;
   };
 
-  // The stored public_id is the bare code, so re-uploading an airline replaces
-  // its image in place rather than accumulating versions.
   const setAirlineLogo = async ({ iataCode, buffer, mimetype }) => {
     if (!Airline) throw new AppError('Airline management is not configured on this server', 503);
     if (!logoStorage) throw new AppError('Logo storage is not configured on this server', 503);
@@ -224,7 +215,6 @@ export function createFlightService({ Airline, airlabs, serpapi, logoStorage, lo
     return airline;
   };
 
-  // Frontend contract: itineraries[0] is the outbound, itineraries[1] the return.
   const buildSerpApiFlights = async ({ type, origin, dest, departureDate, returnDate }) => {
     const outboundOffers = await serpapi.searchOneWay({
       departureId: origin,
@@ -243,7 +233,6 @@ export function createFlightService({ Airline, airlabs, serpapi, logoStorage, lo
       arrivalId: origin,
       outboundDate: returnDate,
     });
-    // Both sides ranked, so index pairing puts a direct outbound with a direct return.
     const inbound = rankOffers(inboundOffers).map(offerToItinerary).filter((it) => it.segments.length);
     if (!inbound.length) return [];
 

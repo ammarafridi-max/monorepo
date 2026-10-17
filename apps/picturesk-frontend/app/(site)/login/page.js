@@ -6,8 +6,6 @@ import { safeNext } from '../../../lib/redirects';
 export const metadata = { title: 'Log in. Picturesk.ai', robots: { index: false, follow: false } };
 
 export default async function LoginPage({ searchParams }) {
-  // Set when a social sign-in bounced back without a session (denied, expired, or
-  // a state mismatch). One calm, generic line, no detail about which step failed.
   const params = await searchParams;
   const failed = Boolean(params?.error);
   const next = safeNext(params?.next);

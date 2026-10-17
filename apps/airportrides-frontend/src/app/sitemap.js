@@ -20,7 +20,5 @@ export default async function sitemap() {
     priority,
   }));
 
-  // Airport landing pages and blog entries will be appended here once those
-  // routes and APIs exist. Keep the async signature so additions stay simple.
   return [...staticEntries];
 }

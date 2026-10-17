@@ -19,10 +19,6 @@ const BlogSchema = new mongoose.Schema(
     status: { type: String, enum: ['draft', 'published', 'scheduled'], default: 'draft', index: true },
     author: { type: mongoose.Schema.ObjectId, ref: 'admin-user', default: null },
     publisher: { type: mongoose.Schema.ObjectId, ref: 'admin-user', default: null },
-    // References, not names. Stored as names until 2026-09-08, which meant
-    // renaming a tag orphaned every post carrying it.
-    // ref must match the name the model is registered under in index.js,
-    // which is 'blog-tag', not the schema's export name.
     tags: { type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'blog-tag' }], default: [], index: true },
     faqs: { type: [faqSchema], default: [] },
     metaTitle: { type: String },

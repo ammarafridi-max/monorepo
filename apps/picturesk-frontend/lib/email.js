@@ -1,9 +1,6 @@
 import 'server-only';
 import { createEmailClient } from '@travel-suite/picturesk-shared';
 
-// Transactional email from the web app (verification codes). Brevo when a key is
-// set; in local dev without one the code is printed to the server log so the
-// flow can be exercised end to end.
 let client;
 function emailClient() {
   if (client !== undefined) return client;

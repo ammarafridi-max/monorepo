@@ -50,10 +50,8 @@ fs.mkdirSync(path.join(S, 'out'), { recursive: true });
 
 const results = [];
 async function runScene([look, attire, pose, light], i) {
-  // Arm A: exactly what the pipeline sends today.
   const promptA = buildPrompts({ looks: [look], attire: [attire], count: 1, subjectAnchor: anchor, product: 'dating', gender: 'man' })[0];
   const a = create({ prompt: promptA, num_outputs: 1, aspect_ratio: '1:1', output_format: 'jpg', lora_scale: 1.15, seed: 1000 + i });
-  // Arm B: plate without the LoRA, then img2img with it.
   const sceneFrag = promptA.split(', ').slice(2).join(', ').split(', smiling naturally')[0].split(', laughing')[0].split(', caught')[0].split(', relaxed')[0].split(', looking away')[0];
   const platePrompt = `candid photo of a bearded man in his early thirties, ${pose}, ${sceneFrag}, ${light}, ${TAIL_B}`;
   const plate = await wait(await create({ prompt: platePrompt, aspect_ratio: '4:5', output_format: 'jpg', seed: 2000 + i, guidance: 3 }, 'black-forest-labs/flux-dev'));

@@ -122,7 +122,6 @@ export function duplicateVisaApi(id) {
   });
 }
 
-// `null` on an overlay field means inherit from the base page (not omission).
 
 export function getOverlaysApi({ visaSlug, residence } = {}) {
   const params = new URLSearchParams();

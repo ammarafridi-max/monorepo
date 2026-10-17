@@ -8,16 +8,6 @@ import { faceCheckAvailable } from '../../lib/quality';
 import { readState, writeState } from '../../lib/generator';
 import { funnelPaths } from '../../lib/products';
 
-// Guided camera capture (prototype). Instead of hoping the customer uploads good
-// photos, we CONTROL the shoot: a short sequence of pose prompts, capturing a clean,
-// consistent, multi-angle set the model can actually learn a face from. This is the
-// biggest lever on likeness. The captured frames upload to R2 and feed the same
-// pipeline as the upload step, so nothing downstream changes.
-//
-// On-device face detection (the native FaceDetector, same as the upload gate) gates
-// auto-capture: it only fires when one face is centered and close enough. Where the
-// browser has no FaceDetector, we fall back to manual capture. Pose DIRECTION is not
-// verified yet (we trust the prompt) -- that is a follow-up.
 
 const POSES = [
   { key: 'front', label: 'Look straight at the camera', hint: 'Relax, mouth closed.' },
@@ -40,7 +30,6 @@ const STATUS_TEXT = {
   manual: 'Tap capture when you are ready',
 };
 
-/** One detection pass on the live video. Returns null if unavailable/errored. */
 async function detectOnVideo(video) {
   if (!faceCheckAvailable() || !video?.videoWidth) return null;
   try {
@@ -65,7 +54,7 @@ async function detectOnVideo(video) {
     const offY = Math.abs(b.y + b.height / 2 - vh / 2) / vh;
     return { faceCount: faces.length, ratio, offX, offY };
   } catch {
-    return null; // no/broken detector -> manual capture
+    return null; 
   }
 }
 
@@ -82,9 +71,9 @@ export default function CaptureStep({ product }) {
   const paths = funnelPaths(product);
   const router = useRouter();
   const [ready, setReady] = useState(false);
-  const [phase, setPhase] = useState('intro'); // intro | capturing | review | uploading | denied
+  const [phase, setPhase] = useState('intro'); 
   const [stepIndex, setStepIndex] = useState(0);
-  const [captures, setCaptures] = useState([]); // { key, url, file }
+  const [captures, setCaptures] = useState([]); 
   const [status, setStatus] = useState('none');
   const [error, setError] = useState('');
 
@@ -92,7 +81,7 @@ export default function CaptureStep({ product }) {
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
   const okSinceRef = useRef(null);
-  const lockRef = useRef(false); // guards the async capture from double-firing
+  const lockRef = useRef(false); 
   const stepRef = useRef(0);
 
   useEffect(() => {
@@ -109,7 +98,6 @@ export default function CaptureStep({ product }) {
     streamRef.current = null;
   }, []);
 
-  // Always stop the camera when leaving the page.
   useEffect(() => stopCamera, [stopCamera]);
 
   const startCamera = useCallback(async () => {
@@ -125,15 +113,12 @@ export default function CaptureStep({ product }) {
       stepRef.current = 0;
       setStepIndex(0);
       setCaptures([]);
-      // The <video> only renders in the 'capturing' phase, so we attach the stream
-      // in an effect below (once the element exists), not here.
       setPhase('capturing');
     } catch {
       setPhase('denied');
     }
   }, []);
 
-  // Attach the live stream once the <video> is mounted (phase === 'capturing').
   useEffect(() => {
     const video = videoRef.current;
     if (phase === 'capturing' && video && streamRef.current && video.srcObject !== streamRef.current) {
@@ -177,7 +162,6 @@ export default function CaptureStep({ product }) {
     );
   }, [stopCamera]);
 
-  // Live detection + auto-capture loop while capturing.
   useEffect(() => {
     if (phase !== 'capturing') return;
     let alive = true;
@@ -216,7 +200,6 @@ export default function CaptureStep({ product }) {
       const existing = readState(product).images || [];
       const images = [...existing, ...uploads.map((u) => u.publicUrl)];
       writeState({ images }, product);
-      // Gate here so the pay button stays fast (results are cached for /checkout).
       setPhase('checking');
       await gateUploads(images);
       router.push(paths.review);
@@ -286,8 +269,6 @@ export default function CaptureStep({ product }) {
         <>
           <p className="capture__prompt">{POSES[stepIndex]?.label}</p>
           <p className="capture__hint">{POSES[stepIndex]?.hint}</p>
-          {/* data-clarity-mask: this is the LIVE camera feed of the customer's face;
-              never record it in Clarity session replay. */}
           <div className="capture__stage" data-clarity-mask="true">
             {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
             <video ref={videoRef} className="capture__video" autoPlay playsInline muted />
@@ -319,7 +300,6 @@ export default function CaptureStep({ product }) {
       {phase === 'review' && (
         <>
           <p className="section__lede">Here is your set. Retake if any look off, then continue.</p>
-          {/* data-clarity-mask: captured face photos; keep them out of Clarity replay. */}
           <div className="thumbs" data-clarity-mask="true">
             {captures.map((c, i) => (
               <div className="thumb" key={i}>

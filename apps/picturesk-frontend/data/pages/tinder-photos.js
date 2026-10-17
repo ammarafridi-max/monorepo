@@ -1,12 +1,5 @@
-/**
- * /tinder-photos
- *
- * About the DESTINATION: Tinder is decided by the first photo, so this page is
- * about that photo and the two or three behind it. It must not restate /ai-dating-photos.
- */
 export const tinderPhotos = {
   meta: {
-    // 54 chars / 157 chars
     title: 'Tinder Photos That Get Matches | AI, From Your Selfies',
     description:
       'Your first Tinder photo decides everything. Get one that is clearly you, well lit and not a mirror selfie, plus a set behind it. From your selfies, from $19.',

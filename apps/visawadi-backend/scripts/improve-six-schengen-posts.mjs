@@ -1,28 +1,3 @@
-/**
- * Targeted improvements to the six posts whose quick answers were expanded.
- *
- * Everything added here is quoted from the consolidated Visa Code, Regulation
- * (EC) No 810/2009 as amended to 02.02.2020, read from the EUR-Lex PDF on
- * 2026-09-08. Articles used: 15 (travel medical insurance), 23 (decision
- * periods), 24 (validity and entries), 32(1) (grounds for refusal) and
- * Annex II (supporting documents). These specific claims therefore carry a real
- * last-checked date; the rest of each post does not and is not stamped.
- *
- * Two factual corrections rather than additions:
- *   - the processing post invented a 30-day tier. Article 23 has 15 calendar
- *     days, extendable to a maximum of 45. There is no 30.
- *   - the single vs multiple entry post described the multiple-entry cascade
- *     loosely and understated the first rung: Article 24(2) requires three
- *     visas lawfully used in the previous two years, not "one or two".
- *   - the BLS post listed Italy and Greece as BLS countries, which contradicts
- *     VisaWadi's own Italy and Greece pages. Both file through VFS Global.
- *
- * Inserted immediately before the Sources block so it stays above it.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/improve-six-schengen-posts.mjs          # dry run
- *   node --env-file=.env.production scripts/improve-six-schengen-posts.mjs --apply
- */
 
 import mongoose from 'mongoose';
 

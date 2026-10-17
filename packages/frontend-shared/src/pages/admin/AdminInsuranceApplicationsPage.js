@@ -361,7 +361,6 @@ function ApplicationsContent() {
         )}
       </div>
 
-      {/* Search + filter button, in one row */}
       <div className="flex items-center gap-3 w-full">
         <AdminSearchInput
           value={localSearch}
@@ -385,7 +384,6 @@ function ApplicationsContent() {
         </button>
       </div>
 
-      {/* Filter modal — same controls on every screen. Bottom sheet. */}
       {filtersOpen && (
         <div
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40"

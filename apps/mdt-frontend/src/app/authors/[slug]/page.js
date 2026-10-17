@@ -15,8 +15,6 @@ import {
 
 export const revalidate = 3600;
 
-// The bio runs to several paragraphs. A meta description has to be one short
-// sentence, so take the opening paragraph and cut it on a word boundary.
 function metaDescriptionFrom(bio, fallback) {
   const first = (bio || '').split(/\n{2,}/)[0].trim();
   if (!first) return fallback;
@@ -45,7 +43,6 @@ export async function generateMetadata({ params }) {
   }
 
   const profile = author.authorProfile || {};
-  // Name only: a multi-role job title pushes the tag past what a SERP shows.
   const title = author.name;
   const description = metaDescriptionFrom(
     profile.bio,

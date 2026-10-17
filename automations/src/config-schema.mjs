@@ -1,16 +1,9 @@
-/**
- * Every target is validated the moment it loads, the same way brand configs are
- * in packages/shared/config. A target that is missing a field fails here with the
- * list of what is wrong, rather than at 05:00 in a cron with a TypeError.
- */
 
-/** Required of every target, whatever jobs it runs. */
 const REQUIRED = {
   key: 'string',
   name: 'string',
 };
 
-/** Required only of targets that run a given job. Keyed by job name. */
 const REQUIRED_BY_JOB = {
   'blog-generate': {
     backendUrl: 'string',
@@ -28,7 +21,6 @@ const REQUIRED_BY_JOB = {
   },
 };
 
-/** Optional, but if present must be the right shape. Catches silent drift. */
 const OPTIONAL = {
   citationDomains: 'array',
   allowedLinkPrefixes: 'array',

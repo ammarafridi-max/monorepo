@@ -1,10 +1,6 @@
 import 'server-only';
 import Anthropic from '@anthropic-ai/sdk';
 
-// The rubric for the LinkedIn photo analyzer. One frozen system prompt (cached
-// across calls) and a strict output shape, so the page always gets the same
-// fields back. The browser measures what can be measured and passes it in as
-// facts; the model judges what needs judgment and writes the fixes.
 const SYSTEM = `You review LinkedIn profile photos for Picturesk, an AI photo studio. You are a candid, kind studio photographer, not a chatbot.
 
 You will receive one photo plus measurements taken in the visitor's browser (face size, position, sharpness, exposure). Treat the measurements as facts. Judge only what they cannot measure: background, expression, attire, and overall impression. Do not comment on the person's looks, age, weight, ethnicity or attractiveness. Judge the photograph.
@@ -22,8 +18,6 @@ const SUB = {
   properties: { score: { type: 'integer' }, note: { type: 'string' } },
 };
 
-// Structured outputs accept the shape but not numeric or length bounds, so the
-// ranges live in the prompt and are clamped below.
 const SCHEMA = {
   type: 'object',
   additionalProperties: false,
@@ -59,10 +53,6 @@ function anthropic() {
   return client;
 }
 
-/**
- * @param {{ data: string, mediaType: string }} image - base64 image
- * @param {object} metrics - the browser's measurements (see lib/photoMetrics.js)
- */
 export async function analyzeLinkedInPhoto(image, metrics) {
   const facts = [
     `Face detected: ${metrics.faceCount ?? 'unknown'} face(s).`,

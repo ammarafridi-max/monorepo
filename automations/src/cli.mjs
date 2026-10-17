@@ -1,14 +1,4 @@
 #!/usr/bin/env node
-/**
- * The one entrypoint for every automation, used identically by a human and by CI:
- *
- *   pnpm automation <job> [--target <key>] [--dry-run] [job flags...]
- *   pnpm automation list
- *   pnpm automation check          validate every target against the schema
- *
- * Anything after the recognised flags is passed through to the job untouched,
- * so a job keeps its own flags (--status, --generate-only, ...).
- */
 
 import { JOBS, listTargets, loadTarget, assertEnv } from './registry.mjs';
 
@@ -32,7 +22,6 @@ function usage() {
   console.log(`\nTargets: ${listTargets().join(', ') || '(none)'}`);
 }
 
-/** Validate every target against the schema for every job it could run. */
 async function check() {
   let failed = 0;
   for (const key of listTargets()) {
@@ -78,8 +67,6 @@ if (!spec) {
 const dryRun = argv.includes('--dry-run');
 let target = null;
 
-// Setup failures are configuration mistakes, not crashes: report them as one
-// readable line, not a stack trace.
 try {
   if (spec.needsTarget) {
     const key = flagValue('target');
@@ -95,7 +82,6 @@ try {
   process.exit(1);
 }
 
-// Job flags only — the CLI's own flags are stripped so a job never sees them.
 const passthrough = argv.slice(1).filter((a, i, all) => {
   if (a === '--dry-run') return false;
   if (a === '--target' || a.startsWith('--target=')) return false;

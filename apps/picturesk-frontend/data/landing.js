@@ -1,11 +1,4 @@
-/**
- * Landing copy that is repeated or likely to change, kept here so content can be
- * edited without touching layout. Every claim below has to stay true to what the
- * product actually does: the upload gate, the per-customer trained model, the
- * one-time Stripe charge, and the automatic refund on a failed run are all real.
- */
 
-// PROCESS. Three steps, in order. No "meta" labels: the step body carries it.
 export const steps = [
   {
     title: 'Upload your selfies',
@@ -21,10 +14,6 @@ export const steps = [
   },
 ];
 
-// BENEFITS. Why us rather than the other AI headshot tools. Each one is a real
-// difference in how the product is built, not a slogan. `icon` names one of the
-// glyphs in sections/Benefits.js; the mapping lives there so the copy file stays
-// free of component imports.
 export const benefits = [
   {
     title: 'We check your photos before you pay',
@@ -48,8 +37,6 @@ export const benefits = [
   },
 ];
 
-// WHO IT IS FOR. Concrete situations that map to real search intent, each one
-// specific enough that a visitor recognises themselves in it.
 export const useCases = [
   {
     title: 'LinkedIn profiles',
@@ -88,13 +75,6 @@ export const useCases = [
   },
 ];
 
-// TESTIMONIALS.
-//
-// ⚠️ PLACEHOLDER CONTENT. These people are invented and so are their ratings. They
-// exist so the section can be designed and reviewed, and they MUST be replaced with
-// real, attributable customer quotes before this page goes live: presenting invented
-// reviews and star ratings as genuine is deceptive to buyers and is regulated in
-// most markets.
 export const testimonials = [
   {
     quote:
@@ -119,10 +99,6 @@ export const testimonials = [
   },
 ];
 
-// PLAN COMPARISON. The verdict line and the one real limit of each tier. What the
-// plan INCLUDES is not written here: Pricing.js builds that checklist straight from
-// the tier data, so the counts on the card can never disagree with what is sold.
-// Keyed by the tier ids in @travel-suite/picturesk-shared/pricing.
 export const planNotes = {
   free: {
     best: 'Best for seeing whether it looks like you before you spend anything.',

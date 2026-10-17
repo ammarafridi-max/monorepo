@@ -1,6 +1,3 @@
-// The Services menu: one group per product, each listing its landing pages. The
-// first entry of a group is the product page itself. Footer and nav both read this
-// so a new landing page is added once.
 export const services = [
   {
     id: 'headshots',
@@ -30,7 +27,6 @@ export const services = [
   },
 ];
 
-// The Tools menu: free tools, grouped the same way so the footer can list them.
 export const tools = [
   {
     id: 'tools',

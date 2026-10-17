@@ -159,7 +159,6 @@ export function createBookingPricingService({ AvailabilityRule, PricingRule }) {
     };
   };
 
-  // Fails closed when a distance trip has no zone PricingRule: never trust a client total.
   const getAuthoritativeVehiclePrice = async ({ pickupZone, dropoffZone, tripType, hoursBooked, vehicleId }) => {
     if (!vehicleId) throw new AppError('Vehicle is required to price this booking.', 400);
     const { pickupZoneId, dropoffZoneId } = validateZones({ pickupZone, dropoffZone, tripType });

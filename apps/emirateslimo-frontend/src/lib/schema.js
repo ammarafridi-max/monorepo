@@ -45,8 +45,6 @@ export const {
   buildProfilePage,
 } = builders;
 
-// The shared builder emits a plain Organization; a chauffeur company is also a
-// LocalBusiness, so the same @id carries both types plus the local fields.
 export const buildOrganization = () => ({
   ...builders.buildOrganization(),
   '@type': ['Organization', 'LimousineService'],

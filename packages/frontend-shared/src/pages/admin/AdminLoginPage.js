@@ -12,20 +12,9 @@ const DEFAULT_HIGHLIGHTS = [
   { label: 'Blog', value: 'Content tools' },
 ];
 
-/**
- * The marketing half is copy, so it is props. Defaults are the travel dashboard's
- * wording; an app selling something else passes its own rather than telling staff
- * they manage a ticketing platform.
- */
 export default function AdminLoginPage({
-  // Off by default: a brand whose backend has no mailer wired would otherwise
-  // show a code form that can only ever 503.
   useOtp = false,
-  // 'login' or 'forgot'. The marketing half is identical either way, so the
-  // reset flow reuses this shell rather than duplicating it.
   variant = 'login',
-  // The reset route is per app, so a brand that has not added
-  // /admin/forgot-password must not be given a link to it.
   showForgotLink = useOtp,
   siteName = 'Admin',
   icon: Icon = Plane,

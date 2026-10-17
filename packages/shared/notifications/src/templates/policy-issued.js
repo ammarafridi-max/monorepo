@@ -43,10 +43,6 @@ function upsellCard(u, primary) {
 </td></tr></table>`;
 }
 
-/**
- * Customer-facing policy confirmation. Brand-neutral: names, colours, links
- * and any cross-sell come from the caller.
- */
 export function renderPolicyIssuedTemplate({
   brand,
   firstName,

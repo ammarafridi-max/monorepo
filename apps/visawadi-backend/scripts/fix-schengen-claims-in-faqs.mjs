@@ -1,21 +1,3 @@
-/**
- * The same Schengen corrections, in quickAnswer and faqs.
- *
- * verify-schengen-claims.mjs rewrote `content` only, which is the identical
- * mistake update-schengen-visa-fee.mjs made: these posts repeat their headline
- * claim in the quick answer and in an FAQ, and both ship inside FAQPage schema.
- * Six posts were left carrying a verified stamp above a claim the Visa Code
- * contradicts.
- *
- * Scope is deliberately narrow. China, South Korea and the UK also say
- * "working days", and for them that is correct: those are their own
- * authorities' service standards, not the Schengen deadline. Only claims
- * governed by Article 23 are touched.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/fix-schengen-claims-in-faqs.mjs          # dry run
- *   node --env-file=.env.production scripts/fix-schengen-claims-in-faqs.mjs --apply
- */
 
 import mongoose from 'mongoose';
 
@@ -54,7 +36,6 @@ const EDITS = {
   ],
 };
 
-/** Correct as written: their own authority's service standard, not Article 23. */
 const NOT_SCHENGEN = new Set([
   'china-visa-from-uae-tourist-visa-application-process',
   'south-korea-visa-from-uae-documents-and-application-tips',

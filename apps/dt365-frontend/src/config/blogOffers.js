@@ -1,12 +1,4 @@
-/**
- * Offers shown beside and inside a blog post.
- *
- * Dummy Ticket 365 sells one thing: flight reservations with a real PNR from
- * USD 13. The card follows the post's subject, resolved from the slug because
- * tags never name a destination or airline.
- */
 
-// Order matters: the first token found in the slug wins.
 const TICKET_BY_SLUG_TOKEN = [
   { tokens: ['turkish'], href: '/turkish-airlines-dummy-ticket', eyebrow: 'Turkish Airlines dummy ticket' },
   { tokens: ['lufthansa'], href: '/lufthansa-dummy-ticket', eyebrow: 'Lufthansa dummy ticket' },
@@ -28,7 +20,6 @@ function resolveTicket(blog) {
     : { href: '/', eyebrow: 'Dummy ticket' };
 }
 
-/** Cards for the sticky rail. */
 export function getBlogOffers(blog) {
   const ticket = resolveTicket(blog);
 
@@ -45,7 +36,6 @@ export function getBlogOffers(blog) {
   ];
 }
 
-/** The single mid-article unit. */
 export function getBlogInlineOffer(blog) {
   const ticket = resolveTicket(blog);
   return {

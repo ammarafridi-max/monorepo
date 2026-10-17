@@ -3,8 +3,6 @@ import { getPublishedBlogsApi } from '@travel-suite/frontend-shared/services/api
 import { getBlogTagsApi } from '@travel-suite/frontend-shared/services/apiBlogTags';
 import { getAuthorsApi } from '@travel-suite/frontend-shared/services/apiAuthors';
 
-// Regenerate hourly so blog and tag entries appear once the backend is reachable
-// at runtime (the build-time Docker container usually can't reach it).
 export const revalidate = 3600;
 
 const staticPages = [

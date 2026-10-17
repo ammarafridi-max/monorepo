@@ -39,8 +39,6 @@ const FALLBACK = { '2 Days': 10, '7 Days': 15, '14 Days': 17 };
 
 export const revalidate = 300;
 
-// Prices come from the GBP price book so the title can never drift from what
-// checkout charges.
 async function getGbpPrices() {
   try {
     const data = await getDummyTicketPricingServerApi('GBP');

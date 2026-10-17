@@ -2,12 +2,6 @@
 
 import { useEffect } from 'react';
 
-/**
- * Minimal image lightbox (modal). Renders a full-screen overlay with one image,
- * closes on backdrop click, the close button, or Escape. Controlled: pass `src`
- * (null/'' = closed) and an `onClose` handler. Reused by /success and the admin
- * order page.
- */
 export default function Lightbox({ src, alt = '', onClose }) {
   useEffect(() => {
     if (!src) return undefined;
@@ -15,7 +9,6 @@ export default function Lightbox({ src, alt = '', onClose }) {
       if (e.key === 'Escape') onClose();
     };
     document.addEventListener('keydown', onKey);
-    // Stop the page behind from scrolling while the modal is open.
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {

@@ -1,10 +1,5 @@
 import { catchAsync, AppError } from '@travel-suite/utils';
 
-/**
- * `select: false` on password only applies to QUERIES. A document returned by
- * create() still carries the freshly hashed value in memory, so any response
- * built from it must strip the field explicitly.
- */
 function withoutPassword(user) {
   const obj = user?.toObject ? user.toObject() : { ...user };
   delete obj.password;

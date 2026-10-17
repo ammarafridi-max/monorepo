@@ -1,18 +1,3 @@
-/**
- * Usage, from automations/:
- *   node scripts/post-drafts.mjs --target travl --dir <drafts/> --start 2026-09-12T05:00:00Z          # dry run
- *   node scripts/post-drafts.mjs --target travl --dir <drafts/> --start 2026-09-12T05:00:00Z --apply
- *
- * Posts hand-written drafts (one <slug>.json per topic, in the shape
- * blog-generate produces) as scheduled posts, one per day from --start, in
- * topics.json order. Auth is the target's admin JWT in <TARGET>_COOKIE.
- * Env: RECRAFT_API_KEY for cover images (falls back to a placeholder).
- *
- * --covers <dir>: use <dir>/<slug>.jpg as the cover when present, instead of
- * generating one. For batches whose covers were made elsewhere.
- *
- * Idempotent: a topic whose title already exists on the site is skipped.
- */
 
 import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";

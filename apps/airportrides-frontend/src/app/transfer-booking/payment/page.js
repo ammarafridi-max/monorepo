@@ -102,7 +102,6 @@ export default function PaymentSuccessPage() {
 
   return (
     <div className="pb-8">
-      {/* ── Hero ────────────────────────────────────────────────────────── */}
       <div className="mb-10 text-center">
         <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-clay-100 ring-4 ring-clay-200">
           <CheckCircle2 size={40} className="text-clay-600" />
@@ -125,7 +124,6 @@ export default function PaymentSuccessPage() {
         ) : null}
       </div>
 
-      {/* ── Booking summary ─────────────────────────────────────────────── */}
       {!loading && booking && (
         <div className="mb-8 overflow-hidden rounded-2xl bg-white ring-1 ring-sand-200 shadow-warm-sm">
           <div className="border-b border-sand-100 px-5 py-4">
@@ -147,7 +145,6 @@ export default function PaymentSuccessPage() {
         </div>
       )}
 
-      {/* ── What happens next ───────────────────────────────────────────── */}
       <h2 className="mb-4 text-base font-semibold text-ink">What happens next</h2>
       <div className="flex flex-col gap-3">
         {NEXT_STEPS.map(({ icon: Icon, title, body }) => (
@@ -166,7 +163,6 @@ export default function PaymentSuccessPage() {
         ))}
       </div>
 
-      {/* ── CTA ─────────────────────────────────────────────────────────── */}
       <div className="mt-8 flex flex-col items-start gap-4 border-t border-sand-200 pt-6 sm:flex-row sm:items-center">
         <Link
           href="/"

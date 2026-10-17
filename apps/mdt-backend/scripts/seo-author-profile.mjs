@@ -1,7 +1,3 @@
-// Usage: node --env-file=.env.production scripts/seo-author-profile.mjs [--apply]
-//
-// Gives the blog byline something to resolve to. Without a slug the author is
-// an inline name string in BlogPosting schema, which is not an E-E-A-T signal.
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';

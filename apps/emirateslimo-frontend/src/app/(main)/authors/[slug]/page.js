@@ -43,10 +43,7 @@ export async function generateMetadata({ params }) {
   }
 
   const profile = author.authorProfile || {};
-  // Name only: a multi-role job title pushes the tag past what a SERP shows.
   const title = author.name;
-  // The bio is page copy and runs long; a meta description over ~160 chars is
-  // truncated in the SERP, so clamp on a word boundary rather than mid-sentence.
   const description = clampDescription(
     profile.bio || `Travel guides written by ${author.name} for Emirates Limo.`,
   );

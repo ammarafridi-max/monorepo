@@ -1,12 +1,3 @@
-/**
- * VisaWadi — visa assistance for UAE residents, and nothing else.
- *
- * Two outbound brands are deliberate: Travl for travel insurance, Dummy Ticket
- * 365 for flight reservations. Both are enforced below rather than left to the
- * prompt, because the migrated blog showed exactly how these rules get broken:
- * a product attributed to the wrong brand, or Dummy Ticket 365 priced in
- * dirhams. See apps/visawadi-frontend/CLAUDE.md for the product map.
- */
 
 const SITE = 'https://www.visawadi.com';
 const visaUrl = (slug) => `${SITE}/uae/visa/${slug}`;
@@ -25,53 +16,37 @@ export const TARGET = {
 
   excludedTags: ['Flight Itinerary', 'Travel Insurance', 'Visa Tips', 'Europe Travel'],
 
-  /** First slot for blog-schedule, and posts it must leave where they are. */
   blogSchedule: {
-    start: '2026-09-10T05:00:00Z', // 09:00 GST
+    start: '2026-09-10T05:00:00Z', 
     excludeSlugs: [],
   },
 
-  /**
-   * Format per length tier. `long` maps to sourced-guide rather than
-   * field-report because field-report requires first-party numbers and the
-   * visa-applications collection is still empty. Flip it to 'field-report'
-   * once there is real data to report, and supply fieldData below.
-   */
   formatsByTier: {
     short: 'quick-answer',
     medium: 'sourced-guide',
     long: 'sourced-guide',
   },
 
-  /**
-   * The only domains a post may cite. Official government and visa-centre
-   * sources only: a visa claim sourced to a blog is worth nothing, and on a
-   * YMYL topic a wrong claim with a confident link is worse than no link.
-   */
   citationDomains: [
-    // Root domains: isCitationUrl matches subdomains, so 'gov.uk' covers
-    // 'www.gov.uk' and 'usembassy.gov' covers 'ae.usembassy.gov'.
     'gov.uk',
-    'state.gov',            // travel.state.gov, ceac.state.gov
-    'usembassy.gov',        // ae.usembassy.gov and other posts
-    'ustraveldocs.com',     // the US visa appointment system
-    'uscode.house.gov',     // the statute itself, e.g. INA 214(b)
-    'govinfo.gov',          // Federal Register, CFR
-    'canada.ca',            // ircc.canada.ca
-    'gc.ca',                // laws-lois.justice.gc.ca, ircc.gc.ca, cic.gc.ca
-    'europa.eu',            // ec.europa.eu, home-affairs, eur-lex
+    'state.gov',            
+    'usembassy.gov',        
+    'ustraveldocs.com',     
+    'uscode.house.gov',     
+    'govinfo.gov',          
+    'canada.ca',            
+    'gc.ca',                
+    'europa.eu',            
     'vfsglobal.com',
-    'vfsglobal.ca',         // the Canada visa application centres use the .ca domain
+    'vfsglobal.ca',         
     'blsinternational.com',
-    'gov.ae',               // icp.gov.ae
+    'gov.ae',               
     'u.ae',
-    'gouv.fr',              // france-visas.gouv.fr, diplomatie.gouv.fr
-    'diplo.de',             // videx.diplo.de
+    'gouv.fr',              
+    'diplo.de',             
     'auswaertiges-amt.de',
-    'esteri.it',            // vistoperitalia.esteri.it
+    'esteri.it',            
     'exteriores.gob.es',
-    // Saudi Arabia. 'gov.sa' covers my.gov.sa and mofa.gov.sa; the tourist
-    // eVisa itself is issued on visitsaudi.com, which is not a .gov.sa domain.
     'gov.sa',
     'visitsaudi.com',
   ],
@@ -86,10 +61,6 @@ export const TARGET = {
     'https://travl.ae',
   ],
 
-  /**
-   * Travl's itinerary may be named but never linked, and the legacy uncountried
-   * visa path only survives as a redirect. Both are hard failures.
-   */
   forbiddenLinkPatterns: [
     {
       pattern: /travl\.ae\/travel-itinerary/i,
@@ -101,16 +72,12 @@ export const TARGET = {
     },
   ],
 
-  /** Checked against the article text, not its markup. */
   contentChecks: [
     {
       pattern: /(?:dummy ticket|flight reservation|flight itinerar)(?:(?!\bUSD\b)[^.]){0,80}AED\s*\d/i,
       message: 'Dummy Ticket 365 is priced in USD (13 / 20 / 23), never in dirhams',
     },
     {
-      // Only fires when VisaWadi is the subject of the offer, or the product is
-      // said to come "from VisaWadi". Proximity alone false-positives on tables,
-      // where unrelated cells flatten into one run of text.
       pattern:
         /VisaWadi(?:\.ae)?(?:'s)?\s+(?:offers?|provides?|sells?|issues?|has)\b[^.]{0,60}\b(?:insurance|itinerar|dummy ticket)\b|\b(?:insurance|itinerar\w*|dummy tickets?)\b[^.]{0,40}\bfrom VisaWadi\b/i,
       message: 'VisaWadi sells visa assistance only — attribute insurance to Travl and tickets to Dummy Ticket 365',
@@ -153,7 +120,6 @@ Example shape (write your own copy, do not reuse this wording verbatim):
     const has = (sub) => lower.includes(sub.toLowerCase());
     const hasWord = (w) => new RegExp(`\\b${w}\\b`, 'i').test(title);
 
-    /** Destination pages, most specific first so a "France visa" post links France, not just Schengen. */
     const destinations = [
       { slug: 'france-visa', match: () => has('France'), label: 'France' },
       { slug: 'germany-visa', match: () => has('Germany'), label: 'Germany' },
@@ -166,7 +132,6 @@ Example shape (write your own copy, do not reuse this wording verbatim):
       },
       {
         slug: 'usa',
-        // Case-sensitive on the bare token: /\bUS\b/i also matches the pronoun "us".
         match: () => /\bUSA?\b/.test(title) || has('United States') || /\bB[12]\b/.test(title),
         label: 'the United States',
       },
@@ -192,8 +157,6 @@ Example shape (write your own copy, do not reuse this wording verbatim):
       });
     }
 
-    // Schengen covers the bloc. Add it when the article is about Schengen itself,
-    // or about a Schengen country we do not have a dedicated page for.
     const schengenOnly = ['Netherlands', 'Greece', 'Switzerland', 'Austria', 'Portugal', 'Belgium'];
     if (has('Schengen') || schengenOnly.some(has)) {
       links.push({

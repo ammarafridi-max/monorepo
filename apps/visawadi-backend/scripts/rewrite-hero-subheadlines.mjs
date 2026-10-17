@@ -1,25 +1,3 @@
-/**
- * Rewrites the eight hero subheadlines under 40 words so each leads with the
- * figures people search for, and clears the snippet floor without turning the
- * hero into a paragraph. Target is 45 to 60 words; Italy (41) and France (40)
- * already qualify and are left alone.
- *
- * Two are credibility fixes as well as length:
- *   - usa promised the applicant would "walk out with your visa", which reads
- *     as a guaranteed outcome
- *   - united-kingdom asserted refusals "have risen sharply" with nothing behind it
- *
- * Every figure used here is one already verified elsewhere on the site: EUR 90
- * and AED 385, the AED 146.74 VFS Germany charge, Article 23's 15 calendar
- * days, and the Annex 25 funds thresholds for Spain and Greece.
- *
- * Written to the base visa and its overlay together. The overlay wins at render
- * time, so setting only one leaves the other as a stale duplicate.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/rewrite-hero-subheadlines.mjs          # dry run
- *   node --env-file=.env.production scripts/rewrite-hero-subheadlines.mjs --apply
- */
 
 import mongoose from 'mongoose';
 

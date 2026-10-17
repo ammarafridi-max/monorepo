@@ -6,7 +6,6 @@ export const metadata = {
   description: 'Your travel insurance policy has been confirmed.',
 };
 
-// Cross-sell after an insurance purchase: dummy ticket (own, booking form is on the homepage).
 const upsells = [
   {
     icon: <Ticket size={15} />,

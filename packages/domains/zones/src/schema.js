@@ -11,7 +11,6 @@ const ZoneSchema = new mongoose.Schema(
         enum: ['Polygon', 'MultiPolygon'],
         required: true,
       },
-      // Untyped Array so both Polygon (3-deep) and MultiPolygon (4-deep) coordinates fit.
       coordinates: {
         type: Array,
         required: true,

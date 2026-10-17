@@ -53,12 +53,6 @@ function LoadingScreen({ message = 'Loading admin workspace...' }) {
   );
 }
 
-/**
- * Client-side route guard for the admin area. The rules are props so an app whose
- * admin is not the travel dashboard can pass its own; the defaults keep the
- * travel brands behaving exactly as before. This guard is UX only — the real
- * boundary is the API checking the cookie and role on every request.
- */
 export default function AdminShell({
   children,
   roleRules = DEFAULT_ROLE_ROUTE_RULES,

@@ -107,9 +107,6 @@ export default function DetailsPage() {
   const formRef = useRef(form);
   useEffect(() => { formRef.current = form; }, [form]);
 
-  // Signature of the payload behind the booking we already created, so coming
-  // back to this step and continuing again doesn't leave a trail of orphan
-  // pending_payment bookings. Any edit changes the signature and forces a new one.
   const savedSigRef = useRef(null);
 
   const actionRef = useRef(null);
@@ -131,10 +128,6 @@ export default function DetailsPage() {
     const sig = JSON.stringify(payload);
     if (bookingId && savedSigRef.current === sig) return true;
 
-    // This must be awaited. The Stripe session carries the booking id in its
-    // metadata and the payment webhook keys off it, so advancing to payment
-    // without a stored booking means the customer gets charged for a booking
-    // that is never saved or confirmed.
     try {
       const result = await createBookingApi(payload);
       if (!result?._id) throw new Error('Your booking could not be saved.');

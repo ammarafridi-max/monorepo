@@ -79,7 +79,6 @@ export function createVisaService({ Visa, VisaOverlay, imageStorage }) {
   };
 
   const deleteVisaFolder = async (visaId) => {
-    // deleteSubfolder scopes to the running brand's storage folder; deleteFolder does not.
     if (!imageStorage?.deleteSubfolder) return;
     try { await imageStorage.deleteSubfolder(visaId); } catch { }
   };
@@ -158,7 +157,6 @@ export function createVisaService({ Visa, VisaOverlay, imageStorage }) {
     const existing = await VisaOverlay.findOne({ residence, visaSlug: payload.visaSlug });
     const doc = existing || new VisaOverlay({ residence, visaSlug: payload.visaSlug });
 
-    // null means "inherit": unset the path rather than storing an empty value.
     for (const [key, value] of Object.entries({ ...payload, residence })) {
       if (value === null) doc.set(key, undefined);
       else doc.set(key, value);

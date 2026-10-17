@@ -1,34 +1,8 @@
-/**
- * Server-side CONTENT SAFETY for the upload gate. The face detector checks that a
- * usable subject is present; this checks that the image is not unsafe to accept,
- * store, train on, or pay for. It runs at the same boundary (POST /checkout,
- * before any Stripe session exists).
- *
- * METHOD + TRADEOFF: we reuse Replicate (the same REPLICATE_API_TOKEN as the face
- * detector) rather than adding a separate moderation vendor. Reasons: one
- * credential, one failure model already hardened here (retry/backoff), and an
- * image NSFW classifier reliably catches the dominant risk for a headshot upload,
- * which is explicit / sexual imagery. The honest limitation: a general NSFW model
- * is NOT a compliance-grade illegal-content system. True illegal-content handling
- * (e.g. CSAM detection via PhotoDNA / Thorn hash matching) and richer categories
- * (violence, weapons, hate) are what a dedicated service like AWS Rekognition
- * Moderation, Hive, or Google Vision SafeSearch provides. moderateImage() is a
- * swappable interface: replace this one function with any of those and no caller
- * changes. If you need that coverage, do the swap.
- *
- * Interface: moderateImage(url) -> { safe: boolean, score: number|null, reason?: string }
- * Throws only on a hard infrastructure error (unreachable model, unparseable
- * output); the caller decides fail-open vs fail-closed for those.
- */
 
 const REPLICATE_API = 'https://api.replicate.com';
 
-// The moderation model, as "owner/name" (env-overridable). We call it by its
-// latest version via the model-predictions endpoint, so there is no version hash
-// to keep in sync; pin REPLICATE_MODERATION_MODEL_VERSION if you want it frozen.
 const DEFAULT_MODERATION_MODEL = 'falcons-ai/nsfw_image_detection';
 
-// Branded, NON-graphic rejection reason. We never describe what was detected.
 export const MODERATION_REASON = 'This photo cannot be used';
 
 function token() {
@@ -42,11 +16,6 @@ function model() {
 function modelVersion() {
   return process.env.REPLICATE_MODERATION_MODEL_VERSION || '';
 }
-/**
- * NSFW score above which an image is rejected. Conservative but not paranoid:
- * a normal selfie scores near 0, so 0.85 blocks clearly explicit content without
- * tripping on ordinary photos (beachwear, low necklines, etc.). Env-tunable.
- */
 function threshold() {
   const t = parseFloat(process.env.REPLICATE_MODERATION_NSFW_THRESHOLD);
   return Number.isFinite(t) ? t : 0.85;
@@ -54,11 +23,6 @@ function threshold() {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-/**
- * fetch() to Replicate that survives rate limits and transient blips. Mirrors the
- * face detector's helper (kept local so this module stays a self-contained,
- * swappable boundary). On 429 waits Retry-After; on 5xx / network errors backs off.
- */
 async function replicateFetch(url, options, { attempts = 5, baseDelayMs = 1000 } = {}) {
   let lastErr;
   for (let attempt = 1; attempt <= attempts; attempt++) {
@@ -86,11 +50,8 @@ async function replicateFetch(url, options, { attempts = 5, baseDelayMs = 1000 }
   throw lastErr;
 }
 
-/** Run the classifier on one image (sync via Prefer: wait) and return its output. */
 async function runModeration(imageUrl) {
   const version = modelVersion();
-  // Pinned version -> /v1/predictions with { version }; otherwise run the model's
-  // latest version via the model-predictions endpoint (no hash needed).
   const endpoint = version
     ? `${REPLICATE_API}/v1/predictions`
     : `${REPLICATE_API}/v1/models/${model()}/predictions`;
@@ -128,12 +89,6 @@ async function runModeration(imageUrl) {
 
 const UNSAFE_LABEL = /nsfw|porn|explicit|sexual|hentai|nude|nudity/;
 
-/**
- * Reduce a classifier's output to a single NSFW score in [0,1], tolerating the
- * shapes NSFW models on Replicate return: a bare label string, an array of
- * { label, score|confidence }, or a { label: score } object. Returns null for an
- * unrecognised shape so the caller can treat it as an infrastructure error.
- */
 export function nsfwScoreFrom(output) {
   if (typeof output === 'string') {
     return UNSAFE_LABEL.test(output.toLowerCase()) ? 1 : 0;
@@ -169,17 +124,10 @@ export function nsfwScoreFrom(output) {
   return null;
 }
 
-/**
- * Moderate one image URL.
- * @param {string} url
- * @returns {Promise<{ safe: boolean, score: number|null, reason?: string }>}
- */
 export async function moderateImage(url) {
   const output = await runModeration(url);
   const score = nsfwScoreFrom(output);
   if (score === null) {
-    // Unknown output shape: treat as an infrastructure error so the caller's
-    // fail-open/closed policy applies, rather than silently passing unsafe input.
     throw new Error('moderation: unrecognised classifier output');
   }
   const safe = score < threshold();

@@ -15,8 +15,6 @@ const customer = createNotificationsService({
   },
 });
 
-// Outbound brands are a deliberate exception to brand neutrality, confined to
-// this app. Visa assistance is VisaWadi's; dummy tickets are Dummy Ticket 365's.
 const UPSELLS = [
   {
     title: 'Get Visa Assistance',

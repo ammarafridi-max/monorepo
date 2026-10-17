@@ -1,12 +1,3 @@
-/**
- * The Dummy Ticket AE — flight reservations and travel insurance, sold direct.
- *
- * The inverse of the VisaWadi target: here the products are ours, so the rules
- * below are about not overclaiming rather than not misattributing. Two hard
- * failures are worth knowing up front. Visa assistance is not a service yet and
- * a post that offers it writes a promise we cannot keep. And no sister brand may
- * be named or linked: each site in this group speaks only for itself.
- */
 
 const SITE = 'https://www.thedummyticket.ae';
 const page = (slug) => `${SITE}/${slug}`;
@@ -24,9 +15,8 @@ export const TARGET = {
 
   excludedTags: ['Visa Assistance', 'Airport Transfers'],
 
-  /** First slot for blog-schedule, and posts it must leave where they are. */
   blogSchedule: {
-    start: '2026-09-25T05:00:00Z', // 09:00 GST
+    start: '2026-09-25T05:00:00Z', 
     excludeSlugs: [],
   },
 
@@ -36,24 +26,19 @@ export const TARGET = {
     long: 'sourced-guide',
   },
 
-  /**
-   * Official sources only. Entry rules and visa requirements are YMYL topics:
-   * a confident claim sourced to a travel blog is worse than no source at all,
-   * because the reader acts on it at a border.
-   */
   citationDomains: [
-    'europa.eu',            // ec.europa.eu, home-affairs, eur-lex (the Visa Code)
+    'europa.eu',            
     'gov.uk',
-    'state.gov',            // travel.state.gov
+    'state.gov',            
     'usembassy.gov',
     'ustraveldocs.com',
     'canada.ca',
     'gc.ca',
     'vfsglobal.com',
     'blsinternational.com',
-    'gov.ae',               // icp.gov.ae
+    'gov.ae',               
     'u.ae',
-    'iata.org',             // Timatic, the database airlines check at the desk
+    'iata.org',             
     'icao.int',
     'gouv.fr',
     'diplo.de',
@@ -70,11 +55,6 @@ export const TARGET = {
     'https://thedummyticket.ae',
   ],
 
-  /**
-   * The airline landing pages were deleted on 2026-09-23; linking them would
-   * publish a 404. Sister brands are a separate matter: each site in this group
-   * names only itself, so a mention is as wrong as a link.
-   */
   forbiddenLinkPatterns: [
     {
       pattern: /thedummyticket\.ae\/(emirates|etihad)-dummy-ticket/i,
@@ -86,15 +66,12 @@ export const TARGET = {
     },
   ],
 
-  /** Checked against the article text, not its markup. */
   contentChecks: [
     {
       pattern: /\b(?:USD|\$)\s*\d+[^.]{0,40}\b(?:dummy ticket|flight reservation|onward ticket|flight itinerar)/i,
       message: 'our reservations are priced in dirhams (AED 49 / 69 / 79), never in USD',
     },
     {
-      // Fires only where we are the subject offering it. Proximity alone
-      // false-positives on checklists, where "visa assistance" is the topic.
       pattern:
         /\b(?:we|The Dummy Ticket AE|thedummyticket\.ae)\s+(?:offer|provide|handle|file|prepare|submit)s?\b[^.]{0,60}\b(?:visa application|visa assistance|your visa)\b/i,
       message: 'we do not file visa applications — we sell the documents that go into one',
@@ -197,8 +174,6 @@ Example shape (write your own copy, do not reuse this wording verbatim):
     }
 
     if (has('insurance') || has('medical cover') || has('EUR 30,000') || has('repatriation')) {
-      // Repatriation and the EUR 30,000 floor are Schengen requirements even
-      // when the title never says Schengen, so they route to the Schengen page.
       const schengenCover = has('Schengen') || has('repatriation') || has('EUR 30,000');
       links.push({
         url: schengenCover ? page('schengen-travel-insurance') : page('travel-insurance'),

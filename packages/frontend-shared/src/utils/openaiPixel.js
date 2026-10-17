@@ -53,7 +53,6 @@ export function openaiCheckoutStarted({ currency = "AED", value = 0 } = {}) {
   oaiq("measure", "checkout_started", { type: "contents", amount: toMinorUnits(value), currency });
 }
 
-// eventId must match the server-side Conversions API event so OpenAI counts the sale once.
 export function openaiOrderCreated({ currency = "AED", value = 0, eventId } = {}) {
   const storageKey = eventId ? `openai:order:${eventId}` : null;
   try {

@@ -26,7 +26,6 @@ import { formatDate, formatToDDMMM, formatToDDMMMYYYYMixed, extractIataCode } fr
 
 export function createNotificationsService({ sendEmail, logger, brand }) {
   const log = logger?.error?.bind(logger) ?? console.error;
-  // What the brand calls the product in customer-facing copy.
   const productNoun = brand.productNoun ?? 'dummy ticket';
 
   async function sendInsuranceFormSubmission({ passengers }) {
@@ -431,11 +430,6 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
     try { return format(new Date(`${String(d).slice(0, 10)}T00:00:00Z`), 'd MMM yyyy'); } catch { return String(d); }
   };
 
-  /**
-   * Customer-facing policy confirmation, sent by us instead of the insurer's
-   * email. `documents` are {name, url} from the provider; `attachments` are
-   * Brevo {name, content} pairs the caller already downloaded.
-   */
   async function sendPolicyIssuedToCustomer({
     email, firstName, policyNumber, journeyType, region, startDate, endDate,
     passengers = [], amount, currency, documents = [], attachments = [],
@@ -524,7 +518,6 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
       const hotelName = data.hotel?.name || 'your hotel';
       const checkIn = formatToDDMMMYYYYMixed(data.checkIn);
       const checkOut = formatToDDMMMYYYYMixed(data.checkOut);
-      // The deadline arrives as a Date; the formatter only reads YYYY-MM-DD.
       const freeUntil = data.freeCancellationUntil
         ? formatToDDMMMYYYYMixed(new Date(data.freeCancellationUntil).toISOString().slice(0, 10))
         : null;

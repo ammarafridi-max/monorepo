@@ -26,9 +26,6 @@ import { todayDateOnly, compareDateOnly } from '../../../utils/dates';
 
 const validityDays = (value) => parseInt(String(value), 10) || 0;
 
-// Validity runs from delivery, so a tier longer than the wait to departure is
-// time the traveller cannot use. The shortest tier always stays selectable,
-// otherwise a same-week flight would have nothing left to buy.
 function withAvailability(options, daysToDeparture) {
   if (daysToDeparture === null || options.length === 0) {
     return options.map((option) => ({ ...option, disabled: false }));
@@ -143,8 +140,6 @@ export default function FlightForm() {
     return next;
   }
 
-  // A ticket delivered after take-off is useless, and its validity window
-  // starts on delivery, so the flight date is the hard ceiling.
   function deliveryDateError() {
     if (receiveNow) return null;
     if (!deliveryDate) return 'Choose a delivery date';
@@ -199,8 +194,6 @@ export default function FlightForm() {
         : withAvailability(PRICING_OPTIONS, daysToDeparture);
     const current = options.find((option) => option.value === ticketValidity);
     const enabled = options.filter((option) => !option.disabled);
-    // A tier that just became unavailable must not stay selected, or the
-    // traveller pays for validity the form is telling them they cannot have.
     const selectedOption =
       current && !current.disabled
         ? current

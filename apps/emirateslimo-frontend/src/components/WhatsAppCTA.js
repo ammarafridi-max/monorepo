@@ -11,7 +11,6 @@ export default function WhatsAppCTA() {
   const [fieldFocused, setFieldFocused] = useState(false);
   const isBookingPage = pathname?.startsWith('/book') || pathname === '/payment';
 
-  // The pill sits over the hero form's last field on small screens, so step aside while someone is typing.
   useEffect(() => {
     const isField = (el) => el && ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName);
     const onFocusIn = (e) => isField(e.target) && setFieldFocused(true);

@@ -17,8 +17,6 @@ const words = (...parts) =>
       .filter((w) => w.length >= 5 && !STOP.has(w)),
   );
 
-// A CMS "why us" card that says the same thing as a brand assurance is dropped
-// so the section reads as four distinct reasons rather than eight overlapping ones.
 function mergeCards(items, assurances) {
   const assuranceWords = assurances.map((a) => words(a.title, a.caption));
   const unique = items.filter((item) => {
@@ -31,7 +29,6 @@ function mergeCards(items, assurances) {
   ].slice(0, 4);
 }
 
-// `assurances` is supplied by the consuming app so this stays brand-neutral.
 export default function VisaTrust({ items = [], assurances = [], title = "Why UAE Residents Trust Us", subtitle = "" }) {
   const cards = assurances.length ? mergeCards(items, assurances) : items.map((i) => ({ title: i.title, caption: i.description, icon: i.icon }));
   if (!cards.length) return null;

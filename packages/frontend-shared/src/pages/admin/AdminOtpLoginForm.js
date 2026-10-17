@@ -131,7 +131,6 @@ export default function AdminOtpLoginForm({ showForgotLink = true }) {
           <input
             id="code"
             ref={codeRef}
-            // One-time-code lets iOS and Chrome autofill straight from the email.
             autoComplete="one-time-code"
             inputMode="numeric"
             pattern="\d{6}"

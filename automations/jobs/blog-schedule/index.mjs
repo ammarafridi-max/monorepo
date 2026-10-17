@@ -1,25 +1,9 @@
-/**
- * Schedule backlog draft posts for publishing, one per day at 09:00 Asia/Dubai
- * (05:00 UTC), oldest-created first.
- *
- *   pnpm automation blog-schedule --target travl --dry-run
- *   pnpm automation blog-schedule --target travl --apply
- *
- * Auth: the target's admin session cookie, from <TARGET>_COOKIE
- * (e.g. TRAVL_COOKIE="jwt=<admin session>"). The first slot and any slugs to
- * leave alone come from the target's own blogSchedule config.
- *
- * Idempotent + stable: the ordering basis is every draft/scheduled post (minus
- * exclusions) sorted by createdAt, so slug→date never shifts between runs. A post
- * already scheduled to its intended time is skipped. The CMS auto-flips
- * scheduled→published when the time passes (publishDueScheduledBlogs on any GET).
- */
 
 let BASE = '';
 let COOKIE = '';
 let DRY = true;
 
-const STEP_MS = 86400000; // one calendar day
+const STEP_MS = 86400000; 
 
 const iso = (ms) => new Date(ms).toISOString();
 const gst = (ms) => new Date(ms + 4 * 3600 * 1000).toISOString().replace('T', ' ').slice(0, 16) + ' GST';
@@ -42,14 +26,10 @@ async function patch(id, body) {
   return res.json();
 }
 
-/**
- * @param {{ target: object, dryRun: boolean }} ctx
- */
 export async function run({ target, dryRun }) {
   const cookieEnv = `${target.key.toUpperCase()}_COOKIE`;
   BASE = process.env[`${target.key.toUpperCase()}_API`] || target.backendUrl;
   COOKIE = process.env[cookieEnv] || '';
-  // --apply is the explicit opt-in to write; --dry-run and the bare default both stay read-only.
   DRY = dryRun || !process.argv.includes('--apply');
 
   if (!COOKIE) throw new Error(`${cookieEnv} not set`);
@@ -65,7 +45,6 @@ export async function run({ target, dryRun }) {
 
   console.log(`\n=== schedule-drafts [${DRY ? 'DRY RUN' : 'APPLY'}] ===\n`);
 
-  // Stable basis: drafts + already-scheduled, minus exclusions, oldest-created first.
   const [drafts, scheduled] = await Promise.all([fetchAdmin('draft'), fetchAdmin('scheduled')]);
   const basis = [...drafts, ...scheduled]
     .filter((b) => !exclude.has(b.slug))

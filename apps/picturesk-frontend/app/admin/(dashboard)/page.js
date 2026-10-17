@@ -15,7 +15,6 @@ import StatCard from '@travel-suite/frontend-shared/components/admin/StatCard';
 import { useAdminStats } from '../../../hooks/admin/useAdminOrders';
 import { usd, STATUS_LABEL } from '../../../lib/adminApi';
 
-// Lifecycle order, so the row reads as the pipeline an operator watches.
 const STATUS_ORDER = ['AWAITING_PAYMENT', 'PAID', 'TRAINING', 'GENERATING', 'DELIVERED', 'FAILED'];
 
 const STATUS_DOT = {

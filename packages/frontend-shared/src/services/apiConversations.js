@@ -4,7 +4,6 @@ const URL = '/api/conversations';
 
 export async function getConversationsApi(params = {}) {
   const queryString = new URLSearchParams(params).toString();
-  // apiFetch already returns json.data — do not unwrap again.
   return (await apiFetch(`${URL}${queryString ? `?${queryString}` : ''}`)) ?? [];
 }
 

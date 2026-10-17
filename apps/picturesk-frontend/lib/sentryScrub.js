@@ -1,6 +1,3 @@
-// Redact customer PII from Sentry events before they leave the browser or server.
-// We want stack traces, not customer faces: strip emails and uploaded-image URLs
-// wherever they might appear. Env-free so it runs identically client and server.
 const EMAIL_RE = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
 const IMG_URL_RE = /https?:\/\/[^\s"']*\/(uploads|training)\/[^\s"']*/g;
 
@@ -9,7 +6,6 @@ function redact(value) {
   return value.replace(EMAIL_RE, '[email]').replace(IMG_URL_RE, '[image-url]');
 }
 
-/** Sentry beforeSend hook. */
 export function scrubEvent(event) {
   if (event.request) {
     delete event.request.data;

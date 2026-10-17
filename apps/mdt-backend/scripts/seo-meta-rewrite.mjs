@@ -1,12 +1,3 @@
-// Usage: node --env-file=.env.production scripts/seo-meta-rewrite.mjs [--apply]
-//
-// GSC-driven SERP title rewrite. The post sits at position 10.2 on 1,806
-// impressions with 0.72% CTR, and separately ranks page 1 for "dummy ticket
-// meaning" (106 impressions, position 4.18) and "what is dummy ticket" (103,
-// 4.85) with zero clicks on both. The 26-character title answered neither, so
-// it now covers the definition intent as well as the how-it-works intent. Only
-// metaTitle and metaDescription change: the H1 comes from `title` and still
-// matches the body, and updatedAt is left alone.
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';

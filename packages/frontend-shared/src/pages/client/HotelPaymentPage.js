@@ -72,8 +72,6 @@ function PaymentContent({ onPurchaseEvent, supportEmail }) {
     setSessionId(localStorage.getItem('HOTEL_SESSION_ID') || '');
   }, []);
 
-  // The supplier booking runs off the Stripe webhook, so the reservation lands
-  // PAID before it lands BOOKED. Poll until the hotel confirmation exists.
   const { reservation, isLoadingReservation, isErrorReservation } = useHotelBooking(sessionId, {
     refetchInterval: (query) => {
       const data = query.state.data;

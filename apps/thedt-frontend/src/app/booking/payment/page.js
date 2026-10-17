@@ -4,7 +4,6 @@ import TicketPaymentPage from '@travel-suite/frontend-shared/pages/client/Ticket
 import { trackPurchaseEvent } from '@travel-suite/frontend-shared/utils/analytics';
 import { LuShieldPlus } from 'react-icons/lu';
 
-// Cross-sell after a dummy-ticket purchase: travel insurance (own).
 const upsells = [
   {
     icon: <LuShieldPlus size={15} />,

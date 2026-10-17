@@ -1,10 +1,3 @@
-/**
- * Usage, from automations/:
- *   node scripts/validate-draft.mjs --target travl --slug <slug> --file <draft.json>
- *
- * Runs the same gate blog-generate applies to a model draft, against a draft
- * written by hand. Exit 0 means the file would have been posted as-is.
- */
 
 import { readFileSync } from "node:fs";
 import { loadTarget } from "../src/registry.mjs";

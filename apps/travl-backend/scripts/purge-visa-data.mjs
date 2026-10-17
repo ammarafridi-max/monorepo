@@ -1,11 +1,3 @@
-/**
- * Usage, from apps/travl-backend:
- *   node --env-file=.env.production scripts/purge-visa-data.mjs          # dry run
- *   node --env-file=.env.production scripts/purge-visa-data.mjs --apply
- *
- * --apply permanently deletes these collections; a full backup is written to
- * migration-output/travl-visa-data-backup.json first.
- */
 
 import fs from 'node:fs';
 import path from 'node:path';

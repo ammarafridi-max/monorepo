@@ -164,7 +164,6 @@ export default function SearchLocations({
         </AnimatePresence>
       )}
 
-      {/* Show box for smaller devices */}
       {show && (
         <AnimatePresence>
           <motion.div

@@ -12,9 +12,6 @@ export default function Currency({ onDark = false }) {
 
   useOutsideClick(wrapperRef, () => setShowCurrencies(false));
 
-  // A brand with no currency switcher renders nothing rather than an empty menu.
-  // This has to stay below every hook: currencies arrive asynchronously, so an
-  // early return above them changes the hook count between renders.
   if (!currencies?.length) return null;
 
   return (

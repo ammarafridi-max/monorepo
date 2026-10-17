@@ -1,7 +1,3 @@
-/**
- * Usage, from apps/travl-backend:
- *   node --env-file=.env.production scripts/export-posts-for-visawadi.mjs
- */
 
 import fs from 'node:fs';
 import path from 'node:path';

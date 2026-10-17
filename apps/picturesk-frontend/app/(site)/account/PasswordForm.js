@@ -2,9 +2,6 @@
 
 import { useState } from 'react';
 
-// Change (or, for a social-only account, set for the first time) the account
-// password. Posts to /api/account/password; the session cookie authenticates the
-// request. `hasPassword` decides whether the current password is required.
 export default function PasswordForm({ hasPassword }) {
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');

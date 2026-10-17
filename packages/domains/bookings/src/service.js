@@ -69,7 +69,6 @@ export function createBookingService({ Booking, stripe }) {
       cancel_url: cancelUrl,
     });
 
-    // Reuse any existing bookingRef so an abandoned-then-resumed checkout does not issue a second one.
     await Booking.findByIdAndUpdate(bookingId, {
       stripeSessionId: session.id,
       bookingRef: booking.bookingRef || generateBookingRef(),

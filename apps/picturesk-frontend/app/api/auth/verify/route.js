@@ -3,7 +3,6 @@ import { dbConnect } from '../../../../lib/db';
 import { getSession } from '../../../../lib/session';
 import { confirmVerificationCode } from '../../../../lib/verification';
 
-// POST /api/auth/verify { code } -> marks the signed-in account's email verified.
 export async function POST(req) {
   const session = await getSession();
   if (!session) return Response.json({ error: 'You are not signed in' }, { status: 401 });

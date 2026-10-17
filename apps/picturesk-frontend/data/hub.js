@@ -1,12 +1,5 @@
-/**
- * The home page (the hub). It answers "what can I make from my selfies" and sends
- * the visitor into the right funnel. It must not restate a product page: the
- * headshot page owns "AI headshot generator", the dating page owns "AI dating
- * photos". The hub owns the brand and the category ("AI photos from selfies").
- */
 export const hub = {
   meta: {
-    // 54 chars / 154 chars
     title: 'Picturesk: AI Headshots and Dating Photos From Selfies',
     description:
       'Picturesk turns a few selfies into professional headshots and candid dating photos. A model trained on your face, one payment, delivered in about an hour.',

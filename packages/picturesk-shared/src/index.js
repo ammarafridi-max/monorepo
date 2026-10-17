@@ -1,12 +1,3 @@
-/**
- * @travel-suite/picturesk-shared
- *
- * The contracts every other service imports so they can never disagree about
- * what an order is: its states, its schema, and the queue that moves it.
- *
- * Consumers do:
- *   import { ORDER_STATES, Order, canTransition, QUEUE_NAMES } from '@travel-suite/picturesk-shared';
- */
 
 export { ORDER_STATES, ORDER_TRANSITIONS, canTransition } from './orderStates.js';
 export { PRODUCTS, DEFAULT_PRODUCT, isValidProduct, productOf } from './products.js';

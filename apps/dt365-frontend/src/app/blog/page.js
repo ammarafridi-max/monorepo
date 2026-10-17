@@ -29,8 +29,6 @@ const breadcrumbPaths = [
   { label: 'Blog', path: '/blog' },
 ];
 
-// Page 2+ self-canonicalises. Canonicalising them all to /blog told Google the
-// deeper pages were duplicates, which discouraged crawling the older posts.
 export async function generateMetadata({ searchParams }) {
   const resolved = await searchParams;
   const page = Math.max(1, Number(resolved?.page || 1) || 1);
@@ -71,10 +69,8 @@ export default async function Page({ searchParams }) {
     blogs = data?.blogs || [];
     pagination = data?.pagination || null;
   } catch {
-    // API unreachable at build time, ISR will populate on first request
   }
 
-  // Without this any ?page=N returns 200, leaving an unbounded crawlable param space.
   if (pagination && pagination.totalPages > 0 && currentPage > pagination.totalPages) {
     notFound();
   }

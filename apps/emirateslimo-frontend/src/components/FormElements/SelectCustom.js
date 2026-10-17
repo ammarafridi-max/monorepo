@@ -15,7 +15,7 @@ export default function SelectCustom({ className = '', value, setValue, children
           onChange={(e) => setValue(e.target.value)}
           onClick={() => setShowOptions((currentValue) => !currentValue)}
           value={value}
-          ref={inputRef} // 👈 forward the ref so RHF can control it
+          ref={inputRef} 
           className="outline-0"
           {...props}
         />

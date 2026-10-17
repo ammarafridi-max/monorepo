@@ -7,9 +7,6 @@ import SectionHeading from '../../../components/SectionHeading';
 import { pricingPage as page } from '../../../data/pages/pricing';
 import { FUNNEL, DATING_FUNNEL, landingMetadata, landingSchema } from '../../../lib/landingPage';
 
-// The pricing page. Content comes from data/pages/pricing.js, but the PLAN FACTS
-// come from the shared pricing catalogue via the Pricing section, so the page can
-// never quote a price or a count the funnel does not actually sell.
 export const metadata = landingMetadata(page);
 
 const schema = landingSchema({ ...page, productName: 'AI Headshots' });

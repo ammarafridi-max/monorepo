@@ -20,8 +20,6 @@ const TicketPricingSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-// One price book per currency. A plain unique index on key would cap the
-// collection at a single book and silently reject the second currency.
 TicketPricingSchema.index({ key: 1, currency: 1 }, { unique: true });
 
 export default TicketPricingSchema;

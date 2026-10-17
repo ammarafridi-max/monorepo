@@ -1,15 +1,3 @@
-/**
- * H7b. Removes the "85 to 90% approval rate" claim from the visa FAQs. No
- * source for it exists in the repo or the CMS.
- *
- * The question asked for an approval rate, so it cannot stay once the number
- * goes. It is reframed onto the half of the answer that was always verifiable
- * and is the more useful question anyway: what actually causes refusals.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/remove-unsourced-approval-stats.mjs          # dry run
- *   node --env-file=.env.production scripts/remove-unsourced-approval-stats.mjs --apply
- */
 
 import mongoose from 'mongoose';
 
@@ -39,7 +27,6 @@ for (const coll of ['visas', 'visa-overlays']) {
       const isRateFaq = /approval rate/i.test(f.question || '') && RATE_RE.test(f.answer || '');
       if (!isRateFaq) return f;
       touched = true;
-      // "What is the Germany visa approval rate for ..." -> "Germany"
       const country = (f.question.match(/What is the (.+?) visa approval rate/i) || [, 'visa'])[1];
       return { ...f, question: questionFor(country), answer: answerFor(country) };
     });

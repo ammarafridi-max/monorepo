@@ -25,7 +25,6 @@ export function UserAuthProvider({ children }) {
     try {
       await logoutUserApi();
     } catch {
-      /* ignore */
     }
     setUser(null);
   }, []);

@@ -1,9 +1,6 @@
 import Container from '../components/Container';
 import SectionHeading from '../components/SectionHeading';
 
-// A comparison table: the one structure on a "vs" page that both a reader and an
-// AI answer engine can lift whole. Plain semantic <table>, first column is the
-// row header, so it reads correctly with a screen reader and extracts cleanly.
 export default function Comparison({ eyebrow, title, lede, columns = [], rows = [] }) {
   return (
     <section id="comparison" className="section comparison">

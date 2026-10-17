@@ -9,10 +9,6 @@ import {
 } from '../../../../../lib/oauth';
 import { safeNext } from '../../../../../lib/redirects';
 
-// GET /api/auth/oauth/:provider -> begin the OAuth code flow. Set a one-time CSRF
-// state cookie and bounce the browser to the provider's consent screen. Using a
-// NextResponse (not next/navigation redirect) so the Set-Cookie reliably rides the
-// external redirect. Unknown or unconfigured provider fails closed to login.
 export async function GET(req, { params }) {
   const name = (await params).provider;
   if (!getProvider(name) || !isConfigured(name)) {
@@ -26,7 +22,7 @@ export async function GET(req, { params }) {
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
-    maxAge: 600, // 10 minutes to complete consent
+    maxAge: 600, 
   };
   res.cookies.set(STATE_COOKIE, state, cookie);
   res.cookies.set(NEXT_COOKIE, safeNext(new URL(req.url).searchParams.get('next')), cookie);

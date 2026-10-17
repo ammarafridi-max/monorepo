@@ -1,12 +1,3 @@
-/**
- * Usage: node targets/thedt/drafts/validate.mjs
- *
- * Checks every hand-written draft against the same rules blog-generate would
- * apply: the target's contentChecks and forbiddenLinkPatterns, the format's
- * word and FAQ counts, the citation allowlist, and the required internal links
- * getRequiredLinks resolves for that title. Self-reported checks are not
- * evidence; this is.
- */
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -44,18 +35,15 @@ for (const file of readdirSync(HERE).filter((f) => f.endsWith('.json')).sort()) 
 
   if (!tier) problems.push(`slug "${d.slug}" is not in topics.json`);
 
-  // Required fields
   for (const k of ['metaTitle', 'metaDescription', 'excerpt', 'quickAnswer', 'content', 'ctaBlock']) {
     if (typeof d[k] !== 'string' || !d[k].trim()) problems.push(`missing or empty: ${k}`);
   }
 
-  // Lengths the CMS and the SERP care about
   const mt = (d.metaTitle ?? '').length;
   const md = (d.metaDescription ?? '').length;
   if (mt < 45 || mt > 65) warn.push(`metaTitle ${mt} chars (target 50-60)`);
   if (md < 140 || md > 165) warn.push(`metaDescription ${md} chars (target 150-160)`);
 
-  // quickAnswer has a hard 500-char database limit
   const qa = d.quickAnswer ?? '';
   if (qa.length > 500) problems.push(`quickAnswer ${qa.length} chars, over the 500 database limit`);
   const qaWords = qa.split(/\s+/).filter(Boolean).length;
@@ -71,10 +59,8 @@ for (const file of readdirSync(HERE).filter((f) => f.endsWith('.json')).sort()) 
     }
   }
 
-  // Opens with a paragraph, not a heading
   if (!/^\s*<p[\s>]/i.test(body)) problems.push('content does not open with a <p>');
 
-  // CTA shape
   if (!(d.ctaBlock ?? '').trim().startsWith(`<div class="${TARGET.ctaClass}"`)) {
     problems.push(`ctaBlock does not open with <div class="${TARGET.ctaClass}">`);
   }
@@ -82,7 +68,6 @@ for (const file of readdirSync(HERE).filter((f) => f.endsWith('.json')).sort()) 
     problems.push('ctaBlock contains a script, style tag or inline style');
   }
 
-  // The target's own hard rules
   for (const check of TARGET.contentChecks ?? []) {
     const m = text.match(check.pattern);
     if (m) problems.push(`contentCheck: ${check.message} (matched "${m[0].slice(0, 70)}")`);
@@ -96,7 +81,6 @@ for (const file of readdirSync(HERE).filter((f) => f.endsWith('.json')).sort()) 
     if (hit) problems.push(`forbidden link: ${rule.message} (${hit})`);
   }
 
-  // Outbound links must be on the citation allowlist; internal ones on our own domain
   const external = allHrefs.filter((h) => /^https?:\/\//i.test(h) && !/thedummyticket\.ae/i.test(h));
   for (const url of external) {
     const host = new URL(url).hostname.replace(/^www\./, '');
@@ -107,17 +91,14 @@ for (const file of readdirSync(HERE).filter((f) => f.endsWith('.json')).sort()) 
     problems.push(`${new Set(external).size} unique citations, needs ${format.minCitations}`);
   }
 
-  // Required internal links for this exact title
   for (const link of TARGET.getRequiredLinks({ title: d.topic ?? '' })) {
     if (!allHrefs.some((h) => h.replace(/\/$/, '') === link.url.replace(/\/$/, ''))) {
       problems.push(`missing required internal link: ${link.url}`);
     }
   }
 
-  // House style
   if (/[—–]/.test(text)) problems.push('contains an em or en dash');
 
-  // Tags must exist on the site
   const KNOWN = ['Flight Reservations', 'Onward Travel', 'Schengen Visa', 'Travel Insurance', 'Entry Requirements', 'Visa Applications'];
   for (const t of d.tags ?? []) if (!KNOWN.includes(t)) problems.push(`unknown tag: ${t}`);
   if ((d.tags ?? []).length < 3) warn.push(`${(d.tags ?? []).length} tags (want 3-5)`);

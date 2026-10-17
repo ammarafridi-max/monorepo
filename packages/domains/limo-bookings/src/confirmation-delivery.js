@@ -27,7 +27,6 @@ function updateFor(key, result, now) {
   return set;
 }
 
-// Never throws: a rejection would 500 the Stripe webhook and get the payment reprocessed. Writes via updateOne + dotted paths, not save().
 export async function deliverPaymentConfirmations({ Booking, booking, notifications }) {
   const results = { admin: null, customer: null };
 

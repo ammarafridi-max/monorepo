@@ -25,7 +25,6 @@ export default function ItineraryLayout({ children }) {
         <StepperDesktop />
         <StepperMobile />
       </div>
-      {/* pb leaves room for the fixed action bar on the preview step */}
       <main className="flex-1 pb-28">
         <Container className="py-6">{children}</Container>
       </main>

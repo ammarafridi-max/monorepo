@@ -1,12 +1,4 @@
-/**
- * Offers shown beside and inside a blog post.
- *
- * Two products: reservations from AED 49 and AXA travel insurance from AED 30.
- * The ticket card follows the post's subject, resolved from the slug because
- * tags never name a destination or airline.
- */
 
-// Order matters: the first token found in the slug wins.
 const TICKET_BY_SLUG_TOKEN = [
   { tokens: ['schengen'], href: '/dummy-ticket-schengen-visa', eyebrow: 'Dummy ticket for Schengen visa' },
   { tokens: ['us-visa', 'usa', 'b1b2'], href: '/dummy-ticket-us-visa', eyebrow: 'Dummy ticket for US visa' },
@@ -37,7 +29,6 @@ function resolveInsurance(blog) {
     : { href: '/travel-insurance', eyebrow: 'Travel insurance' };
 }
 
-/** Cards for the sticky rail, brand product first. */
 export function getBlogOffers(blog) {
   const ticket = resolveTicket(blog);
   const insurance = resolveInsurance(blog);
@@ -64,7 +55,6 @@ export function getBlogOffers(blog) {
   ];
 }
 
-/** The single mid-article unit. Matches the post's subject where it can. */
 export function getBlogInlineOffer(blog) {
   if (isInsurancePost(blog)) {
     const insurance = resolveInsurance(blog);

@@ -2,30 +2,6 @@ import { Router } from 'express';
 import { getTier, Order, ORDER_STATES } from '@travel-suite/picturesk-shared';
 import { AppError, catchAsync } from '@travel-suite/utils';
 
-/**
- * Admin ORDER ACTIONS (the write side): refund, retry, resend delivery email.
- * ADMIN-ONLY and mounted at /admin BEFORE the read-only data router. Guards are
- * per-route (not a blanket router.use), so a non-action request (e.g. GET /orders)
- * falls straight through to the data router without tripping restrictTo('admin')
- * and without running the auth guard twice.
- *
- *   POST /admin/orders/:id/refund        issue a Stripe refund, stamp refundedAt
- *   POST /admin/orders/:id/retry         re-enqueue the pipeline (stuck orders)
- *   POST /admin/orders/:id/resend-email  re-send the delivery email (delivered)
- *   POST /admin/orders/bulk-delete       delete many orders in one request
- *   DELETE /admin/orders/:id             delete one order + its stored images
- *
- * @param {Object} deps
- * @param {Function} deps.guard              combined admin guard (cookie or token)
- * @param {(...roles:string[])=>Function} deps.restrictTo
- * @param {{ refunds:{ create:Function } }|null} deps.stripe
- * @param {{ add:Function, remove:Function }} deps.orderPipeline  BullMQ queue
- * @param {(orderId:string)=>object} deps.pipelineJobOpts
- * @param {{ sendDeliveryEmail:Function }|null} deps.emailClient
- * @param {{ keyForUrl:Function, deleteObjects:Function }|null} deps.storage  R2 client (or null if unconfigured)
- * @param {((modelVersion:string)=>Promise<void>)|null} deps.deleteTrainedModel  removes the order's Replicate model version (or null)
- * @param {string} deps.webBaseUrl
- */
 export function createAdminActionsRouter({
   guard,
   restrictTo,
@@ -40,8 +16,6 @@ export function createAdminActionsRouter({
   const router = Router();
   const adminOnly = [guard, restrictTo('admin')];
 
-  // Orders that can be re-queued: paid and mid-pipeline. Terminal (DELIVERED/
-  // FAILED) and unpaid (AWAITING_PAYMENT) are excluded.
   const RETRYABLE = [ORDER_STATES.PAID, ORDER_STATES.TRAINING, ORDER_STATES.GENERATING];
 
   async function findOrder(id) {
@@ -57,9 +31,6 @@ export function createAdminActionsRouter({
 
   // Refund. Idempotent + safe: only when a captured payment exists and it is not
   // already refunded; the Stripe idempotency key collapses any double-fire to one.
-  // Does not change the order status (refundedAt is independent); an in-flight
-  // pipeline is not cancelled, so refund a stuck order together with a retry only
-  // if you intend to let it keep running.
   router.post(
     '/orders/:id/refund',
     ...adminOnly,
@@ -79,10 +50,8 @@ export function createAdminActionsRouter({
     })
   );
 
-  // Retry: re-enqueue the pipeline job so the worker reattaches. jobId = orderId
   // keeps it idempotent; we remove any finished/failed job with that id first so a
   // fresh run is accepted. The worker itself is idempotent (never retrains or
-  // regenerates a started slot), so this is safe to press more than once.
   router.post(
     '/orders/:id/retry',
     ...adminOnly,
@@ -96,15 +65,12 @@ export function createAdminActionsRouter({
       }
       const orderId = order._id.toString();
       await orderPipeline.remove(orderId).catch(() => {});
-      // The tier's priority has to be passed here too. Without it a requeued
-      // Premium order silently rejoins the queue at the default priority.
       const { priority } = getTier(order.tier);
       await orderPipeline.add('process-order', { orderId }, pipelineJobOpts(orderId, priority));
       res.json({ status: 'success', message: 'Re-queued. The worker will pick it up and reattach.' });
     })
   );
 
-  // Resend the delivery email for a delivered order (same content the worker sends).
   router.post(
     '/orders/:id/resend-email',
     ...adminOnly,
@@ -129,17 +95,6 @@ export function createAdminActionsRouter({
     })
   );
 
-  // Delete an order AND everything WE hold for it: the uploaded selfies, the
-  // training zip and the model weights in R2, plus the trained model version on
-  // Replicate. Images still on replicate.delivery expire on their own; keyForUrl
-  // returns null for them and they are skipped. Hard delete and irreversible: the
-  // order (its payment/audit record) is gone. Any queued pipeline job is removed
-  // first so the worker never touches a deleted order.
-  /**
-   * Remove one order: drop any queued job, delete every object we own in R2 and
-   * the Replicate model, then delete the record. Shared by the single and bulk
-   * routes so they can never drift into deleting different things.
-   */
   async function deleteOneOrder(order) {
     const orderId = order._id.toString();
 
@@ -179,12 +134,6 @@ export function createAdminActionsRouter({
     return storageResult;
   }
 
-  // One request rather than N, so the admin's "delete selected" is a single
-  // round trip. Registered before /orders/:id so the literal path always wins.
-  //
-  // Deliberately per-order and best effort: one bad id must not abandon the rest
-  // half-done, so every order is attempted and the response reports each outcome.
-  // There is no transaction here anyway, since R2 deletes cannot be rolled back.
   const MAX_BULK = 100;
 
   router.post(

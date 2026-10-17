@@ -15,7 +15,6 @@ export function useItineraryChat(sessionId) {
     refetchInterval: awaitingReply ? 2000 : false,
   });
 
-  // The worker always appends an assistant reply, so an assistant-last history means it settled.
   useEffect(() => {
     if (!awaitingReply) return;
     const last = messages[messages.length - 1];

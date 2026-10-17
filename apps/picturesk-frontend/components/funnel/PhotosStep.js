@@ -11,19 +11,13 @@ import { funnelPaths } from '../../lib/products';
 import { useFunnel, useNextHref } from './FunnelContext';
 import StepNav from './StepNav';
 
-// Step 4: photos. One unified grid holds both photos already uploaded on a
-// previous visit (kind 'existing', an R2 URL) and newly picked files (kind 'new',
-// checked by the client gate before upload). EVERY photo has a delete button, and
-// the dropzone stays available so more can be added. On Continue, the new files go
-// direct-to-R2 and the full set (existing + new) is carried to the pay step.
 export default function PhotosStep({ product }) {
   const paths = funnelPaths(product);
   const nextHref = useNextHref(paths.review, paths.review);
   const { reusable } = useFunnel();
   const router = useRouter();
-  // 'reuse' = generate from the model of an earlier order; 'upload' = fresh photos.
   const [mode, setMode] = useState('upload');
-  const [items, setItems] = useState([]); // { id, kind:'existing'|'new', url, file?, status, reason }
+  const [items, setItems] = useState([]); 
   const [error, setError] = useState('');
   const [dragging, setDragging] = useState(false);
   const [ready, setReady] = useState(false);
@@ -31,21 +25,15 @@ export default function PhotosStep({ product }) {
 
   useEffect(() => {
     const s = readState(product);
-    // Guard the funnel order: no selections means the plan step was skipped.
     if (s.looks.length === 0 || s.attire.length === 0) {
       router.replace(paths.plan);
       return;
     }
-    // Reuse is the default for anyone who has a model; a stored choice wins.
     if (reusable && (s.reuseFromOrderId || s.images.length === 0)) setMode('reuse');
-    // Seed with any already-uploaded photos so the user can keep, delete, or add to them.
     setItems(s.images.map((url) => ({ id: url, kind: 'existing', url, status: 'ok', reason: null })));
     setReady(true);
   }, [router, product, paths.plan, reusable]);
 
-  // Keep localStorage's uploaded set in sync with the EXISTING items, so deleting
-  // an already-uploaded photo sticks across a refresh. New (not-yet-uploaded) items
-  // are added on Continue.
   useEffect(() => {
     if (!ready) return;
     writeState({ images: items.filter((it) => it.kind === 'existing').map((it) => it.url) }, product);
@@ -58,9 +46,6 @@ export default function PhotosStep({ product }) {
   const startedRef = useRef(false);
   const addFiles = useCallback((fileList) => {
     const all = Array.from(fileList);
-    // Browsers cannot show HEIC. The picker asks for JPEG/PNG/WebP (which makes
-    // iPhones convert on the way out); one that arrives anyway, by drag and drop,
-    // is accepted and converted server-side during the check.
     const isHeic = (f) => /\.hei[cf]$/i.test(f.name) || /^image\/hei[cf]$/i.test(f.type);
     const picked = all.filter((f) => f.type.startsWith('image/') || isHeic(f));
     if (picked.length && !startedRef.current) {
@@ -73,19 +58,12 @@ export default function PhotosStep({ product }) {
       for (const file of picked) {
         if (next.length >= QUALITY.maxPhotos) break;
         const url = URL.createObjectURL(file);
-        // HEIC cannot be previewed here; the server converts it to JPEG during the
-        // check and the tile switches to the converted image once it passes.
         next.push({ id: url, kind: 'new', url, file, status: 'checking', reason: null, heic: isHeic(file) });
       }
       return next;
     });
   }, []);
 
-  // Verify each NEW item as it is added. A fast client pre-check catches obvious
-  // problems instantly; then the photo is uploaded and run through the REAL server
-  // gate. The green tick appears ONLY after the server confirms it passes (the item
-  // is promoted to a verified 'existing'); until then it stays 'checking' (no tick).
-  // Existing items already passed once and are skipped.
   const checkedRef = useRef(new Set());
   useEffect(() => {
     for (const item of items) {
@@ -97,7 +75,6 @@ export default function PhotosStep({ product }) {
   }, [items]);
 
   async function verifyItem(item) {
-    // 1) Fast client pre-check (Chromium-only; defers to the server otherwise).
     if (!item.heic) {
       try {
         const reason = reasonFor(await detectImage(item.file));
@@ -106,10 +83,8 @@ export default function PhotosStep({ product }) {
           return;
         }
       } catch {
-        /* browser detector unavailable/flaky -> defer to the server gate below */
       }
     }
-    // 2) Upload, then the REAL server gate. Only a server pass earns the tick.
     try {
       const file = item.heic && !item.file.type ? new File([item.file], item.file.name, { type: 'image/heic' }) : item.file;
       const { uploads } = await presignUploads([file]);
@@ -117,7 +92,6 @@ export default function PhotosStep({ product }) {
       let url = uploads[0].publicUrl;
       try {
         const gated = await gateUploads([url]);
-        // The server may have converted the upload (HEIC -> JPEG); keep its URL.
         if (Array.isArray(gated?.urls) && gated.urls[0]) url = gated.urls[0];
       } catch (err) {
         if (err.status === 422) {
@@ -128,7 +102,6 @@ export default function PhotosStep({ product }) {
         }
         throw err;
       }
-      // Passed the real gate -> promote to a verified 'existing' item (green tick).
       setItems((prev) => prev.map((it) => (it.id === item.id ? accept(it, url) : it)));
     } catch (err) {
       const reason =
@@ -164,7 +137,6 @@ export default function PhotosStep({ product }) {
     [addFiles]
   );
 
-  // Any NEW photo still being uploaded + server-gated (no tick yet).
   const checking = items.some((it) => it.kind === 'new' && it.status === 'checking');
   const badCount = items.filter((it) => it.kind === 'new' && it.status === 'bad').length;
   const countOk = items.length >= QUALITY.minPhotos && items.length <= QUALITY.maxPhotos;
@@ -189,8 +161,6 @@ export default function PhotosStep({ product }) {
     }
   }, [badCount]);
 
-  // Promote a passed 'new' item to an accepted 'existing' one: it now carries its R2
-  // URL, shows the green tick, and is never re-uploaded or re-screened again.
   const accept = (it, url) => {
     URL.revokeObjectURL(it.url);
     return { ...it, kind: 'existing', url, file: undefined, status: 'ok', reason: null, heic: false };
@@ -202,8 +172,6 @@ export default function PhotosStep({ product }) {
     if (reusing) {
       writeState({ reuseFromOrderId: reusable.orderId }, product);
     } else {
-      // Every photo was uploaded and passed the server gate as it was added, so all
-      // items here are verified 'existing' ones. Just carry the set to the review step.
       writeState({ images: items.map((it) => it.url), reuseFromOrderId: '' }, product);
     }
     router.push(nextHref);
@@ -342,8 +310,6 @@ export default function PhotosStep({ product }) {
         </div>
 
         {items.length > 0 && (
-          // data-clarity-mask: these are the customer's uploaded face photos; never
-          // record them in Clarity session replay (masked regardless of project mode).
           <div className="thumbs" data-clarity-mask="true">
             {items.map((it, i) => (
               <div

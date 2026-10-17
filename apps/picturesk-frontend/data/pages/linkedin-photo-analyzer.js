@@ -1,13 +1,5 @@
-/**
- * /tools/linkedin-photo-analyzer
- *
- * The free LinkedIn photo scorer. The tool sits above the fold; the copy below
- * explains what is checked and why, so the page ranks for the question as well
- * as the tool. The handoff is the headshot funnel.
- */
 export const linkedinPhotoAnalyzer = {
   meta: {
-    // 57 chars / 155 chars
     title: 'Free LinkedIn Photo Analyzer | Score Your Profile Picture',
     description:
       'Upload your LinkedIn photo and get a score out of 100 with specific fixes for framing, lighting, background, expression and attire. Free, nothing stored.',

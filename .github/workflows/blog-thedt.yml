@@ -1,10 +1,11 @@
 name: The Dummy Ticket Blog
 
 on:
-  # Every third morning, matching the dates in targets/thedt/topics.json. The
-  # queue is the selector, not the date: a failed day is retried on the next run.
-  schedule:
-    - cron: '0 5 */3 * *' # 09:00 Asia/Dubai
+  # DISABLED 2026-10-17 on request. The ten topics in targets/thedt/topics.json
+  # were written by hand and scheduled in the CMS through 2026-10-26, so the
+  # queue had nothing left to write anyway.
+  # schedule:
+  #   - cron: '0 5 */3 * *' # 09:00 Asia/Dubai
   workflow_dispatch:
     inputs:
       status:

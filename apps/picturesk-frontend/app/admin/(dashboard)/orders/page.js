@@ -20,7 +20,6 @@ import { usd, dateTime, STATUS_LABEL } from '../../../../lib/adminApi';
 
 const PAGE_SIZE = 25;
 
-// Lifecycle order, not alphabetical: an operator reads this as a pipeline.
 const STATUSES = ['AWAITING_PAYMENT', 'PAID', 'TRAINING', 'GENERATING', 'DELIVERED', 'FAILED'];
 
 const STATUS_CFG = {
@@ -70,8 +69,6 @@ function OrdersContent() {
 
   useEffect(() => setLocalSearch(urlSearch), [urlSearch]);
 
-  // Selection is per view. Changing filters or page changes which rows exist, and
-  // silently keeping ids you can no longer see is how people delete the wrong thing.
   useEffect(() => {
     setSelected(new Set());
   }, [urlStatus, urlSearch, urlStuck, page]);
@@ -108,8 +105,6 @@ function OrdersContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [localSearch, urlSearch]);
 
-  // Paging, search and the stuck filter all run on the server; this page only ever
-  // holds the rows it shows.
   const rows = orders;
   const total = pagination?.total ?? rows.length;
   const totalPages = pagination?.totalPages ?? 1;
@@ -119,8 +114,6 @@ function OrdersContent() {
   const allOnPageSelected = rows.length > 0 && selectedRows.length === rows.length;
   const someOnPageSelected = selectedRows.length > 0 && !allOnPageSelected;
 
-  // Deleting a paid order that was never refunded destroys the only record of
-  // money we took, so the confirmation calls it out by name.
   const paidUnrefunded = selectedRows.filter((o) => o.amountPaidCents && !o.refundedAt).length;
 
   function toggleOne(orderId) {

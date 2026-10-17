@@ -2,10 +2,6 @@
 
 import { useState } from 'react';
 
-// Delete the account (login) via DELETE /api/account. Two-step and type-to-confirm
-// so it can never fire by accident: the destructive button is disabled until the
-// user types DELETE. Orders revert to anonymous; stored photos are kept (full
-// erasure is a support request, stated in the copy).
 export default function DeleteAccount() {
   const [open, setOpen] = useState(false);
   const [confirm, setConfirm] = useState('');
@@ -24,7 +20,6 @@ export default function DeleteAccount() {
         setBusy(false);
         return;
       }
-      // Account and session are gone; leave the gated area.
       window.location.href = '/';
     } catch {
       setError('Could not reach the server. Please try again.');

@@ -1,6 +1,5 @@
 'use client';
 
-// Empty field means inherit from the base visa page.
 
 import { useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
@@ -163,7 +162,6 @@ export default function VisaOverlayForm({
   function onFormSubmit(data) {
     const blank = (v) => (String(v ?? '').trim() === '' ? null : String(v).trim());
 
-    // Untouched base sections must not be written, or the overlay stops tracking the base.
     const requirementSections = (data.requirementSections || [])
       .filter((s) => s._custom && String(s.title || '').trim())
       .map((s) => ({
@@ -240,8 +238,6 @@ export default function VisaOverlayForm({
 
         <div className="space-y-5">
 
-          {/* What this screen is. Worth stating plainly — the inherit model is the
-              one thing that makes the empty fields make sense. */}
           <div className="flex items-start gap-2.5 px-4 py-3 rounded-2xl bg-primary-50 border border-primary-100">
             <Info size={15} className="text-primary-700 shrink-0 mt-0.5" />
             <p className="text-xs text-primary-900/80 leading-relaxed">
@@ -313,7 +309,6 @@ export default function VisaOverlayForm({
             </div>
           </Card>
 
-          {/* Requirements: the one card that merges per section rather than wholesale. */}
           <Card title="Documents required" collapsible>
             <p className="text-[11px] text-gray-400 mb-4">
               Each section is inherited until you customise it. Customising one leaves the rest

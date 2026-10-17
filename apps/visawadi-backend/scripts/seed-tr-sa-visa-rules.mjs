@@ -1,21 +1,3 @@
-/**
- * Adds Türkiye and Saudi Arabia as checker destinations.
- *
- * Sources fetched 2026-08-20:
- *   TR  Turkish MFA, "Visa Information For Foreigners"
- *   SA  Visit Saudi (official tourism portal) and the GCC Secretariat on
- *       free movement for GCC nationals
- *
- * Both rules are deliberately conservative. Only nationalities the official
- * source named explicitly are given a group; everyone else falls through to
- * VISA_REQUIRED, which is the safe direction to be wrong in. For Saudi that
- * means a Group A national who could use an eVisa is told "visa required",
- * which is true but coarser than it could be. See the note in generalNotes.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/seed-tr-sa-visa-rules.mjs          # dry run
- *   node --env-file=.env.production scripts/seed-tr-sa-visa-rules.mjs --apply
- */
 
 import mongoose from 'mongoose';
 
@@ -24,11 +6,6 @@ const APPLY = process.argv.includes('--apply');
 const EU = ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE'];
 const GCC = ['AE','BH','KW','OM','QA','SA'];
 
-/**
- * Conditional e-Visa: these nationals can apply online only if they already
- * hold a valid Schengen, UK, US or Ireland visa or residence permit. A UAE
- * residence permit does NOT satisfy it, which catches out a lot of applicants.
- */
 const TR_CONDITIONAL_EVISA = ['IN','PK','BD','PH','NP','EG','LK'];
 
 const RULES = [

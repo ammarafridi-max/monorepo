@@ -3,7 +3,6 @@ import { logger } from '@travel-suite/utils';
 import { inclusiveDayCount, buildExpectedDates } from './dates.js';
 
 const MODEL = 'claude-sonnet-4-6';
-// 8192 max_tokens: 4096 truncated 60-day plans mid-object and broke the JSON parse.
 const MAX_TOKENS = 8192;
 
 function buildSystemPrompt({ visaCountry, purpose }) {

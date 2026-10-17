@@ -46,8 +46,6 @@ export default function AdminPricingPage() {
     if (!loading && !isAdmin) router.replace('/admin');
   }, [isAdmin, loading, router]);
 
-  // An unconfigured currency returns no options, so start it from blanks
-  // rather than silently inheriting another currency's numbers.
   useEffect(() => {
     if (!pricing || pricing.currency !== activeCode) return;
     const existing = normalizePricingOptions(pricing);

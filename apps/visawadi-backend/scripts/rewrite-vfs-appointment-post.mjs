@@ -1,26 +1,3 @@
-/**
- * Retargets and corrects the VFS appointment post.
- *
- * Retarget: 165 of the 184 impressions in this post's query cluster are VFS
- * Global's own brand terms ("vfs global dubai", "vfs dubai"), which VisaWadi
- * cannot win and would not convert if it did. The winnable intent is
- * "schengen visa appointment dubai" and its variants, plus "appointment fees
- * for schengen visa", which already sits at position 4.5. The post now leads
- * on those and treats VFS as the operator rather than the subject.
- *
- * Three corrections, each contradicting VisaWadi's own money pages:
- *   - centres given as "Al Twar and Business Bay"; the Schengen centre is Wafi,
- *     which is what the Greece page says and the only location the money pages
- *     name (10 mentions, versus 0 for the other two)
- *   - Spain listed as a VFS country; Spain files through BLS International
- *   - processing "5 to 15 working days"; the money page says 15 calendar days
- *
- * No anchor on this post ranks, so the H2s are rewritten freely.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/rewrite-vfs-appointment-post.mjs          # dry run
- *   node --env-file=.env.production scripts/rewrite-vfs-appointment-post.mjs --apply
- */
 
 import mongoose from 'mongoose';
 
@@ -168,8 +145,6 @@ const all = [metaTitle, metaDescription, quickAnswer, content, ...faqs.map((f) =
 console.log('\n--- corrections check ---');
 for (const [label, re] of [['"Al Twar" gone', /Al Twar/], ['"Business Bay" gone', /Business Bay/], ['"5 to 15 working days" gone', /5 (?:and|to) 15 working days/]])
   console.log(`  ${re.test(all) ? '*** STILL PRESENT ***' : 'ok'}  ${label}`);
-// Assert the correct attribution rather than trying to prove a negative; the
-// FAQ legitimately contains the string "Does Spain use VFS Global".
 console.log(`  ${/Spain files through BLS International, not VFS/.test(all) ? 'ok' : '*** MISSING ***'}  Spain attributed to BLS`);
 console.log(`  ${/Spain<\/td><td>BLS International, not VFS/.test(all) ? 'ok' : '*** MISSING ***'}  Spain row in table says BLS`);
 console.log(`  ok  Wafi named: ${/Wafi/.test(all)}`);

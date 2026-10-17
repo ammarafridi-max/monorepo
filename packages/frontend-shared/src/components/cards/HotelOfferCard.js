@@ -16,8 +16,6 @@ function StarRating({ stars }) {
   );
 }
 
-// Two different prices sit on this card: what the customer pays us (a flat fee) and
-// what the room itself lists for, which is only there to signal how pricey the hotel is.
 export default function HotelOfferCard({ offer, price, currency, nights, isExpanded, onSelect, children }) {
   const listedAmount = offer.price?.amount;
   const listedCurrency = offer.price?.currency;

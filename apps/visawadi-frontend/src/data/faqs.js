@@ -41,14 +41,6 @@ export const homepageFaqs = [
   },
 ];
 
-/**
- * Longer set for the standalone /faq page. Covers the operational questions
- * people ask once they are past the homepage: fees, timelines, refusals and
- * what is and is not included.
- *
- * Insurance policies, flight reservations and day-by-day itineraries appear
- * here only as documents an applicant supplies. VisaWadi does not sell them.
- */
 export const faqPageFaqs = [
   ...homepageFaqs,
   {

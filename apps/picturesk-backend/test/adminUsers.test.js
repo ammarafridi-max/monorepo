@@ -7,14 +7,6 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import { connectMongo } from '@travel-suite/picturesk-shared';
 import { createAdminSubsystem } from '../src/admin/index.js';
 
-/**
- * Admin-user management e2e: role gate (support blocked), CRUD, uniqueness,
- * password reset (+ session invalidation), self-protection, and the
- * last-active-admin invariant (via the token break-glass path, which has no _id).
- *
- * Built through the real composition root, so this covers the production wiring
- * of the shared @travel-suite/auth + admin-users domains, not a stand-in.
- */
 
 const CONFIG = { jwtSecret: 'test-secret', jwtExpiresIn: '7d', cookieExpiresInDays: 7, nodeEnv: 'test' };
 const ADMIN_TOKEN = 'test-admin-token';
@@ -41,7 +33,6 @@ before(async () => {
   });
   AdminUser = admin.AdminUser;
 
-  // The pre-save hook hashes `password`, so the plaintext goes in.
   await AdminUser.create([
     { name: 'Admin One', username: 'adminuser1', email: 'admin@p.ai', password: 'supersecret', role: 'admin', status: 'ACTIVE' },
     { name: 'Sup Port', username: 'supportone', email: 'support@p.ai', password: 'supersecret', role: 'support', status: 'ACTIVE' },
@@ -161,7 +152,6 @@ test('self-protection: an admin cannot deactivate or demote themselves', async (
 });
 
 test('last-active-admin invariant blocks removing the final admin (token path)', async () => {
-  // Token has no _id, so it bypasses self-checks; only the invariant stops it.
   const deact = await fetch(`${base}/admin-users/adminuser1`, {
     method: 'PATCH', headers: tokenH, body: JSON.stringify({ status: 'INACTIVE' }),
   });

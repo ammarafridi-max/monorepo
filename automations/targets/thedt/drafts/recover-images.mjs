@@ -1,12 +1,3 @@
-/**
- * Usage: RECRAFT_API_KEY=... node targets/thedt/drafts/recover-images.mjs --token <jwt> [--dry-run]
- *
- * Replaces the placeholder covers on the imported posts with Recraft images.
- * The import ran without a Recraft key, so fetchCoverImage fell back to picsum
- * and every cover is an unrelated stock photo. This regenerates each one from
- * its own title and PATCHes it in. Recraft bills per image, so it refuses to
- * run without a key rather than quietly falling back to picsum again.
- */
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -65,8 +56,6 @@ for (const d of slugs) {
   try {
     const cover = await fetchCoverImage(d.topic, TARGET);
     if (cover.type === 'image/jpeg' && cover.size < 60000) {
-      // picsum returns small jpegs; Recraft returns webp. Guard against a
-      // silent fallback quietly reinstating a placeholder.
       throw new Error('cover looks like a picsum fallback, not a Recraft image');
     }
     const form = new FormData();

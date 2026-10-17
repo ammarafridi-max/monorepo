@@ -57,7 +57,6 @@ export function createHotelBookingService({
   notifications,
   frontendUrl,
   paidOrderBus,
-  // Never book a rate whose free-cancellation window closes sooner than this.
   minFreeCancellationMarginMs = 48 * 60 * 60 * 1000,
   maxReplacementPriceMultiplier = 1.25,
   maxReplacementAttempts = 5,
@@ -83,14 +82,11 @@ export function createHotelBookingService({
         { marginMs: minFreeCancellationMarginMs },
       );
     } catch (err) {
-      // 2001 is the supplier's "no availability", which is an empty result to us, not a fault.
       if (err.code === 2001) throw new AppError('No refundable rooms available for those dates', 404);
       throw err;
     }
     if (offers.length === 0) throw new AppError('No refundable rooms available for those dates', 404);
 
-    // A city search returns thousands of near-identical rates. One room per hotel, the
-    // cheapest, keeps the response small and the page readable.
     const cheapestPerHotel = new Map();
     for (const offer of offers) {
       const current = cheapestPerHotel.get(offer.hotelId);
@@ -104,9 +100,6 @@ export function createHotelBookingService({
       .slice(0, maxOffersReturned);
   };
 
-  // Cities come from the flight data provider because it is the only source here that
-  // resolves a free-text query to a name plus an ISO country code in one call, which is
-  // the exact pair the hotel supplier needs to list hotels.
   const suggestCities = async (search) => {
     const query = String(search ?? '').trim();
     if (query.length < 2) return [];
@@ -219,10 +212,6 @@ export function createHotelBookingService({
       marginMs: minFreeCancellationMarginMs,
     });
 
-  // The customer picks an offer, then pays, and only then do we prebook. Offers expire
-  // and their terms change in that gap, so the stored one often no longer works. Falling
-  // back to an equivalent room at the same hotel is the difference between a confirmed
-  // booking and charging someone for nothing.
   const acquirePrebook = async (reservation) => {
     try {
       const prebook = await supplier.prebook({ offerId: reservation.supplier.offerId });
@@ -255,8 +244,6 @@ export function createHotelBookingService({
       { marginMs: minFreeCancellationMarginMs },
     );
 
-    // A replacement is our cost, not the customer's, and an unbounded one turns a
-    // failed cancellation into a much larger loss.
     const quoted = Number(reservation.supplier?.quotedPrice?.amount);
     const ceiling = Number.isFinite(quoted) ? quoted * maxReplacementPriceMultiplier : Infinity;
 
@@ -277,14 +264,12 @@ export function createHotelBookingService({
           return { prebook, offerId: offer.offerId, replaced: true };
         }
       } catch {
-        // Try the next one; a single dead offer is not a failure of the search.
       }
     }
 
     throw new AppError('No refundable room could be held for this stay; not booking', 409);
   };
 
-  // Claim the send before making it: a retried booking must not email the customer twice.
   const sendConfirmationOnce = async (reservation) => {
     if (!reservation?.supplier?.bookingId) return;
     const claimed = await HotelBooking.findOneAndUpdate(
@@ -313,7 +298,6 @@ export function createHotelBookingService({
         { $set: { orderStatus: 'DELIVERED', documentSentAt: new Date() } },
       );
     } catch (err) {
-      // Released so a retry can send it; the customer is owed their confirmation.
       await HotelBooking.updateOne(
         { sessionId: reservation.sessionId },
         { $set: { confirmationEmailSentAt: null } },
@@ -325,8 +309,6 @@ export function createHotelBookingService({
     }
   };
 
-  // Separate from the payment claim: payment succeeding and the supplier booking
-  // succeeding are different failures and must be retryable independently.
   const bookWithSupplier = async (sessionId) => {
     const claimed = await HotelBooking.findOneAndUpdate(
       { sessionId, paymentStatus: 'PAID', 'supplier.bookClaimedAt': null },
@@ -351,7 +333,6 @@ export function createHotelBookingService({
         clientReference: claimed.sessionId,
       });
 
-      // The confirmed booking is the source of truth for the deadline, not search or prebook.
       const deadline = supplier.bookingFreeCancellationUntil(booking);
       if (!deadline) throw new Error('Confirmed booking carries no free-cancellation deadline');
 
@@ -381,7 +362,6 @@ export function createHotelBookingService({
       return booked;
     } catch (err) {
       logger?.error('[hotel-bookings] supplier booking failed', { sessionId, message: err.message });
-      // Released so a retry can claim it again; the customer has paid and is owed a room.
       await HotelBooking.updateOne(
         { sessionId },
         { $set: { orderStatus: 'BOOKING_FAILED', 'supplier.bookClaimedAt': null, 'supplier.lastError': err.message } },
@@ -398,7 +378,6 @@ export function createHotelBookingService({
     const existing = await HotelBooking.findOne({ sessionId });
     if (!existing) throw new Error(`[hotel-bookings] Reservation not found for sessionId: ${sessionId}`);
 
-    // Only matches while paidAt is unset, so a resent webhook cannot rewrite it.
     await HotelBooking.updateOne({ sessionId, paidAt: null }, { $set: { paidAt: new Date() } });
 
     const reservation = await HotelBooking.findOneAndUpdate(

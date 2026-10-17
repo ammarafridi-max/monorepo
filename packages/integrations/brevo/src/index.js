@@ -95,8 +95,6 @@ export function createBrevoMailer({ apiKey, sender, logger } = {}) {
       return { ok: false, error: 'BREVO_API_KEY is not configured' };
     }
 
-    // Callers pass either a Brevo attachment array or nothing; an empty array
-    // must be omitted or Brevo rejects the payload.
     const hasAttachment = Array.isArray(attachment) ? attachment.length > 0 : Boolean(attachment);
 
     try {

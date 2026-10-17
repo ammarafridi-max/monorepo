@@ -12,8 +12,6 @@ setInterval(() => {
 }, 10 * 60 * 1000);
 
 function leadRateLimiter(req, res, next) {
-  // Honeypot hits never reach the DB, so they must not burn the allowance of
-  // real people behind the same office or carrier IP.
   if (req.body?.website) return next();
   const ip =
     req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||

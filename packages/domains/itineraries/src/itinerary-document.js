@@ -1,7 +1,6 @@
 import React from 'react';
 import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer';
 
-// Buildless ESM package → no JSX. `h` keeps the tree readable.
 const h = React.createElement;
 
 const PURPOSE_PROFILES = {
@@ -79,7 +78,6 @@ function dayDescription(day) {
   return '';
 }
 
-// Brand-neutral fallback only; the composition root injects the real brand.
 const DEFAULT_BRAND = {
   name: '',
   companyName: '',

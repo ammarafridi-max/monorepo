@@ -1,15 +1,5 @@
-/**
- * /pricing
- *
- * Same shape as the landing pages. This one exists because pricing was only ever a
- * section of the home page, so "how much do AI headshots cost" had nowhere to land.
- * The plan facts themselves are NOT written here: the Pricing section reads them
- * from @travel-suite/picturesk-shared, so the page can never quote a price the
- * funnel does not charge.
- */
 export const pricingPage = {
   meta: {
-    // 47 chars / 154 chars
     title: 'AI Headshot Pricing: Plans From $9 | Picturesk',
     description:
       'AI headshot pricing with no subscription. Three one-time plans from $9: 5, 25 or 60 headshots, delivered in about an hour. See what each plan includes.',

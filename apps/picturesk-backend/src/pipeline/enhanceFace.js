@@ -1,33 +1,10 @@
-/**
- * Realism enhancement (Phase 5 final polish).
- *
- *   enhanceFace(imageUrl) -> { imageUrl, costUsd }
- *
- * FLUX generation + the face swap leave skin looking smooth/"plastic" and the eyes
- * a little soft -- the tell of an AI headshot. This runs each DELIVERED image
- * through a creative upscaler (philz1337x/clarity-upscaler) at LOW creativity /
- * HIGH resemblance, which adds back natural skin micro-texture (pores, fine lines),
- * beard/hair detail, and sharper eyes, and upscales -- WITHOUT re-generating, so it
- * cannot invent features or age the person (the failure mode competitors get slated
- * for). Validated: creativity 0.2 / resemblance 0.85 keeps identity; higher drifts.
- *
- * Injectable, same shape as swapFace.js, so the pipeline can stub it in tests.
- * Reuses REPLICATE_API_TOKEN.
- *
- * MODEL: REPLICATE_ENHANCE_MODEL (default a pinned clarity-upscaler). Tune with
- * ENHANCE_CREATIVITY (default 0.2), ENHANCE_RESEMBLANCE (0.85), ENHANCE_SCALE (2).
- * Non-fatal: an enhance that fails ships the ORIGINAL image, never breaks the order.
- */
 
 const REPLICATE_API = 'https://api.replicate.com';
 const DEFAULT_ENHANCE_MODEL =
   'philz1337x/clarity-upscaler:dfad41707589d68ecdccd1dfa600d55a208f9310748e44bfe35b4a6291453d5e';
 
-// GPU inference rate, same basis as the generation estimate. Cost telemetry only.
 const ENHANCE_USD_PER_SEC = 0.001;
 
-// Realism-leaning prompt (validated). Steers the upscaler toward photographic skin
-// texture + sharp eyes rather than the smooth/painterly default.
 const ENHANCE_PROMPT =
   'professional corporate headshot, natural realistic skin with visible pores and ' +
   'fine texture, sharp detailed eyes, photographic, unretouched, high detail';
@@ -57,14 +34,6 @@ function firstUrl(output) {
   return null;
 }
 
-/**
- * Enhance one delivered image. Low creativity + high resemblance = add texture and
- * eye detail while holding identity. A failure returns the ORIGINAL url so the shot
- * still ships (transient network errors retry, then throw so the step re-runs).
- *
- * @param {string} imageUrl
- * @returns {Promise<{ imageUrl: string, costUsd: number }>}
- */
 export async function enhanceFace(imageUrl, { attempts = 4, baseDelayMs = 1000, pollMs = 3000 } = {}) {
   const versionHash = enhanceVersion();
   const headers = { Authorization: `Bearer ${apiToken()}`, 'Content-Type': 'application/json' };
@@ -115,7 +84,6 @@ export async function enhanceFace(imageUrl, { attempts = 4, baseDelayMs = 1000, 
         return { imageUrl: firstUrl(body.output) || imageUrl, costUsd };
       }
       if (body.status === 'failed' || body.status === 'canceled') {
-        // Content-level failure: ship the original rather than failing the order.
         return { imageUrl, costUsd };
       }
       throw new Error(`enhance prediction ${body.id} stuck in status ${body.status}`);

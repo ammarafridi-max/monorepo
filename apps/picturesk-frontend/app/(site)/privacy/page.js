@@ -29,7 +29,6 @@ export default function PrivacyPage() {
       lede={privacy.lede}
       contactNote
     >
-      {/* TODO: confirm data storage region and retention policy (see data/legal.js). */}
       <Sections sections={privacy.sections} />
     </ContentPage>
   );

@@ -64,7 +64,6 @@ export function createWhatsAppWebhookHandlers({ service, appSecret, verifyToken,
       return res.sendStatus(403);
     }
 
-    // Ack before processing: Meta retries on anything slower than a few seconds.
     res.sendStatus(200);
 
     try {

@@ -4,9 +4,6 @@ import Check from '../components/Check';
 import Container from '../components/Container';
 import GetStartedButton from '../components/GetStartedButton';
 
-// The hub hero. Same shape as the product hero (eyebrow, verdict headline, the
-// quick answer, one action, ticked promises, the frame cluster). The action opens
-// the service picker, since on a hub the one thing to do is pick a service.
 export default function HubHero({ eyebrow, title, lede, promises = [] }) {
   return (
     <section className="hero hero--hub">

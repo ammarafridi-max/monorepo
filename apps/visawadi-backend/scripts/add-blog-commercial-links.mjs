@@ -1,17 +1,3 @@
-/**
- * 21 of 37 published posts had no link to a commercial visa page, so they
- * carried authority nowhere and gave the reader no next step.
- *
- * Appends one CTA paragraph, wrapped in a marker so it can be found and
- * removed again. Targets are mapped explicitly: keyword matching picked
- * "schengen" out of Vietnam and Malaysia posts because the word appears in
- * passing.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/add-blog-commercial-links.mjs           # dry run
- *   node --env-file=.env.production scripts/add-blog-commercial-links.mjs --apply
- *   node --env-file=.env.production scripts/add-blog-commercial-links.mjs --revert --apply
- */
 
 import mongoose from 'mongoose';
 
@@ -19,7 +5,6 @@ const APPLY = process.argv.includes('--apply');
 const REVERT = process.argv.includes('--revert');
 const MARKER = 'data-cta="visa-page"';
 
-/** slug -> [href, anchor sentence]. Destinations with no page point at the hub. */
 const HUB = ['/uae', 'see the visas we handle from the UAE'];
 const TARGETS = {
   'vietnam-visa-from-uae-e-visa-and-visa-on-arrival-guide': HUB,

@@ -1,19 +1,3 @@
-/**
- * Undoes the bulk updatedAt touch of 2026-08-23.
- *
- * 26 posts still share that timestamp, which renders as "Updated 23 Aug 2026",
- * ships as dateModified in BlogPosting, and is the sitemap's lastModified.
- * Three freshness signals all claiming the same day for 26 posts, when nothing
- * was edited that day.
- *
- * The last genuine content edit to the migrated set was the cross-brand fix on
- * 2026-08-16 (see fix-cross-brand-blog-content.mjs). Posts published after that
- * keep their publish date instead, so nothing is ever back-dated below it.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/reset-bulk-datemodified.mjs          # dry run
- *   node --env-file=.env.production scripts/reset-bulk-datemodified.mjs --apply
- */
 
 import mongoose from 'mongoose';
 

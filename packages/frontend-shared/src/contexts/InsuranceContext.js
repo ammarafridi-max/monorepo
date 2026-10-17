@@ -86,7 +86,6 @@ const ageCategories = [
 
 export const InsuranceContext = createContext();
 
-// maxStartDays mirrors the WIS advance-booking window; null disables the cap.
 export function InsuranceProvider({ children, maxStartDays = null }) {
   const { updateLocalStorage } = useLocalStorage();
 

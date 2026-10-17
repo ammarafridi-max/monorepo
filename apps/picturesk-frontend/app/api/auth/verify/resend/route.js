@@ -3,7 +3,6 @@ import { dbConnect } from '../../../../../lib/db';
 import { getSession } from '../../../../../lib/session';
 import { issueVerificationCode } from '../../../../../lib/verification';
 
-// POST /api/auth/verify/resend -> a fresh code, at most once a minute.
 export async function POST() {
   const session = await getSession();
   if (!session) return Response.json({ error: 'You are not signed in' }, { status: 401 });

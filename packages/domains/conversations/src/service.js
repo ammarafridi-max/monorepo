@@ -2,7 +2,6 @@ import { AppError, logger } from '@travel-suite/utils';
 
 const WINDOW_MS = 24 * 60 * 60 * 1000;
 
-// Mongoose 9's lean() drops schema virtuals, so the window expiry is attached here instead.
 function withWindow(conversation) {
   if (!conversation) return conversation;
   return {
@@ -13,8 +12,6 @@ function withWindow(conversation) {
   };
 }
 
-// Graph rejections are plain Errors, so without this they reach the error handler
-// as non-operational and render as a bare 500 with Meta's reason lost.
 function fromGraph(err, action) {
   if (err instanceof AppError) return err;
   logger.error('[conversations] WhatsApp rejected the request', {
@@ -78,8 +75,6 @@ export function createConversationService({ Conversation, Message, SavedReply, A
       ? AdminUser.find({ role: { $in: ['admin', 'agent'] } }).select('name email role').sort({ name: 1 }).lean()
       : [];
 
-  // Atomic: the filter only matches while nobody holds the chat, so two agents
-  // opening the same new conversation cannot both claim it.
   const claimConversation = async ({ waId, adminUserId }) => {
     if (!adminUserId) throw new AppError('No agent to assign', 400);
     const claimed = await Conversation.findOneAndUpdate(
@@ -142,7 +137,6 @@ export function createConversationService({ Conversation, Message, SavedReply, A
       });
       return { conversation, message, duplicate: false };
     } catch (err) {
-      // Duplicate wamid: Meta resent an event we already stored. Undo the unread bump.
       if (err?.code === 11000) {
         await Conversation.updateOne({ _id: conversation._id }, { $inc: { unreadCount: -1 } });
         logger.info('[conversations] duplicate inbound message ignored', { wamid });
@@ -177,7 +171,6 @@ export function createConversationService({ Conversation, Message, SavedReply, A
       );
     }
 
-    // Send first: without a wamid from Meta there is nothing to reconcile delivery statuses against.
     const replyToWamid = await resolveReplyTarget({ conversation, replyTo });
     let wamid;
     try {
@@ -279,8 +272,6 @@ export function createConversationService({ Conversation, Message, SavedReply, A
     return message;
   };
 
-  // Streamed on demand rather than mirrored to storage: customer documents stay behind
-  // admin auth, and Meta keeps the media for 30 days.
   const getMedia = async ({ messageId }) => {
     if (!whatsapp?.isConfigured()) throw new AppError('WhatsApp is not configured', 503);
 

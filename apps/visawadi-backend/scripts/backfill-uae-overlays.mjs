@@ -1,8 +1,3 @@
-/**
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/backfill-uae-overlays.mjs          # dry run
- *   node --env-file=.env.production scripts/backfill-uae-overlays.mjs --apply
- */
 
 import mongoose from 'mongoose';
 import VisaSchema from '@travel-suite/visa/schema';

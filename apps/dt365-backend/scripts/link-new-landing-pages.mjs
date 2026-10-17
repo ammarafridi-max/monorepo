@@ -1,18 +1,9 @@
-/**
- * Usage: node --env-file=.env.production scripts/link-new-landing-pages.mjs [--apply]
- *
- * Adds editorial links from published posts to the four new landing pages and
- * trims the one over-length metaTitle. Dry run unless --apply is passed, and it
- * writes a JSON backup of every document it will touch before changing any.
- * Uses the raw driver so updatedAt is left alone.
- */
 import mongoose from 'mongoose';
 import { writeFileSync } from 'node:fs';
 
 const APPLY = process.argv.includes('--apply');
 const MAX_LINKS_PER_POST = 2;
 
-// Longest phrase first: "multi-city dummy ticket" is a better anchor than "multi-city".
 const TARGETS = [
   { href: '/verifiable-dummy-ticket', phrases: ['verifiable dummy ticket'] },
   {

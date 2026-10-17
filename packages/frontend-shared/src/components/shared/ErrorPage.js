@@ -4,8 +4,6 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import { AlertCircle } from 'lucide-react';
 
-// The app/error.js body every brand renders: brand colour comes from the
-// primary token, copy stays neutral.
 export default function ErrorPage({ error, reset }) {
   useEffect(() => {
     console.error(error);

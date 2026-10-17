@@ -1,29 +1,8 @@
-/**
- * Strict photo screen for the upload gate. The yolov8 detector (faceDetector.js)
- * answers "is there exactly one, big-enough face?" but not the human-judgment rules
- * a good training set needs -- no sunglasses, no hats, in focus, well lit. Those are
- * what a disciplined gate (Aragon-style) enforces, and they are what separates a set
- * the model can learn a face from.
- *
- * We ask a vision-language model (Qwen2-VL) for the SINGLE biggest problem with each
- * photo, as one word, and map it to a branded reason. Validated: it returns "none"
- * for a clean selfie and "sunglasses" for a sunglasses shot.
- *
- * Reuses REPLICATE_API_TOKEN. Model pinned + env-overridable via
- * UPLOAD_PHOTO_GATE_MODEL. Non-fatal by design: a screen error returns { issue:null }
- * (the yolov8 gate + moderation still apply), so a flaky VLM call never blocks a
- * genuinely good photo.
- */
 
 const REPLICATE_API = 'https://api.replicate.com';
 const DEFAULT_MODEL_VERSION =
-  'bf57361c75677fc33d480d0c5f02926e621b2caa2000347cb74aeae9d2ca07ee'; // lucataco/qwen2-vl-7b-instruct
+  'bf57361c75677fc33d480d0c5f02926e621b2caa2000347cb74aeae9d2ca07ee'; 
 
-// Deliberately LENIENT: most everyday photos are fine. We only reject the two
-// unambiguous, training-wrecking cases (dark sunglasses hiding the eyes, a hat
-// covering the head). Subjective calls (blurry / dark / "too far") caused good
-// photos to be rejected, so they are intentionally NOT screened here -- face
-// detection already handles framing, and mild softness/lighting is acceptable.
 const PROMPT =
   'You are screening a photo for an AI headshot, and you should be LENIENT: most ' +
   'everyday photos are acceptable. Reply with exactly one word. Say "sunglasses" ' +
@@ -43,7 +22,6 @@ function modelVersion() {
   return m.includes(':') ? m.split(':').pop() : m;
 }
 
-/** Map the model's one-word answer to a canonical issue id (or null = fine). */
 function toIssue(text) {
   const a = String(text || '').toLowerCase();
   if (a.includes('sunglass')) return 'sunglasses';
@@ -53,10 +31,9 @@ function toIssue(text) {
   if (a.includes('far') || a.includes('small')) return 'far';
   if (a.includes('group') || a.includes('multiple') || a.includes('people'))
     return 'group';
-  return null; // "none" / "ok" / unrecognized -> not a strict-gate failure
+  return null; 
 }
 
-/** fetch() to Replicate that waits out 429s / 5xx (the gate fires several at once). */
 async function replicateFetch(
   url,
   options,
@@ -90,11 +67,6 @@ async function replicateFetch(
   throw lastErr;
 }
 
-/**
- * Assess one image URL for strict-gate issues.
- * @param {string} url
- * @returns {Promise<{ issue: 'sunglasses'|'hat'|'blurry'|'dark'|'far'|'group'|null }>}
- */
 export async function assessPhoto(url) {
   const res = await replicateFetch(`${REPLICATE_API}/v1/predictions`, {
     method: 'POST',

@@ -5,7 +5,6 @@ const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 const URL = '/api/itineraries';
 
-// Generation runs an AI call plus a server-side PDF render, so it needs a long timeout.
 const GENERATE_TIMEOUT_MS = 60_000;
 
 export async function createItineraryApi(data, files) {
@@ -39,7 +38,7 @@ export async function deleteItineraryOrderApi(sessionId) {
     try {
       const json = await res.json();
       message = json.message || json.error || message;
-    } catch { /* non-JSON error body */ }
+    } catch {  }
     throw new Error(message);
   }
   return true;
@@ -52,7 +51,7 @@ export async function getItineraryOrderDetailApi(sessionId) {
     try {
       const json = await res.json();
       message = json.message || json.error || message;
-    } catch { /* non-JSON error body */ }
+    } catch {  }
     throw new Error(message);
   }
   const json = await res.json();
@@ -67,7 +66,7 @@ export async function getItineraryOrdersApi(params = {}) {
     try {
       const json = await res.json();
       message = json.message || json.error || message;
-    } catch { /* non-JSON error body */ }
+    } catch {  }
     throw new Error(message);
   }
   const json = await res.json();

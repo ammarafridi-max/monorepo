@@ -1,10 +1,3 @@
-/**
- * Usage, from apps/travl-backend:
- *   node --env-file=.env.production scripts/drop-orphaned-collections.mjs          # dry run
- *   node --env-file=.env.production scripts/drop-orphaned-collections.mjs --apply
- *
- * --apply drops collections irreversibly; it refuses if any of them is non-empty.
- */
 
 import mongoose from 'mongoose';
 

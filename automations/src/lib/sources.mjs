@@ -1,42 +1,16 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { isCitationUrl, findDeadCitations } from "./blog-utils.mjs";
 
-/**
- * Find real, current official sources for a topic using the web_search server
- * tool, so the writer cites pages that were actually retrieved instead of URLs
- * recalled from training data.
- *
- * This exists because the generator kept inventing plausible canada.ca deep
- * links that 404, losing the whole day's post. Searching is restricted to the
- * target's own citationDomains, so the result can only contain approved
- * official sources, and every URL is checked for life before it is handed on.
- *
- * Deliberately non-fatal: if search is unavailable or finds nothing, the caller
- * carries on and the model cites from memory as it always did. A worse post is
- * better than no post.
- */
 
 const SEARCH_TOOL = "web_search_20260209";
-/**
- * Enforced here, not by the API: on 2026-09-11 one response carried 54
- * server_tool_use blocks against max_uses: 4, and the run spent 710k input
- * tokens finding nothing. The stream is aborted the moment the cap is crossed.
- */
 const MAX_USES = 4;
-/** pause_turn means the server hit its own iteration limit; resume once. */
 const MAX_RESUMES = 1;
-/** Hard wall-clock budget across every resume. */
 const BUDGET_MS = 3 * 60 * 1000;
 
 export async function gatherSources({ apiKey, model, topic, brand, maxUses = MAX_USES }) {
   const domains = brand.citationDomains ?? [];
   if (!apiKey || domains.length === 0) return [];
 
-  // Streamed, and not by preference: the SDK caps a non-streaming request at
-  // ten minutes, and this call blew through it on every CI run between
-  // 2026-09-01 and 2026-09-03, silently degrading to "cite from memory" — the
-  // exact failure mode this function exists to prevent. Streaming removes the
-  // cap; the budget below replaces it with one we control.
   const client = new Anthropic({ apiKey, maxRetries: 2 });
   const deadline = Date.now() + BUDGET_MS;
 
@@ -54,8 +28,6 @@ export async function gatherSources({ apiKey, model, topic, brand, maxUses = MAX
   let response = null;
   let searches = 0;
   let aborted = false;
-  // Every result the search returned, whether or not the model went on to list
-  // it. An aborted search still leaves these to work with.
   const results = new Map();
 
   try {
@@ -70,8 +42,6 @@ export async function gatherSources({ apiKey, model, topic, brand, maxUses = MAX
               type: SEARCH_TOOL,
               name: "web_search",
               max_uses: maxUses,
-              // The allowlist is enforced at search time, so a forbidden domain
-              // cannot reach the draft in the first place.
               allowed_domains: domains,
             },
           ],
@@ -102,8 +72,6 @@ export async function gatherSources({ apiKey, model, topic, brand, maxUses = MAX
       }
 
       if (response.stop_reason !== "pause_turn") break;
-      // Resume by replaying the paused assistant turn. No extra user message:
-      // the API sees the trailing server_tool_use block and continues.
       messages.push({ role: "assistant", content: response.content });
     }
   } catch (err) {
@@ -133,8 +101,6 @@ export async function gatherSources({ apiKey, model, topic, brand, maxUses = MAX
     seen.add(url);
     found.push({ url, note });
   };
-  // The model's own picks first, with its one-line summaries; then anything
-  // else the search surfaced, so a cut-off run still has candidates.
   for (const line of text.split("\n")) {
     const m = line.match(/https?:\/\/[^\s)<>"']+/);
     if (!m) continue;
@@ -151,14 +117,12 @@ export async function gatherSources({ apiKey, model, topic, brand, maxUses = MAX
     return [];
   }
 
-  // Never hand on a dead URL: that is the failure this whole step exists to stop.
   const dead = new Set((await findDeadCitations(found.map((f) => f.url))).map((d) => d.url));
   const live = found.filter((f) => !dead.has(f.url));
   console.log(`✓ ${live.length} live official source(s) found${dead.size ? `, ${dead.size} discarded as dead` : ""}`);
   return live;
 }
 
-/** The prompt block listing the verified sources the writer may cite. */
 export function formatSourcesBlock(sources) {
   if (!sources.length) return "";
   return (

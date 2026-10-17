@@ -1,9 +1,3 @@
-// Usage: node --env-file=.env.production scripts/seo-evisa-links.mjs [--apply]
-//
-// The eVisa post was the only published post with no contextual link to a money
-// page. Adds three. Writes straight to the collection: the blog service
-// regenerates slug and readingTime on save, which would churn published URLs.
-// updatedAt is left alone so this does not read as a freshness signal.
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';

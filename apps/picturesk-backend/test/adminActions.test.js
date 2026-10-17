@@ -9,11 +9,6 @@ import { createAdminSubsystem } from '../src/admin/index.js';
 import { createAdminActionsRouter } from '../src/admin/adminActions.js';
 import { createAdminDataRouter } from '../src/admin/adminData.js';
 
-/**
- * Admin order actions e2e with injected stubs (no real Stripe/BullMQ/email).
- * Also asserts the actions router composes with the data router: a GET read still
- * works and is NOT blocked by the actions router's restrictTo('admin').
- */
 
 const CONFIG = { jwtSecret: 'test-secret', jwtExpiresIn: '7d', cookieExpiresInDays: 7, nodeEnv: 'test' };
 let AdminUser;
@@ -28,8 +23,6 @@ let unpaidId;
 const stripe = { calls: 0, refunds: { create: async () => { stripe.calls++; return { id: 're_1' }; } } };
 const queue = { added: [], removed: [], add: async (_n, d) => { queue.added.push(d.orderId); }, remove: async (id) => { queue.removed.push(id); } };
 const email = { sent: [], sendDeliveryEmail: async ({ to }) => { email.sent.push(to); } };
-// Stub storage: our bucket is the https://r2/ prefix; anything else (e.g. a
-// replicate.delivery output) returns null and is skipped.
 const storage = {
   deletedKeys: [],
   keyForUrl: (url) => (typeof url === 'string' && url.startsWith('https://r2/') ? url.slice('https://r2/'.length) : null),
@@ -96,7 +89,7 @@ test('actions require an admin (unauthenticated 401, support 403)', async () => 
 test('the read router still works alongside the actions router (support can read)', async () => {
   const support = await cookieFor('support@p.ai');
   const res = await fetch(`${base}/admin/orders`, { headers: { Cookie: support } });
-  assert.equal(res.status, 200); // NOT blocked by the actions router's restrictTo('admin')
+  assert.equal(res.status, 200); 
 });
 
 test('refund: issues once, stamps refundedAt, then is idempotent (409)', async () => {
@@ -108,7 +101,7 @@ test('refund: issues once, stamps refundedAt, then is idempotent (409)', async (
   const order = await Order.findById(paidId);
   assert.ok(order.refundedAt);
   const again = await post(`/admin/orders/${paidId}/refund`, cookie);
-  assert.equal(again.status, 409); // already refunded, no second Stripe call
+  assert.equal(again.status, 409); 
   assert.equal(stripe.calls, before + 1);
 });
 
@@ -170,14 +163,13 @@ test('delete: removes the order, our R2 objects (uploads + training zip), and th
   const res = await fetch(`${base}/admin/orders/${id}`, { method: 'DELETE', headers: { Cookie: cookie } });
   assert.equal(res.status, 200);
   const body = await res.json();
-  assert.equal(body.data.deletedObjects, 3); // 2 uploads + training zip
+  assert.equal(body.data.deletedObjects, 3); 
 
-  assert.equal(await Order.findById(id), null); // order gone
-  assert.ok(queue.removed.includes(id)); // job removed
+  assert.equal(await Order.findById(id), null); 
+  assert.ok(queue.removed.includes(id)); 
   assert.ok(storage.deletedKeys.includes('uploads/abc/a.jpg'));
   assert.ok(storage.deletedKeys.includes('uploads/abc/b.jpg'));
   assert.ok(storage.deletedKeys.includes(`training/${id}.zip`));
-  // Replicate-hosted outputs are NOT in our bucket, so never sent to storage delete.
   assert.ok(!storage.deletedKeys.some((k) => k.includes('replicate') || k.includes('1.png')));
 });
 
@@ -188,7 +180,6 @@ test('delete: a missing order is 404', async () => {
 });
 
 test('resend-email: 503 when no email client is configured', async () => {
-  // A second mount with emailClient:null to prove the graceful-disabled path.
   const app = express();
   app.use(express.json());
   app.use(cookieParser());

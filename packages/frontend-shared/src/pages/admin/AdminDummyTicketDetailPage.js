@@ -287,7 +287,6 @@ export default function AdminDummyTicketDetailPage({ basePath = '/admin/dummy-ti
   const [reservationOpen, setReservationOpen] = useState(false);
 
   const { dummyTicket: ticket, isLoadingDummyTicket } = useGetDummyTicket(sessionId);
-  // Delivery dates are YYYY-MM-DD-prefixed and compared lexically against today in Dubai time.
   const todayDubai = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Dubai' }).format(new Date());
   const scheduledDate = ticket?.ticketDelivery?.immediate
     ? null

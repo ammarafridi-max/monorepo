@@ -25,9 +25,6 @@ import {
   withArticle,
 } from '@/lib/visaCheck';
 
-// Reading searchParams makes this route dynamic, so it is not prerendered.
-// The upstream rule fetch is cached for an hour, which keeps TTFB in the low
-// tens of milliseconds and lets a shared param link render its answer in HTML.
 export const revalidate = 3600;
 
 const slugFor = (code) => String(code).toLowerCase();
@@ -71,7 +68,6 @@ export async function generateMetadata({ params }) {
   return {
     title,
     description,
-    // Params personalise the answer; they never earn their own URL.
     alternates: { canonical: `${SITE_URL}/visa-check/${slugFor(rule.destination)}` },
     robots: { index: true, follow: true },
     openGraph: {
@@ -101,13 +97,10 @@ export default async function VisaCheckDestinationPage({ params, searchParams })
   const answer = nationality ? resolveForNationality(rule, nationality, residence) : null;
   const answerUi = answer ? ui(answer.outcome) : null;
 
-  // The visitor's own row first; everything else alphabetical.
   const ordered = nationality
     ? [...rows].sort((a, b) => (a.code === nationality ? -1 : b.code === nationality ? 1 : 0))
     : rows;
 
-  // Two countries per visual row: Afghanistan and Albania sit side by side,
-  // which halves a 238-row table without hiding anything from a crawler.
   const pairs = [];
   for (let i = 0; i < ordered.length; i += 2) pairs.push([ordered[i], ordered[i + 1] ?? null]);
 

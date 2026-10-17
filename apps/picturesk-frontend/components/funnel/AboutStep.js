@@ -10,8 +10,6 @@ import { useFunnel, useNextHref } from './FunnelContext';
 import { ChoiceRow } from './controls';
 import StepNav from './StepNav';
 
-// Step 1: who the person is. Gender, age and build lead every prompt, so all
-// three are required; race and facial hair refine it and are optional.
 export default function AboutStep({ product }) {
   const paths = funnelPaths(product);
   const nextHref = useNextHref(paths.plan, paths.review);
@@ -25,8 +23,6 @@ export default function AboutStep({ product }) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    // Saved answers from the account fill anything the funnel has not asked yet,
-    // so a returning customer only confirms; an in-progress edit is never overwritten.
     const s = readState(product);
     const seed = {};
     for (const key of ['gender', 'ageRange', 'race', 'facialHair', 'build', 'height']) {
@@ -51,8 +47,6 @@ export default function AboutStep({ product }) {
   };
   const onGender = (v) => {
     set('gender', setGender)(v);
-    // Facial hair is hidden for women; clear any beard picked earlier so it does
-    // not silently persist into the order.
     if (v === 'woman' && facialHair) set('facialHair', setFacialHair)('');
   };
 

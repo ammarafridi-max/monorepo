@@ -45,7 +45,6 @@ export function createUserController({ service, cookieExpiresInDays, nodeEnv, ap
 
   const forgotPassword = async (req, res, next) => {
     try {
-      // Build the reset link from a server-trusted base URL, never req.get('host') (host-header injection -> account takeover).
       const base = String(appBaseUrl || '').replace(/\/+$/, '');
       const resetUrl = `${base}/api/users/reset-password`;
       await service.forgotPassword({ email: req.body.email, resetUrl });

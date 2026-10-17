@@ -1,18 +1,3 @@
-/**
- * Fills sectionGuides on the ten visa pages.
- *
- * All fifty slots were empty, so no money page carried a single contextual link
- * into the blog: the 27-post Schengen cluster fed the money pages and got
- * nothing back. Each slot renders a VisaGuideLink under its section, and only
- * if the target blog is published, so a draft target degrades to no link.
- *
- * Overlays never override sectionGuides (it is in neither SCALARS nor
- * WHOLE_LISTS in resolveForResidence.js), so only the base visas docs are set.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/link-visa-section-guides.mjs          # dry run
- *   node --env-file=.env.production scripts/link-visa-section-guides.mjs --apply
- */
 
 import mongoose from 'mongoose';
 
@@ -26,9 +11,6 @@ const REJECT = 'schengen-visa-rejection-top-10-reasons-and-how-to-avoid-them';
 const APPLY_GUIDE = 'how-to-apply-for-a-schengen-visa-from-the-uae-complete-2026-guide';
 const PROCESSING = 'how-long-does-a-schengen-visa-take-to-process-from-dubai';
 
-/** Each country's own guide goes in `process`; that is the slot whose post
- *  most needs the inbound link, and the five country guides are the weakest
- *  pages on the site by position. */
 const MAP = {
   schengen: {
     packages: CHECKLIST, process: APPLY_GUIDE, requirements: BANK,
@@ -66,8 +48,6 @@ const MAP = {
   canada: {
     process: 'canada-visa-biometrics-uae', requirements: BANK,
   },
-  // No Saudi post exists yet; the generic Schengen guides would be wrong here,
-  // so it stays empty rather than carrying a misleading link.
   'saudi-arabia': {},
 };
 

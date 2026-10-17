@@ -4,13 +4,11 @@ import { useEffect, useState } from 'react';
 import AnalyticsInit from '@travel-suite/frontend-shared/components/shared/AnalyticsInit';
 import { analyticsEnabled } from '../lib/analytics';
 
-// localStorage rather than a cookie, so storing the choice sets nothing that would itself need consent.
 const CONSENT_KEY = 'picturesk.consent';
 
 export default function Analytics() {
   const enabled = analyticsEnabled();
 
-  // null until the client reads the saved choice, so the server render and hydration agree.
   const [consent, setConsent] = useState(null);
   const [ready, setReady] = useState(false);
 

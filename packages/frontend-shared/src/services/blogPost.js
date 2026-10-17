@@ -23,9 +23,6 @@ export async function blogPostStaticParams() {
   }
 }
 
-// Related posts are matched on the post's own tags. Tags are broad, so a brand
-// can pass `tagPriority` to prefer its most specific ones; otherwise the first
-// tag wins. Recent posts pad the grid so it is never half-empty.
 async function getRelatedPosts(blog, fallbackPool, tagPriority) {
   const tags = (Array.isArray(blog?.tags) ? blog.tags : []).filter(tagName);
   const primary = tags.find((t) => tagPriority.includes(tagName(t))) || tags[0] || null;
@@ -83,11 +80,6 @@ export async function blogPostMetadata({ slug, siteUrl, fallbackImage = `${siteU
   });
 }
 
-/**
- * `schema` is the brand's lib/schema module: the builders come from
- * createSchemaBuilders, so a brand that overrides one (Emirates Limo adds
- * LocalBusiness fields to its Organization) keeps the override here.
- */
 export function buildBlogPostSchema({ schema, siteUrl, blog, slug }) {
   const canonical = blogPostCanonical(siteUrl, blog, slug);
   const title = blog.metaTitle || blog.title || 'Blog Post';

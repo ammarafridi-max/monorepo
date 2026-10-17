@@ -1,29 +1,8 @@
-/**
- * Corrects the UK and US visa rules, which were seeded as starter data and
- * never verified. Both were telling Gulf nationals they could travel visa-free.
- *
- * The real position is that neither country is "visa free" for those travellers:
- * they need a travel authorisation, which is a different thing with its own cost,
- * application and refusal risk. The schema already has an ETA outcome for this.
- *
- * Sources fetched and parsed on 2026-08-20:
- *   UK  Immigration Rules Appendix ETA National List (gov.uk)
- *   US  Visa Waiver Program participants (dhs.gov), excluding the two countries
- *       listed there as terminated (Argentina, Uruguay)
- *
- * Canada is deliberately NOT touched: canada.ca blocks scripted access, so the
- * eTA list could not be verified against an official source.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/seed-uk-us-visa-rules.mjs          # dry run
- *   node --env-file=.env.production scripts/seed-uk-us-visa-rules.mjs --apply
- */
 
 import mongoose from 'mongoose';
 
 const APPLY = process.argv.includes('--apply');
 
-/** gov.uk Appendix ETA National List: these nationals need an ETA, not a visa. */
 const UK_ETA = [
   'AD', 'AE', 'AG', 'AR', 'AT', 'AU', 'BB', 'BE', 'BG', 'BH',
   'BN', 'BR', 'BS', 'BZ', 'CA', 'CH', 'CL', 'CR', 'CY', 'CZ',
@@ -36,7 +15,6 @@ const UK_ETA = [
   'VA', 'VC', 'WS',
 ];
 
-/** dhs.gov Visa Waiver Program participants: these nationals travel on an ESTA. */
 const US_ESTA = [
   'AD', 'AT', 'AU', 'BE', 'BN', 'CH', 'CL', 'CZ', 'DE', 'DK',
   'EE', 'ES', 'FI', 'FR', 'GB', 'GR', 'HR', 'HU', 'IE', 'IL',
@@ -45,7 +23,6 @@ const US_ESTA = [
   'SM', 'TW',
 ];
 
-/** Annex-I style nationalities that make up most of the UAE's resident population. */
 const UAE_RESIDENT_NATIONALITIES = ['IN', 'PK', 'BD', 'PH', 'EG', 'LK', 'NP', 'JO', 'LB', 'SY'];
 
 const RULES = [

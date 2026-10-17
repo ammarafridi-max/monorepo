@@ -1,22 +1,3 @@
-/**
- * Converts blogs.tags from tag NAMES to BlogTag references, in place.
- *
- * Tags were stored as plain strings, so renaming a tag orphaned every post
- * carrying it and nothing in the data recorded which BlogTag a post belonged to.
- *
- * blog.schema.js is shared by all four brands, so the code change lands
- * everywhere at once while each database migrates on its own. Run this against
- * a brand BEFORE deploying its backend; a backend on the new schema reading
- * unmigrated string data will fail to cast.
- *
- * Idempotent: posts already holding ObjectIds are skipped. It refuses to write
- * anything if a tag name matches no BlogTag document, because converting that
- * post would silently drop the tag.
- *
- * Usage, from the brand's backend directory:
- *   node --env-file=.env.production scripts/migrate-blog-tags-to-refs.mjs          # dry run
- *   node --env-file=.env.production scripts/migrate-blog-tags-to-refs.mjs --apply
- */
 
 import mongoose from 'mongoose';
 

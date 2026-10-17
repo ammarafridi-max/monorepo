@@ -108,8 +108,6 @@ export function createInsuranceService({
   };
 
 
-  // The provider generates PDFs a few seconds after issuance; a first miss is
-  // normal, so retry briefly rather than send an email with no documents.
   const fetchPolicyDocuments = async (policyId) => {
     for (let attempt = 0; attempt < 4; attempt++) {
       try {
@@ -140,9 +138,6 @@ export function createInsuranceService({
   };
 
 
-  // Sends the customer's policy email and records the outcome on the
-  // application, so the admin can see it and resend. Never throws: the
-  // policy is already issued by the time this runs.
   const sendPolicyEmail = async (application) => {
     if (!notifications.policyIssuedEmail || !application?.policyId) return null;
     const documents = await fetchPolicyDocuments(application.policyId);
@@ -277,7 +272,6 @@ export function createInsuranceService({
     return application;
   };
 
-  // Never throws: a Meta outage must not turn an issued policy into a failed confirmation.
   const reportPurchaseToMeta = async (application) => {
     if (!metaCapi?.isConfigured?.()) return;
     const lead = application.passengers?.[0];
@@ -400,9 +394,6 @@ export function createInsuranceService({
       };
     }
 
-    // Two confirmations can race (a double-mounted effect, a reload, a retry).
-    // Claiming the ISSUED transition atomically means only the winner sends
-    // the emails; the loser returns the already-issued application.
     const updated = await InsuranceApplication.findOneAndUpdate(
       { sessionId, issuanceStatus: { $ne: "ISSUED" } },
       {

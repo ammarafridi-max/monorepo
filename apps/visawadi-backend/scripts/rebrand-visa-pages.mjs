@@ -1,8 +1,3 @@
-/**
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/rebrand-visa-pages.mjs          # dry run + diff
- *   node --env-file=.env.production scripts/rebrand-visa-pages.mjs --apply
- */
 
 import fs from 'node:fs';
 import path from 'node:path';

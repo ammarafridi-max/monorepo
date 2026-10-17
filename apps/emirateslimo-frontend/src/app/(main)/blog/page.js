@@ -30,7 +30,6 @@ const breadcrumbPaths = [
 
 const pageNumberFrom = (searchParams) => Math.max(1, Number(searchParams?.page || 1) || 1);
 
-// Paginated listings must be self-canonical, otherwise page 2+ reads as a duplicate of /blog.
 const canonicalForPage = (page) => (page > 1 ? `${meta.canonical}?page=${page}` : meta.canonical);
 
 export async function generateMetadata({ searchParams }) {

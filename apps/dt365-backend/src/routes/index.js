@@ -54,7 +54,6 @@ const router = Router();
 const brevo = createBrevoClient({ apiKey: config.brevoApiKey, logger });
 
 
-// -- Auth ----------------------------------------------------------------------
 const {
   router: authRouter,
   middleware: auth,
@@ -73,10 +72,8 @@ const {
 
 router.use("/auth", authRouter);
 
-// -- Admin Users ---------------------------------------------------------------
 router.use("/admin-users", createAdminUsersRouter({ AdminUser, auth }));
 
-// -- Blog ----------------------------------------------------------------------
 const imageStorage = createCloudinaryStorage({
   cloudName: config.cloudinary.cloudName,
   apiKey: config.cloudinary.apiKey,
@@ -87,14 +84,10 @@ const imageStorage = createCloudinaryStorage({
 router.use("/blogs", createBlogRouter({ db, auth, imageStorage, anthropicApiKey: config.anthropicApiKey }));
 router.use("/blog-tags", createBlogTagRouter({ db, auth }));
 
-// -- Currencies ----------------------------------------------------------------
 router.use("/currencies", createCurrenciesRouter({ db, auth }));
 
-// -- Flights -------------------------------------------------------------------
 const airlabs = createAirLabsClient({ apiKey: config.airlabs.apiKey });
 const serpapi = createSerpApiClient({ apiKey: config.serpapi.apiKey });
-// Airline logos: uploaded from the admin screen and stored on the airline
-// record, so a new logo needs no deploy.
 const airlineLogoStorage = createCloudinaryStorage({
   cloudName: config.cloudinary.cloudName,
   apiKey: config.cloudinary.apiKey,
@@ -105,7 +98,6 @@ const airlineLogoStorage = createCloudinaryStorage({
 router.use("/flights", createFlightRouter({ db, airlabs, serpapi, auth, logoStorage: airlineLogoStorage }));
 router.use("/airports", createAirportsRouter({ airlabs }));
 
-// -- Notifications -------------------------------------------------------------
 const notifications = createNotificationsService({
   sendEmail,
   logger,
@@ -125,15 +117,10 @@ const notifications = createNotificationsService({
   },
 });
 
-// Disabled per request: we no longer want an internal email every time a
-// customer pays. Customer-facing emails still fire. Re-enable by deleting
-// this override.
 notifications.sendTicketPaymentToAdmin = async () => {};
 
-// -- Stripe --------------------------------------------------------------------
 const stripe = createStripeClient({ secretKey: config.stripe.secretKey });
 
-// -- PayPal --------------------------------------------------------------------
 let paypal = null;
 if (config.paypal.clientId && config.paypal.clientSecret) {
   paypal = createPayPalClient({
@@ -146,9 +133,6 @@ if (config.paypal.clientId && config.paypal.clientSecret) {
   logger.warn("[paypal] Credentials not configured — PayPal checkout disabled");
 }
 
-// -- Tickets -------------------------------------------------------------------
-// Reservation PDFs are uploaded to dt365/dummy-tickets/<sessionId>/reservation-file.pdf
-// on Cloudinary, then attached to the customer email by URL.
 const metaCapi = createMetaCapiClient({
   pixelId: config.meta.pixelId,
   accessToken: config.meta.capiAccessToken,
@@ -198,8 +182,6 @@ const {
 router.use("/tickets", ticketsRouter);
 router.use("/pricing", pricingRouter);
 
-// -- Hotel reservations --------------------------------------------------------
-// Registered by the tickets factory above, so this lookup has to stay after it.
 const CurrencyModel = db.models.Currency ?? null;
 const liteapiConfigured = Boolean(config.liteapi.apiKey);
 let handleHotelStripeSuccess = null;
@@ -214,8 +196,6 @@ if (liteapiConfigured) {
     auth,
     stripe,
     supplier: createLiteApiClient({ apiKey: config.liteapi.apiKey, logger }),
-    // Adapted here so the hotel domain stays provider-agnostic: it asks for a name
-    // plus an ISO country code and does not know AirLabs exists.
     citySuggest: async (search) =>
       (await airlabs.suggestCities(search))
         .filter((c) => c?.city_code)
@@ -233,10 +213,8 @@ if (liteapiConfigured) {
   logger.warn("[hotel-bookings] LITEAPI_API_KEY not configured — hotel reservations disabled");
 }
 
-// -- Affiliates ----------------------------------------------------------------
 router.use("/affiliates", createAffiliatesRouter({ db, auth, TicketModel }));
 
-// -- OpenAI Ads ----------------------------------------------------------------
 const { router: openaiAdsRouter } = createOpenAIAdsRouter({
   adsClient: createOpenAIAdsClient({ apiKey: config.openai.adsApiKey, logger }),
   auth,
@@ -265,7 +243,6 @@ const { router: openaiAdsRouter } = createOpenAIAdsRouter({
 });
 router.use("/openai-ads", openaiAdsRouter);
 
-// -- Payments (admin: revenue dashboard + custom payment links) ---------------
 const paymentService = createPaymentService({
   stripe,
   db,
@@ -302,7 +279,6 @@ async function handlePaymentLinkSuccess(session) {
   });
 }
 
-// -- Conversations (WhatsApp inbox) -------------------------------------------
 const whatsappConfigured = Boolean(
   config.whatsapp.appSecret && config.whatsapp.webhookVerifyToken,
 );
@@ -332,7 +308,6 @@ if (whatsappConfigured) {
 // -- WhatsApp webhook (raw body required — mounted in app.js before JSON middleware) --
 export const whatsappWebhookHandlers = whatsappWebhook;
 
-// -- Stripe webhook handler (exported for mounting in app.js before JSON middleware) --
 export const stripeWebhookHandler = createStripeWebhookHandler({
   stripe,
   webhookSecret: config.stripe.webhookSecret,

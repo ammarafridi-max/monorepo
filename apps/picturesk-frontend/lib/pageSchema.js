@@ -7,14 +7,6 @@ import {
   buildWebsite,
 } from './schema';
 
-/**
- * The standard graph every content page emits: Organization, WebSite, WebPage and
- * a BreadcrumbList back to the product page. Pages with something extra to say
- * (an FAQPage, say) pass it in `extra`.
- *
- * Breadcrumbs start at the AI Headshot Generator page, not "/", because that is
- * the canonical home of the product and "/" only redirects to it.
- */
 export function contentPageSchema({ path, title, description, label, extra = [] }) {
   const canonical = `${SITE_URL}${path}`;
   const paths = [
@@ -22,9 +14,6 @@ export function contentPageSchema({ path, title, description, label, extra = [] 
     { label, path },
   ];
 
-  // The breadcrumb builder returns a standalone document with its own @context.
-  // Inside a @graph that context is redundant, so it is stripped and the node is
-  // folded in, leaving the page with ONE script tag and one graph.
   const { '@context': _context, ...breadcrumb } = buildBreadcrumbList({ paths });
 
   return {

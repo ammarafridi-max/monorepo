@@ -50,8 +50,6 @@ function CustomersContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [localSearch, urlSearch]);
 
-  // The API aggregates the newest 200 customers and has no text search, so email
-  // matching and paging happen here. Move both server-side if this grows.
   const needle = urlSearch.trim().toLowerCase();
   const filtered = needle
     ? customers.filter((c) => (c.email || '').toLowerCase().includes(needle))

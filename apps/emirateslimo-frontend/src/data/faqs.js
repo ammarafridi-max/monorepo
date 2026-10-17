@@ -293,7 +293,6 @@ export const abuDhabiAirportFaqs = [
   },
 ];
 
-// The FAQ hub lists every set, so repeated questions keep only their first answer.
 export const allFaqs = [
   ...new Map(
     [...brandFaqs, ...chauffeurFaqs, ...airportTransferFaqs, ...abuDhabiAirportFaqs, ...dubaiTransferFaqs].map(

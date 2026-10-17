@@ -16,29 +16,24 @@ export default function NotFound() {
       <main className="flex-1 flex items-center justify-center px-6 py-24">
         <div className="max-w-lg w-full text-center">
 
-          {/* Icon */}
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-primary-50 border border-primary-100 mb-8">
             <ShieldOff size={36} className="text-primary-700" />
           </div>
 
-          {/* Status */}
           <p className="text-sm font-bold text-primary-600 uppercase tracking-widest mb-3">
             404: Not Found
           </p>
 
-          {/* Headline */}
           <h1 className="text-4xl font-extrabold text-gray-900 mb-4">
             Page not found
           </h1>
 
-          {/* Description */}
           <p className="text-base text-gray-500 leading-relaxed mb-10">
             We couldn&apos;t find the page you were looking for. It may have been
             moved, renamed, or never existed. Double-check the URL or head back
             to safety.
           </p>
 
-          {/* Actions */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               href="/"
@@ -56,7 +51,6 @@ export default function NotFound() {
             </Link>
           </div>
 
-          {/* Helpful links */}
           <div className="mt-12 pt-8 border-t border-gray-100">
             <p className="text-xs text-gray-400 mb-4 font-medium uppercase tracking-wide">
               Helpful pages

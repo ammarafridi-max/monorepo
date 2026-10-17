@@ -23,8 +23,6 @@ export default function VisaProcess({ steps = [], countryName = "", guide, term 
           subtitle="From your first consultation to a decision, we handle every step with you so nothing gets missed."
         />
 
-        {/* One list, responsive. Rendering desktop and mobile variants
-            separately put every step in the DOM twice. */}
         <div className="grid gap-x-8 gap-y-4 lg:grid-cols-3 lg:gap-y-12 lg:max-w-4xl lg:mx-auto">
           {steps.map((step, i) => {
             const isLast = i === steps.length - 1;

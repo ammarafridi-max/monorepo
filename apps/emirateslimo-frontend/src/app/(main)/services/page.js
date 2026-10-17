@@ -64,7 +64,6 @@ export default function Services() {
                 key={i}
                 className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center"
               >
-                {/* Image */}
                 <div className={`relative aspect-[4/3] rounded-2xl overflow-hidden bg-gray-100 ${i % 2 !== 0 ? 'lg:order-2' : ''}`}>
                   <img
                     src={service.image}
@@ -72,15 +71,12 @@ export default function Services() {
                     loading="lazy"
                     className="h-full w-full object-cover object-center transition-transform duration-700 hover:scale-105"
                   />
-                  {/* Subtle service number watermark */}
                   <div className="absolute bottom-4 right-5 text-[72px] font-light text-white/10 leading-none select-none pointer-events-none">
                     {String(i + 1).padStart(2, '0')}
                   </div>
                 </div>
 
-                {/* Content */}
                 <div className={i % 2 !== 0 ? 'lg:order-1' : ''}>
-                  {/* Eyebrow */}
                   <div className="flex items-center gap-3 mb-5">
                     <span className="h-px w-6 bg-accent-500 flex-shrink-0" />
                     <p className="text-[10.5px] tracking-[0.25em] font-light uppercase text-accent-600">

@@ -112,7 +112,6 @@ export default function Page() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(graph) }}
       />
 
-      {/* Header */}
       <PrimarySection className="bg-gray-50 pt-14 pb-10 md:pt-20 md:pb-14">
         <Container className="max-w-3xl">
           <nav className="text-xs text-gray-400 mb-4">
@@ -131,7 +130,6 @@ export default function Page() {
         </Container>
       </PrimarySection>
 
-      {/* Steps */}
       <PrimarySection className="py-12 md:py-16">
         <Container className="max-w-3xl">
           <SectionTitle className="mb-8">How it works</SectionTitle>
@@ -155,7 +153,6 @@ export default function Page() {
         </Container>
       </PrimarySection>
 
-      {/* Claim types */}
       <PrimarySection className="py-12 md:py-16 bg-gray-50/60">
         <Container className="max-w-3xl">
           <SectionTitle className="mb-2">What kind of claim do you have?</SectionTitle>
@@ -179,7 +176,6 @@ export default function Page() {
         </Container>
       </PrimarySection>
 
-      {/* Contact CTA */}
       <PrimarySection className="py-12 md:py-16">
         <Container className="max-w-3xl">
           <div className="rounded-3xl border border-primary-100 bg-[linear-gradient(145deg,#f5fbfb_0%,#eff7ff_55%,#fff7f0_100%)] p-8 md:p-10 text-center">

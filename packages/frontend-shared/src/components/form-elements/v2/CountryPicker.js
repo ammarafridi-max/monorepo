@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Search, X } from 'lucide-react';
 
-// Flags are emoji derived from the ISO alpha-2 code; `flagCode` overrides it for non-countries.
 function Flag({ code, className = 'text-base' }) {
   const cc = String(code || '').toUpperCase();
   if (!/^[A-Z]{2}$/.test(cc)) return <span className={className}>🏳️</span>;

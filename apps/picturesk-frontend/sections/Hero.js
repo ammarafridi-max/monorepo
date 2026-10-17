@@ -3,11 +3,6 @@ import Frame from '../components/Frame';
 import Check from '../components/Check';
 import Container from '../components/Container';
 
-// Hero: the thesis. A verdict headline, a quick-answer paragraph that states
-// plainly what the product does (the thing a first-time visitor and an AI summary
-// both need), one primary action, and the promises as a short ticked list. The
-// frame cluster is its own set in data/samples.js (heroShots), picked so the hero
-// and the portfolio below never show the same photo twice.
 const HERO_ALTS = [
   'AI headshot of a man in a black turtleneck against greenery',
   'AI headshot of a man in a navy polo in front of a bookshelf',

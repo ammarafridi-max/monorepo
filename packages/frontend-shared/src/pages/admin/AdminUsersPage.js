@@ -234,10 +234,6 @@ function SetPasswordModal({ user, onClose, onSave, saving }) {
   );
 }
 
-/**
- * `roles` is the set of roles this app actually offers, so a brand only ever sees
- * its own. Defaults to the travel dashboard's three.
- */
 export default function AdminUsersPage({ roles = DEFAULT_ROLES }) {
   const [search, setSearch]  = useState('');
   const [role, setRole]      = useState('');

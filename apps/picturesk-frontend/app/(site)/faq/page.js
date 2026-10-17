@@ -28,9 +28,6 @@ const SCHEMA = contentPageSchema({
     ],
 });
 
-// The full FAQ, from the SAME data/faq.js the home page uses (one source of truth).
-// Rendered as real question headings with direct answers, so it is easy to read
-// and easy for AI to cite. Each Q becomes an <h2>, each answer a paragraph.
 export default function FaqPage() {
   const sections = faq.map((item) => ({ h: item.q, body: [item.a] }));
 

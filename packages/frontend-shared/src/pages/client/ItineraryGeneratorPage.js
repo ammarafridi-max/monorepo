@@ -217,7 +217,6 @@ export default function ItineraryGeneratorPage({
         localStorage.setItem("email", values.traveller.email.trim());
         localStorage.setItem("phoneNumber", JSON.stringify(values.traveller.phone));
       } catch {
-        /* ignore storage errors */
       }
     }
     trackItineraryGenerate({
@@ -265,7 +264,6 @@ export default function ItineraryGeneratorPage({
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
-        {/* ---------- Part 1: details & trip ---------- */}
         <SectionCard
           step={1}
           title="Your details"
@@ -367,7 +365,6 @@ export default function ItineraryGeneratorPage({
           </div>
         </SectionCard>
 
-        {/* ---------- Part 2: supporting info ---------- */}
         <SectionCard
           step={2}
           title="Supporting information"
@@ -451,7 +448,6 @@ export default function ItineraryGeneratorPage({
           </div>
         </SectionCard>
 
-        {/* ---------- Part 3: segments ---------- */}
         <SectionCard
           step={3}
           title="Your itinerary"

@@ -1,9 +1,3 @@
-/**
- * Single source of truth for Travl's public contact details.
- *
- * Imported by the footer (via Providers) and the contact page so the two can
- * never drift apart.
- */
 
 export const EMAIL = 'info@travl.ae';
 export const WHATSAPP_NUMBER = '+971569964924';

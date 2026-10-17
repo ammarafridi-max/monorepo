@@ -3,9 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-// DEV ONLY. Rendered per order row on /account only when NODE_ENV === 'development',
-// so a developer can delete a single test order. The API route
-// (DELETE /api/account/orders/[id]) is hard-gated to development too, so this is safe.
 export default function DeleteOrderButton({ orderId }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);

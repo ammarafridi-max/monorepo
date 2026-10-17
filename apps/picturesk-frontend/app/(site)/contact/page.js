@@ -18,9 +18,6 @@ const SCHEMA = contentPageSchema({
   label: 'Contact',
 });
 
-// Contact: no form, no backend risk. Just the support address, clearly, plus what
-// to include so we can help fast. The email is a placeholder to swap for a real
-// support inbox (see data/legal.js).
 export default function ContactPage() {
   return (
     <ContentPage
@@ -31,7 +28,6 @@ export default function ContactPage() {
     >
       <div className="contactcard">
         <p className="contactcard__label">Email</p>
-        {/* TODO: swap for the real support address (see data/legal.js). */}
         <a className="contactcard__email" href={`mailto:${CONTACT_EMAIL}`}>
           {CONTACT_EMAIL}
         </a>

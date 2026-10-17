@@ -1,20 +1,3 @@
-/**
- * Corrects the Schengen consular fee wherever it is still stated wrongly.
- *
- * update-schengen-visa-fee.mjs only rewrites `content`, so every figure sitting
- * in `quickAnswer` or `faqs[].answer` survived it; that is where three of these
- * four live. This one rewrites all three fields and verifies across all three.
- *
- * EUR 90 for adults and EUR 45 for children aged 6 to 11 since 11 June 2024.
- * EUR 90 at EUR/AED 4.269 (8 September 2026) is AED 384, so AED 385, matching
- * every Schengen money page and the fees post.
- *
- * Source: European Commission, "Schengen visa fee increased as of 11 June 2024".
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/fix-schengen-fee-figures.mjs          # dry run
- *   node --env-file=.env.production scripts/fix-schengen-fee-figures.mjs --apply
- */
 
 import mongoose from 'mongoose';
 
@@ -48,16 +31,10 @@ const EDITS = {
   },
 };
 
-/** China's AED 270-500 band is its own consular fee, not a Schengen figure, and
- *  must not be swept into the Schengen correction. */
 const NOT_SCHENGEN = new Set(['china-visa-from-uae-tourist-visa-application-process']);
 
-// \b(?!,\d) keeps "EUR 80," (a real hit) while excluding "EUR 30,000" style
-// insurance-coverage figures. A bare (?!,) misses the comma case entirely.
 const STALE = /AED ?(?:350|355|360|370|380)\b|EUR ?(?:80|40)\b(?!,\d)/g;
 
-/** The fees post states the old fee on purpose, to date-stamp guides that still
- *  quote it. Exempt those two phrasings rather than the whole post. */
 const HISTORICAL = /(?:rose from|still quoting) EUR 80/g;
 
 await mongoose.connect(process.env.MONGO_URI);

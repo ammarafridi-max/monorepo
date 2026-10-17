@@ -1,6 +1,3 @@
-// Per-product funnel config for the web: where the funnel lives, what the set is
-// called, and where the landing page is. The catalogue and tiers themselves come
-// from picturesk-shared so the web can never sell something the worker cannot make.
 
 import { PRODUCTS, productOf, isValidProduct } from '@travel-suite/picturesk-shared/products';
 import { services } from '../data/services';
@@ -51,12 +48,10 @@ export function funnelPaths(product) {
     photos: `${base}/photos`,
     capture: `${base}/capture`,
     review: `${base}/review`,
-    // The funnel entry every CTA points at.
     select: `${base}/about`,
   };
 }
 
-/** The product a funnel pathname belongs to, for the stepper and the chrome. */
 export function productForPath(pathname) {
   for (const cfg of Object.values(CONFIG)) {
     if (pathname?.startsWith(cfg.base)) return cfg.id;
@@ -64,11 +59,6 @@ export function productForPath(pathname) {
   return PRODUCTS.HEADSHOTS;
 }
 
-/**
- * The product a page is ABOUT, or null on a neutral page (home, pricing, blog,
- * legal). Funnel and product pages resolve by base path; landing pages resolve
- * through the services list, which is where every landing slug is registered.
- */
 export function productForPage(pathname) {
   if (!pathname || pathname === '/') return null;
   for (const cfg of Object.values(CONFIG)) {
@@ -80,10 +70,6 @@ export function productForPage(pathname) {
   return null;
 }
 
-/**
- * The nav CTA for a page: the product's funnel when the page has one, otherwise
- * the generic "Get started" with no href, which the chrome opens as a chooser.
- */
 export function navCtaFor(pathname) {
   const product = productForPage(pathname);
   if (!product) return { label: 'Get started', href: null };

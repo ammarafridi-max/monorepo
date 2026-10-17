@@ -20,10 +20,6 @@ export default function VisaSearchBar({
   error = '',
   stacked = false,
   extraDestinations = [SCHENGEN_OPTION],
-  /**
-   * Destinations we hold rules for. When omitted the bar falls back to the full
-   * country list, which is what brands without a rules database want.
-   */
   destinations: destinationsProp = null,
 }) {
   const destinations = destinationsProp ?? [...extraDestinations, ...COUNTRIES];

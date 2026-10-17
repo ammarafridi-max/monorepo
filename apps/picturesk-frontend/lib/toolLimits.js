@@ -2,8 +2,6 @@ import 'server-only';
 import mongoose from 'mongoose';
 import { createHash } from 'node:crypto';
 
-// Per-visitor counters for the free tools, in Mongo with a TTL so they expire on
-// their own. Keyed by a hash of the IP so no raw address is stored.
 const schema = new mongoose.Schema(
   {
     key: { type: String, required: true, unique: true },
@@ -19,10 +17,6 @@ export function clientIp(req) {
   return fwd.split(',')[0].trim() || req.headers.get('x-real-ip') || 'unknown';
 }
 
-/**
- * Count one use against `scope` for `who` and say whether it is still within
- * `limit` for `windowMs`. The first call in a window starts the clock.
- */
 export async function consume({ scope, who, limit, windowMs }) {
   const key = `${scope}:${createHash('sha256').update(String(who)).digest('hex').slice(0, 32)}`;
   const now = new Date();

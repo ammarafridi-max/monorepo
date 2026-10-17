@@ -1,11 +1,3 @@
-// Usage: node --env-file=.env.production scripts/seo-blog-content-fixes.mjs [--apply]
-//
-// SEO audit batch 1. Normalises in-article links to root-relative paths, fixes
-// two slugs that 404, replaces cross-brand outbound links, resolves the "#"
-// placeholders, adds the missing money-page links, corrects the two airline
-// website PNR verification overclaims, and strips em dashes from tag metaTitles.
-// Writes straight to the collections: the blog service regenerates slug and
-// readingTime on save, which would churn published URLs.
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -30,13 +22,11 @@ const bySlug = Object.fromEntries(posts.map((p) => [p.slug, p]));
 let failures = 0;
 const fail = (m) => { console.error(m); failures++; };
 
-// 1. Slugs that currently 404.
 const BAD_SLUGS = {
   'what-documents-are-required-for-schengen-visa-from-uae': 'what-documents-are-required-for-a-schengen-visa-from-uae',
   'how-long-does-schengen-visa-take-from-uae': 'how-long-does-a-schengen-visa-take-from-the-uae',
 };
 
-// 2. "#" placeholders and cross-brand links, resolved by their anchor text.
 const BY_ANCHOR = {
   'how long a dummy ticket should be valid for': '/blog/how-long-should-a-dummy-ticket-be-valid',
   'whether dummy tickets are legal for visa applications': '/blog/are-dummy-tickets-legal-for-visa-application',
@@ -47,7 +37,6 @@ const BY_ANCHOR = {
   'dummy tickets are legal for visa applications': '/blog/are-dummy-tickets-legal-for-visa-application',
 };
 
-// 3. Airline-website verification overclaims.
 const VERIFICATION = {
   'how-long-should-a-dummy-ticket-be-valid': [
     ["verified on the airline's website, but you do not pay full airfare",
@@ -59,7 +48,6 @@ const VERIFICATION = {
   ],
 };
 
-// 4. Money-page and cluster links still missing after the steps above.
 const A = (href, text) => `<a href="${href}">${text}</a>`;
 const ADDITIONS = {
   'how-do-dummy-tickets-work': [
@@ -99,7 +87,6 @@ const ADDITIONS = {
      `so you only buy the real ticket once your visa is con`],
   ],
 };
-// budget-airlines also needs a /flight-itinerary link.
 ADDITIONS['budget-airlines-uae-to-europe-2026-guide'] = [
   ['Never buy a non-refundable budget fare before your Schengen visa is approved.',
    `Never buy a non-refundable budget fare before your Schengen visa is approved. A ${A('/flight-itinerary', 'flight itinerary')} with a live PNR covers the booking-proof requirement in the meantime.`],
@@ -118,7 +105,6 @@ for (const post of posts) {
     else c = c.replace(find, repl);
   }
 
-  // Resolve "#" and cross-brand hrefs from their anchor text.
   c = c.replace(/href="(?:#|https:\/\/dummyticket365\.com[^"]*)"([^>]*)>([\s\S]*?)<\/a>/g,
     (m, attrs, text) => {
       const key = text.replace(/<[^>]+>/g, '').trim();
@@ -127,11 +113,9 @@ for (const post of posts) {
       return `href="${target}"${attrs}>${text}</a>`;
     });
 
-  // Normalise every internal href to a root-relative path.
   c = c.replace(/href="((?:\.\.\/)+|https:\/\/www\.mydummyticket\.ae\/?)([^"]*)"/g,
     (m, _prefix, rest) => `href="/${rest}"`);
 
-  // Fix the two slugs that 404.
   for (const [bad, good] of Object.entries(BAD_SLUGS)) c = c.split(bad).join(good);
 
   for (const [find, repl] of ADDITIONS[post.slug] ?? []) {

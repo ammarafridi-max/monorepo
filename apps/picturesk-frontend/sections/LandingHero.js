@@ -1,10 +1,6 @@
 import Check from '../components/Check';
 import Container from '../components/Container';
 
-// The hero for a keyword landing page. Same shape as the home hero (eyebrow,
-// verdict headline, quick-answer paragraph, one action, ticked promises) but
-// content comes entirely from props, and there is no image cluster: a landing page
-// leads with its argument, and the proof sits further down in the showcase.
 export default function LandingHero({ eyebrow, title, lede, promises = [], cta, href, from = 9 }) {
   return (
     <section className="hero hero--landing">

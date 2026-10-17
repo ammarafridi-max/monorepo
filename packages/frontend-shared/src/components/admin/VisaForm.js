@@ -14,7 +14,6 @@ function guideId(value) {
   return typeof value === 'object' ? String(value._id || '') : String(value);
 }
 
-// Stores the blog _id, never the slug.
 function GuideSelect({ blogs, isLoading, ...props }) {
   return (
     <select

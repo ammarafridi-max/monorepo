@@ -126,8 +126,6 @@ export function CurrencyProvider({ children, defaultCode }) {
   );
 }
 
-// Brands without a currency switcher render no provider; prices then show in
-// the amount's own currency with no conversion.
 const SINGLE_CURRENCY = {
   currencies: [],
   selectedCurrency: null,

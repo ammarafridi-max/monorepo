@@ -81,7 +81,6 @@ export default function ContactUs() {
         subtitle="Available 24 hours, 7 days a week"
       />
 
-      {/* Contact Channels */}
       <PrimarySection className="py-15 lg:py-20">
         <Container>
           <SectionTitle subtitle="Get In Touch">
@@ -119,7 +118,6 @@ export default function ContactUs() {
             })}
           </div>
 
-          {/* Bottom CTA */}
           <div className="mt-14 p-8 rounded-2xl bg-primary-900 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
             <div>
               <p className="text-[10.5px] tracking-[0.22em] uppercase text-accent-400 mb-2">

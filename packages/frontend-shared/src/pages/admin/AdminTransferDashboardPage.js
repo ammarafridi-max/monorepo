@@ -3,13 +3,6 @@
 import Link from 'next/link';
 import { ArrowRight, CalendarDays, Car, CheckCircle2, Clock, DollarSign, Loader2, MapPin } from 'lucide-react';
 
-/**
- * Admin home for the transfer brands. The booking shape differs between the
- * `bookings` and `limo-bookings` domains, so each brand passes its own hook and
- * a `toRow` adapter; everything rendered is the same.
- *
- * toRow(booking) => { id, ref, customer, email, route, createdAt, status, amount }
- */
 const DEFAULT_STATUS_CFG = {
   pending_payment: { label: 'Pending payment', cls: 'bg-amber-50 text-amber-700 border-amber-200' },
   pending: { label: 'Pending', cls: 'bg-amber-50 text-amber-700 border-amber-200' },

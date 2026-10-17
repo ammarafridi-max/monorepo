@@ -8,7 +8,6 @@ import { useDebounce } from '../../../hooks/general/useDebounce';
 export default function SelectAirport({ value, onChange, id, icon, error, inputRef }) {
   const [query, setQuery] = useState(value || '');
   const [isOpen, setIsOpen] = useState(false);
-  // Only search while the dropdown is open; the closed input holds a display string AirLabs 502s on.
   const debouncedQuery = useDebounce(query, 250);
   const { airports, isLoadingAirports } = useAirports(isOpen ? debouncedQuery : '');
   const containerRef = useRef();

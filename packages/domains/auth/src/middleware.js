@@ -55,7 +55,6 @@ export function createAdminAuthMiddleware({ AdminUser, verifyToken }) {
       req.user = currentUser;
       res.locals.user = currentUser;
     } catch {
-      // A bad or expired token is simply an anonymous caller here, not an error.
     }
     return next();
   };

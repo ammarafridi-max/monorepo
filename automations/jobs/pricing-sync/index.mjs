@@ -1,11 +1,3 @@
-// Usage:
-//   pnpm automation pricing-sync --dry-run
-//   pnpm automation pricing-sync
-//
-// Locally, supply config with:
-//   node --env-file=apps/emirateslimo-backend/.env.production src/cli.mjs pricing-sync --dry-run
-//
-// The Google service account needs EDITOR access on the sheet (it writes the Added column).
 
 import mongoose from "mongoose";
 import { google } from "googleapis";
@@ -29,7 +21,6 @@ const CONFIG = {
   returnStrategy: "double",
 };
 
-/** Set from the CLI context; --dry is still honoured for standalone runs. */
 let DRY = process.argv.includes("--dry") || process.argv.includes("--dry-run");
 
 function createRuleName(vehicles, pickupZones, dropoffZones) {
@@ -120,9 +111,6 @@ async function resolveZoneCell(Zone, text) {
   return { docs, missing };
 }
 
-/**
- * @param {{ dryRun: boolean }} ctx
- */
 export async function run({ dryRun } = {}) {
   DRY = DRY || Boolean(dryRun);
   if (!process.env.MONGO_URI) throw new Error("MONGO_URI is required");

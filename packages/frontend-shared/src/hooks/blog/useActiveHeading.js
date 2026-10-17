@@ -2,10 +2,6 @@
 
 import { useEffect, useState } from "react";
 
-/**
- * @param {{id: string}[]} headings in document order
- * @returns {string|null} id of the active heading
- */
 export function useActiveHeading(headings = []) {
   const [activeId, setActiveId] = useState(headings[0]?.id ?? null);
 

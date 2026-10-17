@@ -3,7 +3,6 @@ import { z } from 'zod';
 export const MIN_LEAD_MINUTES = 120;
 const GST_OFFSET_MINUTES = 4 * 60;
 
-// pickupDate is YYYY-MM-DD and pickupTime is "hh:mm AM" in Gulf time, which has no DST.
 export function pickupInstant(pickupDate, pickupTime) {
   const d = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(pickupDate || ''));
   const t = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i.exec(String(pickupTime || '').trim());

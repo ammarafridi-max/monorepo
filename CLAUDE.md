@@ -32,13 +32,21 @@ Everything is ESM (`"type": "module"`), Node 22, React 19, Tailwind v4.
 - There is no test suite. Never claim tests pass. When you finish, state plainly
   what you changed and what you did and did not verify.
 - Do not commit or push unless I ask. Show me the diff first.
-- Write almost no comments. No file-header essays, no section banners, no
-  restating what the code says, no notes about what the code used to do. Comment
-  only where the code genuinely cannot explain itself and its absence would let
-  someone reintroduce a real bug: a non-obvious ordering constraint, a deliberate
-  deviation, a contract another file depends on. One line when you do. Functional
-  comments (eslint-disable, ts-expect-error) and the usage lines at the top of
-  scripts are not commentary and always stay.
+- **Do not write comments.** This is the default, not a preference to balance
+  against. No file-header essays, no section banners, no JSDoc blocks, no
+  restating what the code says, no notes about what the code used to do, no
+  explaining a decision you just made. If you want to explain something, put it
+  in your reply to me, not in the file. Name things well and the code explains
+  itself.
+  The only exceptions, and they are narrow:
+  - Functional comments that do work: eslint-disable, ts-expect-error,
+    prettier-ignore, istanbul ignore, webpack magic comments, shebangs.
+  - The usage lines at the top of a runnable script.
+  - A constraint that is invisible in the code and whose absence would let
+    someone reintroduce a real bug: an ordering requirement, a raw-body or
+    idempotency contract, a route that must stay above another. One line, stating
+    the constraint and nothing else.
+  If you are unsure whether a comment qualifies, it does not. Write none.
 - Content and marketing copy follow my house style: conversational, no em dashes,
   no AI-sounding filler, GEO-optimized (verdict first, the title question repeated
   as an H2 above a 40 to 80 word answer, FAQ structure) and conversion-focused

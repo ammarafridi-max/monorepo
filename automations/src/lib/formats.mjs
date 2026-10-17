@@ -1,11 +1,3 @@
-/**
- * Post formats, from the 2026 research on what AI engines actually cite:
- * verdict-first answers, structured tables, question-shaped headings, short
- * paragraphs, and attributed facts. Brand-neutral — a brand maps its length
- * tiers onto these.
- *
- * Sources behind these choices are recorded in docs/blog-format-research.md.
- */
 
 export const FORMATS = {
   "quick-answer": {
@@ -28,9 +20,6 @@ export const FORMATS = {
     maxTokens: 6500,
     minWords: 1200,
     faqCount: 5,
-    // Three, not four. Some destinations have only two approved domains
-    // (Spain: blsinternational.com and exteriores.gob.es), and demanding a
-    // fourth pushed the model into inventing deep links that 404.
     minCitations: 3,
     requiresFieldData: false,
     skeleton: `1. An answer paragraph of 40–80 words. Verdict in the first sentence.
@@ -49,7 +38,6 @@ export const FORMATS = {
     minWords: 1800,
     faqCount: 5,
     minCitations: 5,
-    /** Blocks generation unless the brand supplies real first-party numbers. */
     requiresFieldData: true,
     skeleton: `1. An answer paragraph of 40–80 words. Verdict in the first sentence.
 2. A first-party data block introduced by an <h2>, reporting ONLY the figures supplied to you under "Our Own Data" below. Never estimate, round, or extrapolate beyond them, and never invent a sample size.
@@ -62,11 +50,6 @@ export const FORMATS = {
   },
 };
 
-/**
- * Resolve the format a brand uses for a length tier, or null when the brand has
- * not opted in. A brand without formatsByTier keeps its original prompt, with
- * no format skeleton, no sourcing rules and no fact-check pass.
- */
 export function resolveFormat(brand, lengthTier) {
   if (!brand.formatsByTier) return null;
   const key = brand.formatsByTier[lengthTier];

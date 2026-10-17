@@ -8,12 +8,10 @@ export async function checkVisaRequirementApi({ nationality, residence, destinat
   return apiFetchPublic(`${URL}/check?${params.toString()}`, { cache: 'no-store' });
 }
 
-/** Public: only the destinations that have a published rule behind them. */
 export async function getVisaDestinationsApi() {
   return apiFetchPublic(`${URL}/destinations`);
 }
 
-/** Public: one published rule with its outcome groups, for a destination page. */
 export async function getPublicVisaRuleApi(destination) {
   return apiFetchPublic(`${URL}/public/${encodeURIComponent(destination)}`, {
     next: { revalidate: 3600 },

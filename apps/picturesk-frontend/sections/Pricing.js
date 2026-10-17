@@ -4,16 +4,12 @@ import Check from '../components/Check';
 import Container from '../components/Container';
 import SectionHeading from '../components/SectionHeading';
 
-// Whole-dollar price from integer cents (tier prices are round dollars).
 const usd = (cents) => `$${Math.round(cents / 100)}`;
 
 const TURNAROUND = { 3: 'Standard queue', 2: 'Priority queue', 1: 'Front of the queue' };
 const NOUN = { headshots: 'headshots', dating: 'photos' };
 const LOOK_NOUN = { headshots: 'background', dating: 'scene' };
 
-// What a plan includes, as a checklist built from the tier data itself, so the
-// counts on the card can never drift from what the funnel actually sells. A null
-// count means the tier unlocks the whole catalogue.
 const optionLabel = (n, noun) =>
   n == null ? `All ${noun} options` : `${n} ${noun} option${n === 1 ? '' : 's'}`;
 
@@ -24,9 +20,6 @@ const includesFor = (tier) => [
   TURNAROUND[tier.priority],
 ];
 
-// Pricing: three one-time plans, each showing what it includes, who it is for, and
-// the one place it runs out, then ONE action into the funnel. Verdict first (the
-// price), buy action singular and obvious.
 export default function Pricing({
   eyebrow = 'Pricing',
   title = 'Three plans. One time.',

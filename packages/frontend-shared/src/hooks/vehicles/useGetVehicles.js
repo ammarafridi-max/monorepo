@@ -9,7 +9,6 @@ export function useGetVehicles(params = {}) {
       try {
         return await getAllVehiclesApi(params);
       } catch (err) {
-        // Backend returns 404 "No vehicles found" when empty — treat as empty list.
         if (/no vehicles found/i.test(err.message)) return [];
         throw err;
       }

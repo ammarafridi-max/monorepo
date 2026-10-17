@@ -13,10 +13,6 @@ import {
 } from '@/lib/schema';
 import BlogTagDetailPage from '@travel-suite/frontend-shared/pages/client/BlogTagDetailPage';
 
-// Nothing on this route's ancestor chain (including app/loading.js) may define a
-// loading.js. A loading.js opens a Suspense boundary, so Next flushes the HTML
-// shell with a 200 before this component runs and notFound() can no longer set
-// the status — that is what turned bad slugs into indexable soft 404s.
 export const revalidate = 300;
 
 export async function generateStaticParams() {
@@ -72,7 +68,6 @@ export default async function Page({ params, searchParams }) {
 
   const blogs = data?.blogs || [];
   const pagination = data?.pagination || null;
-  // A tag with nothing under it is a thin page; send a real 404 rather than index an empty list.
   if (currentPage === 1 && blogs.length === 0) notFound();
 
   const title = tag.metaTitle || `${tag.name} | Blog Tag | Travl`;

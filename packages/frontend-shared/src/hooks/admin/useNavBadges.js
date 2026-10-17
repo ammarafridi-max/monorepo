@@ -6,11 +6,6 @@ import { getConversationsApi } from '../../services/apiConversations.js';
 import { getAdminVisaLeadsApi } from '../../services/apiVisaLeads.js';
 import { visibleNavFor } from '../../components/admin/navIcons.js';
 
-/**
- * A nav item opts in with `badge: '<key>'`. Each source returns the number the
- * sidebar shows next to that link; the list endpoints already exist, so a
- * count is one request with limit=1 and the pagination total.
- */
 export const BADGE_SOURCES = {
   pendingDummyTickets: async () => {
     const res = await getDummyTicketsApi({ paymentStatus: 'PAID', orderStatus: 'PENDING', limit: 1 });

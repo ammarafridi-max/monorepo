@@ -22,8 +22,6 @@ test('TIERS holds a free tier plus three paid tiers per product, priced low to h
     assert.deepEqual(prices, [...prices].sort((a, b) => a - b), `${product} tiers ascend by price`);
     assert.equal(tiers.filter((t) => t.popular).length, 1, `${product}: exactly one popular tier`);
   }
-  // Every tier must be internally coherent: integer cents, deliver <= generate,
-  // a valid BullMQ priority, a known product.
   for (const t of TIERS) {
     assert.ok(Number.isInteger(t.priceCents) && t.priceCents >= 0, `${t.id} priceCents`);
     assert.ok(t.deliverCount > 0 && t.deliverCount <= t.generateCount, `${t.id} deliver<=generate`);
@@ -35,7 +33,6 @@ test('TIERS holds a free tier plus three paid tiers per product, priced low to h
 test('higher tiers deliver more and get higher queue priority (lower number)', () => {
   const [starter, pro, premium] = TIERS;
   assert.ok(starter.deliverCount < pro.deliverCount && pro.deliverCount < premium.deliverCount);
-  // Lower priority number = pulled off the queue first.
   assert.ok(premium.priority < pro.priority && pro.priority < starter.priority);
 });
 

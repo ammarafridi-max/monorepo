@@ -39,9 +39,6 @@ const FALLBACK = { '2 Days': 1199, '7 Days': 1799, '14 Days': 2099 };
 
 export const revalidate = 300;
 
-// Prices come from the INR price book so the title can never drift from what
-// checkout charges. A stale title quoting the wrong rupee figure is the exact
-// trust problem this page exists to solve.
 async function getInrPrices() {
   try {
     const data = await getDummyTicketPricingServerApi('INR');

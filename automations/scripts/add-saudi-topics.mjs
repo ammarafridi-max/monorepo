@@ -1,15 +1,3 @@
-/**
- * Inserts the Saudi Arabia topics into the VisaWadi schedule and re-dates what
- * follows, so nothing is lost and no two topics share a date.
- *
- * Appending would have put the first Saudi post on 2026-11-18, eleven weeks
- * after the page starts taking paid traffic. These interleave every other day
- * from the start date instead.
- *
- * Usage, from the repo root:
- *   node automations/scripts/add-saudi-topics.mjs           # dry run
- *   node automations/scripts/add-saudi-topics.mjs --apply
- */
 
 import { readFileSync, writeFileSync } from 'node:fs';
 
@@ -40,7 +28,6 @@ if (topics.some((t) => /saudi/i.test(t.title))) {
   process.exit(1);
 }
 
-/** Interleave: one Saudi topic every EVERY slots until they run out. */
 const merged = [];
 const queue = [...SAUDI];
 for (let i = 0; rest.length || queue.length; i++) {

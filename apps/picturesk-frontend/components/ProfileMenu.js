@@ -2,25 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 
-/**
- * The authed nav identity: an avatar + first name + chevron in a rounded trigger
- * that opens a dropdown with "Account" and "Log Out".
- *
- * NOTE ON DATA: there is no stored display name or avatar image — the session only
- * carries the email. So we DERIVE a friendly first name and an initial from the
- * email's local-part. Real name/photo would require capturing them during OAuth
- * (e.g. Google's profile scope) and persisting a `User.name` / `User.picture`
- * field; until then the email is all we have.
- *
- * Opens three ways so it works on desktop, touch, and keyboard:
- *  - HOVER: mouse-enter on the wrapper opens it (a transparent bridge keeps it
- *    open while the pointer crosses the gap into the panel).
- *  - CLICK: the trigger button toggles it (touch has no hover).
- *  - FOCUS: tabbing onto the trigger opens it; Escape / outside-click closes.
- */
 
-// First name = the leading run of letters before the first separator (. _ + -) or
-// digit, capitalized. Initial = its first letter. e.g. "ammar.afridi95" -> Ammar / A.
 function deriveIdentity(email) {
   const local = String(email || '').split('@')[0] || '';
   const match = local.match(/^[a-zA-Z]+/);

@@ -2,9 +2,6 @@ import { steps as defaultSteps } from '../data/landing';
 import Container from '../components/Container';
 import SectionHeading from '../components/SectionHeading';
 
-// The process, and the section that follows the hero: a real three-step sequence,
-// so the steps sit on a connecting rail with numbered markers that genuinely encode
-// order, left to right on desktop and top to bottom on mobile. Calm, no icons.
 export default function HowItWorks({
   eyebrow = 'The process',
   title = 'Three steps, about an hour.',

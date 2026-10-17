@@ -6,7 +6,6 @@ export function createZoneRouterFromParts({ controller, auth }) {
 
   router.route('/').get(controller.getAllZones).post(protect, restrictTo('admin'), controller.createZone);
 
-  // Must be registered before the '/:id' routes so it is not shadowed.
   router.get('/find/by-point', controller.getZoneByPoint);
 
   router

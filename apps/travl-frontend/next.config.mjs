@@ -4,9 +4,6 @@ import { dirname, join } from 'node:path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 
-// Visa posts that moved to VisaWadi when the brands split. Travl is insurance
-// only now. Slugs are identical on both sides, so each is a straight swap.
-// Insurance posts are NOT here and continue to be served by Travl.
 const MOVED_TO_VISAWADI = [
   'schengen-visa-fees-in-2026-complete-cost-breakdown-for-uae-applicants',
   'how-to-apply-for-a-schengen-visa-from-the-uae-complete-2026-guide',
@@ -40,7 +37,6 @@ const MOVED_TO_VISAWADI = [
   'pnr-codes-explained-what-they-are-and-how-visa-officers-verify-them',
 ];
 
-// Dead or renamed paths, each pointing at its live canonical in a single hop.
 const LEGACY_REDIRECTS = [
   ['/blog/how-to-apply-for-a-schengen-visa-from-the-uae-complete-2026-guide-2',
    'https://www.visawadi.com/blog/how-to-apply-for-a-schengen-visa-from-the-uae-complete-2026-guide'],
@@ -59,19 +55,10 @@ const LEGACY_REDIRECTS = [
    '/blog/pre-existing-medical-conditions-and-travel-insurance-what-uae-travellers-need-to-know'],
 ];
 
-/** @type {import('next').NextConfig} */
 const nextConfig = {
-  // `next dev` otherwise appends a block to CLAUDE.md telling agents this is
-  // "NOT the Next.js you know" and to trust node_modules/next/dist/docs/ over
-  // their own knowledge. Those vendored docs describe APIs that do not exist.
   agentRules: false,
   output: 'standalone',
-  // Trace from the monorepo root so workspace packages are included in standalone output
   outputFileTracingRoot: join(__dirname, '../../'),
-  // /lp/* is noindex at the meta level too; the header covers any asset or
-  // fetch that skips the HTML. robots.txt deliberately does not disallow /lp,
-  // because a blocked URL can still be listed from external links while a
-  // crawlable noindex one cannot.
   async headers() {
     return [
       {
@@ -89,14 +76,8 @@ const nextConfig = {
       })),
       ...LEGACY_REDIRECTS.map(([source, destination]) => ({ source, destination, permanent: true })),
       { source: '/blog/tag/:slug', destination: '/blog/tags/:slug', permanent: true },
-      // Visa assistance moved to VisaWadi. Slugs match one-for-one on both sides.
-      // NOTE: /travel-insurance/*-visa pages are insurance products and stay here.
-      // Straight to the country URL. Pointing at /visa/:slug and letting
-      // VisaWadi redirect again would be a two-hop chain, which Google discounts.
       { source: '/visa', destination: 'https://www.visawadi.com/uae', permanent: true },
       { source: '/visa/:slug', destination: 'https://www.visawadi.com/uae/visa/:slug', permanent: true },
-      // Customer document-upload flow moved with it. Magic links already sent
-      // point here, so keep the path shape.
       { source: '/apply', destination: 'https://www.visawadi.com/apply', permanent: true },
       { source: '/apply/:path*', destination: 'https://www.visawadi.com/apply/:path*', permanent: true },
       {

@@ -1,10 +1,3 @@
-/**
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/migrate-cloudinary-to-visawadi.mjs          # dry run
- *   node --env-file=.env.production scripts/migrate-cloudinary-to-visawadi.mjs --apply
- *
- * Copies, never renames: a Cloudinary rename would 404 every Travl visa page.
- */
 
 import mongoose from 'mongoose';
 import { v2 as cloudinary } from 'cloudinary';

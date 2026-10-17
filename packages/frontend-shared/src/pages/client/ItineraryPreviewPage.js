@@ -47,7 +47,6 @@ function ChatPanel({ sessionId, chatsRemaining, mismatch, returnCheck, onApplyFi
       : []),
   ];
 
-  // Scroll only the messages container; scrollIntoView would scroll the page too.
   useEffect(() => {
     const el = scrollRef.current;
     if (el) el.scrollTop = el.scrollHeight;
@@ -362,7 +361,6 @@ export default function ItineraryPreviewPage({ sessionId }) {
   return (
     <>
       <div className="flex flex-col lg:flex-row gap-6 items-start">
-        {/* Chat (left on desktop, below preview on mobile) */}
         <div className="w-full lg:w-[380px] shrink-0 order-2 lg:order-1">
           <ChatPanel
             sessionId={sessionId}
@@ -373,7 +371,6 @@ export default function ItineraryPreviewPage({ sessionId }) {
           />
         </div>
 
-        {/* Preview (main, takes the freed width) */}
         <div className="flex-1 min-w-0 order-1 lg:order-2">
           {showMismatch && (
             <div className="mb-3 flex items-start gap-2.5 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl px-4 py-3">
@@ -404,7 +401,6 @@ export default function ItineraryPreviewPage({ sessionId }) {
         </div>
       </div>
 
-      {/* Fixed action bar (price · regenerate · pay) */}
       <div className="fixed bottom-0 inset-x-0 z-50 bg-white border-t border-gray-200 shadow-2xl">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
           <div className="min-w-0">

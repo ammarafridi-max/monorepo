@@ -1,12 +1,3 @@
-/**
- * The Standard (AED 599) and Concierge (AED 699) Schengen packages include the
- * VFS/BLS appointment fee. Basic does not. The pages listed it as excluded on
- * all three.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/fix-schengen-vfs-fee-included.mjs          # dry run
- *   node --env-file=.env.production scripts/fix-schengen-vfs-fee-included.mjs --apply
- */
 
 import mongoose from 'mongoose';
 
@@ -15,8 +6,6 @@ const SLUGS = ['schengen', 'france-visa', 'germany-visa', 'italy-visa', 'spain-v
 const INCLUDED_IN = ['Standard', 'Concierge'];
 
 const centreFor = (slug) => (slug === 'spain-visa' ? 'BLS' : 'VFS');
-/** Matches "VFS appointment fee (AED ~95) not included", "BLS ..." and the
- *  Concierge variants that drop the trailing "not included". */
 const isCentreFeeLine = (s) => /\b(VFS|BLS)\b/i.test(s) && /appointment|service charge/i.test(s);
 
 await mongoose.connect(process.env.MONGO_URI);

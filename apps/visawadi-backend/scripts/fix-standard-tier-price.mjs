@@ -1,12 +1,3 @@
-/**
- * Aligns the Standard tier to AED 599 across the Schengen country pages.
- * Schengen itself was corrected earlier; these five still said 598.99, so the
- * same tier had two prices across near-identical pages.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/fix-standard-tier-price.mjs          # dry run
- *   node --env-file=.env.production scripts/fix-standard-tier-price.mjs --apply
- */
 
 import mongoose from 'mongoose';
 
@@ -37,7 +28,6 @@ for (const coll of ['visas', 'visa-overlays']) {
       return { ...p, price: NEW };
     });
 
-    // The breakdown note quotes the other tiers' prices in prose.
     const pricingBreakdown = (d.pricingBreakdown || []).map((r) => {
       if (!r.note?.includes('598.99')) return r;
       touched = true;

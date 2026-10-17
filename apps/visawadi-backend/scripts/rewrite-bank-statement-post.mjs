@@ -1,26 +1,3 @@
-/**
- * Rewrites the bank statement post around the balance question it ranks for.
- *
- * The post contradicted itself on the only figure that matters: the quick answer
- * said AED 3,000 to 5,000 per week, the body said EUR 50 to 100 per day, which
- * is half that. Neither was sourced, and both understate Spain by more than
- * half; Spain's floor alone is EUR 1,098.90 per person whatever the trip length.
- *
- * Amounts now come from Annex 25 of the Practical Handbook (= Annex 18 of the
- * Visa Code Handbook), the consolidated list of reference amounts Member States
- * notify to the Commission under Article 6(4) of the Schengen Borders Code,
- * version dated 01/04/2026. Converted at EUR/AED 4.269 and CHF/AED 4.54,
- * 8 September 2026.
- *
- * Four H2s are preserved VERBATIM because their anchors already rank (positions
- * 6.0 to 6.9 in GSC): what-type-of-bank-statement-do-you-need,
- * how-much-balance-do-you-need, what-should-the-statement-show and
- * employed-vs-self-employed-applicants. Renaming them would churn the slugs.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/rewrite-bank-statement-post.mjs          # dry run
- *   node --env-file=.env.production scripts/rewrite-bank-statement-post.mjs --apply
- */
 
 import mongoose from 'mongoose';
 
@@ -33,7 +10,6 @@ const REF_INSURANCE = 'https://www.travl.ae/blog/schengen-visa-travel-insurance-
 const REF_TICKET = 'https://www.dummyticket365.com';
 const ext = (h, t) => `<a href="${h}" target="_blank" rel="noopener noreferrer">${t}</a>`;
 
-/** Anchors already ranking; the text is load-bearing, not stylistic. */
 const KEEP = [
   'What Type of Bank Statement Do You Need?',
   'How Much Balance Do You Need?',

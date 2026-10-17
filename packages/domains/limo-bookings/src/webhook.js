@@ -13,7 +13,6 @@ function getOrRegisterModel(conn, name, schema) {
 export function createBookingPaymentHandler({ db, notifications, metaCapi, frontendUrl }) {
   const Booking = getOrRegisterModel(db, 'Booking', BookingSchema);
 
-  // Never throws: a Meta outage must not fail the webhook and make Stripe resend a paid booking.
   const reportPurchaseToMeta = async (booking) => {
     if (!metaCapi?.isConfigured?.()) return;
     const { firstName, lastName, email, phoneNumber } = booking.bookingDetails || {};

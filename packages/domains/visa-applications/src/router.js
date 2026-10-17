@@ -29,7 +29,6 @@ export function createVisaApplicationRouterFromParts({ controller, auth, userAut
   const adminOnly = [adminProtect, restrictTo('admin', 'agent')];
   const adminSuper = [adminProtect, restrictTo('admin')];
 
-  // Registered before /admin/:id so these literal paths are not shadowed by it.
   router.get('/admin/document-types', ...adminOnly, controller.listDocumentTypes);
   router.post('/admin/document-types', ...adminSuper, controller.createDocumentType);
   router.patch('/admin/document-types/:id', ...adminSuper, controller.updateDocumentType);

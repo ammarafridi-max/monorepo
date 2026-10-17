@@ -63,7 +63,6 @@ export function validateItinerary(itineraryData, input) {
     }
   }
 
-  // Deliberately no contiguity/order enforcement: a trip can legitimately revisit an earlier country.
   const allowedCountries = expectedCountryOrder(input);
   const allowedSet = new Set(allowedCountries);
 
@@ -93,7 +92,6 @@ export function validateItinerary(itineraryData, input) {
   return { valid: errors.length === 0, errors };
 }
 
-// Schengen members, normalized + aliases. EU-but-not-Schengen (Ireland, Cyprus) deliberately excluded.
 const SCHENGEN_COUNTRIES = new Set([
   'austria', 'belgium', 'bulgaria', 'croatia', 'czechia', 'czech republic',
   'denmark', 'estonia', 'finland', 'france', 'germany', 'greece', 'hungary',
@@ -142,7 +140,6 @@ export function computeMainDestination(itineraryData, input) {
 
 export function computeReturnHome(itineraryData, input) {
   const fromCountry = input?.fromCountry || '';
-  // Derive from the current itineraryData, not input.segments: edits never touch segments, so a segment-based check goes stale.
   const days = Array.isArray(itineraryData?.days) ? itineraryData.days : [];
   const result = { hasMismatch: false, fromCountry, lastCountry: null };
   if (!fromCountry || days.length === 0) return result;

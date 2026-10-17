@@ -1,5 +1,3 @@
-// Usage, from apps/visawadi-backend:
-//   node --env-file=.env.development scripts/seed-schengen-checklist.mjs
 
 import mongoose from 'mongoose';
 import { DocumentTypeSchema, ChecklistTemplateSchema } from '@travel-suite/visa-applications';

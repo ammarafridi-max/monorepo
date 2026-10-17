@@ -1,11 +1,3 @@
-/**
- * Emirates Limo — chauffeur service and airport transfers in Dubai, Abu Dhabi
- * and Sharjah. One brand, one product family, no partner brands.
- *
- * The sister brands in this monorepo (visas, insurance, dummy tickets, and a
- * second transfer brand) must never appear in an Emirates Limo post, by name or
- * by link. Enforced below rather than left to the prompt.
- */
 
 const SITE = 'https://www.emirateslimo.com';
 const pageUrl = (slug) => `${SITE}/${slug}`;
@@ -23,51 +15,36 @@ export const TARGET = {
 
   excludedTags: ['Visa Tips', 'Visa Documents', 'Travel Insurance', 'Dummy Ticket', 'Flight Itinerary'],
 
-  /** First slot for blog-schedule, and posts it must leave where they are. */
   blogSchedule: {
-    start: '2026-09-20T05:00:00Z', // 09:00 GST
+    start: '2026-09-20T05:00:00Z', 
     excludeSlugs: [],
   },
 
-  /**
-   * Format per length tier, matching the other blog targets. `field-report`
-   * stays unused until there are first-party booking numbers worth reporting.
-   */
   formatsByTier: {
     short: 'quick-answer',
     medium: 'sourced-guide',
     long: 'sourced-guide',
   },
 
-  /**
-   * The only domains a post may cite: airports, transport authorities, the
-   * toll operator and the two official tourism boards. A transfer claim sourced
-   * to a blog or an aggregator is worth nothing.
-   */
   citationDomains: [
-    // Root domains: isCitationUrl matches subdomains.
-    'dubaiairports.ae',           // DXB and DWC terminals, arrivals, parking
-    'zayedinternationalairport.ae', // AUH
-    'rta.ae',                     // Dubai Roads and Transport Authority
-    'itc.gov.ae',                 // Abu Dhabi Integrated Transport Centre
-    'salik.ae',                   // Dubai tolls
-    'darb.ae',                    // Abu Dhabi tolls
+    'dubaiairports.ae',           
+    'zayedinternationalairport.ae', 
+    'rta.ae',                     
+    'itc.gov.ae',                 
+    'salik.ae',                   
+    'darb.ae',                    
     'dubai.ae',
     'gov.ae',
-    'u.ae',                       // the UAE government portal
-    'visitdubai.com',             // Dubai Department of Economy and Tourism
-    'visitabudhabi.ae',           // Abu Dhabi Department of Culture and Tourism
-    'emirates.com',               // terminal and check-in facts only
+    'u.ae',                       
+    'visitdubai.com',             
+    'visitabudhabi.ae',           
+    'emirates.com',               
     'etihad.com',
     'flydubai.com',
   ],
 
   allowedLinkPrefixes: [SITE, 'https://emirateslimo.com'],
 
-  /**
-   * Sister brands are off limits, in either direction. Any of these domains in
-   * a post is a hard failure.
-   */
   forbiddenLinkPatterns: [
     {
       pattern: /airportrides\.|travl\.ae|visawadi\.|dummyticket365\.|mydummyticket\.|picturesk\./i,
@@ -79,15 +56,12 @@ export const TARGET = {
     },
   ],
 
-  /** Checked against the article text, not its markup. */
   contentChecks: [
     {
       pattern: /\b(?:AirportRides|Airport Rides|Travl|VisaWadi|Dummy Ticket 365|My Dummy Ticket|Picturesk)\b/i,
       message: 'Emirates Limo posts must never name a sister brand',
     },
     {
-      // Transfer fares are quoted in the booking form only. The one public
-      // price is the hourly rate on the fleet cards.
       pattern: /(?:transfer|ride|journey|trip|fare)[^.]{0,60}\bAED\s*\d+(?:\s*(?:per|\/)\s*km)?/i,
       message: 'never quote a transfer fare; the price is fixed in the booking form. Only the hourly rate (from AED 150 per hour) may be quoted',
     },

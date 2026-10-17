@@ -2,10 +2,6 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { nsfwScoreFrom, MODERATION_REASON } from '../src/contentModerator.js';
 
-// The network call (runModeration) needs a real REPLICATE_API_TOKEN + model, so it
-// is not exercised here. What we CAN test without creds is the piece that decides
-// safe vs unsafe: reducing a classifier's output to an NSFW score. This is the
-// swappable boundary's core, and covers the shapes NSFW models return.
 
 test('nsfwScoreFrom: bare label strings', () => {
   assert.equal(nsfwScoreFrom('nsfw'), 1);
@@ -22,9 +18,7 @@ test('nsfwScoreFrom: array of { label, score }', () => {
     ]),
     0.97
   );
-  // A clean image: only the safe label present.
   assert.equal(nsfwScoreFrom([{ label: 'normal', score: 0.99 }]), 0);
-  // confidence is accepted as an alias for score.
   assert.equal(nsfwScoreFrom([{ label: 'explicit', confidence: 0.4 }]), 0.4);
 });
 

@@ -1,15 +1,6 @@
 import Container from '@travel-suite/frontend-shared/components/shared/layout/Container';
 import PrimarySection from '@travel-suite/frontend-shared/components/shared/layout/PrimarySection';
 
-// Quick-answer block: an H2 carrying the page's core question and a 40-80 word
-// answer, rendered directly after Hero and before Process on every landing page
-// that targets a high-intent query. Built for featured snippets and AI
-// Overviews, which reward a concise verdict near the top of the page.
-//
-// The first sentence is pulled out one type step larger and darker, because it
-// is the verdict and it is the sentence search engines lift. Keep the H2 above
-// the paragraph in the markup: the visual treatment is incidental, the heading
-// then answer order is what gets extracted.
 const MIN_VERDICT = 12;
 const MAX_VERDICT = 220;
 
@@ -18,9 +9,6 @@ function splitVerdict(answer) {
   const sentences = text.split(/(?<=[.!?])\s+(?=[A-Z])/);
   if (sentences.length < 2) return { verdict: text, detail: '' };
 
-  // Take sentences until the verdict is long enough to carry the larger type.
-  // This also absorbs abbreviations: "The U.S." splits off short, so the next
-  // sentence joins it rather than the answer losing its verdict entirely.
   let i = 0;
   let verdict = '';
   while (i < sentences.length && verdict.length < MIN_VERDICT) {
@@ -37,8 +25,6 @@ export default function QuickAnswer({
   answer,
   verdict: verdictProp,
   detail: detailProp,
-  // Prices differ per currency, so a page passes its own tiers or gets none.
-  // Hardcoding USD here would misquote every locale variant.
   tiers,
   tiersLabel = 'How long it stays live',
   faqHref = '#faq',

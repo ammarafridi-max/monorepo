@@ -5,12 +5,6 @@ import AdminHeader from '../../components/admin/AdminHeader';
 import AdminMobileTabBar from '../../components/admin/AdminMobileTabBar';
 import NewOrderPinger from '../../components/admin/NewOrderPinger';
 
-/**
- * `roleRules` / `roleDefaultPath` default to the travel dashboard's routes; an app
- * with a different admin passes its own. `newOrderPing` polls the dummy-tickets
- * endpoint and `globalSearch` queries five travel domains, so apps without those
- * must turn them off.
- */
 export default function AdminDashboardLayout({
   children,
   nav,

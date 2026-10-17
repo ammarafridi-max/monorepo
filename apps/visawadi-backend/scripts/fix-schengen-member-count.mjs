@@ -1,18 +1,8 @@
-/**
- * H5. The Schengen Area has 29 member states. Six visa records and three blog
- * posts said 27, while the homepage and nine other posts said 29, so the
- * Schengen page contradicted itself on the same screen.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/fix-schengen-member-count.mjs          # dry run
- *   node --env-file=.env.production scripts/fix-schengen-member-count.mjs --apply
- */
 
 import mongoose from 'mongoose';
 
 const APPLY = process.argv.includes('--apply');
 
-/** Only where 27 is being used as the Schengen member count. */
 const RULES = [
   [/\ball 27 Schengen member states\b/g, 'all 29 Schengen member states'],
   [/\ball 27 Schengen states\b/g, 'all 29 Schengen states'],

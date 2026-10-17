@@ -25,10 +25,6 @@ function ChevronDown({ open }) {
   );
 }
 
-// The Services entry in the nav. On desktop a hover-or-click dropdown, one column
-// per product; in the mobile drawer the same groups rendered as plain lists, since
-// a dropdown inside a drawer is two menus deep. Opens on hover, click and focus,
-// closes on Escape and outside click, the same contract as ProfileMenu.
 export default function ServicesMenu({ variant = 'dropdown', label = 'Services', groups = services }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);

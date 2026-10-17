@@ -15,7 +15,7 @@ cd automations && node src/cli.mjs blog-generate --target travl --dry-run
 |---|---|---|---|
 | `blog-generate` | travl | **paused** (hand-written batches scheduled to 2026-10-10) | `blog-travl.yml` |
 | `blog-generate` | visawadi | **paused** (hand-written batch scheduled to 2026-10-11) | `blog-visawadi.yml` |
-| `blog-generate` | thedt | every 3rd day 05:00 UTC (drafts) | `blog-thedt.yml` |
+| `blog-generate` | thedt | **disabled** 2026-10-17 (queue written by hand and scheduled to 2026-10-26) | `blog-thedt.yml` |
 | `blog-generate` | emirateslimo | **not enabled** (needs the admin secrets; manual draft runs only) | `blog-emirateslimo.yml` |
 | `blog-generate` | picturesk | **not enabled** (needs the admin account + secrets; manual draft runs only) | `blog-picturesk.yml` |
 | `blog-schedule` | travl | manual | — |

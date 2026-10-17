@@ -13,7 +13,6 @@ export function createVisaRequirementsRouterFromParts({ controller, auth }) {
 
   router.get('/check', publicLimiter, controller.check);
   router.get('/destinations', publicLimiter, controller.listDestinations);
-  // Published rules only, for the /visa-check destination pages.
   router.get('/public/:destination', publicLimiter, controller.getPublicRule);
 
   router.use(auth.protect, auth.restrictTo('admin'));

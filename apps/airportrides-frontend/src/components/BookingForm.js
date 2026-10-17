@@ -23,9 +23,6 @@ function Field({ label, className = '', children }) {
 const selectCls =
   'w-full rounded-xl border border-sand-300 bg-white px-4 py-3 text-[15px] text-ink focus:border-clay-500 focus:outline-none focus:ring-2 focus:ring-clay-500/20 transition-colors';
 
-// The largest vehicle we quote is the People Carrier: 7 seats, 6 bags. Anything
-// above that can't be served by a single transfer, so instead of quietly capping
-// the party we send those enquiries to a human for a multi-vehicle quote.
 const MAX_PASSENGERS = 7;
 const MAX_LUGGAGE    = 6;
 const OVER_CAPACITY  = 'over';
@@ -98,7 +95,6 @@ export default function BookingForm({ onSubmit, className = '' }) {
 
   function handleDateChange(dateStr) {
     if (!dateStr || isDateInPast(dateStr)) return;
-    // If switching to today, drop any time that's already passed
     const time = booking.time && isDateTimeInPast(dateStr, booking.time) ? '' : booking.time;
     setBooking((prev) => ({ ...prev, date: dateStr, time }));
   }
@@ -108,9 +104,6 @@ export default function BookingForm({ onSubmit, className = '' }) {
     setBooking((prev) => ({ ...prev, time: timeStr }));
   }
 
-  // A party over vehicle capacity can't be priced by the standard flow, so the
-  // form stays blocked and points at the group quote instead of submitting a
-  // number we'd have to invent.
   const needsGroupQuote =
     booking.passengers === OVER_CAPACITY || booking.luggage === OVER_CAPACITY;
 

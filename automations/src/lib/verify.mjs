@@ -1,21 +1,6 @@
-/**
- * Fact-check pass.
- *
- * The draft is written from a site-context file and the model's own knowledge,
- * neither of which is a source. This pass re-reads the official pages the draft
- * cites and checks each factual claim against what those pages actually say.
- *
- * It uses the Anthropic web_fetch server tool, which will only fetch URLs
- * already present in the conversation — so the model cannot wander off and
- * "verify" a claim against something it found later.
- */
 
 import Anthropic from "@anthropic-ai/sdk";
 
-/**
- * The verify pass is the last step before publishing, so a transient 429/5xx
- * here would waste the whole generation. Back off and try again.
- */
 async function withRetry(fn, attempts = 4) {
   let lastErr;
   for (let i = 1; i <= attempts; i++) {
@@ -33,21 +18,10 @@ async function withRetry(fn, attempts = 4) {
   throw lastErr;
 }
 
-/** Dynamic filtering is built into this version; do not also declare code_execution. */
 const WEB_FETCH_TOOL = {
   type: "web_fetch_20260209",
   name: "web_fetch",
-  /**
-   * Fetch directly instead of through the dynamic-filtering code-execution
-   * path. That filtering is what made a single verification re-read ~773k
-   * tokens, and it is unsupported on the cheaper models. We only need the page
-   * text back; we do the comparing ourselves.
-   */
   allowed_callers: ["direct"],
-  // Government pages are large. Uncapped, a handful of them blow out the
-  // context and the request runs for tens of minutes.
-  // Was 12000 x 6 = up to 72k tokens of page content per call, re-sent on every
-  // resumed turn. The verifier needs the relevant passage, not the whole page.
   max_content_tokens: 3000,
   max_uses: 4,
 };
@@ -70,7 +44,6 @@ Be strict. If a source does not actually say it, the verdict is "unsupported" ev
 Return ONLY a JSON object, no code fences, no commentary:
 {"claims":[{"claim":"...","sourceUrl":"...","verdict":"supported|contradicted|unsupported","evidence":"..."}]}`;
 
-/** The verifier reads claims, not markup. Tags are billable noise. */
 function stripTags(html) {
   return (html || "")
     .replace(/<a\s+[^>]*href\s*=\s*["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi, "$2 [$1]")
@@ -79,7 +52,6 @@ function stripTags(html) {
     .trim();
 }
 
-/** Turns a verdict into instructions the writer can act on. */
 export function buildRevisionBrief(result) {
   const lines = [];
   if (result.contradicted.length) {
@@ -97,11 +69,6 @@ export function buildRevisionBrief(result) {
   return lines.join("\n");
 }
 
-/**
- * With server tools the model narrates between fetches, so the response is
- * several text blocks and only the last one is the verdict. Take that, then
- * fall back to the widest brace-delimited span across the whole response.
- */
 function parseVerdict(blocks) {
   const texts = blocks.filter((b) => b.type === "text").map((b) => b.text.trim()).filter(Boolean);
   const strip = (t) =>
@@ -119,7 +86,6 @@ function parseVerdict(blocks) {
       const obj = JSON.parse(c);
       if (Array.isArray(obj?.claims)) return obj;
     } catch {
-      // try the next candidate
     }
   }
   throw new Error(
@@ -127,16 +93,11 @@ function parseVerdict(blocks) {
   );
 }
 
-/**
- * @returns {{claims: Array, contradicted: Array, unsupported: Array, supported: Array}}
- */
 export async function verifyDraft({ apiKey, model, title, content, citations, maxTokens = 6000 }) {
   if (!citations.length) {
     throw new Error("Nothing to verify against: the draft cites no official sources.");
   }
 
-  // Reading a dozen government pages routinely runs past the SDK's 10-minute
-  // default, and a timeout here throws away a whole generation.
   const client = new Anthropic({ apiKey, timeout: 15 * 60 * 1000, maxRetries: 1 });
 
   const userPrompt = `Article title: ${title}
@@ -157,14 +118,9 @@ Fetch the sources above, then return the JSON verdict object.`;
     },
   ];
   let response;
-  // web_fetch_20260209 does its dynamic filtering inside a code-execution
-  // container. Resuming a paused turn without naming that container is a 400.
   let containerId;
 
-  // The server-side tool loop can stop early with pause_turn; re-send to resume.
   for (let turn = 0; turn < 3; turn++) {
-    // Streaming, because a long tool-heavy turn otherwise dies on the HTTP
-    // timeout rather than on anything to do with the work itself.
     response = await withRetry(async () => {
       const stream = client.messages.stream({
         model,
@@ -199,31 +155,14 @@ Fetch the sources above, then return the JSON verdict object.`;
   };
 }
 
-/**
- * A contradicted claim is always fatal. A few unsupported claims are normal
- * (not everything true is written on a government page), but a draft that is
- * mostly unsupported is one the model made up.
- */
 export function isClean(result) {
   return result.contradicted.length === 0 && result.unsupported.length === 0;
 }
 
-/**
- * Only a contradicted claim is worth another generation. Unsupported ones are
- * mostly true statements that simply are not written on the pages the article
- * happened to cite, and revising for them churns without converging: measured
- * 9 -> 6 -> 7 across two rounds on the same article.
- */
 export function needsRevision(result) {
   return result.contradicted.length > 0;
 }
 
-/**
- * Strict mode: every claim must end up either supported by a cited source or
- * removed. That is only reachable because the caller revises and re-verifies
- * first — as a one-shot gate it would reject almost everything.
- */
-/** Printing the verdict is separate from enforcing it, so a report-only run still shows it. */
 export function reportVerification(result) {
   const total = result.claims.length;
   console.log(

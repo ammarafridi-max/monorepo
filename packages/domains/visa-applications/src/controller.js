@@ -9,7 +9,6 @@ function pipeInline(res, { body, mimeType, filename }) {
 }
 
 export function createVisaApplicationController({ service, registry, reminders }) {
-  // ---- CUSTOMER (userJwt) ---------------------------------------------------
   const listMine = catchAsync(async (req, res) => {
     const applications = await service.listMine(req.user._id);
     res.status(200).json({ status: 'success', results: applications.length, data: { applications } });
@@ -56,7 +55,6 @@ export function createVisaApplicationController({ service, registry, reminders }
     res.status(200).json({ status: 'success', data: signed });
   });
 
-  // Inline stream (customer). Same ownership + version checks as the signed URL.
   const streamDocument = catchAsync(async (req, res) => {
     const data = await service.streamDocument({
       documentId: req.params.documentId,
@@ -66,7 +64,6 @@ export function createVisaApplicationController({ service, registry, reminders }
     pipeInline(res, data);
   });
 
-  // ---- ADMIN (restrictTo 'admin','agent') -----------------------------------
   const adminList = catchAsync(async (req, res) => {
     const { page = 1, limit = 20, status, assignedTo, search } = req.query;
     const result = await service.adminList({ page, limit, status, assignedTo, search });
@@ -113,13 +110,11 @@ export function createVisaApplicationController({ service, registry, reminders }
     res.status(200).json({ status: 'success', data: signed });
   });
 
-  // Inline stream (admin). Same admin check as the admin signed URL.
   const adminStreamDocument = catchAsync(async (req, res) => {
     const data = await service.streamDocument({ documentId: req.params.documentId, requester: { isAdmin: true }, version: req.query.version });
     pipeInline(res, data);
   });
 
-  // Manual reminder sweep (admin only). `?dryRun=1` reports without sending.
   const adminRunReminders = catchAsync(async (req, res) => {
     const dryRun = ['1', 'true', 'yes'].includes(String(req.query.dryRun || '').toLowerCase());
     const summary = await reminders.runReminderSweep({ dryRun });
@@ -131,7 +126,6 @@ export function createVisaApplicationController({ service, registry, reminders }
     res.status(200).json({ status: 'success', message: 'Note added', data: { application } });
   });
 
-  // ---- ADMIN document-level actions ----------------------------------------
   const adminUploadDocument = catchAsync(async (req, res) => {
     const doc = await service.adminUploadDocument({ documentId: req.params.documentId, file: req.file, performedBy: req.user._id });
     res.status(201).json({ status: 'success', message: 'Document uploaded', data: { document: doc } });
@@ -157,7 +151,6 @@ export function createVisaApplicationController({ service, registry, reminders }
     res.status(200).json({ status: 'success', message: 'Document row removed' });
   });
 
-  // ---- ADMIN registry CRUD (restrictTo('admin')) ---------------------------
   const listDocumentTypes = catchAsync(async (_req, res) => {
     const documentTypes = await registry.listDocumentTypes();
     res.status(200).json({ status: 'success', data: { documentTypes } });

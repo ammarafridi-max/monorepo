@@ -5,9 +5,6 @@ import * as Sentry from '@sentry/nextjs';
 import './globals.css';
 import Container from '../components/Container';
 
-// App Router global error boundary. Reports the render error to Sentry (a no-op
-// when Sentry is not configured) and shows a calm, on-brand fallback. It replaces
-// the root layout when it triggers, so it renders its own html/body.
 export default function GlobalError({ error, reset }) {
   useEffect(() => {
     Sentry.captureException(error);

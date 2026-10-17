@@ -1,23 +1,8 @@
-/**
- * Offers shown beside and inside a blog post.
- *
- * Brand-specific by design: the shared BlogPostPage renders whatever it is
- * given and nothing if it is given nothing, so no other brand inherits Travl's
- * products.
- *
- * The insurance card follows the post. Blog tags are broad ("Schengen Visa",
- * "Visa Documents") and never name a country, so the destination is resolved
- * from the slug, which does. Anything unmatched falls back to the Schengen
- * landing page for visa posts and the index for everything else — both real
- * pages, never a 404.
- */
 
 import { DUMMY_TICKET_365 } from './partners.js';
 
 const DUMMY_TICKET_URL = DUMMY_TICKET_365.url;
 
-// Only routes that exist under /travel-insurance. Order matters: the first
-// token found in the slug wins, so put the specific ones first.
 const INSURANCE_BY_SLUG_TOKEN = [
   ['germany', 'germany-visa'],
   ['france', 'france-visa'],
@@ -77,8 +62,6 @@ function resolveInsurance(blog) {
     };
   }
 
-  // Visa posts without a dedicated insurance page still want a visa-grade
-  // policy; everything else gets the index.
   const isVisaPost = slug.includes('visa') || tagNames(blog).includes('Visa Documents');
   return isVisaPost
     ? {
@@ -93,13 +76,11 @@ function resolveInsurance(blog) {
       };
 }
 
-/** Tags are populated BlogTag references; older data holds bare names. */
 const tagNames = (blog) =>
   (blog?.tags || []).map((t) => (typeof t === 'string' ? t : t?.name)).filter(Boolean);
 
 const VISA_TOKENS = ['visa', 'schengen', 'vfs', 'bls', 'embassy', 'consulate', 'onward', 'pnr'];
 
-/** Only a reader dealing with a visa file has any use for a flight reservation. */
 const isVisaAdjacent = (blog) => {
   const slug = String(blog?.slug || '').toLowerCase();
   const tags = tagNames(blog);
@@ -109,7 +90,6 @@ const isVisaAdjacent = (blog) => {
   );
 };
 
-/** Cards for the sticky rail, brand product first. */
 export function getBlogOffers(blog) {
   const insurance = resolveInsurance(blog);
 
@@ -141,7 +121,6 @@ export function getBlogOffers(blog) {
   return cards;
 }
 
-/** The single mid-article unit. Matches the post's subject where it can. */
 export function getBlogInlineOffer(blog) {
   const tags = tagNames(blog);
   const slug = String(blog?.slug || '').toLowerCase();

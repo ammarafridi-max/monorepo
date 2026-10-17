@@ -1,10 +1,3 @@
-// Verifies the reminder engine against the real MongoDB in MONGO_URI.
-//
-// This sends REAL email through Brevo and writes to the real database. Point it
-// at a staging environment.
-//
-// Usage, from apps/visawadi-backend:
-//   node --env-file=.env.staging scripts/verify/verify-reminders.mjs --db=<dbname>
 
 import {
   readEnv, requireEnv, requireDbArg, assertDb, Reporter, connect, describeConnection, buildSystem,
@@ -186,7 +179,7 @@ try {
   r.fail(`unexpected error: ${err.stack || err.message}`);
 } finally {
   await runCleanups(cleanups);
-  for (const c of conns) { try { await c.close(); } catch { /* ignore */ } }
+  for (const c of conns) { try { await c.close(); } catch {  } }
 }
 
 const failures = r.summary();

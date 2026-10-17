@@ -44,8 +44,6 @@ export function createBlogService({ Blog, BlogTag, imageStorage }) {
 
     if (status && status !== 'all') filter.status = status;
     if (tag && tag !== 'all') {
-      // Accepts a name or a slug and resolves it to an id, so a renamed tag
-      // keeps its posts. An unknown tag matches nothing rather than everything.
       const doc = await BlogTag.findOne({
         $or: [
           { name: new RegExp(`^${escapeRegex(tag)}$`, 'i') },
@@ -143,7 +141,6 @@ export function createBlogService({ Blog, BlogTag, imageStorage }) {
       const input = String(tag || '').trim();
       if (!input) continue;
 
-      // The admin form posts ids; older callers and imports post names or slugs.
       const hit =
         byId.get(input) ||
         byLower.get(input.toLowerCase()) ||
@@ -165,7 +162,7 @@ export function createBlogService({ Blog, BlogTag, imageStorage }) {
     if (!imageStorage) throw new AppError('Image storage is not configured', 500);
 
     if (existingImageUrl) {
-      try { await imageStorage.deleteImage(existingImageUrl); } catch { /* non-fatal */ }
+      try { await imageStorage.deleteImage(existingImageUrl); } catch {  }
     }
 
     return imageStorage.saveImage(file.buffer, blogId);

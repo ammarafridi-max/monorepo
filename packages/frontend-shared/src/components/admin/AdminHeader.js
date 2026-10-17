@@ -79,16 +79,8 @@ function normaliseResults(key, items = []) {
   return [];
 }
 
-/**
- * A search source: given the debounced query, return `{ results, loading }` where
- * results is keyed by category and each item is { id, primary, secondary, href }.
- * Passed in as a prop so an app searches its OWN domains; this one is the travel
- * dashboard's. It is a hook, so it must be a stable module-level function.
- */
 export function useTravelSearchResults(debouncedQuery, enabled) {
   const searchFilters = { search: debouncedQuery, limit: 4 };
-  // No brand mounts all five domains, so several of these always 404. Retrying
-  // them holds the dropdown on a spinner for seconds.
   const searchOpts = { enabled, retry: false };
 
   const { dummyTickets, isLoadingDummyTickets } = useDummyTickets(searchFilters, searchOpts);
@@ -254,12 +246,6 @@ function GlobalSearch({ categories, useSearchResults, placeholder }) {
   );
 }
 
-/**
- * `globalSearch` mounts the header search. The data source is a prop so each app
- * searches its OWN domains; the defaults are the travel dashboard's. An app with
- * none of those either passes its own `useSearchResults` + `searchCategories`, or
- * false, rather than firing requests that all 404.
- */
 export default function AdminHeader({
   globalSearch = true,
   searchCategories = TRAVEL_SEARCH_CATEGORIES,

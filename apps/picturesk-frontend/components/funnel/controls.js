@@ -1,8 +1,5 @@
 'use client';
 
-// A grid of selectable option cards, each with a preview image (or a placeholder
-// until a real image URL is added to the catalog). The choices are the visual
-// interest; cobalt marks the selected state.
 export function OptionGrid({ items, selected, onToggle, showDesc, full }) {
   return (
     <div className="cards">
@@ -47,9 +44,6 @@ export function OptionGrid({ items, selected, onToggle, showDesc, full }) {
   );
 }
 
-// A row of single-select chips: text-only pills (demographics have no preview
-// image). Picking one clears the rest; an optional group can be un-picked by
-// tapping the selected chip again. Cobalt marks the selected state.
 export function ChoiceRow({ items, value, onSelect, allowClear }) {
   return (
     <div className="chips">
@@ -71,6 +65,4 @@ export function ChoiceRow({ items, value, onSelect, allowClear }) {
   );
 }
 
-// Only offer options that have a preview (an image or a swatch). The catalog entry
-// stays so paid orders that already carry the id keep their prompt.
 export const withPreview = (items) => items.filter((it) => it.image || it.swatch);

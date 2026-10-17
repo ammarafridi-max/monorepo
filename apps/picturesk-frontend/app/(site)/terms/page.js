@@ -29,7 +29,6 @@ export default function TermsPage() {
       lede={terms.lede}
       contactNote
     >
-      {/* TODO: confirm governing law / jurisdiction (UAE?) (see data/legal.js). */}
       <Sections sections={terms.sections} />
     </ContentPage>
   );

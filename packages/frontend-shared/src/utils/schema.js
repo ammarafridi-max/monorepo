@@ -46,9 +46,6 @@ export function createSchemaBuilders({
     publisher: { "@id": organizationId },
   });
 
-  // A tag or category listing is a CollectionPage, not a Blog: Blog describes
-  // the publication itself. `items` becomes an ItemList so the listing order is
-  // explicit rather than inferred from the DOM.
   const buildCollectionPage = ({ canonical, title, description, items = [] }) => ({
     "@type": "CollectionPage",
     "@id": `${canonical}#collectionpage`,
@@ -84,11 +81,6 @@ export function createSchemaBuilders({
 
   const authorId = (slug) => `${siteUrl}/authors/${slug}#person`;
 
-  /**
-   * A byline is only an E-E-A-T signal if it resolves to something. An author
-   * with a slug becomes a real Person node other pages reference by @id; one
-   * without stays an inline name, which is all we can honestly claim.
-   */
   const buildPerson = ({ name, slug, jobTitle, bio, image, sameAs, expertise }) => {
     if (!name) return undefined;
     if (!slug) return { "@type": "Person", name };
@@ -148,9 +140,6 @@ export function createSchemaBuilders({
     mainEntityOfPage: { "@id": `${canonical}#webpage` },
   });
 
-  // `offers` takes the brand's own package shape ({ name, price, currency,
-  // description }) and is omitted entirely when empty, so a page with no
-  // pricing emits the same Service node it always did.
   const buildService = ({ canonical, name, description, serviceType, areaServed, offers = [] }) => {
     const priced = (offers || []).filter((o) => Number(o?.price) > 0);
 
@@ -184,9 +173,6 @@ export function createSchemaBuilders({
     };
   };
 
-  // `fromPrice: true` marks `price` as the lowest quote, which is what a
-  // "from AED 30" page actually promises; the Offer keeps `price` for the
-  // rich-result validator and adds the minPrice specification for everyone else.
   const buildProduct = ({
     canonical,
     name,

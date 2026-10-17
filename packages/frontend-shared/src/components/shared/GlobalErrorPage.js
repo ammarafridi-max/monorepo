@@ -2,8 +2,6 @@
 
 import { useEffect } from 'react';
 
-// app/global-error.js replaces the root layout, so this renders its own html
-// and body and uses inline styles: no stylesheet is guaranteed to be loaded.
 export default function GlobalErrorPage({ error, reset }) {
   useEffect(() => {
     console.error(error);

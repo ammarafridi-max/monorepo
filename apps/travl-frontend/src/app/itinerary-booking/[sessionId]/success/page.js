@@ -8,7 +8,6 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-// Cross-sell after an itinerary purchase: insurance (own) + dummy ticket (referred out).
 const upsells = [
   {
     icon: <ShieldCheck size={15} />,

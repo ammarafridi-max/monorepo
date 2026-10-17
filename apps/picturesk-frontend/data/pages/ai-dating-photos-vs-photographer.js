@@ -1,14 +1,5 @@
-/**
- * /ai-dating-photos-vs-photographer
- *
- * A comparison page, honest in both directions. Picturesk figures are exact.
- * Photographer figures are ranges stated as ranges: dating photographers price by
- * city and by session length, and the ranges below should be spot-checked against
- * two live quotes before any number is tightened.
- */
 export const aiDatingPhotosVsPhotographer = {
   meta: {
-    // 52 chars / 160 chars
     title: 'AI Dating Photos vs a Photographer: Cost and Results',
     description:
       'AI dating photos against a dating photographer, compared honestly: what each costs, how long it takes, how natural the results look, and when to book the human.',

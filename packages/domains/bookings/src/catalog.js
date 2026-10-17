@@ -1,4 +1,3 @@
-// Server-side source of truth for transfer pricing: never take a price from the request body. Mirrors the frontend PLACEHOLDER_VEHICLES list.
 export const VEHICLE_CATALOG = {
   'economy-sedan':  { name: 'Standard Sedan',       class: 'Economy',   price: { amount: 35,  currency: 'USD' } },
   'comfort-sedan':  { name: 'Comfort Sedan',        class: 'Comfort',   price: { amount: 52,  currency: 'USD' } },

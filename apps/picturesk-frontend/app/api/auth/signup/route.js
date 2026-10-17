@@ -10,9 +10,6 @@ import {
   backlinkOrders,
 } from '../../../../lib/auth';
 
-// POST /api/auth/signup { email, password } -> creates the account, back-links any
-// past anonymous orders that share the email, starts a session, and emails a
-// verification code. `verify: true` tells the form to go to /verify next.
 export async function POST(req) {
   const { email, password } = await req.json().catch(() => ({}));
   const normalized = normalizeEmail(email);
@@ -32,8 +29,6 @@ export async function POST(req) {
   const user = await User.create({ email: normalized, passwordHash: await hashPassword(password) });
   await backlinkOrders(user._id, normalized);
   await createSessionCookie(user);
-  // A password account proves its inbox before it can start a set; the code is
-  // best effort here, the verify page can resend.
   await issueVerificationCode(user).catch((err) => console.error('[web] verification email failed:', err.message));
 
   return Response.json({ ok: true, verify: true });

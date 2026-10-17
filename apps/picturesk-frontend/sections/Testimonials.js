@@ -3,12 +3,6 @@ import { testimonials as defaultTestimonials } from '../data/landing';
 import Container from '../components/Container';
 import SectionHeading from '../components/SectionHeading';
 
-// What customers say, three cards across. The rating comes from the data rather
-// than being a hardcoded five, so a four-star quote can be shown honestly.
-//
-// NOTE: data/landing.js currently holds PLACEHOLDER quotes and ratings from
-// invented people so this section can be designed. They must be swapped for real,
-// attributable quotes before launch.
 function Stars({ rating = 5 }) {
   return (
     <span className="quote__stars" role="img" aria-label={`${rating} out of 5 stars`}>

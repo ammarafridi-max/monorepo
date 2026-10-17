@@ -14,8 +14,6 @@ import AppLayout from '@travel-suite/frontend-shared/layouts/AppLayout';
 import AnalyticsInit from '@travel-suite/frontend-shared/components/shared/AnalyticsInit';
 import StickyWhatsApp from '@travel-suite/frontend-shared/components/ui/v2/StickyWhatsApp';
 
-// Routes whose first section is not the dark Hero, so the transparent header
-// has to stay dark-on-light there.
 const LIGHT_HEADER_ROUTES = [
   '/blog',
   '/booking',

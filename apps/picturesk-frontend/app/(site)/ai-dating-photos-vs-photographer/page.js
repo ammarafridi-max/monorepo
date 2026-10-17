@@ -9,8 +9,6 @@ import SectionHeading from '../../../components/SectionHeading';
 import { aiDatingPhotosVsPhotographer as page } from '../../../data/pages/ai-dating-photos-vs-photographer';
 import { DATING_FUNNEL, ROOTS, landingMetadata, landingSchema } from '../../../lib/landingPage';
 
-// Every section takes its content from data/pages/ai-dating-photos-vs-photographer.js. Breadcrumbs from
-// /ai-dating-photos, the canonical home of the dating product.
 export const metadata = landingMetadata(page);
 
 const schema = landingSchema({ ...page, productName: 'AI Dating Photos', root: ROOTS.dating, price: '19' });

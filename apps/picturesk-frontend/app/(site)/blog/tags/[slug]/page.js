@@ -13,22 +13,12 @@ import {
   buildWebsite,
 } from '../../../../../lib/schema';
 
-// One tag's posts, rendered by the shared BlogTagDetailPage. The shared post page
-// links every tag chip here, so this route has to exist or every post carries a
-// 404. Same rules as the post route: no loading.js anywhere above this, so an
-// unknown slug is a real 404 and not an indexable soft one.
 
 const describe = (tag) =>
   tag.metaDescription ||
   tag.description ||
   `Guides and tips about ${tag.name.toLowerCase()} from Picturesk, the AI headshot generator.`;
 
-// Rendered per request, never prerendered. The (site) layout reads the session
-// cookie, so nothing under it can be static; a route that also exported
-// generateStaticParams + revalidate promised a static page and then hit that
-// cookie on its first on-demand render, which is a DYNAMIC_SERVER_USAGE 500 in
-// production. The api responses are still cached through each fetch's own
-// `next.revalidate`, so the cost is the render, not the network.
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }) {
@@ -68,7 +58,6 @@ export default async function Page({ params, searchParams }) {
   const description = describe(tag);
   const canonical = `${SITE_URL}/blog/tags/${tag.slug || slug}`;
 
-  // Crumbs start at the product page: "/" only redirects there.
   const breadcrumbPaths = [
     { label: 'AI Headshot Generator', path: '/ai-headshot-generator' },
     { label: 'Blog', path: '/blog' },

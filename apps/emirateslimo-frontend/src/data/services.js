@@ -17,16 +17,4 @@ export const services = [
     image: '/chauffeur-service.webp',
     href: '/hourly-chauffeur',
   },
-  // {
-  //   title: 'Our Fleet',
-  //   text: 'Explore our luxury sedans, SUVs, and executive vans to find the perfect ride for your journey.',
-  //   image: '/city-to-city-rides.webp',
-  //   href: '/fleet',
-  // },
-  // {
-  //   title: 'City Tours',
-  //   text: 'Explore Dubai and Abu Dhabi in style — your private chauffeur will take you to the city’s top attractions at your pace.',
-  //   image: '/city-tours.webp',
-  //   href: '/services',
-  // },
 ];

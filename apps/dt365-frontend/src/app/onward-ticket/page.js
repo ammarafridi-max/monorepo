@@ -144,10 +144,6 @@ export default function Page() {
       name: pageData.meta.productName,
       description: pageData.meta.description,
     }),
-    // Inline Product node with AggregateOffer — onward tickets are priced
-    // in three validity tiers (USD 13 / USD 20 / USD 23) and the shared buildProduct
-    // helper only supports a single Offer. Mirrors buildProduct's shape
-    // (Organization @id refs) so it integrates cleanly with the graph.
     {
       '@type': 'Product',
       '@id': `${pageData.meta.canonical}#product`,
@@ -217,10 +213,6 @@ export default function Page() {
         subtitle={pageData.sections.testimonials.subtitle}
         testimonials={pageData.sections.testimonials.testimonials}
       />
-      {/* Inline FAQ render — we pass 13 FAQs to schema, but the shared <FAQ>
-          component caps the visible list to 6. Google's FAQPage rich result
-          guidelines require the schema content to be visible on the page,
-          so this section renders the full list to match the schema. */}
       <PrimarySection id="faq" className="py-section bg-gray-50/70">
         <Container>
           <SectionTitle

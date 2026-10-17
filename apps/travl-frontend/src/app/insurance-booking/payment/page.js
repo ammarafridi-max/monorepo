@@ -11,7 +11,6 @@ const partnerIcon = (src, alt) => (
   <Image src={src} alt={alt} width={24} height={24} className="rounded-full" />
 );
 
-// Cross-sell after an insurance purchase: both referred out to partner brands.
 const upsells = [
   {
     icon: partnerIcon(VISAWADI.icon, VISAWADI.name),

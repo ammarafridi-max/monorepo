@@ -4,14 +4,6 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getAdminOrders, getAdminCustomers, STATUS_LABEL, usd } from '../../lib/adminApi';
 
-/**
- * The header search, over Picturesk's own domains. Shape is dictated by
- * AdminHeader: a hook taking (debouncedQuery, enabled) and returning
- * { results, loading }, keyed by the categories below.
- *
- * Searching is server-side. The orders list is capped, so filtering here would
- * only ever search the newest few hundred and quietly miss older orders.
- */
 
 export const PICTURESK_SEARCH_CATEGORIES = [
   { key: 'orders', label: 'Orders', color: 'bg-blue-50 text-blue-700' },

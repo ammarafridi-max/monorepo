@@ -1,11 +1,3 @@
-/**
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/migrate-blog-from-travl.mjs          # dry run + diff report
- *   node --env-file=.env.production scripts/migrate-blog-from-travl.mjs --apply
- *
- * Cover images are copied, never renamed: a Cloudinary rename would 404 Travl's
- * own posts. Rollback is deleting these _ids from the visawadi database.
- */
 
 import fs from 'node:fs';
 import path from 'node:path';

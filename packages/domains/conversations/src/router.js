@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import multer from 'multer';
 
-// WhatsApp caps documents at 100MB, but 16MB covers tickets and passport scans without holding big buffers in memory.
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 16 * 1024 * 1024 } });
 
 export function createConversationRouter({ controller, auth }) {

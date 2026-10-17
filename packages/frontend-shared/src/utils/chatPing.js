@@ -2,8 +2,6 @@ const SOUND_URL = '/sounds/message-notification.m4a';
 
 let audio = null;
 
-// Falls back to synthesised tones if the file is missing, so a new brand adopting the
-// inbox still gets an audible alert before anyone drops the asset in public/sounds.
 function playFallbackTones() {
   if (typeof window === 'undefined') return;
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -33,7 +31,6 @@ function playFallbackTones() {
   }
 }
 
-// Browsers block audio until the user has interacted with the page, so the first ping may be silent.
 export function playChatPing() {
   if (typeof window === 'undefined') return;
   try {

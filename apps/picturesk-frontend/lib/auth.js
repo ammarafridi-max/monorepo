@@ -2,10 +2,6 @@ import 'server-only';
 import bcrypt from 'bcryptjs';
 import { Order, User } from '@travel-suite/picturesk-shared';
 
-/**
- * Credentials helpers: password hashing and the anonymous-order back-link. Kept
- * server-only; the User lookups themselves live in the route handlers.
- */
 
 export const PASSWORD_MIN = 8;
 
@@ -25,12 +21,6 @@ export function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-/**
- * Back-link a user's PAST anonymous orders. Safe by construction: it only claims
- * orders that share this exact email AND have no owner yet ({ userId: null } in
- * Mongo also matches the field being absent). It never reassigns an order that
- * already belongs to someone.
- */
 export async function backlinkOrders(userId, email) {
   await Order.updateMany(
     { customerEmail: normalizeEmail(email), userId: null },
@@ -38,13 +28,6 @@ export async function backlinkOrders(userId, email) {
   );
 }
 
-/**
- * Resolve the User for a social sign-in, keyed on the provider's email. If no
- * account exists we create a passwordless one; if it already exists (password or
- * another provider) we reuse it and record the provider. Email is the single
- * identity anchor, so signing in with Google and later with LinkedIn on the same
- * address is one account. Caller must dbConnect() first.
- */
 export async function findOrCreateOAuthUser({ email, provider }) {
   const normalized = normalizeEmail(email);
   let user = await User.findOne({ email: normalized });
@@ -56,8 +39,6 @@ export async function findOrCreateOAuthUser({ email, provider }) {
     user.providers = [...(user.providers || []), provider];
     changed = true;
   }
-  // The provider just proved this inbox, which also verifies a password account
-  // that never typed its code.
   if (!user.emailVerifiedAt) {
     user.emailVerifiedAt = new Date();
     changed = true;

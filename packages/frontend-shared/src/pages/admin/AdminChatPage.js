@@ -370,7 +370,6 @@ function ChatContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeWaId, conversation?.unreadCount]);
 
-  // Opening an unclaimed chat takes ownership, so two agents cannot answer at once.
   useEffect(() => {
     if (activeWaId && conversation && !conversation.assignedTo) claimConversation(activeWaId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -383,7 +382,6 @@ function ChatContent() {
     setReplyTo(null);
   }, [activeWaId]);
 
-  // Ring only for messages that landed after this page opened, never on the first load.
   const lastSeenInboundRef = useRef(null);
   useEffect(() => {
     if (!conversations.length) return;

@@ -1,15 +1,3 @@
-/**
- * Travl is narrowing to travel insurance only, so visa-topic posts do not belong
- * here any more. This removes the leftover visa drafts that were migrated to
- * VisaWadi and left behind, after writing a JSON backup of each one.
- *
- * Insurance posts that merely mention a visa (Schengen insurance requirements,
- * for example) are Travl's own product content and are deliberately kept.
- *
- * Usage, from apps/travl-backend:
- *   node --env-file=.env.production scripts/remove-migrated-visa-drafts.mjs           # dry run
- *   node --env-file=.env.production scripts/remove-migrated-visa-drafts.mjs --apply
- */
 
 import mongoose from 'mongoose';
 import { writeFileSync } from 'node:fs';
@@ -17,7 +5,6 @@ import { writeFileSync } from 'node:fs';
 const APPLY = process.argv.includes('--apply');
 const BACKUP_DIR = process.argv.find((a) => a.startsWith('--backup-dir='))?.split('=')[1] ?? '.';
 
-// Matched on exact title so a re-run cannot widen its own blast radius.
 const TITLES = [
   'What to Do If Your Schengen Visa Is Delayed Past Your Travel Date',
   'Dummy Ticket Providers Compared: What to Look For Before You Buy',

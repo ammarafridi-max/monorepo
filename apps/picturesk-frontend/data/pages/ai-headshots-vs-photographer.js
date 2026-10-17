@@ -1,14 +1,5 @@
-/**
- * /ai-headshots-vs-photographer
- *
- * A comparison page, so it has to be honest in both directions or it earns
- * nothing: the section where a photographer still wins is what makes the rest
- * credible. Every figure about Picturesk is exact. Figures about photographers are
- * ranges stated as ranges, because they vary by city and by photographer.
- */
 export const aiHeadshotsVsPhotographer = {
   meta: {
-    // 52 chars / 156 chars
     title: 'AI Headshots vs Photographer: Cost, Time and Quality',
     description:
       'AI headshots against a photographer, compared honestly: what each costs, how long each takes, when the results hold up, and when a studio is the right call.',

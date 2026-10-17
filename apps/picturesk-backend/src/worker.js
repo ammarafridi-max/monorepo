@@ -1,4 +1,3 @@
-// MUST be first: arms Sentry (and its crash handlers) before any pipeline code runs.
 import { captureError } from './instrument.js';
 import { Worker } from 'bullmq';
 import JSZip from 'jszip';
@@ -19,23 +18,9 @@ import { createPipeline } from './pipeline/pipeline.js';
 import { createEnsureRefund } from './pipeline/refund.js';
 import { classifyFacialHair } from './pipeline/classifyFacialHair.js';
 
-/**
- * Picturesk worker (Phase 5: failure hardening).
- *
- * Consumes order-pipeline jobs and drives an order PAID -> TRAINING ->
- * GENERATING -> DELIVERED. The resumable, per-stage-idempotent logic lives in
- * pipeline.js; the Replicate client, training-zip builder, delivery email, and
- * refund are injected. On failure the order moves to FAILED and, if the customer
- * paid, is refunded exactly once (receipt-before-acting via refundedAt + a Stripe
- * idempotency key). Set USE_FAKE_REPLICATE=1 to drive the fake client.
- */
 
 const USE_FAKE_REPLICATE = process.env.USE_FAKE_REPLICATE === '1';
 
-// Generation backend. 'lora' (default): per-user LoRA training + generation, with
-// optional culling/swap. 'pulid': NO training -- identity comes from a reference
-// selfie fed to bytedance/flux-pulid at generation time, which fixes face shape and
-// removes the train/cull/swap machinery. Gated so prod is unchanged until flipped.
 const USE_PULID = (process.env.GENERATION_BACKEND || 'lora').toLowerCase() === 'pulid';
 
 const {
@@ -50,7 +35,6 @@ const {
 if (!MONGODB_URI) throw new Error('[worker] MONGODB_URI is required');
 if (!REDIS_URL) throw new Error('[worker] REDIS_URL is required');
 
-/** Parse a positive-integer env var, falling back to a default. */
 function intEnv(name, fallback) {
   const raw = process.env[name];
   if (raw == null || raw === '') return fallback;
@@ -61,19 +45,8 @@ function intEnv(name, fallback) {
   return n;
 }
 
-// Identity-based candidate culling is OPTIONAL and currently DEFERRED: it needs a
-// real face-embedding model on Replicate via REPLICATE_FACE_EMBED_MODEL, and no
-// off-the-shelf model fits our contract yet (see "Deferred" in the README). When
-// that var is UNSET the feature is OFF: we generate exactly what we deliver and
-// skip scoring, so delivery behaves exactly as it did before. Set it (once you
-// deploy an embedding model) to turn on overgenerate-and-cull.
-// PuLID already locks identity + face shape from the reference, so culling adds no
-// value there -- force it off in PuLID mode regardless of the env var.
 const IDENTITY_SCORING = !USE_PULID && Boolean(process.env.REPLICATE_FACE_EMBED_MODEL);
 
-// How many headshots we deliver. With culling ON we generate MORE candidates
-// (GENERATE_COUNT) and keep the best DELIVER_COUNT; with culling OFF we generate
-// exactly what we deliver, so there is no overgeneration cost.
 const DELIVER_COUNT = intEnv('DELIVER_COUNT', 14);
 const GENERATE_COUNT = IDENTITY_SCORING ? intEnv('GENERATE_COUNT', 20) : DELIVER_COUNT;
 if (GENERATE_COUNT < DELIVER_COUNT) {
@@ -84,32 +57,18 @@ if (GENERATE_COUNT < DELIVER_COUNT) {
 
 if (!USE_FAKE_REPLICATE) {
   if (!process.env.REPLICATE_API_TOKEN) throw new Error('[worker] REPLICATE_API_TOKEN is required');
-  // The destination model is the LoRA trainer's push target -- only the 'lora'
-  // backend trains, so PuLID does not need it.
   if (!USE_PULID && !process.env.REPLICATE_DESTINATION_MODEL)
     throw new Error('[worker] REPLICATE_DESTINATION_MODEL is required (owner/name)');
-  // NOTE: REPLICATE_FACE_EMBED_MODEL is intentionally NOT required. Identity
-  // culling is OFF until it is set (and always off in PuLID mode).
-  // Refunds are money-critical: the real worker must be able to issue them.
   if (!STRIPE_SECRET_KEY) throw new Error('[worker] STRIPE_SECRET_KEY is required (refunds)');
 }
 
-// Stripe client for refunds. null only in the fake path (no real money).
 const stripe = STRIPE_SECRET_KEY ? new Stripe(STRIPE_SECRET_KEY) : null;
 
-// Pick the generation client. All three expose the same
-// startTraining/pollTraining/startGeneration/pollGeneration interface, so the
-// pipeline is identical across them: the fake (in-memory), the LoRA client (real
-// training + generation), or the PuLID client (no training; reference-image
-// generation).
 const client = USE_FAKE_REPLICATE
   ? await import('./pipeline/replicateClient.fake.js')
   : USE_PULID
     ? await import('./pipeline/replicateClient.pulid.js')
     : await import('./pipeline/replicateClient.js');
-// The identity scorer, loaded ONLY when culling is enabled (it needs the embed
-// model). When disabled, the pipeline uses its neutral default scorer and makes
-// no embedding calls. Real/fake split mirrors the Replicate client.
 const scoreIdentity = IDENTITY_SCORING
   ? (
       USE_FAKE_REPLICATE
@@ -118,11 +77,6 @@ const scoreIdentity = IDENTITY_SCORING
     ).scoreIdentity
   : undefined;
 
-// Identity lock via face swap. Gated on REPLICATE_FACE_SWAP_MODEL: when set, the
-// pipeline swaps the customer's real face onto each delivered headshot (fixing face
-// shape / hair / expression the LoRA drifts on). Unset = OFF, delivery unchanged.
-// Also off in PuLID mode: PuLID already delivers the real face/shape, so a swap
-// on top is redundant.
 const FACE_SWAP = !USE_PULID && Boolean(process.env.REPLICATE_FACE_SWAP_MODEL);
 const swapFace = FACE_SWAP
   ? (
@@ -132,10 +86,6 @@ const swapFace = FACE_SWAP
     ).swapFace
   : undefined;
 
-// Realism enhancement (final polish). Gated on REPLICATE_ENHANCE_MODEL: when set,
-// each delivered image is run through a creative upscaler at low creativity to add
-// skin texture + sharpen eyes (de-plastic) without changing identity. Backend-
-// agnostic -- applies to whatever the delivered set is (LoRA, swapped, or PuLID).
 const ENHANCE_FACE = Boolean(process.env.REPLICATE_ENHANCE_MODEL);
 const enhanceFace = ENHANCE_FACE
   ? (
@@ -145,10 +95,6 @@ const enhanceFace = ENHANCE_FACE
     ).enhanceFace
   : undefined;
 
-// DURABILITY: persist the final delivered images into our R2 bucket so they do not
-// expire with the upstream (replicate.delivery) URLs. ON by default (R2 is already
-// required by the worker); set PERSIST_DELIVERED=off to fall back to the ephemeral
-// upstream URLs. The fake variant (no R2/network) is used under USE_FAKE_REPLICATE.
 const PERSIST_DELIVERED = (process.env.PERSIST_DELIVERED ?? 'on') !== 'off';
 const persistImage = PERSIST_DELIVERED
   ? (
@@ -185,16 +131,9 @@ console.log(
 await connectMongo(MONGODB_URI);
 console.log('[worker] connected to MongoDB');
 
-// PuLID "training input" is just the reference selfie fed to the model at
-// generation time (the pipeline threads it through the training slot, see
-// replicateClient.pulid.js). Use the first uploaded selfie; the upload gate has
-// already ensured it has a detectable face.
 async function resolvePulidReference(order) {
   const reference = (order.uploadedImageUrls ?? [])[0] || null;
   if (!reference) return null;
-  // If the customer left facial hair blank, infer it from the reference so the
-  // prompt names the real beard and PuLID renders it (instead of a generic short
-  // one). Persist once; non-fatal -- a miss just means no derived descriptor.
   if (!order.facialHair && !order.derivedFacialHair) {
     const derived = await classifyFacialHair(reference);
     if (derived) {
@@ -205,14 +144,8 @@ async function resolvePulidReference(order) {
   return reference;
 }
 
-/**
- * Resolve the training-images zip for an order. The flux trainer wants a single
- * zip URL, but an order carries individual selfie URLs, so we download them and
- * zip them into R2. TEST_IMAGE_ZIP_URL is an optional dev override that skips
- * the build entirely.
- */
 async function resolveTrainingZip(order) {
-  if (TEST_IMAGE_ZIP_URL) return TEST_IMAGE_ZIP_URL; // dev override
+  if (TEST_IMAGE_ZIP_URL) return TEST_IMAGE_ZIP_URL; 
 
   const urls = order.uploadedImageUrls ?? [];
   if (urls.length === 0) return null;
@@ -233,21 +166,10 @@ async function resolveTrainingZip(order) {
   return url;
 }
 
-// Brevo transactional email client. null when BREVO_API_KEY is unset, which
-// keeps email a clean no-op for local dev (same behavior as the old Resend path).
 const emailClient = BREVO_API_KEY
   ? createEmailClient({ apiKey: BREVO_API_KEY, sender: BREVO_SENDER })
   : null;
 
-/**
- * Idempotent delivery. Send the results email exactly once, guarded by
- * deliveredEmailSentAt (set only on success). If sending FAILS we throw so
- * BullMQ retries the job, which re-enters the DELIVERED case and tries again;
- * this closes the Phase 4 best-effort gap. The throw never affects order state:
- * the order is already DELIVERED (terminal), and the failed handler skips
- * terminal orders. A missing BREVO_API_KEY is treated as "email disabled" (dev)
- * and does NOT retry.
- */
 async function onDelivered(orderId) {
   const order = await Order.findById(orderId);
   if (!order || order.deliveredEmailSentAt) return;
@@ -257,8 +179,6 @@ async function onDelivered(orderId) {
     return;
   }
 
-  // The token is what authorises the buyer to read the order and download the set.
-  // Legacy orders have none and still resolve without it (see orderAuthorized).
   const token = order.publicToken ? `&t=${order.publicToken}` : '';
   const resultsUrl = `${WEB_BASE_URL}/success?orderId=${orderId}${token}`;
   try {
@@ -266,12 +186,10 @@ async function onDelivered(orderId) {
       to: order.customerEmail,
       resultsUrl,
       orderId,
-      // The culled best set from candidate selection, not the full candidate list.
       thumbnailUrls: order.deliveredImageUrls ?? [],
       product: order.product,
     });
   } catch (err) {
-    // Leave deliveredEmailSentAt unset and let the retry re-attempt.
     console.error(`[worker] order ${orderId} delivery email failed, will retry: ${err.message}`);
     throw err;
   }
@@ -280,14 +198,8 @@ async function onDelivered(orderId) {
 }
 
 // Idempotent auto-refund for a FAILED order (logic in refund.js so the Stripe
-// client can be injected; a counting stub replaces it in tests).
 const ensureRefund = createEnsureRefund({ stripe });
 
-// The subject anchor every prompt leads with, built PER ORDER from its demographics
-// via the shared buildSubject (gender/age/race/facial hair, e.g. "a man in their
-// thirties, with a full beard"). In LoRA mode it is prefixed with the trigger word
-// that activates the trained face. In PuLID mode there is NO trigger (identity comes
-// from the reference image), so we use the plain subject description.
 const subjectAnchorFor = (order) => {
   const subject = buildSubject({
     gender: order.gender,
@@ -295,24 +207,15 @@ const subjectAnchorFor = (order) => {
     race: order.race,
     build: order.build,
     height: order.height,
-    // Prefer the customer's choice; fall back to the vision-inferred one (PuLID).
     facialHair: order.facialHair || order.derivedFacialHair,
   });
-  // PuLID re-synthesizes the face, so name a calm closed-mouth expression to beat
-  // FLUX's toothy-grin prior (the client also carries a teeth negative prompt).
   return USE_PULID ? `${subject}, a calm, subtle closed-mouth expression` : `${TRIGGER_WORD}, ${subject}`;
 };
 
-// Per-order prompt builder: turn the order's selected looks/attire into
-// GENERATE_COUNT prompts via the SHARED catalog buildPrompts, the single source
-// of truth the web also renders its options from, so shown options can never
-// drift from what we generate.
 const buildOrderPrompts = (order, count) =>
   buildPrompts({
     looks: order.selectedLooks ?? [],
     attire: order.selectedAttire ?? [],
-    // The pipeline passes the effective candidate count (which accounts for culling
-    // overgeneration); fall back to the tier snapshot / env for older call sites.
     count: count ?? order.generateCount ?? GENERATE_COUNT,
     subjectAnchor: subjectAnchorFor(order),
     product: order.product,
@@ -329,21 +232,13 @@ const pipeline = createPipeline({
   persistWeights,
   generateCount: GENERATE_COUNT,
   deliverCount: DELIVER_COUNT,
-  // How many candidates to identity-score at once (culling). Scoring is a CPU embed
-  // call per candidate, so a bounded fan-out is far faster than one-at-a-time.
   scoreConcurrency: Number(process.env.SCORE_CONCURRENCY) || 6,
-  // Overgenerate ONLY when culling is on, so scoring has spare candidates to cull.
-  // With culling off (e.g. prod), generation stays == deliverCount (no waste).
   cullingEnabled: IDENTITY_SCORING,
   overgenerateFactor: Number(process.env.OVERGENERATE_FACTOR) || 1.5,
-  // Wedged-training recovery: if a training sits in "starting" (no hardware) longer
-  // than this, cancel it and start a fresh one, up to this many times, instead of
-  // waiting the full training window on a training Replicate never allocated.
   startingMaxWaitMs: (Number(process.env.TRAINING_STARTING_MAX_MIN) || 45) * 60 * 1000,
   maxTrainingRestarts: Number.isFinite(Number(process.env.TRAINING_MAX_RESTARTS))
     ? Number(process.env.TRAINING_MAX_RESTARTS)
     : 1,
-  // PuLID has no zip to build; its "training input" is the reference selfie.
   resolveTrainingZip: USE_PULID ? resolvePulidReference : resolveTrainingZip,
   onDelivered,
   onFailed: ensureRefund,
@@ -351,12 +246,6 @@ const pipeline = createPipeline({
 
 const connection = createRedisConnection(REDIS_URL);
 
-// How many orders this worker process runs at once. An order is almost entirely
-// spent AWAITING Replicate (training + generation polls), so a single process can
-// hold many of these loops open cheaply -- raising this parallelises orders instead
-// of processing them strictly one at a time. The real ceiling is Replicate's rate
-// limit + your account CREDIT (each concurrent order is a live GPU spend), not the
-// worker. Default 1 (serial) so nothing changes until you opt in. Tune via the env.
 const WORKER_CONCURRENCY = Number(process.env.WORKER_CONCURRENCY) || 1;
 
 const worker = new Worker(
@@ -369,23 +258,12 @@ const worker = new Worker(
   {
     connection,
     concurrency: WORKER_CONCURRENCY,
-    // Redis-frugal settings for a LOW-VOLUME queue. An idle BullMQ worker polls
-    // Redis constantly (fetch + stalled-check + lock-renew), which alone can exhaust
-    // a small managed-Redis quota with zero traffic. Since orders are infrequent and
-    // long-running, we can safely block much longer when idle, check for stalled jobs
-    // far less often, and renew job locks less frequently -- cutting idle Redis
-    // commands ~10x. A newly enqueued job still starts immediately (the producer wakes
-    // the blocking fetch); drainDelay is only the idle fallback. All env-overridable.
-    drainDelay: Number(process.env.WORKER_DRAIN_DELAY_S) || 60, // seconds to block waiting for a job
-    stalledInterval: Number(process.env.WORKER_STALLED_INTERVAL_MS) || 300000, // stalled check every 5 min
-    lockDuration: Number(process.env.WORKER_LOCK_DURATION_MS) || 120000, // 2 min lock (renews ~every 60s)
+    drainDelay: Number(process.env.WORKER_DRAIN_DELAY_S) || 60, 
+    stalledInterval: Number(process.env.WORKER_STALLED_INTERVAL_MS) || 300000, 
+    lockDuration: Number(process.env.WORKER_LOCK_DURATION_MS) || 120000, 
   }
 );
 
-// Throttled error handler. BullMQ emits 'error' on Redis trouble (outage, or a
-// quota/rate-limit reply), and without a listener Node can crash on the event; with
-// a naive one it floods the logs thousands of times a second. Log at most once per
-// 10s so a Redis incident is visible without drowning everything.
 let lastWorkerErrorLog = 0;
 worker.on('error', (err) => {
   const now = Date.now();
@@ -407,8 +285,6 @@ worker.on('failed', async (job, err) => {
 
   if (!job) return;
 
-  // Report every job failure to Sentry with NON-PII context only (orderId/jobId
-  // are ids, not customer data). This is how a failing pipeline surfaces in prod.
   captureError(err, {
     jobId: job.id,
     orderId: job.data?.orderId,
@@ -417,18 +293,13 @@ worker.on('failed', async (job, err) => {
     finalAttempt: job.attemptsMade >= attempts,
   });
 
-  // Only give up once BullMQ has exhausted all retries. Before that, let the
-  // queue back off and try again.
   if (job.attemptsMade < attempts) return;
 
   // Move the order to FAILED (recording the error) and issue the idempotent
-  // refund. All of that lives in pipeline.failOrder so it is one testable unit.
   try {
     await pipeline.failOrder(job.data.orderId, err);
   } catch (e) {
     console.error(`[worker] failure handling error for ${job.data.orderId}: ${e.message}`);
-    // A refund/fail-transition error is the most important thing to surface:
-    // money may be at stake and it is past the normal retry path.
     captureError(e, { orderId: job.data?.orderId, phase: 'failOrder' });
   }
 });

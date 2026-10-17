@@ -17,7 +17,6 @@ export default function AnalyticsInit({ enabled = true }) {
 
     captureAttribution();
 
-    // Every analytics and ad pixel shares one idle-time init so a brand gets them all from one mount.
     const init = () => {
       initializeGA();
       initializeClarity();

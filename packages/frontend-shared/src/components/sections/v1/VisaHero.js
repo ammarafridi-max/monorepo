@@ -17,8 +17,6 @@ export default function VisaHero({
   imageUrl = "",
   imageAlt = "",
   onCtaClick,
-  // Supplied by the consuming app so this stays brand-neutral and no claim is
-  // hardcoded in a shared component.
   trustItems = [],
 }) {
   const { first: headFirst, second: headSecond } = splitHeadline(headline);

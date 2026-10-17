@@ -1,8 +1,11 @@
 name: Hotel Cancellations
 
 on:
-  schedule:
-    - cron: '17 * * * *' # hourly, off the hour to avoid the platform's busiest minute
+  # DISABLED 2026-10-17 on request. Nothing was awaiting auto-cancellation at the
+  # time. While this is off, a refundable booking that passes its free window
+  # becomes a room someone has paid for, so cancel by hand or run this manually.
+  # schedule:
+  #   - cron: '17 * * * *' # hourly, off the hour to avoid the platform's busiest minute
   workflow_dispatch:
     inputs:
       dry_run:

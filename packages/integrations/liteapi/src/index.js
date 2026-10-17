@@ -13,8 +13,6 @@ const toDate = (value) => {
   return Number.isNaN(date.getTime()) ? null : date;
 };
 
-// The free-cancellation window closes at the EARLIEST cancelTime: each entry is the
-// penalty that applies from that moment on, not a deadline that is still free.
 export function freeCancellationDeadline(cancellationPolicies) {
   if (!cancellationPolicies) return null;
   if (cancellationPolicies.refundableTag !== 'RFN') return null;
@@ -24,8 +22,6 @@ export function freeCancellationDeadline(cancellationPolicies) {
   return new Date(Math.min(...times.map((t) => t.getTime())));
 }
 
-// A prebook carries its policy per rate, not at the top level, and those terms can
-// differ from the ones search advertised. The strictest rate governs the booking.
 export function prebookCancellation(prebook) {
   const rates = (prebook?.roomTypes ?? []).flatMap((roomType) => roomType.rates ?? []);
   const terms = strictestCancellation(rates.map((rate) => rate.cancellationPolicies));
@@ -38,9 +34,6 @@ export function bookingFreeCancellationUntil(booking) {
   return freeCancellationDeadline(booking?.cancellationPolicies);
 }
 
-// An offer is one bookable unit but can carry several rates, and the supplier applies
-// the worst of them. Judging it by its first rate is how a non-refundable room reaches
-// a customer. Search and booking both go through this so they cannot disagree.
 export function strictestCancellation(policies = []) {
   const list = policies.filter(Boolean);
   if (list.length === 0) return { refundableTag: null, freeCancellationUntil: null, policies: [] };
@@ -53,8 +46,6 @@ export function strictestCancellation(policies = []) {
   };
 }
 
-// A missing deadline is treated as unacceptable rather than unlimited: an RFN rate with
-// no stated window is missing data, and guessing in our favour is what costs a room.
 export function isCancellationAcceptable(terms, { at = new Date(), marginMs = 0 } = {}) {
   if (terms?.refundableTag !== 'RFN') return false;
   if (!terms.freeCancellationUntil) return false;
@@ -83,7 +74,6 @@ export function createLiteApiClient({ apiKey, baseUrl = LITEAPI_URL, logger, fet
       const detail = payload?.error ?? {};
       logger?.warn('LiteAPI request failed', { action, statusCode: res.status, code: detail.code, message: detail.message });
       const error = new Error(`LiteAPI ${action} failed: ${detail.message ?? res.status}`);
-      // LiteAPI returns some failures with a 200, so never let a 2xx through as the error's status.
       error.statusCode = res.ok ? 502 : res.status;
       error.code = detail.code;
       error.detail = detail;
@@ -107,9 +97,6 @@ export function createLiteApiClient({ apiKey, baseUrl = LITEAPI_URL, logger, fet
     return payload?.data ?? [];
   };
 
-  // Rates are only returned for an explicit list of hotel ids on this account: searching
-  // by city, coordinates or IATA code comes back empty even where inventory exists. So a
-  // city search resolves to hotel ids first, then asks for their rates.
   const getCountries = async () => {
     const payload = await request('getCountries', '/data/countries');
     return payload?.data ?? [];
@@ -189,7 +176,6 @@ export function createLiteApiClient({ apiKey, baseUrl = LITEAPI_URL, logger, fet
     return payload?.data ?? null;
   };
 
-  // The cancel response uses snake_case where the rest of the API uses camelCase.
   const cancelBooking = async (bookingId) => {
     const payload = await request('cancelBooking', `/bookings/${encodeURIComponent(bookingId)}`, { method: 'PUT' });
     const data = payload?.data ?? {};

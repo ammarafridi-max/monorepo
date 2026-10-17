@@ -1,12 +1,5 @@
-/**
- * /bumble-photos
- *
- * About the DESTINATION: on Bumble women open the conversation, so the photos have
- * to be approachable and give her something to say. Must not restate /ai-dating-photos.
- */
 export const bumblePhotos = {
   meta: {
-    // 52 chars / 159 chars
     title: 'Bumble Profile Pictures That Work | AI, From Selfies',
     description:
       'Bumble profile pictures that get the first message: approachable, warm light, a real smile, a scene worth asking about. From your selfies in an hour, from $19.',

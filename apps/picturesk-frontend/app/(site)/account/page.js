@@ -13,8 +13,6 @@ import ProfileForm from './ProfileForm';
 import { cleanProfile } from '../../../lib/profile';
 import { FiLogOut } from 'react-icons/fi';
 
-// The only gated area. Reading the session (cookies) makes it dynamic anyway;
-// force-dynamic is explicit since it also queries Mongo.
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Your account. Picturesk.ai', robots: { index: false, follow: false } };
 
@@ -46,8 +44,6 @@ export default async function AccountPage() {
     ? new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(new Date(user.createdAt))
     : null;
 
-  // Sanitized order view: no cost, Stripe, or Replicate internals. Delivered orders
-  // carry a single thumbnail (the first persisted headshot) for the card preview.
   const view = orders.map((o) => {
     const tier = getTier(o.tier);
     return {
@@ -96,7 +92,6 @@ export default async function AccountPage() {
             { key: 'settings', label: 'Settings' },
           ]}
         >
-          {/* Panel 1: Orders */}
           <div>
             {view.length === 0 ? (
               <div className="acct__card acct__empty">
@@ -170,7 +165,6 @@ export default async function AccountPage() {
             )}
           </div>
 
-          {/* Panel 2: Settings */}
           <div>
             <section className="acct__section acct__section--first">
               <h2 className="acct__h2">About you</h2>

@@ -1,9 +1,3 @@
-// Usage:
-//   pnpm automation hotel-cancellations --dry-run
-//   pnpm automation hotel-cancellations --brand dt365
-//
-// Locally, supply config with:
-//   node --env-file=apps/dt365-backend/.env.development src/cli.mjs hotel-cancellations --dry-run
 
 import mongoose from 'mongoose';
 import { getBrand } from '@travel-suite/config';
@@ -12,9 +6,7 @@ import { createLiteApiClient } from '@travel-suite/liteapi';
 import { HotelBookingSchema } from '@travel-suite/hotel-bookings';
 
 // Must stay comfortably larger than the run interval: scheduled CI runs are
-// routinely late and occasionally dropped, and a missed window buys a real room.
 const SAFETY_MARGIN_MS = 48 * 60 * 60 * 1000;
-// A book that has been claimed longer than this never got an answer from the supplier.
 const STUCK_CLAIM_MS = 15 * 60 * 1000;
 
 const model = (conn, name, schema) => {
@@ -88,7 +80,6 @@ export async function run({ dryRun = false, argv = [] } = {}) {
       const deadline = reservation.freeCancellationUntil;
       const line = `${describe(reservation)} · free until ${iso(deadline)}`;
 
-      // Past the deadline, cancelling means accepting the fee. That is a human decision.
       if (deadline.getTime() <= now) {
         overdue.push(line);
         console.log(`  OVERDUE  ${line}`);
@@ -138,8 +129,6 @@ export async function run({ dryRun = false, argv = [] } = {}) {
       }
     }
 
-    // A book claimed but never answered leaves the reservation stranded: the customer
-    // has paid and nothing will retry it on its own.
     const stalled = await HotelBooking.find({
       orderStatus: 'PENDING',
       paymentStatus: 'PAID',
@@ -176,7 +165,6 @@ export async function run({ dryRun = false, argv = [] } = {}) {
       console.log(`  alert sent to ${adminEmail}`);
     }
 
-    // A fee charged or a room left live is a money problem, so the run must go red.
     if (failed.length > 0 || overdue.length > 0) {
       throw new Error(`${failed.length} failed cancellation(s), ${overdue.length} past the free window`);
     }

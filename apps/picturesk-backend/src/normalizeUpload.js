@@ -7,19 +7,6 @@ function isHeic(url, contentType) {
   return HEIC_TYPES.has(String(contentType || '').split(';')[0].trim().toLowerCase()) || /\.hei[cf](\?|$)/i.test(url);
 }
 
-/**
- * Bring an uploaded photo into a form the rest of the pipeline can read: HEIC
- * becomes JPEG, and every converted image is rotated upright from its EXIF and
- * stripped of metadata. Returns the URL to use from here on: the original when
- * nothing needed doing, otherwise the JPEG written next to it in storage.
- *
- * The prebuilt sharp binaries cannot decode HEVC, so decoding goes through
- * heic-convert (libheif compiled to wasm); sharp does the rotate, strip and encode.
- *
- * @param {{ keyForUrl: Function, putObject: Function }} storage
- * @param {string} url - public R2 URL of the upload
- * @returns {Promise<string>}
- */
 export async function normalizeUpload(storage, url) {
   const key = storage.keyForUrl(url);
   if (!key) return url;

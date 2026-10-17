@@ -3,8 +3,6 @@ import { dbConnect } from '../../../../lib/db';
 import { getSession } from '../../../../lib/session';
 import { cleanProfile } from '../../../../lib/profile';
 
-// PUT /api/account/profile { gender, ageRange, race, facialHair, build } -> saves
-// the funnel's About and Build answers on the account. Empty strings clear a field.
 export async function PUT(req) {
   const session = await getSession();
   if (!session) return Response.json({ error: 'You are not signed in' }, { status: 401 });

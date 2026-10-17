@@ -51,11 +51,6 @@ export function createVisaRequirementsService({ VisaRule, VisaQuery, providers =
     return { ...answer, nationality: nat, residence: res, isServiced };
   }
 
-  /**
-   * Public: the destinations the checker can actually answer for. Offering a
-   * destination with no rule behind it only produces an UNKNOWN result, which
-   * reads to a visitor as the tool being broken.
-   */
   async function listDestinations() {
     const rules = await VisaRule.find({ isPublished: true })
       .select('destination destinationName visaSlug')
@@ -69,12 +64,6 @@ export function createVisaRequirementsService({ VisaRule, VisaQuery, providers =
     }));
   }
 
-  /**
-   * Public: one published rule, shaped for a destination page. Returns the
-   * outcome groups rather than a single answer, because the page has to render
-   * every nationality rather than one visitor's result. Unpublished rules are
-   * invisible here, so an unfinished rule cannot leak onto an indexable page.
-   */
   async function getPublicRule(destination) {
     const rule = await VisaRule.findOne({ destination: norm(destination), isPublished: true })
       .select(

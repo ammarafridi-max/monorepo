@@ -1,13 +1,3 @@
-/**
- * The checker only shows its "we can help with this" link when the matched
- * rule carries a visaSlug. Saudi Arabia was seeded before the page existed, so
- * every Saudi result was a dead end. Greece now has its own page rather than
- * falling back to the generic Schengen one.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/link-checker-rules-to-pages.mjs          # dry run
- *   node --env-file=.env.production scripts/link-checker-rules-to-pages.mjs --apply
- */
 
 import mongoose from 'mongoose';
 

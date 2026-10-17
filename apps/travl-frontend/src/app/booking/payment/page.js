@@ -5,7 +5,6 @@ import { trackPurchaseEvent } from '@travel-suite/frontend-shared/utils/analytic
 import { EMAIL } from '@/config/contact';
 import { LuShieldPlus } from 'react-icons/lu';
 
-// Cross-sell after a flight reservation purchase: travel insurance (own).
 const upsells = [
   {
     icon: <LuShieldPlus size={15} />,

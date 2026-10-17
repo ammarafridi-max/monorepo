@@ -1,12 +1,3 @@
-/**
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/seed-visa-rules.mjs            # dry run
- *   node --env-file=.env.production scripts/seed-visa-rules.mjs --apply
- *   node --env-file=.env.production scripts/seed-visa-rules.mjs --apply --publish
- *
- * Rules seed UNPUBLISHED unless --publish is passed; --publish makes unverified
- * data visible to the visa checker.
- */
 
 import mongoose from 'mongoose';
 import VisaRuleSchema from '@travel-suite/visa-requirements/schema';

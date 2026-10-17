@@ -33,7 +33,6 @@ export const metadata = {
   twitter: { card: 'summary_large_image', images: [`${SITE_URL}/og-image.png`] },
 };
 
-/** Schengen states share one rule set, so they read better as one block. */
 const SCHENGEN = new Set([
   'AT', 'BE', 'BG', 'HR', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IS', 'IT',
   'LV', 'LI', 'LT', 'LU', 'MT', 'NL', 'NO', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE', 'CH', 'XS',

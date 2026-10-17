@@ -15,8 +15,6 @@ const customer = createNotificationsService({
   },
 });
 
-// The dummy ticket is our own product. Visa assistance is VisaWadi's, a
-// deliberate exception to brand neutrality confined to this app.
 const UPSELLS = [
   {
     title: "Book a Dummy Ticket",

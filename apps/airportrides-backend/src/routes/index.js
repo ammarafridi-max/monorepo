@@ -26,7 +26,6 @@ import config from "../utils/config.js";
 const router = Router();
 
 
-// -- Auth ----------------------------------------------------------------------
 const {
   router: authRouter,
   middleware: auth,
@@ -41,10 +40,8 @@ const {
 
 router.use("/auth", authRouter);
 
-// -- Admin Users ---------------------------------------------------------------
 router.use("/admin-users", createAdminUsersRouter({ AdminUser, auth }));
 
-// -- Blog ----------------------------------------------------------------------
 const imageStorage = createCloudinaryStorage({
   cloudName: config.cloudinary.cloudName,
   apiKey: config.cloudinary.apiKey,
@@ -55,14 +52,11 @@ const imageStorage = createCloudinaryStorage({
 router.use("/blogs", createBlogRouter({ db, auth, imageStorage }));
 router.use("/blog-tags", createBlogTagRouter({ db, auth }));
 
-// -- Currencies ----------------------------------------------------------------
 router.use("/currencies", createCurrenciesRouter({ db, auth }));
 
-// -- Airports -------------------------------------------------------------------
 const airlabs = createAirLabsClient({ apiKey: config.airlabs.apiKey });
 router.use("/airports", createAirportsRouter({ airlabs }));
 
-// -- Locations (Google Maps autocomplete, coordinates, distance, IP geo) -------
 router.use(
   "/locations",
   createLocationsRouter({
@@ -71,7 +65,6 @@ router.use(
   }),
 );
 
-// -- Notifications -------------------------------------------------------------
 const notifications = createNotificationsService({
   sendEmail,
   logger,
@@ -91,10 +84,8 @@ const notifications = createNotificationsService({
   },
 });
 
-// -- Stripe --------------------------------------------------------------------
 const stripe = createStripeClient({ secretKey: config.stripe.secretKey });
 
-// -- Bookings ------------------------------------------------------------------
 const {
   router: bookingsRouter,
   service: bookingService,
@@ -102,11 +93,6 @@ const {
 } = createBookingsRouter({ db, stripe, auth });
 router.use("/bookings", bookingsRouter);
 
-// Admin surfaces, mounted here rather than inside the shared bookings router
-// because only this brand has them. They MUST carry the same guards as every
-// other admin route in this file — without them the list hands the entire
-// booking table (names, emails, phones, addresses) to anonymous callers, and
-// the status route lets anyone mark a ride paid or cancelled.
 router.get(
   "/bookings",
   auth.protect,
@@ -120,7 +106,6 @@ router.patch(
   bookingController.updateStatus,
 );
 
-// -- Payments (admin: revenue dashboard + custom payment links) ---------------
 const paymentService = createPaymentService({
   stripe,
   db,
@@ -222,7 +207,6 @@ async function handlePaymentLinkSuccess(session) {
   });
 }
 
-// -- Stripe webhook handler (exported for mounting in app.js before JSON middleware) --
 export const stripeWebhookHandler = createStripeWebhookHandler({
   stripe,
   webhookSecret: config.stripe.webhookSecret,

@@ -11,15 +11,7 @@ import {
   buildWebsite,
 } from '../../../lib/schema';
 
-// The blog index, rendered by the SHARED client BlogPage the travel brands use, so
-// the layout, cards, pagination and breadcrumb stay identical across the monorepo.
-// It is a Tailwind component tree and this site is plain CSS, so app/(site)/shared-ui.css
-// compiles the utilities it needs and `.shared-ui` carries the resets it assumes.
-//
-// Posts come from the api's public blog routes (GET /api/blogs), which sit above
-// the domain's auth guard, so no session is involved.
 
-// Title 52 chars, description 141 chars, both carrying "AI headshot".
 const meta = {
   title: 'AI Headshot Guides and Tips | Picturesk Blog',
   description:
@@ -39,8 +31,6 @@ const breadcrumbPaths = [
 
 const pageNumberFrom = (searchParams) => Math.max(1, Number(searchParams?.page || 1) || 1);
 
-// Paginated listings must be self-canonical. Pointing page 2+ at /blog told
-// Google they were duplicates and suppressed the posts only reachable there.
 const canonicalForPage = (page) => (page > 1 ? `${meta.canonical}?page=${page}` : meta.canonical);
 
 export async function generateMetadata({ searchParams }) {
@@ -65,7 +55,6 @@ export default async function Page({ searchParams }) {
     blogs = data?.blogs || [];
     pagination = data?.pagination || null;
   } catch {
-    // An api blip must not 500 the page; it renders empty and revalidates later.
   }
 
   const schema = buildGraph([

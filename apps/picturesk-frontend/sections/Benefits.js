@@ -3,12 +3,6 @@ import { benefits as defaultBenefits } from '../data/landing';
 import Container from '../components/Container';
 import SectionHeading from '../components/SectionHeading';
 
-// Why us rather than the other AI headshot tools. Each point is a real difference
-// in how the product is built (the upload gate, the per-customer trained model, the
-// one-time charge, the automatic refund), so nothing here is a claim we cannot back.
-//
-// One line glyph per card, named by the `icon` key in data/landing.js so the copy
-// file carries no component imports. Line icons, not filled ones, and never emoji.
 const ICONS = {
   screen: FiSearch,
   face: FiUser,

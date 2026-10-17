@@ -28,7 +28,6 @@ export default function HotelSelectRoomPage({ onAnalytics, searchPath = '/hotel-
   const nights = checkIn && checkOut
     ? Math.round((Date.parse(`${checkOut}T00:00:00Z`) - Date.parse(`${checkIn}T00:00:00Z`)) / 86_400_000)
     : null;
-  // Nights do not change the fee, so one figure covers every card on the page.
   const bookingPrice = pricing ? formatMoney(getHotelPrice(pricing, 1), pricing.currency).amount : null;
 
   useEffect(() => {

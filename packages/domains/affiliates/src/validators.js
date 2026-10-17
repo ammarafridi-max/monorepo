@@ -60,7 +60,6 @@ export function updateAffiliateSchema(body = {}) {
   if (Object.prototype.hasOwnProperty.call(body, 'isActive'))
     payload.isActive = normalizeOptionalBoolean(body.isActive);
 
-  // email is intentionally not updatable
   if (Object.prototype.hasOwnProperty.call(body, 'email'))
     throw new AppError('Affiliate email cannot be updated', 400);
 

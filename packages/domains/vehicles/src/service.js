@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 import { AppError } from '@travel-suite/utils';
 
-// Keyed by _id, not brand_model, so deleting one vehicle can never wipe another that shares a brand + model.
 function vehicleFolder(id) {
   return `vehicles/${id}`;
 }
@@ -147,7 +146,6 @@ export function createVehicleService({ Vehicle, images }) {
     const vehicle = await Vehicle.findById(id);
     if (!vehicle) throw new AppError('Vehicle not found', 404);
 
-    // The URL comes from the request body, so verify it belongs to THIS vehicle before deleting it.
     const ownsImage =
       vehicle.featuredImage === imageUrl || (vehicle.images || []).includes(imageUrl);
     if (!ownsImage) throw new AppError('That image does not belong to this vehicle', 400);

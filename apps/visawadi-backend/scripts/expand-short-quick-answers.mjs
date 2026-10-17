@@ -1,15 +1,3 @@
-/**
- * Expands the six quickAnswer blocks under 40 words.
- *
- * The quick answer is what an answer engine lifts, and under about 40 words it
- * is too thin to stand alone as the response. Each rewrite also aligns the
- * figures with what the rest of the site now says: EUR 90, 15 calendar days,
- * the EUR 30,000 insurance minimum, and per-destination funds thresholds.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/expand-short-quick-answers.mjs          # dry run
- *   node --env-file=.env.production scripts/expand-short-quick-answers.mjs --apply
- */
 
 import mongoose from 'mongoose';
 

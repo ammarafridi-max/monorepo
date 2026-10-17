@@ -1,7 +1,3 @@
-// Shared helpers for verify-reminders.mjs.
-//
-// Nothing here is mocked: it uses the real MongoDB, Cloudinary and Brevo
-// credentials from the environment.
 
 import mongoose from 'mongoose';
 
@@ -72,7 +68,6 @@ export function requireDbArg(argv = process.argv.slice(2)) {
 }
 
 export async function assertDb(conn, expected) {
-  // Wrong-database guard: bail before reading or writing anything if the names disagree.
   if (conn.name !== expected) {
     const actual = conn.name || '(unknown)';
     await conn.close().catch(() => {});

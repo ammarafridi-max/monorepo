@@ -9,12 +9,6 @@ const ANON_PER_DAY = 3;
 const ANY_PER_HOUR = 10;
 const TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
-/**
- * POST /api/tools/analyze-photo  { image: { data, mediaType }, metrics }
- * The judgment half of the LinkedIn photo analyzer. The photo is forwarded to
- * Claude and never stored. Anonymous visitors get three a day; everyone gets
- * ten an hour; signed-in accounts keep their last score.
- */
 export async function POST(req) {
   if (!process.env.ANTHROPIC_API_KEY) return Response.json({ error: 'Analysis is not configured' }, { status: 500 });
   const body = await req.json().catch(() => null);

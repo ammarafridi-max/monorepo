@@ -22,8 +22,6 @@ export function createAdminAuthMiddlewareFromDb({ db, jwtSecret }) {
   return createAdminAuthMiddleware({ AdminUser, verifyToken });
 }
 
-// sendEmail is optional. Without it the OTP endpoints answer 503 and password
-// login is untouched, so a brand opts in by passing a mailer and nothing else.
 export function createAuthRouter({ db, jwtSecret, jwtExpiresIn = '30d', cookieExpiresInDays = 30, nodeEnv = 'production', sendEmail, brandName = 'Admin', loginUrl, logger }) {
   const AdminUser  = getOrRegisterModel(db, 'admin-user', AdminUserSchema);
   const AdminOtp   = getOrRegisterModel(db, 'admin-otp', AdminOtpSchema);

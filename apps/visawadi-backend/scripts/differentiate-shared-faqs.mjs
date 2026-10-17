@@ -1,18 +1,3 @@
-/**
- * Three FAQs survived the differentiation pass identical across all six
- * Schengen-family pages: free movement, flight reservations, and what happens
- * after a refusal. The underlying rules genuinely are the same everywhere,
- * which is why the template produced one answer for all of them, but six pages
- * carrying the same three answers is the duplication we set out to remove.
- *
- * Each is rewritten around something concrete to that country: a worked
- * example of the main-destination rule, the specific centre that checks the
- * reservation, and the specific fees that are lost on a refusal.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/differentiate-shared-faqs.mjs          # dry run
- *   node --env-file=.env.production scripts/differentiate-shared-faqs.mjs --apply
- */
 
 import mongoose from 'mongoose';
 

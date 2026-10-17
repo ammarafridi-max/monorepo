@@ -10,9 +10,6 @@ import SectionHeading from '../../../components/SectionHeading';
 import { linkedinHeadshots as page } from '../../../data/pages/linkedin-headshots';
 import { FUNNEL, landingMetadata, landingSchema } from '../../../lib/landingPage';
 
-// Every section on this page takes its content from data/pages/linkedin-headshots.js.
-// Nothing here is hardcoded copy, so the page can be rewritten without touching JSX,
-// and the same section components serve the home page and every landing page.
 export const metadata = landingMetadata(page);
 
 const schema = landingSchema({ ...page, productName: 'AI LinkedIn Headshots' });

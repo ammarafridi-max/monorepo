@@ -1,11 +1,4 @@
 /* eslint-disable no-console */
-/**
- * Usage:
- *   node --env-file=apps/emirateslimo-backend/.env.production \
- *        apps/emirateslimo-backend/scripts/resend-booking-confirmations.js --db=<dbname> [--apply] [--limit=N] [--since=YYYY-MM-DD] [--recipient=customer|admin|both]
- *
- * --apply sends real email to real customers; without it nothing leaves the machine.
- */
 import mongoose from "mongoose";
 
 import { BookingSchema, deliverPaymentConfirmations } from "@travel-suite/limo-bookings";
@@ -69,7 +62,6 @@ async function run() {
   await mongoose.connect(config.mongoUri);
   const conn = mongoose.connection;
 
-  // Wrong-database guard: bail before reading anything if the names disagree.
   if (conn.name !== EXPECTED_DB) {
     await mongoose.disconnect();
     throw new Error(

@@ -2,12 +2,6 @@
 
 import { Children, useRef, useState } from 'react';
 
-/**
- * Accessible tabbed sections for the account page. The panels are server-rendered
- * (order list, settings forms) and passed in as children in the same order as
- * `tabs`; this client wrapper only toggles which one is visible. Follows the WAI
- * tabs pattern: roving tabindex, arrow/Home/End keys, aria-selected/controls.
- */
 export default function AccountTabs({ tabs, children }) {
   const panels = Children.toArray(children);
   const [active, setActive] = useState(0);

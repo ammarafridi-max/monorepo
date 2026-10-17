@@ -68,7 +68,6 @@ export default function BookingSummary({ btnText, btnOnClick, btnDisabled, btnNo
         </Container>
       </div>
 
-      {/* Terms Note */}
       <p className="text-center text-[12px] mt-3 font-extralight px-3 text-primary-500">
         By proceeding, you agree to our{' '}
         <a

@@ -4,8 +4,6 @@ import { usePathname } from 'next/navigation';
 import { funnelSteps } from '../lib/generator';
 import { productForPath } from '../lib/products';
 
-// Which funnel step the current route is on, so the stepper can render each step
-// as done / current / upcoming. Pay has no route past the Stripe redirect.
 function currentKey(pathname) {
   const last = pathname?.split('/').pop();
   if (last === 'capture') return 'photos';

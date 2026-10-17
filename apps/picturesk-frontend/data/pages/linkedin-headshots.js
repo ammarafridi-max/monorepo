@@ -1,17 +1,5 @@
-/**
- * /linkedin-headshots
- *
- * One content object per landing page, in the same shape the travel brands use:
- * `meta` for metadata and schema, `sections` for everything the page renders. The
- * page file composes sections and passes these in; nothing on the page is hardcoded.
- *
- * This page is about the DESTINATION, not the product. It must not restate the
- * /ai-headshot-generator page: same product, different question ("what makes a
- * LinkedIn photo work"), so the two do not compete for the same query.
- */
 export const linkedinHeadshots = {
   meta: {
-    // 57 chars / 152 chars
     title: 'LinkedIn Headshots From Your Selfies | AI, From $9',
     description:
       'Get a LinkedIn headshot that looks like you. Upload a few selfies, pick your background, and we email a full set in about an hour. From $9, no subscription.',

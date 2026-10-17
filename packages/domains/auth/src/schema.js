@@ -56,8 +56,6 @@ const AdminUserSchema = new mongoose.Schema(
       type: Date,
       select: false,
     },
-    // Public byline data. Optional everywhere: only accounts that actually
-    // write posts need it, and only the brands that publish a blog use it.
     authorProfile: {
       slug: { type: String, lowercase: true, trim: true, maxlength: 80, default: '' },
       jobTitle: { type: String, trim: true, maxlength: 120, default: '' },
@@ -75,7 +73,7 @@ AdminUserSchema.pre('save', async function () {
   if (!this.isModified('password')) return;
   this.password = await bcrypt.hash(this.password, 12);
   if (!this.isNew) {
-    this.passwordChangedAt = new Date(Date.now() - 1000); // subtract 1s to avoid race with token iat
+    this.passwordChangedAt = new Date(Date.now() - 1000); 
   }
 });
 

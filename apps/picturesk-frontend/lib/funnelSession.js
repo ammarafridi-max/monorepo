@@ -18,11 +18,6 @@ async function alive(url) {
   }
 }
 
-/**
- * Whether an earlier order still has selfies to reuse: the individual uploads
- * (shown as thumbnails) or, failing that, the training zip the api can restore
- * them from. Returns { images } or null.
- */
 async function reusablePhotos(order) {
   const urls = order.uploadedImageUrls ?? [];
   if (urls.length && (await alive(urls[0]))) return { images: urls };
@@ -31,11 +26,6 @@ async function reusablePhotos(order) {
   return null;
 }
 
-/**
- * What the funnel layout needs about the visitor, in one query pass: where to send
- * them if they cannot be here, whether the free plan is spent, and the most recent
- * order whose trained model is still fresh enough to reuse.
- */
 export async function loadFunnelSession(entryPath) {
   const session = await getSession();
   const back = encodeURIComponent(entryPath);
@@ -60,7 +50,6 @@ export async function loadFunnelSession(entryPath) {
       .lean(),
   ]);
 
-  // The newest order whose photos still exist somewhere we can get them from.
   let reusable = null;
   for (const source of candidates) {
     const photos = await reusablePhotos(source);

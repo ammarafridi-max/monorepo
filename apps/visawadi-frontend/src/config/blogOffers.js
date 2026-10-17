@@ -1,20 +1,6 @@
-/**
- * Conversion units rendered alongside blog posts.
- *
- * VisaWadi sells one thing: visa application assistance. So the primary offer
- * is always a visa page, matched to whatever destination the post is about.
- *
- * Proof of onward travel is the one exception. Applicants genuinely need it and
- * we do not sell it, so those posts point at Dummy Ticket 365 rather than
- * pretending we can help. That is a deliberate outbound referral.
- */
 
 const DUMMY_TICKET_URL = 'https://www.dummyticket365.com';
 
-/** Slug token -> visa page. Order matters: first match wins, so the specific
- *  country slugs must be tested before the generic Schengen fallback.
- *  Paths are country-prefixed: bare /visa/* only 308s to these, and a CTA that
- *  redirects keeps the legacy URL alive in the index. */
 const VISA_BY_SLUG_TOKEN = [
   { tokens: ['france'], href: '/uae/visa/france-visa', label: 'France visa' },
   { tokens: ['germany'], href: '/uae/visa/germany-visa', label: 'Germany visa' },
@@ -26,7 +12,6 @@ const VISA_BY_SLUG_TOKEN = [
   { tokens: ['schengen', 'netherlands', 'switzerland', 'greece'], href: '/uae/visa/schengen', label: 'Schengen visa' },
 ];
 
-/** Pick the visa page closest to the post's subject, defaulting to the hub. */
 function resolveVisa(blog) {
   const slug = String(blog?.slug || '').toLowerCase();
   const match = VISA_BY_SLUG_TOKEN.find((entry) =>
@@ -60,7 +45,6 @@ function isOnwardTravelPost(blog) {
   );
 }
 
-/** Cards for the sticky rail. Own product first. */
 export function getBlogOffers(blog) {
   const visa = resolveVisa(blog);
 
@@ -91,7 +75,6 @@ export function getBlogOffers(blog) {
   return offers;
 }
 
-/** The single mid-article unit. Matches the post's subject where it can. */
 export function getBlogInlineOffer(blog) {
   if (isOnwardTravelPost(blog)) {
     return {

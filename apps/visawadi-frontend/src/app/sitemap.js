@@ -6,12 +6,7 @@ import { getPublicVisasForResidenceApi } from "@travel-suite/frontend-shared/ser
 import { getVisaDestinationsApi } from "@travel-suite/frontend-shared/services/apiVisaRequirements";
 import { LIVE_COUNTRIES } from "@/config/countries";
 
-// Regenerate hourly so blog/visa/tag entries appear once the backend is reachable
-// at runtime (the build-time Docker container usually can't reach it).
 export const revalidate = 3600;
-// Hand-written pages have no modification date in any datastore, so they carry
-// none. A wrong lastmod is worse than an absent one: Google discounts the field
-// site-wide once it stops matching what actually changed.
 const staticPages = [
   { url: "/", changeFrequency: "weekly", priority: 1.0 },
   { url: "/uae", changeFrequency: "weekly", priority: 0.9 },
@@ -28,8 +23,6 @@ const staticPages = [
 export default async function sitemap() {
   const now = new Date().toISOString();
 
-  // Next normalises canonicals without a trailing slash, so the root entry has
-  // to match or the two disagree on the homepage URL.
   const staticEntries = staticPages.map(({ url, changeFrequency, priority }) => ({
     url: url === "/" ? SITE_URL : `${SITE_URL}${url}`,
     changeFrequency,
@@ -54,8 +47,6 @@ export default async function sitemap() {
     console.error("[sitemap] fetch failed:", err);
   }
 
-  // One entry per live country per destination it actually serves. A country
-  // with no overlay for a destination has no page for it, so it is not listed.
   let visaEntries = [];
   for (const country of LIVE_COUNTRIES) {
     try {
@@ -76,8 +67,6 @@ export default async function sitemap() {
     }
   }
 
-  // A tag is as fresh as its newest post. Tags with no posts yet stay listed
-  // and simply carry no lastmod.
   let tagEntries = [];
   try {
     const data = await getBlogTagsApi();
@@ -107,8 +96,6 @@ export default async function sitemap() {
     console.error("[sitemap] fetch failed:", err);
   }
 
-  // One entry per destination that has a published rule. Param URLs are never
-  // listed: they canonicalise to these.
   let visaCheckEntries = [];
   try {
     const list = await getVisaDestinationsApi();

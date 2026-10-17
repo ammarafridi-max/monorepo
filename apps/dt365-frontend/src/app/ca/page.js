@@ -39,9 +39,6 @@ const FALLBACK = { '2 Days': 18, '7 Days': 28, '14 Days': 32 };
 
 export const revalidate = 300;
 
-// Prices come from the CAD price book so the title can never drift from what
-// checkout charges. A Canadian reading a dollar figure and being billed a
-// different one is the exact trust problem this page exists to solve.
 async function getCadPrices() {
   try {
     const data = await getDummyTicketPricingServerApi('CAD');

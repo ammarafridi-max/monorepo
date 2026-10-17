@@ -1,13 +1,9 @@
-// First import on purpose: Sentry must initialise before express loads.
 import "@travel-suite/utils/sentry";
 import { logger } from "@travel-suite/utils";
 import { connectDB } from "./utils/db.js";
 import config from "./utils/config.js";
 import app from "./app.js";
 
-// Next occurrence of `hour`:00 wall-clock in the given IANA timezone, as a real
-// UTC instant. Uses Intl (bundled ICU) to read the current wall-clock and derive
-// the zone offset — no dependency on system tzdata and DST-safe (Dubai has none).
 const start = async () => {
   await connectDB();
 

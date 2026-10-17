@@ -48,7 +48,6 @@ const router = Router();
 const brevo = createBrevoClient({ apiKey: config.brevoApiKey, logger });
 
 
-// -- Auth ----------------------------------------------------------------------
 const {
   router: authRouter,
   middleware: auth,
@@ -67,10 +66,8 @@ const {
 
 router.use("/auth", authRouter);
 
-// -- Admin Users ---------------------------------------------------------------
 router.use("/admin-users", createAdminUsersRouter({ AdminUser, auth }));
 
-// -- Blog ----------------------------------------------------------------------
 const imageStorage = createCloudinaryStorage({
   cloudName: config.cloudinary.cloudName,
   apiKey: config.cloudinary.apiKey,
@@ -82,11 +79,8 @@ router.use("/blogs", createBlogRouter({ db, auth, imageStorage, anthropicApiKey:
 router.use("/blog-tags", createBlogTagRouter({ db, auth }));
 
 
-// -- Flights -------------------------------------------------------------------
 const airlabs = createAirLabsClient({ apiKey: config.airlabs.apiKey });
 const serpapi = createSerpApiClient({ apiKey: config.serpapi.apiKey });
-// Airline logos: uploaded from the admin screen and stored on the airline
-// record, so a new logo needs no deploy.
 const airlineLogoStorage = createCloudinaryStorage({
   cloudName: config.cloudinary.cloudName,
   apiKey: config.cloudinary.apiKey,
@@ -107,7 +101,6 @@ if (!metaCapi.isConfigured()) {
   logger.warn("[meta-capi] Pixel ID or access token not configured — server-side purchase events disabled");
 }
 
-// -- Insurance -----------------------------------------------------------------
 router.use(
   "/insurance",
   createInsuranceRouter({
@@ -122,7 +115,6 @@ router.use(
   }),
 );
 
-// -- Notifications -------------------------------------------------------------
 const notifications = createNotificationsService({
   sendEmail,
   logger,
@@ -142,17 +134,10 @@ const notifications = createNotificationsService({
   },
 });
 
-// Disabled per request: we no longer want an internal email every time a
-// customer pays. Customer-facing emails still fire. Re-enable by deleting
-// this override.
 notifications.sendTicketPaymentToAdmin = async () => {};
 
-// -- Stripe --------------------------------------------------------------------
 const stripe = createStripeClient({ secretKey: config.stripe.secretKey });
 
-// -- Tickets -------------------------------------------------------------------
-// Reservation PDFs are uploaded to thedt/dummy-tickets/<sessionId>/reservation-file.pdf
-// on Cloudinary, then attached to the customer email by URL.
 const reservationStorage = createCloudinaryStorage({
   cloudName: config.cloudinary.cloudName,
   apiKey: config.cloudinary.apiKey,
@@ -181,10 +166,8 @@ const {
 router.use("/tickets", ticketsRouter);
 router.use("/pricing", pricingRouter);
 
-// -- Affiliates ----------------------------------------------------------------
 router.use("/affiliates", createAffiliatesRouter({ db, auth, TicketModel }));
 
-// -- Payments (admin: revenue dashboard + custom payment links) ---------------
 const paymentService = createPaymentService({
   stripe,
   db,
@@ -221,7 +204,6 @@ async function handlePaymentLinkSuccess(session) {
   });
 }
 
-// -- Stripe webhook handler (exported for mounting in app.js before JSON middleware) --
 export const stripeWebhookHandler = createStripeWebhookHandler({
   stripe,
   webhookSecret: config.stripe.webhookSecret,

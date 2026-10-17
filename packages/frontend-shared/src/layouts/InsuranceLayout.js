@@ -114,20 +114,8 @@ function TripSummaryBar() {
               </div>
             </>
           )}
-          {/* {startDate && (
-            <>
-              <span className="text-gray-300">·</span>
-              <span className="text-gray-400">{displayDays} days</span>
-            </>
-          )} */}
         </div>
 
-        {/* <Link
-          href="/"
-          className="text-xs font-semibold text-primary-600 hover:text-primary-800 border border-primary-200 hover:bg-primary-50 px-3 py-1 rounded-full transition-colors shrink-0"
-        >
-          Edit search
-        </Link> */}
       </div>
     </div>
   );
@@ -286,14 +274,6 @@ function StepperMobile() {
 
   return (
     <div className="flex lg:hidden items-center gap-4 px-6 py-4">
-      {/* <button
-        type="button"
-        onClick={goBack}
-        disabled={currentIndex === 0}
-        className="text-gray-600 hover:text-gray-900 disabled:text-gray-300 transition-colors shrink-0"
-      >
-        <ArrowLeft size={18} />
-      </button> */}
 
       <div className="flex-1 min-w-0">
         <p className="text-xs text-gray-400 font-medium leading-none mb-0.5">

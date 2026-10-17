@@ -38,7 +38,6 @@ const applicationDocumentSchema = new Schema(
     isOptional: { type: Boolean, default: false },
     note: { type: String, trim: true, maxlength: 1000, default: '' },
 
-    // Store the public_id, never a raw secure_url — reads go through a signed short-lived URL.
     cloudinaryPublicId: { type: String, default: '' },
     originalFilename: { type: String, default: '' },
     mimeType: { type: String, default: '' },

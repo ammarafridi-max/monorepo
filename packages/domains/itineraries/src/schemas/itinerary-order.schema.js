@@ -36,8 +36,8 @@ const ItineraryDaySchema = new mongoose.Schema(
     type: { type: String, default: '' },
     title: { type: String, default: '' },
     description: { type: String, default: '' },
-    activities: { type: [String], default: [] }, // legacy; retained for older orders
-    accommodationNote: { type: String, default: '' }, // legacy
+    activities: { type: [String], default: [] }, 
+    accommodationNote: { type: String, default: '' }, 
   },
   { _id: false },
 );

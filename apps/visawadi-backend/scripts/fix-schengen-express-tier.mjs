@@ -1,19 +1,9 @@
-/**
- * The Schengen family sells Basic, Standard and Concierge. There is no Express
- * tier and no expedited processing: the embassy sets the decision time, and no
- * package changes it. What the tiers change is how fast the file is ready.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/fix-schengen-express-tier.mjs          # dry run
- *   node --env-file=.env.production scripts/fix-schengen-express-tier.mjs --apply
- */
 
 import mongoose from 'mongoose';
 
 const APPLY = process.argv.includes('--apply');
 const SLUGS = ['schengen', 'france-visa', 'germany-visa', 'italy-visa', 'spain-visa', 'greece-visa'];
 
-/** Spain files through BLS, everyone else through VFS. */
 const centreFor = (slug) => (slug === 'spain-visa' ? 'BLS' : 'VFS');
 
 const timelineAnswer = (centre) =>

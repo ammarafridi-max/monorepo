@@ -8,7 +8,6 @@ const isAdminPath = () =>
 
 let initialized = false;
 
-// fbevents.js tracks history changes itself, so App Router navigations get a PageView without manual route tracking.
 export function initializeMetaPixel() {
   if (initialized || !META_PIXEL_ID || !isProduction || isAdminPath()) return;
   if (typeof window === "undefined" || typeof document === "undefined") return;
@@ -82,7 +81,6 @@ export function pixelInitiateCheckout({
   pixelEvent("InitiateCheckout", { currency, value, num_items: numItems });
 }
 
-// eventId must match the server-side Conversions API event so Meta counts the sale once.
 export function pixelPurchase({ currency = "AED", value = 0, eventId } = {}) {
   const storageKey = eventId ? `meta:purchase:${eventId}` : null;
   try {

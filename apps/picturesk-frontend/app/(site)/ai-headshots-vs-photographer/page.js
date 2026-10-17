@@ -10,9 +10,6 @@ import SectionHeading from '../../../components/SectionHeading';
 import { aiHeadshotsVsPhotographer as page } from '../../../data/pages/ai-headshots-vs-photographer';
 import { FUNNEL, landingMetadata, landingSchema } from '../../../lib/landingPage';
 
-// The "vs" money page. Content lives in data/pages/ai-headshots-vs-photographer.js;
-// the table is what makes the page citable, and the section on where a
-// photographer still wins is what makes it credible.
 export const metadata = landingMetadata(page);
 
 const schema = landingSchema({ ...page, productName: 'AI Headshots' });

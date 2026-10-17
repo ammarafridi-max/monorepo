@@ -1,40 +1,6 @@
-/**
- * Identity-lock via FACE SWAP (Phase 5 quality step).
- *
- *   swapFace(targetImageUrl, sourceFaceUrl) -> { imageUrl, costUsd }
- *
- * Swaps the customer's REAL face (sourceFaceUrl, one of their uploaded selfies)
- * onto a generated headshot (targetImageUrl), returning the swapped image URL.
- *
- * Why this exists: the trained LoRA reproduces the customer "from memory", so it
- * drifts on the things it cannot lock -- face SHAPE (elongated), hair length, and
- * expression (it invents a teeth smile from the base model's headshot prior).
- * Culling can't catch these (ArcFace identity is invariant to expression/hair), so
- * the delivered set is "close but not them". Swapping the real face onto the final
- * shot fixes geometry/hair/expression directly, because those pixels ARE the
- * customer. The generated image still provides the pose, outfit, lighting and
- * background; only the face is replaced.
- *
- * Injectable, same shape as replicateClient.js / scoreIdentity.js, so the pipeline
- * can stub it in tests. Reuses REPLICATE_API_TOKEN (no new credential).
- *
- * MODEL CONFIG: point REPLICATE_FACE_SWAP_MODEL at a face-swap model on Replicate
- * as "owner/name:versionHash". It must accept { swap_image (the source face),
- * input_image (the target) } and return the swapped image as a URL (string, or a
- * one-element array). Kept in env, not pinned in code, because the right model is
- * an operational choice and slugs churn.
- *
- * Robustness: a swap that FAILS at the content level (e.g. no detectable face in a
- * particular generated shot) falls back to the ORIGINAL target url, so that one
- * image ships un-swapped instead of failing the whole order. Transient/network
- * errors retry and, on exhaustion, throw so the selection step re-runs the swap for
- * the still-unswapped slot on the next job attempt.
- */
 
 const REPLICATE_API = 'https://api.replicate.com';
 
-// GPU inference rate, same basis as the generation estimate in replicateClient.js.
-// Only used for computeCostCents margin telemetry.
 const SWAP_USD_PER_SEC = 0.001;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -55,21 +21,12 @@ function swapModel() {
   return model;
 }
 
-/** Pull the swapped image URL out of the model output (string or [string]). */
 function extractUrl(output) {
   if (typeof output === 'string') return output;
   if (Array.isArray(output) && typeof output[0] === 'string') return output[0];
   return null;
 }
 
-/**
- * Swap one face. Starts with `Prefer: wait` so a warm model settles in the POST,
- * then polls to a terminal state (the model can cold boot for a minute or two).
- *
- * @param {string} targetImageUrl - the generated headshot to place the face on
- * @param {string} sourceFaceUrl  - the customer's real selfie (the face to use)
- * @returns {Promise<{ imageUrl: string, costUsd: number }>}
- */
 export async function swapFace(
   targetImageUrl,
   sourceFaceUrl,
@@ -117,9 +74,6 @@ export async function swapFace(
           : 0;
       if (body.status === 'succeeded') {
         const imageUrl = extractUrl(body.output);
-        // A "succeeded" run with no usable url, or a content-level failure, means the
-        // swap could not be applied to THIS shot (e.g. no face found). Ship it
-        // un-swapped rather than failing the order.
         return { imageUrl: imageUrl || targetImageUrl, costUsd };
       }
       if (body.status === 'failed' || body.status === 'canceled') {

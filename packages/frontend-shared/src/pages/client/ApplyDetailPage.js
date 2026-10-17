@@ -50,7 +50,7 @@ async function openDocument(documentId) {
   try {
     const { url } = await getDocumentViewUrlApi(documentId);
     if (url) window.open(url, '_blank', 'noopener');
-  } catch { /* toast handled elsewhere */ }
+  } catch {  }
 }
 
 function DocRow({ doc, applicantId, applicationRef }) {

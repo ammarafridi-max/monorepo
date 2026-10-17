@@ -29,10 +29,6 @@ const FACIAL_HAIR_LABEL = labels(FACIAL_HAIR);
 const BUILD_LABEL = labels(BUILDS);
 const HEIGHT_LABEL = labels(HEIGHTS);
 
-// Step 5: review, then pay. Every row has a Change link that opens its step with
-// ?return=review, so one choice can be corrected without touching the rest (the
-// state lives in localStorage per product). Creating the order happens HERE: a
-// paid plan goes to Stripe Checkout, a free plan starts straight away.
 export default function ReviewStep({ product }) {
   const paths = funnelPaths(product);
   const cfg = productConfig(product);
@@ -83,8 +79,6 @@ export default function ReviewStep({ product }) {
         tier: state.tier,
         product,
       });
-      // State stays until the success page confirms payment, so a Stripe cancel
-      // brings the customer back to a review page that still has their choices.
       window.location.href = checkoutUrl;
     } catch (err) {
       if (err.status === 401) return router.push(`/login?next=${encodeURIComponent(paths.review)}`);

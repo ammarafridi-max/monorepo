@@ -8,15 +8,11 @@ const MAX_ATTEMPTS = 5;
 const RESEND_COOLDOWN_MS = 60 * 1000;
 const MAX_REQUESTS_PER_HOUR = 5;
 
-// Every failure path says the same thing. Distinguishing "no such admin" from
-// "wrong code" turns this endpoint into an admin-email oracle.
 const GENERIC_FAILURE = 'Invalid or expired code';
 
 const normalizeEmail = (v) => String(v || '').trim().toLowerCase();
 
 function generateCode() {
-  // randomInt is rejection-sampled, so every code is equally likely. Math.random
-  // is not, and these are the only factor protecting the admin panel.
   return String(crypto.randomInt(0, 10 ** CODE_LENGTH)).padStart(CODE_LENGTH, '0');
 }
 
@@ -29,8 +25,6 @@ export function createOtpService({ AdminUser, AdminOtp, sendEmail, brandName, lo
 
     const user = await AdminUser.findOne({ email: normalized });
 
-    // Silent no-op for unknown or inactive accounts: the caller cannot tell
-    // this apart from a successful send.
     if (!user || user.status === 'INACTIVE') {
       return { sent: true };
     }
@@ -43,14 +37,10 @@ export function createOtpService({ AdminUser, AdminOtp, sendEmail, brandName, lo
       .sort({ createdAt: -1 })
       .lean();
 
-    // The hourly cap counts every purpose, so it still bounds how much mail one
-    // address can be made to receive.
     if (recent.length >= MAX_REQUESTS_PER_HOUR) {
       throw new AppError('Too many codes requested. Please try again later.', 429);
     }
 
-    // The resend cooldown is per purpose. Shared, it blocked anyone who failed
-    // an OTP login and then reached for "forgot password" within the minute.
     const lastSame = recent.find((r) => r.purpose === purpose);
     if (lastSame && now - new Date(lastSame.createdAt).getTime() < RESEND_COOLDOWN_MS) {
       const wait = Math.ceil(
@@ -59,8 +49,6 @@ export function createOtpService({ AdminUser, AdminOtp, sendEmail, brandName, lo
       throw new AppError(`Please wait ${wait} seconds before requesting another code.`, 429);
     }
 
-    // Scoped to the purpose: asking for a reset code should not kill a login
-    // code the same person is part-way through using.
     await AdminOtp.updateMany(
       { user: user._id, purpose, consumedAt: null, supersededAt: null },
       { $set: { supersededAt: new Date() } },
@@ -79,9 +67,6 @@ export function createOtpService({ AdminUser, AdminOtp, sendEmail, brandName, lo
     const minutes = Math.round(TTL_MS / 60000);
     const warning = `If you did not try to sign in${loginUrl ? ` at ${loginUrl}` : ''}, someone has your email address. Ignore this message and tell your administrator.`;
 
-    // The shared Brevo mailer reports failure by returning { ok: false } and only
-    // throws for programmer error, so a thrown-only check would let a code live
-    // on for an email that was never sent.
     let result;
     try {
       result = await sendEmail({
@@ -100,7 +85,6 @@ export function createOtpService({ AdminUser, AdminOtp, sendEmail, brandName, lo
     }
 
     if (result && result.ok === false) {
-      // Do not leave a live code behind for an email that never arrived.
       await AdminOtp.deleteMany({ user: user._id, purpose, consumedAt: null, supersededAt: null });
       logger?.error?.('[auth] failed to send sign-in code', { error: result.error });
       throw new AppError('Could not send the code. Please try again.', 502);
@@ -145,8 +129,6 @@ export function createOtpService({ AdminUser, AdminOtp, sendEmail, brandName, lo
       throw new AppError(GENERIC_FAILURE, 401);
     }
 
-    // consumedAt: null in the filter makes this atomic, so two requests racing
-    // with the same valid code cannot both mint a session.
     const consumed = await AdminOtp.findOneAndUpdate(
       { _id: record._id, consumedAt: null },
       { $set: { consumedAt: new Date() } },

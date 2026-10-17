@@ -30,12 +30,6 @@ export default function VehicleLoadingCard() {
           </div>
         </div>
       </div>
-      {/* <div>
-        <div className="w-50 lg:h-[20px] bg-primary-200 mb-2"></div>
-        <div className="w-15 h-[16px] bg-primary-200 mb-4"></div>
-        <div className="w-full h-[14px] bg-primary-200 mb-1"></div>
-        <div className="w-[60%] h-[14px] bg-primary-200 mb-4"></div>
-      </div> */}
     </div>
   );
 }

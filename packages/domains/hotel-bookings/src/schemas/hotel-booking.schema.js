@@ -28,9 +28,7 @@ const SupplierSchema = new mongoose.Schema({
   hotelConfirmationCode: String,
   price: { amount: Number, currency: String },
   quotedPrice: { amount: Number, currency: String },
-  // True when the offer the customer picked had expired and an equivalent room was booked instead.
   offerReplaced: { type: Boolean, default: false },
-  // Claimed atomically before the supplier is called, so a resent webhook can never book twice.
   bookClaimedAt: { type: Date, default: null },
   bookedAt: { type: Date, default: null },
   lastError: { type: String, default: null },
@@ -69,7 +67,6 @@ const HotelBookingSchema = new mongoose.Schema(
     cancellationAttempts: { type: Number, default: 0 },
 
     paymentStatus: { type: String, enum: ['UNPAID', 'PAID', 'REFUNDED'], default: 'UNPAID' },
-    // Claimed once at the payment transition, never rewritten: a resent webhook must not move a reservation up the admin list.
     paidAt: { type: Date, default: null },
     totalAmount: { type: Number },
     currency: { type: String, default: 'AED', uppercase: true, trim: true },
@@ -82,7 +79,6 @@ const HotelBookingSchema = new mongoose.Schema(
       enum: ['PENDING', 'BOOKED', 'DELIVERED', 'BOOKING_FAILED', 'REFUNDED'],
       default: 'PENDING',
     },
-    // Claimed before the send so a retry of the booking cannot email the customer twice.
     confirmationEmailSentAt: { type: Date, default: null },
     documentUrl: { type: String, default: null },
     documentSentAt: { type: Date, default: null },

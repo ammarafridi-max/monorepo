@@ -3,8 +3,6 @@ import { format } from "date-fns";
 import { FaArrowRightLong } from "react-icons/fa6";
 import { formatISODuration } from "../../../utils/dates.js";
 
-// Logos are stored per airline: a Cloudinary URL on brands that have migrated,
-// a backend-relative path like /airlines/EK.png on those that have not.
 function resolveLogo(logo) {
   if (!logo) return '';
   if (/^https?:\/\//.test(logo)) return logo;

@@ -29,7 +29,6 @@ export function createAdminUsersRouterFromParts({ controller, auth }) {
   router.patch("/me", protect, controller.updateMe);
   router.patch("/me/password", protect, controller.updateMyPassword);
 
-  // Must precede the CRUD routes: without it createAdminUser is a public privilege-escalation endpoint.
   router.use(protect, restrictTo("admin"));
 
   router

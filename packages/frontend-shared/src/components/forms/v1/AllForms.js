@@ -4,10 +4,6 @@ import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Plane, ShieldPlus, BedDouble } from 'lucide-react';
 
-// Split so only the visible tab ships. Both forms used to sit in the entry
-// bundle on every page, which meant the insurance form and the tooltip library
-// it pulls in were downloaded on ticket pages that never render them. The
-// active tab still server-renders, so this costs nothing on first paint.
 const FormFallback = () => (
   <div className="min-h-[420px] w-full animate-pulse rounded-3xl bg-white/10" />
 );

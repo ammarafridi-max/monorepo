@@ -11,9 +11,6 @@ import {
 } from 'lucide-react';
 import { TransferBookingContext } from '@travel-suite/frontend-shared/contexts/TransferBookingContext';
 
-// TODO: Replace PLACEHOLDER_VEHICLES with the live supplier API response.
-// Shape mirrors a real transfer supplier API — swap the array contents only;
-// rendering logic stays unchanged.
 const PLACEHOLDER_VEHICLES = [
   {
     id: 'economy-sedan',

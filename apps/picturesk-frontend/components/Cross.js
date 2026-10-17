@@ -1,5 +1,3 @@
-// The counterpart to Check: a small x for what a plan does not include. Decorative;
-// the list text carries the meaning.
 export default function Cross() {
   return (
     <svg className="cross" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false">

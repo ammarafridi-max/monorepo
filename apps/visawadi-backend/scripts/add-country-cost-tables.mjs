@@ -1,23 +1,3 @@
-/**
- * Adds an at-a-glance table to the six Schengen country guides.
- *
- * Every figure is one already verified this session, so nothing here rests on a
- * source I have not read:
- *   fee            EC, "Schengen visa fee increased as of 11 June 2024"
- *   funds          Annex 25 of the Practical Handbook, version 01/04/2026
- *   insurance      Visa Code Art. 15(3)
- *   decision       Visa Code Art. 23(1) and 23(2)
- *
- * The funds row is the reason the table earns its place: it is the only figure
- * that genuinely differs by country, and it is the one prose kept getting
- * wrong. Germany asks EUR 45 a day and Spain EUR 122.10; the posts had been
- * saying "EUR 50 to EUR 100" for all of them.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/add-country-cost-tables.mjs          # dry run
- *   node --env-file=.env.production scripts/add-country-cost-tables.mjs --apply
- *   node --env-file=.env.production scripts/add-country-cost-tables.mjs --remove --apply
- */
 
 import mongoose from 'mongoose';
 
@@ -28,7 +8,6 @@ const CHECKED = '9 September 2026';
 const CODE = 'https://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=CELEX:02009R0810-20200202';
 const ANNEX = 'https://home-affairs.ec.europa.eu/document/download/7130e21d-c1c8-41fd-9c83-b6fe312d4f5c_en';
 
-/** Means of subsistence exactly as each state notified it in Annex 25. */
 const FUNDS = {
   'france-visa-from-uae-application-process-documents-and-tips':
     ['France', 'EUR 120 per day, or EUR 65 per day for nights a hotel booking covers'],

@@ -1,25 +1,7 @@
-/**
- * The look + attire catalog and prompt builder. THE single source of truth for
- * the choices a customer makes and the prompts we actually generate from them,
- * imported by BOTH the web (to render the selection cards) and the worker (to
- * build generation prompts). Keeping them together is the whole point: the
- * options a customer sees can never drift from what the model is told to make.
- *
- * A LOOK is the scene/lighting/background. ATTIRE is what the subject wears.
- * `promptFragment` is the piece of the generation prompt each contributes;
- * `label`/`description` are the user-facing copy (BRAND: verdict-first, no em
- * dashes). `image` is a preview URL shown next to the option on the select step;
- * leave it '' to render a placeholder, and drop in a real image URL later.
- */
 
 import { PRODUCTS, DEFAULT_PRODUCT, productOf } from './products.js';
 
-/** @typedef {{ id: string, label: string, description: string, promptFragment: string, image: string, swatch?: string, note?: string }} Look */
-// `swatch` is a solid CSS color the UI shows as the preview when there is no real
-// `image` yet -- for a background option, the backdrop tone is a fair stand-in.
-/** @typedef {{ id: string, label: string, promptFragment: string, promptFragmentByGender?: Record<string, string>, image: string }} Attire */
 
-/** @type {readonly Look[]} */
 export const LOOKS = Object.freeze([
   {
     id: 'corporate_studio',
@@ -108,16 +90,10 @@ export const LOOKS = Object.freeze([
   },
 ]);
 
-/** @type {readonly Attire[]} */
-// Ordered dressiest -> most casual. Every fragment is gender-neutral: the gender
-// anchor (buildSubject) decides the cut, so "business suit" / "black-tie attire"
-// render correctly for any subject. Keep it that way unless we add gender-conditional
-// attire (which would unlock gendered garments like gowns or cultural formal wear).
 export const ATTIRE = Object.freeze([
   {
     id: 'black_tie',
     label: 'Black tie',
-    // Neutral wording so the gender anchor renders a tux or an evening gown.
     promptFragment: 'wearing elegant black-tie evening attire',
     image: '/attire-black-tie.jpg',
   },
@@ -165,14 +141,7 @@ export const ATTIRE = Object.freeze([
   },
 ]);
 
-/**
- * Dating photos. Same engine, different catalogue: scenes a real date would happen
- * in, and clothes people actually own. Fragments are written for candid framing,
- * not a headshot. `note` is shown on the option card so the customer opts in
- * knowingly when a scene adds something that is not theirs (a dog).
- */
 
-/** @type {readonly Look[]} */
 export const DATING_LOOKS = Object.freeze([
   {
     id: 'coffee_shop',
@@ -274,9 +243,6 @@ export const DATING_LOOKS = Object.freeze([
   },
 ]);
 
-/** @type {readonly Attire[]} */
-// `promptFragmentByGender` overrides the neutral fragment where the garment reads
-// differently by gender; buildPrompts picks by the order's gender id.
 export const DATING_ATTIRE = Object.freeze([
   {
     id: 'smart_casual_shirt',
@@ -340,20 +306,8 @@ export const DATING_ATTIRE = Object.freeze([
   },
 ]);
 
-/**
- * Subject demographics. These describe the person, not the scene, so they refine
- * the SUBJECT ANCHOR that leads every prompt (via buildSubject) rather than being
- * combined like looks x attire. Gender is the head noun; age and race modify it.
- * `promptFragment` is the phrase each contributes; `label` is the user-facing copy.
- *
- * Age and gender are asked on the select step; race is optional. All three are
- * optional at the data layer so a legacy or partial order still yields a valid
- * generic subject ("a person").
- */
 
-/** @typedef {{ id: string, label: string, promptFragment: string }} Demographic */
 
-/** @type {readonly Demographic[]} */
 export const AGE_RANGES = Object.freeze([
   { id: 'age_18_24', label: '18 to 24', promptFragment: 'in their early twenties' },
   { id: 'age_25_34', label: '25 to 34', promptFragment: 'in their late twenties to early thirties' },
@@ -362,14 +316,12 @@ export const AGE_RANGES = Object.freeze([
   { id: 'age_55_plus', label: '55 and over', promptFragment: 'in their late fifties or older' },
 ]);
 
-/** @type {readonly Demographic[]} */
 export const GENDERS = Object.freeze([
   { id: 'woman', label: 'Woman', promptFragment: 'a woman' },
   { id: 'man', label: 'Man', promptFragment: 'a man' },
   { id: 'nonbinary', label: 'Non-binary', promptFragment: 'an androgynous person' },
 ]);
 
-/** @type {readonly Demographic[]} */
 export const RACES = Object.freeze([
   { id: 'east_asian', label: 'East Asian', promptFragment: 'of East Asian descent' },
   { id: 'south_asian', label: 'South Asian', promptFragment: 'of South Asian descent' },
@@ -382,17 +334,6 @@ export const RACES = Object.freeze([
   { id: 'mixed', label: 'Mixed heritage', promptFragment: 'of mixed heritage' },
 ]);
 
-// Facial hair. Optional, but the single most useful appearance cue to name in the
-// prompt: without it, FLUX's "professional headshot" prior drifts toward
-// clean-shaven and the trained beard shrinks or vanishes across the set. Naming it
-// in the subject anchor holds the beard steady. `clean-shaven` is a real choice,
-// not just "unset": it tells the model to KEEP the face bare instead of guessing.
-/**
- * Body build, asked as one chip row instead of height and weight. It only exists
- * to keep the generated body honest to the person, so the fragment names the build
- * plainly and nothing else.
- * @type {readonly Demographic[]}
- */
 export const BUILDS = Object.freeze([
   { id: 'slim', label: 'Slim', promptFragment: 'with a slim build' },
   { id: 'average', label: 'Average', promptFragment: 'with an average build' },
@@ -401,11 +342,6 @@ export const BUILDS = Object.freeze([
   { id: 'plus', label: 'Plus-size', promptFragment: 'with a plus-size build' },
 ]);
 
-/**
- * Estimated height, as ranges so nobody has to know their exact number. Labels
- * show both units; the fragment describes stature relative to the average adult.
- * @type {readonly Demographic[]}
- */
 export const HEIGHTS = Object.freeze([
   { id: 'under_160', label: "Under 160 cm (5'3\")", promptFragment: 'short in stature' },
   { id: 'h_160_170', label: "160 to 170 cm (5'3\" to 5'7\")", promptFragment: 'slightly below average height' },
@@ -414,7 +350,6 @@ export const HEIGHTS = Object.freeze([
   { id: 'over_190', label: "Over 190 cm (6'3\")", promptFragment: 'very tall' },
 ]);
 
-/** @type {readonly Demographic[]} */
 export const FACIAL_HAIR = Object.freeze([
   { id: 'clean_shaven', label: 'Clean-shaven', promptFragment: 'clean-shaven' },
   { id: 'stubble', label: 'Stubble', promptFragment: 'with light stubble' },
@@ -429,11 +364,6 @@ const ATTIRE_BY_ID = Object.freeze(Object.fromEntries(ATTIRE.map((a) => [a.id, a
 const DATING_LOOKS_BY_ID = Object.freeze(Object.fromEntries(DATING_LOOKS.map((l) => [l.id, l])));
 const DATING_ATTIRE_BY_ID = Object.freeze(Object.fromEntries(DATING_ATTIRE.map((a) => [a.id, a])));
 
-/**
- * The catalogue for a product: the option lists the select step renders and the
- * lookups checkout validates against. Unknown or missing product means headshots,
- * so every order that predates products keeps working.
- */
 export function catalogFor(product) {
   if (product === PRODUCTS.DATING) {
     return { looks: DATING_LOOKS, attire: DATING_ATTIRE, looksById: DATING_LOOKS_BY_ID, attireById: DATING_ATTIRE_BY_ID };
@@ -448,55 +378,31 @@ const FACIAL_HAIR_BY_ID = Object.freeze(Object.fromEntries(FACIAL_HAIR.map((f) =
 const BUILDS_BY_ID = Object.freeze(Object.fromEntries(BUILDS.map((b) => [b.id, b])));
 const HEIGHTS_BY_ID = Object.freeze(Object.fromEntries(HEIGHTS.map((h) => [h.id, h])));
 
-/** Is `id` a real look in the product's catalog? (Used by the api to validate /checkout.) */
 export function isValidLook(id, product = DEFAULT_PRODUCT) {
   return Object.prototype.hasOwnProperty.call(catalogFor(product).looksById, id);
 }
-/** Is `id` a real attire option in the product's catalog? */
 export function isValidAttire(id, product = DEFAULT_PRODUCT) {
   return Object.prototype.hasOwnProperty.call(catalogFor(product).attireById, id);
 }
-/** Is `id` a real age range? */
 export function isValidAgeRange(id) {
   return Object.prototype.hasOwnProperty.call(AGE_RANGES_BY_ID, id);
 }
-/** Is `id` a real gender option? */
 export function isValidGender(id) {
   return Object.prototype.hasOwnProperty.call(GENDERS_BY_ID, id);
 }
-/** Is `id` a real race option? */
 export function isValidRace(id) {
   return Object.prototype.hasOwnProperty.call(RACES_BY_ID, id);
 }
-/** Is `id` a real facial-hair option? */
 export function isValidFacialHair(id) {
   return Object.prototype.hasOwnProperty.call(FACIAL_HAIR_BY_ID, id);
 }
-/** Is `id` a real build option? */
 export function isValidBuild(id) {
   return Object.prototype.hasOwnProperty.call(BUILDS_BY_ID, id);
 }
-/** Is `id` a real height range? */
 export function isValidHeight(id) {
   return Object.prototype.hasOwnProperty.call(HEIGHTS_BY_ID, id);
 }
 
-/**
- * Build the subject phrase that leads every prompt, from the order's demographics.
- * Pure. Gender is the head noun ("a woman"), age and race modify it. Any missing
- * piece is simply omitted; with nothing set it falls back to a generic "a person"
- * so the money path never emits a broken subject.
- *
- * e.g. { gender: 'man', ageRange: 'age_25_34', race: 'south_asian', facialHair: 'full_beard' }
- *      -> "a man in their late twenties to early thirties, of South Asian descent, with a full beard"
- *
- * @param {Object} [opts]
- * @param {string} [opts.gender]     - gender id
- * @param {string} [opts.ageRange]   - age range id
- * @param {string} [opts.race]       - race id (optional)
- * @param {string} [opts.facialHair] - facial-hair id (optional)
- * @returns {string} the subject phrase (never empty)
- */
 export function buildSubject({ gender, ageRange, race, facialHair, build, height } = {}) {
   let subject = GENDERS_BY_ID[gender]?.promptFragment || 'a person';
   const ageFrag = AGE_RANGES_BY_ID[ageRange]?.promptFragment;
@@ -512,57 +418,18 @@ export function buildSubject({ gender, ageRange, race, facialHair, build, height
   return subject;
 }
 
-/**
- * Build the generation prompts for an order from its selected looks + attire.
- * Pure and deterministic. THE single source of truth for prompt construction:
- * the worker calls this at generation time; nothing else assembles prompts.
- *
- * It enumerates every (look x attire) combination of the SELECTED ids in a stable
- * order and cycles through them to produce exactly `count` prompts, so a customer
- * who picks 2 looks and 2 attire gets all 4 combinations spread across the set.
- * Each prompt keeps the subject anchor FIRST (trigger word + subject), then
- * attire, then the look, then a shared quality tail, matching the anchoring the
- * worker relied on before (name the subject up front so a weak seed does not
- * drift). Unknown ids are ignored; an empty selection falls back to the first
- * catalog entry so we never emit a broken prompt.
- *
- * @param {Object} opts
- * @param {string[]} opts.looks - selected look ids
- * @param {string[]} opts.attire - selected attire ids
- * @param {number} opts.count - how many prompt strings to return (== generateCount)
- * @param {string} opts.subjectAnchor - e.g. "HDLNRZ, a person" (trigger + subject)
- * @returns {string[]} exactly `count` prompt strings
- */
-// The shared quality/photography tail appended to every generation prompt. It
-// does the work behind "make it look like a photographer shot it, not a selfie":
-//  - "head and shoulders framing with space above the head" pulls the camera back
-//    and leaves headroom, so the square output survives LinkedIn's circular crop
-//    instead of clipping the top of the head / chin.
-//  - "85mm portrait lens at eye level" gives a photographer's distance and kills
-//    the wide-angle selfie distortion.
-//  - "shallow depth of field, softly blurred background" gives professional bokeh
-//    (the old tail said "sharp focus, high detail", which kept the background tack
-//    sharp); "sharp focus on the face" keeps the subject crisp.
-// Scene-neutral wording ("headshot portrait", not "studio") so it does not fight
-// an outdoor / office / greenery look. FLUX has no negative prompt, so everything
-// here is positive phrasing. Kept in ONE place and reused by the dev tune script.
 export const QUALITY_TAIL =
   'professional headshot portrait, head and shoulders framing with space above the head, ' +
   'shot on a DSLR with an 85mm portrait lens at eye level, shallow depth of field, ' +
   'softly blurred background, sharp focus on the face, natural realistic skin texture, ' +
   'sharp detailed eyes, high detail';
 
-// The dating tail is the opposite brief: a candid lifestyle photo, wider framing,
-// available light and visible skin texture. Every competitor complaint about
-// "looks AI" is really about every shot being a posed studio portrait.
 export const DATING_QUALITY_TAIL =
   'candid lifestyle photo, three-quarter or waist-up framing, shot on a full-frame camera ' +
   'with a 35mm lens, natural available light, warm tones, genuine relaxed expression, ' +
   'natural realistic skin texture with visible pores, no retouching, sharp eyes, ' +
   'slight film grain, looks like a photo a friend took';
 
-// Poses cycle through dating prompts so a set is not all the same posed portrait.
-// Two of five look away from the camera or are in motion on purpose.
 const DATING_POSES = Object.freeze([
   'smiling naturally at the camera',
   'laughing, looking slightly off camera',
@@ -576,28 +443,15 @@ function attireFragment(entry, gender) {
   return entry.promptFragmentByGender?.[gender] || entry.promptFragment;
 }
 
-/**
- * @param {Object} opts
- * @param {string[]} opts.looks - selected look ids
- * @param {string[]} opts.attire - selected attire ids
- * @param {number} opts.count - how many prompt strings to return (== generateCount)
- * @param {string} opts.subjectAnchor - e.g. "HDLNRZ, a person" (trigger + subject)
- * @param {string} [opts.product] - product id; picks the catalogue, tail and poses
- * @param {string} [opts.gender] - gender id, for gender-conditional attire
- * @returns {string[]} exactly `count` prompt strings
- */
 export function buildPrompts({ looks = [], attire = [], count, subjectAnchor, product, gender }) {
   const cat = catalogFor(product);
   const dating = productOf(product) === PRODUCTS.DATING;
   const lookFrags = looks.map((id) => cat.looksById[id]?.promptFragment).filter(Boolean);
   const attireFrags = attire.map((id) => attireFragment(cat.attireById[id], gender)).filter(Boolean);
 
-  // Fall back to the first catalog entry so a bad/empty selection still yields
-  // usable prompts rather than throwing on the money path.
   const L = lookFrags.length ? lookFrags : [cat.looks[0].promptFragment];
   const A = attireFrags.length ? attireFrags : [attireFragment(cat.attire[0], gender)];
 
-  // Every selected combination, in a stable order (attire varies fastest).
   const combos = [];
   for (const look of L) for (const att of A) combos.push({ look, att });
 

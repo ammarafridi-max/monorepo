@@ -3,10 +3,6 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-// The fixed action bar at the bottom of every funnel step, the same pattern the
-// travel brands use: white, full width, Back on the left, Continue on the right,
-// and the one sentence that explains a disabled Continue in between. `.generator`
-// leaves room for it at the bottom of the page.
 export default function StepNav({
   backHref,
   nextHref,

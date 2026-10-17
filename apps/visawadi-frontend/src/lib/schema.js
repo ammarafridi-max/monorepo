@@ -28,7 +28,6 @@ export const {
   sameAs: SOCIALS.map((s) => s.href),
   logoUrl: `${SITE_URL}/logo-dark.png`,
   email: EMAIL,
-  // TODO: replace with VisaWadi's registered address once confirmed.
   address: {
     addressLocality: 'Dubai',
     addressRegion: 'Dubai',

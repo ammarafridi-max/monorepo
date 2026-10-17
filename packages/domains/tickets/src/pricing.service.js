@@ -40,8 +40,6 @@ export function createPricingService({ TicketPricing, Currency }) {
     return base?.code || 'AED';
   };
 
-  // Only the base currency's book is auto-created. Every other currency is
-  // opt-in, so a missing book means "fall back", never "invent a price".
   async function ensureDefaultBook() {
     const code = await getBaseCode();
     const onBase = await TicketPricing.findOne({ key: 'dummy-ticket', currency: code });
@@ -100,8 +98,6 @@ export function createPricingService({ TicketPricing, Currency }) {
 
   const updatePricing = async ({ currency, options, updatedBy }) => {
     const code = normalizeCode(currency) || (await getBaseCode());
-    // A book for a currency the brand does not list could never be charged,
-    // and a typo would create one nobody notices.
     if (Currency && !(await Currency.exists({ code }))) {
       throw new AppError(`Unknown currency: ${code}`, 400);
     }
@@ -124,8 +120,6 @@ export function createPricingService({ TicketPricing, Currency }) {
     return { currency: code, deleted: true };
   };
 
-  // isExact tells checkout whether this price was set for the requested
-  // currency or merely fell back, which decides if FX conversion applies.
   const getUnitPrice = async (ticketValidity, requestedCurrency) => {
     const exact = await findBook(requestedCurrency);
     const book = exact || (await ensureDefaultBook());

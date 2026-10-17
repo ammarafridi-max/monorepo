@@ -13,10 +13,6 @@ import {
   buildWebsite,
 } from '../../../../lib/schema';
 
-// The author profile page, rendered by the shared AuthorPage. Every blog post's
-// byline links here, so the route has to exist or each post carries a 404. Same
-// rule as the post and tag routes: no loading.js above this, so an unknown slug
-// is a real 404.
 
 const FALLBACK = (name) => `AI headshot guides written by ${name} for Picturesk.`;
 
@@ -27,12 +23,6 @@ function metaDescriptionFrom(bio, fallback) {
   return `${first.slice(0, 157).replace(/\s+\S*$/, '')}...`;
 }
 
-// Rendered per request, never prerendered. The (site) layout reads the session
-// cookie, so nothing under it can be static; a route that also exported
-// generateStaticParams + revalidate promised a static page and then hit that
-// cookie on its first on-demand render, which is a DYNAMIC_SERVER_USAGE 500 in
-// production. The api responses are still cached through each fetch's own
-// `next.revalidate`, so the cost is the render, not the network.
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }) {

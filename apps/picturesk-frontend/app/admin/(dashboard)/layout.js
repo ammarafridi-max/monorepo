@@ -86,8 +86,6 @@ const nav = [
 
 const brand = { name: 'Picturesk', icon: 'Camera' };
 
-// Picturesk staff are admin (full access) or support (read-only), so the travel
-// dashboard's rules do not apply. Staff CRUD is the only admin-only area.
 const roleRules = [
   { prefix: '/admin/users', roles: ['admin'] },
   { prefix: '/admin/blog', roles: ['admin'] },

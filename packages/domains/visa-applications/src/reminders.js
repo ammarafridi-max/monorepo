@@ -1,4 +1,3 @@
-// Every send is gated by an atomic findOneAndUpdate that claims it, so a repeated or concurrent sweep never double-emails.
 
 const HOUR = 60 * 60 * 1000;
 const TRACK_A_INTERVAL_MS = 48 * HOUR;
@@ -29,7 +28,6 @@ export function createReminderEngine({ VisaApplication, Applicant, ApplicationDo
     return new Map(types.map((t) => [t.key, t.label]));
   }
 
-  // Only CUSTOMER-source rows: a customer is never chased for a document staff produce.
   async function missingByTraveller(appId) {
     const [applicants, docs] = await Promise.all([
       Applicant.find({ application: appId }).lean(),

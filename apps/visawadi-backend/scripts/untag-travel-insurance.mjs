@@ -1,21 +1,3 @@
-/**
- * Removes the "Travel Insurance" tag from the 17 posts carrying it.
- *
- * None of them is an insurance post. Every one is a visa guide that mentions
- * the EUR 30,000 cover requirement in passing, so the tag was grouping visa
- * content under a product VisaWadi does not sell and building topical authority
- * on the wrong subject.
- *
- * The tag record itself is left in place, so /blog/tags/travel-insurance stays
- * reachable but lists nothing. That is a deliberate hold, not an oversight:
- * deleting a tag is the owner's call.
- *
- * `tags` is an array of plain strings on the blog schema, so this is a $pull.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/untag-travel-insurance.mjs          # dry run
- *   node --env-file=.env.production scripts/untag-travel-insurance.mjs --apply
- */
 
 import mongoose from 'mongoose';
 

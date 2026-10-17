@@ -11,7 +11,6 @@ import {
 
 const MAX_BYTES = 2 * 1024 * 1024;
 
-// A logo is either a Cloudinary URL or a legacy backend-relative path.
 function logoSrc(logo) {
   if (!logo) return '';
   if (/^https?:\/\//.test(logo)) return logo;

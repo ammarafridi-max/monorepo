@@ -22,8 +22,6 @@ const loginLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// A 6-digit code is a million guesses; the password limiter is not enough on
-// its own, and the request side must not become a mail-bombing tool.
 const otpRequestLimiter = rateLimit({
   max: 10,
   windowMs: 15 * 60 * 1000,

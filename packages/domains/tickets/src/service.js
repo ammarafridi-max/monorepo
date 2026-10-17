@@ -44,7 +44,6 @@ function buildRecencyFilter(window, paidOnly) {
   if (!hours) return null;
   const since = new Date(Date.now() - hours * 3_600_000);
   if (paidOnly) return { paidAt: { $gte: since } };
-  // A ticket created at 1pm and paid at 6pm is recent either way, so a mixed list must not hide it.
   return { $or: [{ createdAt: { $gte: since } }, { paidAt: { $gte: since } }] };
 }
 
@@ -70,7 +69,6 @@ function daysBetweenDateOnly(fromStr, toStr) {
   return Math.round((to - from) / 86_400_000);
 }
 
-// The browser blocks both of these, so anything reaching here skipped the form.
 function assertDeliveryAndValidity(payload) {
   const departure = dateOnly(payload?.departureDate);
   if (!departure) return;
@@ -87,8 +85,6 @@ function assertDeliveryAndValidity(payload) {
   if (!needed || validity === SHORTEST_VALIDITY) return;
   const daysToDeparture = daysBetweenDateOnly(getDubaiDateString(), departure);
   if (daysToDeparture === null) return;
-  // One day of slack: the client counts from its own timezone, and rejecting a
-  // legitimate order over a date-line disagreement costs more than it saves.
   if (needed > daysToDeparture + 1) {
     throw new AppError(`A ${validity} reservation would outlast a departure ${daysToDeparture} day${daysToDeparture === 1 ? '' : 's'} away`, 400);
   }
@@ -110,9 +106,6 @@ function applyDeliveryDateFilter(queryObj, deliveryDate) {
 }
 
 export function createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, paypal, notifications, frontendUrl, brevo, reviewListId, paidOrderBus, reservationStorage, sendEmail, metaCapi, openaiCapi }) {
-  // A price book set for the requested currency is the price. Fall back to FX
-  // only when that currency has no book, otherwise the page would quote a local
-  // price and the gateway would charge the converted one.
   const resolveTicketAmount = async ({ validity, passengers, targetCode }) => {
     const { currency: bookCurrency, unitPrice, isExact } = await pricingService.getUnitPrice(
       validity,
@@ -133,10 +126,8 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     Object.keys(queryObj).forEach((k) => queryObj[k] === 'all' && delete queryObj[k]);
     applyDeliveryDateFilter(queryObj, query.deliveryDate);
     Object.assign(queryObj, attributionChannelFilter(query.channel));
-    // On a paid-only list, "recent" means recently paid, not recently created: someone can start an order at 1pm and pay at 6pm.
     const paidOnly = queryObj.paymentStatus === 'PAID';
     const recency = buildRecencyFilter(query.createdAt, paidOnly);
-    // $and, because both the recency and search filters can carry their own $or.
     const finalQuery = {
       ...queryObj,
       ...buildSearchFilter(query.search),
@@ -183,14 +174,12 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       throw new AppError('This ticket is scheduled for a later delivery date. Bring the delivery date forward before sending.', 409);
     }
 
-    // 'image' (not 'raw') so Cloudinary treats the PDF as a renderable asset.
     const url = await reservationStorage.saveFile(
       file.buffer,
       `${sessionId}/reservation-file.pdf`,
       { resourceType: 'image' },
     );
 
-    // Attach the bytes inline: Cloudinary blocks PDF delivery by default, so handing Brevo a URL bounces the email.
     const ok = await sendEmail({
       email: ticket.email,
       name: ticket.leadPassenger || '',
@@ -367,7 +356,6 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     }, { idempotencyKey: sessionId });
   };
 
-  // Neither ad report throws: a platform outage must not fail the webhook and make Stripe resend a paid order.
   const reportPurchaseToOpenAI = async (ticket) => {
     if (!openaiCapi?.isConfigured?.()) return;
     const lead = ticket.passengers?.[0];
@@ -460,7 +448,6 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       }
     }
 
-    // Only matches while paidAt is unset, so a resent webhook or a duplicate capture cannot rewrite it.
     await Ticket.updateOne({ sessionId, paidAt: null }, { $set: { paidAt: new Date() } });
 
     const ticket = await Ticket.findOneAndUpdate(
@@ -613,7 +600,6 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       }
     }
 
-    // Only matches while paidAt is unset, so a resent webhook or a duplicate capture cannot rewrite it.
     await Ticket.updateOne({ sessionId, paidAt: null }, { $set: { paidAt: new Date() } });
 
     const ticket = await Ticket.findOneAndUpdate(

@@ -9,8 +9,6 @@ import SectionHeading from '../../../components/SectionHeading';
 import { hingePhotos as page } from '../../../data/pages/hinge-photos';
 import { DATING_FUNNEL, ROOTS, landingMetadata, landingSchema } from '../../../lib/landingPage';
 
-// Every section takes its content from data/pages/hinge-photos.js. Breadcrumbs from
-// /ai-dating-photos, the canonical home of the dating product.
 export const metadata = landingMetadata(page);
 
 const schema = landingSchema({ ...page, productName: 'AI Hinge Photos', root: ROOTS.dating, price: '19' });

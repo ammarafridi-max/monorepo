@@ -1,10 +1,6 @@
 import Container from '../components/Container';
 import SectionHeading from '../components/SectionHeading';
 
-// The services grid: one card per product with who it is for, what you get, the
-// price from, the funnel CTA, and the product's landing pages as text links. This
-// is the hub's internal-linking engine; each product page gets its exact-match
-// anchor from here. Data-driven from data/hub.js so a new service is one entry.
 export default function Services({ eyebrow, title, lede, items = [] }) {
   return (
     <section id="services" className="section services-grid">

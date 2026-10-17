@@ -10,7 +10,6 @@ export function createCloudinaryStorage({ cloudName, apiKey, apiSecret, logger, 
 
   cloudinary.config({ cloud_name: cloudName, api_key: apiKey, api_secret: apiSecret });
 
-  // All six brands share one Cloudinary account; this folder prefix is the only thing stopping one brand from deleting another's assets.
   const ownsPublicId = (publicId) =>
     typeof publicId === 'string' && (publicId === folder || publicId.startsWith(`${folder}/`));
 

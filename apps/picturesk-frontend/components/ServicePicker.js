@@ -3,10 +3,6 @@
 import { useEffect, useRef } from 'react';
 import { hub } from '../data/hub';
 
-// The chooser behind the generic "Get started" CTA: a small modal with one card per
-// service, each straight into its funnel. Closes on backdrop click, the close
-// button or Escape; focus lands on the first card when it opens and returns to the
-// trigger on close (the caller re-focuses). Reads the same service list as the hub.
 export default function ServicePicker({ open, onClose }) {
   const firstRef = useRef(null);
 

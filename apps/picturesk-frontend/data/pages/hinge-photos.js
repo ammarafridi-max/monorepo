@@ -1,12 +1,5 @@
-/**
- * /hinge-photos
- *
- * About the DESTINATION, not the product: what makes a Hinge profile work and how
- * to fill its six slots. It must not restate /ai-dating-photos.
- */
 export const hingePhotos = {
   meta: {
-    // 51 chars / 156 chars
     title: 'Hinge Photos That Get Likes | AI, From Your Selfies',
     description:
       'The Hinge photos that get likes: a clear face, a full-length shot, something you do, somewhere you went. Get all six from your selfies in an hour, from $19.',

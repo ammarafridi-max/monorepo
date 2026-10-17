@@ -23,8 +23,6 @@ export const createLimoNotifications = ({ sendEmail }) =>
     },
   });
 
-// Maps a limo booking onto the shared booking email templates. The limo-bookings
-// webhook records each result on the booking, so both handlers return { ok }.
 export function bookingNotifications(notifications) {
   const toEmailData = (booking) => {
     const hourly = booking?.tripType === "hourly";

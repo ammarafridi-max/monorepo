@@ -80,7 +80,6 @@ export function createItineraryController({ service }) {
     }
   };
 
-  // Proxied, not redirected, so the payment gate cannot be bypassed with the public Cloudinary URL.
   const getDocument = async (req, res, next) => {
     try {
       const url = await service.getCleanPdfUrl(req.params.sessionId);

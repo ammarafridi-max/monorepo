@@ -1,11 +1,3 @@
-/**
- * Travl.ae — travel insurance and travel itineraries for UAE residents.
- *
- * Visa assistance moved to VisaWadi in the brand split, so nothing here may
- * describe a visa service as Travl's or link a travl.ae/visa URL: those are all
- * 308 redirects to visawadi.com. Both rules are enforced below rather than left
- * to the prompt.
- */
 
 const SITE = 'https://www.travl.ae';
 const VISAWADI = 'https://www.visawadi.com';
@@ -17,7 +9,6 @@ export const TARGET = {
   backendUrl: 'https://api.travl.ae',
   siteUrl: SITE,
 
-  /** Env var names, so each brand's admin credentials stay separate. */
   adminEmailEnv: 'TRAVL_ADMIN_EMAIL',
   adminPasswordEnv: 'TRAVL_ADMIN_PASSWORD',
 
@@ -26,46 +17,31 @@ export const TARGET = {
 
   excludedTags: ['Visa Tips', 'Visa Documents', 'Dummy Ticket', 'Flight Itinerary'],
 
-  /** First slot for blog-schedule, and posts it must leave where they are. */
   blogSchedule: {
-    start: '2026-09-10T05:00:00Z', // 09:00 GST
+    start: '2026-09-10T05:00:00Z', 
     excludeSlugs: ['why-you-need-travel-insurance-for-your-schengen-visa-application'],
   },
 
-  /**
-   * Format per length tier, matching VisaWadi. `field-report` stays unused
-   * until there are first-party claims numbers worth reporting; supply
-   * fieldData and flip the long tier to it when there are.
-   */
   formatsByTier: {
     short: 'quick-answer',
     medium: 'sourced-guide',
     long: 'sourced-guide',
   },
 
-  /**
-   * The only domains a post may cite. Insurance is YMYL: a cover requirement,
-   * a compensation right or an entry rule sourced to a blog is worth nothing.
-   * Regulators, the bodies that set the rule, and AXA for its own policy terms.
-   */
   citationDomains: [
-    // Root domains: isCitationUrl matches subdomains, so 'gov.uk' covers 'www.gov.uk'.
-    'europa.eu',            // the Schengen insurance minimum, EU261 delay rights
-    'gov.uk',               // UK entry rules and FCDO travel advice
-    'state.gov',            // travel.state.gov advisories and US entry rules
+    'europa.eu',            
+    'gov.uk',               
+    'state.gov',            
     'canada.ca',
     'gc.ca',
-    'gov.ae',               // mohap.gov.ae, icp.gov.ae
-    'u.ae',                 // the UAE government portal
-    'centralbank.ae',       // the insurance regulator since the IA merger
+    'gov.ae',               
+    'u.ae',                 
+    'centralbank.ae',       
     'mofa.gov.ae',
-    'who.int',              // vaccination and health requirements
-    'icao.int',             // the Montreal Convention, behind baggage liability
-    'gov.sa',               // Hajj and Umrah requirements
+    'who.int',              
+    'icao.int',             
+    'gov.sa',               
     'visitsaudi.com',
-    // AXA is deliberately absent: axa.ae and axa-gulf.com never answer an
-    // automated request, so an invented deep link there would pass the
-    // liveness check. Policy terms come from the Travl page instead.
   ],
 
   allowedLinkPrefixes: [
@@ -77,7 +53,6 @@ export const TARGET = {
     'https://visawadi.com',
   ],
 
-  /** travl.ae/visa/* is a redirect to VisaWadi, so linking it is a hard failure. */
   forbiddenLinkPatterns: [
     {
       pattern: /travl\.ae\/visa(?:\/|["'])/i,
@@ -85,25 +60,18 @@ export const TARGET = {
     },
   ],
 
-  /** Checked against the article text, not its markup. */
   contentChecks: [
     {
       pattern: /(?:dummy ticket|flight reservation|flight itinerar)(?:(?!\bUSD\b)[^.]){0,80}AED\s*\d/i,
       message: 'Dummy Ticket 365 is priced in USD (13 / 20 / 23), never in dirhams. Travl\'s own itinerary at AED 49 is a different product.',
     },
     {
-      // Only fires where Travl is the subject of the offer, or the service is
-      // said to come "from Travl". Proximity alone false-positives on tables.
       pattern:
         /Travl(?:\.ae)?(?:'s)?\s+(?:offers?|provides?|handles?|sells?|files?)\b[^.]{0,60}\b(?:visa assistance|visa application|visa service)\b|\bvisa (?:assistance|application|service)s?\b[^.]{0,40}\bfrom Travl\b/i,
       message: 'Travl sells travel insurance and itineraries only — attribute visa assistance to VisaWadi',
     },
   ],
 
-  /**
-   * Titles that are a money page's head term. Each already has a product page
-   * under /travel-insurance, so a post with the same title cannibalises it.
-   */
   titleChecks: [
     {
       pattern:
@@ -119,10 +87,8 @@ export const TARGET = {
   writerIdentity:
     'You are an expert travel content writer for Travl.ae, a UAE-based travel services platform. You write SEO-optimised blog posts targeting UAE residents and expats.',
 
-  /** Sits in the Writing Rules list, near the top. */
   internalLinkingRule:
     "- Naturally weave in links to Travl's own pages (see Internal Linking Priority in the context)",
-  /** Sits lower in the same list, next to the HTML rules. */
   linkFormatRule:
     '- Internal links: use full URL (https://www.travl.ae/...) in <a href> attributes. Permitted outbound links: https://www.dummyticket365.com, https://www.visawadi.com/uae/visa/..., and the official sources listed under Sourcing Rules',
 
@@ -165,7 +131,6 @@ Example shape (write your own copy, do not reuse this wording verbatim):
       });
     }
 
-    /** Visa assistance is VisaWadi's, most specific destination first. */
     const destinations = [
       { slug: 'france-visa', match: () => has('France'), label: 'France' },
       { slug: 'germany-visa', match: () => has('Germany'), label: 'Germany' },
@@ -177,7 +142,6 @@ Example shape (write your own copy, do not reuse this wording verbatim):
         label: 'the United Kingdom',
       },
       {
-        // Case-sensitive on the bare token: /\bUS\b/i also matches the pronoun "us".
         slug: 'usa',
         match: () => /\bUSA?\b/.test(title) || has('United States') || has('B1/B2'),
         label: 'the United States',

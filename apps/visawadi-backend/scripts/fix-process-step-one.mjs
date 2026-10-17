@@ -1,12 +1,3 @@
-/**
- * Step 1 of the Schengen-family process promised an online form with dates,
- * countries and document uploads. The real first step is a call-back request,
- * so the step now describes that.
- *
- * Usage, from apps/visawadi-backend:
- *   node --env-file=.env.production scripts/fix-process-step-one.mjs          # dry run
- *   node --env-file=.env.production scripts/fix-process-step-one.mjs --apply
- */
 
 import mongoose from 'mongoose';
 

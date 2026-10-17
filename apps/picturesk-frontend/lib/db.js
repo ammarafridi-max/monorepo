@@ -2,12 +2,6 @@ import 'server-only';
 import mongoose from 'mongoose';
 import { connectMongo } from '@travel-suite/picturesk-shared';
 
-/**
- * Cached Mongoose connection for the Next server. connectMongo() from
- * @travel-suite/picturesk-shared does the actual connect; we cache the promise on globalThis so
- * dev HMR (which re-imports modules) reuses one connection instead of opening a
- * new one every reload.
- */
 let cached = globalThis.__pictureskMongoose;
 if (!cached) cached = globalThis.__pictureskMongoose = { promise: null };
 

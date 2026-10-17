@@ -74,7 +74,6 @@ export function HotelProvider({ children }) {
     });
   }, []);
 
-  // Search fields live in sessionStorage so a refresh or back-navigation inside the flow keeps them.
   useEffect(() => {
     const saved = safeParse(SEARCH_STORAGE_KEY, null, 'session');
     if (saved) {

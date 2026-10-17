@@ -239,11 +239,6 @@ export default function Page() {
         benefits={pageData.sections.benefits.benefits}
       />
 
-      {/* Inline FAQ render: this page ships 8 FAQs in the FAQPage schema,
-          but the shared <FAQ> component caps the visible list to 6.
-          Google's rich-result guidelines require schema content to be
-          visible on-page, so we render the full set with the same
-          primitives instead. */}
       <PrimarySection id="faq" className="py-section bg-gray-50/70">
         <Container>
           <SectionTitle

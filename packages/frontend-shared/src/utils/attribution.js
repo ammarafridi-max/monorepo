@@ -16,11 +16,9 @@ const PARAMS = {
   oppref: 'oppref',
 };
 
-// Returning from a payment or sign-in page must not overwrite the touch that brought the customer in.
 const IGNORED_REFERRERS = ['stripe.com', 'paypal.com', 'accounts.google.com'];
 const RETURN_PATH = /(payment|success|confirmation)/i;
 
-// document.referrer survives client-side navigation, so capturing again after a remount would record a false touch.
 let captured = false;
 
 const bareHost = (host) => host.replace(/^www\./, '').toLowerCase();

@@ -20,10 +20,6 @@ import {
   buildFAQPage,
 } from '../../lib/schema';
 
-// The hub. It owns the brand and the category ("AI photos from selfies") and sends
-// visitors into one of the product funnels; each product page owns its own
-// keyword and its own Product schema, so the hub carries an ItemList of the
-// services instead of claiming a price for two different things.
 const CANONICAL = `${SITE_URL}/`;
 
 export const metadata = buildMetadata({

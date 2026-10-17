@@ -1,4 +1,3 @@
-// In-memory bus: only reaches admins on the SAME backend instance. Scaling past one machine needs Redis pub/sub.
 export function createPaidOrderBus() {
   const subscribers = new Set();
 

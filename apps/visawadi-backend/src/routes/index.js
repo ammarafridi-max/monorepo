@@ -69,8 +69,6 @@ const notifications = createNotificationsService({
     deliverySenderName: "VisaWadi Delivery",
     customerSenderName: "VisaWadi",
     whatsappUrl: "https://wa.me/971569964924",
-    // Cobalt & Stone, matching the site. An email that looks nothing like the
-    // page the customer just came from reads as a phishing attempt.
     theme: { primaryColor: "#254b8e", accentColor: "#F26B4E", linkColor: "#2b5cb0" },
   },
 });
@@ -90,10 +88,6 @@ router.use(
   createVisaLeadRouter({ db, auth, notificationsService: notifications, metaCapi, frontendUrl: config.frontendUrl }),
 );
 
-// Visa requirement checker. Runs on our own curated rules. The service takes an
-// ordered provider list, so a third-party source can be added later without
-// touching the tool. servicedSlugs decides which answers push the consultation
-// CTA rather than just informing.
 const { router: visaRequirementsRouter } = createVisaRequirementsRouter({
   db,
   auth,
@@ -156,9 +150,6 @@ const { router: usersRouter, middleware: userAuth, User } = createUsersRouter({
 
 router.use("/users", usersRouter);
 
-// -- Schengen visa application system -----------------------------------------
-// Private customer documents (passport/bank statements) go to a SEPARATE
-// authenticated Cloudinary space; reads are always via signed short-lived URLs.
 const visaApplicationStorage = createCloudinaryStorage({
   cloudName: config.cloudinary.cloudName,
   apiKey: config.cloudinary.apiKey,
@@ -169,8 +160,8 @@ const visaApplicationStorage = createCloudinaryStorage({
 
 const { router: visaApplicationsRouter, runReminderSweep } = createVisaApplicationsRouter({
   db,
-  auth,          // admin protect/restrictTo
-  userAuth,      // customer (userJwt) protect
+  auth,          
+  userAuth,      
   User,
   storage: visaApplicationStorage,
   notifications,
@@ -180,7 +171,6 @@ const { router: visaApplicationsRouter, runReminderSweep } = createVisaApplicati
 });
 router.use("/visa-applications", visaApplicationsRouter);
 
-// Exposed so server.js can schedule the daily reminder sweep (node-cron).
 export { runReminderSweep as runVisaReminderSweep };
 
 export default router;

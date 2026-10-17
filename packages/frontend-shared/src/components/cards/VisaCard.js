@@ -8,16 +8,23 @@ const DEFAULT_FEATURES = [
   "Cover letter and financial summary written for you",
 ];
 
-// basePath: brands that segment visa pages by residence country pass the
-// segment, e.g. basePath="/uae" to link /uae/visa/<slug>. `href` overrides it.
-export default function VisaCard({ visa, fallbackTagline = "", features = DEFAULT_FEATURES, href, basePath = "", priority = false }) {
+export default function VisaCard({
+  visa,
+  fallbackTagline = "",
+  features = DEFAULT_FEATURES,
+  href,
+  basePath = "",
+  priority = false,
+}) {
   if (!visa?.slug) return null;
 
   const tagline = visa.excerpt || fallbackTagline || visa.heroSubheadline || "";
 
   const cheapest = (visa.packages ?? []).reduce(
     (min, p) =>
-      min == null || (Number(p.price) || 0) < (Number(min.price) || 0) ? p : min,
+      min == null || (Number(p.price) || 0) < (Number(min.price) || 0)
+        ? p
+        : min,
     null,
   );
   const fromPrice = cheapest ? Number(cheapest.price) || 0 : null;
@@ -28,7 +35,7 @@ export default function VisaCard({ visa, fallbackTagline = "", features = DEFAUL
       href={href || `${basePath}/visa/${visa.slug}`}
       className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-[0_4px_20px_rgba(16,24,40,0.06)] hover:-translate-y-1 hover:shadow-[0_12px_36px_rgba(16,24,40,0.12)] transition-all duration-300"
     >
-      <div className="relative aspect-16/7 bg-linear-to-br from-primary-50 to-primary-100/50 overflow-hidden">
+      <div className="relative aspect-video bg-linear-to-br from-primary-50 to-primary-100/50 overflow-hidden">
         {visa.heroImageUrl && (
           <Image
             src={visa.heroImageUrl}
@@ -42,22 +49,11 @@ export default function VisaCard({ visa, fallbackTagline = "", features = DEFAUL
       </div>
 
       <div className="flex flex-col flex-1 py-5 px-5">
-        <h3 className="font-semibold text-[17px] leading-snug text-gray-900 mb-1.5">
+        <h3 className="font-bold text-[16px] leading-snug text-gray-900 mb-1.5">
           {visa.countryName} Visa
         </h3>
-        <p className="text-[13px] text-gray-500 leading-5">{tagline}</p>
+        <p className="text-[12px] text-gray-500 leading-5">{tagline}</p>
 
-        <ul className="mt-4 flex flex-col gap-2 flex-1">
-          {features.map((feature) => (
-            <li
-              key={feature}
-              className="flex items-start gap-2 text-[12.5px] text-gray-600 leading-snug"
-            >
-              <Check size={14} className="text-primary-600 shrink-0 mt-0.5" />
-              <span>{feature}</span>
-            </li>
-          ))}
-        </ul>
 
         {timeline && (
           <p className="mt-4 inline-flex items-center gap-1.5 text-[12px] font-medium text-gray-500">

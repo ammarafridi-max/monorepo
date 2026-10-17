@@ -9,9 +9,6 @@ function fmtDate(str) {
   return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-// Sent to the customer when their itinerary payment is confirmed. Attaches the
-// clean, watermark-free PDF (fetched from Cloudinary) and links to the page where
-// they can re-download. Best-effort: never throws into the Stripe webhook.
 export async function itineraryPaymentCustomerEmail({
   email,
   name,
@@ -31,8 +28,6 @@ export async function itineraryPaymentCustomerEmail({
     const dates = [fmtDate(startDate), fmtDate(endDate)].filter(Boolean).join(' – ');
     const downloadLink = `${config.frontendUrl}/itinerary-booking/${sessionId}/success`;
 
-    // Fetch the PDF and attach it (base64). If it can't be fetched, still send the
-    // email with the download link so the customer is notified.
     let attachment;
     if (pdfUrl) {
       try {
