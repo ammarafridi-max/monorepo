@@ -5,6 +5,7 @@ export function createSchemaBuilders({
   sameAs,
   telephone,
   logoUrl,
+  productImage,
   email,
   address,
   contactPoint,
@@ -178,6 +179,7 @@ export function createSchemaBuilders({
     name,
     description,
     price,
+    image,
     currency = "USD",
     category,
     fromPrice = false,
@@ -188,6 +190,10 @@ export function createSchemaBuilders({
     name,
     description,
     url: canonical,
+    ...(() => {
+      const src = image || productImage || logoUrl;
+      return src ? { image: Array.isArray(src) ? src : [src] } : {};
+    })(),
     ...(category ? { category } : {}),
     brand: { "@id": organizationId },
     offers: {

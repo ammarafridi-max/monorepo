@@ -20,7 +20,7 @@ import {
 } from 'react-icons/hi2';
 import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety } from 'react-icons/md';
 import QuickAnswer from '@/components/QuickAnswer';
-import { USD_TIERS } from '@/lib/tiers';
+import { getUsdPrices, usdTiers } from '@/lib/tiers';
 import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
@@ -145,7 +145,8 @@ const pageData = {
 
 export const metadata = buildMetadata(pageData.meta);
 
-export default function Page() {
+export default async function Page() {
+  const usdPrices = await getUsdPrices();
   const breadcrumbPaths = [
     { label: 'Home', href: '/' },
     { label: 'Dummy Ticket for UK Visa' },
@@ -164,7 +165,7 @@ export default function Page() {
       canonical: pageData.meta.canonical,
       name: pageData.meta.productName,
       description: pageData.meta.description,
-      price: '13.00',
+      price: String(usdPrices['2 Days']),
       currency: 'USD',
     }),
     buildFAQPage({
@@ -200,7 +201,7 @@ export default function Page() {
       <QuickAnswer
         question="Do you need a flight booking for a UK visa?"
         answer="You need evidence of your travel plans, not a paid ticket. A Standard Visitor application asks what you intend to do and when, and a flight reservation with a verifiable PNR shows it. Buying a fare before a decision carries real risk, because a refusal can leave you holding travel you cannot fully recover."
-        tiers={USD_TIERS}
+        tiers={usdTiers(usdPrices)}
       />
       <Process
         title={pageData.sections.process.title}

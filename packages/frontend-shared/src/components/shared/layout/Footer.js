@@ -18,6 +18,7 @@ export default function Footer({
   brandName,
   disclaimer = 'Disclaimer: This service provides a flight itinerary with booking details and a verifiable PNR. It is not a paid airline ticket.',
   copyrightName,
+  linkGroups = [],
 }) {
   return (
     <footer className="bg-[linear-gradient(155deg,#0b1220_0%,#0f172a_55%,#132134_100%)] text-gray-300 font-nunito">
@@ -50,6 +51,25 @@ export default function Footer({
             ))}
           </div>
         </div>
+
+        {linkGroups.length > 0 && (
+          <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-7 md:gap-8 pb-7 border-b border-white/10">
+            {linkGroups.map(({ title, links }) => (
+              <div key={title}>
+                <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.12em] text-gray-200">
+                  {title}
+                </p>
+                <ul className="flex flex-col gap-2 text-[14px] text-gray-400">
+                  {links.map(({ label, href }) => (
+                    <li key={href}>
+                      <FooterLink href={href}>{label}</FooterLink>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="mt-7 flex flex-wrap items-center gap-2 text-[14px] text-gray-400">
           <FooterLink href="/blog">Blog</FooterLink>

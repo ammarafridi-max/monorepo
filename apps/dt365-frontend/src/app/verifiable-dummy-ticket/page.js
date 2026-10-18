@@ -1,7 +1,7 @@
 import { EMAIL, WHATSAPP_NUMBER } from '@/config/contact';
 import { testimonials } from '@/data/testimonials';
 import QuickAnswer from '@/components/QuickAnswer';
-import { USD_TIERS } from '@/lib/tiers';
+import { getUsdPrices, usdTiers } from '@/lib/tiers';
 import RelatedPages from '@/components/RelatedPages';
 import {
   SITE_URL,
@@ -66,7 +66,7 @@ const benefits = [
   },
   {
     title: 'Live for the Validity You Choose',
-    text: 'Verification only works while the booking is live, so the tier you pick is the window in which it can be checked. Two days is USD 13, seven days is USD 20, fourteen days is USD 23.',
+    text: 'Verification only works while the booking is live, so the tier you pick is the window in which it can be checked. Two days is USD 13, seven days is USD 19, fourteen days is USD 21.',
     icon: HiOutlineClock,
   },
   {
@@ -118,42 +118,43 @@ const faqs = [
   },
 ];
 
-const schema = buildGraph([
-  buildOrganization(),
-  buildWebsite(),
-  buildWebPage({
-    canonical: CANONICAL,
-    title: 'Verifiable Dummy Ticket From USD 13',
-    description: 'A live GDS reservation a consulate can retrieve and check.',
-  }),
-  buildService({
-    canonical: CANONICAL,
-    name: 'Verifiable Dummy Ticket',
-    description: 'Flight reservation with a live PNR on Amadeus, Sabre or Travelport.',
-  }),
-  buildProduct({
-    canonical: CANONICAL,
-    name: 'Verifiable Dummy Ticket',
-    description:
-      'Unticketed flight reservation with a six-character PNR retrievable on global distribution systems.',
-    price: '13.00',
-    currency: 'USD',
-  }),
-  buildFAQPage({
-    canonical: CANONICAL,
-    title: 'Frequently Asked Questions',
-    description: 'How dummy ticket verification works.',
-    faqs,
-  }),
-  buildBreadcrumbList({
-    paths: [
-      { label: 'Home', href: '/' },
-      { label: 'Verifiable Dummy Ticket' },
-    ],
-  }),
-]);
 
-export default function Page() {
+export default async function Page() {
+  const usdPrices = await getUsdPrices();
+  const schema = buildGraph([
+    buildOrganization(),
+    buildWebsite(),
+    buildWebPage({
+      canonical: CANONICAL,
+      title: 'Verifiable Dummy Ticket From USD 13',
+      description: 'A live GDS reservation a consulate can retrieve and check.',
+    }),
+    buildService({
+      canonical: CANONICAL,
+      name: 'Verifiable Dummy Ticket',
+      description: 'Flight reservation with a live PNR on Amadeus, Sabre or Travelport.',
+    }),
+    buildProduct({
+      canonical: CANONICAL,
+      name: 'Verifiable Dummy Ticket',
+      description:
+        'Unticketed flight reservation with a six-character PNR retrievable on global distribution systems.',
+      price: String(usdPrices['2 Days']),
+      currency: 'USD',
+    }),
+    buildFAQPage({
+      canonical: CANONICAL,
+      title: 'Frequently Asked Questions',
+      description: 'How dummy ticket verification works.',
+      faqs,
+    }),
+    buildBreadcrumbList({
+      paths: [
+        { label: 'Home', href: '/' },
+        { label: 'Verifiable Dummy Ticket' },
+      ],
+    }),
+  ]);
   const breadcrumbPaths = [
     { label: 'Home', href: '/' },
     { label: 'Verifiable Dummy Ticket' },
@@ -177,7 +178,7 @@ export default function Page() {
         ]}
         breadcrumbPaths={breadcrumbPaths}
       />
-      <QuickAnswer question={QUESTION} answer={ANSWER} tiers={USD_TIERS} />
+      <QuickAnswer question={QUESTION} answer={ANSWER} tiers={usdTiers(usdPrices)} />
       <Process
         title="How to Get a Verifiable Dummy Ticket"
         subtitle="Enter your route and dates, choose how long the booking needs to stay live, and pay. The PDF arrives by email with the PNR ready to quote."

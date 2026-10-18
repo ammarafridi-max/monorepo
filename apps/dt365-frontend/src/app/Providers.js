@@ -27,39 +27,69 @@ const LOGO_ALT = 'DT365 Logo';
 const LOGO_SRC = '/logo-icon.png';
 const BRAND_NAME = 'Dummy Ticket 365';
 
-const defaultPages = [
+const TICKET_COLUMNS = [
   {
-    name: 'Dummy Tickets',
-    links: ['/', '/booking/select-flights', '/booking/review-details', '/dummy-ticket-for-visa', '/verifiable-dummy-ticket', '/multi-city-dummy-ticket', '/dummy-ticket-14-days'],
-    icon: <Plane size={18} />,
-    subpages: [
-      { name: 'Dummy Ticket For Australia Visa', link: '/dummy-ticket-australia-visa' },
-      { name: 'Dummy Ticket For Canada Visa', link: '/dummy-ticket-canada-visa' },
-      { name: 'Dummy Ticket For Japan Visa', link: '/dummy-ticket-japan-visa' },
-      { name: 'Dummy Ticket For Schengen Visa', link: '/dummy-ticket-schengen-visa' },
-      { name: 'Dummy Ticket For UK Visa', link: '/dummy-ticket-uk-visa' },
-      { name: 'Onward Ticket', link: '/onward-ticket' },
-      { name: 'Flight Itinerary', link: '/flight-itinerary' },
-      { name: 'Dummy Ticket For Any Visa', link: '/dummy-ticket-for-visa' },
-      { name: 'Verifiable Dummy Ticket', link: '/verifiable-dummy-ticket' },
-      { name: 'Multi City Dummy Ticket', link: '/multi-city-dummy-ticket' },
-      { name: 'Dummy Ticket Valid 14 Days', link: '/dummy-ticket-14-days' },
+    title: 'By Country',
+    links: [
+      { name: 'Dummy Ticket from India', short: 'India', link: '/in' },
+      { name: 'Dummy Ticket from the UAE', short: 'United Arab Emirates', link: '/ae' },
+      { name: 'Dummy Ticket from the UK', short: 'United Kingdom', link: '/uk' },
+      { name: 'Dummy Ticket from Canada', short: 'Canada', link: '/ca' },
+      { name: 'Dummy Ticket from Saudi Arabia', short: 'Saudi Arabia', link: '/sa' },
     ],
   },
   {
-    name: 'By Airline',
-    links: ['/lufthansa-dummy-ticket', '/turkish-airlines-dummy-ticket', '/air-france-dummy-ticket'],
-    icon: <Plane size={18} />,
-    subpages: [
-      { name: 'Lufthansa Dummy Ticket', link: '/lufthansa-dummy-ticket' },
-      { name: 'Turkish Airlines Dummy Ticket', link: '/turkish-airlines-dummy-ticket' },
-      { name: 'Air France Dummy Ticket', link: '/air-france-dummy-ticket' },
+    title: 'By Visa Type',
+    links: [
+      { name: 'Schengen visa', link: '/dummy-ticket-schengen-visa' },
+      { name: 'UK visa', link: '/dummy-ticket-uk-visa' },
+      { name: 'Canada visa', link: '/dummy-ticket-canada-visa' },
+      { name: 'Japan visa', link: '/dummy-ticket-japan-visa' },
+      { name: 'Australia visa', link: '/dummy-ticket-australia-visa' },
     ],
+  },
+  {
+    title: 'Ticket Options',
+    links: [
+      { name: 'For any visa', link: '/dummy-ticket-for-visa' },
+      { name: 'Verifiable dummy ticket', link: '/verifiable-dummy-ticket' },
+      { name: 'Multi city', link: '/multi-city-dummy-ticket' },
+      { name: 'Valid for 14 days', link: '/dummy-ticket-14-days' },
+      { name: 'Onward ticket', link: '/onward-ticket' },
+    ],
+  },
+  {
+    title: 'By Airline',
+    links: [
+      { name: 'Lufthansa', link: '/lufthansa-dummy-ticket' },
+      { name: 'Turkish Airlines', link: '/turkish-airlines-dummy-ticket' },
+      { name: 'Air France', link: '/air-france-dummy-ticket' },
+      { name: 'Flight itinerary', link: '/flight-itinerary' },
+    ],
+  },
+];
+
+const defaultPages = [
+  {
+    name: 'Dummy Tickets',
+    links: [
+      '/',
+      '/booking/select-flights',
+      '/booking/review-details',
+      ...TICKET_COLUMNS.flatMap((column) => column.links.map((item) => item.link)),
+    ],
+    icon: <Plane size={18} />,
+    columns: TICKET_COLUMNS,
   },
   { name: 'Blog', links: ['/blog'], icon: <Rss size={18} /> },
   { name: 'FAQ', links: ['/faq'], icon: <HelpCircle size={18} /> },
   { name: 'Email Us', links: [`mailto:${EMAIL}`], icon: <Mail size={18} /> },
 ];
+
+const footerLinkGroups = TICKET_COLUMNS.map(({ title, links }) => ({
+  title,
+  links: links.map(({ name, short, link }) => ({ label: short ?? name, href: link })),
+}));
 
 const flightItineraryPages = [
   {
@@ -107,7 +137,7 @@ export default function Providers({ children }) {
           <CurrencyProvider defaultCode={defaultCurrency}>
             <TicketProvider>
                 <InsuranceProvider>
-                  <AppLayout logoSrc={LOGO_SRC} brandName={BRAND_NAME} pages={flightItineraryPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark}>
+                  <AppLayout logoSrc={LOGO_SRC} brandName={BRAND_NAME} pages={flightItineraryPages} footerLinkGroups={footerLinkGroups} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark}>
                     <main>{children}</main>
                   </AppLayout>
                   <StickyWhatsApp phoneNumber={WHATSAPP_NUMBER} />
@@ -127,7 +157,7 @@ export default function Providers({ children }) {
         <CurrencyProvider defaultCode={defaultCurrency}>
           <TicketProvider>
               <InsuranceProvider>
-                <AppLayout logoSrc={LOGO_SRC} brandName={BRAND_NAME} pages={defaultPages} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark}>
+                <AppLayout logoSrc={LOGO_SRC} brandName={BRAND_NAME} pages={defaultPages} footerLinkGroups={footerLinkGroups} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark}>
                   <main>{children}</main>
                 </AppLayout>
                 <StickyWhatsApp phoneNumber={WHATSAPP_NUMBER} />

@@ -12,7 +12,6 @@ import QuickAnswer from '@/components/QuickAnswer';
 import RelatedPages from '@/components/RelatedPages';
 import { testimonials } from '@/data/testimonials';
 import { getDummyTicketPricingServerApi } from '@travel-suite/frontend-shared/services/apiPricing';
-import { hreflangAlternates } from '@/lib/locales';
 import { tiersFrom } from '@/lib/tiers';
 import {
   SITE_URL,
@@ -56,7 +55,7 @@ export async function generateMetadata() {
   return {
     title: `Dummy Ticket Saudi Arabia from ${sar(p['2 Days'])} | Verifiable PNR`,
     description: `Book a dummy ticket in Saudi Arabia with a verifiable PNR on Amadeus, Sabre and Travelport. Priced in riyals from ${sar(p['2 Days'])}, delivered by email in minutes.`,
-    alternates: { canonical: CANONICAL, languages: hreflangAlternates() },
+    alternates: { canonical: CANONICAL },
     robots: { index: true, follow: true },
     openGraph: {
       url: CANONICAL,

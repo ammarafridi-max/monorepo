@@ -13,7 +13,7 @@ import {
 import { HiCheck, HiOutlineClock, HiOutlineCurrencyDollar } from 'react-icons/hi';
 import { MdOutlineHealthAndSafety, MdOutlineLuggage } from 'react-icons/md';
 import QuickAnswer from '@/components/QuickAnswer';
-import { USD_TIERS } from '@/lib/tiers';
+import { getUsdPrices, usdTiers } from '@/lib/tiers';
 import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
@@ -64,7 +64,7 @@ const benefits = [
   },
   {
     title: 'Three Validity Tiers From USD 13',
-    text: 'Pick the validity that fits how long you need proof of onward travel: 2 days for USD 13, 7 days for USD 20, or 14 days for USD 23. All tiers include the same verifiable PNR and instant email delivery.',
+    text: 'Pick the validity that fits how long you need proof of onward travel: 2 days for USD 13, 7 days for USD 19, or 14 days for USD 21. All tiers include the same verifiable PNR and instant email delivery.',
     icon: HiOutlineCurrencyDollar,
   },
 ];
@@ -73,7 +73,7 @@ const pageData = {
   meta: {
     title: 'Onward Ticket From USD 13 | Instant, Genuine, & Affordable',
     description:
-      'Onward ticket with a verifiable PNR for airline check-in and immigration. Tiers from USD 13 for 2 days to USD 23 for 14 days. Delivered in minutes.',
+      'Onward ticket with a verifiable PNR for airline check-in and immigration. Tiers from USD 13 for 2 days to USD 21 for 14 days. Delivered in minutes.',
     canonical: 'https://www.dummyticket365.com/onward-ticket',
     productName: 'Onward Ticket',
   },
@@ -81,7 +81,7 @@ const pageData = {
     hero: {
       title: 'Book Your Onward Ticket From USD 13',
       subtitle:
-        'Proof of onward travel is a flight reservation showing you will leave the destination country within the permitted stay. Airlines and immigration officers accept a real reservation with a verifiable PNR and do not require a paid ticket. Ours is issued on Amadeus, Sabre, and Travelport in three validity tiers: 2 days USD 13, 7 days USD 20, 14 days USD 23.',
+        'Proof of onward travel is a flight reservation showing you will leave the destination country within the permitted stay. Airlines and immigration officers accept a real reservation with a verifiable PNR and do not require a paid ticket. Ours is issued on Amadeus, Sabre, and Travelport in three validity tiers: 2 days USD 13, 7 days USD 19, 14 days USD 21.',
       form: <AllForms forms={['ticket']} />,
     },
     process: {
@@ -129,7 +129,8 @@ const pageData = {
 
 export const metadata = buildMetadata(pageData.meta);
 
-export default function Page() {
+export default async function Page() {
+  const usdPrices = await getUsdPrices();
   const breadcrumbPaths = [
     { label: 'Home', href: '/' },
     { label: 'Onward Ticket' },
@@ -150,12 +151,13 @@ export default function Page() {
       name: pageData.meta.productName,
       description: pageData.meta.description,
       url: pageData.meta.canonical,
+      image: [`${SITE_URL}/logo.png`],
       brand: { '@id': `${SITE_URL}/#organization` },
       offers: {
         '@type': 'AggregateOffer',
         priceCurrency: 'USD',
-        lowPrice: '13.00',
-        highPrice: '23.00',
+        lowPrice: String(usdPrices['2 Days']),
+        highPrice: String(usdPrices['14 Days']),
         offerCount: 3,
         availability: 'https://schema.org/InStock',
         url: pageData.meta.canonical,
@@ -192,7 +194,7 @@ export default function Page() {
       <QuickAnswer
         question="What counts as proof of onward travel?"
         answer="A flight reservation showing you will leave the country within the permitted stay. Airlines check for it at the counter when you hold a one-way booking, and immigration officers may ask at the border. A live reservation with a verifiable PNR satisfies both without you buying a second fare you never intend to fly."
-        tiers={USD_TIERS}
+        tiers={usdTiers(usdPrices)}
       />
       <Process
         title={pageData.sections.process.title}

@@ -1,7 +1,7 @@
 import { EMAIL, WHATSAPP_NUMBER } from '@/config/contact';
 import { testimonials } from '@/data/testimonials';
 import QuickAnswer from '@/components/QuickAnswer';
-import { USD_TIERS } from '@/lib/tiers';
+import { getUsdPrices, usdTiers } from '@/lib/tiers';
 import RelatedPages from '@/components/RelatedPages';
 import {
   SITE_URL,
@@ -76,7 +76,7 @@ const benefits = [
   },
   {
     title: 'Priced Per Person, Not Per Leg',
-    text: 'A multi city reservation costs the same as any other tier: USD 13 for 2 days validity, USD 20 for 7 days, USD 23 for 14 days. Adding legs does not add to the price.',
+    text: 'A multi city reservation costs the same as any other tier: USD 13 for 2 days validity, USD 19 for 7 days, USD 21 for 14 days. Adding legs does not add to the price.',
     icon: HiOutlineCurrencyDollar,
   },
   {
@@ -120,42 +120,43 @@ const faqs = [
   },
 ];
 
-const schema = buildGraph([
-  buildOrganization(),
-  buildWebsite(),
-  buildWebPage({
-    canonical: CANONICAL,
-    title: 'Multi City Dummy Ticket',
-    description: 'Several flights in sequence under a single verifiable PNR.',
-  }),
-  buildService({
-    canonical: CANONICAL,
-    name: 'Multi City Dummy Ticket',
-    description: 'Multi leg flight reservation issued as one GDS record.',
-  }),
-  buildProduct({
-    canonical: CANONICAL,
-    name: 'Multi City Dummy Ticket',
-    description:
-      'Multi leg unticketed flight reservation with every leg under one verifiable PNR.',
-    price: '13.00',
-    currency: 'USD',
-  }),
-  buildFAQPage({
-    canonical: CANONICAL,
-    title: 'Frequently Asked Questions',
-    description: 'How multi city dummy tickets work.',
-    faqs,
-  }),
-  buildBreadcrumbList({
-    paths: [
-      { label: 'Home', href: '/' },
-      { label: 'Multi City Dummy Ticket' },
-    ],
-  }),
-]);
 
-export default function Page() {
+export default async function Page() {
+  const usdPrices = await getUsdPrices();
+  const schema = buildGraph([
+    buildOrganization(),
+    buildWebsite(),
+    buildWebPage({
+      canonical: CANONICAL,
+      title: 'Multi City Dummy Ticket',
+      description: 'Several flights in sequence under a single verifiable PNR.',
+    }),
+    buildService({
+      canonical: CANONICAL,
+      name: 'Multi City Dummy Ticket',
+      description: 'Multi leg flight reservation issued as one GDS record.',
+    }),
+    buildProduct({
+      canonical: CANONICAL,
+      name: 'Multi City Dummy Ticket',
+      description:
+        'Multi leg unticketed flight reservation with every leg under one verifiable PNR.',
+      price: String(usdPrices['2 Days']),
+      currency: 'USD',
+    }),
+    buildFAQPage({
+      canonical: CANONICAL,
+      title: 'Frequently Asked Questions',
+      description: 'How multi city dummy tickets work.',
+      faqs,
+    }),
+    buildBreadcrumbList({
+      paths: [
+        { label: 'Home', href: '/' },
+        { label: 'Multi City Dummy Ticket' },
+      ],
+    }),
+  ]);
   const breadcrumbPaths = [
     { label: 'Home', href: '/' },
     { label: 'Multi City Dummy Ticket' },
@@ -179,7 +180,7 @@ export default function Page() {
         ]}
         breadcrumbPaths={breadcrumbPaths}
       />
-      <QuickAnswer question={QUESTION} answer={ANSWER} tiers={USD_TIERS} />
+      <QuickAnswer question={QUESTION} answer={ANSWER} tiers={usdTiers(usdPrices)} />
       <Process
         title="How to Book a Multi City Dummy Ticket"
         subtitle="Give us the legs in the order you plan to fly them, choose a validity that covers your appointment window, and pay. The itinerary arrives by email."

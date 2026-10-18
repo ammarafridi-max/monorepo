@@ -1,5 +1,3 @@
-import { SITE_URL } from './schema';
-
 export const LOCALES = [
   { code: 'en-US', path: '', currency: 'USD' },
   { code: 'en-IN', path: '/in', currency: 'INR' },
@@ -8,11 +6,6 @@ export const LOCALES = [
   { code: 'en-GB', path: '/uk', currency: 'GBP' },
   { code: 'en-SA', path: '/sa', currency: 'SAR' },
 ];
-
-export const hreflangAlternates = () => ({
-  'x-default': SITE_URL,
-  ...Object.fromEntries(LOCALES.map((l) => [l.code, `${SITE_URL}${l.path}`])),
-});
 
 export function localeCurrency(pathname) {
   if (!pathname) return undefined;

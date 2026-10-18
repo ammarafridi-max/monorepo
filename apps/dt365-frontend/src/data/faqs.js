@@ -1,5 +1,10 @@
 export const faqArray = [
   {
+    question: 'Is a dummy flight ticket the same as a dummy air ticket?',
+    answer:
+      'Yes. Dummy ticket, dummy flight ticket and dummy air ticket all describe an unticketed flight reservation held on a global distribution system with a verifiable PNR. Consulates and airlines sometimes call it a flight itinerary or a temporary reservation instead. The name changes, the document does not.',
+  },
+  {
     question: 'What is a {keyword}?',
     answer:
       'A {keyword} is a temporary and verifiable flight reservation that shows your planned onward or return travel. It is commonly used when airlines or immigration authorities ask for proof that you intend to leave the destination country within the allowed period.',
@@ -22,7 +27,7 @@ export const faqArray = [
   {
     question: 'How much does a {keyword} cost?',
     answer:
-      'A {keyword} costs USD 13 for 2 days validity, USD 20 for 7 days, or USD 23 for 14 days. All three tiers include the same verifiable PNR and the same accepted format, so pick the validity that matches your appointment or travel window.',
+      'A {keyword} costs USD 13 for 2 days validity, USD 19 for 7 days, or USD 21 for 14 days. All three tiers include the same verifiable PNR and the same accepted format, so pick the validity that matches your appointment or travel window.',
   },
   {
     question: 'How long is a {keyword} valid for?',

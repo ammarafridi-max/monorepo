@@ -5,6 +5,7 @@ import MobileNavigation from '../components/shared/layout/MobileNavigation';
 export default function AppLayout({
   children,
   pages = [],
+  footerLinkGroups = [],
   logoAlt = '',
   email = '',
   onDark = false,
@@ -18,7 +19,7 @@ export default function AppLayout({
       <Navigation pages={pages} logoAlt={logoAlt} onDark={onDark} logoSrc={logoSrc} logoSrcOnDark={logoSrcOnDark} brandName={brandName} />
       <MobileNavigation pages={pages} logoAlt={logoAlt} onDark={onDark} logoSrc={logoSrc} logoSrcOnDark={logoSrcOnDark} brandName={brandName} />
       <main>{children}</main>
-      <Footer logoAlt={logoAlt} email={email} copyrightName={copyrightName} logoSrc={logoSrc} brandName={brandName} />
+      <Footer logoAlt={logoAlt} email={email} copyrightName={copyrightName} logoSrc={logoSrc} brandName={brandName} linkGroups={footerLinkGroups} />
     </>
   );
 }

@@ -20,7 +20,7 @@ import {
 } from 'react-icons/hi2';
 import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety } from 'react-icons/md';
 import QuickAnswer from '@/components/QuickAnswer';
-import { USD_TIERS } from '@/lib/tiers';
+import { getUsdPrices, usdTiers } from '@/lib/tiers';
 import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
@@ -169,7 +169,8 @@ const pageData = {
 
 export const metadata = buildMetadata(pageData.meta);
 
-export default function Page() {
+export default async function Page() {
+  const usdPrices = await getUsdPrices();
   const breadcrumbPaths = [
     { label: 'Home', href: '/' },
     { label: 'Lufthansa Dummy Ticket' },
@@ -188,7 +189,7 @@ export default function Page() {
       canonical: pageData.meta.canonical,
       name: pageData.meta.productName,
       description: pageData.meta.description,
-      price: '13.00',
+      price: String(usdPrices['2 Days']),
       currency: 'USD',
     }),
     buildFAQPage({
@@ -224,7 +225,7 @@ export default function Page() {
       <QuickAnswer
         question="Can you get a dummy ticket on Lufthansa?"
         answer="Yes. A Lufthansa reservation is created on the same global distribution systems as any other carrier, so it carries a real six-character PNR for the validity you choose. Most airlines only expose ticketed bookings through their own Manage Booking page, so verification happens on the GDS, where the record actually lives."
-        tiers={USD_TIERS}
+        tiers={usdTiers(usdPrices)}
       />
       <Process
         title={pageData.sections.process.title}

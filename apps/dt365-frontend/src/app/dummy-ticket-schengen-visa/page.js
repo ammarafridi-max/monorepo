@@ -20,7 +20,7 @@ import {
 } from 'react-icons/hi2';
 import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety } from 'react-icons/md';
 import QuickAnswer from '@/components/QuickAnswer';
-import { USD_TIERS } from '@/lib/tiers';
+import { getUsdPrices, usdTiers } from '@/lib/tiers';
 import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
 import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
@@ -51,7 +51,7 @@ const benefits = [
   },
   {
     title: 'Three Validity Tiers From USD 13',
-    text: 'Pick the tier that matches your appointment and review window: 2 days for USD 13, 7 days for USD 20, 14 days for USD 23. All tiers include the same verifiable PNR and the same accepted format. Reissue available if processing runs longer.',
+    text: 'Pick the tier that matches your appointment and review window: 2 days for USD 13, 7 days for USD 19, 14 days for USD 21. All tiers include the same verifiable PNR and the same accepted format. Reissue available if processing runs longer.',
     icon: HiOutlineBanknotes,
   },
   {
@@ -85,7 +85,7 @@ const faqs = [
   {
     question: 'How do I book a dummy ticket for a Schengen visa?',
     answer:
-      'Three steps. Enter your route, travel dates, and passenger details. Pick a validity tier (2 days for USD 13, 7 days for USD 20, 14 days for USD 23). Pay online. The PDF arrives by email within minutes with the PNR ready to submit.',
+      'Three steps. Enter your route, travel dates, and passenger details. Pick a validity tier (2 days for USD 13, 7 days for USD 19, 14 days for USD 21). Pay online. The PDF arrives by email within minutes with the PNR ready to submit.',
   },
   {
     question: 'Is the reservation verifiable?',
@@ -165,7 +165,8 @@ const pageData = {
 
 export const metadata = buildMetadata(pageData.meta);
 
-export default function Page() {
+export default async function Page() {
+  const usdPrices = await getUsdPrices();
   const breadcrumbPaths = [
     { label: 'Home', href: '/' },
     { label: 'Dummy Ticket for Schengen Visa' },
@@ -184,7 +185,7 @@ export default function Page() {
       canonical: pageData.meta.canonical,
       name: pageData.meta.productName,
       description: pageData.meta.description,
-      price: '13.00',
+      price: String(usdPrices['2 Days']),
       currency: 'USD',
     }),
     buildFAQPage({
@@ -220,7 +221,7 @@ export default function Page() {
       <QuickAnswer
         question="Is a dummy ticket accepted for a Schengen visa?"
         answer="Yes. EU Visa Code Article 14 lists a flight reservation among the supporting documents for a short stay visa, not a purchased ticket. VFS Global, BLS International and TLScontact centres accept a reservation with a verifiable PNR. The booking has to still be live when the consulate opens your file, so match the validity to your appointment."
-        tiers={USD_TIERS}
+        tiers={usdTiers(usdPrices)}
       />
       <Process
         title={pageData.sections.process.title}
@@ -268,6 +269,10 @@ export default function Page() {
           { anchor: 'Dummy ticket on Air France (Schengen routes)', href: '/air-france-dummy-ticket', blurb: 'CDG routing via SkyTeam, naturally suited to French consulate applications.' },
           { anchor: 'Dummy ticket on Turkish Airlines (Schengen routes)', href: '/turkish-airlines-dummy-ticket', blurb: 'Istanbul connection, competitive fares and wide Schengen network.' },
           { anchor: 'Dummy ticket for a UK visa', href: '/dummy-ticket-uk-visa', blurb: 'Standard Visitor visa file ready, no paid ticket needed before approval.' },
+          { anchor: 'Multi city dummy ticket', href: '/multi-city-dummy-ticket', blurb: 'Every leg under one PNR when you enter through one Schengen country and leave from another.' },
+          { anchor: 'Verifiable dummy ticket', href: '/verifiable-dummy-ticket', blurb: 'How a consulate retrieves the record, and what a generated PDF fails on.' },
+          { anchor: 'Dummy ticket valid for 14 days', href: '/dummy-ticket-14-days', blurb: 'The longest tier, for missions that hold a file for a week or more.' },
+          { anchor: 'Dummy ticket for any visa application', href: '/dummy-ticket-for-visa', blurb: 'What each visa type asks for, and which accept a reservation.' },
         ]}
       />
 

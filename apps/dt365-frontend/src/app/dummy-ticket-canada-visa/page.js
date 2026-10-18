@@ -23,7 +23,7 @@ import {
   MdOutlineHealthAndSafety,
 } from "react-icons/md";
 import QuickAnswer from '@/components/QuickAnswer';
-import { USD_TIERS } from '@/lib/tiers';
+import { getUsdPrices, usdTiers } from '@/lib/tiers';
 import Hero from "@travel-suite/frontend-shared/components/sections/v1/Hero";
 import AllForms from "@travel-suite/frontend-shared/components/forms/v1/AllForms";
 import Process from "@travel-suite/frontend-shared/components/sections/v1/Process";
@@ -159,7 +159,8 @@ const pageData = {
 
 export const metadata = buildMetadata(pageData.meta);
 
-export default function Page() {
+export default async function Page() {
+  const usdPrices = await getUsdPrices();
   const breadcrumbPaths = [
     { label: "Home", href: "/" },
     { label: "Dummy Ticket for Canada Visa" },
@@ -214,7 +215,7 @@ export default function Page() {
       <QuickAnswer
         question="Is a dummy ticket accepted for a Canada visa?"
         answer="Yes, for a visitor visa. The application asks you to set out your travel plan and does not require a purchased ticket at the point of applying, so a flight reservation with a verifiable PNR is enough. Booking a fare before approval is the risk, since processing times vary and a refusal leaves the cost with you."
-        tiers={USD_TIERS}
+        tiers={usdTiers(usdPrices)}
       />
       <Process
         title={pageData.sections.process.title}

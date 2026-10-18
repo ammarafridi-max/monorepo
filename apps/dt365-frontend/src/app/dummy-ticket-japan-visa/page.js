@@ -23,7 +23,7 @@ import {
   MdOutlineHealthAndSafety,
 } from "react-icons/md";
 import QuickAnswer from '@/components/QuickAnswer';
-import { USD_TIERS } from '@/lib/tiers';
+import { getUsdPrices, usdTiers } from '@/lib/tiers';
 import Hero from "@travel-suite/frontend-shared/components/sections/v1/Hero";
 import AllForms from "@travel-suite/frontend-shared/components/forms/v1/AllForms";
 import Process from "@travel-suite/frontend-shared/components/sections/v1/Process";
@@ -153,7 +153,8 @@ const pageData = {
 
 export const metadata = buildMetadata(pageData.meta);
 
-export default function Page() {
+export default async function Page() {
+  const usdPrices = await getUsdPrices();
   const breadcrumbPaths = [
     { label: "Home", href: "/" },
     { label: "Dummy Ticket for Japan Visa" },
@@ -208,7 +209,7 @@ export default function Page() {
       <QuickAnswer
         question="Do you need a flight reservation for a Japan visa?"
         answer="Yes, as part of your itinerary. A Japanese tourist visa application asks for a daily schedule together with a flight reservation covering entry and departure, and an unticketed reservation with a verifiable PNR satisfies that. The dates on the reservation must match the schedule you submit alongside it."
-        tiers={USD_TIERS}
+        tiers={usdTiers(usdPrices)}
       />
       <Process
         title={pageData.sections.process.title}

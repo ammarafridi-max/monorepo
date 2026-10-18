@@ -1,6 +1,6 @@
 import { EMAIL, WHATSAPP_NUMBER } from '@/config/contact';
 import QuickAnswer from '@/components/QuickAnswer';
-import { USD_TIERS } from '@/lib/tiers';
+import { getUsdPrices, usdTiers } from '@/lib/tiers';
 import Hero from "@travel-suite/frontend-shared/components/sections/v1/Hero";
 import AllForms from "@travel-suite/frontend-shared/components/forms/v1/AllForms";
 import Process from "@travel-suite/frontend-shared/components/sections/v1/Process";
@@ -20,7 +20,6 @@ import {
   buildWebPage,
   buildWebsite,
 } from "@/lib/schema";
-import { hreflangAlternates } from "@/lib/locales";
 import {
   HiArrowsRightLeft,
   HiCheckBadge,
@@ -96,6 +95,12 @@ const testimonials = [
 
 const faqs = [
   {
+    question:
+      "Is a dummy flight ticket the same as a dummy air ticket or a dummy ticket?",
+    answer:
+      "Yes, all three describe the same thing: an unticketed flight reservation held on a global distribution system with a verifiable PNR. The wording changes by country and by whoever is asking for it. Some consulates call it a flight itinerary or a temporary reservation. What matters is that the booking is live and can be retrieved, not what it is called.",
+  },
+  {
     question: "What is a dummy ticket?",
     answer:
       "A dummy ticket is a temporary flight reservation that shows your travel itinerary without purchasing a full airline ticket. It includes real airline details and a verifiable PNR, and is commonly used for visa applications and proof of onward travel.",
@@ -118,7 +123,7 @@ const faqs = [
   {
     question: "How much does a dummy ticket cost?",
     answer:
-      "A dummy ticket costs USD 13 for 2 days validity, USD 20 for 7 days, or USD 23 for 14 days. All three tiers include the same verifiable PNR and the same accepted format, so pick the validity that matches your appointment or travel window.",
+      "A dummy ticket costs USD 13 for 2 days validity, USD 19 for 7 days, or USD 21 for 14 days. All three tiers include the same verifiable PNR and the same accepted format, so pick the validity that matches your appointment or travel window.",
   },
   {
     question: "Is a dummy ticket suitable for immigration checks?",
@@ -139,13 +144,13 @@ const pageData = {
     hero: {
       title: "Dummy Tickets for Visa, Onward Travel From USD 13",
       subtitle:
-        "A dummy ticket is a real flight reservation with a verifiable PNR, created through global GDS platforms (Amadeus, Sabre, Travelport). Use it for visa applications, airline check-in, proof of onward travel, and immigration checks. You pay for the reservation document, not the flight, from USD 13, delivered by email in minutes.",
+        "A dummy ticket is a real flight reservation with a verifiable PNR, created through global GDS platforms (Amadeus, Sabre, Travelport). You will also see it called a dummy flight ticket or a dummy air ticket, and it is the same document. Use it for visa applications, airline check-in, proof of onward travel, and immigration checks. You pay for the reservation, not the flight, from USD 13, delivered by email in minutes.",
       form: <AllForms forms={["ticket"]} />,
     },
     process: {
       title: "Get Your Dummy Ticket in 3 Simple Steps",
       subtitle:
-        "Here is how you can book a dummy ticket for visa application in minutes with authentic airline itinerary details and a verifiable PNR for a hassle-free experience.",
+        "Dummy ticket booking takes a couple of minutes. Enter your route and dates, pick how long the reservation needs to stay live, and pay. The itinerary arrives by email with a verifiable PNR on it.",
       keyword,
     },
     about: {
@@ -195,7 +200,6 @@ export const metadata = {
   description: pageData.meta.description,
   alternates: {
     canonical: pageData.meta.canonical,
-    languages: hreflangAlternates(),
   },
   robots: {
     index: true,
@@ -215,7 +219,8 @@ export const metadata = {
   },
 };
 
-export default function HomePage() {
+export default async function HomePage() {
+  const usdPrices = await getUsdPrices();
   const schema = buildGraph([
     buildOrganization(),
     buildWebsite(),
@@ -258,7 +263,7 @@ export default function HomePage() {
       <QuickAnswer
         question="What is a dummy ticket?"
         answer="A dummy ticket is a real but unticketed flight reservation carrying a verifiable six-character PNR, issued on Amadeus, Sabre or Travelport. Travellers use it for visa applications, airline check-in and proof of onward travel, where a reservation is what is asked for and a purchased ticket is not. It starts at USD 13 and arrives by email in minutes."
-        tiers={USD_TIERS}
+        tiers={usdTiers(usdPrices)}
       />
       <Process
         title={pageData.sections.process.title}

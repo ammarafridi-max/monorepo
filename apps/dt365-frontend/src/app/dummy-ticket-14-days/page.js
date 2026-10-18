@@ -1,7 +1,7 @@
 import { EMAIL, WHATSAPP_NUMBER } from '@/config/contact';
 import { testimonials } from '@/data/testimonials';
 import QuickAnswer from '@/components/QuickAnswer';
-import { USD_TIERS } from '@/lib/tiers';
+import { getUsdPrices, usdTiers } from '@/lib/tiers';
 import RelatedPages from '@/components/RelatedPages';
 import {
   SITE_URL,
@@ -35,18 +35,18 @@ const CANONICAL = `${SITE_URL}/dummy-ticket-14-days`;
 
 const QUESTION = 'How long is a 14 day dummy ticket valid?';
 const ANSWER =
-  'A 14 day dummy ticket keeps its PNR live on the GDS for fourteen days from the moment it is delivered, which is the longest tier we issue, and it costs USD 23. Validity runs from delivery rather than from the date you ordered, so if you need the booking to still be live when a slow consulate finally opens your file, this is the tier that covers it.';
+  'A 14 day dummy ticket keeps its PNR live on the GDS for fourteen days from the moment it is delivered, which is the longest tier we issue, and it costs USD 21. Validity runs from delivery rather than from the date you ordered, so if you need the booking to still be live when a slow consulate finally opens your file, this is the tier that covers it.';
 
 export const metadata = {
-  title: 'Dummy Ticket Valid for 14 Days, USD 23 | Longest Tier',
+  title: 'Dummy Ticket Valid for 14 Days, USD 21 | Longest Tier',
   description:
-    'A dummy ticket with 14 days validity for USD 23. The PNR stays live on Amadeus, Sabre or Travelport for a full fortnight from delivery. Emailed in minutes.',
+    'A dummy ticket with 14 days validity for USD 21. The PNR stays live on Amadeus, Sabre or Travelport for a full fortnight from delivery. Emailed in minutes.',
   alternates: { canonical: CANONICAL },
   robots: { index: true, follow: true },
   openGraph: {
     url: CANONICAL,
-    title: 'Dummy Ticket Valid for 14 Days, USD 23 | Longest Tier',
-    description: 'Fourteen days of live PNR validity for USD 23, delivered by email in minutes.',
+    title: 'Dummy Ticket Valid for 14 Days, USD 21 | Longest Tier',
+    description: 'Fourteen days of live PNR validity for USD 21, delivered by email in minutes.',
     images: [`${SITE_URL}/og-image.png`],
   },
   twitter: { card: 'summary_large_image', images: [`${SITE_URL}/og-image.png`] },
@@ -64,8 +64,8 @@ const benefits = [
     icon: HiOutlineClock,
   },
   {
-    title: 'USD 23, All In',
-    text: 'The three tiers are USD 13 for 2 days, USD 20 for 7 days and USD 23 for 14 days. The reservation itself is identical in each; you are paying for how long it stays live, not for a better booking.',
+    title: 'USD 21, All In',
+    text: 'The three tiers are USD 13 for 2 days, USD 19 for 7 days and USD 21 for 14 days. The reservation itself is identical in each; you are paying for how long it stays live, not for a better booking.',
     icon: HiOutlineCurrencyDollar,
   },
   {
@@ -119,42 +119,43 @@ const faqs = [
   },
 ];
 
-const schema = buildGraph([
-  buildOrganization(),
-  buildWebsite(),
-  buildWebPage({
-    canonical: CANONICAL,
-    title: 'Dummy Ticket Valid for 14 Days',
-    description: 'Fourteen days of live PNR validity for USD 23.',
-  }),
-  buildService({
-    canonical: CANONICAL,
-    name: 'Dummy Ticket with 14 Days Validity',
-    description: 'Flight reservation held live on the GDS for fourteen days from delivery.',
-  }),
-  buildProduct({
-    canonical: CANONICAL,
-    name: 'Dummy Ticket with 14 Days Validity',
-    description:
-      'Unticketed flight reservation with a verifiable PNR, held live for fourteen days from delivery.',
-    price: '23.00',
-    currency: 'USD',
-  }),
-  buildFAQPage({
-    canonical: CANONICAL,
-    title: 'Frequently Asked Questions',
-    description: 'How 14 day dummy ticket validity works.',
-    faqs,
-  }),
-  buildBreadcrumbList({
-    paths: [
-      { label: 'Home', href: '/' },
-      { label: 'Dummy Ticket Valid for 14 Days' },
-    ],
-  }),
-]);
 
-export default function Page() {
+export default async function Page() {
+  const usdPrices = await getUsdPrices();
+  const schema = buildGraph([
+    buildOrganization(),
+    buildWebsite(),
+    buildWebPage({
+      canonical: CANONICAL,
+      title: 'Dummy Ticket Valid for 14 Days',
+      description: 'Fourteen days of live PNR validity for USD 21.',
+    }),
+    buildService({
+      canonical: CANONICAL,
+      name: 'Dummy Ticket with 14 Days Validity',
+      description: 'Flight reservation held live on the GDS for fourteen days from delivery.',
+    }),
+    buildProduct({
+      canonical: CANONICAL,
+      name: 'Dummy Ticket with 14 Days Validity',
+      description:
+        'Unticketed flight reservation with a verifiable PNR, held live for fourteen days from delivery.',
+      price: String(usdPrices['14 Days']),
+      currency: 'USD',
+    }),
+    buildFAQPage({
+      canonical: CANONICAL,
+      title: 'Frequently Asked Questions',
+      description: 'How 14 day dummy ticket validity works.',
+      faqs,
+    }),
+    buildBreadcrumbList({
+      paths: [
+        { label: 'Home', href: '/' },
+        { label: 'Dummy Ticket Valid for 14 Days' },
+      ],
+    }),
+  ]);
   const breadcrumbPaths = [
     { label: 'Home', href: '/' },
     { label: 'Dummy Ticket Valid for 14 Days' },
@@ -167,18 +168,18 @@ export default function Page() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
       />
       <Hero
-        title="Dummy Tickets Valid for 14 Days, USD 23"
+        title="Dummy Tickets Valid for 14 Days, USD 21"
         subtitle="Fourteen days is our longest validity tier. The PNR sits live on Amadeus, Sabre or Travelport for a full fortnight from the day the ticket is delivered, which is what you want when a consulate is going to hold your file for a week and a half before anyone looks at it."
         form={<AllForms forms={['ticket']} />}
         pills={[
           '14 days live validity',
-          'USD 23 per person',
+          'USD 21 per person',
           'Verifiable GDS PNR',
           'Delivered in minutes',
         ]}
         breadcrumbPaths={breadcrumbPaths}
       />
-      <QuickAnswer question={QUESTION} answer={ANSWER} tiers={USD_TIERS} />
+      <QuickAnswer question={QUESTION} answer={ANSWER} tiers={usdTiers(usdPrices)} />
       <Process
         title="How to Book a 14 Day Dummy Ticket"
         subtitle="Enter your route and dates, pick the 14 day validity, and choose whether to receive it now or closer to your appointment."

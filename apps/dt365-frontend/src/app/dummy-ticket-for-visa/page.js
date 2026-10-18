@@ -1,7 +1,7 @@
 import { EMAIL, WHATSAPP_NUMBER } from '@/config/contact';
 import { testimonials } from '@/data/testimonials';
 import QuickAnswer from '@/components/QuickAnswer';
-import { USD_TIERS } from '@/lib/tiers';
+import { getUsdPrices, usdTiers } from '@/lib/tiers';
 import RelatedPages from '@/components/RelatedPages';
 import {
   SITE_URL,
@@ -89,6 +89,11 @@ const benefits = [
 const faqs = [
   { question: QUESTION, answer: ANSWER },
   {
+    question: 'Does it matter if the checklist says dummy flight ticket or flight itinerary?',
+    answer:
+      'No. Dummy ticket, dummy flight ticket, dummy air ticket and flight itinerary all point at the same thing: an unticketed reservation with a retrievable PNR. Match whatever wording the mission uses in your covering letter and submit the same document.',
+  },
+  {
     question: 'Which visa types accept a flight reservation?',
     answer:
       'Short stay visitor and tourist categories almost always do, including Schengen, UK Standard Visitor, Canadian visitor, Japanese tourist and Australian visitor applications. Long stay, work and settlement routes vary, so read the specific checklist for the route you are on.',
@@ -120,42 +125,43 @@ const faqs = [
   },
 ];
 
-const schema = buildGraph([
-  buildOrganization(),
-  buildWebsite(),
-  buildWebPage({
-    canonical: CANONICAL,
-    title: 'Dummy Ticket for Visa Applications',
-    description: 'Which visa applications accept a flight reservation instead of a paid ticket.',
-  }),
-  buildService({
-    canonical: CANONICAL,
-    name: 'Dummy Ticket for Visa Applications',
-    description: 'Verifiable flight reservations for visa supporting documents.',
-  }),
-  buildProduct({
-    canonical: CANONICAL,
-    name: 'Dummy Ticket for Visa Applications',
-    description:
-      'Unticketed flight reservation with a verifiable PNR, accepted as a visa supporting document.',
-    price: '13.00',
-    currency: 'USD',
-  }),
-  buildFAQPage({
-    canonical: CANONICAL,
-    title: 'Frequently Asked Questions',
-    description: 'Dummy tickets and visa applications.',
-    faqs,
-  }),
-  buildBreadcrumbList({
-    paths: [
-      { label: 'Home', href: '/' },
-      { label: 'Dummy Ticket for Visa Applications' },
-    ],
-  }),
-]);
 
-export default function Page() {
+export default async function Page() {
+  const usdPrices = await getUsdPrices();
+  const schema = buildGraph([
+    buildOrganization(),
+    buildWebsite(),
+    buildWebPage({
+      canonical: CANONICAL,
+      title: 'Dummy Ticket for Visa Applications',
+      description: 'Which visa applications accept a flight reservation instead of a paid ticket.',
+    }),
+    buildService({
+      canonical: CANONICAL,
+      name: 'Dummy Ticket for Visa Applications',
+      description: 'Verifiable flight reservations for visa supporting documents.',
+    }),
+    buildProduct({
+      canonical: CANONICAL,
+      name: 'Dummy Ticket for Visa Applications',
+      description:
+        'Unticketed flight reservation with a verifiable PNR, accepted as a visa supporting document.',
+      price: String(usdPrices['2 Days']),
+      currency: 'USD',
+    }),
+    buildFAQPage({
+      canonical: CANONICAL,
+      title: 'Frequently Asked Questions',
+      description: 'Dummy tickets and visa applications.',
+      faqs,
+    }),
+    buildBreadcrumbList({
+      paths: [
+        { label: 'Home', href: '/' },
+        { label: 'Dummy Ticket for Visa Applications' },
+      ],
+    }),
+  ]);
   const breadcrumbPaths = [
     { label: 'Home', href: '/' },
     { label: 'Dummy Ticket for Visa Applications' },
@@ -179,7 +185,7 @@ export default function Page() {
         ]}
         breadcrumbPaths={breadcrumbPaths}
       />
-      <QuickAnswer question={QUESTION} answer={ANSWER} tiers={USD_TIERS} />
+      <QuickAnswer question={QUESTION} answer={ANSWER} tiers={usdTiers(usdPrices)} />
       <Process
         title="How to Get a Dummy Ticket for Your Visa"
         subtitle="Enter your route and the dates in your application, pick a validity that covers the appointment, and pay. The PDF arrives by email."

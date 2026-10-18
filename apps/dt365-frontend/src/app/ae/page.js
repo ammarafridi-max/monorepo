@@ -12,7 +12,6 @@ import QuickAnswer from '@/components/QuickAnswer';
 import RelatedPages from '@/components/RelatedPages';
 import { testimonials } from '@/data/testimonials';
 import { getDummyTicketPricingServerApi } from '@travel-suite/frontend-shared/services/apiPricing';
-import { hreflangAlternates } from '@/lib/locales';
 import { tiersFrom } from '@/lib/tiers';
 import {
   SITE_URL,
@@ -54,14 +53,14 @@ const aed = (n) => `AED ${Number(n).toLocaleString('en-AE')}`;
 export async function generateMetadata() {
   const p = await getAedPrices();
   return {
-    title: `Dummy Ticket for UAE Residents from ${aed(p['2 Days'])} | Visa & Check-In`,
-    description: `Flight reservations with a verifiable GDS PNR for Schengen, UK, US and Canadian files put together in the Emirates. Priced in dirhams from ${aed(p['2 Days'])}.`,
-    alternates: { canonical: CANONICAL, languages: hreflangAlternates() },
+    title: `Dummy Ticket UAE from ${aed(p['2 Days'])} | Verifiable PNR`,
+    description: `Book a dummy ticket in the UAE with a verifiable PNR on Amadeus, Sabre and Travelport. Priced in dirhams from ${aed(p['2 Days'])}, delivered by email in minutes.`,
+    alternates: { canonical: CANONICAL },
     robots: { index: true, follow: true },
     openGraph: {
       url: CANONICAL,
-      title: `Dummy Ticket for UAE Residents from ${aed(p['2 Days'])} | Visa & Check-In`,
-      description: `Flight reservations for residents of the Emirates applying on a third-country passport, priced in dirhams from ${aed(p['2 Days'])}.`,
+      title: `Dummy Ticket UAE from ${aed(p['2 Days'])} | Verifiable PNR`,
+      description: `Verifiable flight reservations for the UAE, priced in dirhams from ${aed(p['2 Days'])}.`,
       images: [`${SITE_URL}/og-image.png`],
     },
     twitter: { card: 'summary_large_image', images: [`${SITE_URL}/og-image.png`] },
@@ -79,29 +78,29 @@ export default async function Page() {
       icon: HiOutlineCurrencyDollar,
     },
     {
-      title: 'Built for Residents Applying on a Third Passport',
-      text: 'Most applicants here hold a UAE residence visa on an Indian, Pakistani, Filipino, Egyptian, Nigerian or Jordanian passport, which means a Schengen, UK, US or Canadian file assembled in Dubai or Abu Dhabi rather than back home.',
-      icon: HiCheckBadge,
-    },
-    {
-      title: 'Verifiable PNR on Global GDS',
-      text: 'Every reservation carries a six-character PNR created on Amadeus, Sabre or Travelport, the same systems consulates and IATA travel agents use to confirm a booking while it is live.',
-      icon: HiShieldCheck,
-    },
-    {
-      title: 'Real Routes from UAE Airports',
-      text: 'Itineraries use genuine carriers and realistic routings out of DXB, AUH, SHJ and RKT, including the European, Asian and African connections residents here actually fly.',
-      icon: HiGlobeAlt,
-    },
-    {
-      title: 'Same-Day When the Appointment Is Tomorrow',
-      text: 'The PDF arrives by email within minutes. Visa application centres in the Emirates fill their slots quickly, so a file often has to be complete the evening before.',
+      title: 'Slot Tomorrow, File Ready Tonight',
+      text: 'Appointment slots at the Dubai and Abu Dhabi visa centres go quickly and often open at short notice. The PDF reaches your inbox within minutes of payment, so a file can be finished the evening before without rearranging anything.',
       icon: HiOutlineClock,
     },
     {
-      title: 'Nothing Paid Until the Decision Comes',
-      text: 'A refundable long-haul fare out of Dubai can run to several thousand dirhams and the refund takes weeks. A reservation answers the same documentary requirement without tying up the money.',
+      title: 'A PNR Your Consulate Can Pull Up',
+      text: 'Each booking is created on Amadeus, Sabre or Travelport and carries a live six-character record. Anyone with GDS access can retrieve it and see your name, route and dates for as long as the validity runs.',
+      icon: HiShieldCheck,
+    },
+    {
+      title: 'Routings That Match How People Fly From Here',
+      text: 'DXB, AUH, SHJ and RKT departures on carriers that genuinely serve those routes, with connection times that hold up. An itinerary showing an impossible transfer is the detail that invites a second look.',
+      icon: HiGlobeAlt,
+    },
+    {
+      title: 'Visa Runs and One-Way Bookings',
+      text: 'Airline staff ask for onward travel at the counter when your booking ends in the Emirates, and a visit visa is granted against evidence that you are leaving again. A live reservation answers both without a second fare.',
       icon: HiArrowsRightLeft,
+    },
+    {
+      title: 'Nothing Paid Until the Decision Lands',
+      text: 'A flexible long-haul fare out of Dubai runs into thousands of dirhams and the refund arrives long after you needed the money back. The documentary requirement is the same either way.',
+      icon: HiCheckBadge,
     },
   ];
 
@@ -111,24 +110,24 @@ export default async function Page() {
       answer: `A dummy ticket costs ${aed(p['2 Days'])} for 2 days validity, ${aed(p['7 Days'])} for 7 days, or ${aed(p['14 Days'])} for 14 days. Those are dirham amounts billed exactly as shown, not a dollar price converted at your bank's rate.`,
     },
     {
-      question: 'Can I pay in dirhams?',
-      answer: 'Yes. The price is set in AED and charged in AED by card through Stripe, so your statement shows the same number you saw on the page.',
+      question: 'Which visa centres in the UAE accept a flight reservation?',
+      answer: 'The centres handling European, British, American and Canadian applications across Dubai, Abu Dhabi and Sharjah work from the checklist published by the mission concerned, and those checklists ask for a flight reservation rather than a purchased ticket. Bring the PDF and the PNR will resolve if anyone checks.',
     },
     {
-      question: 'Is a dummy ticket accepted for a Schengen visa from the UAE?',
-      answer: 'Yes. EU Visa Code Article 14 lists a flight reservation among the supporting documents for a short stay visa rather than a paid ticket, and applications from UAE residents are submitted through visa application centres in Dubai, Abu Dhabi and Sharjah on that basis.',
+      question: 'I live here on a residence visa but hold another passport. Does that change anything?',
+      answer: 'Not for the reservation itself. Your nationality decides which visa you need and what else goes in the file, but the flight booking requirement is the same, and applying from the Emirates rather than your home country makes no difference to how the PNR is verified.',
     },
     {
-      question: 'Do I need one for a UAE tourist visa or a visa run?',
-      answer: 'Usually yes. Entry as a visitor is granted against evidence that you are leaving again, and airlines check for onward travel at the counter when you hold a one-way booking. A live reservation covers that without buying a second fare.',
+      question: 'Do I need one for a visa run or a one-way booking into the UAE?',
+      answer: 'Usually yes. Airlines check for onward travel at check-in when your booking has no return leg, and entry as a visitor is granted against evidence that you intend to leave. A live reservation satisfies both without committing you to a flight.',
     },
     {
-      question: 'Will the consulate be able to verify it?',
-      answer: 'Yes. The PNR sits on Amadeus, Sabre or Travelport for the validity you pick, so a consulate or any IATA accredited agent can retrieve it. It is a genuine reservation rather than a PDF made to look like one.',
+      question: 'Can I pay with a UAE card?',
+      answer: 'Yes, and it is billed in dirhams. The price is set in AED rather than converted at checkout, so your statement shows the same figure you saw here and your bank has nothing to add a cross-border fee to.',
     },
     {
-      question: 'How long is the reservation valid?',
-      answer: 'You choose 2, 7 or 14 days. Match the tier to the gap between handing in your file and the consulate opening it, because the PNR has to be live when they check.',
+      question: 'How long should I make the booking valid for?',
+      answer: 'Match it to the wait, not to your trip. Two days covers a counter check or a same-day appointment, seven covers a typical centre turnaround, and fourteen is for a mission that holds files for a week or more before opening them.',
     },
   ];
 
@@ -137,8 +136,8 @@ export default async function Page() {
     buildWebsite(),
     buildWebPage({
       canonical: CANONICAL,
-      title: `Dummy Ticket for UAE Residents from ${from}`,
-      description: `Flight reservations for residents of the Emirates applying on a third-country passport, priced in dirhams from ${from}.`,
+      title: `Dummy Ticket UAE from ${from}`,
+      description: `Verifiable flight reservations for the UAE, priced in dirhams from ${from}.`,
     }),
     buildService({
       canonical: CANONICAL,
@@ -168,8 +167,8 @@ export default async function Page() {
       />
 
       <Hero
-        title={`Dummy Tickets for Residents of the UAE from ${from}`}
-        subtitle={`Most people who order from us in the Emirates hold a residence visa on a passport from somewhere else, which means assembling a Schengen, UK, US or Canadian file here rather than back home. A dummy ticket is a real flight reservation with a PNR on Amadeus, Sabre or Travelport, priced and charged in dirhams from ${from} and emailed within minutes.`}
+        title={`Dummy Tickets in the UAE from ${from}`}
+        subtitle={`A dummy ticket is a real flight reservation with a verifiable PNR, created on Amadeus, Sabre and Travelport. In the Emirates it goes into visa files, satisfies an airline asking for onward travel, and covers a visit visa that needs proof you are leaving. Priced and charged in dirhams from ${from}, emailed within minutes.`}
         form={<AllForms forms={['ticket']} />}
         pills={[
           `From ${from}, charged in dirhams`,
@@ -189,7 +188,7 @@ export default async function Page() {
       />
       <About
         title="About Us"
-        text="We are an international travel documentation provider issuing verifiable flight reservations for travellers worldwide. A large share of the files we support are assembled by residents of the Emirates applying on a passport from elsewhere. You can expect:"
+        text="We are an international travel documentation provider issuing verifiable flight reservations for travellers worldwide, with the Emirates among the markets we serve most. You can expect:"
         services={[
           {
             icon: <MdOutlineAirplaneTicket />,
@@ -204,8 +203,8 @@ export default async function Page() {
         ]}
       />
       <Benefits
-        title="Why Residents in the UAE Choose Dummy Ticket 365"
-        subtitle="Dirham pricing with no conversion markup, a PNR your consulate can check, and delivery quick enough for a next-morning appointment."
+        title="Why People in the UAE Book With Dummy Ticket 365"
+        subtitle="Dirham pricing, a record anyone can retrieve, and delivery fast enough for a slot that opened this afternoon."
         benefits={benefits}
       />
       <Testimonials

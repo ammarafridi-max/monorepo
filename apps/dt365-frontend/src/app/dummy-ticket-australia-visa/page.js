@@ -23,7 +23,7 @@ import {
   MdOutlineHealthAndSafety,
 } from "react-icons/md";
 import QuickAnswer from '@/components/QuickAnswer';
-import { USD_TIERS } from '@/lib/tiers';
+import { getUsdPrices, usdTiers } from '@/lib/tiers';
 import Hero from "@travel-suite/frontend-shared/components/sections/v1/Hero";
 import AllForms from "@travel-suite/frontend-shared/components/forms/v1/AllForms";
 import Process from "@travel-suite/frontend-shared/components/sections/v1/Process";
@@ -161,7 +161,8 @@ const pageData = {
 
 export const metadata = buildMetadata(pageData.meta);
 
-export default function Page() {
+export default async function Page() {
+  const usdPrices = await getUsdPrices();
   const breadcrumbPaths = [
     { label: "Home", href: "/" },
     { label: "Dummy Ticket for Australia Visa" },
@@ -216,7 +217,7 @@ export default function Page() {
       <QuickAnswer
         question="Do you need a flight booking for an Australian visitor visa?"
         answer="Not a purchased one. A Subclass 600 application asks you to describe your intended travel, and a flight reservation with a verifiable PNR uploaded to ImmiAccount evidences it. Buying a fare before the visa is granted is unnecessary and risky, because processing times vary from weeks to months."
-        tiers={USD_TIERS}
+        tiers={usdTiers(usdPrices)}
       />
       <Process
         title={pageData.sections.process.title}
