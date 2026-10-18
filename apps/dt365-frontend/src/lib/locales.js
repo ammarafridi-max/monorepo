@@ -5,6 +5,11 @@ export const LOCALES = [
   { code: 'en-AE', path: '/ae', currency: 'AED' },
   { code: 'en-GB', path: '/uk', currency: 'GBP' },
   { code: 'en-SA', path: '/sa', currency: 'SAR' },
+  { code: 'en-AU', path: '/au', currency: 'AUD' },
+  { code: 'en-SG', path: '/sg', currency: 'SGD' },
+  { code: 'en-PH', path: '/ph', currency: 'PHP' },
+  { code: 'de-DE', path: '/de', currency: 'EUR' },
+  { code: 'id-ID', path: '/id', currency: 'IDR' },
 ];
 
 export function localeCurrency(pathname) {

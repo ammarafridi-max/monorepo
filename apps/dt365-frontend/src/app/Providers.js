@@ -36,6 +36,11 @@ const TICKET_COLUMNS = [
       { name: 'Dummy Ticket from the UK', short: 'United Kingdom', link: '/uk' },
       { name: 'Dummy Ticket from Canada', short: 'Canada', link: '/ca' },
       { name: 'Dummy Ticket from Saudi Arabia', short: 'Saudi Arabia', link: '/sa' },
+      { name: 'Dummy Ticket from Australia', short: 'Australia', link: '/au' },
+      { name: 'Dummy Ticket from Singapore', short: 'Singapore', link: '/sg' },
+      { name: 'Dummy Ticket from the Philippines', short: 'Philippines', link: '/ph' },
+      { name: 'Dummy Ticket from Germany', short: 'Germany', link: '/de' },
+      { name: 'Dummy Ticket from Indonesia', short: 'Indonesia', link: '/id' },
     ],
   },
   {
