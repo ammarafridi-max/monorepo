@@ -73,34 +73,34 @@ export default async function Page() {
 
   const benefits = [
     {
-      title: 'Canadian Dollars, Not US Dollars',
-      text: `The price on this page is ${from} and that is what your card is charged. No US dollar conversion at checkout, no cross-border fee from your bank, no surprise when the statement lands.`,
+      title: 'That Dollar Sign Is Canadian',
+      text: `The dummy ticket is ${from} and your card is charged ${from}. No US dollar price converted at checkout, and no cross-border fee from your bank for something that looked domestic.`,
       icon: HiOutlineCurrencyDollar,
     },
     {
-      title: 'Verifiable PNR on Global GDS',
-      text: 'Every reservation carries a six-character PNR created on Amadeus, Sabre or Travelport, the same systems consulates, border officers and IATA travel agents use to confirm a booking during its validity.',
-      icon: HiShieldCheck,
-    },
-    {
-      title: 'Proof of Onward Travel at Check-In',
-      text: 'Airlines can deny boarding when you cannot show onward travel out of a country with a one-way ticket. A live reservation satisfies the agent at the counter without committing you to a second fare.',
+      title: 'Newcomers Travel on a Different Passport',
+      text: 'A study permit, work permit or PR card gets you back into Canada. The country you are visiting looks at your passport, and an Indian, Nigerian, Filipino or Chinese one needs visas a Canadian one does not.',
       icon: HiCheckBadge,
     },
     {
-      title: 'Real Routes from Canadian Airports',
-      text: 'Itineraries use genuine carriers and realistic routings from YYZ, YVR, YUL, YYC, YOW and YEG, including the US and European connections travellers from Canada actually fly.',
+      title: 'Europe Is Visa Free, Which Changes What You Need',
+      text: 'A Canadian passport enters Schengen and the UK without a visa, so the reason here is usually proof of onward travel at check-in, or a visa for China, India, Vietnam or Russia.',
       icon: HiGlobeAlt,
     },
     {
-      title: 'Delivered While You Wait',
-      text: 'The PDF arrives by email within minutes, which matters when an appointment slot opens at short notice or you are already at the airport sorting out a one-way booking.',
-      icon: HiOutlineClock,
+      title: 'Parents and Grandparents Visiting',
+      text: 'Super Visa and visitor applications from relatives abroad ask for evidence of intended travel. A dummy flight ticket with a live PNR covers that without anyone buying a fare before the decision lands.',
+      icon: HiShieldCheck,
     },
     {
-      title: 'No Fare Locked Up Before Approval',
-      text: 'A refundable international fare out of Canada ties up hundreds of dollars and often carries a change penalty. A reservation meets the same documentary requirement without freezing that money.',
+      title: 'Nothing Frozen While IRCC Decides',
+      text: 'Processing times move, and a refundable fare out of Toronto or Vancouver ties up several hundred dollars in the meantime, sometimes with a change penalty attached when plans shift.',
       icon: HiArrowsRightLeft,
+    },
+    {
+      title: 'Issued While You Are Still at the Counter',
+      text: 'Delivery is automatic and takes minutes, which matters when an airline agent at YYZ or YVR has just asked how you are leaving the country you are flying to.',
+      icon: HiOutlineClock,
     },
   ];
 
@@ -110,24 +110,24 @@ export default async function Page() {
       answer: `A dummy ticket costs ${cad(p['2 Days'])} for 2 days validity, ${cad(p['7 Days'])} for 7 days, or ${cad(p['14 Days'])} for 14 days. Those are Canadian dollar amounts charged as shown, not US dollar prices converted at your card rate.`,
     },
     {
-      question: 'Am I charged in Canadian dollars or US dollars?',
-      answer: 'Canadian dollars. The price is set in CAD and billed in CAD by card through Stripe, so your statement shows the same figure you saw on the page and your bank has no reason to add a foreign currency fee.',
+      question: 'Is a dummy air ticket the same as a dummy ticket?',
+      answer: 'Yes. Dummy ticket, dummy air ticket and dummy flight ticket all describe an unticketed reservation with a verifiable PNR. Canadian applications more often use the words flight itinerary or proof of travel, and that is the same document again.',
     },
     {
-      question: 'Do I need a dummy ticket if I hold a Canadian passport?',
-      answer: 'Often yes, though usually not for Europe. A Canadian passport is visa exempt for the Schengen area, but countries such as China, India, Vietnam and Russia still require a visa, and airlines still ask for proof of onward travel when you fly one way.',
+      question: 'Do I need one if I hold a Canadian passport?',
+      answer: 'Often, though not for Europe. A Canadian passport is visa exempt for the Schengen area and the UK, while China, India, Vietnam and Russia still require a visa, and airlines still ask for onward travel on a one-way booking.',
     },
     {
-      question: 'Can I use this for a visa application submitted from Canada?',
-      answer: 'Yes. Applicants living in Canada on a study permit, work permit or permanent residence regularly need a flight reservation for a visa file, and a reservation with a live PNR is what the supporting document lists rather than a paid ticket.',
+      question: 'Can my parents use this for a Super Visa application?',
+      answer: 'A reservation is appropriate evidence of intended travel while the application is pending. Buying a fare before the decision is the risk, since processing times vary and a refusal leaves the cost with the family.',
     },
     {
-      question: 'Will the consulate or the airline be able to verify it?',
-      answer: 'Yes. The PNR is live on Amadeus, Sabre or Travelport for the validity you choose, so a consulate, an airline agent or any IATA accredited travel agent can look it up. It is a real reservation, not a generated PDF.',
+      question: 'Am I charged in Canadian dollars?',
+      answer: 'Yes. The price is set in CAD and billed in CAD through Stripe, so your statement shows the same figure you saw and your bank has no reason to add a foreign currency fee.',
     },
     {
-      question: 'How long is the reservation valid?',
-      answer: 'You choose 2, 7 or 14 days. Pick the tier that covers the gap between submitting your file and someone checking it, since the PNR has to still be live at the moment they look.',
+      question: 'How long does the reservation stay live?',
+      answer: 'For the tier you pick: 2, 7 or 14 days from delivery. Choose the one that covers the day someone actually checks, not the length of the trip itself.',
     },
   ];
 

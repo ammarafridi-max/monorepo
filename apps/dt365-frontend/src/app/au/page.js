@@ -88,7 +88,7 @@ export default async function Page() {
     },
     {
       title: 'For the Countries That Still Want a Visa',
-      text: 'Europe and the UK let an Australian passport in without one. China, India, Vietnam and Russia do not, and those applications ask for a flight reservation rather than a purchased ticket.',
+      text: 'Europe and the UK let an Australian passport in without one. China, India, Vietnam and Russia do not, and those forms ask for a dummy flight ticket or flight reservation rather than a purchased fare.',
       icon: HiGlobeAlt,
     },
     {

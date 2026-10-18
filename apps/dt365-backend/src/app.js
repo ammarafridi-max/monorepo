@@ -42,7 +42,20 @@ app.use(compression());
 app.use(cookieParser());
 app.use(express.json({ limit: '10kb' }));
 
-app.use('/api', rateLimit({ windowMs: 60 * 60 * 1000, max: 500, standardHeaders: true, legacyHeaders: false }));
+// The production build fetches every post and price book in one burst from a
+// single IP, which trips the limiter and fails the deploy.
+app.use(
+  '/api',
+  rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 500,
+    standardHeaders: true,
+    legacyHeaders: false,
+    skip: (req) =>
+      Boolean(config.internalApiToken) &&
+      req.get('x-internal-token') === config.internalApiToken,
+  }),
+);
 
 app.use('/airlines', express.static(join(__dirname, 'public/airlines'), {
   setHeaders: (res) => res.set('Cross-Origin-Resource-Policy', 'cross-origin'),

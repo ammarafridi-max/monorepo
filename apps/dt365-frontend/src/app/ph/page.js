@@ -88,7 +88,7 @@ export default async function Page() {
     },
     {
       title: 'Works Alongside Your Other Papers',
-      text: 'Departing Filipino travellers are often asked to show their travel plan as a whole. A clean itinerary with a retrievable PNR sits naturally beside employment papers, invitations or a visa.',
+      text: 'Departing Filipino travellers are often asked to show their travel plan as a whole. Whether the desk asks for a dummy ticket, a dummy flight ticket or simply your return booking, a clean itinerary with a retrievable PNR answers it.',
       icon: HiIdentification,
     },
     {

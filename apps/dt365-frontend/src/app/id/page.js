@@ -83,7 +83,7 @@ export default async function Page() {
     },
     {
       title: 'For the Visas an Indonesian Passport Needs',
-      text: 'Schengen, UK, US and Australian applications all ask for evidence of your travel plan, and all accept a reservation. That is the bulk of what we issue for travellers here.',
+      text: 'Schengen, UK, US and Australian applications all ask for evidence of your travel plan, and all accept a reservation. Agents here often call it a dummy flight ticket or tiket dummy, which is the same thing again.',
       icon: HiCalendarDays,
     },
     {

@@ -116,7 +116,7 @@ export default async function Page() {
     },
     {
       question: 'Will Changi check-in staff accept it?',
-      answer: 'The agent is looking for evidence that you leave the destination within your permitted stay, and a live reservation with a retrievable PNR shows exactly that. It is a booking, not a boarding pass, and that is what is being asked for.',
+      answer: 'The agent is looking for evidence that you leave the destination within your permitted stay, and a live reservation with a retrievable PNR shows exactly that. Some airlines word the request as a dummy flight ticket or a dummy air ticket; it is the same document.',
     },
     {
       question: 'I hold a Singapore PR but not a Singapore passport. Which rules apply?',

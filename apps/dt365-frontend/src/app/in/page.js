@@ -73,34 +73,34 @@ export default async function Page() {
 
   const benefits = [
     {
-      title: 'Priced in Rupees, Charged in Rupees',
-      text: `You see ${from} and you are charged ${from}. No dollar conversion at checkout, no card foreign exchange surprise, no guessing what the final amount will be when the statement arrives.`,
+      title: 'Rupee Pricing, Not a Converted Dollar Figure',
+      text: `The dummy ticket costs ${from} and your card is billed ${from}. Nothing is quoted in dollars and converted at your bank's rate, so there is no markup hiding between the page and the statement.`,
       icon: HiOutlineCurrencyDollar,
     },
     {
-      title: 'Accepted at VFS and BLS Centres in India',
-      text: 'Our reservations are submitted every week through VFS Global and BLS International centres in Delhi, Mumbai, Bengaluru, Chennai, Hyderabad and Kolkata for Schengen, UK, US and Canadian applications.',
+      title: 'Submitted Through VFS and BLS Every Week',
+      text: 'Applications from Delhi, Mumbai, Bengaluru, Chennai, Hyderabad and Kolkata go through VFS Global and BLS International, and those checklists ask for a flight reservation rather than a purchased ticket.',
       icon: HiCheckBadge,
     },
     {
-      title: 'Verifiable PNR on Global GDS',
-      text: 'Every reservation carries a six-character PNR created on Amadeus, Sabre or Travelport, the same systems consulates and IATA travel agents use to confirm a booking during its validity.',
+      title: 'Dummy Flight Ticket, Flight Itinerary, Same Document',
+      text: 'Agents and consulates use different words for it. Whether your checklist says dummy flight ticket, dummy air ticket, flight itinerary or temporary reservation, what it wants is a booking with a retrievable PNR.',
       icon: HiShieldCheck,
     },
     {
-      title: 'Real Routes from Indian Airports',
-      text: 'Itineraries use genuine carriers and realistic routings from DEL, BOM, BLR, MAA, HYD and CCU, including the Gulf and European connections Indian applicants actually fly.',
+      title: 'First-Time Applicants Get Scrutinised Harder',
+      text: 'A first Schengen or UK application from India is read more carefully than a renewal. Dates on the reservation that match your cover letter and hotel booking remove the easiest reason to doubt the file.',
       icon: HiGlobeAlt,
     },
     {
-      title: 'Delivered While You Wait',
-      text: 'The PDF arrives by email within minutes, which matters when a VFS appointment slot opens at short notice and the file has to be complete the same day.',
-      icon: HiOutlineClock,
+      title: 'A Delhi to Europe Fare Is Not Small Money',
+      text: 'A flexible long-haul ticket out of India runs into tens of thousands of rupees and the refund arrives weeks later. The documentary requirement is identical whichever one you hold.',
+      icon: HiArrowsRightLeft,
     },
     {
-      title: 'No Ticket Purchased Before Approval',
-      text: 'A paid international ticket from India runs into tens of thousands of rupees. A reservation meets the same documentary requirement without locking that money up while the consulate decides.',
-      icon: HiArrowsRightLeft,
+      title: 'Same Evening When the Slot Opens Tomorrow',
+      text: 'VFS appointment slots appear and vanish within hours. The PDF is issued automatically and lands in your inbox in minutes, so a slot found at nine at night is still usable.',
+      icon: HiOutlineClock,
     },
   ];
 
@@ -110,24 +110,24 @@ export default async function Page() {
       answer: `A dummy ticket costs ${inr(p['2 Days'])} for 2 days validity, ${inr(p['7 Days'])} for 7 days, or ${inr(p['14 Days'])} for 14 days. That is the amount charged at checkout in rupees, not a dollar price converted at your card rate.`,
     },
     {
-      question: 'Is a dummy ticket accepted for a Schengen visa from India?',
-      answer: 'Yes. EU Visa Code Article 14 lists a flight reservation among the supporting documents for a short-stay visa, not a paid ticket. VFS Global and BLS International centres across India accept reservations with a verifiable PNR.',
+      question: 'Is a dummy flight ticket the same thing?',
+      answer: 'Yes. Dummy ticket, dummy flight ticket and dummy air ticket all mean an unticketed reservation held on a global distribution system with a verifiable PNR. Indian agents tend to say dummy flight ticket, consulates tend to say flight reservation, and the document is the same.',
     },
     {
-      question: 'Can I pay in rupees?',
-      answer: 'Yes. The price is set in rupees and charged in rupees by card through Stripe. Your bank statement shows the same figure you saw on the page.',
+      question: 'Will VFS or the embassy actually check the PNR?',
+      answer: 'Sometimes, and you have to assume they will. The record sits on Amadeus, Sabre or Travelport for the validity you choose, so a consulate or any IATA accredited agent can retrieve it and see your name, route and dates.',
     },
     {
-      question: 'Will the consulate be able to verify it?',
-      answer: 'Yes. The PNR is live on Amadeus, Sabre or Travelport for the validity you choose, so a consulate or any IATA-accredited travel agent can look it up. It is a real reservation, not a generated PDF.',
+      question: 'My travel dates might change. Does that matter?',
+      answer: 'What matters is that the reservation agrees with the rest of the application on the day it is reviewed. If your plans shift before you submit, order the corrected itinerary rather than explaining a mismatch in the covering letter.',
     },
     {
-      question: 'Which Indian cities do you cover?',
-      answer: 'All of them. Itineraries can start from any Indian airport, and we most often issue from Delhi, Mumbai, Bengaluru, Chennai, Hyderabad, Kolkata, Pune, Ahmedabad and Kochi.',
+      question: 'Which Indian cities do you issue from?',
+      answer: 'Any of them. Itineraries most often start from Delhi, Mumbai, Bengaluru, Chennai, Hyderabad, Kolkata, Pune, Ahmedabad and Kochi, using carriers and connections that genuinely serve those routes.',
     },
     {
-      question: 'How long is the reservation valid?',
-      answer: 'You choose 2, 7 or 14 days. Pick the tier that covers the window between submitting your file and the consulate reviewing it, since the PNR must still be live when they check.',
+      question: 'How long should the booking stay live?',
+      answer: 'Long enough to cover the gap between submitting and someone opening the file. Two days suits a same-day appointment, seven covers a normal VFS turnaround, and fourteen is for a consulate that takes its time.',
     },
   ];
 

@@ -122,6 +122,11 @@ export default async function Page() {
       answer: 'Usually yes. Airlines check for onward travel at check-in when your booking has no return leg, and entry as a visitor is granted against evidence that you intend to leave. A live reservation satisfies both without committing you to a flight.',
     },
     {
+      question: 'Agents here say dummy flight ticket. Is that different?',
+      answer:
+        'No. Dummy ticket, dummy flight ticket and dummy air ticket all describe an unticketed reservation with a PNR that resolves on the GDS. Travel agencies across the Emirates use the terms interchangeably, and the visa centres tend to write flight reservation on the checklist.',
+    },
+    {
       question: 'Can I pay with a UAE card?',
       answer: 'Yes, and it is billed in dirhams. The price is set in AED rather than converted at checkout, so your statement shows the same figure you saw here and your bank has nothing to add a cross-border fee to.',
     },

@@ -23,7 +23,11 @@ COPY apps/dt365-frontend/ apps/dt365-frontend/
 # Committed .env.build contains public NEXT_PUBLIC_* vars; Next reads it at build time
 RUN cp apps/dt365-frontend/.env.build apps/dt365-frontend/.env.production
 
-RUN pnpm --filter dt365-frontend build
+# Build secret, not an ARG: an ARG value persists in the image metadata.
+# Absent secret means an empty token, so the build still works, just rate limited.
+RUN --mount=type=secret,id=internal_api_token \
+    INTERNAL_API_TOKEN="$(cat /run/secrets/internal_api_token 2>/dev/null || true)" \
+    pnpm --filter dt365-frontend build
 
 RUN cp -r apps/dt365-frontend/.next/static \
          apps/dt365-frontend/.next/standalone/apps/dt365-frontend/.next/static && \

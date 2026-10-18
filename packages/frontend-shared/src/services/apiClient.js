@@ -1,5 +1,11 @@
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL;
 
+// Server-only: never NEXT_PUBLIC_, so it is not inlined into the client bundle.
+const internalHeaders = () => {
+  const token = typeof window === 'undefined' ? process.env.INTERNAL_API_TOKEN : '';
+  return token ? { 'x-internal-token': token } : {};
+};
+
 async function checkError(res) {
   if (!res.ok) {
     let message = 'Something went wrong';
@@ -43,6 +49,7 @@ export async function apiFetchPublic(path, { timeoutMs = 8000, ...options } = {}
   const res = await fetch(`${BACKEND}${path}`, {
     ...options,
     headers: {
+      ...internalHeaders(),
       ...(options.headers || {}),
     },
     signal: options.signal ?? AbortSignal.timeout(timeoutMs),

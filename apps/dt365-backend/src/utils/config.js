@@ -28,6 +28,7 @@ export default {
   corsOrigins: parseList(process.env.CORS_ORIGINS, ["http://localhost:3000"]),
 
   frontendUrl: process.env.FRONTEND_URL ?? "http://localhost:3000",
+  internalApiToken: process.env.INTERNAL_API_TOKEN ?? "",
 
   airlabs: {
     apiKey: process.env.AIRLABS_API_KEY,

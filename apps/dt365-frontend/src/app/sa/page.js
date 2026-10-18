@@ -73,34 +73,34 @@ export default async function Page() {
 
   const benefits = [
     {
-      title: 'Riyals on the Page, Riyals on the Card',
-      text: `You see ${from} and your card is charged ${from}. Nothing is quoted in dollars and converted, so a Saudi-issued card picks up no foreign currency markup along the way.`,
+      title: 'Riyals Billed as Riyals',
+      text: `The dummy ticket is ${from} and your card is charged ${from}. Nothing is priced in dollars and converted, so a Saudi-issued card picks up no foreign currency markup.`,
       icon: HiOutlineCurrencyDollar,
     },
     {
-      title: 'Built Around the Iqama Holder',
-      text: 'Most applicants here live in the Kingdom on a residence permit while holding an Indian, Pakistani, Filipino, Egyptian, Bangladeshi or Sudanese passport, so the Schengen, UK, US or Canadian file gets put together in Riyadh or Jeddah rather than back home.',
+      title: 'The Iqama Does Not Travel With You',
+      text: 'Your residence permit governs life in the Kingdom. The mission you are applying to looks at your passport, and an Indian, Pakistani, Bangladeshi, Egyptian or Sudanese one needs visas on its own terms.',
       icon: HiCheckBadge,
     },
     {
-      title: 'Verifiable PNR on Global GDS',
-      text: 'Every reservation carries a six-character PNR created on Amadeus, Sabre or Travelport, the same systems consulates and IATA travel agents use to confirm a booking while it is live.',
+      title: 'Routes That Leave From Here',
+      text: 'Itineraries depart RUH, JED, DMM and MED on carriers that genuinely serve those routes, including the Gulf, Levant and South Asian connections most people in the Kingdom actually connect through.',
+      icon: HiArrowsRightLeft,
+    },
+    {
+      title: 'Around Umrah the Queues Get Longer',
+      text: 'Visa centres in Riyadh, Jeddah and Al Khobar slow down in the busy seasons, and a file sitting for ten days needs a booking that is still live when someone finally opens it.',
       icon: HiShieldCheck,
     },
     {
-      title: 'Real Routes from Saudi Airports',
-      text: 'Itineraries use genuine carriers and realistic routings out of RUH, JED, DMM and MED, including the European, Asian and African connections residents here actually fly.',
+      title: 'Dummy Air Ticket, Flight Reservation, Same Record',
+      text: 'The wording varies between agents and consulates. Dummy ticket, dummy air ticket, dummy flight ticket and flight reservation all mean a booking with a PNR that resolves when checked.',
       icon: HiGlobeAlt,
     },
     {
-      title: 'Ready Before the Appointment',
-      text: 'The PDF arrives by email within minutes. Visa application centres in Riyadh, Jeddah and Al Khobar fill their slots quickly, so a file often has to be complete the night before.',
+      title: 'Issued Outside Office Hours',
+      text: 'Bookings are generated automatically, so a file being finished after Isha on a Thursday does not wait for an agency to reopen on Sunday morning.',
       icon: HiOutlineClock,
-    },
-    {
-      title: 'Nothing Paid Until the Decision Comes',
-      text: 'A refundable long-haul fare out of the Kingdom runs into thousands of riyals and the refund takes weeks to come back. A reservation answers the same documentary requirement without tying up the money.',
-      icon: HiArrowsRightLeft,
     },
   ];
 
@@ -110,24 +110,24 @@ export default async function Page() {
       answer: `A dummy ticket costs ${sar(p['2 Days'])} for 2 days validity, ${sar(p['7 Days'])} for 7 days, or ${sar(p['14 Days'])} for 14 days. Those are riyal amounts billed exactly as shown, not a dollar price converted at your bank's rate.`,
     },
     {
-      question: 'Can I pay in riyals?',
-      answer: 'Yes. The price is set in SAR and charged in SAR by card through Stripe, so your statement shows the same number you saw on the page.',
+      question: 'Is a dummy air ticket different from a dummy ticket?',
+      answer: 'No, they are the same. Dummy ticket, dummy air ticket and dummy flight ticket all describe an unticketed reservation held on a global distribution system with a verifiable PNR, whatever your agent or the consulate calls it.',
     },
     {
-      question: 'Is a dummy ticket accepted for a Schengen visa from Saudi Arabia?',
-      answer: 'Yes. EU Visa Code Article 14 lists a flight reservation among the supporting documents for a short stay visa rather than a paid ticket, and applications from residents of the Kingdom are submitted through visa application centres in Riyadh, Jeddah and Al Khobar on that basis.',
+      question: 'Which centres in the Kingdom handle these applications?',
+      answer: 'European, British, American and Canadian applications are submitted through visa centres in Riyadh, Jeddah and Al Khobar, and those checklists ask for a flight reservation rather than a purchased ticket.',
     },
     {
-      question: 'Do I need one for exit and re-entry or a one-way booking?',
-      answer: 'Often yes. Airlines check for onward travel at the counter when you hold a one-way booking, and a live reservation covers that without you buying a second fare you do not intend to fly.',
+      question: 'Does my nationality change what I need?',
+      answer: 'It decides everything except the reservation itself. Your passport determines which visa you need and what else goes in the file, while the flight booking requirement and the way it is verified stay the same.',
     },
     {
-      question: 'Will the consulate be able to verify it?',
-      answer: 'Yes. The PNR sits on Amadeus, Sabre or Travelport for the validity you pick, so a consulate or any IATA accredited agent can retrieve it. It is a genuine reservation rather than a PDF made to look like one.',
+      question: 'Does the busy season change how early I should order?',
+      answer: 'It changes the validity more than the timing. When the centres are slow, a file can sit for a week and a half, so the fourteen day tier is the one that is still live when somebody finally opens it.',
     },
     {
-      question: 'How long is the reservation valid?',
-      answer: 'You choose 2, 7 or 14 days. Match the tier to the gap between handing in your file and the consulate opening it, because the PNR has to be live when they check.',
+      question: 'How long should I make the booking valid?',
+      answer: 'Match it to the wait at the mission, not the trip. Two days covers a counter check, seven a normal centre turnaround, and fourteen the busier periods when files sit for over a week.',
     },
   ];
 

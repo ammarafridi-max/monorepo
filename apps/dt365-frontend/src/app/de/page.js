@@ -124,7 +124,7 @@ export default async function Page() {
     },
     {
       question: 'Can I pay with SEPA or a German card?',
-      answer: 'Payment is by card through Stripe and billed in euros, so a German-issued card is charged the exact amount shown with no currency conversion applied.',
+      answer: 'Payment is by card through Stripe and billed in euros, so a German-issued card is charged the exact amount shown with no currency conversion applied. The product is the same whether you searched for a dummy ticket, a dummy flight ticket or a Flugreservierung.',
     },
     {
       question: 'Is the price the same elsewhere in the euro area?',

@@ -73,34 +73,34 @@ export default async function Page() {
 
   const benefits = [
     {
-      title: 'Priced in Pounds, Charged in Pounds',
-      text: `The page says ${from} and your card is debited ${from}. No dollar price converted at checkout, so your bank has no reason to add a non-sterling transaction fee.`,
+      title: 'Sterling In, Sterling Out',
+      text: `The dummy ticket is ${from} and that is what leaves your account. No dollar figure converted at checkout, so your bank has nothing to attach a non-sterling transaction fee to.`,
       icon: HiOutlineCurrencyDollar,
     },
     {
-      title: 'For Schengen Files Submitted in the UK',
-      text: 'Applicants living here on a work visa, student visa or settled status submit European applications through visa centres in London, Manchester, Edinburgh and Cardiff, and those files ask for a reservation rather than a purchased ticket.',
+      title: 'Europe Needs Paperwork Again',
+      text: 'A British passport no longer walks into the Schengen area for long stays or work, and applications submitted here through centres in London, Manchester and Edinburgh ask for a reservation rather than a bought ticket.',
       icon: HiCheckBadge,
     },
     {
-      title: 'Verifiable PNR on Global GDS',
-      text: 'Every reservation carries a six-character PNR created on Amadeus, Sabre or Travelport, the same systems consulates and IATA travel agents use to confirm a booking while it is live.',
+      title: 'Settled Status Does Not Change Your Passport',
+      text: 'People living here on a BRP, a skilled worker visa or settled status travel on the passport they hold, and an Indian, Nigerian, Pakistani or Filipino one carries its own visa requirements.',
       icon: HiShieldCheck,
     },
     {
-      title: 'Real Routes from UK Airports',
-      text: 'Itineraries use genuine carriers and realistic routings from LHR, LGW, MAN, STN, BHX, EDI and GLA, including the European, Asian and African connections travellers here actually fly.',
+      title: 'Biometrics Dates Move, Fares Do Not',
+      text: 'Appointment slots get rescheduled at short notice. A reservation can be reissued for the new date for a few pounds, where a flexible fare charges you for the privilege.',
+      icon: HiArrowsRightLeft,
+    },
+    {
+      title: 'Dummy Flight Ticket Is the Same Thing',
+      text: 'Checklists and agents use dummy ticket, dummy flight ticket, dummy air ticket and flight itinerary interchangeably. All of them mean a live booking with a PNR someone can retrieve.',
       icon: HiGlobeAlt,
     },
     {
-      title: 'Delivered While You Wait',
-      text: 'The PDF arrives by email within minutes, which matters when a biometrics appointment comes up at short notice or an airline queries a one-way booking at the desk.',
+      title: 'Minutes, Not the Next Working Day',
+      text: 'Issued automatically and emailed straight away, so an application you are finishing on a Sunday evening does not wait for an office to open on Monday.',
       icon: HiOutlineClock,
-    },
-    {
-      title: 'No Fare Tied Up Before a Decision',
-      text: 'A flexible long-haul fare from the UK runs into hundreds of pounds and the refund arrives long after you need the money. A reservation satisfies the same requirement without that wait.',
-      icon: HiArrowsRightLeft,
     },
   ];
 
@@ -110,24 +110,24 @@ export default async function Page() {
       answer: `A dummy ticket costs ${gbp(p['2 Days'])} for 2 days validity, ${gbp(p['7 Days'])} for 7 days, or ${gbp(p['14 Days'])} for 14 days. Those are sterling amounts charged as shown, not a dollar price converted at your card rate.`,
     },
     {
-      question: 'Am I charged in pounds?',
-      answer: 'Yes. The price is set in GBP and billed in GBP by card through Stripe, so your statement matches the figure on the page and no non-sterling fee applies.',
+      question: 'Do checklists mean something different by dummy flight ticket?',
+      answer: 'No. Dummy ticket, dummy flight ticket and dummy air ticket all point at an unticketed reservation with a retrievable PNR. UK and European forms usually say flight reservation or travel itinerary, which is the same document under a more formal name.',
     },
     {
-      question: 'Do I need a dummy ticket if I hold a British passport?',
-      answer: 'Often yes, though not for Europe. A British passport is visa exempt for the Schengen area, but China, India, Vietnam and Russia still require a visa, and airlines still ask for proof of onward travel when you travel on a one-way booking.',
+      question: 'Is a reservation accepted for a Schengen visa applied for in the UK?',
+      answer: 'Yes. EU Visa Code Article 14 lists a flight reservation among the supporting documents for a short stay visa rather than a purchased ticket, and the centres handling European applications here work from that checklist.',
     },
     {
-      question: 'Is a flight reservation accepted for a Schengen visa from the UK?',
-      answer: 'Yes. EU Visa Code Article 14 lists a flight reservation among the supporting documents for a short stay visa rather than a paid ticket, and centres handling European applications in the UK accept a reservation with a verifiable PNR.',
+      question: 'Do I need one with a British passport?',
+      answer: 'Not for short trips to Europe, which remain visa free. China, India, Vietnam and Russia still require a visa, and airlines still ask for proof of onward travel when you fly on a one-way booking.',
     },
     {
-      question: 'Will the consulate or the airline be able to verify it?',
-      answer: 'Yes. The PNR is live on Amadeus, Sabre or Travelport for the validity you choose, so a consulate, an airline agent or any IATA accredited travel agent can retrieve it. It is a real reservation, not a generated PDF.',
+      question: 'What if my appointment gets moved?',
+      answer: 'Order the itinerary again for the new dates. Nothing was purchased, so nothing is lost, and the old booking simply lapses at the end of its validity window.',
     },
     {
-      question: 'How long is the reservation valid?',
-      answer: 'You choose 2, 7 or 14 days. Pick the tier that covers the gap between submitting your file and someone checking it, since the PNR must still be live at that moment.',
+      question: 'Which validity suits a UK-submitted application?',
+      answer: 'Seven days covers most visa centre turnarounds here. Two days is enough for an airline desk, and fourteen is worth it when a consulate is known to hold files for over a week.',
     },
   ];
 
