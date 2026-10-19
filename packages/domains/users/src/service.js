@@ -4,13 +4,20 @@ import { AppError } from '@travel-suite/utils';
 
 const PROVISIONAL_RETENTION_MS = 24 * 60 * 60 * 1000;
 
+export const TOKEN_ISSUER = 'travel-suite';
+export const CUSTOMER_AUDIENCE = 'travel-suite:customer';
+
 function isUnclaimedProvisional(user) {
   return Boolean(user.provisionalExpiresAt) && user.isActive && !user.isVerified && !user.password;
 }
 
 export function createUserService({ User, jwtSecret, jwtExpiresIn, notifications, apiBaseUrl = '' }) {
   function signToken(id) {
-    return jwt.sign({ id }, jwtSecret, { expiresIn: jwtExpiresIn });
+    return jwt.sign({ id }, jwtSecret, {
+      expiresIn: jwtExpiresIn,
+      issuer: TOKEN_ISSUER,
+      audience: CUSTOMER_AUDIENCE,
+    });
   }
 
   const register = async ({ firstName, lastName, email, password }) => {
@@ -91,6 +98,7 @@ export function createUserService({ User, jwtSecret, jwtExpiresIn, notifications
     user.password = password;
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
+    user.passwordChangedAt = new Date(Date.now() - 1000);
     await user.save();
 
     const token = signToken(user._id);
@@ -165,6 +173,7 @@ export function createUserService({ User, jwtSecret, jwtExpiresIn, notifications
     const user = await User.findById(userId).select('+password');
     if (!user || !(await user.correctPassword(currentPassword))) throw new AppError('Current password is incorrect', 401);
     user.password = newPassword;
+    user.passwordChangedAt = new Date(Date.now() - 1000);
     await user.save();
 
     const token = signToken(user._id);

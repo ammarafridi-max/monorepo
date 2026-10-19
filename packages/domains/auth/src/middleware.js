@@ -20,7 +20,7 @@ export function createAdminAuthMiddleware({ AdminUser, verifyToken }) {
       return next(new AppError('Invalid or expired token.', 401));
     }
 
-    if (decoded.type && decoded.type !== 'admin') {
+    if (decoded.type !== 'admin') {
       return next(new AppError('Invalid session type.', 401));
     }
 
@@ -47,7 +47,7 @@ export function createAdminAuthMiddleware({ AdminUser, verifyToken }) {
 
     try {
       const decoded = verifyToken(token);
-      if (decoded.type && decoded.type !== 'admin') return next();
+      if (decoded.type !== 'admin') return next();
 
       const currentUser = await AdminUser.findById(decoded.id).select('+passwordChangedAt');
       if (!currentUser || currentUser.status === 'INACTIVE') return next();

@@ -1,10 +1,18 @@
 import jwt from 'jsonwebtoken';
 
+export const TOKEN_ISSUER = 'travel-suite';
+export const ADMIN_AUDIENCE = 'travel-suite:admin';
+
 export function createJwtUtils({ jwtSecret, jwtExpiresIn, cookieExpiresInDays, nodeEnv }) {
   const signToken = (id, role) =>
-    jwt.sign({ id, role, type: 'admin' }, jwtSecret, { expiresIn: jwtExpiresIn });
+    jwt.sign({ id, role, type: 'admin' }, jwtSecret, {
+      expiresIn: jwtExpiresIn,
+      issuer: TOKEN_ISSUER,
+      audience: ADMIN_AUDIENCE,
+    });
 
-  const verifyToken = (token) => jwt.verify(token, jwtSecret);
+  const verifyToken = (token) =>
+    jwt.verify(token, jwtSecret, { issuer: TOKEN_ISSUER, audience: ADMIN_AUDIENCE });
 
   const createCookieOptions = () => {
     const isProd = nodeEnv === 'production';
