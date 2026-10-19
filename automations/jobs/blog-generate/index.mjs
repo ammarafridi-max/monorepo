@@ -24,6 +24,7 @@ import {
 import { resolveFormat } from "../../src/lib/formats.mjs";
 import { gatherSources, formatSourcesBlock } from "../../src/lib/sources.mjs";
 import { verifyDraft, assertVerification, reportVerification, needsRevision, buildRevisionBrief } from "../../src/lib/verify.mjs";
+import { CSRF_HEADER, CSRF_HEADER_VALUE } from '@travel-suite/utils/csrf';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -414,7 +415,7 @@ async function postDraft({ brand, api, token, topic, content, availableTags, sta
 
   const res = await fetch(`${api.BACKEND_URL}/api/blogs`, {
     method: "POST",
-    headers: { Cookie: `jwt=${token}` },
+    headers: { Cookie: `jwt=${token}`, [CSRF_HEADER]: CSRF_HEADER_VALUE },
     body: form,
   });
 

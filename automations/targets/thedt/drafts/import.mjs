@@ -3,6 +3,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import TARGET from '../config.mjs';
 import { fetchCoverImage } from '../../../src/lib/blog-utils.mjs';
+import { CSRF_HEADER, CSRF_HEADER_VALUE } from '@travel-suite/utils/csrf';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const arg = (name) => {
@@ -65,7 +66,7 @@ for (const [i, d] of drafts.entries()) {
 
     const res = await fetch(`${TARGET.backendUrl}/api/blogs`, {
       method: 'POST',
-      headers: { Cookie: `jwt=${TOKEN}` },
+      headers: { Cookie: `jwt=${TOKEN}`, [CSRF_HEADER]: CSRF_HEADER_VALUE },
       body: form,
     });
 

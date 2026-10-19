@@ -13,6 +13,7 @@
     "@travel-suite/hotel-bookings": "workspace:*",
     "@travel-suite/liteapi": "workspace:*",
     "@travel-suite/pricing-rules": "workspace:*",
+    "@travel-suite/utils": "workspace:*",
     "@travel-suite/vehicles": "workspace:*",
     "@travel-suite/zones": "workspace:*",
     "googleapis": "^144.0.0",

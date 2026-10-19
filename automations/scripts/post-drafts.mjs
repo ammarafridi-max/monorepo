@@ -3,6 +3,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { loadTarget } from "../src/registry.mjs";
 import { createApiClient, fetchCoverImage } from "../src/lib/blog-utils.mjs";
+import { CSRF_HEADER, CSRF_HEADER_VALUE } from '@travel-suite/utils/csrf';
 
 const arg = (name) => {
   const i = process.argv.indexOf(`--${name}`);
@@ -72,7 +73,7 @@ for (const topic of queue) {
 
   const res = await fetch(`${api.BACKEND_URL}/api/blogs`, {
     method: "POST",
-    headers: { Cookie: `jwt=${token}` },
+    headers: { Cookie: `jwt=${token}`, [CSRF_HEADER]: CSRF_HEADER_VALUE },
     body: form,
   });
   const body = await res.json().catch(() => ({}));
