@@ -1,7 +1,8 @@
 'use client';
 
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useGetCurrencies } from '../hooks/currencies/useGetCurrencies.js';
+import { guessVisitorCurrency } from '../utils/geoCurrency.js';
 
 const SELECTED_CURRENCY_KEY = 'selectedCurrencyCode';
 
@@ -9,31 +10,43 @@ export const CurrencyContext = createContext(null);
 
 function readStoredCurrency() {
   if (typeof window === 'undefined') return null;
-  return localStorage.getItem(SELECTED_CURRENCY_KEY);
+  try {
+    return localStorage.getItem(SELECTED_CURRENCY_KEY);
+  } catch {
+    return null;
+  }
 }
 
-export function CurrencyProvider({ children, defaultCode }) {
+export function CurrencyProvider({
+  children,
+  defaultCode,
+  detectCurrency = false,
+}) {
   const { currencies: apiCurrencies = [] } = useGetCurrencies();
   const [selectedCurrencyCode, setSelectedCurrencyCode] = useState(null);
+  const chosenCodeRef = useRef(null);
+  const detectedCode = useMemo(
+    () => (detectCurrency ? guessVisitorCurrency() : undefined),
+    [detectCurrency],
+  );
 
   useEffect(() => {
-    const storedCode = readStoredCurrency();
-    if (storedCode) {
-      setSelectedCurrencyCode(storedCode);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!apiCurrencies.length || selectedCurrencyCode) return;
+    if (!apiCurrencies.length) return;
 
     const known = (code) => apiCurrencies.find((currency) => currency.code === code)?.code;
-    setSelectedCurrencyCode(
+    const nextCode =
+      known(chosenCodeRef.current) ||
+      known(readStoredCurrency()) ||
       known(defaultCode) ||
-        apiCurrencies.find((currency) => currency.isBaseCurrency)?.code ||
-        apiCurrencies[0]?.code ||
-        null,
-    );
-  }, [apiCurrencies, defaultCode, selectedCurrencyCode]);
+      known(detectedCode) ||
+      apiCurrencies.find((currency) => currency.isBaseCurrency)?.code ||
+      apiCurrencies[0]?.code ||
+      null;
+
+    if (nextCode && nextCode !== selectedCurrencyCode) {
+      setSelectedCurrencyCode(nextCode);
+    }
+  }, [apiCurrencies, defaultCode, detectedCode, selectedCurrencyCode]);
 
   const selectedCurrency = useMemo(
     () =>
@@ -51,10 +64,13 @@ export function CurrencyProvider({ children, defaultCode }) {
       typeof nextCurrency === 'string' ? nextCurrency : nextCurrency?.code;
     if (!nextCode) return;
 
+    chosenCodeRef.current = nextCode;
     setSelectedCurrencyCode(nextCode);
 
     if (typeof window !== 'undefined') {
-      localStorage.setItem(SELECTED_CURRENCY_KEY, nextCode);
+      try {
+        localStorage.setItem(SELECTED_CURRENCY_KEY, nextCode);
+      } catch {}
     }
   }
 

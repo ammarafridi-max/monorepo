@@ -139,7 +139,7 @@ export default function Providers({ children }) {
         <AnalyticsInit />
         <Toaster />
         <QueryClientProvider client={queryClient}>
-          <CurrencyProvider defaultCode={defaultCurrency}>
+          <CurrencyProvider defaultCode={defaultCurrency} detectCurrency>
             <TicketProvider>
                 <InsuranceProvider>
                   <AppLayout logoSrc={LOGO_SRC} brandName={BRAND_NAME} pages={flightItineraryPages} footerLinkGroups={footerLinkGroups} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark}>
@@ -159,7 +159,7 @@ export default function Providers({ children }) {
       <AnalyticsInit />
       <Toaster />
       <QueryClientProvider client={queryClient}>
-        <CurrencyProvider defaultCode={defaultCurrency}>
+        <CurrencyProvider defaultCode={defaultCurrency} detectCurrency>
           <TicketProvider>
               <InsuranceProvider>
                 <AppLayout logoSrc={LOGO_SRC} brandName={BRAND_NAME} pages={defaultPages} footerLinkGroups={footerLinkGroups} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark}>
