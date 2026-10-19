@@ -17,6 +17,7 @@ import {
   buildFAQPage,
   buildGraph,
   buildOrganization,
+  buildProduct,
   buildService,
   buildWebPage,
   buildWebsite,
@@ -161,6 +162,14 @@ export default function Page() {
       name: pageData.meta.entityName,
       description: pageData.meta.description,
       areaServed: 'AE',
+    }),
+    buildProduct({
+      canonical: pageData.meta.canonical,
+      name: pageData.meta.entityName,
+      description: pageData.meta.description,
+      price: '30.00',
+      currency: 'AED',
+      fromPrice: true,
     }),
     buildFAQPage({
       canonical: pageData.meta.canonical,

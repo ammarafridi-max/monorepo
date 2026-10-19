@@ -68,8 +68,8 @@ export const TARGET = {
 
   contentChecks: [
     {
-      pattern: /\b(?:USD|\$)\s*\d+[^.]{0,40}\b(?:dummy ticket|flight reservation|onward ticket|flight itinerar)/i,
-      message: 'our reservations are priced in dirhams (AED 49 / 69 / 79), never in USD',
+      pattern: /(?<!\b(?:fee|fees|charge|charges|levy|tax)\b[^.]{0,80})(?:\b(?:USD|\$)\s*\d+[^.]{0,40}\b(?:dummy ticket|flight reservation|onward ticket|flight itinerar)|\b(?:dummy ticket|flight reservation|onward ticket|flight itinerar)[^.]{0,40}\b(?:USD|\$)\s*\d+)/i,
+      message: 'our reservations are priced in dirhams (AED 49 / 69 / 79), never in USD. Third-party government fees in USD are fine; name them as a fee',
     },
     {
       pattern:
@@ -117,6 +117,25 @@ Example shape (write your own copy, do not reuse this wording verbatim):
   <h3>Need proof of onward travel before you fly?</h3>
   <p>We hold a real seat under a live PNR, so the airline and the border officer can both look it up. <a href="https://www.thedummyticket.ae/onward-ticket">Book an onward ticket from AED 49</a> and it lands in your inbox within 10 to 15 minutes.</p>
 </div>`,
+
+  imagePrompt(title) {
+    const t = title.toLowerCase();
+    const scenes = [
+      [/thailand|vietnam|indonesia|bali|asia/, 'a sunlit Southeast Asian international airport departures hall, travellers with backpacks at a check-in counter'],
+      [/boarding|check-in|airline|denied/, 'an airline check-in counter in a modern terminal, a ground agent facing a waiting passenger, departure boards blurred behind'],
+      [/onward|proof of travel|return ticket/, 'a passenger at an airport immigration desk handing over a passport, bright terminal glass behind'],
+      [/entry.?exit|ees|border/, 'a European airport border control area with automated biometric gates, an officer booth, cool morning light'],
+      [/90.?180|overstay|days/, 'a passport open on a desk beside a wall calendar and a boarding pass, warm window light'],
+      [/eta|uk|britain/, 'a London Heathrow arrivals hall, UK border signage area, travellers with luggage, soft overcast light'],
+      [/appointment|visa application|consulate|embassy/, 'a visa application centre waiting area, numbered seating, a folder of documents on a lap'],
+      [/pnr|itinerary|reservation|booking reference|verify/, 'a laptop on a desk showing a flight booking screen beside a passport and coffee, over-the-shoulder view'],
+      [/repatriation|insurance|medical|cover/, 'a traveller reviewing documents in a hotel room beside an open suitcase and a first aid kit, soft daylight'],
+      [/schengen|europe/, 'a European city street with a consulate building facade, travellers walking past, early evening light'],
+    ];
+    const scene = scenes.find(([re]) => re.test(t))?.[1]
+      ?? 'a traveller at an airport departure gate with a passport and documents, editorial travel photography';
+    return `Professional editorial travel photography, ${scene}, natural light, shallow depth of field, no text, no words, no letters, no watermarks, no labels, no signage`;
+  },
 
   getRequiredLinks(topic) {
     const title = topic.title;

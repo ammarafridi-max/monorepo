@@ -23,7 +23,7 @@ export const {
 } = createSchemaBuilders({
   siteUrl: SITE_URL,
   siteName: 'Dummy Ticket 365',
-  logoUrl: `${SITE_URL}/logo.png`,
+  logoUrl: `${SITE_URL}/logo-icon.png`,
   email: EMAIL,
   telephone: WHATSAPP_NUMBER,
   sameAs: [

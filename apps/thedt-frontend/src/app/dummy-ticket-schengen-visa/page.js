@@ -106,7 +106,7 @@ export const pageData = {
   meta: {
     title: 'Dummy Ticket for Schengen Visa From AED 49 | Accepted by VFS',
     description:
-      'A genuine Schengen flight reservation with a PNR your consulate can verify. From AED 49, emailed in minutes, handled daily at VFS and BLS in Dubai and Abu Dhabi.',
+      'A genuine Schengen flight reservation with a PNR your consulate can verify. From AED 49, emailed in minutes, handled daily at VFS and BLS in Dubai.',
     canonical: 'https://www.thedummyticket.ae/dummy-ticket-schengen-visa',
     entityName: 'Dummy Ticket for Schengen Visa',
   },

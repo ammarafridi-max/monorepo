@@ -19,6 +19,7 @@ export const metadata = {
   description: 'The Dummy Ticket AE',
   icons: {
     icon: '/logo-dark.png',
+    apple: '/apple-touch-icon.png',
   },
   openGraph: {
     title: 'The Dummy Ticket AE',

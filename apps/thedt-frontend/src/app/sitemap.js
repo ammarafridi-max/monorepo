@@ -10,6 +10,7 @@ const staticPages = [
   { url: '/dummy-ticket-schengen-visa', changeFrequency: 'monthly', priority: 0.9 },
   { url: '/dummy-ticket-us-visa', changeFrequency: 'monthly', priority: 0.9 },
   { url: '/onward-ticket', changeFrequency: 'monthly', priority: 0.9 },
+  { url: '/flight-itinerary', changeFrequency: 'monthly', priority: 0.9 },
   { url: '/travel-insurance', changeFrequency: 'monthly', priority: 0.8 },
   { url: '/schengen-travel-insurance', changeFrequency: 'monthly', priority: 0.8 },
   { url: '/blog', changeFrequency: 'daily', priority: 0.8 },

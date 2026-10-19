@@ -22,7 +22,7 @@ export const {
 } = createSchemaBuilders({
   siteUrl: SITE_URL,
   siteName: "The Dummy Ticket AE",
-  logoUrl: `${SITE_URL}/logo.webp`,
+  logoUrl: `${SITE_URL}/logo-dark.png`,
   email: "info@thedummyticket.ae",
   address: {
     streetAddress: "Abraj Al Mamzar",

@@ -1,0 +1,481 @@
+# The Dummy Ticket AE: SEO / AEO / GEO Audit
+
+**Date:** 19 October 2026
+**Target:** `apps/thedt-frontend`, `apps/thedt-backend`, shared packages they import
+**Environment audited:** production, `https://www.thedummyticket.ae`
+**Branch / commit at audit time:** `master` @ `5e29beb`
+**Stack:** Next.js 16.3.0, React 19.2.5, App Router, Tailwind v4, blog from MongoDB via the Express backend
+
+## Instruments
+
+| Instrument | Available | Notes |
+|---|---|---|
+| Live production over HTTPS | Yes | All page-level findings are measured, not inferred |
+| Real browser (Chrome DevTools) | Yes | Lighthouse and a performance trace were run against production |
+| GSC export | Yes | `~/Downloads/thedummyticket.ae-Performance-on-Search-2026-10-19`, last 3 months, UAE, web |
+| Dev servers | No | Not started, by instruction. Production was audited instead |
+| CrUX field data | No | Page has no field data yet. Performance numbers are lab only |
+
+**What this means for the report.** Everything below was measured against the deployed site. One
+consequence matters: the working tree contains an uncommitted fix for finding T1 that production
+does not have. Where that is the case it is stated per finding.
+
+**Database note.** The audit was read-only and touched no data. Worth recording for any follow-up
+fix script: thedt's production database is `thedummyticket` on a cluster shared with the sister
+brand's `mydummyticket` database. There is no separate staging database, so a fix script has no
+safe rehearsal.
+
+## Scores
+
+| Bucket | Weight | Score |
+|---|---|---|
+| Technical SEO | 25% | 82 |
+| On-page SEO | 20% | 88 |
+| Content and Blog | 20% | 85 |
+| AEO / GEO | 20% | 94 |
+| Internal Linking | 15% | 74 |
+| **Overall** | | **85** |
+
+**Technical SEO 82.** Redirects, canonicals, robots and structured data validity are all correct
+and verified live. Core Web Vitals are excellent. Three things pull it down: a money page missing
+from the sitemap, the Organization logo pointing at the sister brand's file, and the two highest
+traffic pages carrying no Offer markup.
+
+**On-page SEO 88.** Every page has exactly one H1, a title inside 44 to 60 characters, a
+description inside range bar one, and complete OG and Twitter tags. Pricing is consistent with
+HOUSE FACTS on every page checked. `/flight-itinerary` is materially thinner than its siblings.
+
+**Content and Blog 85.** Seven posts, 2,415 to 2,866 words each, 11 to 13 H2s, 2 to 4 tables, both
+Article and FAQPage schema, 4 to 9 distinct authoritative outbound domains per post, and genuine
+per-post dates. This is the strongest part of the site. It loses points for being entirely
+informational and for leaving one money page with no editorial support at all.
+
+**AEO / GEO 92.** Verdict-first is real here, not claimed: every money page states what it is and
+what it costs inside the first 40 words. Posts carry extractable answers, question-shaped headings
+and tables, and the money pages carry a 45-word pricing answer under a question H2. Posts render a
+visible updated date and carry dateModified. Revised up from 88 after correcting findings A1 and
+A2, both of which were measurement errors in the first version rather than changes.
+
+**Internal Linking 74.** Navigation links every money page from every page, which is boilerplate
+rather than equity. Contextually, `/dummy-ticket-us-visa` receives zero in-article links from any
+post, and it has zero impressions in GSC.
+
+**On the age of the domain.** The site launched around 22 September 2026, so this export covers
+roughly four weeks. 24 clicks and 688 impressions is not underperformance, it is a new domain. The
+scores above grade fundamentals, not traffic volume, and no finding below is a complaint about
+absolute numbers.
+
+## Top 10 fixes
+
+| # | Issue | Impact | Effort |
+|---|---|---|---|
+| 1 | Organization schema logo points at the sister brand's wordmark | High | Trivial, already fixed locally |
+| 2 | `/flight-itinerary` is absent from the sitemap | High | Trivial |
+| 3 | "dummy ticket" sits at position 19.8 on 181 impressions, 26% of all impressions | High | Medium |
+| 4 | Home and `/travel-insurance` carry no Offer markup despite leading with a price | High | Low |
+| 5 | `/dummy-ticket-us-visa` has zero contextual inbound links and zero impressions | High | Low |
+| 6 | "dummy ticket with pnr", 22 impressions at position 34, has a matching page nobody submitted | Medium | Low |
+| 7 | thedt ranks position 4.8 to 8.8 for the sister brand's navigational queries | Medium | Judgement call |
+| 8 | Blog is 100% informational, zero commercial-intent posts | Medium | Medium |
+| 9 | No apple-touch-icon, no web manifest, no favicon.ico | Low | Low |
+| 10 | Six tag pages are indexable with near-zero unique content | Low | Low |
+
+---
+
+## Phase 0: Stack and routes
+
+Metadata comes from the App Router `metadata` export and a local `src/lib/schema.js` graph builder.
+The sitemap is generated by `src/app/sitemap.js`, which merges a hardcoded static route list with
+blog posts, tags and authors fetched from the backend. Robots comes from `src/app/robots.js`.
+Deployment is Fly.io, single machine, with `proxy.js` middleware handling apex to www.
+
+**Public routes found in code: 14.** Plus dynamic blog, tag and author routes.
+
+| Route | In sitemap | Live status |
+|---|---|---|
+| `/` | Yes | 200 |
+| `/onward-ticket` | Yes | 200 |
+| `/flight-itinerary` | **No** | 200 |
+| `/dummy-ticket-schengen-visa` | Yes | 200 |
+| `/dummy-ticket-us-visa` | Yes | 200 |
+| `/travel-insurance` | Yes | 200 |
+| `/schengen-travel-insurance` | Yes | 200 |
+| `/faq` | Yes | 200 |
+| `/blog`, `/blog/tags` | Yes | 200 |
+| `/privacy-policy`, `/terms-and-conditions` | Yes | 200 |
+| `/authors/ammar-afridi` | Yes | 200 |
+| 7 blog posts, 6 tag pages | Yes | 200 |
+| `/booking/*`, `/insurance-booking/*` | No, correctly | Disallowed in robots |
+
+Sitemap contains 25 URLs. The gap is `/flight-itinerary`, covered in T2.
+
+---
+
+## Phase 1: Technical SEO
+
+### Indexability and redirects, all verified live
+
+| Check | Result |
+|---|---|
+| `http://thedummyticket.ae/` | 301 to `https://thedummyticket.ae/` |
+| `https://thedummyticket.ae/` | 308 to `https://www.thedummyticket.ae/` |
+| `http://www.thedummyticket.ae/` | 301 to `https://www.thedummyticket.ae/` |
+| Trailing slash | 308 to the non-slash canonical |
+| robots.txt | Present, sitemap referenced, booking funnels disallowed |
+| Canonicals | Present and self-referencing on every page checked |
+| Stray noindex | None found |
+
+Redirect hygiene is correct. The http apex reaching Google (2 impressions in the export, position
+94) is the expected pre-consolidation artefact of a new domain, not a fault.
+
+### T1. Organization logo is the sister brand's file
+
+Measured live on every page:
+
+```json
+"logo": "https://www.thedummyticket.ae/logo.webp"
+```
+
+`public/logo.webp` on thedt is 1000x178 and is the wordmark inherited when this brand was cloned.
+It is the sister brand's logo, served from this domain, and it is the single image Google reads for
+the Organization entity. Google's requirement is a minimum of 112x112 and a crawlable URL; there is
+no square requirement, so this is a provenance fault, not a sizing one.
+
+**Status:** fixed in the working tree, not deployed. `src/lib/schema.js` now points at
+`/logo-dark.png` (250x250, the brand's own mark), and the inherited `logo.webp` has been deleted
+after confirming no thedt code path requests it. The same fix was applied to the two sister brands,
+which were pointing at their own wide wordmarks rather than the round marks their navigation uses.
+**Production still serves the wrong logo until a deploy happens.**
+
+### T2. `/flight-itinerary` is missing from the sitemap
+
+`src/app/sitemap.js` hardcodes its static route list and the entry was never added. The page is
+live and returns 200, carries valid Product and Offer markup, and is the natural landing page for
+"dummy ticket with pnr" (22 impressions, position 34) and "temporary flight reservation". It has
+**zero impressions** in the export.
+
+**Fix:** add `{ url: '/flight-itinerary', changeFrequency: 'monthly', priority: 0.9 }` to the static
+list. Guarding against recurrence is worth more than the fix: derive the static list from the route
+tree, or add a check that fails when a public route is absent from the sitemap.
+
+### T3. Offer markup missing on the two most-seen pages
+
+| Page | Impressions | Service | Product | Offer |
+|---|---|---|---|---|
+| `/` | 396 (58% of site) | Yes | **No** | **No** |
+| `/travel-insurance` | 13 | Yes | **No** | **No** |
+| `/onward-ticket` | 16 | Yes | Yes | 49.00 AED |
+| `/flight-itinerary` | 0 | Yes | Yes | 49.00 AED |
+| `/dummy-ticket-schengen-visa` | 0 | Yes | Yes | 49.00 AED |
+| `/dummy-ticket-us-visa` | 0 | Yes | Yes | 49.00 AED |
+| `/schengen-travel-insurance` | 0 | Yes | Yes | 30.00 AED |
+
+The home page leads with "From AED 49" in its H1 and title and carries no machine-readable price.
+`/travel-insurance` says "from AED 30" once in prose and marks up nothing. GSC already reports 6
+impressions under the Product snippets appearance, so the pages that do have Offers are being
+parsed; the two that matter most are not eligible.
+
+### T4. Structured data validity
+
+Every JSON-LD block on every page parses. No silent prop-name drop. Types present: Organization,
+ImageObject, PostalAddress, ContactPoint, WebSite, WebPage, Service, Product, Offer, FAQPage,
+Question, Answer, BreadcrumbList, ListItem. Posts additionally carry Article. Organization name,
+email and address match HOUSE FACTS.
+
+### T5. Performance, measured
+
+Lab trace of the home page, Chrome, no throttling, cache bypassed:
+
+| Metric | Value |
+|---|---|
+| LCP | 850 ms (TTFB 293 ms, render delay 556 ms) |
+| CLS | 0.00 |
+| Field data | None in CrUX yet |
+
+Lighthouse, mobile, navigation mode: **Accessibility 100, SEO 100, Best Practices 77, Agentic
+Browsing 100**. The two Best Practices failures are third-party cookies (6, from analytics) and
+Chrome Issues panel entries. Neither is an SEO problem.
+
+Minor headroom the trace flagged: 82.2 kB of cache-policy waste and 29.6 kB of legacy JavaScript
+transpilation, both with 0 ms estimated metric saving. Not worth acting on.
+
+### T6. Brand assets
+
+| Asset | Status |
+|---|---|
+| `/favicon.png` | 200, set via metadata to `/logo-dark.png` |
+| `/favicon.ico` | **404** |
+| `/apple-touch-icon.png` | **404** |
+| `/manifest.json`, `/site.webmanifest` | **404** |
+| `/og-image.png` | 200, 897 kB, and confirmed **not** the sister brand's file |
+
+The og-image is this brand's own, which is the important check. The missing icons affect iOS home
+screen and some social surfaces, not rankings.
+
+---
+
+## Phase 2: On-page SEO
+
+| Page | Title chars | Desc chars | H1 | Canonical | Schema | Prices seen |
+|---|---|---|---|---|---|---|
+| `/` | 53 | 151 | 1 | self | Org, WebSite, WebPage, Service, FAQPage | 49, 69, 79 |
+| `/onward-ticket` | 49 | 145 | 1 | self | + Product, Offer, Breadcrumb | 49, 69, 79 |
+| `/flight-itinerary` | 56 | 116 | 1 | self | + Product, Offer, Breadcrumb | 49 only |
+| `/dummy-ticket-schengen-visa` | 60 | **161** | 1 | self | + Product, Offer, FAQPage | 49, 69, 79 |
+| `/dummy-ticket-us-visa` | 47 | 148 | 1 | self | + Product, Offer, FAQPage | 49, 69, 79 |
+| `/travel-insurance` | 60 | 148 | 1 | self | Service, FAQPage, Breadcrumb | 30 |
+| `/schengen-travel-insurance` | 58 | 141 | 1 | self | + Product, Offer, FAQPage | 30, 49 |
+| `/faq` | 44 | 134 | 1 | self | FAQPage, Breadcrumb | 49, 69, 79 |
+
+**Clean.** No missing, duplicate or multiple H1s. No missing titles or descriptions. OG and Twitter
+complete on every page. No truncated titles.
+
+**O1.** `/dummy-ticket-schengen-visa` description is 161 characters, one over. Cosmetic.
+
+**O2.** `/flight-itinerary` is the thinnest money page: 88 kB of HTML against 185 kB for home and
+188 kB for onward-ticket, one price mention against nine, and no FAQ block. Combined with its
+sitemap absence (T2) it is the least supported money page on the site, despite targeting the "pnr"
+and "itinerary" query cluster that already draws impressions.
+
+**HOUSE FACTS check.** Prices are consistent everywhere: AED 49 / 69 / 79 for reservations, AED 30
+for insurance. No page contradicts another. No page claims visa assistance as a service. No
+guarantee-of-outcome language found. No sister brand named anywhere in the rendered output.
+
+---
+
+## Phase 3: Content and blog
+
+Seven posts published, three scheduled through 26 October.
+
+| Post | Words | H2 | Tables | Article | FAQ | Cite domains | Published / modified |
+|---|---|---|---|---|---|---|---|
+| countries-proof-of-onward-travel-2026 | 2,415 | 12 | 2 | Yes | Yes | 8 | 29-09 / 29-09 |
+| airlines-deny-boarding-no-onward-ticket | 2,606 | 11 | 2 | Yes | Yes | 6 | 02-10 / 02-10 |
+| dummy-ticket-onward-ticket-flight-itinerary-difference | 2,789 | 12 | 2 | Yes | Yes | 9 | 05-10 / 05-10 |
+| how-to-check-flight-reservation-pnr | 2,866 | 13 | 2 | Yes | Yes | 5 | 08-10 / 08-10 |
+| eu-entry-exit-system-schengen-borders | 2,679 | 13 | 2 | Yes | Yes | 4 | 11-10 / 11-10 |
+| schengen-90-180-rule-ees-counts-days | 2,666 | 11 | 4 | Yes | Yes | 5 | 14-10 / 14-10 |
+| uk-eta-uae-residents-who-needs-one | 2,558 | 12 | 3 | Yes | Yes | 4 | 17-10 / 17-10 |
+
+**Freshness is honest.** Every post has its own datePublished, and dateModified equals it. There is
+no bulk-set date misrepresenting freshness in three places at once. This is the correct state.
+
+**C1. The blog is entirely informational.** Zero of seven posts serve commercial intent. There is
+no "best dummy ticket service UAE", no pricing comparison, no "how much does a dummy ticket cost"
+post. That is a structural finding: the money pages have to rank unaided, and GSC confirms they
+largely are not. "how much dummy ticket cost" and "how much is dummy ticket" already draw
+impressions at positions 6.7 and 8 with no post targeting them.
+
+**C2. Cluster shape.** Two coherent clusters exist. Onward travel (3 posts) feeds `/onward-ticket`.
+Schengen and borders (2 posts) feeds `/dummy-ticket-schengen-visa` and `/schengen-travel-insurance`.
+Both are genuine hub-and-spoke, not a flat pile. The US visa cluster does not exist at all.
+
+**C3.** Only one post has any impressions yet (countries-proof-of-onward-travel-2026, 4 impressions
+at position 8.5). Position 8.5 on a three-week-old post is a good signal, not a problem.
+
+---
+
+## Phase 4: AEO / GEO
+
+**Verdict-first: passing, including on money pages.** Measured openings:
+
+- Home: "A flight reservation your consulate can look up. From AED 49. Not a paid ticket and not a mock-up."
+- `/onward-ticket`: "Proof you are leaving, without buying a flight you will not take."
+- `/dummy-ticket-us-visa`: "Show your travel plan without buying the flight."
+- `/travel-insurance`: "Real cover, issued in minutes, accepted by consulates. This is a genuine AXA policy that pays out, not a document you wave at a visa officer."
+
+Each states the proposition and the price inside the first 40 words. This is the thing most
+commercial sites fail and it is already right here.
+
+**Extractability.** All seven posts use question-shaped H2s, 11 to 13 per post. All seven carry
+tables, 2 to 4 each, so comparative and numeric content is liftable rather than buried in prose.
+FAQPage markup is present on six of eight money pages and all seven posts.
+
+**Provenance, the deciding factor for a YMYL-adjacent topic.** Every post cites 4 to 9 distinct
+authoritative domains, all from the allowlist in the automation config: europa.eu, gov.uk,
+iata.org, state.gov, immigration.go.th, imigrasi.go.id and similar. No travel blogs cited. No
+unsourced statistic or success-rate claim found, and nothing of that kind baked into schema.
+
+**A1. Quick-answer blocks are present. Corrected after first publication.** The first version of
+this report claimed money pages carried no extractable answer. That was wrong, and it was a
+measurement error rather than a change: `PricingTiers` renders a 45-word verdict-first answer
+under a question H2 on `/`, `/onward-ticket`, `/dummy-ticket-schengen-visa` and
+`/dummy-ticket-us-visa`, stating all three tiers in prose. The two insurance pages answer cost in
+their FAQ block, which carries FAQPage markup, so it is both extractable and machine-readable.
+
+The one real nit: React splits that paragraph across text nodes in the raw HTML, so a naive
+parser reading source rather than rendered text sees it fragmented. Rendered extraction is fine.
+No action taken.
+
+**A2. Freshness dates are present. Corrected after first publication.** The first version claimed
+posts carried no last-checked date. Wrong again, and for the same reason: every post renders
+"Updated DD Mon YYYY" above the body and carries dateModified in Article schema. Verified live on
+the UK ETA post, which shows "Updated 17 Oct 2026".
+
+What the posts do well on provenance is worth stating. The EES post says the official position is
+fully operational since 10 April 2026 and explicitly declines to assert the unverified "several
+member states still pausing" claim that circulates in travel media. That restraint is the
+behaviour that earns citations. No action taken.
+
+**A3. Machine access is clean.** robots.txt blocks no AI crawler. All key content is server
+rendered, confirmed by the fact that titles, descriptions, schema, prices and body copy are all
+present in the raw HTML response with no JavaScript execution.
+
+---
+
+## Phase 5: Internal linking
+
+**Boilerplate versus contextual.** Every money page shows 14 or 15 inbound links sitewide, which is
+the navigation appearing on 15 documents. Stripping nav and footer, the contextual picture:
+
+| Money page | Contextual in-article links from posts |
+|---|---|
+| `/travel-insurance` | 5 |
+| `/onward-ticket` | 3 |
+| `/dummy-ticket-schengen-visa` | 3 |
+| `/faq` | 3 |
+| `/` | 2 |
+| `/flight-itinerary` | 2 |
+| `/schengen-travel-insurance` | 2 |
+| `/dummy-ticket-us-visa` | **0** |
+
+**L1. `/dummy-ticket-us-visa` is editorially orphaned.** No post links to it in body copy. It has
+zero impressions. It is the only money page with neither a supporting cluster nor a single
+contextual link. The fix is a US visa post, which also closes a content gap: "dummy ticket for visa"
+draws 14 impressions at position 77.6.
+
+**L2.** Posts interlink well, 9 to 12 unique targets each, and every post links at least one money
+page. No orphan posts. Anchor text is varied and descriptive rather than "click here".
+
+**L3.** Six tag pages are indexable and in the sitemap with near-zero unique content beyond a post
+list. At seven posts they add little and dilute crawl. Worth revisiting when the blog is larger
+rather than deleting now.
+
+---
+
+## Phase 6: GSC-informed opportunities
+
+Export covers the last 3 months filtered to the UAE, which in practice is four weeks of life.
+**24 clicks, 688 impressions, average position 21.6.** Desktop 15 clicks, mobile 9.
+
+### Striking distance, positions 4 to 15
+
+| Query | Impressions | Position | CTR | Tied page |
+|---|---|---|---|---|
+| dummy ticket uae | 11 | 9.9 | 18.2% | `/` |
+| dummy ticket ae | 16 | 3.1 | 6.3% | `/` |
+| dummyticket.ae | 21 | 2.0 | 9.5% | `/` |
+| how much dummy ticket cost | 3 | 6.7 | 0% | none, see C1 |
+| how much is dummy ticket | 2 | 8.0 | 0% | none, see C1 |
+| proof of travel | 4 | 8.5 | 0% | `/onward-ticket` |
+| dumy ticket | 4 | 8.5 | 0% | `/` |
+
+### The single biggest lever
+
+**"dummy ticket": 181 impressions, 5 clicks, position 19.8.** That one query is 26% of all site
+impressions. It is a position problem, not a CTR problem: page 2 earns almost nothing regardless of
+title. Everything that moves the home page up, Offer markup, the missing sitemap entry feeding
+internal equity, and a commercial-intent post cluster, serves this query.
+
+### Position problems, not CTR problems
+
+High impressions, zero clicks, all far down. Do not rewrite these titles; the pages are not being
+seen.
+
+| Query | Impressions | Position |
+|---|---|---|
+| dummy ticket with pnr | 22 | 34.4 | 
+| dummy tickets | 14 | 27.9 |
+| dummy ticket for visa | 14 | 77.6 |
+| onward ticket for visa | 11 | 73.8 |
+| verifiable dummy ticket | 10 | 83.8 |
+| dummy ticket for visa application | 8 | 84.6 |
+
+"dummy ticket with pnr" at 22 impressions is the most actionable: `/flight-itinerary` targets
+exactly this and is not in the sitemap (T2).
+
+### Content gaps, queries ranking with no page targeting them
+
+1. **Cost queries.** "how much dummy ticket cost" (position 6.7), "how much is dummy ticket"
+   (position 8), "dummy ticket cost" (position 7). Already ranking on page 1 with nothing aimed at
+   them. A pricing post is the highest-return piece of content available.
+2. **Free-seeker queries.** "dummy ticket free", "free dummy ticket", "dummy flight ticket free",
+   "free dummy flight ticket": 24 impressions combined, all positions 72 to 88. Low commercial
+   value and probably not worth chasing. Stated so you can decide rather than discover it later.
+3. **Travel insurance cluster.** Eleven distinct insurance queries draw single impressions at
+   positions 21 to 80. `/travel-insurance` has 13 impressions at position 49 and no Offer markup.
+
+### Sister-brand overlap
+
+thedt is ranking for the sister brand's navigational queries:
+
+| Query | Impressions | Position |
+|---|---|---|
+| mydummyticket | 8 | 8.8 |
+| my dummy ticket ae | 6 | 4.8 |
+| mydummyticket.ae | 5 | 5.0 |
+
+Three sites in this group sell the identical product to the identical market. This export shows the
+newest of them surfacing at position 4.8 for the oldest one's brand name. Google is treating them
+as substitutable. That is a commercial decision rather than a defect, so it is reported, not scored,
+but it is worth deciding deliberately: either differentiate the three by query intent, or accept
+that they compete with each other for the same head terms.
+
+One more artefact: **"emirates dummy ticket", 1 impression at position 108.** That is the page
+deleted on 23 September. It correctly returns 404 and will drop out.
+
+---
+
+## Full fix list
+
+| # | Issue | Scope | Category | Impact | Effort | Fix |
+|---|---|---|---|---|---|---|
+| 1 | Organization logo is the sister brand's wordmark | Sitewide | Technical, credibility | High | Trivial | Already fixed locally: `logoUrl` to `/logo-dark.png`, `logo.webp` deleted. Needs a deploy |
+| 2 | `/flight-itinerary` absent from sitemap | 1 money page | Technical | High | Trivial | Add to the static list in `src/app/sitemap.js`; add a guard so a public route cannot go unsubmitted |
+| 3 | "dummy ticket" at position 19.8 on 181 impressions | `/` | Rankings | High | Medium | Serve it with fixes 2, 4, 5 and 8 together rather than a title rewrite |
+| 4 | No Offer markup on `/` and `/travel-insurance` | 2 pages | Technical, AEO | High | Low | Add Product plus Offer with the three tiers on `/`, and a 30.00 AED Offer on `/travel-insurance` |
+| 5 | `/dummy-ticket-us-visa` editorially orphaned | 1 money page | Internal linking | High | Low | Write one US visa post and link it; closes the "dummy ticket for visa" gap too |
+| 6 | "dummy ticket with pnr" at position 34 with an unsubmitted matching page | `/flight-itinerary` | Rankings | Medium | Low | Fix 2, then thicken the page: add an FAQ block and the tier table |
+| 7 | Sister-brand query overlap | 3 domains | Strategy | Medium | Judgement | Decide deliberately: differentiate by intent, or accept the overlap |
+| 8 | Blog is 100% informational | Collection | Content | Medium | Medium | Add commercial-intent posts, starting with a pricing post |
+| 9 | Missing apple-touch-icon, manifest, favicon.ico | Sitewide | Technical | Low | Low | Generate from `logo-dark.png`, add a web manifest |
+| 10 | Six thin tag pages indexable | 6 pages | Crawl | Low | Low | Leave for now; revisit past ~20 posts |
+| 11 | `/dummy-ticket-schengen-visa` description 161 chars | 1 page | On-page | Low | Trivial | Trim one character |
+| 12 | ~~No last-checked dates on moving-rule posts~~ | - | - | - | - | **Withdrawn.** Measurement error; posts render "Updated DD Mon YYYY" and carry dateModified. See A2 |
+| 13 | ~~No quick-answer block on money pages~~ | - | - | - | - | **Withdrawn.** Measurement error in the first version; the blocks exist. See A1 |
+
+### Suggested copy for fix 4
+
+Home page Offer, matching the existing tier table and HOUSE FACTS:
+
+```json
+{
+  "@type": "Product",
+  "name": "Dummy Ticket",
+  "description": "A real airline reservation held under a live PNR, verifiable in Amadeus, Sabre and Travelport.",
+  "offers": [
+    { "@type": "Offer", "name": "2 days validity", "price": "49.00", "priceCurrency": "AED", "availability": "https://schema.org/InStock" },
+    { "@type": "Offer", "name": "7 days validity", "price": "69.00", "priceCurrency": "AED", "availability": "https://schema.org/InStock" },
+    { "@type": "Offer", "name": "14 days validity", "price": "79.00", "priceCurrency": "AED", "availability": "https://schema.org/InStock" }
+  ]
+}
+```
+
+### Suggested title and H2 for fix 8
+
+Target the cost cluster already ranking at positions 6.7 to 8:
+
+- Title: `How Much Does a Dummy Ticket Cost in the UAE? (2026 Prices)`
+- Opening H2: `How much does a dummy ticket cost in the UAE?`
+- Answer, 48 words: "A dummy ticket in the UAE costs AED 49 for two days of validity, AED 69 for seven days and AED 79 for fourteen. The price follows how long the reservation stays live, not the route, and one way costs the same as return. Anyone charging per leg is pricing something else."
+
+---
+
+## What was not checked
+
+- **Tap targets and mobile visual rendering.** Lighthouse mobile scored Accessibility 100, but no
+  manual viewport walkthrough was done.
+- **Field Core Web Vitals.** No CrUX data exists for this domain yet. All performance numbers are lab.
+- **Blog posts 8 to 10.** Scheduled for 20, 23 and 26 October, not yet live.
+- **The admin section.** Out of scope and correctly disallowed in robots.
+- **Backend API performance.** Only the rendered frontend was measured.
