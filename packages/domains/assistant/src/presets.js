@@ -1,0 +1,304 @@
+const attributionFields = [
+  { name: 'channel', path: 'attribution.last.channel', type: 'string', description: 'Last touch marketing channel' },
+  { name: 'source', path: 'attribution.last.source', type: 'string', description: 'Last touch source' },
+  { name: 'campaign', path: 'attribution.last.campaign', type: 'string', description: 'Last touch campaign' },
+];
+
+function dataset(model, config) {
+  if (!model) return null;
+  return { model, ...config };
+}
+
+export const dummyTickets = (model, overrides = {}) =>
+  dataset(model, {
+    key: 'dummy_tickets',
+    label: 'Dummy ticket orders',
+    description: 'Flight reservation orders, one record per customer order.',
+    roles: ['admin', 'agent'],
+    analyticsRoles: ['admin'],
+    dateField: 'createdAt',
+    idFields: ['sessionId', 'pnr'],
+    fields: [
+      { name: 'createdAt', type: 'date' },
+      { name: 'paidAt', type: 'date' },
+      { name: 'paymentStatus', type: 'enum', values: ['UNPAID', 'PAID', 'REFUNDED'] },
+      { name: 'orderStatus', type: 'enum', values: ['PENDING', 'DELIVERED', 'PROGRESS', 'REFUNDED'] },
+      { name: 'type', type: 'enum', values: ['One Way', 'Return'] },
+      { name: 'from', type: 'string', searchable: true },
+      { name: 'to', type: 'string', searchable: true },
+      { name: 'departureDate', type: 'string', groupable: false },
+      { name: 'ticketValidity', type: 'enum', values: ['2 Days', '7 Days', '14 Days'] },
+      { name: 'paymentMethod', type: 'enum', values: ['stripe', 'paypal'] },
+      { name: 'amountPaid', path: 'amountPaid.amount', type: 'number', summable: true, roles: ['admin'], description: 'Amount actually charged' },
+      { name: 'currency', path: 'amountPaid.currency', type: 'string' },
+      { name: 'totalAmount', type: 'number', summable: true, roles: ['admin'], description: 'Quoted order total' },
+      { name: 'affiliateId', type: 'string' },
+      { name: 'sessionId', type: 'string', searchable: true, groupable: false },
+      { name: 'pnr', type: 'string', searchable: true, groupable: false },
+      { name: 'email', type: 'string', searchable: true, sensitive: true, mask: 'email', groupable: false },
+      ...attributionFields,
+    ],
+    ...overrides,
+  });
+
+export const hotelBookings = (model, overrides = {}) =>
+  dataset(model, {
+    key: 'hotel_bookings',
+    label: 'Hotel reservations',
+    description: 'Hotel booking orders placed through the site.',
+    roles: ['admin', 'agent'],
+    analyticsRoles: ['admin'],
+    dateField: 'createdAt',
+    idFields: ['sessionId'],
+    fields: [
+      { name: 'createdAt', type: 'date' },
+      { name: 'paidAt', type: 'date' },
+      { name: 'paymentStatus', type: 'enum', values: ['UNPAID', 'PAID', 'REFUNDED'] },
+      { name: 'orderStatus', type: 'enum', values: ['PENDING', 'BOOKED', 'DELIVERED', 'BOOKING_FAILED', 'REFUNDED'] },
+      { name: 'cancellationStatus', type: 'enum', values: ['NOT_BOOKED', 'SCHEDULED', 'CANCELLED', 'FAILED'] },
+      { name: 'cityName', path: 'destination.cityName', type: 'string' },
+      { name: 'hotelName', path: 'hotel.name', type: 'string', searchable: true },
+      { name: 'hotelCountry', path: 'hotel.country', type: 'string' },
+      { name: 'checkIn', type: 'string', groupable: false },
+      { name: 'checkOut', type: 'string', groupable: false },
+      { name: 'nights', type: 'number', summable: true },
+      { name: 'rooms', path: 'occupancy.rooms', type: 'number', summable: true },
+      { name: 'totalAmount', type: 'number', summable: true, roles: ['admin'] },
+      { name: 'affiliateId', type: 'string' },
+      { name: 'amountPaid', path: 'amountPaid.amount', type: 'number', summable: true, roles: ['admin'] },
+      { name: 'currency', path: 'amountPaid.currency', type: 'string' },
+      { name: 'sessionId', type: 'string', searchable: true, groupable: false },
+      { name: 'email', type: 'string', searchable: true, sensitive: true, mask: 'email', groupable: false },
+      ...attributionFields,
+    ],
+    ...overrides,
+  });
+
+export const insuranceApplications = (model, overrides = {}) =>
+  dataset(model, {
+    key: 'insurance_applications',
+    label: 'Travel insurance applications',
+    description: 'Insurance quotes and issued policies.',
+    roles: ['admin'],
+    dateField: 'createdAt',
+    idFields: ['sessionId', 'policyNumber'],
+    fields: [
+      { name: 'createdAt', type: 'date' },
+      { name: 'issuedAt', type: 'date' },
+      { name: 'paymentStatus', type: 'enum', values: ['UNPAID', 'PENDING', 'PAID', 'FAILED', 'REFUNDED'] },
+      { name: 'issuanceStatus', type: 'enum', values: ['NOT_ISSUED', 'PENDING', 'ISSUED', 'FAILED'] },
+      { name: 'journeyType', type: 'enum', values: ['single', 'annual', 'biennial'] },
+      { name: 'regionName', path: 'region.name', type: 'string' },
+      { name: 'supplier', type: 'string' },
+      { name: 'country', type: 'string' },
+      { name: 'startDate', type: 'string', groupable: false },
+      { name: 'adults', path: 'quantity.adults', type: 'number', summable: true },
+      { name: 'amountPaid', path: 'amountPaid.amount', type: 'number', summable: true },
+      { name: 'currency', path: 'amountPaid.currency', type: 'string' },
+      { name: 'affiliateId', type: 'string' },
+      { name: 'sessionId', type: 'string', searchable: true, groupable: false },
+      { name: 'policyNumber', type: 'string', searchable: true, groupable: false },
+      { name: 'email', type: 'string', searchable: true, sensitive: true, mask: 'email', groupable: false },
+      ...attributionFields,
+    ],
+    ...overrides,
+  });
+
+export const transferBookings = (model, overrides = {}) =>
+  dataset(model, {
+    key: 'transfer_bookings',
+    label: 'Airport transfer bookings',
+    description: 'Point to point transfer bookings.',
+    roles: ['admin', 'agent'],
+    analyticsRoles: ['admin'],
+    dateField: 'createdAt',
+    idFields: ['bookingRef'],
+    fields: [
+      { name: 'createdAt', type: 'date' },
+      { name: 'status', type: 'enum', values: ['pending_payment', 'paid', 'confirmed', 'completed', 'cancelled'] },
+      { name: 'vehicleName', path: 'vehicle.name', type: 'string' },
+      { name: 'vehicleClass', path: 'vehicle.class', type: 'string' },
+      { name: 'pickup', path: 'trip.pickup.label', type: 'string', searchable: true },
+      { name: 'dropoff', path: 'trip.dropoff.label', type: 'string', searchable: true },
+      { name: 'tripDate', path: 'trip.date', type: 'string', groupable: false },
+      { name: 'passengers', path: 'trip.passengers', type: 'number', summable: true },
+      { name: 'price', path: 'vehicle.price.amount', type: 'number', summable: true, roles: ['admin'] },
+      { name: 'currency', path: 'vehicle.price.currency', type: 'string' },
+      { name: 'bookingRef', type: 'string', searchable: true, groupable: false },
+      { name: 'email', path: 'passenger.email', type: 'string', searchable: true, sensitive: true, mask: 'email', groupable: false },
+      ...attributionFields,
+    ],
+    ...overrides,
+  });
+
+export const limoBookings = (model, overrides = {}) =>
+  dataset(model, {
+    key: 'limo_bookings',
+    label: 'Chauffeur bookings',
+    description: 'Chauffeur and limousine bookings, by trip.',
+    roles: ['admin', 'agent'],
+    analyticsRoles: ['admin'],
+    dateField: 'createdAt',
+    idFields: ['bookingRef'],
+    fields: [
+      { name: 'createdAt', type: 'date' },
+      { name: 'status', type: 'enum', values: ['pending', 'confirmed', 'assigned', 'in-progress', 'completed', 'cancelled'] },
+      { name: 'tripType', type: 'enum', values: ['distance', 'hourly'] },
+      { name: 'paymentStatus', path: 'payment.status', type: 'string' },
+      { name: 'paymentMethod', path: 'payment.method', type: 'string' },
+      { name: 'amount', path: 'payment.amount', type: 'number', summable: true, roles: ['admin'] },
+      { name: 'currency', path: 'payment.currency', type: 'string' },
+      { name: 'total', path: 'orderSummary.total', type: 'number', summable: true, roles: ['admin'] },
+      { name: 'pickupName', path: 'pickup.name', type: 'string', searchable: true },
+      { name: 'dropoffName', path: 'dropoff.name', type: 'string', searchable: true },
+      { name: 'pickupDate', type: 'string', groupable: false },
+      { name: 'hoursBooked', type: 'number', summable: true },
+      { name: 'bookingRef', type: 'string', searchable: true, groupable: false },
+      { name: 'email', path: 'bookingDetails.email', type: 'string', searchable: true, sensitive: true, mask: 'email', groupable: false },
+      ...attributionFields,
+    ],
+    ...overrides,
+  });
+
+export const visaLeads = (model, overrides = {}) =>
+  dataset(model, {
+    key: 'visa_leads',
+    label: 'Visa enquiries',
+    description: 'Enquiries captured from the visa pages, before an application exists.',
+    roles: ['admin', 'agent'],
+    dateField: 'createdAt',
+    fields: [
+      { name: 'createdAt', type: 'date' },
+      { name: 'status', type: 'enum', values: ['new', 'contacted', 'qualified', 'converted', 'lost'] },
+      { name: 'visaCountryName', type: 'string', searchable: true },
+      { name: 'packageRequested', type: 'string' },
+      { name: 'nationality', type: 'string' },
+      { name: 'leadSource', path: 'source', type: 'enum', values: ['hero_cta', 'package_card', 'final_cta', 'sticky_bar', 'inline_cta'], description: 'Which on-page CTA captured the lead' },
+      { name: 'applicantCount', type: 'number', summable: true },
+      { name: 'email', type: 'string', searchable: true, sensitive: true, mask: 'email', groupable: false },
+      { name: 'phone', type: 'string', sensitive: true, mask: 'phone', groupable: false },
+      { name: 'firstName', type: 'string', searchable: true, sensitive: true, mask: 'name', groupable: false },
+      { name: 'lastName', type: 'string', searchable: true, sensitive: true, mask: 'name', groupable: false },
+      ...attributionFields,
+    ],
+    ...overrides,
+  });
+
+export const visaApplications = (model, overrides = {}) =>
+  dataset(model, {
+    key: 'visa_applications',
+    label: 'Visa applications',
+    description: 'Visa applications in progress, one per applicant file.',
+    roles: ['admin', 'agent'],
+    dateField: 'createdAt',
+    idFields: ['applicationRef'],
+    fields: [
+      { name: 'createdAt', type: 'date' },
+      { name: 'status', type: 'string' },
+      { name: 'destinationCountry', type: 'string', searchable: true },
+      { name: 'packageName', type: 'string' },
+      { name: 'visaTypeKey', type: 'string' },
+      { name: 'appointmentStatus', type: 'string' },
+      { name: 'appointmentDate', type: 'date' },
+      { name: 'vfsCenter', type: 'string' },
+      { name: 'applicantCount', type: 'number', summable: true },
+      { name: 'readyToSubmit', type: 'boolean' },
+      { name: 'customerCompletenessPercent', type: 'number', summable: true },
+      { name: 'fileCompletenessPercent', type: 'number', summable: true },
+      { name: 'lastCustomerActionAt', type: 'date' },
+      { name: 'applicationRef', type: 'string', searchable: true, groupable: false },
+    ],
+    ...overrides,
+  });
+
+export const itineraryOrders = (model, overrides = {}) =>
+  dataset(model, {
+    key: 'itinerary_orders',
+    label: 'Travel itinerary orders',
+    description: 'Generated travel itinerary documents, one per order.',
+    roles: ['admin', 'agent'],
+    analyticsRoles: ['admin'],
+    dateField: 'createdAt',
+    idFields: ['sessionId'],
+    fields: [
+      { name: 'createdAt', type: 'date' },
+      { name: 'paidAt', type: 'date' },
+      { name: 'status', type: 'enum', values: ['DRAFT', 'GENERATING', 'GENERATED', 'FAILED'] },
+      { name: 'paymentStatus', type: 'enum', values: ['UNPAID', 'PAID', 'REFUNDED'] },
+      { name: 'visaCountry', path: 'input.visaCountry', type: 'string', searchable: true },
+      { name: 'fromCountry', path: 'input.fromCountry', type: 'string' },
+      { name: 'purpose', path: 'input.purpose', type: 'string' },
+      { name: 'travellers', path: 'input.travellers', type: 'number', summable: true },
+      { name: 'regenCount', type: 'number', summable: true },
+      { name: 'chatCount', type: 'number', summable: true },
+      { name: 'price', type: 'number', summable: true, roles: ['admin'] },
+      { name: 'currency', type: 'string' },
+      { name: 'amountPaid', path: 'amountPaid.amount', type: 'number', summable: true, roles: ['admin'] },
+      { name: 'sessionId', type: 'string', searchable: true, groupable: false },
+      ...attributionFields,
+    ],
+    ...overrides,
+  });
+
+export const affiliates = (model, overrides = {}) =>
+  dataset(model, {
+    key: 'affiliates',
+    label: 'Affiliates',
+    description: 'Affiliate partners and their commission terms.',
+    roles: ['admin'],
+    dateField: 'createdAt',
+    idFields: ['affiliateId'],
+    fields: [
+      { name: 'createdAt', type: 'date' },
+      { name: 'name', type: 'string', searchable: true, groupable: false },
+      { name: 'affiliateId', type: 'string', searchable: true, groupable: false },
+      { name: 'isActive', type: 'boolean' },
+      { name: 'commissionPercent', type: 'number', summable: true },
+      { name: 'email', type: 'string', searchable: true, sensitive: true, mask: 'email', groupable: false },
+    ],
+    ...overrides,
+  });
+
+export const affiliatePayouts = (model, overrides = {}) =>
+  dataset(model, {
+    key: 'affiliate_payouts',
+    label: 'Affiliate payouts',
+    description: 'The payout ledger: one row per affiliate per period.',
+    roles: ['admin'],
+    dateField: 'createdAt',
+    fields: [
+      { name: 'createdAt', type: 'date' },
+      { name: 'periodStart', type: 'date' },
+      { name: 'periodEnd', type: 'date' },
+      { name: 'status', type: 'string' },
+      { name: 'affiliateId', type: 'string' },
+      { name: 'currency', type: 'string' },
+      { name: 'commissionAmount', type: 'number', summable: true },
+      { name: 'revenueAmount', type: 'number', summable: true },
+      { name: 'orderCount', type: 'number', summable: true },
+      { name: 'absorbedRefundAmount', type: 'number', summable: true },
+      { name: 'paidAt', type: 'date' },
+      { name: 'reference', type: 'string', groupable: false },
+    ],
+    ...overrides,
+  });
+
+export const blogPosts = (model, overrides = {}) =>
+  dataset(model, {
+    key: 'blog_posts',
+    label: 'Blog posts',
+    description: 'Published and draft blog content.',
+    roles: ['admin', 'agent', 'blog-manager'],
+    dateField: 'createdAt',
+    idFields: ['slug'],
+    fields: [
+      { name: 'createdAt', type: 'date' },
+      { name: 'publishedAt', type: 'date' },
+      { name: 'status', type: 'enum', values: ['draft', 'published', 'scheduled'] },
+      { name: 'scheduledAt', type: 'date' },
+      { name: 'title', type: 'string', searchable: true, groupable: false },
+      { name: 'slug', type: 'string', searchable: true, groupable: false },
+      { name: 'readingTime', type: 'number', summable: true },
+    ],
+    ...overrides,
+  });

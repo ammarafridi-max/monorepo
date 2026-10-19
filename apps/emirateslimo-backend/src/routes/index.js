@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { createAssistantRouter, assistantDatasets } from "@travel-suite/assistant";
 import { logger } from "@travel-suite/utils";
 import { createAuthRouter } from "@travel-suite/auth";
 import { createAdminUsersRouter } from "@travel-suite/admin-users";
@@ -115,6 +116,24 @@ const metaCapi = createMetaCapiClient({
 });
 if (!metaCapi.isConfigured()) {
   logger.warn("[meta-capi] Pixel ID or access token not configured — server-side purchase events disabled");
+}
+
+if (config.anthropicApiKey) {
+  const { router: assistantRouter } = createAssistantRouter({
+    db,
+    auth,
+    anthropicApiKey: config.anthropicApiKey,
+    stripe,
+    brand: { name: "Emirates Limo" },
+    logger,
+    datasets: [
+      assistantDatasets.limoBookings(db.models.Booking),
+      assistantDatasets.blogPosts(db.models.Blog),
+    ],
+  });
+  router.use("/assistant", assistantRouter);
+} else {
+  logger.warn("[assistant] ANTHROPIC_API_KEY not configured — admin assistant disabled");
 }
 
 export const stripeWebhookHandler = createStripeWebhookHandler({

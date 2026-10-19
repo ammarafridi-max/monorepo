@@ -5,6 +5,7 @@ import {
   createAffiliatesRouter,
   AffiliateSchema,
 } from "@travel-suite/affiliates";
+import { createAssistantRouter, assistantDatasets } from "@travel-suite/assistant";
 import { createBlogRouter, createBlogTagRouter } from "@travel-suite/blog";
 import { createCloudinaryStorage } from "@travel-suite/cloudinary";
 import { createCurrenciesRouter } from "@travel-suite/currencies";
@@ -312,6 +313,27 @@ if (whatsappConfigured) {
   whatsappWebhook = webhook;
 } else {
   logger.warn("[whatsapp] Credentials not configured — chat inbox disabled");
+}
+
+if (config.anthropicApiKey) {
+  const { router: assistantRouter } = createAssistantRouter({
+    db,
+    auth,
+    anthropicApiKey: config.anthropicApiKey,
+    stripe,
+    brand: { name: "Dummy Ticket 365" },
+    logger,
+    datasets: [
+      assistantDatasets.dummyTickets(TicketModel),
+      assistantDatasets.hotelBookings(db.models["hotel-booking"]),
+      assistantDatasets.affiliates(AffiliateModel),
+      assistantDatasets.affiliatePayouts(db.models.AffiliatePayout),
+      assistantDatasets.blogPosts(db.models.Blog),
+    ],
+  });
+  router.use("/assistant", assistantRouter);
+} else {
+  logger.warn("[assistant] ANTHROPIC_API_KEY not configured — admin assistant disabled");
 }
 
 // -- WhatsApp webhook (raw body required — mounted in app.js before JSON middleware) --

@@ -3,13 +3,15 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LogOut, MoreHorizontal, X } from 'lucide-react';
+import { LogOut, MoreHorizontal, Sparkles, X } from 'lucide-react';
 import { useAdminAuth } from '../../contexts/AdminAuthContext.js';
 import { useAdminLogout } from '../../hooks/auth/useAdminLogout.js';
 import { isNavItemActive } from '../../utils/paths.js';
 import { ICON_MAP, visibleNavFor, mobileTabsFor } from './navIcons.js';
 import { useNavBadges } from '../../hooks/admin/useNavBadges.js';
 import { CountBadge } from './AdminSidebar.js';
+import { useAssistantMeta } from '../../hooks/assistant/useAssistantMeta.js';
+import AssistantWindow from './AssistantWindow.js';
 
 const SHEET_KEYFRAMES = `
 @keyframes adminSheetFade { from { opacity: 0 } to { opacity: 1 } }
@@ -67,7 +69,7 @@ function Tab({ icon, label, href, active, onClick, count = 0 }) {
   );
 }
 
-function MoreSheet({ nav, brand, badges, onClose }) {
+function MoreSheet({ nav, brand, badges, onClose, onOpenAssistant }) {
   const pathname = usePathname();
   const { adminUser } = useAdminAuth();
   const { logout, loggingOut } = useAdminLogout();
@@ -116,6 +118,19 @@ function MoreSheet({ nav, brand, badges, onClose }) {
         </div>
 
         <div className="overflow-y-auto overscroll-contain px-4 pb-4 space-y-5">
+          {onOpenAssistant && (
+            <button
+              type="button"
+              onClick={onOpenAssistant}
+              className="w-full flex items-center gap-3 px-3.5 py-3 bg-white rounded-2xl text-sm font-semibold text-gray-700 active:bg-gray-50 transition"
+            >
+              <span className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center shrink-0 text-primary-700">
+                <Sparkles size={16} />
+              </span>
+              Assistant
+            </button>
+          )}
+
           {sections.map(({ section, items }) => (
             <div key={section}>
               <p className="px-1 mb-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
@@ -177,6 +192,8 @@ export default function AdminMobileTabBar({ nav = [], brand }) {
   const pathname = usePathname();
   const { adminUser } = useAdminAuth();
   const [moreOpen, setMoreOpen] = useState(false);
+  const [assistantOpen, setAssistantOpen] = useState(false);
+  const { meta, assistantAvailable } = useAssistantMeta();
 
   useEffect(() => {
     setMoreOpen(false);
@@ -207,7 +224,29 @@ export default function AdminMobileTabBar({ nav = [], brand }) {
 
   return (
     <>
-      {moreOpen && <MoreSheet nav={nav} brand={brand} badges={badges} onClose={() => setMoreOpen(false)} />}
+      {moreOpen && (
+        <MoreSheet
+          nav={nav}
+          brand={brand}
+          badges={badges}
+          onClose={() => setMoreOpen(false)}
+          onOpenAssistant={
+            assistantAvailable
+              ? () => {
+                  setMoreOpen(false);
+                  setAssistantOpen(true);
+                }
+              : null
+          }
+        />
+      )}
+
+      <AssistantWindow
+        open={assistantOpen}
+        onClose={() => setAssistantOpen(false)}
+        nav={nav}
+        meta={meta}
+      />
 
       <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-t border-gray-200 shadow-[0_-1px_12px_rgba(0,0,0,0.04)]">
         <div className="flex items-stretch h-14">

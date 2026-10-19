@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Search, X, Loader2 } from 'lucide-react';
 import { useAdminAuth } from '../../contexts/AdminAuthContext.js';
+import AssistantLauncher from './AssistantLauncher.js';
 import { useDebounce } from '../../hooks/general/useDebounce.js';
 import { useDummyTickets } from '../../hooks/dummy-tickets/useDummyTickets.js';
 import { useGetInsuranceApplications } from '../../hooks/insurance/useGetInsuranceApplications.js';
@@ -252,6 +253,8 @@ export default function AdminHeader({
   searchCategories = TRAVEL_SEARCH_CATEGORIES,
   useSearchResults = useTravelSearchResults,
   searchPlaceholder = 'Search tickets, insurance, leads…',
+  assistant = true,
+  nav = [],
 }) {
   const { adminUser } = useAdminAuth();
 
@@ -279,6 +282,8 @@ export default function AdminHeader({
       )}
 
       <div className="flex-1" />
+
+      {assistant && <AssistantLauncher nav={nav} />}
 
       {adminUser && (
         <Link

@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { createAssistantRouter, assistantDatasets } from "@travel-suite/assistant";
 import { createAuthRouter } from "@travel-suite/auth";
 import { createAdminUsersRouter } from "@travel-suite/admin-users";
 import { createBlogRouter, createBlogTagRouter } from "@travel-suite/blog";
@@ -176,6 +177,25 @@ const { router: visaApplicationsRouter, runReminderSweep } = createVisaApplicati
   logger,
 });
 router.use("/visa-applications", visaApplicationsRouter);
+
+if (config.anthropicApiKey) {
+  const { router: assistantRouter } = createAssistantRouter({
+    db,
+    auth,
+    anthropicApiKey: config.anthropicApiKey,
+    stripe,
+    brand: { name: "VisaWadi" },
+    logger,
+    datasets: [
+      assistantDatasets.visaLeads(db.models["visa-lead"]),
+      assistantDatasets.visaApplications(db.models["visa-application"]),
+      assistantDatasets.blogPosts(db.models.Blog),
+    ],
+  });
+  router.use("/assistant", assistantRouter);
+} else {
+  logger.warn("[assistant] ANTHROPIC_API_KEY not configured — admin assistant disabled");
+}
 
 export { runReminderSweep as runVisaReminderSweep };
 

@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { createAssistantRouter, assistantDatasets } from "@travel-suite/assistant";
 import { createAuthRouter } from "@travel-suite/auth";
 import { createAdminUsersRouter } from "@travel-suite/admin-users";
 import {
@@ -211,6 +212,27 @@ async function handlePaymentLinkSuccess(session) {
     sessionId: updated.sessionId,
     paidAt: updated.paidAt,
   });
+}
+
+if (config.anthropicApiKey) {
+  const { router: assistantRouter } = createAssistantRouter({
+    db,
+    auth,
+    anthropicApiKey: config.anthropicApiKey,
+    stripe,
+    brand: { name: "The Dummy Ticket AE" },
+    logger,
+    datasets: [
+      assistantDatasets.dummyTickets(TicketModel),
+      assistantDatasets.insuranceApplications(db.models["insurance-application"]),
+      assistantDatasets.affiliates(AffiliateModel),
+      assistantDatasets.affiliatePayouts(db.models.AffiliatePayout),
+      assistantDatasets.blogPosts(db.models.Blog),
+    ],
+  });
+  router.use("/assistant", assistantRouter);
+} else {
+  logger.warn("[assistant] ANTHROPIC_API_KEY not configured — admin assistant disabled");
 }
 
 export const stripeWebhookHandler = createStripeWebhookHandler({

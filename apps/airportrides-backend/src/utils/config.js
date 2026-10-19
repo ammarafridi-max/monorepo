@@ -20,6 +20,8 @@ export default {
   jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? "30d",
   jwtCookieExpiresInDays: parseNumber(process.env.JWT_COOKIE_EXPIRES_IN, 30),
 
+  anthropicApiKey: process.env.ANTHROPIC_API_KEY,
+
   brevoApiKey: process.env.BREVO_API_KEY,
   adminEmail: process.env.ADMIN_EMAIL ?? "info@airportrides.com",
 

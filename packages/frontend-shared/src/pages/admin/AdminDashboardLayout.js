@@ -12,6 +12,7 @@ export default function AdminDashboardLayout({
   roleRules,
   roleDefaultPath,
   newOrderPing = true,
+  assistant = true,
   globalSearch = true,
   searchCategories,
   useSearchResults,
@@ -25,6 +26,8 @@ export default function AdminDashboardLayout({
           <AdminSidebar nav={nav} brand={brand} />
           <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
             <AdminHeader
+              assistant={assistant}
+              nav={nav}
               globalSearch={globalSearch}
               searchCategories={searchCategories}
               useSearchResults={useSearchResults}

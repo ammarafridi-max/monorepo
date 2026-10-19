@@ -9,6 +9,7 @@
     "start": "node --env-file=.env.production src/server.js"
   },
   "dependencies": {
+    "@travel-suite/assistant": "workspace:*",
     "@travel-suite/admin-users": "workspace:*",
     "@travel-suite/auth": "workspace:*",
     "@travel-suite/blog": "workspace:*",

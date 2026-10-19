@@ -11,6 +11,7 @@
     "resend-confirmations:prod": "node --env-file=.env.production scripts/resend-booking-confirmations.js"
   },
   "dependencies": {
+    "@travel-suite/assistant": "workspace:*",
     "@travel-suite/admin-users": "workspace:*",
     "@travel-suite/auth": "workspace:*",
     "@travel-suite/availability-rules": "workspace:*",
