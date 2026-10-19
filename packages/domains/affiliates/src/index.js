@@ -1,11 +1,12 @@
 import AffiliateSchema from './schema.js';
 import AffiliatePayoutSchema from './payout.schema.js';
+import AffiliateClickSchema from './click.schema.js';
 import { createAffiliateService } from './service.js';
 import { createAffiliatePayoutService } from './payout.service.js';
 import { createAffiliateController, createAffiliatePayoutController } from './controller.js';
 import { createAffiliateRouter } from './router.js';
 
-export { AffiliateSchema, AffiliatePayoutSchema };
+export { AffiliateSchema, AffiliatePayoutSchema, AffiliateClickSchema };
 
 function getOrRegisterModel(conn, name, schema) {
   try { return conn.model(name); }
@@ -25,10 +26,13 @@ export function createAffiliatesRouter({
 }) {
   const Affiliate = getOrRegisterModel(db, 'Affiliate', AffiliateSchema);
   const AffiliatePayout = getOrRegisterModel(db, 'AffiliatePayout', AffiliatePayoutSchema);
+  const AffiliateClick = getOrRegisterModel(db, 'AffiliateClick', AffiliateClickSchema);
   const resolveCurrencyModel = () => CurrencyModel ?? db.models?.Currency ?? null;
 
   const service = createAffiliateService({
     Affiliate,
+    AffiliateClick,
+    AffiliatePayout,
     Ticket: TicketModel,
     InsuranceApplication: InsuranceApplicationModel,
     resolveCurrencyModel,
@@ -46,7 +50,7 @@ export function createAffiliatesRouter({
     logger,
   });
 
-  const controller = createAffiliateController({ service });
+  const controller = createAffiliateController({ service, logger });
   const payoutController = createAffiliatePayoutController({ service: payoutService });
   const router = createAffiliateRouter({ controller, payoutController, auth });
 

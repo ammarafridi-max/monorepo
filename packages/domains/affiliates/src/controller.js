@@ -32,7 +32,18 @@ export function createAffiliatePayoutController({ service }) {
   return { generatePayouts, getPayouts, getPayoutById, markPayoutPaid, voidPayout };
 }
 
-export function createAffiliateController({ service }) {
+export function createAffiliateController({ service, logger = null }) {
+  const logFailure = logger?.error?.bind(logger) ?? console.error;
+
+  const recordAffiliateClick = async (req, res) => {
+    try {
+      await service.recordClick(req.params.affiliateId);
+    } catch (err) {
+      logFailure('[affiliates] click not recorded', { err: err.message });
+    }
+    res.status(204).send();
+  };
+
   const getAffiliates = catchAsync(async (req, res) => {
     const { affiliates, pagination } = await service.getAffiliates(req.query);
     res.json({ status: 'success', data: { affiliates, pagination } });
@@ -74,6 +85,7 @@ export function createAffiliateController({ service }) {
   });
 
   return {
+    recordAffiliateClick,
     getAffiliates,
     getAffiliateById,
     createAffiliate,

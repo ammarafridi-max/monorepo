@@ -3,6 +3,7 @@
 import { createContext, useCallback, useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { compareDateOnly, todayDateOnly } from '../utils/dates.js';
+import { recordAffiliateClickApi } from '../services/apiAffiliates.js';
 
 function safeParse(key, fallback) {
   try {
@@ -153,6 +154,7 @@ export function TicketProvider({ children }) {
         } catch {}
       }
       setAffiliateAttribution(next);
+      recordAffiliateClickApi(incomingAffiliateId);
       return;
     }
 

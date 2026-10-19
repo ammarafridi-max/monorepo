@@ -41,6 +41,14 @@ function buildCreatedAtRange(query = {}) {
   return Object.keys(range).length ? range : null;
 }
 
+function utcDayStart(value) {
+  const date = new Date(value);
+  date.setUTCHours(0, 0, 0, 0);
+  return date;
+}
+
+const AFFILIATE_ID_PATTERN = /^\d{9}$/;
+
 const IS_PAID = { $eq: ['$paymentStatus', 'PAID'] };
 
 function missingField(path) {
@@ -86,6 +94,8 @@ async function aggregateStats(Model, match) {
 
 export function createAffiliateService({
   Affiliate,
+  AffiliateClick = null,
+  AffiliatePayout = null,
   Ticket,
   InsuranceApplication,
   resolveCurrencyModel = () => null,
@@ -178,20 +188,93 @@ export function createAffiliateService({
     return affiliate;
   };
 
+  const findLinkedLabels = async (affiliate) => {
+    const linkedToAffiliate = {
+      $or: [{ affiliate: affiliate._id }, { affiliateId: affiliate.affiliateId }],
+    };
+    const labelled = [
+      [Ticket, 'tickets'],
+      [InsuranceApplication, 'insurance applications'],
+      [AffiliatePayout, 'payout records'],
+    ];
+    const labels = [];
+    for (const [Model, label] of labelled) {
+      if (!Model) continue;
+      if (await Model.exists(linkedToAffiliate)) labels.push(label);
+    }
+    return labels;
+  };
+
+  const linkedError = (labels) =>
+    new AppError(`Affiliate cannot be deleted while linked ${labels.join(' and ')} exist`, 400);
+
   const deleteAffiliateById = async (id) => {
     const affiliate = await getAffiliateById(id);
-    if (Ticket) {
-      const linkedTickets = await Ticket.countDocuments({ affiliate: affiliate._id });
-      if (linkedTickets > 0)
-        throw new AppError('Affiliate cannot be deleted while linked tickets exist', 400);
+
+    const wasActive = affiliate.isActive !== false;
+    await Affiliate.updateOne({ _id: affiliate._id }, { $set: { isActive: false } });
+
+    const restoreActiveFlag = async () => {
+      if (wasActive) await Affiliate.updateOne({ _id: affiliate._id }, { $set: { isActive: true } });
+    };
+
+    const linked = await findLinkedLabels(affiliate);
+    if (linked.length) {
+      await restoreActiveFlag();
+      throw linkedError(linked);
     }
-    if (InsuranceApplication) {
-      const linkedApplications = await InsuranceApplication.countDocuments({ affiliate: affiliate._id });
-      if (linkedApplications > 0)
-        throw new AppError('Affiliate cannot be deleted while linked insurance applications exist', 400);
+
+    const removed = await Affiliate.findByIdAndDelete(affiliate._id).lean();
+    if (!removed) throw new AppError('Affiliate not found', 404);
+
+    const linkedAfterDelete = await findLinkedLabels(affiliate);
+    if (linkedAfterDelete.length) {
+      await Affiliate.collection.insertOne(removed);
+      await restoreActiveFlag();
+      throw linkedError(linkedAfterDelete);
     }
-    await Affiliate.findByIdAndDelete(id);
+
+    if (AffiliateClick) await AffiliateClick.deleteMany({ affiliate: affiliate._id });
+
     return affiliate;
+  };
+
+  const recordClick = async (rawAffiliateId) => {
+    if (!AffiliateClick) return false;
+
+    const affiliateId = String(rawAffiliateId ?? '').trim();
+    if (!AFFILIATE_ID_PATTERN.test(affiliateId)) return false;
+
+    const affiliate = await Affiliate.findOne({ affiliateId, isActive: true })
+      .select('_id affiliateId')
+      .lean();
+    if (!affiliate) return false;
+
+    const filter = { affiliate: affiliate._id, date: utcDayStart(Date.now()) };
+
+    try {
+      await AffiliateClick.updateOne(
+        filter,
+        { $inc: { count: 1 }, $setOnInsert: { affiliateId: affiliate.affiliateId } },
+        { upsert: true },
+      );
+    } catch (err) {
+      if (err?.code !== 11000) throw err;
+      await AffiliateClick.updateOne(filter, { $inc: { count: 1 } });
+    }
+
+    return true;
+  };
+
+  const countClicks = async (affiliateObjectId, dateRange) => {
+    if (!AffiliateClick) return null;
+    const match = { affiliate: affiliateObjectId };
+    if (dateRange) match.date = dateRange;
+    const [row] = await AffiliateClick.aggregate([
+      { $match: match },
+      { $group: { _id: null, clicks: { $sum: '$count' } } },
+    ]);
+    return row?.clicks || 0;
   };
 
   const getAffiliateStatsById = async (id, query = {}) => {
@@ -215,6 +298,7 @@ export function createAffiliateService({
     }
 
     const baseCurrency = await resolveBaseCurrencyCode();
+    const clicks = await countClicks(affiliate._id, createdAtRange);
 
     const totalPaidRevenue = Number((
       (ticketStats?.baseRevenue || 0) + (insuranceStats?.baseRevenue || 0)
@@ -226,6 +310,10 @@ export function createAffiliateService({
       (ticketStats?.unconvertedPaid || 0) + (insuranceStats?.unconvertedPaid || 0);
     const uncommissionedPaid =
       (ticketStats?.uncommissionedPaid || 0) + (insuranceStats?.uncommissionedPaid || 0);
+
+    const paidConversions = (ticketStats?.paid || 0) + (insuranceStats?.paid || 0);
+    const conversionRate =
+      clicks > 0 ? Number(((paidConversions / clicks) * 100).toFixed(2)) : null;
 
     return {
       affiliateId: affiliate.affiliateId,
@@ -245,6 +333,8 @@ export function createAffiliateService({
         unpaidApplications: insuranceStats.unpaid,
         refundedApplications: insuranceStats.refunded,
       }),
+
+      ...(clicks !== null && { clicks, paidConversions, conversionRate }),
 
       paidRevenue: { currency: baseCurrency, amount: totalPaidRevenue },
       totalCommission: { currency: baseCurrency, amount: totalCommissionAmount },
@@ -312,6 +402,7 @@ export function createAffiliateService({
     getAffiliateById,
     updateAffiliateById,
     deleteAffiliateById,
+    recordClick,
     getAffiliateStatsById,
     getAffiliateTicketsById,
     getAffiliateApplicationsById,

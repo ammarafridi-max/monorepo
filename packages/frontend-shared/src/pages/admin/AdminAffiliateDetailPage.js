@@ -503,6 +503,24 @@ function AffiliateDetailContent() {
                 sub="Payment confirmed"
               />
             )}
+            {stats.clicks != null && (
+              <StatPill
+                label="Clicks"
+                value={stats.clicks.toLocaleString()}
+                sub="Tracked link visits"
+              />
+            )}
+            {stats.clicks != null && (
+              <StatPill
+                label="Conversion Rate"
+                value={stats.conversionRate == null ? '—' : `${stats.conversionRate}%`}
+                sub={
+                  stats.conversionRate == null
+                    ? 'No clicks recorded'
+                    : `${(stats.paidConversions ?? 0).toLocaleString()} paid of ${stats.clicks.toLocaleString()}`
+                }
+              />
+            )}
             <StatPill
               label="Commission Earned"
               value={statAmount(stats.totalCommission)}

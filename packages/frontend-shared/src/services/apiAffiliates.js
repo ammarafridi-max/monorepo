@@ -2,6 +2,18 @@ import { apiFetch } from './apiClient.js';
 
 const URL = '/api/affiliates';
 
+export function recordAffiliateClickApi(affiliateId) {
+  if (typeof window === 'undefined') return;
+  if (!/^\d{9}$/.test(String(affiliateId ?? ''))) return;
+
+  try {
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}${URL}/clicks/${affiliateId}`, {
+      method: 'POST',
+      keepalive: true,
+    }).catch(() => {});
+  } catch {}
+}
+
 export async function getAffiliatesApi(params = {}) {
   const queryString = new URLSearchParams(params).toString();
   const result = await apiFetch(`${URL}?${queryString}`);
