@@ -6,7 +6,7 @@ import Link from 'next/link';
 import {
   ArrowLeft, Loader2, AlertCircle, Pencil, Trash2, X,
   Handshake, BarChart2, Ticket, ShieldCheck, Mail,
-  ChevronLeft, ChevronRight, ExternalLink,
+  ChevronLeft, ChevronRight, ExternalLink, Wallet,
 } from 'lucide-react';
 import { useGetAffiliate } from '../../hooks/affiliates/useGetAffiliate';
 import { useGetAffiliateStats } from '../../hooks/affiliates/useGetAffiliateStats';
@@ -457,12 +457,20 @@ function AffiliateDetailContent() {
             </div>
           </div>
 
-          <button
-            onClick={() => setEditOpen(true)}
-            className="flex items-center gap-2 text-xs font-bold px-4 py-2.5 border border-gray-200 hover:border-primary-300 hover:text-primary-700 text-gray-600 rounded-xl transition"
-          >
-            <Pencil size={13} /> Edit
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/admin/affiliates/payouts?affiliateId=${affiliate.affiliateId}`}
+              className="flex items-center gap-2 text-xs font-bold px-4 py-2.5 border border-gray-200 hover:border-primary-300 hover:text-primary-700 text-gray-600 rounded-xl transition"
+            >
+              <Wallet size={13} /> Payouts
+            </Link>
+            <button
+              onClick={() => setEditOpen(true)}
+              className="flex items-center gap-2 text-xs font-bold px-4 py-2.5 border border-gray-200 hover:border-primary-300 hover:text-primary-700 text-gray-600 rounded-xl transition"
+            >
+              <Pencil size={13} /> Edit
+            </button>
+          </div>
         </div>
 
         {!isLoadingStats && stats && (

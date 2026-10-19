@@ -5,6 +5,11 @@ const REQUIRED = {
 };
 
 const REQUIRED_BY_JOB = {
+  'affiliate-payouts': {
+    backendUrl: 'string',
+    adminEmailEnv: 'string',
+    adminPasswordEnv: 'string',
+  },
   'blog-generate': {
     backendUrl: 'string',
     siteUrl: 'string',
@@ -22,6 +27,7 @@ const REQUIRED_BY_JOB = {
 };
 
 const OPTIONAL = {
+  jobs: 'array',
   citationDomains: 'array',
   allowedLinkPrefixes: 'array',
   forbiddenLinkPatterns: 'array',
@@ -51,8 +57,10 @@ export function validateTarget(target, { job = null } = {}) {
     else if (got !== want) errors.push(`${field} should be ${want}, got ${got}`);
   };
 
+  const participates = !Array.isArray(target.jobs) || !job || target.jobs.includes(job);
+
   for (const [field, want] of Object.entries(REQUIRED)) check(field, want);
-  if (job && REQUIRED_BY_JOB[job]) {
+  if (job && participates && REQUIRED_BY_JOB[job]) {
     for (const [field, want] of Object.entries(REQUIRED_BY_JOB[job])) check(field, want);
   }
   for (const [field, want] of Object.entries(OPTIONAL)) {

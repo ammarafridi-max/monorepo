@@ -14,7 +14,7 @@ Three things decide most of the money, so here they are up front:
 
 ## How to join
 
-Apply through {{BRAND_DOMAIN}}. We review applications by hand, so it is not instant. If we approve you, you get an affiliate account with a nine digit affiliate ID and your commission rate.
+Email us at {{BRAND_EMAIL}} telling us where you would promote us. We review applications by hand, so it is not instant. If we approve you, we set you up and send you your nine digit affiliate ID, your tracking link and your commission rate.
 
 We can decline an application without giving a reason. Being declined once does not stop you applying again later.
 
@@ -47,7 +47,7 @@ Cookies are per browser and per device. If someone clicks on their phone and buy
 
 ## What you earn
 
-Commission is a percentage of the order value. The rate is set per affiliate, and yours is shown in your affiliate dashboard.
+Commission is a percentage of the order value. The rate is set per affiliate, and we confirm yours in writing when you join.
 
 **Your rate is frozen onto each sale at the moment of payment.** If we change your rate later, commission you have already earned is unaffected. The new rate applies to sales made after the change.
 
@@ -70,10 +70,13 @@ If a refund lands after we have already paid you, we absorb it. We will not claw
 ## Getting paid
 
 - Payout periods are **calendar months**.
-- Payouts run **monthly on a fixed date** and cover the previous calendar month.
-- There is currently **no holding period**, so a sale is payable in the payout that follows the month it happened in. A sale on 3 March and a sale on 31 March are both in the March statement and both paid in the April run.
+- Payouts run on the **5th of each month** and cover the previous calendar month.
+- There is **no minimum payout**. Whatever you earned gets paid, even if it is one order.
+- There is **no holding period**, so a sale is payable in the payout that follows the month it happened in. A sale on 3 March and a sale on 31 March are both in the March statement and both paid on 5 April.
+- We pay by **bank transfer or PayPal**, whichever you prefer. You choose when you join and can change it by emailing us.
+- **We cover the transfer fee.** The amount that reaches you is the amount on your statement, not less.
 
-Keep your payment details current in your dashboard. We cannot pay a payout we have no valid details for, and anything that fails to send rolls into the next run.
+Keep your payment details current. We cannot pay a payout we have no valid details for, and anything that fails to send rolls into the next run.
 
 ## What is not allowed
 
@@ -97,7 +100,7 @@ Our attribution record is what we go on. It is the only record of who the click 
 
 ## Changes to rates and terms
 
-We can change commission rates or these terms. We will give you reasonable notice by email before a change takes effect, and changes are not applied backwards: sales already made keep the rate that was frozen onto them.
+We can change commission rates or these terms. We will give you **30 days notice by email** before a change takes effect, and changes are not applied backwards: sales already made keep the rate that was frozen onto them.
 
 If you do not like a change, you can leave. Commission already earned on valid, unrefunded orders is still paid in the normal run.
 
@@ -113,4 +116,4 @@ We hold your account and payment details so we can run the programme and pay you
 
 ## Talk to us
 
-Questions about a sale, a payout, or whether a promotion is allowed: email us at the address in your affiliate dashboard. Asking first is always cheaper than being deactivated afterwards.
+Questions about a sale, a payout, or whether a promotion is allowed: email us at {{BRAND_EMAIL}}. Asking first is always cheaper than being deactivated afterwards.

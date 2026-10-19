@@ -21,6 +21,8 @@ cd automations && node src/cli.mjs blog-generate --target travl --dry-run
 | `blog-schedule` | travl | manual | — |
 | `blog-schedule` | thedt | manual | — |
 | `pricing-sync` | — | Mon + Thu 05:00 UTC | `pricing-sync-emirateslimo.yml` |
+| `affiliate-payouts` | dt365 | 5th of the month 05:00 UTC | `affiliate-payouts-dt365.yml` |
+| `affiliate-payouts` | mdt | 5th of the month 05:00 UTC | `affiliate-payouts-mdt.yml` |
 
 Travl's cron was off between 2026-07-19 and 2026-09-09, covered by a backlog that
 ran out on 2026-08-28. It is back on against an insurance-only topic list running
@@ -39,6 +41,12 @@ in USD, or names a sister brand.
 already have a post for, so the file is a queue and `date` is the plan, not a
 selector: a failed day is retried the next morning rather than skipped. Delete a
 topic you no longer want, or the queue will write it before anything after it.
+
+`affiliate-payouts` generates the previous calendar month's payouts, computed in
+UTC, for the two brands running an affiliate programme. `--period YYYY-MM`
+backfills a month that was missed. Generating is idempotent, so a retry or a
+double cron fire creates no duplicates and re-claims nothing. The job never marks
+a payout paid: recording payment stays a deliberate action in the admin UI.
 
 Both blog targets carry the same machinery: a format per length tier, an official
 citation allowlist, forbidden link patterns, content checks, and a per-topic
@@ -60,7 +68,8 @@ targets/<key>/         config.mjs + topics.json + site-context.md
 1. Add a folder under `jobs/` exporting `run({ target, dryRun })`.
 2. Add an entry to `JOBS` in `src/registry.mjs`, listing the env it needs.
 3. If it is per-brand, add `targets/<key>/config.mjs` (plus `topics.json` and
-   `site-context.md` for blog jobs).
+   `site-context.md` for blog jobs). List the jobs it is for in `jobs` if it is
+   not a target for every per-brand job.
 4. Add a caller workflow — copy `blog-visawadi.yml`, change the cron and the
    `job`/`target` inputs. Do not copy the body; it lives in `_automation.yml`.
 
@@ -84,6 +93,7 @@ Set as repository secrets; the reusable workflow passes them all through.
 - `<TARGET>_ADMIN_EMAIL` / `<TARGET>_ADMIN_PASSWORD` — the target's admin login
 - `<TARGET>_COOKIE` — `blog-schedule` only, an admin session cookie (that job also
   needs `blogSchedule` in the target's config: the first slot and any slugs to skip)
+- `DT365_ADMIN_EMAIL` / `DT365_ADMIN_PASSWORD`, `MDT_ADMIN_EMAIL` / `MDT_ADMIN_PASSWORD` — affiliate payouts
 - `MONGO_URI`, `PRICING_SHEET_ID`, `PRICING_SHEET_TAB`, `GOOGLE_SERVICE_ACCOUNT_JSON` — pricing sync
 
 The model for blog generation defaults to `claude-sonnet-4-6` and can be

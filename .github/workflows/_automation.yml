@@ -60,6 +60,10 @@ jobs:
           VISAWADI_ADMIN_EMAIL: ${{ secrets.VISAWADI_ADMIN_EMAIL }}
           VISAWADI_ADMIN_PASSWORD: ${{ secrets.VISAWADI_ADMIN_PASSWORD }}
           VISAWADI_COOKIE: ${{ secrets.VISAWADI_COOKIE }}
+          DT365_ADMIN_EMAIL: ${{ secrets.DT365_ADMIN_EMAIL }}
+          DT365_ADMIN_PASSWORD: ${{ secrets.DT365_ADMIN_PASSWORD }}
+          MDT_ADMIN_EMAIL: ${{ secrets.MDT_ADMIN_EMAIL }}
+          MDT_ADMIN_PASSWORD: ${{ secrets.MDT_ADMIN_PASSWORD }}
           MONGO_URI: ${{ secrets.MONGO_URI }}
           PRICING_SHEET_ID: ${{ secrets.PRICING_SHEET_ID }}
           PRICING_SHEET_TAB: ${{ secrets.PRICING_SHEET_TAB }}

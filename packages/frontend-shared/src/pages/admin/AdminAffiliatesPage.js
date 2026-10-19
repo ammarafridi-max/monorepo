@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useState } from 'react';
-import { Handshake, Plus, Pencil, Trash2, X, Loader2, ChevronLeft, ChevronRight, Eye, ArrowUpDown } from 'lucide-react';
+import { Handshake, Plus, Pencil, Trash2, X, Loader2, ChevronLeft, ChevronRight, Eye, ArrowUpDown, Wallet } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useGetAffiliates } from '../../hooks/affiliates/useGetAffiliates';
@@ -200,11 +200,19 @@ function AffiliatesContent() {
 
       <div className="max-w-7xl mx-auto space-y-5">
 
-        <div>
-          <h2 className="text-2xl font-extrabold text-gray-900">Affiliates</h2>
-          <p className="text-sm text-gray-500 mt-0.5">
-            {pagination?.totalDocs != null ? `${pagination.totalDocs} affiliate${pagination.totalDocs !== 1 ? 's' : ''}` : 'Manage affiliate partners'}
-          </p>
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <h2 className="text-2xl font-extrabold text-gray-900">Affiliates</h2>
+            <p className="text-sm text-gray-500 mt-0.5">
+              {pagination?.totalDocs != null ? `${pagination.totalDocs} affiliate${pagination.totalDocs !== 1 ? 's' : ''}` : 'Manage affiliate partners'}
+            </p>
+          </div>
+          <Link
+            href="/admin/affiliates/payouts"
+            className="inline-flex items-center gap-2 text-xs font-bold px-4 py-2.5 border border-gray-200 hover:border-primary-300 hover:text-primary-700 text-gray-600 rounded-xl transition shrink-0"
+          >
+            <Wallet size={13} /> Payouts
+          </Link>
         </div>
 
         <AdminFab onClick={() => setModal('new')} label="New affiliate" />

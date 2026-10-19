@@ -28,10 +28,19 @@ jobs:
 
       # No credentials: a dry run must stay runnable without them, which is what
       # makes this check meaningful on a fork PR.
-      - name: Dry-run every blog target
+      - name: Dry-run every target against the jobs it declares
         working-directory: automations
         run: |
-          for t in $(node -e "import('./src/registry.mjs').then(m => console.log(m.listTargets().join(' ')))"); do
-            echo "--- $t"
-            node src/cli.mjs blog-generate --target "$t" --dry-run > /dev/null
-          done
+          node --input-type=module -e '
+            const { listTargets, loadTarget } = await import("./src/registry.mjs");
+            for (const key of listTargets()) {
+              const t = await loadTarget(key);
+              const jobs = Array.isArray(t.jobs) ? t.jobs : ["blog-generate"];
+              for (const j of jobs) console.log(`${key} ${j}`);
+            }
+          ' > combos.txt
+          while read -r t j; do
+            echo "--- $t / $j"
+            node src/cli.mjs "$j" --target "$t" --dry-run > /dev/null
+          done < combos.txt
+          rm -f combos.txt

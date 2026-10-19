@@ -56,3 +56,46 @@ export async function getAffiliateApplicationsApi(id, params = {}) {
   const queryString = new URLSearchParams(params).toString();
   return await apiFetch(`${URL}/${id}/applications?${queryString}`);
 }
+
+export async function getAffiliatePayoutsApi(params = {}) {
+  const clean = Object.fromEntries(
+    Object.entries(params).filter(([, value]) => value !== undefined && value !== null && value !== ''),
+  );
+  const queryString = new URLSearchParams(clean).toString();
+  const result = await apiFetch(`${URL}/payouts${queryString ? `?${queryString}` : ''}`);
+
+  return {
+    payouts: result?.payouts || [],
+    pagination: result?.pagination || null,
+  };
+}
+
+export async function getAffiliatePayoutApi(id) {
+  return await apiFetch(`${URL}/payouts/${id}`);
+}
+
+export async function generateAffiliatePayoutsApi(payload) {
+  return await apiFetch(`${URL}/payouts`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function markAffiliatePayoutPaidApi(id, payload) {
+  return await apiFetch(`${URL}/payouts/${id}/paid`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function voidAffiliatePayoutApi(id) {
+  return await apiFetch(`${URL}/payouts/${id}/void`, {
+    method: 'PATCH',
+  });
+}

@@ -8,6 +8,13 @@ export const TARGETS_DIR = join(HERE, '..', 'targets');
 const JOBS_DIR = join(HERE, '..', 'jobs');
 
 export const JOBS = {
+  'affiliate-payouts': {
+    describe: 'Generate the previous calendar month\'s affiliate payouts (never marks them paid)',
+    module: join(JOBS_DIR, 'affiliate-payouts', 'index.mjs'),
+    needsTarget: true,
+    env: [],
+    dryRunEnv: [],
+  },
   'blog-generate': {
     describe: 'Generate and publish one blog post from the target\'s topic schedule',
     module: join(JOBS_DIR, 'blog-generate', 'index.mjs'),

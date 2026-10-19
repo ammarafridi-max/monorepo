@@ -74,6 +74,11 @@ try {
       throw new Error(`Job "${job}" needs --target <key>. Available: ${listTargets().join(', ')}`);
     }
     target = await loadTarget(key, { job });
+    if (Array.isArray(target.jobs) && !target.jobs.includes(job)) {
+      throw new Error(
+        `Target "${key}" does not run "${job}". It declares: ${target.jobs.join(', ')}`,
+      );
+    }
   }
   assertEnv(job, target, { dryRun });
 } catch (err) {

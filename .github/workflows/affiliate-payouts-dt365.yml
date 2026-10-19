@@ -1,0 +1,29 @@
+name: Dummy Ticket 365 Monthly Affiliate Payouts
+
+on:
+  schedule:
+    - cron: '0 5 5 * *' # 09:00 Asia/Dubai on the 5th
+  workflow_dispatch:
+    inputs:
+      period:
+        description: Month to generate as YYYY-MM, blank for the previous month
+        type: string
+        default: ''
+      dry_run:
+        description: Resolve and print without generating
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  payouts:
+    uses: ./.github/workflows/_automation.yml
+    secrets: inherit
+    with:
+      job: affiliate-payouts
+      target: dt365
+      dry_run: ${{ inputs.dry_run || false }}
+      args: ${{ inputs.period && format('--period {0}', inputs.period) || '' }}
