@@ -3,6 +3,7 @@ import { AppError } from "@travel-suite/utils";
 import {
   createAdminUserSchema,
   updateAdminUserSchema,
+  updateMyProfileSchema,
   adminSetPasswordSchema,
 } from "./validators.js";
 
@@ -26,7 +27,7 @@ export function createAdminUsersRouterFromParts({ controller, auth }) {
   router.get("/authors/:slug", controller.getPublicAuthor);
 
   router.get("/me", protect, controller.getMe);
-  router.patch("/me", protect, controller.updateMe);
+  router.patch("/me", protect, validate(updateMyProfileSchema), controller.updateMe);
   router.patch("/me/password", protect, controller.updateMyPassword);
 
   router.use(protect, restrictTo("admin"));

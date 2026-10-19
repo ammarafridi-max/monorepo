@@ -16,6 +16,7 @@ const ROLE_LABELS = {
   admin: 'Admin',
   agent: 'Agent',
   'blog-manager': 'Blog Manager',
+  support: 'Support',
 };
 
 export const TRAVEL_SEARCH_CATEGORIES = [

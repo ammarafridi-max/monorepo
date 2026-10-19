@@ -108,9 +108,14 @@ export function createAdminUsersService({ AdminUser }) {
     const nextRole = normalized.role ?? existingUser.role;
     const nextStatus = normalized.status ?? existingUser.status;
 
-    if (currentUser && String(existingUser._id) === String(currentUser._id)) {
-      if (nextStatus === 'INACTIVE') throw new AppError('You cannot deactivate your own admin account.', 400);
-      if (nextRole !== 'admin') throw new AppError('You cannot remove your own admin role.', 400);
+    const isSelfEdit = Boolean(currentUser) && String(existingUser._id) === String(currentUser._id);
+    if (isSelfEdit) {
+      if (nextStatus !== existingUser.status) {
+        throw new AppError('You cannot change the status of your own account.', 400);
+      }
+      if (nextRole !== existingUser.role) {
+        throw new AppError('You cannot change your own role.', 400);
+      }
     }
 
     await ensureEmailIsUnique(AdminUser, normalized.email, existingUser._id);
@@ -121,10 +126,12 @@ export function createAdminUsersService({ AdminUser }) {
       nextStatus,
     });
 
-    return AdminUser.findOneAndUpdate({ username: existingUser.username }, normalized, {
+    const updated = await AdminUser.findByIdAndUpdate(existingUser._id, normalized, {
       runValidators: true,
       new: true,
     });
+    if (!updated) throw new AppError('Admin user not found.', 404);
+    return updated;
   };
 
   const deleteAdminUserByUsername = async (username, currentUser) => {
@@ -143,8 +150,9 @@ export function createAdminUsersService({ AdminUser }) {
       nextStatus: 'INACTIVE',
     });
 
-    await AdminUser.findOneAndDelete({ username });
-    return user;
+    const deleted = await AdminUser.findByIdAndDelete(user._id);
+    if (!deleted) throw new AppError('Admin user not found with that username.', 404);
+    return deleted;
   };
 
   const updateMyPassword = async (userId, { currentPassword, password, passwordConfirm }) => {

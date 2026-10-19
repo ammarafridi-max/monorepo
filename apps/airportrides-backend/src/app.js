@@ -15,6 +15,8 @@ import indexRouter, { stripeWebhookHandler } from "./routes/index.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 
+app.set("trust proxy", 1);
+
 app.use((req, res, next) => {
   req.id = req.headers["x-request-id"] || randomUUID();
   res.setHeader("x-request-id", req.id);

@@ -47,8 +47,7 @@ export function createAdminUsersController({ service }) {
   };
 
   const updateMe = catchAsync(async (req, res) => {
-    const { name, email } = req.body;
-    const user = await service.updateAdminUserByUsername(req.user.username, { name, email }, req.user);
+    const user = await service.updateAdminUserByUsername(req.user.username, req.body, req.user);
     res.status(200).json({ status: 'success', data: withoutPassword(user) });
   });
 

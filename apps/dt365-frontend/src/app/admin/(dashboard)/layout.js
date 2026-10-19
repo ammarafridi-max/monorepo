@@ -62,7 +62,7 @@ const nav = [
   {
     section: 'Settings',
     items: [
-      { label: 'My Account', href: '/admin/account', mobile: 4, mobileLabel: 'Account', icon: 'UserCircle', roles: ['admin', 'agent', 'blog-manager'] },
+      { label: 'My Account', href: '/admin/account', mobile: 4, mobileLabel: 'Account', icon: 'UserCircle', roles: ['admin', 'agent', 'blog-manager', 'support'] },
     ],
   },
 ];

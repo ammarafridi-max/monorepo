@@ -136,6 +136,24 @@ export const adminSetPasswordSchema = (body = {}) => {
   return { password, passwordConfirm };
 };
 
+export const updateMyProfileSchema = (body) => {
+  const source = body && typeof body === 'object' && !Array.isArray(body) ? body : {};
+  const payload = {};
+
+  if (Object.prototype.hasOwnProperty.call(source, 'name')) payload.name = normalizeName(source.name);
+  if (Object.prototype.hasOwnProperty.call(source, 'email')) payload.email = normalizeEmail(source.email);
+  if (Object.prototype.hasOwnProperty.call(source, 'authorProfile')) {
+    const profile = normalizeAuthorProfile(source.authorProfile);
+    for (const [key, val] of Object.entries(profile)) payload[`authorProfile.${key}`] = val;
+  }
+
+  if (!Object.keys(payload).length) {
+    throw new AppError('Please provide a name, email, or author profile field to update', 400);
+  }
+
+  return payload;
+};
+
 export const updateAdminUserSchema = (body = {}) => {
   const payload = {};
 

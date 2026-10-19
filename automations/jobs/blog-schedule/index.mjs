@@ -32,7 +32,7 @@ export async function run({ target, dryRun }) {
   COOKIE = process.env[cookieEnv] || '';
   DRY = dryRun || !process.argv.includes('--apply');
 
-  if (!COOKIE) throw new Error(`${cookieEnv} not set`);
+  if (!DRY && !COOKIE) throw new Error(`${cookieEnv} not set`);
 
   const settings = target.blogSchedule ?? {};
   const startMs = Date.parse(settings.start ?? '');
@@ -44,6 +44,13 @@ export async function run({ target, dryRun }) {
   const exclude = new Set(settings.excludeSlugs ?? []);
 
   console.log(`\n=== schedule-drafts [${DRY ? 'DRY RUN' : 'APPLY'}] ===\n`);
+
+  if (!COOKIE) {
+    console.log(`${cookieEnv} not set: skipping the admin read, nothing to plan.`);
+    console.log(`Window would start ${gst(startMs)}`);
+    console.log('\n=== WOULD SCHEDULE 0, skipped 0 ===');
+    return;
+  }
 
   const [drafts, scheduled] = await Promise.all([fetchAdmin('draft'), fetchAdmin('scheduled')]);
   const basis = [...drafts, ...scheduled]

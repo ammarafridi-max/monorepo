@@ -20,6 +20,7 @@ const ROLE_LABELS = {
   admin: 'Admin',
   agent: 'Agent',
   'blog-manager': 'Blog Manager',
+  support: 'Support',
 };
 
 function Tab({ icon, label, href, active, onClick, count = 0 }) {
