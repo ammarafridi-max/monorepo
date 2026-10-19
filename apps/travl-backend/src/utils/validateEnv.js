@@ -6,7 +6,6 @@ const isProduction = config.nodeEnv === "production";
 const required = {
   mongoUri: "MONGO_URI",
   jwtSecret: "JWT_SECRET",
-  userJwtSecret: "USER_JWT_SECRET (or JWT_SECRET)",
 };
 
 if (isProduction) {

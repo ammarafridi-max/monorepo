@@ -63,10 +63,6 @@ export default {
     apiSecret: process.env.CLOUDINARY_API_SECRET,
   },
 
-  userJwtSecret: process.env.USER_JWT_SECRET ?? process.env.JWT_SECRET,
-  userJwtExpiresIn: process.env.USER_JWT_EXPIRES_IN ?? "30d",
-  userCookieExpiresInDays: parseNumber(process.env.USER_COOKIE_EXPIRES_IN, 30),
-
   enableReminderCron: ['1', 'true', 'yes'].includes(String(process.env.ENABLE_REMINDER_CRON ?? '').toLowerCase()),
 
   anthropicApiKey: process.env.ANTHROPIC_API_KEY,
