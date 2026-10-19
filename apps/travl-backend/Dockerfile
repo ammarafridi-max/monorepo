@@ -21,6 +21,7 @@ WORKDIR /repo
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 
 # Every package the backend pulls in (direct + transitive workspace deps)
+COPY packages/domains/assistant/package.json         packages/domains/assistant/package.json
 COPY packages/domains/auth/package.json            packages/domains/auth/package.json
 COPY packages/domains/admin-users/package.json     packages/domains/admin-users/package.json
 COPY packages/domains/affiliates/package.json      packages/domains/affiliates/package.json

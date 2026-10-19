@@ -26,6 +26,7 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 # manifest is present at install time, so a workspace package missing from here
 # builds fine and then dies at boot with ERR_MODULE_NOT_FOUND on mongoose. Add a
 # line whenever the backend gains a workspace dependency.
+COPY packages/domains/assistant/package.json         packages/domains/assistant/package.json
 COPY packages/domains/auth/package.json            packages/domains/auth/package.json
 COPY packages/domains/admin-users/package.json     packages/domains/admin-users/package.json
 COPY packages/domains/blog/package.json            packages/domains/blog/package.json
