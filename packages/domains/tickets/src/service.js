@@ -415,6 +415,44 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     }
   };
 
+  const buildPaymentSnapshot = async ({ existing, currency, amount, clearAffiliate }) => {
+    const snapshot = {};
+
+    if (existing.amountPaidBase?.amount == null) {
+      const base = await currencyService.convertToBase({ amount, sourceCode: currency });
+      if (base) {
+        snapshot.amountPaidBase = {
+          currency: base.currencyCode,
+          amount: base.amount,
+          rate: base.rate,
+        };
+      }
+    }
+
+    if (clearAffiliate) {
+      snapshot.affiliateCommissionPercent = null;
+      snapshot.affiliateCommission = { currency: null, amount: null };
+      return snapshot;
+    }
+
+    if (!existing.affiliate || existing.affiliateCommission?.amount != null) return snapshot;
+
+    const affiliate = await Affiliate.findById(existing.affiliate).select('commissionPercent').lean();
+    const percent = Number(affiliate?.commissionPercent);
+    if (!Number.isFinite(percent)) return snapshot;
+
+    const baseCurrency = snapshot.amountPaidBase?.currency ?? existing.amountPaidBase?.currency;
+    const baseAmount = snapshot.amountPaidBase?.amount ?? existing.amountPaidBase?.amount;
+    if (baseAmount == null || !baseCurrency) return snapshot;
+
+    snapshot.affiliateCommissionPercent = percent;
+    snapshot.affiliateCommission = {
+      currency: baseCurrency,
+      amount: Number(((baseAmount * percent) / 100).toFixed(2)),
+    };
+    return snapshot;
+  };
+
   const handleStripeSuccess = async (session) => {
     if (session.payment_status !== 'paid') return;
 
@@ -450,6 +488,13 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
 
     await Ticket.updateOne({ sessionId, paidAt: null }, { $set: { paidAt: new Date() } });
 
+    const paymentSnapshot = await buildPaymentSnapshot({
+      existing,
+      currency,
+      amount,
+      clearAffiliate: shouldClearAffiliate,
+    });
+
     const ticket = await Ticket.findOneAndUpdate(
       { sessionId },
       {
@@ -458,6 +503,7 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
           amountPaid: { currency, amount },
           transactionId,
           orderStatus: 'PENDING',
+          ...paymentSnapshot,
           ...(shouldClearAffiliate ? { affiliate: null, affiliateId: null, affiliateCapturedAt: null } : {}),
         },
       },
@@ -602,6 +648,13 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
 
     await Ticket.updateOne({ sessionId, paidAt: null }, { $set: { paidAt: new Date() } });
 
+    const paymentSnapshot = await buildPaymentSnapshot({
+      existing,
+      currency,
+      amount,
+      clearAffiliate: shouldClearAffiliate,
+    });
+
     const ticket = await Ticket.findOneAndUpdate(
       { sessionId },
       {
@@ -611,6 +664,7 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
           amountPaid: { currency, amount },
           transactionId,
           orderStatus: 'PENDING',
+          ...paymentSnapshot,
           ...(shouldClearAffiliate ? { affiliate: null, affiliateId: null, affiliateCapturedAt: null } : {}),
         },
       },
@@ -666,7 +720,7 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
 
     await Ticket.findOneAndUpdate(
       { transactionId },
-      { $set: { paymentStatus: 'REFUNDED', orderStatus: 'REFUNDED' } },
+      { $set: { paymentStatus: 'REFUNDED', orderStatus: 'REFUNDED', refundedAt: new Date() } },
       { new: true },
     );
 

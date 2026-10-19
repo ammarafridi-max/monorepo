@@ -213,7 +213,16 @@ if (liteapiConfigured) {
   logger.warn("[hotel-bookings] LITEAPI_API_KEY not configured — hotel reservations disabled");
 }
 
-router.use("/affiliates", createAffiliatesRouter({ db, auth, TicketModel }));
+router.use(
+  "/affiliates",
+  createAffiliatesRouter({
+    db,
+    auth,
+    TicketModel,
+    notifications,
+    trackingBaseUrl: config.frontendUrl,
+  }),
+);
 
 const { router: openaiAdsRouter } = createOpenAIAdsRouter({
   adsClient: createOpenAIAdsClient({ apiKey: config.openai.adsApiKey, logger }),

@@ -11,6 +11,10 @@ import {
 } from './templates/hotel-booking.js';
 import { renderVisaLeadTemplate, renderVisaLeadCustomerTemplate } from './templates/visa-lead.js';
 import {
+  renderAffiliateWelcomeTemplate,
+  renderAffiliateStatementTemplate,
+} from './templates/affiliate.js';
+import {
   renderMagicLink,
   renderApplicationAssigned,
   renderDocumentRejected,
@@ -278,6 +282,46 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
       return true;
     } catch (err) {
       log('[notifications] sendVisaLeadToCustomer failed', { email: data.email, err: err.message });
+      return false;
+    }
+  }
+
+  async function sendAffiliateWelcome(data) {
+    try {
+      if (!data?.email) return false;
+      await sendEmail({
+        email: data.email,
+        name: data.name || data.email,
+        subject: brand.name
+          ? `You're set up as a ${brand.name} affiliate`
+          : "You're set up as an affiliate",
+        htmlContent: renderAffiliateWelcomeTemplate({ brand, ...data }),
+      });
+      return true;
+    } catch (err) {
+      log('[notifications] sendAffiliateWelcome failed', {
+        affiliateId: data?.affiliateId,
+        err: err.message,
+      });
+      return false;
+    }
+  }
+
+  async function sendAffiliatePayoutStatement(data) {
+    try {
+      if (!data?.email) return false;
+      await sendEmail({
+        email: data.email,
+        name: data.name || data.email,
+        subject: `Your affiliate statement${data.periodLabel ? ` for ${data.periodLabel}` : ''}`,
+        htmlContent: renderAffiliateStatementTemplate({ brand, ...data }),
+      });
+      return true;
+    } catch (err) {
+      log('[notifications] sendAffiliatePayoutStatement failed', {
+        affiliateId: data?.affiliateId,
+        err: err.message,
+      });
       return false;
     }
   }
@@ -583,6 +627,8 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
     sendContactFormToAdmin,
     sendVisaLeadToAdmin,
     sendVisaLeadToCustomer,
+    sendAffiliateWelcome,
+    sendAffiliatePayoutStatement,
     sendMagicLink,
     sendApplicationAssigned,
     sendDocumentRejected,

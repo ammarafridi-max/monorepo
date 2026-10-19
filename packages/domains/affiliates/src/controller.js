@@ -1,5 +1,37 @@
 import { catchAsync } from '@travel-suite/utils';
 
+export function createAffiliatePayoutController({ service }) {
+  const generatePayouts = catchAsync(async (req, res) => {
+    const result = await service.generateForPeriod({ period: req.body?.period });
+    res.status(201).json({ status: 'success', message: 'Affiliate payouts generated', data: result });
+  });
+
+  const getPayouts = catchAsync(async (req, res) => {
+    const { payouts, pagination } = await service.getPayouts(req.query);
+    res.json({ status: 'success', data: { payouts, pagination } });
+  });
+
+  const getPayoutById = catchAsync(async (req, res) => {
+    const payout = await service.getPayoutById(req.params.id);
+    res.json({ status: 'success', data: payout });
+  });
+
+  const markPayoutPaid = catchAsync(async (req, res) => {
+    const payout = await service.markPayoutPaid(req.params.id, {
+      reference: req.body?.reference,
+      note: req.body?.note,
+    });
+    res.json({ status: 'success', message: 'Payout marked paid', data: payout });
+  });
+
+  const voidPayout = catchAsync(async (req, res) => {
+    const payout = await service.voidPayout(req.params.id);
+    res.json({ status: 'success', message: 'Payout voided', data: payout });
+  });
+
+  return { generatePayouts, getPayouts, getPayoutById, markPayoutPaid, voidPayout };
+}
+
 export function createAffiliateController({ service }) {
   const getAffiliates = catchAsync(async (req, res) => {
     const { affiliates, pagination } = await service.getAffiliates(req.query);
@@ -41,11 +73,6 @@ export function createAffiliateController({ service }) {
     res.json({ status: 'success', data: { applications, pagination } });
   });
 
-  const seedAffiliates = catchAsync(async (req, res) => {
-    const affiliates = await service.seedAffiliates();
-    res.status(201).json({ status: 'success', message: 'Affiliate test data seeded successfully', data: affiliates });
-  });
-
   return {
     getAffiliates,
     getAffiliateById,
@@ -55,6 +82,5 @@ export function createAffiliateController({ service }) {
     getAffiliateStatsById,
     getAffiliateTicketsById,
     getAffiliateApplicationsById,
-    seedAffiliates,
   };
 }

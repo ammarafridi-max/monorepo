@@ -42,15 +42,6 @@ export async function deleteAffiliateApi(id) {
   });
 }
 
-export async function seedAffiliatesApi() {
-  return await apiFetch(`${URL}/seed`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-}
-
 export async function getAffiliateStatsApi(id, params = {}) {
   const queryString = new URLSearchParams(params).toString();
   return await apiFetch(`${URL}/${id}/stats${queryString ? `?${queryString}` : ''}`);

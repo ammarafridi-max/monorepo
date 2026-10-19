@@ -32,13 +32,19 @@ function buildCreatedAtRange(query = {}) {
   const range = {};
   if (query.startDate) {
     const start = new Date(query.startDate);
-    if (!Number.isNaN(start.getTime())) { start.setHours(0, 0, 0, 0); range.$gte = start; }
+    if (!Number.isNaN(start.getTime())) { start.setUTCHours(0, 0, 0, 0); range.$gte = start; }
   }
   if (query.endDate) {
     const end = new Date(query.endDate);
-    if (!Number.isNaN(end.getTime())) { end.setHours(23, 59, 59, 999); range.$lte = end; }
+    if (!Number.isNaN(end.getTime())) { end.setUTCHours(23, 59, 59, 999); range.$lte = end; }
   }
   return Object.keys(range).length ? range : null;
+}
+
+const IS_PAID = { $eq: ['$paymentStatus', 'PAID'] };
+
+function missingField(path) {
+  return { $eq: [{ $ifNull: [path, null] }, null] };
 }
 
 async function aggregateStats(Model, match) {
@@ -48,10 +54,20 @@ async function aggregateStats(Model, match) {
       $group: {
         _id: null,
         total: { $sum: 1 },
-        paid: { $sum: { $cond: [{ $eq: ['$paymentStatus', 'PAID'] }, 1, 0] } },
+        paid: { $sum: { $cond: [IS_PAID, 1, 0] } },
         unpaid: { $sum: { $cond: [{ $eq: ['$paymentStatus', 'UNPAID'] }, 1, 0] } },
-        paidRevenue: {
-          $sum: { $cond: [{ $eq: ['$paymentStatus', 'PAID'] }, { $ifNull: ['$amountPaid.amount', 0] }, 0] },
+        refunded: { $sum: { $cond: [{ $eq: ['$paymentStatus', 'REFUNDED'] }, 1, 0] } },
+        baseRevenue: {
+          $sum: { $cond: [IS_PAID, { $ifNull: ['$amountPaidBase.amount', 0] }, 0] },
+        },
+        commission: {
+          $sum: { $cond: [IS_PAID, { $ifNull: ['$affiliateCommission.amount', 0] }, 0] },
+        },
+        unconvertedPaid: {
+          $sum: { $cond: [{ $and: [IS_PAID, missingField('$amountPaidBase.amount')] }, 1, 0] },
+        },
+        uncommissionedPaid: {
+          $sum: { $cond: [{ $and: [IS_PAID, missingField('$affiliateCommission.amount')] }, 1, 0] },
         },
       },
     },
@@ -60,11 +76,55 @@ async function aggregateStats(Model, match) {
     total: summary?.total || 0,
     paid: summary?.paid || 0,
     unpaid: summary?.unpaid || 0,
-    paidRevenue: summary?.paidRevenue || 0,
+    refunded: summary?.refunded || 0,
+    baseRevenue: summary?.baseRevenue || 0,
+    commission: summary?.commission || 0,
+    unconvertedPaid: summary?.unconvertedPaid || 0,
+    uncommissionedPaid: summary?.uncommissionedPaid || 0,
   };
 }
 
-export function createAffiliateService({ Affiliate, Ticket, InsuranceApplication }) {
+export function createAffiliateService({
+  Affiliate,
+  Ticket,
+  InsuranceApplication,
+  resolveCurrencyModel = () => null,
+  notifications = null,
+  trackingBaseUrl = null,
+  logger = null,
+}) {
+  const logFailure = logger?.error?.bind(logger) ?? console.error;
+
+  const buildTrackingLink = (affiliateId) => {
+    if (!trackingBaseUrl || !affiliateId) return null;
+    return `${String(trackingBaseUrl).replace(/\/+$/, '')}/?affId=${affiliateId}`;
+  };
+
+  const sendWelcomeEmail = async (affiliate) => {
+    if (!notifications?.sendAffiliateWelcome || !affiliate?.email) return;
+    try {
+      await notifications.sendAffiliateWelcome({
+        email: affiliate.email,
+        name: affiliate.name,
+        affiliateId: affiliate.affiliateId,
+        commissionPercent: affiliate.commissionPercent,
+        trackingLink: buildTrackingLink(affiliate.affiliateId),
+      });
+    } catch (err) {
+      logFailure('[affiliates] welcome email failed', {
+        affiliateId: affiliate.affiliateId,
+        err: err.message,
+      });
+    }
+  };
+
+  const resolveBaseCurrencyCode = async () => {
+    const Currency = resolveCurrencyModel();
+    if (!Currency) return null;
+    const base = await Currency.findOne({ isBaseCurrency: true }).select('code').lean();
+    return base?.code ?? null;
+  };
+
   const createAffiliate = async (payload) => {
     if (Object.prototype.hasOwnProperty.call(payload, 'affiliateId'))
       throw new AppError('affiliateId is auto-generated and cannot be provided manually', 400);
@@ -76,7 +136,9 @@ export function createAffiliateService({ Affiliate, Ticket, InsuranceApplication
       throw new AppError('Could not generate a unique affiliate ID', 500);
     }
 
-    return Affiliate.create({ ...payload, affiliateId });
+    const affiliate = await Affiliate.create({ ...payload, affiliateId });
+    await sendWelcomeEmail(affiliate);
+    return affiliate;
   };
 
   const getAffiliates = async (query = {}) => {
@@ -152,12 +214,18 @@ export function createAffiliateService({ Affiliate, Ticket, InsuranceApplication
       insuranceStats = await aggregateStats(InsuranceApplication, match);
     }
 
+    const baseCurrency = await resolveBaseCurrencyCode();
+
     const totalPaidRevenue = Number((
-      (ticketStats?.paidRevenue || 0) + (insuranceStats?.paidRevenue || 0)
+      (ticketStats?.baseRevenue || 0) + (insuranceStats?.baseRevenue || 0)
     ).toFixed(2));
-    const totalCommissionAmount = Number(
-      ((totalPaidRevenue * Number(affiliate.commissionPercent || 0)) / 100).toFixed(2),
-    );
+    const totalCommissionAmount = Number((
+      (ticketStats?.commission || 0) + (insuranceStats?.commission || 0)
+    ).toFixed(2));
+    const unconvertedPaid =
+      (ticketStats?.unconvertedPaid || 0) + (insuranceStats?.unconvertedPaid || 0);
+    const uncommissionedPaid =
+      (ticketStats?.uncommissionedPaid || 0) + (insuranceStats?.uncommissionedPaid || 0);
 
     return {
       affiliateId: affiliate.affiliateId,
@@ -168,16 +236,19 @@ export function createAffiliateService({ Affiliate, Ticket, InsuranceApplication
         totalTickets: ticketStats.total,
         paidTickets: ticketStats.paid,
         unpaidTickets: ticketStats.unpaid,
+        refundedTickets: ticketStats.refunded,
       }),
 
       ...(insuranceStats !== null && {
         totalApplications: insuranceStats.total,
         paidApplications: insuranceStats.paid,
         unpaidApplications: insuranceStats.unpaid,
+        refundedApplications: insuranceStats.refunded,
       }),
 
-      paidRevenue: { currency: 'AED', amount: totalPaidRevenue },
-      totalCommission: { currency: 'AED', amount: totalCommissionAmount },
+      paidRevenue: { currency: baseCurrency, amount: totalPaidRevenue },
+      totalCommission: { currency: baseCurrency, amount: totalCommissionAmount },
+      excluded: { unconvertedPaid, uncommissionedPaid },
     };
   };
 
@@ -200,7 +271,7 @@ export function createAffiliateService({ Affiliate, Ticket, InsuranceApplication
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
-      .select('sessionId passengers email paymentStatus orderStatus amountPaid totalAmount from to departureDate returnDate createdAt');
+      .select('sessionId passengers email paymentStatus orderStatus amountPaid totalAmount from to departureDate returnDate createdAt affiliateCommission affiliateCommissionPercent amountPaidBase');
 
     return {
       tickets,
@@ -227,30 +298,12 @@ export function createAffiliateService({ Affiliate, Ticket, InsuranceApplication
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
-      .select('sessionId email journeyType paymentStatus amountPaid passengers startDate endDate region createdAt');
+      .select('sessionId email journeyType paymentStatus amountPaid passengers startDate endDate region createdAt affiliateCommission affiliateCommissionPercent amountPaidBase');
 
     return {
       applications,
       pagination: { total, page, limit, totalPages, hasNextPage: page < totalPages, hasPrevPage: page > 1 },
     };
-  };
-
-  const seedAffiliates = async () => {
-    const seeds = [
-      { name: 'Atlas Partners', email: 'atlas.partners@example.com', commissionPercent: 12, isActive: true },
-      { name: 'Blue Horizon Media', email: 'blue.horizon@example.com', commissionPercent: 18, isActive: true },
-      { name: 'Northline Referrals', email: 'northline@example.com', commissionPercent: 25, isActive: false },
-      { name: 'Skyline Promotions', email: 'skyline.promotions@example.com', commissionPercent: 32, isActive: true },
-      { name: 'Summit Network', email: 'summit.network@example.com', commissionPercent: 40, isActive: false },
-    ];
-
-    const created = [];
-    for (const payload of seeds) {
-      const existing = await Affiliate.findOne({ email: payload.email });
-      if (existing) { created.push(existing); continue; }
-      created.push(await createAffiliate(payload));
-    }
-    return created;
   };
 
   return {
@@ -262,6 +315,5 @@ export function createAffiliateService({ Affiliate, Ticket, InsuranceApplication
     getAffiliateStatsById,
     getAffiliateTicketsById,
     getAffiliateApplicationsById,
-    seedAffiliates,
   };
 }

@@ -28,15 +28,27 @@ function fmtDatetime(iso) {
   });
 }
 
-function fmtAmount(val, currency = 'AED') {
+function fmtAmount(val, currency) {
   if (val == null) return '—';
-  return `${currency} ${Number(val).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const formatted = Number(val).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return currency ? `${currency} ${formatted}` : formatted;
 }
 
-function statAmount(value, fallbackCurrency = 'AED') {
+function statAmount(value) {
   if (value == null) return '—';
-  if (typeof value === 'object') return fmtAmount(value.amount, value.currency || fallbackCurrency);
-  return fmtAmount(value, fallbackCurrency);
+  if (typeof value === 'object') return fmtAmount(value.amount, value.currency);
+  return fmtAmount(value);
+}
+
+function rowCommission(row, livePercent) {
+  if (row?.affiliateCommission?.amount != null) {
+    return fmtAmount(row.affiliateCommission.amount, row.affiliateCommission.currency);
+  }
+  if (row?.amountPaid?.amount == null) return '—';
+  const percent = Number(row?.affiliateCommissionPercent ?? livePercent);
+  if (!Number.isFinite(percent)) return '—';
+  const estimate = (Number(row.amountPaid.amount) * percent) / 100;
+  return `${fmtAmount(estimate, row.amountPaid.currency)} est.`;
 }
 
 function leadPassenger(passengers) {
@@ -273,7 +285,7 @@ function TicketsTable({ affiliateId, commissionPercent }) {
                 </td>
                 <td className="px-5 py-2.5 text-gray-600 capitalize">{t.journeyType ?? '—'}</td>
                 <td className="px-5 py-2.5 font-semibold text-gray-800">{fmtAmount(t.amountPaid?.amount, t.amountPaid?.currency)}</td>
-                <td className="px-5 py-2.5 font-semibold text-green-700">{fmtAmount(((Number(t.amountPaid?.amount || 0) * Number(commissionPercent || 0)) / 100), t.amountPaid?.currency)}</td>
+                <td className="px-5 py-2.5 font-semibold text-green-700">{rowCommission(t, commissionPercent)}</td>
                 <td className="px-5 py-2.5">
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
                     t.paymentStatus === 'PAID'
@@ -339,7 +351,7 @@ function ApplicationsTable({ affiliateId, commissionPercent }) {
                 <td className="px-5 py-2.5 text-gray-600">{leadPassenger(a.passengers)}</td>
                 <td className="px-5 py-2.5 text-gray-600 capitalize">{a.journeyType ?? '—'}</td>
                 <td className="px-5 py-2.5 font-semibold text-gray-800">{fmtAmount(a.amountPaid?.amount, a.amountPaid?.currency)}</td>
-                <td className="px-5 py-2.5 font-semibold text-green-700">{fmtAmount(((Number(a.amountPaid?.amount || 0) * Number(commissionPercent || 0)) / 100), a.amountPaid?.currency)}</td>
+                <td className="px-5 py-2.5 font-semibold text-green-700">{rowCommission(a, commissionPercent)}</td>
                 <td className="px-5 py-2.5">
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
                     a.paymentStatus === 'PAID'
@@ -493,6 +505,25 @@ function AffiliateDetailContent() {
               value={statAmount(stats.paidRevenue)}
               sub="From paid orders"
             />
+          </div>
+        )}
+
+        {stats && (stats.excluded?.unconvertedPaid > 0 || stats.excluded?.uncommissionedPaid > 0) && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            <span className="font-semibold">Totals are incomplete.</span>{' '}
+            {stats.excluded.unconvertedPaid > 0 && (
+              <>
+                {stats.excluded.unconvertedPaid} paid order
+                {stats.excluded.unconvertedPaid === 1 ? '' : 's'} have no base-currency amount recorded.{' '}
+              </>
+            )}
+            {stats.excluded.uncommissionedPaid > 0 && (
+              <>
+                {stats.excluded.uncommissionedPaid} paid order
+                {stats.excluded.uncommissionedPaid === 1 ? '' : 's'} have no commission recorded.{' '}
+              </>
+            )}
+            They are excluded from the figures above and must be reconciled before payout.
           </div>
         )}
 

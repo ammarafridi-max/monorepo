@@ -1,6 +1,4 @@
-import mongoose from 'mongoose';
 import TicketSchema from './schemas/ticket.schema.js';
-import AffiliateSchema from './schemas/affiliate.schema.js';
 import TicketPricingSchema from './schemas/pricing.schema.js';
 import CurrencySchema from './schemas/currency.schema.js';
 import { createTicketService } from './service.js';
@@ -20,8 +18,12 @@ function getOrRegisterModel(conn, name, schema) {
 }
 
 export function createTicketsRouter({ db, auth, stripe, paypal, notifications, frontendUrl, AffiliateModel, brevo, reviewListId, reservationStorage, sendEmail, metaCapi, openaiCapi }) {
+  if (!AffiliateModel) {
+    throw new Error('createTicketsRouter requires AffiliateModel: pass the Affiliate model registered from @travel-suite/affiliates');
+  }
+
   const Ticket = getOrRegisterModel(db, 'dummy-ticket', TicketSchema);
-  const Affiliate = AffiliateModel ?? getOrRegisterModel(db, 'Affiliate', AffiliateSchema);
+  const Affiliate = AffiliateModel;
   const TicketPricing = getOrRegisterModel(db, 'dummy-ticket-pricing', TicketPricingSchema);
   const Currency = getOrRegisterModel(db, 'Currency', CurrencySchema);
 

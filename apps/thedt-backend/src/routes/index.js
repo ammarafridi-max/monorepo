@@ -166,7 +166,16 @@ const {
 router.use("/tickets", ticketsRouter);
 router.use("/pricing", pricingRouter);
 
-router.use("/affiliates", createAffiliatesRouter({ db, auth, TicketModel }));
+router.use(
+  "/affiliates",
+  createAffiliatesRouter({
+    db,
+    auth,
+    TicketModel,
+    notifications,
+    trackingBaseUrl: config.frontendUrl,
+  }),
+);
 
 const paymentService = createPaymentService({
   stripe,

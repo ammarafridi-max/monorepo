@@ -16,7 +16,11 @@ function safeParse(key, fallback) {
 
 function safeGetItem(key, fallback = '') {
   if (typeof window === 'undefined') return fallback;
-  return localStorage.getItem(key) || fallback;
+  try {
+    return localStorage.getItem(key) || fallback;
+  } catch {
+    return fallback;
+  }
 }
 
 export const TicketContext = createContext();
@@ -144,7 +148,9 @@ export function TicketProvider({ children }) {
       };
 
       if (typeof window !== 'undefined') {
-        localStorage.setItem(AFFILIATE_STORAGE_KEY, JSON.stringify(next));
+        try {
+          localStorage.setItem(AFFILIATE_STORAGE_KEY, JSON.stringify(next));
+        } catch {}
       }
       setAffiliateAttribution(next);
       return;
@@ -152,7 +158,9 @@ export function TicketProvider({ children }) {
 
     if (!current) {
       if (typeof window !== 'undefined') {
-        localStorage.removeItem(AFFILIATE_STORAGE_KEY);
+        try {
+          localStorage.removeItem(AFFILIATE_STORAGE_KEY);
+        } catch {}
       }
       setAffiliateAttribution(null);
       return;
