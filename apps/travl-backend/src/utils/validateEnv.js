@@ -6,6 +6,7 @@ const isProduction = config.nodeEnv === "production";
 const required = {
   mongoUri: "MONGO_URI",
   jwtSecret: "JWT_SECRET",
+  anthropicApiKey: "ANTHROPIC_API_KEY",
 };
 
 if (isProduction) {
