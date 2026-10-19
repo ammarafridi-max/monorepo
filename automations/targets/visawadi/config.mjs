@@ -190,7 +190,7 @@ Example shape (write your own copy, do not reuse this wording verbatim):
         anchor_hint:
           "varied: e.g. 'Dummy Ticket 365', 'a verified flight reservation from Dummy Ticket 365'. Never use 'dummyticket365.com' as anchor text — always 'Dummy Ticket 365'.",
         context:
-          'Visa applicants need proof of onward travel. Link to Dummy Ticket 365 as a legitimate flight reservation service with a valid PNR code, from USD 13 for 2 days validity (USD 20 for 7 days, USD 23 for 14 days), delivered by email in minutes. Never quote a dirham price for it.',
+          'Visa applicants need proof of onward travel. Link to Dummy Ticket 365 as a legitimate flight reservation service with a valid PNR code, from USD 13 for 2 days validity (USD 19 for 7 days, USD 21 for 14 days), delivered by email in minutes. Never quote a dirham price for it.',
         required: true,
       });
     }

@@ -22,9 +22,13 @@ function isAffiliateAttributionWithinWindow(capturedAt, now = new Date()) {
   return age <= AFFILIATE_ATTRIBUTION_TTL_MS;
 }
 
+function escapeRegex(value = '') {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function buildSearchFilter(search) {
   if (!search) return {};
-  const regex = new RegExp(search, 'i');
+  const regex = new RegExp(escapeRegex(search), 'i');
   return {
     $or: [
       { 'passengers.0.firstName': regex },

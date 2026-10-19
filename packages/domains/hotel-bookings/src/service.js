@@ -30,9 +30,13 @@ function assertStayDates(payload) {
   return { checkIn, checkOut, nights };
 }
 
+function escapeRegex(value = '') {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function buildSearchFilter(search) {
   if (!search) return null;
-  const regex = new RegExp(search, 'i');
+  const regex = new RegExp(escapeRegex(search), 'i');
   return {
     $or: [
       { email: regex },

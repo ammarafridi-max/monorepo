@@ -22,7 +22,7 @@ An applicant often has to *supply* these as part of a visa file, so they belong 
 |---|---|---|---|
 | **Travl** (travl.ae) | Travel insurance, AXA-issued, Schengen-compliant (EUR 30,000 medical cover, accepted by VFS Global and BLS International) | from AED 30 | Link to https://www.travl.ae/travel-insurance or the Schengen page |
 | **Travl** | Travel itinerary document | — | Mention if the topic needs it. **Never link to it.** |
-| **Dummy Ticket 365** (dummyticket365.com) | Flight reservations, aka flight itineraries, aka dummy tickets, with a real PNR code, delivered by email in minutes | USD 13 (2 days validity), USD 20 (7 days), USD 23 (14 days) | Link to https://www.dummyticket365.com |
+| **Dummy Ticket 365** (dummyticket365.com) | Flight reservations, aka flight itineraries, aka dummy tickets, with a real PNR code, delivered by email in minutes | USD 13 (2 days validity), USD 19 (7 days), USD 21 (14 days) | Link to https://www.dummyticket365.com |
 
 **Dummy Ticket 365 is never priced in dirhams.** Use USD.
 

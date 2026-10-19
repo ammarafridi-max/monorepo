@@ -179,7 +179,7 @@ export default async function Page() {
       canonical: pageData.meta.canonical,
       name: pageData.meta.productName,
       description: pageData.meta.description,
-      price: "13.00",
+      price: Number(usdPrices['2 Days']).toFixed(2),
       currency: "USD",
     }),
     buildFAQPage({

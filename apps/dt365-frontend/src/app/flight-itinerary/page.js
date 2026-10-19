@@ -1,6 +1,7 @@
 import { EMAIL, WHATSAPP_NUMBER } from '@/config/contact';
 import { testimonials } from '@/data/testimonials';
 import { buildMetadata } from '@/lib/schema';
+import { getUsdPrices } from '@/lib/tiers';
 import {
   buildBreadcrumbList,
   buildGraph,
@@ -83,7 +84,8 @@ export const metadata = {
   robots: { index: false, follow: true },
 };
 
-export default function Page() {
+export default async function Page() {
+  const usdPrices = await getUsdPrices();
   const breadcrumbPaths = [
     { label: 'Home', href: '/' },
     { label: 'Flight Itinerary' },
@@ -102,7 +104,7 @@ export default function Page() {
       canonical: pageData.meta.canonical,
       name: pageData.meta.productName,
       description: pageData.meta.description,
-      price: '13.00',
+      price: Number(usdPrices['2 Days']).toFixed(2),
       currency: 'USD',
     }),
     buildBreadcrumbList({ paths: breadcrumbPaths }),
