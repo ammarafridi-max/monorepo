@@ -1,4 +1,4 @@
-import { apiFetchPublic } from './apiClient.js';
+import { apiFetchPublic, csrfHeader } from './apiClient.js';
 import { getAttribution } from '../utils/attribution.js';
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL;
@@ -32,7 +32,11 @@ export async function getItineraryOrderApi(sessionId) {
 }
 
 export async function deleteItineraryOrderApi(sessionId) {
-  const res = await fetch(`${BACKEND}${URL}/${sessionId}`, { method: 'DELETE', credentials: 'include' });
+  const res = await fetch(`${BACKEND}${URL}/${sessionId}`, {
+    method: 'DELETE',
+    headers: { ...csrfHeader('DELETE') },
+    credentials: 'include',
+  });
   if (!res.ok) {
     let message = 'Failed to delete itinerary';
     try {

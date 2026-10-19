@@ -1,4 +1,4 @@
-import { apiFetch, apiFetchPublic } from './apiClient.js';
+import { apiFetch, apiFetchPublic, csrfHeader } from './apiClient.js';
 import { getAttribution } from '../utils/attribution.js';
 
 const URL = '/api/hotel-bookings';
@@ -23,7 +23,7 @@ export async function createHotelBookingApi(payload) {
 export async function createHotelCheckoutApi({ sessionId, currencyCode }) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}${URL}/checkout`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { ...csrfHeader('POST'), 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify({ sessionId, currencyCode }),
   });

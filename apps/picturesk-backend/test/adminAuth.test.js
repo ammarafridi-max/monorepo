@@ -5,7 +5,7 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { createAuthRouter } from '@travel-suite/auth';
+import { createAuthRouter, CSRF_HEADER, CSRF_HEADER_VALUE } from '@travel-suite/auth';
 import { connectMongo } from '@travel-suite/picturesk-shared';
 
 
@@ -136,6 +136,37 @@ test('an INACTIVE admin cannot log in (403)', async () => {
   assert.equal(res.status, 403);
   assert.equal((await res.json()).message, 'Admin user is inactive');
   await AdminUser.updateOne({ email: 'admin@picturesk.ai' }, { $set: { status: 'ACTIVE' } });
+});
+
+test('a cookie-authenticated mutating request without the CSRF header is 403', async () => {
+  const loginRes = await login('admin@picturesk.ai', 'supersecret');
+  const cookie = loginRes.headers.get('set-cookie').split(';')[0];
+  const res = await fetch(`${base}/auth/me`, {
+    method: 'PATCH',
+    headers: { Cookie: cookie, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: 'Renamed Admin' }),
+  });
+  assert.equal(res.status, 403);
+  assert.match((await res.json()).message, new RegExp(CSRF_HEADER));
+});
+
+test('the same mutating request with the CSRF header is accepted', async () => {
+  const loginRes = await login('admin@picturesk.ai', 'supersecret');
+  const cookie = loginRes.headers.get('set-cookie').split(';')[0];
+  const res = await fetch(`${base}/auth/me`, {
+    method: 'PATCH',
+    headers: { Cookie: cookie, 'Content-Type': 'application/json', [CSRF_HEADER]: CSRF_HEADER_VALUE },
+    body: JSON.stringify({ name: 'Renamed Admin' }),
+  });
+  assert.equal(res.status, 200);
+  assert.equal((await res.json()).data.name, 'Renamed Admin');
+});
+
+test('a GET with the login cookie and no CSRF header still works', async () => {
+  const loginRes = await login('admin@picturesk.ai', 'supersecret');
+  const cookie = loginRes.headers.get('set-cookie').split(';')[0];
+  const res = await fetch(`${base}/admin/ping`, { headers: { Cookie: cookie } });
+  assert.equal(res.status, 200);
 });
 
 test('a tampered/garbage cookie is rejected as 401', async () => {

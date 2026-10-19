@@ -20,7 +20,6 @@ const AdminUserSchema = new mongoose.Schema(
       trim: true,
       minlength: [8, 'Username must be at least 8 characters long'],
       maxlength: 50,
-      index: true,
       match: [USERNAME_REGEX, 'Username must use lowercase letters, numbers, dots, underscores, or hyphens'],
     },
     email: {
@@ -30,7 +29,6 @@ const AdminUserSchema = new mongoose.Schema(
       required: [true, 'Email is required'],
       trim: true,
       validate: [validator.isEmail, 'Please provide a valid email'],
-      index: true,
     },
     password: {
       type: String,
@@ -67,6 +65,15 @@ const AdminUserSchema = new mongoose.Schema(
     },
   },
   { timestamps: true, toJSON: true },
+);
+
+AdminUserSchema.index(
+  { 'authorProfile.slug': 1 },
+  {
+    name: 'authorProfile.slug_1',
+    unique: true,
+    partialFilterExpression: { 'authorProfile.slug': { $gt: '' } },
+  },
 );
 
 AdminUserSchema.pre('save', async function () {

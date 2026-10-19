@@ -39,12 +39,13 @@ export function createAuthController({ service, otpService, jwtUtils }) {
   });
 
   const resetPassword = catchAsync(async (req, res) => {
-    const verified = await otpService.verifyOtp({
+    const user = await otpService.verifyOtp({
       email: req.body.email,
       code: req.body.code,
       purpose: 'reset',
+      onVerified: (verified) =>
+        service.resetPassword({ userId: verified._id, password: req.body.password }),
     });
-    const user = await service.resetPassword({ userId: verified._id, password: req.body.password });
     sendToken(user, 200, res);
   });
 

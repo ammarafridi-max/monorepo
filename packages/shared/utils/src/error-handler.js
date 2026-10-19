@@ -1,3 +1,5 @@
+import { redactUrl } from './redact-url.js';
+
 export function createErrorHandler({ logger, nodeEnv = 'production' }) {
   return (err, req, res, _next) => {
     if (err?.name === 'ValidationError' && err.errors) {
@@ -30,7 +32,12 @@ export function createErrorHandler({ logger, nodeEnv = 'production' }) {
       return res.status(statusCode).json({ status, message: err.message });
     }
 
-    logger?.error('Unexpected error', { error: err, requestId: req.id });
+    logger?.error('Unexpected error', {
+      name: err?.name,
+      message: redactUrl(err?.message ?? ''),
+      stack: redactUrl(err?.stack ?? ''),
+      requestId: req.id,
+    });
     res.status(500).json({ status: 'error', message: 'Something went wrong' });
   };
 }

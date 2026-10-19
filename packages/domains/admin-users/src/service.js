@@ -4,6 +4,24 @@ function escapeRegex(value = '') {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+const DUPLICATE_KEY_MESSAGES = {
+  email: 'Email is already in use by another admin user.',
+  username: 'Username is already in use by another admin user.',
+  'authorProfile.slug': 'That author slug is already in use.',
+};
+
+async function writeMappingDuplicateKey(write) {
+  try {
+    return await write();
+  } catch (err) {
+    if (err?.code !== 11000) throw err;
+    const fields = Object.keys(err.keyPattern ?? err.keyValue ?? {});
+    const message = fields.map((field) => DUPLICATE_KEY_MESSAGES[field]).find(Boolean);
+    if (!message) throw err;
+    throw new AppError(message, 400);
+  }
+}
+
 async function ensureEmailIsUnique(AdminUser, email, excludeId = null) {
   if (!email) return;
   const existing = await AdminUser.findOne({
@@ -91,7 +109,7 @@ export function createAdminUsersService({ AdminUser }) {
     await ensureUsernameIsUnique(AdminUser, normalized.username);
     await ensureEmailIsUnique(AdminUser, normalized.email);
 
-    return AdminUser.create(normalized);
+    return writeMappingDuplicateKey(() => AdminUser.create(normalized));
   };
 
   const updateAdminUserByUsername = async (username, payload, currentUser) => {
@@ -126,10 +144,12 @@ export function createAdminUsersService({ AdminUser }) {
       nextStatus,
     });
 
-    const updated = await AdminUser.findByIdAndUpdate(existingUser._id, normalized, {
-      runValidators: true,
-      new: true,
-    });
+    const updated = await writeMappingDuplicateKey(() =>
+      AdminUser.findByIdAndUpdate(existingUser._id, normalized, {
+        runValidators: true,
+        new: true,
+      }),
+    );
     if (!updated) throw new AppError('Admin user not found.', 404);
     return updated;
   };

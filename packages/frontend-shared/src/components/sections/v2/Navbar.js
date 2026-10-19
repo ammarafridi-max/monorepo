@@ -3,8 +3,7 @@
 import { useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { usePathname, useRouter } from "next/navigation";
 import {
   ChevronDown,
   ChevronRight,
@@ -29,8 +28,9 @@ export default function Navbar({
   cta = null,
   ctaOnMobile = true,
 }) {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, setUser } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
 
   const [megaOpen, setMegaOpen] = useState(null);
   const [megaTab, setMegaTab] = useState(0);
@@ -375,7 +375,8 @@ export default function Navbar({
                           } catch {
                             void 0;
                           }
-                          await signOut({ callbackUrl: "/" });
+                          setUser(null);
+                          router.push("/");
                         }}
                         className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-red-600 hover:bg-red-50 font-medium transition-colors"
                       >

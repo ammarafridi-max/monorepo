@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { AppError } from '@travel-suite/utils';
+import { createLoginThrottleFromDb } from './login-throttle.js';
 
 function validate(schema) {
   return (req, _res, next) => {
@@ -39,17 +40,19 @@ const otpVerifyLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-export function createAuthRouterFromParts({ controller, middleware, validators }) {
+export function createAuthRouterFromParts({ controller, middleware, validators, db, logger }) {
   const { protect } = middleware;
+  const loginThrottle = createLoginThrottleFromDb({ db, logger });
   const { loginSchema, updatePasswordSchema, updateCurrentAdminSchema, otpRequestSchema, otpVerifySchema, forgotPasswordSchema, resetPasswordSchema } = validators;
   const router = Router();
 
-  router.post('/login',  loginLimiter, validate(loginSchema), controller.login);
+  // loginThrottle.guard must stay after validate(loginSchema): it keys on the normalized req.body.email.
+  router.post('/login',  loginLimiter, validate(loginSchema), loginThrottle.guard, controller.login);
   router.post('/otp/request', otpRequestLimiter, validate(otpRequestSchema), controller.requestOtp);
-  router.post('/otp/verify',  otpVerifyLimiter,  validate(otpVerifySchema),  controller.verifyOtp);
+  router.post('/otp/verify',  otpVerifyLimiter,  validate(otpVerifySchema),  loginThrottle.releaseOnSuccess, controller.verifyOtp);
 
   router.post('/password/forgot', otpRequestLimiter, validate(forgotPasswordSchema), controller.forgotPassword);
-  router.post('/password/reset',  otpVerifyLimiter,  validate(resetPasswordSchema),  controller.resetPassword);
+  router.post('/password/reset',  otpVerifyLimiter,  validate(resetPasswordSchema),  loginThrottle.releaseOnSuccess, controller.resetPassword);
 
   router.post('/logout', controller.logout);
   router.get('/logout',  controller.logout);

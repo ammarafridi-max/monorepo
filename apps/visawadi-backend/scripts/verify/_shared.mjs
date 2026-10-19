@@ -6,7 +6,7 @@ import { createUsersRouter } from '@travel-suite/users';
 import { createVisaApplicationsRouter } from '@travel-suite/visa-applications';
 import { createCloudinaryStorage } from '@travel-suite/cloudinary';
 import { createNotificationsService } from '@travel-suite/notifications';
-import { logger } from '@travel-suite/utils';
+import { logger, missingEnvKeys } from '@travel-suite/utils';
 
 import { sendEmail as realSendEmail } from '../../src/utils/email.js';
 
@@ -30,9 +30,7 @@ export function readEnv() {
 }
 
 export function requireEnv(env, keys) {
-  const missing = [];
-  const get = (path) => path.split('.').reduce((o, k) => (o == null ? o : o[k]), env);
-  for (const k of keys) if (!get(k)) missing.push(k);
+  const missing = missingEnvKeys(env, keys);
   if (missing.length) {
     console.log(`FAIL  missing required environment variable(s): ${missing.join(', ')}`);
     console.log('      This script talks to REAL services — it cannot run without credentials.');

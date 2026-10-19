@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { ChevronRight, Menu, X, User, LogOut } from "lucide-react";
-import { signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "../../../contexts/AuthContextBase.js";
 import { logoutUserSessionApi } from "../../../services/apiAuth.js";
 import Currency from "../../ui/v2/Currency.js";
@@ -13,12 +13,10 @@ export default function MobileNavigation({
   showCurrency = true,
   loginHref = "/login",
   cta = null,
-  // A brand with its own bottom tab bar already has the primary action in the
-  // thumb zone, so repeating it beside the hamburger is clutter that also
-  // overflows the bar at narrow widths.
   showCta = true,
 }) {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, setUser } = useAuth();
+  const router = useRouter();
 
   const [open, setOpen] = useState(false);
   const [openIndex, setOpenIndex] = useState(null);
@@ -140,7 +138,8 @@ export default function MobileNavigation({
                     } catch {
                       void 0;
                     }
-                    await signOut({ callbackUrl: "/" });
+                    setUser(null);
+                    router.push("/");
                   }}
                   className="py-2.5 text-left text-red-600 hover:text-red-700 transition-colors flex items-center gap-2"
                 >

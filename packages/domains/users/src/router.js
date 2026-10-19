@@ -1,50 +1,71 @@
 import { Router } from 'express';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 
-const RATE_MAX = 5;
-const RATE_WINDOW_MS = 60 * 60 * 1000;
-const rateBuckets = new Map();
+const HOUR_MS = 60 * 60 * 1000;
 
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, entry] of rateBuckets.entries()) {
-    if (now > entry.resetAt) rateBuckets.delete(key);
-  }
-}, 10 * 60 * 1000).unref?.();
+const normalizeEmail = (value) => String(value || '').trim().toLowerCase();
 
-function hit(key) {
-  const now = Date.now();
-  const entry = rateBuckets.get(key);
-  if (!entry || now > entry.resetAt) {
-    rateBuckets.set(key, { count: 1, resetAt: now + RATE_WINDOW_MS });
-    return true;
-  }
-  entry.count += 1;
-  return entry.count <= RATE_MAX;
+function ipLimiter({ windowMs, limit, message, skipSuccessfulRequests = false }) {
+  return rateLimit({
+    windowMs,
+    limit,
+    skipSuccessfulRequests,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { status: 'error', message },
+  });
 }
 
-function magicLinkRateLimiter(req, res, next) {
-  const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || 'unknown';
-  const email = String(req.body?.email || '').trim().toLowerCase() || 'no-email';
-  const ipOk = hit(`ip:${ip}`);
-  const emailOk = hit(`email:${email}`);
-  if (!ipOk || !emailOk) {
-    return res.status(429).json({ status: 'error', message: 'Too many sign-in link requests. Please try again later.' });
-  }
-  next();
+function emailLimiter({ windowMs, limit, message, scope }) {
+  return rateLimit({
+    windowMs,
+    limit,
+    standardHeaders: false,
+    legacyHeaders: false,
+    keyGenerator: (req) => {
+      const email = normalizeEmail(req.body?.email);
+      if (email) return `${scope}:email:${email}`;
+      return `${scope}:ip:${req.ip ? ipKeyGenerator(req.ip) : 'unknown'}`;
+    },
+    message: { status: 'error', message },
+  });
 }
+
+const TOO_MANY_SIGN_IN_LINKS = 'Too many sign-in link requests. Please try again later.';
+const TOO_MANY_LOGINS = 'Too many sign-in attempts. Please try again in 15 minutes.';
+const TOO_MANY_REGISTRATIONS = 'Too many accounts created from this network. Please try again later.';
+const TOO_MANY_RESETS = 'Too many password reset requests. Please try again later.';
+const TOO_MANY_TOKEN_ATTEMPTS = 'Too many attempts. Please try again later.';
+
+const magicLinkIpLimiter = ipLimiter({ windowMs: HOUR_MS, limit: 5, message: TOO_MANY_SIGN_IN_LINKS });
+const magicLinkEmailLimiter = emailLimiter({ windowMs: HOUR_MS, limit: 5, message: TOO_MANY_SIGN_IN_LINKS, scope: 'magic-link' });
+
+const loginIpLimiter = ipLimiter({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  skipSuccessfulRequests: true,
+  message: TOO_MANY_LOGINS,
+});
+
+const registerIpLimiter = ipLimiter({ windowMs: HOUR_MS, limit: 10, message: TOO_MANY_REGISTRATIONS });
+
+const forgotPasswordIpLimiter = ipLimiter({ windowMs: HOUR_MS, limit: 5, message: TOO_MANY_RESETS });
+const forgotPasswordEmailLimiter = emailLimiter({ windowMs: HOUR_MS, limit: 3, message: TOO_MANY_RESETS, scope: 'forgot-password' });
+
+const tokenRedemptionLimiter = ipLimiter({ windowMs: HOUR_MS, limit: 30, message: TOO_MANY_TOKEN_ATTEMPTS });
 
 export function createUserRouterFromParts({ controller, middleware }) {
   const router = Router();
   const { protect } = middleware;
 
-  router.post('/register', controller.register);
-  router.post('/login', controller.login);
+  router.post('/register', registerIpLimiter, controller.register);
+  router.post('/login', loginIpLimiter, controller.login);
   router.post('/logout', controller.logout);
-  router.get('/verify-email/:token', controller.verifyEmail);
-  router.post('/forgot-password', controller.forgotPassword);
-  router.patch('/reset-password/:token', controller.resetPassword);
-  router.post('/magic-link', magicLinkRateLimiter, controller.requestMagicLink);
-  router.get('/magic-link/:token', controller.verifyMagicLink);
+  router.get('/verify-email/:token', tokenRedemptionLimiter, controller.verifyEmail);
+  router.post('/forgot-password', forgotPasswordIpLimiter, forgotPasswordEmailLimiter, controller.forgotPassword);
+  router.patch('/reset-password/:token', tokenRedemptionLimiter, controller.resetPassword);
+  router.post('/magic-link', magicLinkIpLimiter, magicLinkEmailLimiter, controller.requestMagicLink);
+  router.get('/magic-link/:token', tokenRedemptionLimiter, controller.verifyMagicLink);
 
   router.use(protect);
   router.get('/me', controller.getProfile);

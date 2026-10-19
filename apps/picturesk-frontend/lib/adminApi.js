@@ -1,9 +1,10 @@
+import { csrfHeader } from '@travel-suite/frontend-shared/services/apiClient';
 import { API_BASE } from './api';
 
 async function adminFetch(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
-    headers: { ...(options.headers || {}) },
+    headers: { ...csrfHeader(options.method ?? 'GET'), ...(options.headers || {}) },
     credentials: 'include',
   });
   if (res.status === 204) return null;

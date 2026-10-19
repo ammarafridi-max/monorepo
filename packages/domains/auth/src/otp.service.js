@@ -4,11 +4,16 @@ import { AppError } from '@travel-suite/utils';
 
 const CODE_LENGTH = 6;
 const TTL_MS = 10 * 60 * 1000;
+const RETENTION_MS = 2 * 60 * 60 * 1000;
 const MAX_ATTEMPTS = 5;
 const RESEND_COOLDOWN_MS = 60 * 1000;
+const REQUEST_WINDOW_MS = 60 * 60 * 1000;
 const MAX_REQUESTS_PER_HOUR = 5;
+const MAX_REQUESTS_PER_HOUR_PER_IP = 3;
+const MAX_TRACKED_SOURCES = 20000;
 
 const GENERIC_FAILURE = 'Invalid or expired code';
+const THROTTLED = 'Too many codes requested. Please try again later.';
 
 const normalizeEmail = (v) => String(v || '').trim().toLowerCase();
 
@@ -19,34 +24,74 @@ function generateCode() {
 export function createOtpService({ AdminUser, AdminOtp, sendEmail, brandName, loginUrl, logger }) {
   const enabled = typeof sendEmail === 'function';
 
+  const sourceHits = new Map();
+
+  const liveHits = (key, now) =>
+    (sourceHits.get(key) || []).filter((h) => h.at > now - REQUEST_WINDOW_MS);
+
+  const pruneSources = (now) => {
+    for (const key of sourceHits.keys()) {
+      const hits = liveHits(key, now);
+      if (hits.length) sourceHits.set(key, hits);
+      else sourceHits.delete(key);
+    }
+  };
+
+  const sourceKey = (ip, email) => (ip ? `${ip}|${email}` : null);
+
+  const recordSourceHit = (key, purpose, now) => {
+    if (!key) return;
+    if (sourceHits.size >= MAX_TRACKED_SOURCES) pruneSources(now);
+    sourceHits.set(key, [...liveHits(key, now), { at: now, purpose }]);
+  };
+
+  const cooldownError = (lastAt, now) => {
+    const wait = Math.ceil((RESEND_COOLDOWN_MS - (now - lastAt)) / 1000);
+    return new AppError(`Please wait ${wait} seconds before requesting another code.`, 429);
+  };
+
+  const guardSource = (key, purpose, now) => {
+    if (!key) return;
+    const hits = liveHits(key, now);
+    const lastSame = hits.filter((h) => h.purpose === purpose).at(-1);
+    if (lastSame && now - lastSame.at < RESEND_COOLDOWN_MS) throw cooldownError(lastSame.at, now);
+    if (hits.length >= MAX_REQUESTS_PER_HOUR_PER_IP) throw new AppError(THROTTLED, 429);
+  };
+
   const requestOtp = async ({ email, ip, purpose = 'login' }) => {
     if (!enabled) throw new AppError('One-time codes are not configured', 503);
     const normalized = normalizeEmail(email);
+    const now = Date.now();
+    const key = sourceKey(ip, normalized);
+
+    guardSource(key, purpose, now);
 
     const user = await AdminUser.findOne({ email: normalized });
 
     if (!user || user.status === 'INACTIVE') {
+      recordSourceHit(key, purpose, now);
       return { sent: true };
     }
 
-    const now = Date.now();
     const recent = await AdminOtp.find({
       user: user._id,
-      createdAt: { $gte: new Date(now - 60 * 60 * 1000) },
+      createdAt: { $gte: new Date(now - REQUEST_WINDOW_MS) },
     })
       .sort({ createdAt: -1 })
       .lean();
 
+    if (ip && recent.filter((r) => r.requestIp === ip).length >= MAX_REQUESTS_PER_HOUR_PER_IP) {
+      throw new AppError(THROTTLED, 429);
+    }
+
     if (recent.length >= MAX_REQUESTS_PER_HOUR) {
-      throw new AppError('Too many codes requested. Please try again later.', 429);
+      throw new AppError(THROTTLED, 429);
     }
 
     const lastSame = recent.find((r) => r.purpose === purpose);
-    if (lastSame && now - new Date(lastSame.createdAt).getTime() < RESEND_COOLDOWN_MS) {
-      const wait = Math.ceil(
-        (RESEND_COOLDOWN_MS - (now - new Date(lastSame.createdAt).getTime())) / 1000,
-      );
-      throw new AppError(`Please wait ${wait} seconds before requesting another code.`, 429);
+    if (lastSame) {
+      const lastAt = new Date(lastSame.createdAt).getTime();
+      if (now - lastAt < RESEND_COOLDOWN_MS) throw cooldownError(lastAt, now);
     }
 
     await AdminOtp.updateMany(
@@ -60,7 +105,8 @@ export function createOtpService({ AdminUser, AdminOtp, sendEmail, brandName, lo
       email: normalized,
       codeHash: await bcrypt.hash(code, 10),
       purpose,
-      expiresAt: new Date(now + TTL_MS),
+      usableUntil: new Date(now + TTL_MS),
+      expiresAt: new Date(now + TTL_MS + RETENTION_MS),
       requestIp: ip || null,
     });
 
@@ -90,10 +136,11 @@ export function createOtpService({ AdminUser, AdminOtp, sendEmail, brandName, lo
       throw new AppError('Could not send the code. Please try again.', 502);
     }
 
+    recordSourceHit(key, purpose, now);
     return { sent: true };
   };
 
-  const verifyOtp = async ({ email, code, purpose = 'login' }) => {
+  const verifyOtp = async ({ email, code, purpose = 'login', onVerified }) => {
     if (!enabled) throw new AppError('One-time codes are not configured', 503);
     const normalized = normalizeEmail(email);
     const submitted = String(code || '').trim();
@@ -107,7 +154,7 @@ export function createOtpService({ AdminUser, AdminOtp, sendEmail, brandName, lo
       purpose,
       consumedAt: null,
       supersededAt: null,
-      expiresAt: { $gt: new Date() },
+      usableUntil: { $gt: new Date() },
     }).sort({ createdAt: -1 });
 
     if (!record) throw new AppError(GENERIC_FAILURE, 401);
@@ -129,18 +176,33 @@ export function createOtpService({ AdminUser, AdminOtp, sendEmail, brandName, lo
       throw new AppError(GENERIC_FAILURE, 401);
     }
 
+    const claimedAt = new Date();
     const consumed = await AdminOtp.findOneAndUpdate(
-      { _id: record._id, consumedAt: null },
-      { $set: { consumedAt: new Date() } },
+      { _id: record._id, consumedAt: null, supersededAt: null },
+      { $set: { consumedAt: claimedAt } },
       { new: true },
     );
     if (!consumed) throw new AppError(GENERIC_FAILURE, 401);
+
+    let outcome;
+    if (typeof onVerified === 'function') {
+      try {
+        outcome = await onVerified(user);
+      } catch (err) {
+        await AdminOtp.updateOne(
+          { _id: record._id, consumedAt: claimedAt },
+          { $set: { consumedAt: null } },
+        );
+        throw err;
+      }
+    }
 
     await AdminOtp.updateMany(
       { user: user._id, purpose, consumedAt: null, supersededAt: null },
       { $set: { supersededAt: new Date() } },
     );
-    return user;
+
+    return outcome ?? user;
   };
 
   return { requestOtp, verifyOtp, enabled };

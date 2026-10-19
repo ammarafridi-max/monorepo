@@ -2,6 +2,12 @@ import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { AppError } from '@travel-suite/utils';
 
+const PROVISIONAL_RETENTION_MS = 24 * 60 * 60 * 1000;
+
+function isUnclaimedProvisional(user) {
+  return Boolean(user.provisionalExpiresAt) && user.isActive && !user.isVerified && !user.password;
+}
+
 export function createUserService({ User, jwtSecret, jwtExpiresIn, notifications, apiBaseUrl = '' }) {
   function signToken(id) {
     return jwt.sign({ id }, jwtSecret, { expiresIn: jwtExpiresIn });
@@ -9,10 +15,23 @@ export function createUserService({ User, jwtSecret, jwtExpiresIn, notifications
 
   const register = async ({ firstName, lastName, email, password }) => {
     if (!firstName || !lastName || !email || !password) throw new AppError('All fields are required', 400);
-    const existing = await User.findOne({ email: email.toLowerCase().trim() });
-    if (existing) throw new AppError('Email already in use', 409);
+    const normalized = email.toLowerCase().trim();
+    const existing = await User.findOne({ email: normalized }).select('+password +provisionalExpiresAt');
+    if (existing && !isUnclaimedProvisional(existing)) throw new AppError('Email already in use', 409);
 
-    const user = await User.create({ firstName, lastName, email, password });
+    let user;
+    if (existing) {
+      existing.firstName = firstName;
+      existing.lastName = lastName;
+      existing.password = password;
+      existing.provisionalExpiresAt = undefined;
+      existing.magicLinkToken = undefined;
+      existing.magicLinkExpires = undefined;
+      await existing.save();
+      user = existing;
+    } else {
+      user = await User.create({ firstName, lastName, email: normalized, password });
+    }
 
     if (notifications?.sendEmailVerification) {
       const token = user.createEmailVerifyToken();
@@ -82,9 +101,11 @@ export function createUserService({ User, jwtSecret, jwtExpiresIn, notifications
     const normalized = String(email || '').trim().toLowerCase();
     if (!normalized || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) return;
 
-    let user = await User.findOne({ email: normalized });
+    let user = await User.findOne({ email: normalized }).select('+provisionalExpiresAt');
     if (!user) {
-      user = await User.create({ email: normalized, password: crypto.randomBytes(24).toString('hex') });
+      user = new User({ email: normalized, provisionalExpiresAt: new Date(Date.now() + PROVISIONAL_RETENTION_MS) });
+    } else if (user.provisionalExpiresAt) {
+      user.provisionalExpiresAt = new Date(Date.now() + PROVISIONAL_RETENTION_MS);
     }
     if (!user.isActive) return;
 
@@ -110,11 +131,12 @@ export function createUserService({ User, jwtSecret, jwtExpiresIn, notifications
       magicLinkToken: hashed,
       magicLinkExpires: { $gt: Date.now() },
       isActive: true,
-    }).select('+magicLinkToken +magicLinkExpires');
+    }).select('+magicLinkToken +magicLinkExpires +provisionalExpiresAt');
     if (!user) throw new AppError('Token is invalid or has expired', 400);
 
     user.magicLinkToken = undefined;
     user.magicLinkExpires = undefined;
+    user.provisionalExpiresAt = undefined;
     user.isVerified = true;
     await user.save({ validateBeforeSave: false });
 
@@ -149,9 +171,12 @@ export function createUserService({ User, jwtSecret, jwtExpiresIn, notifications
     return { token, user: { _id: user._id, firstName: user.firstName, lastName: user.lastName, email: user.email, isVerified: user.isVerified } };
   };
 
-  const deleteAccount = async (userId, { password }) => {
+  const deleteAccount = async (userId, { password } = {}) => {
     const user = await User.findById(userId).select('+password');
-    if (!user || !(await user.correctPassword(password))) throw new AppError('Password is incorrect', 401);
+    if (!user) throw new AppError('User not found', 404);
+    if (user.password && !(await user.correctPassword(password))) {
+      throw new AppError('Password is incorrect', 401);
+    }
     user.isActive = false;
     await user.save({ validateBeforeSave: false });
   };

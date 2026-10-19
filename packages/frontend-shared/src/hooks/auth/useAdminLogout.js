@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAdminAuth } from '../../contexts/AdminAuthContext.js';
+import { csrfHeader } from '../../services/apiClient.js';
 
 export function useAdminLogout() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export function useAdminLogout() {
     try {
       await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL ?? ''}/api/auth/logout`, {
         method: 'POST',
+        headers: { ...csrfHeader('POST') },
         credentials: 'include',
       });
     } catch {

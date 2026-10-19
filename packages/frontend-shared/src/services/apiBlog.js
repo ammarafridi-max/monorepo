@@ -1,4 +1,4 @@
-import { apiFetch, apiFetchPublic } from './apiClient.js';
+import { apiFetch, apiFetchPublic, csrfHeader } from './apiClient.js';
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -66,6 +66,7 @@ export function getBlogByIdApi(id) {
 export async function createBlogApi(formData) {
   const res = await fetch(`${BACKEND}${URL}`, {
     method: 'POST',
+    headers: { ...csrfHeader('POST') },
     body: formData,
     credentials: 'include',
   });
@@ -115,7 +116,7 @@ export function duplicateBlogApi(id) {
 export async function improveContentApi({ content, title }) {
   const res = await fetch(`${BACKEND}${URL}/improve-content`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { ...csrfHeader('POST'), 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify({ content, title }),
   });
@@ -134,7 +135,7 @@ export async function improveContentApi({ content, title }) {
 export async function generateCoverImageApi({ title, excerpt }) {
   const res = await fetch(`${BACKEND}${URL}/generate-cover`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { ...csrfHeader('POST'), 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify({ title, excerpt }),
   });

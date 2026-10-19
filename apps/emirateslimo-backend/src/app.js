@@ -7,6 +7,7 @@ import rateLimit from "express-rate-limit";
 import { randomUUID } from "crypto";
 import { logger, AppError, createErrorHandler } from "@travel-suite/utils";
 import { setupSentryErrorHandler } from "@travel-suite/utils/sentry";
+import { redactUrl } from "@travel-suite/utils/redact-url";
 import config from "./utils/config.js";
 import indexRouter, { stripeWebhookHandler } from "./routes/index.js";
 
@@ -20,7 +21,7 @@ app.use((req, res, next) => {
   res.on("finish", () => {
     logger.info("HTTP", {
       method: req.method,
-      url: req.originalUrl,
+      url: redactUrl(req.originalUrl),
       status: res.statusCode,
       ms: Date.now() - start,
       requestId: req.id,
@@ -59,7 +60,7 @@ app.get("/health", (_req, res) =>
 app.use("/api", indexRouter);
 
 app.all("/{*path}", (req, _res, next) =>
-  next(new AppError(`Route ${req.originalUrl} not found`, 404)),
+  next(new AppError(`Route ${redactUrl(req.originalUrl)} not found`, 404)),
 );
 
 setupSentryErrorHandler(app);

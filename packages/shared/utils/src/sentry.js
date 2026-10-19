@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/node';
+import { redactUrl } from './redact-url.js';
 
 
 const dsn = process.env.SENTRY_DSN;
@@ -14,6 +15,10 @@ function scrubEvent(event) {
     if (event.request.headers) {
       delete event.request.headers.authorization;
       delete event.request.headers.cookie;
+    }
+    if (event.request.url) event.request.url = redactUrl(event.request.url);
+    if (event.request.query_string) {
+      event.request.query_string = redactUrl(`?${event.request.query_string}`).replace(/^\?/, '');
     }
   }
   if (event.message) event.message = redact(event.message);

@@ -16,9 +16,13 @@ const UserSchema = new mongoose.Schema(
     emailVerifyExpires: { type: Date, select: false },
     magicLinkToken: { type: String, select: false },
     magicLinkExpires: { type: Date, select: false },
+    passwordChangedAt: { type: Date, select: false },
+    provisionalExpiresAt: { type: Date },
   },
   { timestamps: true },
 );
+
+UserSchema.index({ provisionalExpiresAt: 1 }, { expireAfterSeconds: 0 });
 
 UserSchema.virtual('fullName').get(function () {
   return `${this.firstName} ${this.lastName}`.trim();

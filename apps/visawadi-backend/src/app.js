@@ -7,6 +7,7 @@ import rateLimit from 'express-rate-limit';
 import { randomUUID } from 'crypto';
 import { logger, AppError, createErrorHandler } from '@travel-suite/utils';
 import { setupSentryErrorHandler } from '@travel-suite/utils/sentry';
+import { redactUrl } from '@travel-suite/utils/redact-url';
 import config from './utils/config.js';
 import indexRouter, { stripeWebhookHandler } from './routes/index.js';
 
@@ -19,7 +20,7 @@ app.use((req, res, next) => {
   res.setHeader('x-request-id', req.id);
   const start = Date.now();
   res.on('finish', () => {
-    logger.info('HTTP', { method: req.method, url: req.originalUrl, status: res.statusCode, ms: Date.now() - start, requestId: req.id });
+    logger.info('HTTP', { method: req.method, url: redactUrl(req.originalUrl), status: res.statusCode, ms: Date.now() - start, requestId: req.id });
   });
   next();
 });
@@ -37,7 +38,7 @@ app.use('/api', rateLimit({ windowMs: 60 * 60 * 1000, max: 500, standardHeaders:
 app.get('/health', (_req, res) => res.status(200).json({ status: 'ok', brand: 'visawadi' }));
 app.use('/api', indexRouter);
 
-app.all('/{*path}', (req, _res, next) => next(new AppError(`Route ${req.originalUrl} not found`, 404)));
+app.all('/{*path}', (req, _res, next) => next(new AppError(`Route ${redactUrl(req.originalUrl)} not found`, 404)));
 
 setupSentryErrorHandler(app);
 app.use(createErrorHandler({ logger, nodeEnv: config.nodeEnv }));

@@ -1,4 +1,4 @@
-import { apiFetch } from './apiClient.js';
+import { apiFetch, csrfHeader } from './apiClient.js';
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -56,50 +56,10 @@ export async function getUserMeApi() {
   return await apiFetch('/api/users/me');
 }
 
-export async function exchangeOAuthSessionApi() {
-  const tokenRes = await fetch('/api/auth/oauth-token', {
-    credentials: 'include',
-  });
-
-  if (!tokenRes.ok) {
-    let message = 'Could not prepare sign-in session';
-    try {
-      const json = await tokenRes.json();
-      message = json.message || message;
-    } catch (error) {
-      void error;
-    }
-    throw new Error(message);
-  }
-
-  const { token } = await tokenRes.json();
-
-  const res = await fetch(`${BACKEND}/api/users/oauth-login`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  if (!res.ok) {
-    let message = 'Could not complete sign-in';
-    try {
-      const json = await res.json();
-      message = json.message || message;
-    } catch (error) {
-      void error;
-    }
-    throw new Error(message);
-  }
-
-  const json = await res.json();
-  return json.data || null;
-}
-
 export async function logoutUserSessionApi() {
-  const res = await fetch(`${BACKEND}/api/auth/logout`, {
+  const res = await fetch(`${BACKEND}/api/users/logout`, {
     method: 'POST',
+    headers: { ...csrfHeader('POST') },
     credentials: 'include',
   });
 

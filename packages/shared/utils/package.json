@@ -6,7 +6,10 @@
   "main": "./src/index.js",
   "exports": {
     ".": "./src/index.js",
-    "./sentry": "./src/sentry.js"
+    "./env": "./src/env.js",
+    "./sentry": "./src/sentry.js",
+    "./csrf": "./src/csrf.js",
+    "./redact-url": "./src/redact-url.js"
   },
   "scripts": {},
   "dependencies": {

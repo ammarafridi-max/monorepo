@@ -1,10 +1,26 @@
 export function createUserController({ service, cookieExpiresInDays, nodeEnv, appBaseUrl }) {
-  function sendTokenCookie(res, token) {
-    res.cookie('userJwt', token, {
-      expires: new Date(Date.now() + cookieExpiresInDays * 24 * 60 * 60 * 1000),
+  const COOKIE_NAME = 'userJwt';
+
+  function cookieOptions() {
+    return {
       httpOnly: true,
       secure: nodeEnv === 'production',
       sameSite: 'lax',
+      path: '/',
+    };
+  }
+
+  function sendTokenCookie(res, token) {
+    res.cookie(COOKIE_NAME, token, {
+      ...cookieOptions(),
+      expires: new Date(Date.now() + cookieExpiresInDays * 24 * 60 * 60 * 1000),
+    });
+  }
+
+  function clearTokenCookie(res) {
+    res.cookie(COOKIE_NAME, 'loggedout', {
+      ...cookieOptions(),
+      expires: new Date(Date.now() + 1000),
     });
   }
 
@@ -29,7 +45,7 @@ export function createUserController({ service, cookieExpiresInDays, nodeEnv, ap
   };
 
   const logout = (req, res) => {
-    res.cookie('userJwt', 'loggedout', { expires: new Date(Date.now() + 1000), httpOnly: true });
+    clearTokenCookie(res);
     res.json({ status: 'success' });
   };
 
@@ -115,8 +131,8 @@ export function createUserController({ service, cookieExpiresInDays, nodeEnv, ap
 
   const deleteAccount = async (req, res, next) => {
     try {
-      await service.deleteAccount(req.user._id, req.body);
-      res.cookie('userJwt', 'loggedout', { expires: new Date(Date.now() + 1000), httpOnly: true });
+      await service.deleteAccount(req.user._id, req.body || {});
+      clearTokenCookie(res);
       res.status(204).send();
     } catch (err) {
       next(err);

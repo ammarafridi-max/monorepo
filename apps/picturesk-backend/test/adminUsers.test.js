@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { connectMongo } from '@travel-suite/picturesk-shared';
+import { CSRF_HEADER, CSRF_HEADER_VALUE } from '@travel-suite/auth';
 import { createAdminSubsystem } from '../src/admin/index.js';
 
 
@@ -89,7 +90,7 @@ test('admin lists, creates, and never leaks the password hash', async () => {
 
   const created = await fetch(`${base}/admin-users`, {
     method: 'POST',
-    headers: { Cookie: cookie, 'Content-Type': 'application/json' },
+    headers: { Cookie: cookie, 'Content-Type': 'application/json', [CSRF_HEADER]: CSRF_HEADER_VALUE },
     body: JSON.stringify({ name: 'New Editor', username: 'neweditor', email: 'ed@p.ai', password: 'password123', role: 'support' }),
   });
   assert.equal(created.status, 201);
@@ -102,12 +103,12 @@ test('admin lists, creates, and never leaks the password hash', async () => {
 test('duplicate username and duplicate email are rejected (400)', async () => {
   const { cookie } = await cookieFor('admin@p.ai');
   const dupUser = await fetch(`${base}/admin-users`, {
-    method: 'POST', headers: { Cookie: cookie, 'Content-Type': 'application/json' },
+    method: 'POST', headers: { Cookie: cookie, 'Content-Type': 'application/json', [CSRF_HEADER]: CSRF_HEADER_VALUE },
     body: JSON.stringify({ name: 'X', username: 'neweditor', email: 'other@p.ai', password: 'password123' }),
   });
   assert.equal(dupUser.status, 400);
   const dupEmail = await fetch(`${base}/admin-users`, {
-    method: 'POST', headers: { Cookie: cookie, 'Content-Type': 'application/json' },
+    method: 'POST', headers: { Cookie: cookie, 'Content-Type': 'application/json', [CSRF_HEADER]: CSRF_HEADER_VALUE },
     body: JSON.stringify({ name: 'X', username: 'anotheruser', email: 'ed@p.ai', password: 'password123' }),
   });
   assert.equal(dupEmail.status, 400);
@@ -116,7 +117,7 @@ test('duplicate username and duplicate email are rejected (400)', async () => {
 test('admin can reset another user password; the target logs in with the new one', async () => {
   const { cookie } = await cookieFor('admin@p.ai');
   const res = await fetch(`${base}/admin-users/neweditor/password`, {
-    method: 'PATCH', headers: { Cookie: cookie, 'Content-Type': 'application/json' },
+    method: 'PATCH', headers: { Cookie: cookie, 'Content-Type': 'application/json', [CSRF_HEADER]: CSRF_HEADER_VALUE },
     body: JSON.stringify({ password: 'brandnew123', passwordConfirm: 'brandnew123' }),
   });
   assert.equal(res.status, 200);
@@ -127,7 +128,7 @@ test('admin can reset another user password; the target logs in with the new one
 test('deactivating a user blocks their login (403)', async () => {
   const { cookie } = await cookieFor('admin@p.ai');
   const res = await fetch(`${base}/admin-users/neweditor`, {
-    method: 'PATCH', headers: { Cookie: cookie, 'Content-Type': 'application/json' },
+    method: 'PATCH', headers: { Cookie: cookie, 'Content-Type': 'application/json', [CSRF_HEADER]: CSRF_HEADER_VALUE },
     body: JSON.stringify({ status: 'INACTIVE' }),
   });
   assert.equal(res.status, 200);
@@ -138,16 +139,16 @@ test('deactivating a user blocks their login (403)', async () => {
 test('self-protection: an admin cannot deactivate or demote themselves', async () => {
   const { cookie } = await cookieFor('admin@p.ai');
   const deact = await fetch(`${base}/admin-users/adminuser1`, {
-    method: 'PATCH', headers: { Cookie: cookie, 'Content-Type': 'application/json' },
+    method: 'PATCH', headers: { Cookie: cookie, 'Content-Type': 'application/json', [CSRF_HEADER]: CSRF_HEADER_VALUE },
     body: JSON.stringify({ status: 'INACTIVE' }),
   });
   assert.equal(deact.status, 400);
   const demote = await fetch(`${base}/admin-users/adminuser1`, {
-    method: 'PATCH', headers: { Cookie: cookie, 'Content-Type': 'application/json' },
+    method: 'PATCH', headers: { Cookie: cookie, 'Content-Type': 'application/json', [CSRF_HEADER]: CSRF_HEADER_VALUE },
     body: JSON.stringify({ role: 'support' }),
   });
   assert.equal(demote.status, 400);
-  const selfDelete = await fetch(`${base}/admin-users/adminuser1`, { method: 'DELETE', headers: { Cookie: cookie } });
+  const selfDelete = await fetch(`${base}/admin-users/adminuser1`, { method: 'DELETE', headers: { Cookie: cookie, [CSRF_HEADER]: CSRF_HEADER_VALUE } });
   assert.equal(selfDelete.status, 400);
 });
 
@@ -162,7 +163,7 @@ test('last-active-admin invariant blocks removing the final admin (token path)',
 
 test('admin deletes a user (204), then it is gone (404)', async () => {
   const { cookie } = await cookieFor('admin@p.ai');
-  const del = await fetch(`${base}/admin-users/neweditor`, { method: 'DELETE', headers: { Cookie: cookie } });
+  const del = await fetch(`${base}/admin-users/neweditor`, { method: 'DELETE', headers: { Cookie: cookie, [CSRF_HEADER]: CSRF_HEADER_VALUE } });
   assert.equal(del.status, 204);
   const gone = await fetch(`${base}/admin-users/neweditor`, { headers: { Cookie: cookie } });
   assert.equal(gone.status, 404);

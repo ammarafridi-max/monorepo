@@ -1,4 +1,5 @@
 import { AppError, catchAsync } from '@travel-suite/utils';
+import { CSRF_HEADER, hasCsrfHeader, isStateChangingMethod } from '@travel-suite/utils/csrf';
 
 export function createAdminAuthMiddleware({ AdminUser, verifyToken }) {
   const protect = catchAsync(async (req, res, next) => {
@@ -6,6 +7,10 @@ export function createAdminAuthMiddleware({ AdminUser, verifyToken }) {
 
     if (!token || token === 'loggedout') {
       return next(new AppError('You need to login to access this route.', 401));
+    }
+
+    if (isStateChangingMethod(req.method) && !hasCsrfHeader(req)) {
+      return next(new AppError(`Missing ${CSRF_HEADER} header.`, 403));
     }
 
     let decoded;

@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { connectMongo, Order, ORDER_STATES } from '@travel-suite/picturesk-shared';
+import { CSRF_HEADER, CSRF_HEADER_VALUE } from '@travel-suite/auth';
 import { createAdminSubsystem } from '../src/admin/index.js';
 import { createAdminActionsRouter } from '../src/admin/adminActions.js';
 import { createAdminDataRouter } from '../src/admin/adminData.js';
@@ -76,8 +77,11 @@ async function cookieFor(email_) {
   const res = await fetch(`${base}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email_, password: 'supersecret' }) });
   return res.headers.get('set-cookie').split(';')[0];
 }
+function mutateHeaders(cookie) {
+  return { [CSRF_HEADER]: CSRF_HEADER_VALUE, ...(cookie ? { Cookie: cookie } : {}) };
+}
 function post(path, cookie) {
-  return fetch(`${base}${path}`, { method: 'POST', headers: cookie ? { Cookie: cookie } : {} });
+  return fetch(`${base}${path}`, { method: 'POST', headers: mutateHeaders(cookie) });
 }
 
 test('actions require an admin (unauthenticated 401, support 403)', async () => {
@@ -143,7 +147,7 @@ test('resend-email: a non-delivered order has nothing to email (400)', async () 
 test('delete: requires an admin (401 unauth, 403 support)', async () => {
   const order = await Order.create({ customerEmail: 'd@x.com', status: ORDER_STATES.DELIVERED });
   const id = order._id.toString();
-  const del = (cookie) => fetch(`${base}/admin/orders/${id}`, { method: 'DELETE', headers: cookie ? { Cookie: cookie } : {} });
+  const del = (cookie) => fetch(`${base}/admin/orders/${id}`, { method: 'DELETE', headers: mutateHeaders(cookie) });
   assert.equal((await del()).status, 401);
   const support = await cookieFor('support@p.ai');
   assert.equal((await del(support)).status, 403);
@@ -160,7 +164,7 @@ test('delete: removes the order, our R2 objects (uploads + training zip), and th
   const id = order._id.toString();
   const cookie = await cookieFor('admin@p.ai');
 
-  const res = await fetch(`${base}/admin/orders/${id}`, { method: 'DELETE', headers: { Cookie: cookie } });
+  const res = await fetch(`${base}/admin/orders/${id}`, { method: 'DELETE', headers: mutateHeaders(cookie) });
   assert.equal(res.status, 200);
   const body = await res.json();
   assert.equal(body.data.deletedObjects, 3); 
@@ -175,7 +179,7 @@ test('delete: removes the order, our R2 objects (uploads + training zip), and th
 
 test('delete: a missing order is 404', async () => {
   const cookie = await cookieFor('admin@p.ai');
-  const res = await fetch(`${base}/admin/orders/${new mongoose.Types.ObjectId()}`, { method: 'DELETE', headers: { Cookie: cookie } });
+  const res = await fetch(`${base}/admin/orders/${new mongoose.Types.ObjectId()}`, { method: 'DELETE', headers: mutateHeaders(cookie) });
   assert.equal(res.status, 404);
 });
 
@@ -193,7 +197,7 @@ test('resend-email: 503 when no email client is configured', async () => {
   const port = srv.address().port;
   const login = await fetch(`http://127.0.0.1:${port}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'admin@p.ai', password: 'supersecret' }) });
   const cookie = login.headers.get('set-cookie').split(';')[0];
-  const res = await fetch(`http://127.0.0.1:${port}/admin/orders/${deliveredId}/resend-email`, { method: 'POST', headers: { Cookie: cookie } });
+  const res = await fetch(`http://127.0.0.1:${port}/admin/orders/${deliveredId}/resend-email`, { method: 'POST', headers: mutateHeaders(cookie) });
   assert.equal(res.status, 503);
   await new Promise((r) => srv.close(r));
 });

@@ -8,6 +8,8 @@ import { createAuthController } from './controller.js';
 import { createAuthRouterFromParts } from './router.js';
 import * as validators from './validators.js';
 
+export { CSRF_HEADER, CSRF_HEADER_VALUE } from '@travel-suite/utils/csrf';
+
 function getOrRegisterModel(conn, name, schema) {
   try {
     return conn.model(name);
@@ -30,7 +32,7 @@ export function createAuthRouter({ db, jwtSecret, jwtExpiresIn = '30d', cookieEx
   const otpService = createOtpService({ AdminUser, AdminOtp, sendEmail, brandName, loginUrl, logger });
   const middleware = createAdminAuthMiddleware({ AdminUser, verifyToken: jwtUtils.verifyToken });
   const controller = createAuthController({ service, otpService, jwtUtils });
-  const router     = createAuthRouterFromParts({ controller, middleware, validators });
+  const router     = createAuthRouterFromParts({ controller, middleware, validators, db, logger });
 
   return { router, middleware, AdminUser, AdminOtp, otpEnabled: otpService.enabled };
 }
