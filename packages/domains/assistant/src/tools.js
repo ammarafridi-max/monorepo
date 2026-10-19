@@ -52,7 +52,7 @@ export function buildToolDefinitions({ datasets, stripe }) {
     {
       name: 'aggregate_records',
       description:
-        'Group and total records: revenue by currency, orders by status, a daily or monthly trend. Returns one bucket per group with the metric value and the number of records behind it.',
+        'Group and total records: revenue by currency, orders by status, a daily or monthly trend, repeat customers by email, orders per handling agent. Returns one bucket per group with the metric value and the number of records behind it.',
       input_schema: {
         type: 'object',
         properties: {
@@ -67,6 +67,11 @@ export function buildToolDefinitions({ datasets, stripe }) {
           },
           filters: filtersSchema,
           ...rangeSchema,
+          minRecords: {
+            type: 'integer',
+            description:
+              'Only return groups backed by at least this many records. Use it for repeat-customer questions: group by email with minRecords 4 for "paid more than 3 times".',
+          },
           limit: { type: 'integer', description: `Buckets to return, max ${GROUP_LIMIT.max}` },
         },
         required: ['dataset'],
@@ -75,7 +80,7 @@ export function buildToolDefinitions({ datasets, stripe }) {
     {
       name: 'find_records',
       description:
-        'List individual records, newest first by default. Use it to show examples or to locate a customer. Returns a small page only, so prefer count_records or aggregate_records for totals.',
+        'List individual records, newest first by default. Use it to show examples or to locate a customer, including every order for one email address. Each row carries a "link" to its admin page when one exists. Returns a small page only, so prefer count_records or aggregate_records for totals.',
       input_schema: {
         type: 'object',
         properties: {
@@ -123,7 +128,10 @@ export async function executeTool({ name, input, datasets, stripe, role }) {
   const unmask = canSeeRawValues(dataset, role);
 
   if (name === 'count_records') return { ...(await countRecords(dataset, input)), dataset: dataset.key, unmasked: false };
-  if (name === 'aggregate_records') return { ...(await aggregateRecords(dataset, input)), dataset: dataset.key, unmasked: false };
+  if (name === 'aggregate_records') {
+    const outcome = await aggregateRecords(dataset, input, { unmask });
+    return { ...outcome, dataset: dataset.key, unmasked: Boolean(outcome.unmasked) };
+  }
   if (name === 'find_records') return { ...(await findRecords(dataset, input, { unmask })), dataset: dataset.key, unmasked: unmask };
   if (name === 'get_record') return { ...(await getRecord(dataset, input, { unmask })), dataset: dataset.key, unmasked: unmask };
 

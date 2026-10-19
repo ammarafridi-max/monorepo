@@ -29,8 +29,10 @@ Everything is ESM (`"type": "module"`), Node 22, React 19, Tailwind v4.
   webhooks, account for idempotency (Stripe retries and resends events),
   concurrency, and failure paths. A duplicate webhook must never double-issue a
   ticket or double-charge.
-- There is no test suite. Never claim tests pass. When you finish, state plainly
-  what you changed and what you did and did not verify.
+- Tests exist in exactly two places: `apps/picturesk-backend` and
+  `packages/domains/assistant` (both `node --test`). Everything else has none.
+  Never claim tests pass for code they do not cover. When you finish, state
+  plainly what you changed and what you did and did not verify.
 - Do not commit or push unless I ask. Show me the diff first.
 - **Do not write comments.** This is the default, not a preference to balance
   against. No file-header essays, no section banners, no JSDoc blocks, no
@@ -82,7 +84,7 @@ Backends run directly on Node's built-in watcher and env-file loader (no nodemon
 pnpm dev        # node --env-file=.env.development --watch src/server.js
 ```
 
-**Testing:** the travel apps have no tests. The only test suite in the repo is Picturesk's (`node --test` in `apps/picturesk-backend`), so a root `pnpm test` runs that and nothing else. It passes. **Linting** exists only on frontends (`next lint`); shared packages have no lint/build step (they're consumed as raw source via subpath exports).
+**Testing:** the travel apps have no tests. Two packages do, both `node --test`: `apps/picturesk-backend`, and `packages/domains/assistant` (the admin assistant's access gates, query building and Stripe maths — 30 tests, no DB or network). A root `pnpm test` runs those two and nothing else. Both pass. **Linting** exists only on frontends (`next lint`); shared packages have no lint/build step (they're consumed as raw source via subpath exports).
 
 ## Architecture
 

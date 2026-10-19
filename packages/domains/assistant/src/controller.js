@@ -38,6 +38,16 @@ export function createAssistantController({ service, brand, model, datasets, str
     res.status(204).send();
   });
 
+  const getToolCalls = catchAsync(async (req, res) => {
+    const { calls, pagination } = await service.listToolCalls(req.query);
+    res.status(200).json({ status: 'success', data: { calls, pagination } });
+  });
+
+  const getUsage = catchAsync(async (req, res) => {
+    const usage = await service.getUsage({ days: req.query.days });
+    res.status(200).json({ status: 'success', data: { usage } });
+  });
+
   const postMessage = async (req, res) => {
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
@@ -69,5 +79,13 @@ export function createAssistantController({ service, brand, model, datasets, str
     }
   };
 
-  return { getMeta, getConversations, getConversationById, deleteConversationById, postMessage };
+  return {
+    getMeta,
+    getConversations,
+    getConversationById,
+    deleteConversationById,
+    getToolCalls,
+    getUsage,
+    postMessage,
+  };
 }

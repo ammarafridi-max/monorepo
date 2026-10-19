@@ -17,6 +17,20 @@ export async function getAssistantConversationApi(id) {
   return result?.conversation || null;
 }
 
+export async function getAssistantAuditApi(params = {}) {
+  const query = new URLSearchParams(
+    Object.entries(params).filter(([, value]) => value !== '' && value !== undefined && value !== null),
+  ).toString();
+
+  const result = await apiFetch(`${URL}/audit?${query}`);
+  return { calls: result?.calls || [], pagination: result?.pagination || null };
+}
+
+export async function getAssistantUsageApi(days = 30) {
+  const result = await apiFetch(`${URL}/usage?days=${days}`);
+  return result?.usage || null;
+}
+
 export async function deleteAssistantConversationApi(id) {
   return await apiFetch(`${URL}/conversations/${id}`, { method: 'DELETE' });
 }

@@ -90,6 +90,116 @@ export function createAssistantService({
     }
   }
 
+  async function listToolCalls({ page = 1, limit = 50, dataset, tool, userId, from, to } = {}) {
+    const size = Math.min(Math.max(Number(limit) || 50, 1), 100);
+    const current = Math.max(Number(page) || 1, 1);
+
+    const query = {};
+    if (dataset) query.dataset = dataset;
+    if (tool) query.tool = tool;
+    if (userId) query.user = userId;
+    if (from || to) {
+      query.createdAt = {};
+      if (from) query.createdAt.$gte = new Date(from);
+      if (to) query.createdAt.$lt = new Date(to);
+    }
+
+    const [rows, total] = await Promise.all([
+      ToolCall.find(query).sort({ createdAt: -1 }).skip((current - 1) * size).limit(size).lean(),
+      ToolCall.countDocuments(query),
+    ]);
+
+    return {
+      calls: rows.map((row) => ({
+        id: String(row._id),
+        at: row.createdAt,
+        user: row.userName ?? null,
+        role: row.role ?? null,
+        tool: row.tool,
+        dataset: row.dataset,
+        rowCount: row.rowCount,
+        unmasked: row.unmasked,
+        durationMs: row.durationMs,
+        error: row.error,
+        input: row.input,
+      })),
+      pagination: { page: current, limit: size, total, pages: Math.ceil(total / size) || 1 },
+    };
+  }
+
+  async function getUsage({ days = 30 } = {}) {
+    const since = new Date(Date.now() - Math.min(Math.max(Number(days) || 30, 1), 365) * 86400000);
+
+    const [totals] = await Conversation.aggregate([
+      { $match: { lastMessageAt: { $gte: since } } },
+      {
+        $group: {
+          _id: null,
+          conversations: { $sum: 1 },
+          requests: { $sum: '$usage.requests' },
+          inputTokens: { $sum: '$usage.inputTokens' },
+          outputTokens: { $sum: '$usage.outputTokens' },
+          cacheReadTokens: { $sum: '$usage.cacheReadTokens' },
+        },
+      },
+    ]);
+
+    const perUser = await Conversation.aggregate([
+      { $match: { lastMessageAt: { $gte: since } } },
+      {
+        $group: {
+          _id: '$user',
+          conversations: { $sum: 1 },
+          inputTokens: { $sum: '$usage.inputTokens' },
+          outputTokens: { $sum: '$usage.outputTokens' },
+        },
+      },
+      { $sort: { inputTokens: -1 } },
+      { $limit: 20 },
+    ]);
+
+    const names = await resolveUserNames(perUser.map((row) => row._id));
+
+    const [tools, failures, unmasked] = await Promise.all([
+      ToolCall.aggregate([
+        { $match: { createdAt: { $gte: since } } },
+        { $group: { _id: '$tool', calls: { $sum: 1 }, rows: { $sum: '$rowCount' } } },
+        { $sort: { calls: -1 } },
+      ]),
+      ToolCall.countDocuments({ createdAt: { $gte: since }, error: { $ne: null } }),
+      ToolCall.countDocuments({ createdAt: { $gte: since }, unmasked: true }),
+    ]);
+
+    return {
+      since,
+      days: Number(days) || 30,
+      totals: {
+        conversations: totals?.conversations ?? 0,
+        requests: totals?.requests ?? 0,
+        inputTokens: totals?.inputTokens ?? 0,
+        outputTokens: totals?.outputTokens ?? 0,
+        cacheReadTokens: totals?.cacheReadTokens ?? 0,
+      },
+      failures,
+      unmasked,
+      tools: tools.map((row) => ({ tool: row._id, calls: row.calls, rows: row.rows })),
+      users: perUser.map((row) => ({
+        user: names.get(String(row._id)) ?? 'unknown',
+        conversations: row.conversations,
+        inputTokens: row.inputTokens,
+        outputTokens: row.outputTokens,
+      })),
+    };
+  }
+
+  async function resolveUserNames(ids) {
+    const AdminUser = Conversation.db?.models?.['admin-user'];
+    if (!AdminUser) return new Map();
+
+    const docs = await AdminUser.find({ _id: { $in: ids.filter(Boolean) } }).select('name').lean();
+    return new Map(docs.map((doc) => [String(doc._id), doc.name]));
+  }
+
   async function sendMessage({ user, conversationId, message, nav, onEvent, signal }) {
     const text = String(message ?? '').trim();
     if (!text) throw new AppError('A message is required', 400);
@@ -247,5 +357,5 @@ export function createAssistantService({
     return { conversationId: String(conversation._id), title: conversation.title, usage, stopped };
   }
 
-  return { listConversations, getConversation, deleteConversation, sendMessage };
+  return { listConversations, getConversation, deleteConversation, sendMessage, listToolCalls, getUsage };
 }

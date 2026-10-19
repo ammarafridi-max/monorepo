@@ -20,6 +20,7 @@ function normaliseField(field) {
     path: field.path ?? field.name,
     type,
     roles: field.roles ?? null,
+    resolve: field.resolve ?? null,
     description: field.description ?? null,
     values: field.values ?? null,
     filterable: field.filterable ?? true,
@@ -59,6 +60,7 @@ export function normaliseDatasets(datasets = []) {
       analyticsRoles: dataset.analyticsRoles ?? dataset.roles ?? ['admin'],
       rawAccessRoles: dataset.rawAccessRoles ?? ['admin'],
       dateField,
+      detailPath: dataset.detailPath ?? null,
       idFields: dataset.idFields ?? [],
       defaultSort: dataset.defaultSort ?? dateField,
       fields,
@@ -229,8 +231,25 @@ function serialise(value) {
   return value;
 }
 
+function fillDetailPath(dataset, doc) {
+  if (!dataset.detailPath) return null;
+
+  let missing = false;
+  const path = dataset.detailPath.replace(/\{([\w.]+)\}/g, (_, token) => {
+    if (token === '_id' || token === 'id') return String(doc._id);
+    const field = dataset.fieldByName.get(token);
+    const value = readPath(doc, field?.path ?? token);
+    if (value === null || value === undefined || value === '') missing = true;
+    return String(value);
+  });
+
+  return missing ? null : path;
+}
+
 export function projectRow(dataset, doc, { unmask }) {
   const row = { id: String(doc._id) };
+  const link = fillDetailPath(dataset, doc);
+  if (link) row.link = link;
 
   for (const field of dataset.fields) {
     const raw = serialise(readPath(doc, field.path));
@@ -246,6 +265,32 @@ export function projectRow(dataset, doc, { unmask }) {
 
 function selectPaths(dataset) {
   return [...new Set(dataset.fields.map((f) => f.path))].join(' ');
+}
+
+function resolvableFields(dataset) {
+  return dataset.fields.filter((field) => field.resolve);
+}
+
+async function resolveReferences(dataset, rows) {
+  for (const field of resolvableFields(dataset)) {
+    const ids = [...new Set(rows.map((row) => row[field.name]).filter(Boolean))];
+    const names = await lookupNames(dataset, field, ids);
+    for (const row of rows) {
+      if (row[field.name]) row[field.name] = names.get(String(row[field.name])) ?? 'unassigned';
+    }
+  }
+  return rows;
+}
+
+async function lookupNames(dataset, field, ids) {
+  const valid = ids.filter((id) => /^[0-9a-f]{24}$/i.test(String(id)));
+  if (!valid.length) return new Map();
+
+  const Ref = dataset.model.db?.models?.[field.resolve.model];
+  if (!Ref) return new Map();
+
+  const docs = await Ref.find({ _id: { $in: valid } }).select(field.resolve.field).lean();
+  return new Map(docs.map((doc) => [String(doc._id), doc[field.resolve.field]]));
 }
 
 function clampLimit(limit, bounds) {
@@ -279,7 +324,7 @@ export async function findRecords(dataset, args, { unmask }) {
     .limit(limit)
     .lean();
 
-  const rows = docs.map((doc) => projectRow(dataset, doc, { unmask }));
+  const rows = await resolveReferences(dataset, docs.map((doc) => projectRow(dataset, doc, { unmask })));
   return { result: { dataset: dataset.key, returned: rows.length, limit, rows }, rowCount: rows.length };
 }
 
@@ -298,10 +343,11 @@ export async function getRecord(dataset, args, { unmask }) {
   const doc = await dataset.model.findOne({ $or: or }).select(selectPaths(dataset)).lean();
   if (!doc) return { result: { dataset: dataset.key, found: false }, rowCount: 0 };
 
-  return { result: { dataset: dataset.key, found: true, record: projectRow(dataset, doc, { unmask }) }, rowCount: 1 };
+  const [record] = await resolveReferences(dataset, [projectRow(dataset, doc, { unmask })]);
+  return { result: { dataset: dataset.key, found: true, record }, rowCount: 1 };
 }
 
-export async function aggregateRecords(dataset, args) {
+export async function aggregateRecords(dataset, args, { unmask } = { unmask: false }) {
   assertCanAggregate(dataset);
 
   const metric = args.metric ?? 'count';
@@ -320,6 +366,7 @@ export async function aggregateRecords(dataset, args) {
   }
 
   let groupId = null;
+  let groupField = null;
   let timeSeries = false;
 
   if (args.interval) {
@@ -331,25 +378,38 @@ export async function aggregateRecords(dataset, args) {
     groupId = { $dateTrunc: { date: `$${dateField.path}`, unit: args.interval } };
     timeSeries = true;
   } else if (args.groupBy) {
-    const groupField = fieldOrThrow(dataset, args.groupBy);
+    groupField = fieldOrThrow(dataset, args.groupBy);
     if (!groupField.groupable) throw new AppError(`Field "${groupField.name}" is not groupable`, 400);
-    if (groupField.sensitive) throw new AppError(`Field "${groupField.name}" cannot be used as a grouping key`, 400);
+    if (groupField.sensitive && !unmask) throw new AppError(ACCESS_DENIED, 403);
     groupId = `$${groupField.path}`;
   }
 
   const accumulator = metric === 'count' ? { $sum: 1 } : { [`$${metric}`]: `$${valueField.path}` };
 
   pipeline.push({ $group: { _id: groupId, value: accumulator, count: { $sum: 1 } } });
+
+  const minRecords = Number(args.minRecords);
+  if (Number.isFinite(minRecords) && minRecords > 1) {
+    pipeline.push({ $match: { count: { $gte: Math.trunc(minRecords) } } });
+  }
+
   pipeline.push({ $sort: timeSeries ? { _id: 1 } : { value: -1 } });
   pipeline.push({ $limit: limit });
 
   const rows = await dataset.model.aggregate(pipeline);
 
-  const buckets = rows.map((row) => ({
-    group: row._id instanceof Date ? row._id.toISOString().slice(0, 10) : (row._id ?? 'none'),
-    value: typeof row.value === 'number' ? Math.round(row.value * 100) / 100 : row.value,
-    records: row.count,
-  }));
+  const names = groupField?.resolve
+    ? await lookupNames(dataset, groupField, rows.map((row) => row._id))
+    : new Map();
+
+  const buckets = rows.map((row) => {
+    const raw = row._id instanceof Date ? row._id.toISOString().slice(0, 10) : (row._id ?? 'none');
+    return {
+      group: groupField?.resolve ? (names.get(String(row._id)) ?? 'unassigned') : raw,
+      value: typeof row.value === 'number' ? Math.round(row.value * 100) / 100 : row.value,
+      records: row.count,
+    };
+  });
 
   return {
     result: {
@@ -357,8 +417,10 @@ export async function aggregateRecords(dataset, args) {
       metric,
       valueField: valueField?.name ?? null,
       groupedBy: args.interval ? `${dataset.dateField} by ${args.interval}` : (args.groupBy ?? 'all records'),
+      minRecords: Number.isFinite(minRecords) && minRecords > 1 ? Math.trunc(minRecords) : null,
       buckets,
     },
     rowCount: buckets.length,
+    unmasked: Boolean(groupField?.sensitive),
   };
 }

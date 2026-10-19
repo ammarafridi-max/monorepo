@@ -7,7 +7,9 @@
   "exports": {
     ".": "./src/index.js"
   },
-  "scripts": {},
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.127.0",
     "@travel-suite/utils": "workspace:*"

@@ -19,7 +19,7 @@ import {
   useAssistantConversations,
   useDeleteAssistantConversation,
 } from '../../hooks/assistant/useAssistantConversations.js';
-import AssistantText from './AssistantText.js';
+import AssistantText, { splitFollowUps } from './AssistantText.js';
 
 const TOOL_LABELS = {
   count_records: 'Counting',
@@ -78,7 +78,7 @@ function ToolChip({ tool }) {
   );
 }
 
-function Message({ message, streaming, isLast }) {
+function Message({ message, streaming, isLast, onAsk }) {
   if (message.role === 'user') {
     return (
       <div className="flex justify-end">
@@ -90,6 +90,8 @@ function Message({ message, streaming, isLast }) {
   }
 
   const waiting = streaming && isLast && !message.text;
+  const { body, followUps } = splitFollowUps(message.text);
+  const showFollowUps = followUps.length > 0 && !streaming;
 
   return (
     <div className="space-y-2">
@@ -108,7 +110,22 @@ function Message({ message, streaming, isLast }) {
         </div>
       )}
 
-      {message.text && <AssistantText text={message.text} />}
+      {body && <AssistantText text={body} />}
+
+      {showFollowUps && (
+        <div className="flex flex-wrap gap-1.5 pt-0.5">
+          {followUps.map((question) => (
+            <button
+              key={question}
+              type="button"
+              onClick={() => onAsk(question)}
+              className="rounded-full border border-gray-200 px-2.5 py-1 text-[11px] text-gray-600 transition hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900"
+            >
+              {question}
+            </button>
+          ))}
+        </div>
+      )}
 
       {message.error && (
         <div className="flex items-start gap-2 rounded-xl bg-red-50 px-3 py-2 text-[12px] text-red-700">
@@ -341,6 +358,7 @@ export default function AssistantWindow({ open, onClose, nav, meta }) {
                       message={message}
                       streaming={streaming}
                       isLast={index === messages.length - 1}
+                      onAsk={submit}
                     />
                   ))
                 )}

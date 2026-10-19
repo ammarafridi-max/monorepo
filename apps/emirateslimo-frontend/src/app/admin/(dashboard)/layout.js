@@ -41,6 +41,7 @@ const nav = [
   {
     section: 'Settings',
     items: [
+      { label: 'Assistant', href: '/admin/assistant', icon: 'Sparkles', roles: ['admin'] },
       { label: 'Currencies', href: '/admin/currencies', icon: 'CircleDollarSign', roles: ['admin'] },
       { label: 'Admin Users', href: '/admin/users', icon: 'Users', roles: ['admin'] },
       { label: 'My Account', href: '/admin/account', mobile: 4, mobileLabel: 'Account', icon: 'UserCircle', roles: ['admin', 'agent', 'blog-manager', 'support'] },

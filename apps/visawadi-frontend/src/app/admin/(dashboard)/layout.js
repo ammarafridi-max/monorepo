@@ -104,6 +104,7 @@ const nav = [
   {
     section: "Settings",
     items: [
+      { label: "Assistant", href: "/admin/assistant", icon: "Sparkles", roles: ["admin"] },
       {
         label: "My Account",
         href: "/admin/account", mobile: 4, mobileLabel: "Account",

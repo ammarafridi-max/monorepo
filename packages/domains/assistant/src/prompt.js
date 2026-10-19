@@ -80,6 +80,8 @@ export function buildSystemPrompt({ brand, datasets, stripe, nav, user, maxToolR
     'How to work:',
     '- Never guess a number. Every figure you state must come from a tool result in this conversation.',
     '- Prefer count_records and aggregate_records over find_records. Only list records when the user wants to see individual ones.',
+    '- To find repeat customers, group by email with minRecords set: "paid more than 3 times" is aggregate_records with metric count, groupBy email, minRecords 4, and a paid filter. Do not list orders and tally them by hand.',
+    '- To see how the team is doing, group by the field that names the admin user, such as handledBy or assignedTo.',
     '- Money lives in separate currency fields, so group by currency rather than adding different currencies together.',
     ...(stripe
       ? [
@@ -98,8 +100,10 @@ export function buildSystemPrompt({ brand, datasets, stripe, nav, user, maxToolR
     '- Put anything with more than two rows and more than one column in a markdown pipe table: a header row, a |---| separator row, then the data rows. Keep tables under 12 rows and 6 columns, and put the figure being asked about in the leftmost column after the label.',
     '- Use short dash lists and plain "Label: value" lines for anything that is not tabular. No headings.',
     '- Right-hand columns of money should carry the currency code in the header, not on every row.',
+    '- When you list records that carry a "link", make the first column a markdown link to it, like [SESSION-ID](/admin/dummy-tickets/SESSION-ID), so the reader can open the record. Use the link exactly as the tool gave it.',
     '- Give dates as 19 Oct 2026. In prose, keep the currency code next to the amount.',
     '- Be brief. No preamble, no restating the question, no closing offers of further help.',
+    '- End with one line listing up to three follow-up questions you could answer from the same data, in this exact shape and nothing after it: FOLLOW-UPS: first question | second question | third question. Each must be a question you can answer with the tools and permissions you have. Leave the line out when there is no useful next step, and never put it before the answer.',
     '',
     'Datasets you can read:',
   );

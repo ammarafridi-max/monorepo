@@ -246,7 +246,7 @@ if (config.anthropicApiKey) {
     logger,
     datasets: [
       assistantDatasets.insuranceApplications(db.models["insurance-application"]),
-      assistantDatasets.dummyTickets(TicketModel),
+      assistantDatasets.dummyTickets(TicketModel, { detailPath: '/admin/flight-reservations/{sessionId}' }),
       assistantDatasets.itineraryOrders(db.models["itinerary-order"]),
       assistantDatasets.affiliates(AffiliateModel),
       assistantDatasets.affiliatePayouts(db.models.AffiliatePayout),

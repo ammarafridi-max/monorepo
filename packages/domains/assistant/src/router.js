@@ -34,6 +34,9 @@ export function createAssistantRouterFromParts({ controller, auth, roles, messag
   router.use(protect, restrictTo(...roles));
 
   router.get('/meta', controller.getMeta);
+  router.get('/audit', restrictTo('admin'), controller.getToolCalls);
+  router.get('/usage', restrictTo('admin'), controller.getUsage);
+
   router.get('/conversations', controller.getConversations);
   router.get('/conversations/:id', controller.getConversationById);
   router.delete('/conversations/:id', controller.deleteConversationById);
