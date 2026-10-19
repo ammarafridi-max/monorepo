@@ -3,7 +3,7 @@ import {
   TrendingUp, Link2, Package, DollarSign, CircleDollarSign, Users, Handshake,
   UserCircle, Plane, ClipboardList, Shield, CalendarCheck, Car, MapPin,
   SlidersHorizontal, CalendarDays, FileText, MessageSquare, Camera, BedDouble,
-  Megaphone,
+  Megaphone, Banknote,
 } from 'lucide-react';
 
 export const ICON_MAP = {
@@ -11,7 +11,7 @@ export const ICON_MAP = {
   TrendingUp, Link2, Package, DollarSign, CircleDollarSign, Users, Handshake,
   UserCircle, Plane, ClipboardList, Shield, CalendarCheck, Car, MapPin,
   SlidersHorizontal, CalendarDays, FileText, MessageSquare, Camera, BedDouble,
-  Megaphone,
+  Megaphone, Banknote,
 };
 
 export function visibleNavFor(nav = [], role) {

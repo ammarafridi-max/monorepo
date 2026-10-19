@@ -32,7 +32,7 @@ const nextConfig = {
     ];
   },
   outputFileTracingRoot: join(__dirname, '../../'),
-  transpilePackages: ['@travel-suite/frontend-shared'],
+  transpilePackages: ['@travel-suite/frontend-shared', '@travel-suite/config'],
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [

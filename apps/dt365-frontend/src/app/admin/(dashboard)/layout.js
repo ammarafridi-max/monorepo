@@ -57,6 +57,7 @@ const nav = [
     items: [
       { label: 'Admin Users', href: '/admin/users', icon: 'Users', roles: ['admin'] },
       { label: 'Affiliates', href: '/admin/affiliates', icon: 'Handshake', roles: ['admin'] },
+      { label: 'Affiliate Payouts', href: '/admin/affiliates/payouts', icon: 'Banknote', roles: ['admin'] },
     ],
   },
   {

@@ -16,6 +16,7 @@ const staticPages = [
   { url: '/schengen-travel-insurance', changeFrequency: 'monthly', priority: 0.8 },
   { url: '/blog', changeFrequency: 'daily', priority: 0.8 },
   { url: '/blog/tags', changeFrequency: 'weekly', priority: 0.6 },
+  { url: '/affiliate-program', changeFrequency: 'monthly', priority: 0.6 },
   { url: '/faq', changeFrequency: 'monthly', priority: 0.7 },
   { url: '/terms-and-conditions', changeFrequency: 'yearly', priority: 0.3 },
   { url: '/privacy-policy', changeFrequency: 'yearly', priority: 0.3 },
