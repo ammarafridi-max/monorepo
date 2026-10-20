@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertTriangle,
   ArrowUp,
+  ImagePlus,
   Clock,
   Database,
   Loader2,
@@ -22,6 +23,7 @@ import {
 import AssistantProposal from './AssistantProposal.js';
 import AssistantText, { splitFollowUps } from './AssistantText.js';
 import { useAssistantAction } from '../../hooks/assistant/useAssistantAction.js';
+import { useAssistantAdImage } from '../../hooks/assistant/useAssistantAdImage.js';
 
 const TOOL_LABELS = {
   ads_setup: 'Ads account',
@@ -208,6 +210,7 @@ export default function AssistantWindow({ open, onClose, nav, meta }) {
   const [mode, setMode] = useState('modal');
   const [showHistory, setShowHistory] = useState(false);
   const [draft, setDraft] = useState('');
+  const [images, setImages] = useState([]);
 
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
@@ -225,6 +228,10 @@ export default function AssistantWindow({ open, onClose, nav, meta }) {
   } = useAssistantChat({ nav });
 
   const { decideAction, decidingId } = useAssistantAction({ onDecided: settleProposal });
+
+  const { uploadImage, uploadingImage } = useAssistantAdImage({
+    onUploaded: (image) => setImages((current) => [...current, image]),
+  });
 
   const { conversations, isLoadingConversations } = useAssistantConversations({ enabled: open && showHistory });
   const { deleteConversation, deletingConversation } = useDeleteAssistantConversation();
@@ -257,8 +264,16 @@ export default function AssistantWindow({ open, onClose, nav, meta }) {
   function submit(text) {
     const value = String(text ?? '').trim();
     if (!value || streaming) return;
+
+    const attached = images.length
+      ? `${value}\n\nImages uploaded to the ad account and ready to use: ${images
+          .map((image) => `${image.fileId} (${image.name})`)
+          .join(', ')}`
+      : value;
+
     setDraft('');
-    send(value);
+    setImages([]);
+    send(attached);
   }
 
   function handleKeyDown(event) {
@@ -394,7 +409,46 @@ export default function AssistantWindow({ open, onClose, nav, meta }) {
             </div>
 
             <div className="shrink-0 border-t border-gray-100 p-3">
+              {images.length > 0 && (
+                <div className="mx-auto mb-1.5 flex max-w-3xl flex-wrap gap-1.5">
+                  {images.map((image) => (
+                    <span
+                      key={image.fileId}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-2.5 py-1 text-[11px] text-gray-600"
+                    >
+                      {image.name}
+                      <button
+                        type="button"
+                        onClick={() => setImages((current) => current.filter((i) => i.fileId !== image.fileId))}
+                        aria-label={`Remove ${image.name}`}
+                        className="text-gray-400 hover:text-gray-700"
+                      >
+                        <X size={11} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+
               <div className="mx-auto flex max-w-3xl items-end gap-2 rounded-2xl border border-gray-200 bg-white p-2 focus-within:border-gray-300">
+                {meta?.adsWrite && (
+                  <label
+                    title="Upload an image for an ad"
+                    className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-xl text-gray-400 transition hover:bg-gray-50 hover:text-gray-700"
+                  >
+                    {uploadingImage ? <Loader2 size={15} className="animate-spin" /> : <ImagePlus size={15} />}
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      className="hidden"
+                      disabled={uploadingImage}
+                      onChange={(event) => {
+                        uploadImage(event.target.files?.[0]);
+                        event.target.value = '';
+                      }}
+                    />
+                  </label>
+                )}
                 <textarea
                   ref={inputRef}
                   rows={1}

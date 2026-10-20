@@ -1,4 +1,4 @@
-import { apiFetch, csrfHeader } from './apiClient.js';
+import { apiFetch, apiUpload, csrfHeader } from './apiClient.js';
 
 const URL = '/api/assistant';
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL;
@@ -29,6 +29,14 @@ export async function getAssistantAuditApi(params = {}) {
 export async function getAssistantUsageApi(days = 30) {
   const result = await apiFetch(`${URL}/usage?days=${days}`);
   return result?.usage || null;
+}
+
+export async function uploadAssistantAdImageApi(file) {
+  const form = new FormData();
+  form.append('image', file);
+
+  const result = await apiUpload('/api/openai-ads/images', form);
+  return result?.fileId ?? null;
 }
 
 export async function decideAssistantActionApi({ id, approve }) {

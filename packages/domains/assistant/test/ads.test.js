@@ -258,3 +258,93 @@ describe('duplicate overrides', () => {
     });
   });
 });
+
+describe('building inside an existing campaign', () => {
+  const AD = { title: 'Dummy ticket in minutes', body: 'Verifiable reservation for your visa file.', targetUrl: 'https://dummyticket365.com/ae', imageFileId: 'file_9' };
+
+  it('offers a tool for every part of a campaign', () => {
+    const names = buildAdsToolDefinitions({ canWrite: true }).map((t) => t.name);
+    for (const expected of ['propose_ads_adgroup', 'propose_ads_ad', 'propose_ads_replace_ad', 'propose_ads_adgroup_settings', 'propose_ads_rename']) {
+      assert.ok(names.includes(expected), `missing ${expected}`);
+    }
+  });
+
+  it('can archive, which is how things are removed', () => {
+    const tool = buildAdsToolDefinitions({ canWrite: true }).find((t) => t.name === 'propose_ads_status');
+    assert.deepEqual(tool.input_schema.properties.action.enum, ['pause', 'activate', 'archive']);
+  });
+
+  it('warns that archiving cannot be undone', async () => {
+    const { summary, details } = await describeAdsProposal({
+      name: 'propose_ads_status',
+      input: { kind: 'campaigns', id: 'c_1', action: 'archive' },
+      ads: adsStub(),
+    });
+    assert.match(summary, /^Archive the campaign/);
+    assert.match(details.join(' '), /cannot be undone/);
+  });
+
+  it('adds an ad group with its ad to a named campaign', async () => {
+    const ads = adsStub();
+    const { summary, details } = await describeAdsProposal({
+      name: 'propose_ads_adgroup',
+      input: { campaignId: 'c_1', adGroup: { name: 'UAE visa', bid: 12, contextHints: ['a', 'b'] }, ad: AD },
+      ads,
+    });
+    assert.match(summary, /Add the ad group "UAE visa" to "Visa traffic"/);
+    assert.match(details.join(' '), /Bid: AED 12/);
+    assert.match(details.join(' '), /Audience hints: 2/);
+    assert.equal(ads.calls.length, 0);
+  });
+
+  it('explains that replacing an ad archives the old one', async () => {
+    const { summary, details } = await describeAdsProposal({
+      name: 'propose_ads_replace_ad',
+      input: { adId: 'a_1', adGroupId: 'g_1', ad: AD },
+      ads: adsStub(),
+    });
+    assert.match(summary, /Replace an ad in "Schengen"/);
+    assert.match(details.join(' '), /creates the replacement first and archives the old ad after/);
+  });
+
+  it('creates the replacement then archives the original, in that order', async () => {
+    const ads = adsStub();
+    ads.createAdInGroup = async (groupId, ad, by) => { ads.calls.push(['createAd', groupId, ad.title, by]); return { id: 'a_new' }; };
+
+    const result = await executeAdsAction({ kind: 'propose_ads_replace_ad', params: { adId: 'a_old', adGroupId: 'g_1', ad: AD }, ads, performedBy: 'Ammar' });
+
+    assert.deepEqual(ads.calls[0], ['createAd', 'g_1', AD.title, 'Ammar']);
+    assert.deepEqual(ads.calls[1], ['status', 'ads', 'a_old', 'archive', 'Ammar']);
+    assert.equal(result.replaced, 'a_old');
+  });
+
+  it('warns rather than lying when archiving the old ad fails', async () => {
+    const ads = adsStub();
+    ads.createAdInGroup = async () => ({ id: 'a_new' });
+    ads.setStatus = async () => { throw new Error('ad is already archived'); };
+
+    const result = await executeAdsAction({ kind: 'propose_ads_replace_ad', params: { adId: 'a_old', adGroupId: 'g_1', ad: AD }, ads, performedBy: 'Ammar' });
+
+    assert.match(result.warnings[0], /archiving the old one failed/);
+    assert.match(result.warnings[0], /Both are live/);
+  });
+
+  it('keeps the current hints when only the bid changes', async () => {
+    const ads = adsStub();
+    ads.getAdGroupSettings = async (id) => ({ id, name: 'Schengen', bid: 12, contextHints: ['keep me'] });
+    ads.updateAdGroupSettings = async (id, input, by) => { ads.calls.push(['update', id, input, by]); return { id }; };
+
+    await executeAdsAction({ kind: 'propose_ads_adgroup_settings', params: { adGroupId: 'g_1', campaignId: 'c_1', bid: 20 }, ads, performedBy: 'Ammar' });
+
+    const [, , input] = ads.calls[0];
+    assert.deepEqual(input.contextHints, ['keep me']);
+    assert.equal(input.bid, 20);
+  });
+
+  it('renames through the ads service', async () => {
+    const ads = adsStub();
+    ads.rename = async (kind, id, name, by) => { ads.calls.push(['rename', kind, id, name, by]); return { id, name }; };
+    await executeAdsAction({ kind: 'propose_ads_rename', params: { kind: 'campaigns', id: 'c_1', name: 'New name' }, ads, performedBy: 'Ammar' });
+    assert.deepEqual(ads.calls[0], ['rename', 'campaigns', 'c_1', 'New name', 'Ammar']);
+  });
+});

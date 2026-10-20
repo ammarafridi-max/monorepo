@@ -421,6 +421,19 @@ export function createAssistantService({
     }));
   }
 
+  async function recordOutcome(action, line) {
+    if (!action.conversation) return;
+
+    // The model only learns what an approval did if the outcome is appended to the history.
+    await Conversation.updateOne(
+      { _id: action.conversation },
+      {
+        $push: { turns: { role: 'user', content: `[Recorded by the portal, not typed by the user] ${line}`, at: new Date() } },
+        $set: { lastMessageAt: new Date() },
+      },
+    );
+  }
+
   async function decideAction({ user, id, approve }) {
     if (!ads || !adsWriteRoles.includes(user.role)) {
       throw new AppError('You are not allowed to change the ad account', 403);
@@ -441,6 +454,7 @@ export function createAssistantService({
 
     if (!approve) {
       logger?.info('[assistant] action cancelled', { actionId: id, kind: claimed.kind, userId: String(user._id) });
+      await recordOutcome(claimed, `The admin rejected this proposal: ${claimed.summary}. Nothing was changed.`);
       return { id, status: 'cancelled', summary: claimed.summary };
     }
 
@@ -463,12 +477,22 @@ export function createAssistantService({
       await claimed.save();
       logger?.info('[assistant] action executed', { actionId: id, kind: claimed.kind, userId: String(user._id) });
 
+      await recordOutcome(
+        claimed,
+        `The admin approved this proposal: ${claimed.summary}. It succeeded, and the ad account returned ${JSON.stringify(result)}.`,
+      );
+
       return { id, status: 'executed', summary: claimed.summary, result };
     } catch (err) {
       claimed.status = 'failed';
       claimed.error = err.message;
       await claimed.save();
       logger?.error('[assistant] action failed', { actionId: id, kind: claimed.kind, message: err.message });
+
+      await recordOutcome(
+        claimed,
+        `The admin approved this proposal: ${claimed.summary}. It FAILED and nothing was changed. The ad account said: ${err.message}. Work out what to correct and propose a fixed version.`,
+      );
       throw new AppError(`That did not go through: ${err.message}`, err.statusCode ?? 502);
     }
   }
