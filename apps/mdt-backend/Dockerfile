@@ -22,6 +22,8 @@ COPY packages/domains/insurance/package.json       packages/domains/insurance/pa
 COPY packages/integrations/wis/package.json        packages/integrations/wis/package.json
 COPY packages/integrations/meta-capi/package.json  packages/integrations/meta-capi/package.json
 COPY packages/integrations/openai-capi/package.json  packages/integrations/openai-capi/package.json
+COPY packages/integrations/openai-ads/package.json  packages/integrations/openai-ads/package.json
+COPY packages/domains/openai-ads/package.json  packages/domains/openai-ads/package.json
 COPY packages/shared/notifications/package.json   packages/shared/notifications/package.json
 COPY packages/domains/payments/package.json        packages/domains/payments/package.json
 COPY packages/domains/tickets/package.json         packages/domains/tickets/package.json
