@@ -13,9 +13,8 @@ import { InsuranceProvider } from '@travel-suite/frontend-shared/contexts/Insura
 import { TicketProvider } from '@travel-suite/frontend-shared/contexts/TicketContext';
 import AppMegaLayout from '@travel-suite/frontend-shared/layouts/AppMegaLayout';
 import Footer from '@travel-suite/frontend-shared/components/sections/v2/Footer';
-import StickyWhatsApp from '@travel-suite/frontend-shared/components/ui/v2/StickyWhatsApp';
 import AnalyticsInit from '@travel-suite/frontend-shared/components/shared/AnalyticsInit';
-import { EMAIL, WHATSAPP_NUMBER, ADDRESS, GMB_URL, SOCIALS } from '@/config/contact';
+import { EMAIL, ADDRESS, GMB_URL, SOCIALS } from '@/config/contact';
 
 const LOGO_ALT = 'Travl';
 
@@ -175,10 +174,6 @@ export default function Providers({ children }) {
               >
                 <main>{children}</main>
               </AppMegaLayout>
-              <StickyWhatsApp
-                phoneNumber={WHATSAPP_NUMBER}
-                hidePathPrefixes={['/insurance-booking', '/apply']}
-              />
             </InsuranceProvider>
             </TicketProvider>
         </AuthProvider>

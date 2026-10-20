@@ -1,5 +1,5 @@
 'use client';
-import { EMAIL, WHATSAPP_NUMBER } from '@/config/contact';
+import { EMAIL } from '@/config/contact';
 
 import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -12,7 +12,6 @@ import { TicketProvider } from '@travel-suite/frontend-shared/contexts/TicketCon
 import { InsuranceProvider } from '@travel-suite/frontend-shared/contexts/InsuranceContext';
 import AppLayout from '@travel-suite/frontend-shared/layouts/AppLayout';
 import AnalyticsInit from '@travel-suite/frontend-shared/components/shared/AnalyticsInit';
-import StickyWhatsApp from '@travel-suite/frontend-shared/components/ui/v2/StickyWhatsApp';
 
 const LIGHT_HEADER_ROUTES = [
   '/blog',
@@ -145,7 +144,6 @@ export default function Providers({ children }) {
                   <AppLayout logoSrc={LOGO_SRC} brandName={BRAND_NAME} pages={flightItineraryPages} footerLinkGroups={footerLinkGroups} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark}>
                     <main>{children}</main>
                   </AppLayout>
-                  <StickyWhatsApp phoneNumber={WHATSAPP_NUMBER} />
                 </InsuranceProvider>
             </TicketProvider>
           </CurrencyProvider>
@@ -165,7 +163,6 @@ export default function Providers({ children }) {
                 <AppLayout logoSrc={LOGO_SRC} brandName={BRAND_NAME} pages={defaultPages} footerLinkGroups={footerLinkGroups} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark}>
                   <main>{children}</main>
                 </AppLayout>
-                <StickyWhatsApp phoneNumber={WHATSAPP_NUMBER} />
               </InsuranceProvider>
           </TicketProvider>
         </CurrencyProvider>
