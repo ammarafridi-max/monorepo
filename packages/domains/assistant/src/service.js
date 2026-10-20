@@ -6,6 +6,16 @@ import { buildToolDefinitions, executeTool } from './tools.js';
 
 const MAX_MESSAGE_LENGTH = 4000;
 
+export function repairToolUse(content) {
+  if (!Array.isArray(content)) return content;
+
+  return content.map((block) =>
+    block?.type === 'tool_use' && (block.input === null || block.input === undefined)
+      ? { ...block, input: {} }
+      : block,
+  );
+}
+
 function withoutToolUse(content) {
   return Array.isArray(content) ? content.filter((block) => block.type !== 'tool_use') : content;
 }
@@ -264,7 +274,7 @@ export function createAssistantService({
 
     conversation.turns.push({ role: 'user', content: text, at: new Date() });
 
-    const messages = conversation.turns.map(({ role, content }) => ({ role, content }));
+    const messages = conversation.turns.map(({ role, content }) => ({ role, content: repairToolUse(content) }));
     const usage = { requests: 0, inputTokens: 0, outputTokens: 0, cacheReadTokens: 0 };
 
     let stopped = null;

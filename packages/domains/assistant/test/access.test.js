@@ -11,6 +11,7 @@ import {
   projectRow,
 } from '../src/datasets.js';
 import { dummyTickets, visaLeads } from '../src/presets.js';
+import { repairToolUse } from '../src/service.js';
 
 const DOC = {
   _id: '507f1f77bcf86cd799439011',
@@ -200,5 +201,30 @@ describe('dataset definitions', () => {
 
   it('refuses a dataset with no model', () => {
     assert.throws(() => normaliseDatasets([{ key: 'x' }]), /needs a key and a model/);
+  });
+});
+
+describe('replaying a stored conversation', () => {
+  it('puts back the input Mongoose drops from a no-argument tool call', () => {
+    const stored = [
+      { type: 'text', text: 'checking' },
+      { type: 'tool_use', id: 'tu_1', name: 'ads_setup' },
+      { type: 'tool_use', id: 'tu_2', name: 'count_records', input: { dataset: 'dummy_tickets' } },
+    ];
+
+    const repaired = repairToolUse(stored);
+
+    assert.deepEqual(repaired[1].input, {}, 'a tool_use with no input is rejected by the Messages API');
+    assert.deepEqual(repaired[2].input, { dataset: 'dummy_tickets' }, 'arguments that were stored must survive untouched');
+    assert.equal(repaired[0], stored[0], 'blocks that need no repair are left alone');
+  });
+
+  it('leaves a plain text turn alone', () => {
+    assert.equal(repairToolUse('a typed message'), 'a typed message');
+  });
+
+  it('keeps an empty input that did survive', () => {
+    const [block] = repairToolUse([{ type: 'tool_use', id: 't', name: 'stripe_balance', input: {} }]);
+    assert.deepEqual(block.input, {});
   });
 });

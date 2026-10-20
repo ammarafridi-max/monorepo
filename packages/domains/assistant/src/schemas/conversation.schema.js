@@ -6,7 +6,9 @@ const AssistantTurnSchema = new mongoose.Schema(
     content: { type: mongoose.Schema.Types.Mixed, required: true },
     at: { type: Date, default: Date.now },
   },
-  { _id: false },
+  // minimize must stay off: Mongoose drops an empty object, and a tool called with
+  // no arguments stores input: {}, which the Messages API then rejects on replay.
+  { _id: false, minimize: false },
 );
 
 const AssistantConversationSchema = new mongoose.Schema(

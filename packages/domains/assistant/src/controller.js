@@ -100,8 +100,19 @@ export function createAssistantController({
 
       send(res, 'done', { type: 'done', ...outcome });
     } catch (err) {
-      logger?.error('[assistant] message failed', { message: err.message, userId: String(req.user._id) });
-      send(res, 'error', { type: 'error', message: err.isOperational ? err.message : 'The assistant could not answer that.' });
+      logger?.error('[assistant] message failed', {
+        message: err.message,
+        status: err.status ?? err.statusCode ?? null,
+        userId: String(req.user._id),
+        conversationId: req.body?.conversationId ?? null,
+      });
+
+      send(res, 'error', {
+        type: 'error',
+        message: err.isOperational
+          ? err.message
+          : 'Something went wrong on the way to the model. Try again, and start a new conversation if it keeps happening.',
+      });
     } finally {
       res.end();
     }
