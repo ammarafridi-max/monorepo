@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
+import AssistantActionSchema from './schemas/action.schema.js';
 import AssistantConversationSchema from './schemas/conversation.schema.js';
 import AssistantToolCallSchema from './schemas/tool-call.schema.js';
 import { normaliseDatasets } from './datasets.js';
@@ -6,7 +7,7 @@ import { createAssistantService } from './service.js';
 import { createAssistantController } from './controller.js';
 import { createAssistantRouterFromParts } from './router.js';
 
-export { AssistantConversationSchema, AssistantToolCallSchema };
+export { AssistantActionSchema, AssistantConversationSchema, AssistantToolCallSchema };
 export * as assistantDatasets from './presets.js';
 
 function getOrRegisterModel(conn, name, schema) {
@@ -25,6 +26,10 @@ export function createAssistantRouter({
   datasets = [],
   stripe = null,
   stripeRoles = ['admin'],
+  ads = null,
+  adsRoles = ['admin'],
+  adsWriteRoles = ['admin'],
+  actionTtlMinutes = 30,
   roles = ['admin', 'agent', 'blog-manager'],
   model = 'claude-opus-5-5',
   effort = 'medium',
@@ -39,6 +44,7 @@ export function createAssistantRouter({
 
   const Conversation = getOrRegisterModel(db, 'assistant-conversation', AssistantConversationSchema);
   const ToolCall = getOrRegisterModel(db, 'assistant-tool-call', AssistantToolCallSchema);
+  const Action = getOrRegisterModel(db, 'assistant-action', AssistantActionSchema);
 
   const resolved = normaliseDatasets(datasets);
   const anthropic = new Anthropic({ apiKey: anthropicApiKey });
@@ -47,9 +53,14 @@ export function createAssistantRouter({
     anthropic,
     Conversation,
     ToolCall,
+    Action,
     datasets: resolved,
     stripe,
     stripeRoles,
+    ads,
+    adsRoles,
+    adsWriteRoles,
+    actionTtlMinutes,
     brand,
     model,
     effort,
@@ -66,9 +77,18 @@ export function createAssistantRouter({
     datasets: resolved,
     stripe: Boolean(stripe),
     stripeRoles,
+    ads: Boolean(ads),
+    adsRoles,
+    adsWriteRoles,
     logger,
   });
-  const router = createAssistantRouterFromParts({ controller, auth, roles, messagesPerHour });
+  const router = createAssistantRouterFromParts({
+    controller,
+    auth,
+    roles,
+    writeRoles: adsWriteRoles,
+    messagesPerHour,
+  });
 
   return { router, service, controller };
 }

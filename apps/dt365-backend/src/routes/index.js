@@ -225,7 +225,7 @@ router.use(
   }),
 );
 
-const { router: openaiAdsRouter } = createOpenAIAdsRouter({
+const { router: openaiAdsRouter, service: openaiAdsService } = createOpenAIAdsRouter({
   adsClient: createOpenAIAdsClient({ apiKey: config.openai.adsApiKey, logger }),
   auth,
   maxDailyBudget: config.openai.adsMaxDailyBudget,
@@ -321,6 +321,7 @@ if (config.anthropicApiKey) {
     auth,
     anthropicApiKey: config.anthropicApiKey,
     stripe,
+    ads: config.openai.adsApiKey ? openaiAdsService : null,
     brand: { name: "Dummy Ticket 365" },
     logger,
     datasets: [

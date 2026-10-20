@@ -58,7 +58,7 @@ function describeDataset(dataset, role) {
   return lines.join('\n');
 }
 
-export function buildSystemPrompt({ brand, datasets, stripe, nav, user, maxToolRounds }) {
+export function buildSystemPrompt({ brand, datasets, stripe, ads, adsWrite, nav, user, maxToolRounds }) {
   const stable = [];
 
   stable.push(
@@ -69,12 +69,24 @@ export function buildSystemPrompt({ brand, datasets, stripe, nav, user, maxToolR
     ...(stripe
       ? ['- Read this brand\'s Stripe account through the stripe_ tools: balance, settled revenue, balance transactions, payouts, disputes and individual charges.']
       : []),
+    ...(ads
+      ? [
+          '- Read this brand OpenAI Ads account through the ads_ tools: the account setup, every campaign, and any campaign broken down by ad group and ad.',
+        ]
+      : []),
+    ...(adsWrite
+      ? [
+          '- Propose changes to the ad account: a new campaign, a duplicate of one, a budget change, or pausing and activating. You propose; the admin approves.',
+        ]
+      : []),
     '- Explain what the numbers mean, and point out what looks off.',
     '- Tell the user which admin page to open for a task, using the portal map below.',
     '',
     'What you cannot do:',
-    '- You have no write access. You cannot create, edit, cancel, refund or delete anything. If asked, say so and name the admin page where they can do it themselves.',
-    `- You cannot read anything outside the datasets listed below${stripe ? ' and this brand\'s Stripe account' : ''}.`,
+    adsWrite
+      ? '- The only thing you can change is the ad account, and only by proposing it. Everything else is read-only: you cannot create, edit, cancel, refund or delete. If asked, say so and name the admin page where they can do it themselves.'
+      : '- You have no write access. You cannot create, edit, cancel, refund or delete anything. If asked, say so and name the admin page where they can do it themselves.',
+    `- You cannot read anything outside the datasets listed below${stripe ? ", this brand's Stripe account" : ''}${ads ? ' and its OpenAI Ads account' : ''}.`,
     `- A single answer may use at most ${maxToolRounds} rounds of tool calls, and list results are capped at ${FIND_LIMIT.max} rows. For totals, count or aggregate instead of listing.`,
     '',
     'How to work:',
@@ -114,6 +126,32 @@ export function buildSystemPrompt({ brand, datasets, stripe, nav, user, maxToolR
     stable.push(
       '',
       'Stripe: live, for this brand only. Amounts come back already converted out of minor units, so use them as given. Balance transaction types you will see include charge, payment, refund, payout, adjustment and stripe_fee.',
+    );
+  }
+
+
+  if (ads) {
+    stable.push(
+      '',
+      'OpenAI Ads for this brand:',
+      '  Money is spent here, so accuracy matters more than speed.',
+      '  - Spend, clicks and orders come from the ads account. Read ads_setup first so you know the currency, the website ads must point at, and the daily budget ceiling.',
+      '  - When you analyse performance, compare at the level the question asks about, and name the metric you judged on. Cost per order is the one that matters for the sales goal, cost per click for the clicks goal. Say when a figure rests on too few conversions to trust.',
+      '  - Never state a campaign, ad group or ad is doing well or badly without the numbers from a tool in front of you.',
+    );
+  }
+
+  if (adsWrite) {
+    stable.push(
+      '',
+      'Proposing ad changes:',
+      '  - A propose_ tool changes nothing. It puts a card in front of the admin, who approves or rejects it. Never say you created, duplicated, paused or changed anything. Say what you have proposed and that it is waiting for them.',
+      '  - Gather before you propose: ads_setup for the currency and ceiling, ads_find_locations for location ids, and ads_campaign on a comparable campaign to copy a bid, audience hints, headline, body and the image id from something that already works.',
+      '  - A new ad needs the id of an image already in this ad account. You cannot upload one. Take one from an existing ad and say which ad you took it from. If there is no usable image, say so and send them to the ChatGPT Ads page instead of proposing a broken ad.',
+      '  - Make one proposal at a time and explain your reasoning for the numbers you chose: why that budget, why that bid, why those locations. Suggest the budget rather than asking them to pick one, and keep the first budget modest unless they say otherwise.',
+      '  - Landing pages must be https on this brand own website. Headlines are 3 to 50 characters, body text 1 to 100.',
+      '  - Campaigns are always created paused, so say that the copy or the new campaign will not spend until they activate it.',
+      '  - If the admin asks for something above the daily budget ceiling, say what the ceiling is and propose the ceiling instead.',
     );
   }
 

@@ -60,6 +60,20 @@ export function useAssistantChat({ nav } = {}) {
           dataset: tool.input?.dataset ?? null,
           pending: false,
         })),
+        proposals: [],
+      })),
+    );
+  }, []);
+
+  const settleProposal = useCallback((outcome) => {
+    setMessages((current) =>
+      current.map((message) => ({
+        ...message,
+        proposals: (message.proposals ?? []).map((proposal) =>
+          proposal.id === outcome.id
+            ? { ...proposal, status: outcome.status ?? (outcome.approved ? 'executed' : 'cancelled'), result: outcome.result, error: outcome.error }
+            : proposal,
+        ),
       })),
     );
   }, []);
@@ -81,8 +95,8 @@ export function useAssistantChat({ nav } = {}) {
       setStreaming(true);
       setMessages((current) => [
         ...current,
-        { id: makeId(), role: 'user', text, tools: [] },
-        { id: makeId(), role: 'assistant', text: '', tools: [] },
+        { id: makeId(), role: 'user', text, tools: [], proposals: [] },
+        { id: makeId(), role: 'assistant', text: '', tools: [], proposals: [] },
       ]);
 
       try {
@@ -125,6 +139,23 @@ export function useAssistantChat({ nav } = {}) {
               return;
             }
 
+            if (event.type === 'proposal') {
+              updateLastAssistant((message) => ({
+                ...message,
+                proposals: [
+                  ...message.proposals,
+                  {
+                    id: event.id,
+                    kind: event.kind,
+                    summary: event.summary,
+                    details: event.details,
+                    status: 'pending',
+                  },
+                ],
+              }));
+              return;
+            }
+
             if (event.type === 'done') {
               setConversationId(event.conversationId);
               if (event.stopped) setNotice(event.stopped);
@@ -158,5 +189,6 @@ export function useAssistantChat({ nav } = {}) {
     stop,
     startNewConversation,
     openConversation,
+    settleProposal,
   };
 }

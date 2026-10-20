@@ -31,6 +31,10 @@ export async function getAssistantUsageApi(days = 30) {
   return result?.usage || null;
 }
 
+export async function decideAssistantActionApi({ id, approve }) {
+  return await apiFetch(`${URL}/actions/${id}/${approve ? 'approve' : 'cancel'}`, { method: 'POST' });
+}
+
 export async function deleteAssistantConversationApi(id) {
   return await apiFetch(`${URL}/conversations/${id}`, { method: 'DELETE' });
 }

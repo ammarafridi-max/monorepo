@@ -27,7 +27,7 @@ function createPerUserLimiter({ windowMs, max }) {
   };
 }
 
-export function createAssistantRouterFromParts({ controller, auth, roles, messagesPerHour }) {
+export function createAssistantRouterFromParts({ controller, auth, roles, writeRoles, messagesPerHour }) {
   const router = Router();
   const { protect, restrictTo } = auth;
 
@@ -36,6 +36,10 @@ export function createAssistantRouterFromParts({ controller, auth, roles, messag
   router.get('/meta', controller.getMeta);
   router.get('/audit', restrictTo('admin'), controller.getToolCalls);
   router.get('/usage', restrictTo('admin'), controller.getUsage);
+
+  router.get('/actions', controller.getActions);
+  router.post('/actions/:id/approve', restrictTo(...writeRoles), controller.approveAction);
+  router.post('/actions/:id/cancel', controller.cancelAction);
 
   router.get('/conversations', controller.getConversations);
   router.get('/conversations/:id', controller.getConversationById);

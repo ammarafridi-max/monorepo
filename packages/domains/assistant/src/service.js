@@ -1,4 +1,5 @@
 import { AppError } from '@travel-suite/utils';
+import { executeAdsAction } from './ads-tools.js';
 import { datasetsForRole } from './datasets.js';
 import { buildSystemPrompt, sanitiseNav } from './prompt.js';
 import { buildToolDefinitions, executeTool } from './tools.js';
@@ -19,9 +20,14 @@ export function createAssistantService({
   anthropic,
   Conversation,
   ToolCall,
+  Action,
   datasets,
   stripe,
   stripeRoles,
+  ads,
+  adsRoles,
+  adsWriteRoles,
+  actionTtlMinutes,
   brand,
   model,
   effort,
@@ -220,15 +226,41 @@ export function createAssistantService({
 
     const allowed = datasetsForRole(datasets, user.role);
     const stripeClient = stripe && stripeRoles.includes(user.role) ? stripe : null;
-    const tools = buildToolDefinitions({ datasets: allowed, stripe: stripeClient });
+    const adsService = ads && adsRoles.includes(user.role) ? ads : null;
+    const adsWrite = Boolean(adsService) && adsWriteRoles.includes(user.role);
+
+    const tools = buildToolDefinitions({
+      datasets: allowed,
+      stripe: stripeClient,
+      ads: adsService,
+      adsWrite,
+    });
+
     const system = buildSystemPrompt({
       brand,
       datasets: allowed,
       stripe: Boolean(stripeClient),
+      ads: Boolean(adsService),
+      adsWrite,
       nav: sanitiseNav(nav),
       user,
       maxToolRounds,
     });
+
+    const propose = async ({ kind, params, summary, details }) => {
+      const action = await Action.create({
+        user: user._id,
+        userName: user.name,
+        conversation: conversation._id,
+        kind,
+        params,
+        summary,
+        details,
+        expiresAt: new Date(Date.now() + actionTtlMinutes * 60000),
+      });
+
+      return { id: String(action._id), kind, expiresAt: action.expiresAt };
+    };
 
     conversation.turns.push({ role: 'user', content: text, at: new Date() });
 
@@ -292,11 +324,13 @@ export function createAssistantService({
           const startedAt = Date.now();
 
           try {
-            const { result, rowCount, unmasked, dataset } = await executeTool({
+            const { result, rowCount, unmasked, dataset, proposal } = await executeTool({
               name: call.name,
               input: call.input,
               datasets: allowed,
               stripe: stripeClient,
+              ads: adsService,
+              propose: adsWrite ? propose : null,
               role: user.role,
             });
 
@@ -312,6 +346,7 @@ export function createAssistantService({
             });
 
             onEvent({ type: 'tool_result', name: call.name, dataset, rowCount });
+            if (proposal) onEvent({ type: 'proposal', ...proposal });
             results.push({ type: 'tool_result', tool_use_id: call.id, content: JSON.stringify(result) });
           } catch (err) {
             await recordToolCall({
@@ -357,5 +392,85 @@ export function createAssistantService({
     return { conversationId: String(conversation._id), title: conversation.title, usage, stopped };
   }
 
-  return { listConversations, getConversation, deleteConversation, sendMessage, listToolCalls, getUsage };
+  async function listActions({ user, conversationId }) {
+    const query = { user: user._id };
+    if (conversationId) query.conversation = conversationId;
+
+    const rows = await Action.find(query).sort({ createdAt: -1 }).limit(50).lean();
+
+    return rows.map((row) => ({
+      id: String(row._id),
+      kind: row.kind,
+      summary: row.summary,
+      details: row.details,
+      status: row.status,
+      result: row.result,
+      error: row.error,
+      expiresAt: row.expiresAt,
+      createdAt: row.createdAt,
+    }));
+  }
+
+  async function decideAction({ user, id, approve }) {
+    if (!ads || !adsWriteRoles.includes(user.role)) {
+      throw new AppError('You are not allowed to change the ad account', 403);
+    }
+
+    // The claim must be atomic: an approval that runs twice would create two campaigns.
+    const claimed = await Action.findOneAndUpdate(
+      { _id: id, user: user._id, status: 'pending' },
+      { status: approve ? 'executed' : 'cancelled', decidedBy: user._id, decidedAt: new Date() },
+      { new: true },
+    );
+
+    if (!claimed) {
+      const existing = await Action.findOne({ _id: id, user: user._id }).lean();
+      if (!existing) throw new AppError('That action was not found', 404);
+      throw new AppError(`That action is already ${existing.status}`, 409);
+    }
+
+    if (!approve) {
+      logger?.info('[assistant] action cancelled', { actionId: id, kind: claimed.kind, userId: String(user._id) });
+      return { id, status: 'cancelled', summary: claimed.summary };
+    }
+
+    if (claimed.expiresAt.getTime() < Date.now()) {
+      claimed.status = 'cancelled';
+      claimed.error = 'The proposal expired before it was approved';
+      await claimed.save();
+      throw new AppError('That proposal expired. Ask again and approve the new one.', 410);
+    }
+
+    try {
+      const result = await executeAdsAction({
+        kind: claimed.kind,
+        params: claimed.params,
+        ads,
+        performedBy: user.name ?? String(user._id),
+      });
+
+      claimed.result = result;
+      await claimed.save();
+      logger?.info('[assistant] action executed', { actionId: id, kind: claimed.kind, userId: String(user._id) });
+
+      return { id, status: 'executed', summary: claimed.summary, result };
+    } catch (err) {
+      claimed.status = 'failed';
+      claimed.error = err.message;
+      await claimed.save();
+      logger?.error('[assistant] action failed', { actionId: id, kind: claimed.kind, message: err.message });
+      throw new AppError(`That did not go through: ${err.message}`, err.statusCode ?? 502);
+    }
+  }
+
+  return {
+    listConversations,
+    getConversation,
+    deleteConversation,
+    sendMessage,
+    listToolCalls,
+    getUsage,
+    listActions,
+    decideAction,
+  };
 }

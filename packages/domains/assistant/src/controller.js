@@ -6,7 +6,18 @@ function send(res, event, data) {
   res.flush?.();
 }
 
-export function createAssistantController({ service, brand, model, datasets, stripe, stripeRoles, logger }) {
+export function createAssistantController({
+  service,
+  brand,
+  model,
+  datasets,
+  stripe,
+  stripeRoles,
+  ads,
+  adsRoles,
+  adsWriteRoles,
+  logger,
+}) {
   const getMeta = (req, res) => {
     const role = req.user.role;
     res.status(200).json({
@@ -16,6 +27,8 @@ export function createAssistantController({ service, brand, model, datasets, str
         model,
         readOnly: true,
         stripe: Boolean(stripe) && stripeRoles.includes(role),
+        ads: Boolean(ads) && adsRoles.includes(role),
+        adsWrite: Boolean(ads) && adsWriteRoles.includes(role),
         datasets: datasets
           .filter((dataset) => dataset.roles.includes(role))
           .map((dataset) => ({ key: dataset.key, label: dataset.label, description: dataset.description })),
@@ -46,6 +59,21 @@ export function createAssistantController({ service, brand, model, datasets, str
   const getUsage = catchAsync(async (req, res) => {
     const usage = await service.getUsage({ days: req.query.days });
     res.status(200).json({ status: 'success', data: { usage } });
+  });
+
+  const getActions = catchAsync(async (req, res) => {
+    const actions = await service.listActions({ user: req.user, conversationId: req.query.conversationId });
+    res.status(200).json({ status: 'success', data: { actions } });
+  });
+
+  const approveAction = catchAsync(async (req, res) => {
+    const outcome = await service.decideAction({ user: req.user, id: req.params.id, approve: true });
+    res.status(200).json({ status: 'success', data: { action: outcome } });
+  });
+
+  const cancelAction = catchAsync(async (req, res) => {
+    const outcome = await service.decideAction({ user: req.user, id: req.params.id, approve: false });
+    res.status(200).json({ status: 'success', data: { action: outcome } });
   });
 
   const postMessage = async (req, res) => {
@@ -86,6 +114,9 @@ export function createAssistantController({ service, brand, model, datasets, str
     deleteConversationById,
     getToolCalls,
     getUsage,
+    getActions,
+    approveAction,
+    cancelAction,
     postMessage,
   };
 }

@@ -393,6 +393,7 @@ export function createOpenAIAdsService({ adsClient, countOwnConversions, maxDail
           title: a.creative?.title,
           body: a.creative?.body,
           targetUrl: a.creative?.target_url,
+          imageFileId: a.creative?.file_id ?? null,
           ...metricsFrom(deliveryByAd.get(a.id), conversionsByAd.get(a.id)),
         }));
       return {
@@ -524,6 +525,91 @@ export function createOpenAIAdsService({ adsClient, countOwnConversions, maxDail
     return { id: campaign.id };
   };
 
+  const duplicateCampaign = async (sourceId, input, performedBy) => {
+    ensureConfigured();
+    assertId('campaigns', sourceId);
+
+    const source = await callApi(() => adsClient.getCampaign(sourceId));
+    const sourceBudget = source.budget?.daily_spend_limit_micros != null ? source.budget.daily_spend_limit_micros / 1e6 : null;
+    const name = text(input?.name ?? `${source.name} copy`, { field: 'Campaign name', min: 3, max: 200 });
+    const dailyBudget = amount(input?.dailyBudget ?? sourceBudget, { field: 'Daily budget', max: maxDailyBudget });
+
+    const groups = (await callApi(() => adsClient.listAdGroups(sourceId))).filter((g) => g.status !== 'archived');
+    if (!groups.length) throw new AppError('That campaign has no ad groups to copy', 400);
+
+    const adsByGroup = await callApi(() => Promise.all(groups.map((g) => adsClient.listAdsInGroup(g.id))));
+
+    const campaign = await callApi(() =>
+      adsClient.createCampaign({
+        name,
+        status: 'paused',
+        bidding_type: source.bidding_type,
+        budget: { daily_spend_limit_micros: toMicros(dailyBudget) },
+        ...(source.conversion_event_setting_ids?.length
+          ? { conversion_event_setting_ids: source.conversion_event_setting_ids }
+          : {}),
+        targeting: keepTargeting(source.targeting),
+      }),
+    );
+    logger?.info('[openai-ads] campaign duplicated', { from: sourceId, campaignId: campaign?.id, performedBy });
+
+    const warnings = [];
+    let copiedGroups = 0;
+    let copiedAds = 0;
+
+    for (const [i, group] of groups.entries()) {
+      try {
+        const created = await callApi(() =>
+          adsClient.createAdGroup({
+            name: group.name,
+            context_hints: group.context_hints ?? [],
+            bidding_config: {
+              billing_event_type: group.bidding_config?.billing_event_type ?? 'click',
+              max_bid_micros: group.bidding_config?.max_bid_micros,
+            },
+            campaign_id: campaign.id,
+            status: 'active',
+          }),
+        );
+        copiedGroups += 1;
+
+        for (const ad of adsByGroup[i].filter((a) => a.status !== 'archived')) {
+          if (!ad.creative?.file_id) {
+            warnings.push(`"${ad.name}" was skipped because its image could not be read`);
+            continue;
+          }
+          await callApi(() =>
+            adsClient.createAd({
+              name: ad.name,
+              creative: {
+                type: 'chat_card',
+                title: ad.creative.title,
+                body: ad.creative.body,
+                target_url: ad.creative.target_url,
+                file_id: ad.creative.file_id,
+              },
+              ad_group_id: created.id,
+              status: 'active',
+            }),
+          );
+          copiedAds += 1;
+        }
+      } catch (err) {
+        warnings.push(`Ad group "${group.name}" was not copied: ${err.message}`);
+      }
+    }
+
+    return {
+      id: campaign.id,
+      name,
+      dailyBudget,
+      adGroups: copiedGroups,
+      ads: copiedAds,
+      status: 'paused',
+      ...(warnings.length ? { warnings } : {}),
+    };
+  };
+
   const uploadImage = async (file) => {
     ensureConfigured();
     if (!file?.buffer) throw new AppError('Choose an image', 400);
@@ -556,6 +642,7 @@ export function createOpenAIAdsService({ adsClient, countOwnConversions, maxDail
     searchLocations,
     getCampaignDetail,
     createCampaignWithAd,
+    duplicateCampaign,
     createAdGroupWithAd,
     createAdInGroup,
     uploadImage,

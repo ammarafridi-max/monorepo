@@ -1,4 +1,11 @@
 import { AppError } from '@travel-suite/utils';
+import {
+  ADS_READ_TOOLS,
+  ADS_WRITE_TOOLS,
+  buildAdsToolDefinitions,
+  describeAdsProposal,
+  executeAdsRead,
+} from './ads-tools.js';
 import { STRIPE_TOOL_NAMES, buildStripeToolDefinitions, executeStripeTool } from './stripe-tools.js';
 import {
   FIND_LIMIT,
@@ -33,8 +40,15 @@ const rangeSchema = {
   to: { type: 'string', description: 'Exclusive end of the date range, ISO 8601' },
 };
 
-export function buildToolDefinitions({ datasets, stripe }) {
-  if (!datasets.length) return stripe ? buildStripeToolDefinitions() : [];
+function extras({ stripe, ads, adsWrite }) {
+  return [
+    ...(stripe ? buildStripeToolDefinitions() : []),
+    ...(ads ? buildAdsToolDefinitions({ canWrite: adsWrite }) : []),
+  ];
+}
+
+export function buildToolDefinitions({ datasets, stripe, ads, adsWrite }) {
+  if (!datasets.length) return extras({ stripe, ads, adsWrite });
 
   const keys = datasets.map((d) => d.key);
   const dataset = { type: 'string', enum: keys, description: 'Which dataset to read' };
@@ -106,10 +120,38 @@ export function buildToolDefinitions({ datasets, stripe }) {
     },
   ];
 
-  return stripe ? [...definitions, ...buildStripeToolDefinitions()] : definitions;
+  return [...definitions, ...extras({ stripe, ads, adsWrite })];
 }
 
-export async function executeTool({ name, input, datasets, stripe, role }) {
+export async function executeTool({ name, input, datasets, stripe, ads, propose, role }) {
+  if (ADS_READ_TOOLS.includes(name)) {
+    if (!ads) throw new AppError('OpenAI Ads is not configured on this brand', 400);
+    const { result, rowCount } = await executeAdsRead({ name, input, ads });
+    return { result, rowCount, dataset: 'openai-ads', unmasked: false };
+  }
+
+  if (ADS_WRITE_TOOLS.includes(name)) {
+    if (!ads) throw new AppError('OpenAI Ads is not configured on this brand', 400);
+    if (!propose) throw new AppError('You are not allowed to change the ad account', 403);
+
+    const { summary, details } = await describeAdsProposal({ name, input, ads });
+    const action = await propose({ kind: name, params: input, summary, details });
+
+    return {
+      result: {
+        proposed: true,
+        actionId: action.id,
+        summary,
+        details,
+        awaiting: 'Nothing has changed yet. The admin has to approve this in the chat window before it runs.',
+      },
+      rowCount: 0,
+      dataset: 'openai-ads',
+      unmasked: false,
+      proposal: { ...action, summary, details },
+    };
+  }
+
   if (STRIPE_TOOL_NAMES.includes(name)) {
     const { result, rowCount } = await executeStripeTool({ name, input, stripe });
     return { result, rowCount, dataset: 'stripe', unmasked: true };

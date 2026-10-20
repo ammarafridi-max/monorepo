@@ -19,9 +19,19 @@ import {
   useAssistantConversations,
   useDeleteAssistantConversation,
 } from '../../hooks/assistant/useAssistantConversations.js';
+import AssistantProposal from './AssistantProposal.js';
 import AssistantText, { splitFollowUps } from './AssistantText.js';
+import { useAssistantAction } from '../../hooks/assistant/useAssistantAction.js';
 
 const TOOL_LABELS = {
+  ads_setup: 'Ads account',
+  ads_overview: 'Ads campaigns',
+  ads_campaign: 'Ads campaign',
+  ads_find_locations: 'Ads locations',
+  propose_ads_campaign: 'Drafting a campaign',
+  propose_ads_duplicate: 'Drafting a duplicate',
+  propose_ads_budget: 'Drafting a budget change',
+  propose_ads_status: 'Drafting a status change',
   count_records: 'Counting',
   aggregate_records: 'Totalling',
   find_records: 'Listing',
@@ -78,7 +88,7 @@ function ToolChip({ tool }) {
   );
 }
 
-function Message({ message, streaming, isLast, onAsk }) {
+function Message({ message, streaming, isLast, onAsk, onDecide, decidingId }) {
   if (message.role === 'user') {
     return (
       <div className="flex justify-end">
@@ -111,6 +121,15 @@ function Message({ message, streaming, isLast, onAsk }) {
       )}
 
       {body && <AssistantText text={body} />}
+
+      {(message.proposals ?? []).map((proposal) => (
+        <AssistantProposal
+          key={proposal.id}
+          proposal={proposal}
+          onDecide={onDecide}
+          deciding={decidingId === proposal.id}
+        />
+      ))}
 
       {showFollowUps && (
         <div className="flex flex-wrap gap-1.5 pt-0.5">
@@ -202,7 +221,10 @@ export default function AssistantWindow({ open, onClose, nav, meta }) {
     stop,
     startNewConversation,
     openConversation,
+    settleProposal,
   } = useAssistantChat({ nav });
+
+  const { decideAction, decidingId } = useAssistantAction({ onDecided: settleProposal });
 
   const { conversations, isLoadingConversations } = useAssistantConversations({ enabled: open && showHistory });
   const { deleteConversation, deletingConversation } = useDeleteAssistantConversation();
@@ -359,6 +381,8 @@ export default function AssistantWindow({ open, onClose, nav, meta }) {
                       streaming={streaming}
                       isLast={index === messages.length - 1}
                       onAsk={submit}
+                      onDecide={decideAction}
+                      decidingId={decidingId}
                     />
                   ))
                 )}
