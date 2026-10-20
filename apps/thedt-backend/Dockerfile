@@ -9,6 +9,9 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 
 COPY packages/domains/admin-users/package.json     packages/domains/admin-users/package.json
 COPY packages/domains/affiliates/package.json      packages/domains/affiliates/package.json
+COPY packages/integrations/openai-capi/package.json  packages/integrations/openai-capi/package.json
+COPY packages/integrations/openai-ads/package.json  packages/integrations/openai-ads/package.json
+COPY packages/domains/openai-ads/package.json  packages/domains/openai-ads/package.json
 COPY packages/domains/assistant/package.json         packages/domains/assistant/package.json
 COPY packages/domains/auth/package.json            packages/domains/auth/package.json
 COPY packages/domains/blog/package.json            packages/domains/blog/package.json

@@ -34,6 +34,7 @@ const nav = [
     section: 'Finance',
     items: [
       { label: 'Revenue', href: '/admin/revenue', icon: 'TrendingUp', roles: ['admin'] },
+      { label: 'ChatGPT Ads', href: '/admin/chatgpt-ads', icon: 'Megaphone', roles: ['admin'] },
       { label: 'Payment Links', href: '/admin/payment-links', icon: 'Link2', roles: ['admin', 'agent'] },
       { label: 'Products', href: '/admin/products', icon: 'Package', roles: ['admin', 'agent'] },
       { label: 'Pricing', href: '/admin/pricing', icon: 'DollarSign', roles: ['admin'] },

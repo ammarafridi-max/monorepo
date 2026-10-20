@@ -756,6 +756,15 @@ importers:
       '@travel-suite/notifications':
         specifier: workspace:*
         version: link:../../packages/shared/notifications
+      '@travel-suite/openai-ads':
+        specifier: workspace:*
+        version: link:../../packages/integrations/openai-ads
+      '@travel-suite/openai-ads-admin':
+        specifier: workspace:*
+        version: link:../../packages/domains/openai-ads
+      '@travel-suite/openai-capi':
+        specifier: workspace:*
+        version: link:../../packages/integrations/openai-capi
       '@travel-suite/payments':
         specifier: workspace:*
         version: link:../../packages/domains/payments

@@ -30,6 +30,9 @@ import { db } from "../utils/db.js";
 import { wis } from "../utils/wis.js";
 import { createBrevoClient } from "@travel-suite/brevo";
 import { createMetaCapiClient } from "@travel-suite/meta-capi";
+import { createOpenAICapiClient } from "@travel-suite/openai-capi";
+import { createOpenAIAdsClient } from "@travel-suite/openai-ads";
+import { createOpenAIAdsRouter } from "@travel-suite/openai-ads-admin";
 import { sendEmail } from "../utils/email.js";
 import { insurancePaymentCompletionEmail, policyIssuedEmail } from "../notifications/insurance.js";
 import config from "../utils/config.js";
@@ -116,6 +119,15 @@ router.use(
   }),
 );
 
+const openaiCapi = createOpenAICapiClient({
+  pixelId: config.openai.pixelId,
+  apiKey: config.openai.capiApiKey,
+  logger,
+});
+if (!openaiCapi.isConfigured()) {
+  logger.warn("[openai-capi] Pixel ID or API key not configured — server-side order events disabled");
+}
+
 const notifications = createNotificationsService({
   sendEmail,
   logger,
@@ -163,6 +175,7 @@ const {
   reservationStorage,
   sendEmail,
   metaCapi,
+  openaiCapi,
 });
 router.use("/tickets", ticketsRouter);
 router.use("/pricing", pricingRouter);
@@ -177,6 +190,42 @@ router.use(
     trackingBaseUrl: config.frontendUrl,
   }),
 );
+
+const adsConfigured = Boolean(config.openai.adsApiKey);
+let openaiAdsService = null;
+
+if (adsConfigured) {
+  const { router: openaiAdsRouter, service } = createOpenAIAdsRouter({
+    adsClient: createOpenAIAdsClient({ apiKey: config.openai.adsApiKey, logger }),
+    auth,
+    maxDailyBudget: config.openai.adsMaxDailyBudget,
+    logger,
+    countOwnConversions: async ({ from, to }) => {
+      const rows = await TicketModel.aggregate([
+        {
+          $match: {
+            paymentStatus: "PAID",
+            paidAt: { $gte: from, $lt: to },
+            $or: [
+              { "attribution.last.channel": "chatgpt_ads" },
+              { "attribution.last.oppref": { $nin: [null, ""] } },
+              { "openaiAttribution.oppref": { $nin: [null, ""] } },
+            ],
+          },
+        },
+        { $group: { _id: "$amountPaid.currency", orders: { $sum: 1 }, amount: { $sum: "$amountPaid.amount" } } },
+      ]);
+      return {
+        orders: rows.reduce((n, r) => n + r.orders, 0),
+        revenue: rows.map((r) => ({ currency: r._id, amount: Math.round(r.amount * 100) / 100 })),
+      };
+    },
+  });
+  openaiAdsService = service;
+  router.use("/openai-ads", openaiAdsRouter);
+} else {
+  logger.warn("[openai-ads] OPENAI_ADS_API_KEY not configured — ChatGPT Ads management disabled");
+}
 
 const paymentService = createPaymentService({
   stripe,
@@ -220,6 +269,7 @@ if (config.anthropicApiKey) {
     auth,
     anthropicApiKey: config.anthropicApiKey,
     stripe,
+    ads: openaiAdsService,
     brand: { name: "The Dummy Ticket AE" },
     logger,
     datasets: [
