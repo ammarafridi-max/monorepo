@@ -111,13 +111,33 @@ export function buildAdsToolDefinitions({ canWrite }) {
     {
       name: 'propose_ads_duplicate',
       description:
-        'Propose duplicating a campaign with every ad group and ad it contains, optionally under a new name or budget. This does NOT copy anything until the admin approves. The copy is created paused.',
+        'Propose duplicating a campaign with every ad group and ad it contains. Anything you leave out is copied from the original, and what you set is applied to the copy: a new name, budget, goal, locations, landing page, or bid. Use this rather than building a campaign from scratch when the admin asks for a copy with changes, because it keeps every ad group. This does NOT copy anything until the admin approves, and the copy is created paused.',
       input_schema: {
         type: 'object',
         properties: {
           campaignId: { type: 'string', description: 'The campaign to copy' },
           name: { type: 'string', description: 'Name for the copy. Defaults to the original name plus "copy".' },
           dailyBudget: { type: 'number', description: 'Daily budget for the copy. Defaults to the original budget.' },
+          goal: {
+            type: 'string',
+            enum: ['sales', 'clicks'],
+            description: 'Goal for the copy. Defaults to the original goal. Sales needs a purchase conversion set up in the ad account.',
+          },
+          locationIds: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'Replace the targeting with these location ids from ads_find_locations. Omit to keep the original targeting.',
+          },
+          targetUrl: {
+            type: 'string',
+            description:
+              'Replace the landing page on every copied ad with this https url on the brand own site. Omit to keep each ad original url. Note that replacing it drops any tracking parameters the original urls carried.',
+          },
+          bid: { type: 'number', description: 'Set this bid on every copied ad group. Omit to keep each group own bid.' },
+          clearBid: {
+            type: 'boolean',
+            description: 'Set true to copy the ad groups with no bid at all, letting OpenAI optimise. Use this when the admin asks for no target cost per order.',
+          },
         },
         required: ['campaignId'],
       },
@@ -174,10 +194,21 @@ async function describeDuplicateProposal(ads, input) {
 
   const details = [
     `Copying: ${campaign.name}`,
-    `Goal: ${campaign.goal}`,
+    `Goal: ${input.goal ?? campaign.goal}${input.goal && input.goal !== campaign.goal ? ` (was ${campaign.goal})` : ''}`,
     `Daily budget: ${money(input.dailyBudget ?? campaign.dailyBudget, setup.currency)}`,
+    input.locationIds
+      ? `Locations: replaced with ${input.locationIds.length} new one${input.locationIds.length === 1 ? '' : 's'}`
+      : `Locations: kept from the original (${campaign.locations.map((l) => l.name).join(', ') || 'none'})`,
+    input.targetUrl
+      ? `Landing page: every ad repointed to ${input.targetUrl}, dropping the original tracking parameters`
+      : 'Landing page: each ad keeps its own',
+    input.clearBid
+      ? 'Bids: cleared, so OpenAI optimises instead of a target cost'
+      : input.bid != null
+        ? `Bids: ${money(input.bid, setup.currency)} on every ad group`
+        : 'Bids: kept from the original',
     'Every ad group and ad in the original is copied',
-    'The copy is created paused',
+    'The copy is created paused, so nothing spends until you activate it',
   ];
 
   return { summary: `Duplicate "${campaign.name}" as "${input.name ?? `${campaign.name} copy`}"`, details };
@@ -227,7 +258,19 @@ export async function executeAdsAction({ kind, params, ads, performedBy }) {
   if (kind === 'propose_ads_campaign') return ads.createCampaignWithAd(params, performedBy);
 
   if (kind === 'propose_ads_duplicate') {
-    return ads.duplicateCampaign(params.campaignId, { name: params.name, dailyBudget: params.dailyBudget }, performedBy);
+    return ads.duplicateCampaign(
+      params.campaignId,
+      {
+        name: params.name,
+        dailyBudget: params.dailyBudget,
+        goal: params.goal,
+        locationIds: params.locationIds,
+        targetUrl: params.targetUrl,
+        bid: params.bid,
+        clearBid: params.clearBid,
+      },
+      performedBy,
+    );
   }
 
   if (kind === 'propose_ads_budget') {

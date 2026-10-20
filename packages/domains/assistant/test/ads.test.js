@@ -178,7 +178,13 @@ describe('approved actions reach the ads service', () => {
   it('duplicates with the chosen name and budget', async () => {
     const ads = adsStub();
     await executeAdsAction({ kind: 'propose_ads_duplicate', params: { campaignId: 'c_1', name: 'Copy', dailyBudget: 25 }, ads, performedBy: 'Ammar' });
-    assert.deepEqual(ads.calls[0], ['duplicate', 'c_1', { name: 'Copy', dailyBudget: 25 }, 'Ammar']);
+    const [verb, id, passed, by] = ads.calls[0];
+    assert.equal(verb, 'duplicate');
+    assert.equal(id, 'c_1');
+    assert.equal(by, 'Ammar');
+    assert.equal(passed.name, 'Copy');
+    assert.equal(passed.dailyBudget, 25);
+    assert.equal(passed.locationIds, undefined, 'omitted overrides must stay undefined so the original is kept');
   });
 
   it('keeps the existing locations and dates when only the budget changes', async () => {
@@ -198,5 +204,57 @@ describe('approved actions reach the ads service', () => {
 
   it('refuses an unknown action kind', async () => {
     await assert.rejects(executeAdsAction({ kind: 'propose_refund', params: {}, ads: adsStub() }), /Unknown action/);
+  });
+});
+
+describe('duplicate overrides', () => {
+  const dupInput = {
+    campaignId: 'c_1',
+    name: 'DT365_UAE_Dummy-Tickets_Conversions_v2',
+    goal: 'sales',
+    locationIds: ['1000001'],
+    targetUrl: 'https://www.dummyticket365.com/ae',
+    clearBid: true,
+  };
+
+  it('accepts location, landing page, goal and bid overrides', () => {
+    const tool = buildAdsToolDefinitions({ canWrite: true }).find((t) => t.name === 'propose_ads_duplicate');
+    const fields = Object.keys(tool.input_schema.properties);
+    for (const field of ['locationIds', 'targetUrl', 'goal', 'bid', 'clearBid', 'dailyBudget', 'name']) {
+      assert.ok(fields.includes(field), `duplicate should accept ${field}`);
+    }
+  });
+
+  it('spells out each override on the approval card', async () => {
+    const { details } = await describeAdsProposal({ name: 'propose_ads_duplicate', input: dupInput, ads: adsStub() });
+    const text = details.join('\n');
+    assert.match(text, /Locations: replaced with 1 new one/);
+    assert.match(text, /repointed to https:\/\/www\.dummyticket365\.com\/ae/);
+    assert.match(text, /dropping the original tracking parameters/);
+    assert.match(text, /Bids: cleared/);
+  });
+
+  it('says when targeting and bids are inherited rather than changed', async () => {
+    const { details } = await describeAdsProposal({ name: 'propose_ads_duplicate', input: { campaignId: 'c_1' }, ads: adsStub() });
+    const text = details.join('\n');
+    assert.match(text, /Locations: kept from the original/);
+    assert.match(text, /Bids: kept from the original/);
+    assert.match(text, /each ad keeps its own/);
+  });
+
+  it('passes every override through to the ads service on approval', async () => {
+    const ads = adsStub();
+    await executeAdsAction({ kind: 'propose_ads_duplicate', params: dupInput, ads, performedBy: 'Ammar' });
+    const [, id, passed] = ads.calls[0];
+    assert.equal(id, 'c_1');
+    assert.deepEqual(passed, {
+      name: dupInput.name,
+      dailyBudget: undefined,
+      goal: 'sales',
+      locationIds: ['1000001'],
+      targetUrl: 'https://www.dummyticket365.com/ae',
+      bid: undefined,
+      clearBid: true,
+    });
   });
 });

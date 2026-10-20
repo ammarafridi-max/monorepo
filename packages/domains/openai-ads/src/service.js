@@ -534,6 +534,31 @@ export function createOpenAIAdsService({ adsClient, countOwnConversions, maxDail
     const name = text(input?.name ?? `${source.name} copy`, { field: 'Campaign name', min: 3, max: 200 });
     const dailyBudget = amount(input?.dailyBudget ?? sourceBudget, { field: 'Daily budget', max: maxDailyBudget });
 
+    const goal = input?.goal ?? (source.bidding_type === 'conversions' ? 'sales' : 'clicks');
+    if (!Object.keys(GOALS).includes(goal)) throw new AppError('Goal must be sales or clicks', 400);
+
+    let locationIds = null;
+    if (input?.locationIds !== undefined) {
+      locationIds = (Array.isArray(input.locationIds) ? input.locationIds : []).filter((id) => /^\d{1,12}$/.test(String(id)));
+      if (!locationIds.length) throw new AppError('Choose at least one location', 400);
+      if (locationIds.length > 50) throw new AppError('Choose at most 50 locations', 400);
+    }
+
+    const clearBid = input?.clearBid === true;
+    const bid = input?.bid != null && input.bid !== '' ? amount(input.bid, { field: 'Bid', max: dailyBudget }) : null;
+    if (clearBid && bid != null) throw new AppError('Either set a bid or clear it, not both', 400);
+
+    const targetUrl = input?.targetUrl ? await assertOwnSite(text(input.targetUrl, { field: 'Landing page', min: 1, max: 2000 })) : null;
+
+    let conversionSettingIds = source.conversion_event_setting_ids ?? [];
+    if (goal === 'sales' && !conversionSettingIds.length) {
+      const settings = await callApi(() => adsClient.listConversionEventSettings());
+      const purchase = settings.find((x) => !x.archived && x.event_type === 'order_created');
+      if (!purchase) throw new AppError('No purchase conversion is set up in OpenAI Ads Manager', 400);
+      conversionSettingIds = [purchase.id];
+    }
+    if (goal === 'clicks') conversionSettingIds = [];
+
     const groups = (await callApi(() => adsClient.listAdGroups(sourceId))).filter((g) => g.status !== 'archived');
     if (!groups.length) throw new AppError('That campaign has no ad groups to copy', 400);
 
@@ -543,12 +568,12 @@ export function createOpenAIAdsService({ adsClient, countOwnConversions, maxDail
       adsClient.createCampaign({
         name,
         status: 'paused',
-        bidding_type: source.bidding_type,
+        bidding_type: GOALS[goal],
         budget: { daily_spend_limit_micros: toMicros(dailyBudget) },
-        ...(source.conversion_event_setting_ids?.length
-          ? { conversion_event_setting_ids: source.conversion_event_setting_ids }
-          : {}),
-        targeting: keepTargeting(source.targeting),
+        ...(conversionSettingIds.length ? { conversion_event_setting_ids: conversionSettingIds } : {}),
+        targeting: locationIds
+          ? { ...keepTargeting(source.targeting), locations: { include: locationIds.map((id) => ({ id: String(id) })) } }
+          : keepTargeting(source.targeting),
       }),
     );
     logger?.info('[openai-ads] campaign duplicated', { from: sourceId, campaignId: campaign?.id, performedBy });
@@ -565,7 +590,9 @@ export function createOpenAIAdsService({ adsClient, countOwnConversions, maxDail
             context_hints: group.context_hints ?? [],
             bidding_config: {
               billing_event_type: group.bidding_config?.billing_event_type ?? 'click',
-              max_bid_micros: group.bidding_config?.max_bid_micros,
+              ...(clearBid
+                ? {}
+                : { max_bid_micros: bid != null ? toMicros(bid) : group.bidding_config?.max_bid_micros }),
             },
             campaign_id: campaign.id,
             status: 'active',
@@ -585,7 +612,7 @@ export function createOpenAIAdsService({ adsClient, countOwnConversions, maxDail
                 type: 'chat_card',
                 title: ad.creative.title,
                 body: ad.creative.body,
-                target_url: ad.creative.target_url,
+                target_url: targetUrl ?? ad.creative.target_url,
                 file_id: ad.creative.file_id,
               },
               ad_group_id: created.id,
@@ -602,10 +629,14 @@ export function createOpenAIAdsService({ adsClient, countOwnConversions, maxDail
     return {
       id: campaign.id,
       name,
+      goal,
       dailyBudget,
       adGroups: copiedGroups,
       ads: copiedAds,
       status: 'paused',
+      ...(locationIds ? { locationsChanged: locationIds.length } : {}),
+      ...(targetUrl ? { landingPage: targetUrl } : {}),
+      ...(clearBid ? { bids: 'cleared' } : bid != null ? { bids: bid } : {}),
       ...(warnings.length ? { warnings } : {}),
     };
   };
