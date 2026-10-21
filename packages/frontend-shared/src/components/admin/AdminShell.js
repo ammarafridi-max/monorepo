@@ -31,6 +31,7 @@ const DEFAULT_ROLE_ROUTE_RULES = [
   { prefix: '/admin/currencies',              roles: ['admin'] },
   { prefix: '/admin/pricing',                 roles: ['admin'] },
   { prefix: '/admin/revenue',                 roles: ['admin'] },
+  { prefix: '/admin/chatgpt-ads',             roles: ['admin'] },
   { prefix: '/admin/blog',                    roles: ['admin', 'blog-manager'] },
   { prefix: '/admin/blog-tags',               roles: ['admin', 'blog-manager'] },
 

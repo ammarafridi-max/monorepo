@@ -22,7 +22,7 @@ function isValidPhone(phone) {
   }
 }
 
-export function createVisaLeadService({ VisaLead, Visa, notificationsService, metaCapi, frontendUrl }) {
+export function createVisaLeadService({ VisaLead, Visa, notificationsService, metaCapi, openaiCapi, frontendUrl }) {
 
   const submitLead = async ({
     firstName, lastName, nationality, email, phone,
@@ -121,6 +121,27 @@ export function createVisaLeadService({ VisaLead, Visa, notificationsService, me
         customData: { content_name: visaSlug },
       }).catch((err) => {
         console.error('[visa-leads] Meta lead event failed', err?.message);
+      });
+    }
+
+    if (openaiCapi?.isConfigured?.()) {
+      openaiCapi.trackLead({
+        eventId:   `visa-lead:${lead._id}`,
+        eventTime: lead.createdAt,
+        sourceUrl: frontendUrl || undefined,
+        user: {
+          email:      lead.email,
+          phone:      lead.phone,
+          firstName:  lead.firstName,
+          lastName:   lead.lastName,
+          externalId: lead.email || lead.phone,
+          clientIp:   ipAddress !== 'unknown' ? ipAddress : undefined,
+          userAgent,
+          oppref:     lead.attribution?.last?.oppref,
+          obref:      lead.attribution?.last?.obref,
+        },
+      }).catch((err) => {
+        console.error('[visa-leads] OpenAI lead event failed', err?.message);
       });
     }
 

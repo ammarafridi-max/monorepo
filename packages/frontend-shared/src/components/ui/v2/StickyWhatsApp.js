@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { FaWhatsapp } from 'react-icons/fa';
+import { reportWhatsappClick } from '../../../utils/whatsappConversion.js';
 
 export default function StickyWhatsApp({
   phoneNumber,
@@ -37,6 +38,7 @@ export default function StickyWhatsApp({
   return (
     <a
       href={href}
+      onClick={reportWhatsappClick}
       target="_blank"
       rel="noopener noreferrer"
       aria-label={label}

@@ -1,6 +1,7 @@
 "use client";
 
 import Container from "../../shared/layout/Container.js";
+import { reportWhatsappClick } from '../../../utils/whatsappConversion.js';
 
 function CtaButton({ children, onClick, href, size = "md" }) {
   const sz =
@@ -50,6 +51,7 @@ export default function VisaFinalCta({ headline, ctaText, onCtaClick, whatsappUr
             {whatsappUrl && (
               <a
                 href={whatsappUrl}
+                onClick={reportWhatsappClick}
                 className="inline-flex min-h-11 items-center justify-center gap-2 text-[14px] py-2.5 px-5 sm:py-3 font-outfit font-semibold rounded-full border border-white/25 text-white hover:bg-white/10 transition-colors duration-200 whitespace-nowrap"
               >
                 Chat on WhatsApp

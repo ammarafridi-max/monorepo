@@ -77,6 +77,12 @@ const nav = [
         roles: ["admin"],
       },
       {
+        label: "ChatGPT Ads",
+        href: "/admin/chatgpt-ads",
+        icon: "Megaphone",
+        roles: ["admin"],
+      },
+      {
         label: "Payment Links",
         href: "/admin/payment-links",
         icon: "Link2",
