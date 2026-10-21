@@ -6,6 +6,10 @@ import { createBlogRouter, createBlogTagRouter } from "@travel-suite/blog";
 import { createVisaRouter } from "@travel-suite/visa";
 import { createVisaLeadRouter } from "@travel-suite/visa-leads";
 import { createMetaCapiClient } from "@travel-suite/meta-capi";
+import { createOpenAICapiClient } from "@travel-suite/openai-capi";
+import { createOpenAIAdsClient } from "@travel-suite/openai-ads";
+import { createOpenAIAdsRouter } from "@travel-suite/openai-ads-admin";
+import { createOpenAIEventsRouter } from "./openaiEvents.js";
 import { createVisaRequirementsRouter } from "@travel-suite/visa-requirements";
 import { createUsersRouter } from "@travel-suite/users";
 import { createVisaApplicationsRouter } from "@travel-suite/visa-applications";
@@ -17,7 +21,7 @@ import {
   createPaymentsController,
   createPaymentsAdminRouter,
   PaymentLinkSchema,
-  ProductSchema,
+  StripeProductSchema,
 } from "@travel-suite/payments";
 import { createCloudinaryStorage } from "@travel-suite/cloudinary";
 import { logger } from "@travel-suite/utils";
@@ -90,10 +94,53 @@ if (!metaCapi.isConfigured()) {
   logger.warn("[meta-capi] Pixel ID or access token not configured — server-side lead events disabled");
 }
 
+const openaiCapi = createOpenAICapiClient({
+  pixelId: config.openai.pixelId,
+  apiKey: config.openai.capiApiKey,
+  logger,
+});
+if (!openaiCapi.isConfigured()) {
+  logger.warn("[openai-capi] Pixel ID or API key not configured — server-side lead events disabled");
+}
+
+const openaiWhatsappCapi = createOpenAICapiClient({
+  pixelId: config.openai.pixelId,
+  apiKey: config.openai.whatsappCapiApiKey,
+  logger,
+});
+if (!openaiWhatsappCapi.isConfigured()) {
+  logger.warn("[openai-capi] WhatsApp conversion key not configured — click-to-chat events disabled");
+}
+
 router.use(
   "/visa-leads",
-  createVisaLeadRouter({ db, auth, notificationsService: notifications, metaCapi, frontendUrl: config.frontendUrl }),
+  createVisaLeadRouter({ db, auth, notificationsService: notifications, metaCapi, openaiCapi, frontendUrl: config.frontendUrl }),
 );
+
+router.use(
+  "/openai-events",
+  createOpenAIEventsRouter({ capi: openaiWhatsappCapi, frontendUrl: config.frontendUrl, logger }),
+);
+
+const { router: openaiAdsRouter } = createOpenAIAdsRouter({
+  adsClient: createOpenAIAdsClient({ apiKey: config.openai.adsApiKey, logger }),
+  auth,
+  maxDailyBudget: config.openai.adsMaxDailyBudget,
+  logger,
+  countOwnConversions: async ({ from, to }) => {
+    const VisaLead = db.models["visa-lead"];
+    if (!VisaLead) return { orders: 0, revenue: [] };
+    const leads = await VisaLead.countDocuments({
+      createdAt: { $gte: from, $lt: to },
+      $or: [
+        { "attribution.last.channel": "chatgpt_ads" },
+        { "attribution.last.oppref": { $nin: [null, ""] } },
+      ],
+    });
+    return { orders: leads, revenue: [] };
+  },
+});
+router.use("/openai-ads", openaiAdsRouter);
 
 const { router: visaRequirementsRouter } = createVisaRequirementsRouter({
   db,
@@ -109,7 +156,7 @@ router.use("/visa-requirements", visaRequirementsRouter);
 
 const stripe = createStripeClient({ secretKey: config.stripe.secretKey });
 
-const paymentService = createPaymentService({ stripe, db, PaymentLinkSchema, ProductSchema });
+const paymentService = createPaymentService({ stripe, db, PaymentLinkSchema, StripeProductSchema });
 const paymentsController = createPaymentsController({ service: paymentService });
 router.use("/payments", createPaymentsAdminRouter({ controller: paymentsController, auth }));
 
@@ -189,7 +236,7 @@ if (config.anthropicApiKey) {
     datasets: [
       assistantDatasets.visaLeads(db.models["visa-lead"]),
       assistantDatasets.visaApplications(db.models["visa-application"]),
-      assistantDatasets.blogPosts(db.models.Blog),
+      assistantDatasets.blogPosts(db.models.blog),
     ],
   });
   router.use("/assistant", assistantRouter);

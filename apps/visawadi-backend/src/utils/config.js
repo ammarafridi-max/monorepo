@@ -40,6 +40,14 @@ export default {
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
   },
 
+  openai: {
+    pixelId: process.env.OPENAI_PIXEL_ID,
+    capiApiKey: process.env.OPENAI_CAPI_API_KEY,
+    whatsappCapiApiKey: process.env.OPENAI_WHATSAPP_CAPI_API_KEY,
+    adsApiKey: process.env.OPENAI_ADS_API_KEY,
+    adsMaxDailyBudget: parseNumber(process.env.OPENAI_ADS_MAX_DAILY_BUDGET, 200),
+  },
+
   meta: {
     pixelId: process.env.META_PIXEL_ID,
     capiAccessToken: process.env.META_CAPI_ACCESS_TOKEN,

@@ -49,11 +49,11 @@ export function getOpenAIBrowserIds() {
 
 const toMinorUnits = (value) => Math.round(Number(value || 0) * 100);
 
-export function openaiCheckoutStarted({ currency = "AED", value = 0 } = {}) {
+export function openaiCheckoutStarted({ currency, value = 0 } = {}) {
   oaiq("measure", "checkout_started", { type: "contents", amount: toMinorUnits(value), currency });
 }
 
-export function openaiOrderCreated({ currency = "AED", value = 0, eventId } = {}) {
+export function openaiOrderCreated({ currency, value = 0, eventId } = {}) {
   const storageKey = eventId ? `openai:order:${eventId}` : null;
   try {
     if (storageKey && window.localStorage.getItem(storageKey) === "1") return;
@@ -75,4 +75,8 @@ export function openaiOrderCreated({ currency = "AED", value = 0, eventId } = {}
 
 export function openaiLeadCreated({ eventId } = {}) {
   oaiq("measure", "lead_created", { type: "customer_action" }, eventId ? { event_id: eventId } : undefined);
+}
+
+export function openaiWhatsappClicked({ eventId } = {}) {
+  oaiq("measure", "whatsapp_click", { type: "customer_action" }, eventId ? { event_id: eventId } : undefined);
 }
