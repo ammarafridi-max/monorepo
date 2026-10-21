@@ -1,8 +1,8 @@
 import crypto from 'crypto';
 import mongoose from 'mongoose';
 import { AppError } from '@travel-suite/utils';
-import { APPLICATION_STATUSES, APPOINTMENT_STATUSES } from './schemas/visaApplication.schema.js';
-import { ACCOMMODATION_TYPES } from './schemas/checklistTemplate.schema.js';
+import { APPLICATION_STATUSES, APPOINTMENT_STATUSES } from './schemas/visa-application.schema.js';
+import { ACCOMMODATION_TYPES } from './schemas/checklist-template.schema.js';
 import { deriveAgeGroup, evaluateTemplate, neededProfileFields, templateReferencesCondition } from './matcher.js';
 
 const MAX_BYTES = 15 * 1024 * 1024;
@@ -587,7 +587,7 @@ export function createVisaApplicationService({
   async function adminCreate({ visaLeadId, email, firstName, lastName, destinationCountry, packageName, applicantCount, intendedTravelDates, primaryApplicant, visaTypeKey, accommodationType, performedBy }) {
     let lead = null;
     if (visaLeadId) {
-      const VisaLead = VisaApplication.db.model('VisaLead');
+      const VisaLead = VisaApplication.db.model('visa-lead');
       lead = await VisaLead.findById(visaLeadId).lean();
       if (!lead) throw new AppError('Visa lead not found', 404);
     }

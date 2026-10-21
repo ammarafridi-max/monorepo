@@ -19,7 +19,7 @@ const PassengerSchema = new mongoose.Schema(
 const InsuranceApplicationSchema = new mongoose.Schema(
   {
     sessionId: { type: String, default: uuidv4, unique: true },
-    affiliate: { type: mongoose.Schema.ObjectId, ref: 'Affiliate', default: null, index: true },
+    affiliate: { type: mongoose.Schema.ObjectId, ref: 'affiliate', default: null, index: true },
     affiliateId: { type: String, trim: true, index: true },
 
     journeyType: { type: String, required: true, enum: ['single', 'annual', 'biennial'] },

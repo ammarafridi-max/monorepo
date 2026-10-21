@@ -75,7 +75,7 @@ const faqSchema = new mongoose.Schema(
   { _id: false },
 );
 
-const guideRef = () => ({ type: mongoose.Schema.Types.ObjectId, ref: 'Blog', default: null });
+const guideRef = () => ({ type: mongoose.Schema.Types.ObjectId, ref: 'blog', default: null });
 
 const sectionGuidesSchema = new mongoose.Schema(
   {

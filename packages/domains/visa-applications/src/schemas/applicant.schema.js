@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { FINANCIAL_SUPPORT, MINOR_TRAVELLING_WITH } from './checklistTemplate.schema.js';
+import { FINANCIAL_SUPPORT, MINOR_TRAVELLING_WITH } from './checklist-template.schema.js';
 
 const { Schema, Types: { ObjectId } } = mongoose;
 

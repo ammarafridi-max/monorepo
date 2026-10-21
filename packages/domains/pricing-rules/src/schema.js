@@ -3,9 +3,9 @@ import mongoose from 'mongoose';
 const PricingRuleSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
-    pickupZones: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Zone', required: true }],
-    dropoffZones: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Zone', required: true }],
-    vehicles: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Vehicle', required: true }],
+    pickupZones: [{ type: mongoose.Schema.Types.ObjectId, ref: 'zone', required: true }],
+    dropoffZones: [{ type: mongoose.Schema.Types.ObjectId, ref: 'zone', required: true }],
+    vehicles: [{ type: mongoose.Schema.Types.ObjectId, ref: 'vehicle', required: true }],
     pricing: {
       oneWay: { type: Number, required: true, min: 0 },
       return: { type: Number, required: true, min: 0 },

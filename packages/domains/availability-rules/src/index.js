@@ -4,19 +4,13 @@ import AvailabilityRuleSchema from './schema.js';
 import { createAvailabilityRuleService } from './service.js';
 import { createAvailabilityRuleController } from './controller.js';
 import { createAvailabilityRuleRouterFromParts } from './router.js';
+import { getOrRegisterModel } from '@travel-suite/utils/model';
 
-function getOrRegisterModel(conn, name, schema) {
-  try {
-    return conn.model(name);
-  } catch {
-    return conn.model(name, schema);
-  }
-}
 
 export function createAvailabilityRulesRouter({ db, auth }) {
-  getOrRegisterModel(db, 'Vehicle', VehicleSchema);
-  getOrRegisterModel(db, 'Zone', ZoneSchema);
-  const AvailabilityRule = getOrRegisterModel(db, 'AvailabilityRule', AvailabilityRuleSchema);
+  getOrRegisterModel(db, 'vehicle', VehicleSchema);
+  getOrRegisterModel(db, 'zone', ZoneSchema);
+  const AvailabilityRule = getOrRegisterModel(db, 'availability-rule', AvailabilityRuleSchema);
 
   const service = createAvailabilityRuleService({ AvailabilityRule });
   const controller = createAvailabilityRuleController({ service });

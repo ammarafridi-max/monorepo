@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const ProductSchema = new mongoose.Schema(
+const StripeProductSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
 
@@ -23,7 +23,7 @@ const ProductSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-ProductSchema.index({ createdAt: -1 });
-ProductSchema.index({ isActive: 1, createdAt: -1 });
+StripeProductSchema.index({ createdAt: -1 });
+StripeProductSchema.index({ isActive: 1, createdAt: -1 });
 
-export default ProductSchema;
+export default StripeProductSchema;

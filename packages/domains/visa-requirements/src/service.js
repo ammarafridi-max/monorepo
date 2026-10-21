@@ -1,9 +1,9 @@
 import { AppError } from '@travel-suite/utils';
-import { OUTCOMES } from './schemas/visaRule.schema.js';
+import { OUTCOMES } from './schemas/visa-rule.schema.js';
 
 const ISO2 = /^[A-Za-z]{2}$/;
 
-export function createVisaRequirementsService({ VisaRule, VisaQuery, providers = [], servicedSlugs = [] }) {
+export function createVisaRequirementsService({ VisaRule, VisaRequirementSearch, providers = [], servicedSlugs = [] }) {
   const serviced = new Set(servicedSlugs);
 
   const norm = (v) => (v ? String(v).toUpperCase().trim() : null);
@@ -38,7 +38,7 @@ export function createVisaRequirementsService({ VisaRule, VisaQuery, providers =
 
     const isServiced = Boolean(answer.visaSlug && serviced.has(answer.visaSlug));
 
-    VisaQuery.create({
+    VisaRequirementSearch.create({
       nationality: nat,
       residence: res,
       destination: dest,
@@ -123,19 +123,19 @@ export function createVisaRequirementsService({ VisaRule, VisaQuery, providers =
   async function queryStats({ days = 30, limit = 50 } = {}) {
     const since = new Date(Date.now() - days * 86400_000);
     const [corridors, gaps, totals] = await Promise.all([
-      VisaQuery.aggregate([
+      VisaRequirementSearch.aggregate([
         { $match: { createdAt: { $gte: since } } },
         { $group: { _id: { nationality: '$nationality', destination: '$destination' }, count: { $sum: 1 } } },
         { $sort: { count: -1 } },
         { $limit: limit },
       ]),
-      VisaQuery.aggregate([
+      VisaRequirementSearch.aggregate([
         { $match: { createdAt: { $gte: since }, wasFallback: true } },
         { $group: { _id: '$destination', count: { $sum: 1 } } },
         { $sort: { count: -1 } },
         { $limit: limit },
       ]),
-      VisaQuery.aggregate([
+      VisaRequirementSearch.aggregate([
         { $match: { createdAt: { $gte: since } } },
         { $group: { _id: null, total: { $sum: 1 }, serviced: { $sum: { $cond: ['$isServiced', 1, 0] } } } },
       ]),

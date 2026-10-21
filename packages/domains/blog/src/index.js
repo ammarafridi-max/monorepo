@@ -1,22 +1,16 @@
 import BlogSchema from './schemas/blog.schema.js';
-import BlogTagSchema from './schemas/blogTag.schema.js';
+import BlogTagSchema from './schemas/blog-tag.schema.js';
 import { createBlogService } from './service.js';
 import { createBlogTagService } from './blogTag.service.js';
 import { createBlogController } from './controller.js';
 import { createBlogTagController } from './blogTag.controller.js';
 import { createBlogRouterFromParts } from './router.js';
 import { createBlogTagRouterFromParts } from './blogTag.router.js';
+import { getOrRegisterModel } from '@travel-suite/utils/model';
 
-function getOrRegisterModel(conn, name, schema) {
-  try {
-    return conn.model(name);
-  } catch {
-    return conn.model(name, schema);
-  }
-}
 
 export function createBlogRouter({ db, auth, imageStorage, anthropicApiKey }) {
-  const Blog = getOrRegisterModel(db, 'Blog', BlogSchema);
+  const Blog = getOrRegisterModel(db, 'blog', BlogSchema);
   const BlogTag = getOrRegisterModel(db, 'blog-tag', BlogTagSchema);
   const service = createBlogService({ Blog, BlogTag, imageStorage });
   const controller = createBlogController({ service, Blog, anthropicApiKey });
@@ -24,7 +18,7 @@ export function createBlogRouter({ db, auth, imageStorage, anthropicApiKey }) {
 }
 
 export function createBlogTagRouter({ db, auth }) {
-  const Blog = getOrRegisterModel(db, 'Blog', BlogSchema);
+  const Blog = getOrRegisterModel(db, 'blog', BlogSchema);
   const BlogTag = getOrRegisterModel(db, 'blog-tag', BlogTagSchema);
   const service = createBlogTagService({ BlogTag, Blog });
   const controller = createBlogTagController({ service, BlogTag });
@@ -32,7 +26,7 @@ export function createBlogTagRouter({ db, auth }) {
 }
 
 export async function publishDueScheduledBlogs(db) {
-  const Blog = getOrRegisterModel(db, 'Blog', BlogSchema);
+  const Blog = getOrRegisterModel(db, 'blog', BlogSchema);
   const now = new Date();
   const result = await Blog.updateMany(
     { status: 'scheduled', scheduledAt: { $lte: now } },

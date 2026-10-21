@@ -4,14 +4,8 @@ import { createPdfRenderer } from './pdf.js';
 import { createItineraryService } from './service.js';
 import { createItineraryController } from './controller.js';
 import { createItineraryRouter } from './router.js';
+import { getOrRegisterModel } from '@travel-suite/utils/model';
 
-function getOrRegisterModel(conn, name, schema) {
-  try {
-    return conn.model(name);
-  } catch {
-    return conn.model(name, schema);
-  }
-}
 
 export function createItinerariesRouter({
   db,

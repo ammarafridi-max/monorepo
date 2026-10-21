@@ -1,23 +1,17 @@
-import InsuranceApplicationSchema from './schemas/InsuranceApplicationSchema.js';
-import NationalitySchema from './schemas/NationalitySchema.js';
+import InsuranceApplicationSchema from './schemas/insurance-application.schema.js';
+import WisNationalitySchema from './schemas/wis-nationality.schema.js';
 import { createInsuranceService } from './service.js';
 import { createInsuranceController } from './controller.js';
 import { createInsuranceRouterFromController } from './router.js';
 import { logger } from '@travel-suite/utils';
+import { getOrRegisterModel } from '@travel-suite/utils/model';
 
-function getOrRegisterModel(conn, name, schema) {
-  try {
-    return conn.model(name);
-  } catch {
-    return conn.model(name, schema);
-  }
-}
 
 export function createInsuranceRouter({ db, wis, brevo, auth, notifications, logger: injectedLogger, Affiliate = null, metaCapi, frontendUrl }) {
   const log = injectedLogger ?? logger;
 
   const InsuranceApplication = getOrRegisterModel(db, 'insurance-application', InsuranceApplicationSchema);
-  const Nationality          = getOrRegisterModel(db, 'Nationality',           NationalitySchema);
+  const WisNationality          = getOrRegisterModel(db, 'wis-nationality',           WisNationalitySchema);
 
   const service = createInsuranceService({
     InsuranceApplication,
@@ -33,7 +27,7 @@ export function createInsuranceRouter({ db, wis, brevo, auth, notifications, log
   const controller = createInsuranceController({
     service,
     wis,
-    Nationality,
+    WisNationality,
     InsuranceApplication,
     logger: log,
     brevo,

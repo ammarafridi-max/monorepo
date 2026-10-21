@@ -1,4 +1,4 @@
-import AdminUserSchema from './schema.js';
+import AdminUserSchema from './admin-user.schema.js';
 import AdminOtpSchema from './otp.schema.js';
 import { createJwtUtils } from './jwt.js';
 import { createAuthService } from './service.js';
@@ -7,16 +7,10 @@ import { createAdminAuthMiddleware } from './middleware.js';
 import { createAuthController } from './controller.js';
 import { createAuthRouterFromParts } from './router.js';
 import * as validators from './validators.js';
+import { getOrRegisterModel } from '@travel-suite/utils/model';
 
 export { CSRF_HEADER, CSRF_HEADER_VALUE } from '@travel-suite/utils/csrf';
 
-function getOrRegisterModel(conn, name, schema) {
-  try {
-    return conn.model(name);
-  } catch {
-    return conn.model(name, schema);
-  }
-}
 
 export function createAdminAuthMiddlewareFromDb({ db, jwtSecret }) {
   const AdminUser  = getOrRegisterModel(db, 'admin-user', AdminUserSchema);

@@ -7,21 +7,15 @@ import { createBookingPricingService } from './pricing.service.js';
 import { createBookingService } from './service.js';
 import { createBookingController } from './controller.js';
 import { createBookingRouterFromParts } from './router.js';
+import { getOrRegisterModel } from '@travel-suite/utils/model';
 
-function getOrRegisterModel(conn, name, schema) {
-  try {
-    return conn.model(name);
-  } catch {
-    return conn.model(name, schema);
-  }
-}
 
 export function createBookingsRouter({ db, auth, stripe, frontendUrl }) {
-  getOrRegisterModel(db, 'Vehicle', VehicleSchema);
-  getOrRegisterModel(db, 'Zone', ZoneSchema);
-  const PricingRule = getOrRegisterModel(db, 'PricingRule', PricingRuleSchema);
-  const AvailabilityRule = getOrRegisterModel(db, 'AvailabilityRule', AvailabilityRuleSchema);
-  const Booking = getOrRegisterModel(db, 'Booking', BookingSchema);
+  getOrRegisterModel(db, 'vehicle', VehicleSchema);
+  getOrRegisterModel(db, 'zone', ZoneSchema);
+  const PricingRule = getOrRegisterModel(db, 'pricing-rule', PricingRuleSchema);
+  const AvailabilityRule = getOrRegisterModel(db, 'availability-rule', AvailabilityRuleSchema);
+  const Booking = getOrRegisterModel(db, 'booking', BookingSchema);
 
   const pricing = createBookingPricingService({ AvailabilityRule, PricingRule });
   const service = createBookingService({ Booking, stripe, frontendUrl, pricing });

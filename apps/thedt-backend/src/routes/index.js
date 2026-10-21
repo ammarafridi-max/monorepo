@@ -4,7 +4,7 @@ import { createAuthRouter } from "@travel-suite/auth";
 import { createAdminUsersRouter, createAdminBadgesRouter } from "@travel-suite/admin-users";
 import {
   createAffiliatesRouter,
-  AffiliateSchema,
+  registerAffiliateModels,
 } from "@travel-suite/affiliates";
 import { createBlogRouter, createBlogTagRouter } from "@travel-suite/blog";
 import { createCloudinaryStorage } from "@travel-suite/cloudinary";
@@ -24,7 +24,7 @@ import {
   createPaymentsController,
   createPaymentsAdminRouter,
   PaymentLinkSchema,
-  ProductSchema,
+  StripeProductSchema,
 } from "@travel-suite/payments";
 import { db } from "../utils/db.js";
 import { wis } from "../utils/wis.js";
@@ -38,15 +38,7 @@ import { insurancePaymentCompletionEmail, policyIssuedEmail } from "../notificat
 import config from "../utils/config.js";
 import { logger } from "@travel-suite/utils";
 
-// -- Model pre-registration (ORDER CRITICAL) -----------------------------------
-function getOrRegisterModel(conn, name, schema) {
-  try {
-    return conn.model(name);
-  } catch {
-    return conn.model(name, schema);
-  }
-}
-const AffiliateModel = getOrRegisterModel(db, "Affiliate", AffiliateSchema);
+const { Affiliate: AffiliateModel } = registerAffiliateModels({ db });
 
 const router = Router();
 const brevo = createBrevoClient({ apiKey: config.brevoApiKey, logger });
@@ -242,7 +234,7 @@ const paymentService = createPaymentService({
   stripe,
   db,
   PaymentLinkSchema,
-  ProductSchema,
+  StripeProductSchema,
 });
 const paymentsController = createPaymentsController({
   service: paymentService,
@@ -287,8 +279,8 @@ if (config.anthropicApiKey) {
       assistantDatasets.dummyTickets(TicketModel),
       assistantDatasets.insuranceApplications(db.models["insurance-application"]),
       assistantDatasets.affiliates(AffiliateModel),
-      assistantDatasets.affiliatePayouts(db.models.AffiliatePayout),
-      assistantDatasets.blogPosts(db.models.Blog),
+      assistantDatasets.affiliatePayouts(db.models['affiliate-payout']),
+      assistantDatasets.blogPosts(db.models.blog),
     ],
   });
   router.use("/assistant", assistantRouter);

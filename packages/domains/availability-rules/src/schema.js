@@ -3,11 +3,11 @@ import mongoose from 'mongoose';
 const AvailabilityRuleSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
-    pickupZones: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Zone' }],
-    dropoffZones: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Zone' }],
+    pickupZones: [{ type: mongoose.Schema.Types.ObjectId, ref: 'zone' }],
+    dropoffZones: [{ type: mongoose.Schema.Types.ObjectId, ref: 'zone' }],
     vehicles: [
       {
-        vehicle: { type: mongoose.Schema.Types.ObjectId, ref: 'Vehicle', required: true },
+        vehicle: { type: mongoose.Schema.Types.ObjectId, ref: 'vehicle', required: true },
         available: { type: Boolean, default: true },
       },
     ],

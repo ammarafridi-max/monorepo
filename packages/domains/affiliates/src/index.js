@@ -1,17 +1,22 @@
-import AffiliateSchema from './schema.js';
+import AffiliateSchema from './affiliate.schema.js';
 import AffiliatePayoutSchema from './payout.schema.js';
 import AffiliateClickSchema from './click.schema.js';
 import { createAffiliateService } from './service.js';
 import { createAffiliatePayoutService } from './payout.service.js';
 import { createAffiliateController, createAffiliatePayoutController } from './controller.js';
 import { createAffiliateRouter } from './router.js';
+import { getOrRegisterModel } from '@travel-suite/utils/model';
 
 export { AffiliateSchema, AffiliatePayoutSchema, AffiliateClickSchema };
 
-function getOrRegisterModel(conn, name, schema) {
-  try { return conn.model(name); }
-  catch { return conn.model(name, schema); }
+export function registerAffiliateModels({ db }) {
+  return {
+    Affiliate: getOrRegisterModel(db, 'affiliate', AffiliateSchema),
+    AffiliatePayout: getOrRegisterModel(db, 'affiliate-payout', AffiliatePayoutSchema),
+    AffiliateClick: getOrRegisterModel(db, 'affiliate-click', AffiliateClickSchema),
+  };
 }
+
 
 export function createAffiliatesRouter({
   db,
@@ -24,10 +29,8 @@ export function createAffiliatesRouter({
   trackingBaseUrl = null,
   logger = null,
 }) {
-  const Affiliate = getOrRegisterModel(db, 'Affiliate', AffiliateSchema);
-  const AffiliatePayout = getOrRegisterModel(db, 'AffiliatePayout', AffiliatePayoutSchema);
-  const AffiliateClick = getOrRegisterModel(db, 'AffiliateClick', AffiliateClickSchema);
-  const resolveCurrencyModel = () => CurrencyModel ?? db.models?.Currency ?? null;
+  const { Affiliate, AffiliatePayout, AffiliateClick } = registerAffiliateModels({ db });
+  const resolveCurrencyModel = () => CurrencyModel ?? db.models?.currency ?? null;
   const resolveInsuranceApplicationModel = () =>
     InsuranceApplicationModel ?? db.models?.['insurance-application'] ?? null;
 

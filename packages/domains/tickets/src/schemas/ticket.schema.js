@@ -84,7 +84,7 @@ const TicketSchema = new mongoose.Schema(
     reservationSentAt: { type: Date, default: null },
     affiliateId: { type: String, trim: true, default: null, match: [/^\d{9}$/, 'Affiliate ID must be exactly 9 digits'] },
     affiliateCapturedAt: { type: Date, default: null },
-    affiliate: { type: mongoose.Schema.ObjectId, ref: 'Affiliate', default: null },
+    affiliate: { type: mongoose.Schema.ObjectId, ref: 'affiliate', default: null },
     affiliateCommissionPercent: { type: Number, default: null, min: 0, max: 100 },
     affiliateCommission: {
       currency: { type: String, default: null, uppercase: true, trim: true },
@@ -95,7 +95,7 @@ const TicketSchema = new mongoose.Schema(
       amount: { type: Number, default: null },
       rate: { type: Number, default: null },
     },
-    affiliatePayout: { type: mongoose.Schema.ObjectId, ref: 'AffiliatePayout', default: null },
+    affiliatePayout: { type: mongoose.Schema.ObjectId, ref: 'affiliate-payout', default: null },
     refundedAt: { type: Date, default: null },
     events: { type: [TicketEventSchema], default: [] },
     attribution: attributionSchemaField(),

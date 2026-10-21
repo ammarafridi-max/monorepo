@@ -6,17 +6,11 @@ import { normaliseDatasets } from './datasets.js';
 import { createAssistantService } from './service.js';
 import { createAssistantController } from './controller.js';
 import { createAssistantRouterFromParts } from './router.js';
+import { getOrRegisterModel } from '@travel-suite/utils/model';
 
 export { AssistantActionSchema, AssistantConversationSchema, AssistantToolCallSchema };
 export * as assistantDatasets from './presets.js';
 
-function getOrRegisterModel(conn, name, schema) {
-  try {
-    return conn.model(name);
-  } catch {
-    return conn.model(name, schema);
-  }
-}
 
 export function createAssistantRouter({
   db,

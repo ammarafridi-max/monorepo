@@ -11,7 +11,10 @@ import { createAirLabsClient } from "@travel-suite/airlabs";
 import { createFlightRouter, createAirportsRouter } from "@travel-suite/flights";
 import { createSerpApiClient } from "@travel-suite/serpapi";
 import { createTicketsRouter } from "@travel-suite/tickets";
-import { createAffiliatesRouter, AffiliateSchema } from "@travel-suite/affiliates";
+import {
+  createAffiliatesRouter,
+  registerAffiliateModels,
+} from "@travel-suite/affiliates";
 import { createNotificationsService } from "@travel-suite/notifications";
 import {
   createStripeClient,
@@ -20,7 +23,7 @@ import {
   createPaymentsController,
   createPaymentsAdminRouter,
   PaymentLinkSchema,
-  ProductSchema,
+  StripeProductSchema,
 } from "@travel-suite/payments";
 import { createCloudinaryStorage } from "@travel-suite/cloudinary";
 import { logger } from "@travel-suite/utils";
@@ -33,15 +36,7 @@ import { insurancePaymentCompletionEmail, policyIssuedEmail } from "../notificat
 import { itineraryPaymentCustomerEmail } from "../notifications/itinerary.js";
 import config from "../utils/config.js";
 
-// -- Model pre-registration (ORDER CRITICAL) ----------------------------------
-function getOrRegisterModel(conn, name, schema) {
-  try {
-    return conn.model(name);
-  } catch {
-    return conn.model(name, schema);
-  }
-}
-const AffiliateModel = getOrRegisterModel(db, "Affiliate", AffiliateSchema);
+const { Affiliate: AffiliateModel } = registerAffiliateModels({ db });
 
 const router = Router();
 const brevo = createBrevoClient({ apiKey: config.brevoApiKey, logger });
@@ -221,7 +216,7 @@ router.use(
   }),
 );
 
-const paymentService = createPaymentService({ stripe, db, PaymentLinkSchema, ProductSchema });
+const paymentService = createPaymentService({ stripe, db, PaymentLinkSchema, StripeProductSchema });
 const paymentsController = createPaymentsController({ service: paymentService });
 router.use("/payments", createPaymentsAdminRouter({ controller: paymentsController, auth }));
 
@@ -260,8 +255,8 @@ if (config.anthropicApiKey) {
       assistantDatasets.dummyTickets(TicketModel, { detailPath: '/admin/flight-reservations/{sessionId}' }),
       assistantDatasets.itineraryOrders(db.models["itinerary-order"]),
       assistantDatasets.affiliates(AffiliateModel),
-      assistantDatasets.affiliatePayouts(db.models.AffiliatePayout),
-      assistantDatasets.blogPosts(db.models.Blog),
+      assistantDatasets.affiliatePayouts(db.models['affiliate-payout']),
+      assistantDatasets.blogPosts(db.models.blog),
     ],
   });
   router.use("/assistant", assistantRouter);

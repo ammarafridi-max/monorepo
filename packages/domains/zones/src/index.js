@@ -2,17 +2,11 @@ import ZoneSchema from './schema.js';
 import { createZoneService } from './service.js';
 import { createZoneController } from './controller.js';
 import { createZoneRouterFromParts } from './router.js';
+import { getOrRegisterModel } from '@travel-suite/utils/model';
 
-function getOrRegisterModel(conn, name, schema) {
-  try {
-    return conn.model(name);
-  } catch {
-    return conn.model(name, schema);
-  }
-}
 
 export function createZonesRouter({ db, auth }) {
-  const Zone = getOrRegisterModel(db, 'Zone', ZoneSchema);
+  const Zone = getOrRegisterModel(db, 'zone', ZoneSchema);
   const service = createZoneService({ Zone });
   const controller = createZoneController({ service });
   return createZoneRouterFromParts({ controller, auth });

@@ -1,6 +1,6 @@
 import { AppError } from '@travel-suite/utils';
-import { DOCUMENT_SOURCES } from './schemas/documentType.schema.js';
-import { AGE_GROUPS, FINANCIAL_SUPPORT, ACCOMMODATION_TYPES, MINOR_TRAVELLING_WITH } from './schemas/checklistTemplate.schema.js';
+import { DOCUMENT_SOURCES } from './schemas/document-type.schema.js';
+import { AGE_GROUPS, FINANCIAL_SUPPORT, ACCOMMODATION_TYPES, MINOR_TRAVELLING_WITH } from './schemas/checklist-template.schema.js';
 import { EMPLOYMENT_STATUSES } from './schemas/applicant.schema.js';
 import { evaluateTemplate } from './matcher.js';
 
