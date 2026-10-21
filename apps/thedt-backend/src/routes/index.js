@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { createAssistantRouter, assistantDatasets } from "@travel-suite/assistant";
 import { createAuthRouter } from "@travel-suite/auth";
-import { createAdminUsersRouter } from "@travel-suite/admin-users";
+import { createAdminUsersRouter, createAdminBadgesRouter } from "@travel-suite/admin-users";
 import {
   createAffiliatesRouter,
   AffiliateSchema,
@@ -179,6 +179,17 @@ const {
 });
 router.use("/tickets", ticketsRouter);
 router.use("/pricing", pricingRouter);
+
+router.use(
+  "/admin-badges",
+  createAdminBadgesRouter({
+    auth,
+    counters: {
+      pendingDummyTickets: () =>
+        TicketModel.countDocuments({ paymentStatus: "PAID", orderStatus: "PENDING" }),
+    },
+  }),
+);
 
 router.use(
   "/affiliates",

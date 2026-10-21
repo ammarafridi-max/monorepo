@@ -3,7 +3,7 @@ import { createAssistantRouter, assistantDatasets } from "@travel-suite/assistan
 import rateLimit from "express-rate-limit";
 import { createAuthRouter } from "@travel-suite/auth";
 import { createInsuranceRouter } from "@travel-suite/insurance";
-import { createAdminUsersRouter } from "@travel-suite/admin-users";
+import { createAdminUsersRouter, createAdminBadgesRouter } from "@travel-suite/admin-users";
 import { createBlogRouter, createBlogTagRouter } from "@travel-suite/blog";
 import { createItinerariesRouter } from "@travel-suite/itineraries";
 import { createLocationsRouter } from "@travel-suite/locations";
@@ -198,6 +198,17 @@ const {
 });
 router.use("/tickets", ticketsRouter);
 router.use("/pricing", pricingRouter);
+
+router.use(
+  "/admin-badges",
+  createAdminBadgesRouter({
+    auth,
+    counters: {
+      pendingDummyTickets: () =>
+        TicketModel.countDocuments({ paymentStatus: "PAID", orderStatus: "PENDING" }),
+    },
+  }),
+);
 
 router.use(
   "/affiliates",

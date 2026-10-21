@@ -22,6 +22,26 @@ const SegmentSchema = new mongoose.Schema({
 
 const FlightSchema = new mongoose.Schema({ duration: String, segments: [SegmentSchema] });
 
+export const TICKET_EVENT_ACTIONS = [
+  'ORDER_STATUS_CHANGED',
+  'DELIVERY_CHANGED',
+  'RESERVATION_SENT',
+  'REFUNDED',
+];
+
+const TicketEventSchema = new mongoose.Schema(
+  {
+    at: { type: Date, default: Date.now },
+    by: { type: mongoose.Schema.ObjectId, ref: 'admin-user', default: null },
+    byName: { type: String, default: null },
+    action: { type: String, enum: TICKET_EVENT_ACTIONS, required: true },
+    from: { type: String, default: null },
+    to: { type: String, default: null },
+    detail: { type: String, default: null },
+  },
+  { _id: false },
+);
+
 const TicketSchema = new mongoose.Schema(
   {
     sessionId: { type: String, default: uuidv4, unique: true },
@@ -29,7 +49,6 @@ const TicketSchema = new mongoose.Schema(
     passengers: [PassengerSchema],
     email: { type: String, required: true, match: /^\S+@\S+\.\S+$/ },
     phoneNumber: { code: { type: String }, digits: { type: String } },
-    pnr: { type: String },
     from: { type: String, required: true },
     to: { type: String, required: true },
     departureDate: { type: String, required: true },
@@ -78,6 +97,7 @@ const TicketSchema = new mongoose.Schema(
     },
     affiliatePayout: { type: mongoose.Schema.ObjectId, ref: 'AffiliatePayout', default: null },
     refundedAt: { type: Date, default: null },
+    events: { type: [TicketEventSchema], default: [] },
     attribution: attributionSchemaField(),
     openaiAttribution: {
       oppref: { type: String },

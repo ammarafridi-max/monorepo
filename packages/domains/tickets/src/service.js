@@ -136,7 +136,6 @@ function buildSearchFilter(search) {
       { from: regex },
       { to: regex },
       { sessionId: regex },
-      { pnr: regex },
       ...(digits.length >= 4 ? [{ 'phoneNumber.digits': new RegExp(escapeRegex(digits)) }] : []),
     ],
   };
@@ -343,7 +342,7 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       .select('sessionId paidAt')
       .lean();
 
-  const sendReservation = async ({ sessionId, agentId, subject, body, bodyHtml, file }) => {
+  const sendReservation = async ({ sessionId, agentId, agentName, subject, body, bodyHtml, file }) => {
     if (!reservationStorage || !sendEmail) {
       throw new AppError('Reservation sending is not configured on this server', 500);
     }
@@ -388,6 +387,15 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     const updated = await Ticket.findOneAndUpdate(
       { sessionId },
       {
+        $push: {
+          events: ticketEvent({
+            actor: { id: agentId, name: agentName },
+            action: 'RESERVATION_SENT',
+            from: ticket.orderStatus,
+            to: 'DELIVERED',
+            detail: ticket.email,
+          }),
+        },
         $set: {
           orderStatus: 'DELIVERED',
           handledBy: agentId ? new mongoose.Types.ObjectId(agentId) : ticket.handledBy,
@@ -422,23 +430,40 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     throw new AppError('No reservation file has been sent for this ticket', 404);
   };
 
-  const updateOrderStatus = async (sessionId, userId, orderStatus) => {
+  const updateOrderStatus = async (sessionId, userId, orderStatus, actor = null) => {
     if (!orderStatus) throw new AppError('Order status is required', 400);
     const allowed = ['PENDING', 'DELIVERED', 'PROGRESS', 'REFUNDED'];
     if (!allowed.includes(orderStatus)) throw new AppError('Invalid order status', 400);
     if (!mongoose.Types.ObjectId.isValid(userId)) throw new AppError('Invalid user ID', 400);
 
+    const existing = await Ticket.findOne({ sessionId }).select('orderStatus ticketDelivery');
+    if (!existing) throw new AppError('Ticket not found', 404);
+
     if (orderStatus === 'PROGRESS' || orderStatus === 'DELIVERED') {
-      const existing = await Ticket.findOne({ sessionId });
-      if (!existing) throw new AppError('Ticket not found', 404);
       if (!isDeliveryDayReached(existing)) {
         throw new AppError('This ticket is scheduled for a later delivery date. Bring the delivery date forward first.', 409);
       }
     }
 
+    const changed = existing.orderStatus !== orderStatus;
+
     const updated = await Ticket.findOneAndUpdate(
       { sessionId },
-      { $set: { orderStatus, handledBy: new mongoose.Types.ObjectId(userId) } },
+      {
+        $set: { orderStatus, handledBy: new mongoose.Types.ObjectId(userId) },
+        ...(changed
+          ? {
+              $push: {
+                events: ticketEvent({
+                  actor: actor ?? { id: userId },
+                  action: 'ORDER_STATUS_CHANGED',
+                  from: existing.orderStatus,
+                  to: orderStatus,
+                }),
+              },
+            }
+          : {}),
+      },
       { new: true },
     ).populate('handledBy');
 
@@ -446,7 +471,10 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     return updated;
   };
 
-  const updateDeliveryDate = async (sessionId, userId, { deliveryDate, immediate } = {}) => {
+  const describeDelivery = (delivery) =>
+    delivery?.immediate ? 'Immediate' : delivery?.deliveryDate || 'Not set';
+
+  const updateDeliveryDate = async (sessionId, userId, { deliveryDate, immediate } = {}, actor = null) => {
     if (!mongoose.Types.ObjectId.isValid(userId)) throw new AppError('Invalid user ID', 400);
 
     let ticketDelivery;
@@ -460,9 +488,22 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       ticketDelivery = { immediate: false, deliveryDate: dateStr };
     }
 
+    const existing = await Ticket.findOne({ sessionId }).select('ticketDelivery');
+    if (!existing) throw new AppError('Ticket not found', 404);
+
     const updated = await Ticket.findOneAndUpdate(
       { sessionId },
-      { $set: { ticketDelivery, handledBy: new mongoose.Types.ObjectId(userId) } },
+      {
+        $set: { ticketDelivery, handledBy: new mongoose.Types.ObjectId(userId) },
+        $push: {
+          events: ticketEvent({
+            actor: actor ?? { id: userId },
+            action: 'DELIVERY_CHANGED',
+            from: describeDelivery(existing.ticketDelivery),
+            to: describeDelivery(ticketDelivery),
+          }),
+        },
+      },
       { new: true },
     ).populate('handledBy');
 
@@ -649,6 +690,16 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       logger.warn('[tickets] Meta purchase event failed', { sessionId: ticket.sessionId, error: err.message });
     }
   };
+
+  const ticketEvent = ({ actor, action, from = null, to = null, detail = null }) => ({
+    at: new Date(),
+    by: actor?.id && mongoose.Types.ObjectId.isValid(actor.id) ? new mongoose.Types.ObjectId(actor.id) : null,
+    byName: actor?.name || null,
+    action,
+    from: from === null || from === undefined ? null : String(from),
+    to: to === null || to === undefined ? null : String(to),
+    detail,
+  });
 
   const announcePaidTicket = async (ticket) => {
     await notifications.sendTicketPaymentToAdmin({
@@ -974,7 +1025,7 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     return reconciled ?? ticket;
   };
 
-  const refundByTransactionId = async (transactionId) => {
+  const refundByTransactionId = async (transactionId, actor = null) => {
     const ticket = await Ticket.findOne({ transactionId });
     if (!ticket) throw new AppError('Ticket not found', 404);
     if (ticket.paymentStatus !== 'PAID') throw new AppError('Payment not completed', 400);
@@ -989,7 +1040,20 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
 
     await Ticket.findOneAndUpdate(
       { transactionId },
-      { $set: { paymentStatus: 'REFUNDED', orderStatus: 'REFUNDED', refundedAt: new Date() } },
+      {
+        $set: { paymentStatus: 'REFUNDED', orderStatus: 'REFUNDED', refundedAt: new Date() },
+        $push: {
+          events: ticketEvent({
+            actor,
+            action: 'REFUNDED',
+            from: ticket.orderStatus,
+            to: 'REFUNDED',
+            detail: ticket.amountPaid?.amount
+              ? `${ticket.amountPaid.currency} ${ticket.amountPaid.amount}`
+              : null,
+          }),
+        },
+      },
       { new: true },
     );
 

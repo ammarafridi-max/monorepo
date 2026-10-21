@@ -18,7 +18,7 @@ export const dummyTickets = (model, overrides = {}) =>
     analyticsRoles: ['admin'],
     dateField: 'createdAt',
     detailPath: '/admin/dummy-tickets/{sessionId}',
-    idFields: ['sessionId', 'pnr'],
+    idFields: ['sessionId'],
     fields: [
       { name: 'createdAt', type: 'date' },
       { name: 'paidAt', type: 'date' },
@@ -35,7 +35,6 @@ export const dummyTickets = (model, overrides = {}) =>
       { name: 'totalAmount', type: 'number', summable: true, roles: ['admin'], description: 'Quoted order total' },
       { name: 'affiliateId', type: 'string' },
       { name: 'sessionId', type: 'string', searchable: true, groupable: false },
-      { name: 'pnr', type: 'string', searchable: true, groupable: false },
       { name: 'email', type: 'string', searchable: true, sensitive: true, mask: 'email', groupable: true },
       { name: 'handledBy', type: 'string', resolve: { model: 'admin-user', field: 'name' }, description: 'Admin user who handled the order' },
       ...attributionFields,

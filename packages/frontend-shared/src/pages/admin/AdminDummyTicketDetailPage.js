@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import {
   ArrowLeft, Loader2, AlertCircle, Trash2, Check, Pencil, Undo, Send,
   Mail, Phone, MapPin, CreditCard, Hash, Plane, Users, Calendar,
-  MessageSquare, ExternalLink, ArrowRight, FileText, X, Zap,
+  MessageSquare, ExternalLink, ArrowRight, FileText, X, Zap, History,
 } from 'lucide-react';
 import { MdWhatsapp } from 'react-icons/md';
 import { FaStripe, FaPaypal } from 'react-icons/fa';
@@ -195,6 +195,53 @@ function RefundSection({ ticket, disabled, onRefund, isRefunding }) {
         Cancel
       </button>
     </div>
+  );
+}
+
+const EVENT_LABELS = {
+  ORDER_STATUS_CHANGED: 'Status changed',
+  DELIVERY_CHANGED: 'Delivery changed',
+  RESERVATION_SENT: 'Reservation sent',
+  REFUNDED: 'Refunded',
+};
+
+function HistoryCard({ events }) {
+  const entries = [...(events || [])].sort(
+    (a, b) => new Date(b.at).getTime() - new Date(a.at).getTime(),
+  );
+
+  if (!entries.length) {
+    return (
+      <Card title="History" icon={History}>
+        <p className="text-xs text-gray-400 text-center py-2">No changes recorded yet.</p>
+      </Card>
+    );
+  }
+
+  return (
+    <Card title="History" icon={History}>
+      <ol className="space-y-3">
+        {entries.map((event, i) => (
+          <li key={i} className="flex gap-2.5">
+            <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gray-300" />
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-gray-800">
+                {EVENT_LABELS[event.action] || event.action}
+                {event.from && event.to && (
+                  <span className="font-normal text-gray-500"> · {event.from} → {event.to}</span>
+                )}
+              </p>
+              <p className="text-[11px] text-gray-400">
+                {event.byName || 'System'} · {convertToDubaiDate(event.at)} {convertToDubaiTime(event.at)}
+              </p>
+              {event.detail && (
+                <p className="text-[11px] text-gray-400 break-all">{event.detail}</p>
+              )}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </Card>
   );
 }
 
@@ -440,7 +487,6 @@ export default function AdminDummyTicketDetailPage({ basePath = '/admin/dummy-ti
     message: ticket.message || '',
     status: [ticket.paymentStatus, ticket.orderStatus].filter(Boolean),
     paymentMethod: ticket.paymentMethod === 'paypal' ? 'PayPal' : 'Stripe',
-    recordLocator: ticket.pnr || '',
     type: ticket.type,
     validity: ticket.ticketValidity,
     delivery: ticket.ticketDelivery?.immediate
@@ -706,6 +752,8 @@ export default function AdminDummyTicketDetailPage({ basePath = '/admin/dummy-ti
             <InfoRow label="Updated"     value={`${convertToDubaiDate(ticket?.updatedAt)} ${convertToDubaiTime(ticket?.updatedAt)}`} />
             <InfoRow label="Session"     value={ticket?.sessionId} mono />
           </Card>
+
+          <HistoryCard events={ticket?.events} />
 
           {(ticket?.reservationFile?.publicId || ticket?.reservationUrl) && (
             <Card title="Reservation" icon={FileText}>

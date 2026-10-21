@@ -76,6 +76,7 @@ export function createTicketController({ service, paidOrderBus }) {
       const updated = await service.sendReservation({
         sessionId: req.params.sessionId,
         agentId: req.user?._id,
+        agentName: req.user?.name,
         subject: req.body?.subject,
         body: req.body?.body,
         bodyHtml: req.body?.bodyHtml,
@@ -153,7 +154,12 @@ export function createTicketController({ service, paidOrderBus }) {
 
   const updateOrderStatus = async (req, res, next) => {
     try {
-      const ticket = await service.updateOrderStatus(req.params.sessionId, req.user._id, req.body.orderStatus);
+      const ticket = await service.updateOrderStatus(
+        req.params.sessionId,
+        req.user._id,
+        req.body.orderStatus,
+        { id: req.user._id, name: req.user.name },
+      );
       res.json({ status: 'success', data: ticket });
     } catch (err) {
       next(err);
@@ -162,10 +168,12 @@ export function createTicketController({ service, paidOrderBus }) {
 
   const updateDelivery = async (req, res, next) => {
     try {
-      const ticket = await service.updateDeliveryDate(req.params.sessionId, req.user._id, {
-        deliveryDate: req.body?.deliveryDate,
-        immediate: req.body?.immediate,
-      });
+      const ticket = await service.updateDeliveryDate(
+        req.params.sessionId,
+        req.user._id,
+        { deliveryDate: req.body?.deliveryDate, immediate: req.body?.immediate },
+        { id: req.user._id, name: req.user.name },
+      );
       res.json({ status: 'success', data: ticket });
     } catch (err) {
       next(err);
@@ -183,7 +191,10 @@ export function createTicketController({ service, paidOrderBus }) {
 
   const refundByTransactionId = async (req, res, next) => {
     try {
-      const refund = await service.refundByTransactionId(req.params.transactionId);
+      const refund = await service.refundByTransactionId(req.params.transactionId, {
+        id: req.user?._id,
+        name: req.user?.name,
+      });
       res.json({ status: 'success', data: refund });
     } catch (err) {
       next(err);
