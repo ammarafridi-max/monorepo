@@ -12,12 +12,12 @@ export function createCurrencyController({ service }) {
   });
 
   const createCurrency = catchAsync(async (req, res) => {
-    const data = await service.createCurrency(req.body);
+    const data = await service.createCurrency({ ...req.body, updatedBy: req.user?._id });
     res.status(201).json({ status: 'success', message: 'Currency created successfully', data });
   });
 
   const updateCurrency = catchAsync(async (req, res) => {
-    const data = await service.updateCurrency(req.params.code, req.body);
+    const data = await service.updateCurrency(req.params.code, req.body, req.user?._id);
     res.json({ status: 'success', message: 'Currency updated successfully', data });
   });
 

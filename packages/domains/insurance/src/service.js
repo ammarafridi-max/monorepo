@@ -1,5 +1,6 @@
 import { randomBytes } from "crypto";
 import { AppError, coverEndDate, sanitizeAttribution } from "@travel-suite/utils";
+import { parseAmount } from "@travel-suite/utils/currency";
 
 export function createInsuranceService({
   InsuranceApplication,
@@ -404,10 +405,15 @@ export function createInsuranceService({
           paymentReturnStatus: "PAID",
           paymentVerifiedAt: new Date(),
           issuedAt: new Date(),
-          amountPaid: {
-            currency: application?.amountPaid?.currency || "AED",
-            amount: application?.amountPaid?.amount || 0,
-          },
+          // Only rewrite the amount when one was actually quoted; an invented zero reads as a free policy.
+          ...(parseAmount(application?.amountPaid?.amount) !== null
+            ? {
+                amountPaid: {
+                  currency: application.amountPaid.currency,
+                  amount: application.amountPaid.amount,
+                },
+              }
+            : {}),
           transactionId: `WIS_DIRECTPAY_${application.policyId}`,
         },
       },

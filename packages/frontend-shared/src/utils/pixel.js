@@ -61,12 +61,12 @@ export function pixelCustomEvent(event, data = {}) {
   fbq("trackCustom", event, data);
 }
 
-export function pixelLead({ currency = "AED", value = 0 } = {}) {
+export function pixelLead({ currency, value = 0 } = {}) {
   pixelEvent("Lead", { currency, value });
 }
 
 export function pixelViewContent({
-  currency = "AED",
+  currency,
   value = 0,
   numItems = 0,
 } = {}) {
@@ -74,14 +74,14 @@ export function pixelViewContent({
 }
 
 export function pixelInitiateCheckout({
-  currency = "AED",
+  currency,
   value = 0,
   numItems = 1,
 } = {}) {
   pixelEvent("InitiateCheckout", { currency, value, num_items: numItems });
 }
 
-export function pixelPurchase({ currency = "AED", value = 0, eventId } = {}) {
+export function pixelPurchase({ currency, value = 0, eventId } = {}) {
   const storageKey = eventId ? `meta:purchase:${eventId}` : null;
   try {
     if (storageKey && window.localStorage.getItem(storageKey) === "1") return;

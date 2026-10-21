@@ -35,6 +35,7 @@ export function createTicketRouter({ controller, auth }) {
 
   // Must stay above the public /:sessionId route or Express matches these literal paths as a sessionId.
   router.get('/latest-paid', protect, restrictTo('admin', 'agent'), controller.getLatestPaidTicket);
+  router.get('/stats', protect, restrictTo('admin', 'agent'), controller.getTicketStats);
   router.get('/events', protect, restrictTo('admin', 'agent'), controller.streamEvents);
 
   router.get('/:sessionId/quote', controller.getTicketQuote);

@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { AppError, logger, sanitizeAttribution } from '@travel-suite/utils';
+import { fromStripeMinorUnits, toStripeMinorUnits } from '@travel-suite/utils/currency';
 
 const RECENCY_HOURS = { '4_hours': 4, '24_hours': 24, '7_days': 168 };
 
@@ -199,7 +200,7 @@ export function createHotelBookingService({
         quantity: 1,
         price_data: {
           currency: currencyCode.toLowerCase(),
-          unit_amount: Math.round(totalAmount * 100),
+          unit_amount: toStripeMinorUnits(totalAmount, currencyCode),
           product_data: {
             name: 'Hotel reservation',
             description: `${reservation.hotel?.name ?? reservation.destination?.cityName ?? 'Hotel'} · ${reservation.checkIn} to ${reservation.checkOut}`,
@@ -382,6 +383,8 @@ export function createHotelBookingService({
     const existing = await HotelBooking.findOne({ sessionId });
     if (!existing) throw new Error(`[hotel-bookings] Reservation not found for sessionId: ${sessionId}`);
 
+    const paidCurrency = (session.currency || existing.currency || 'aed').toUpperCase();
+
     await HotelBooking.updateOne({ sessionId, paidAt: null }, { $set: { paidAt: new Date() } });
 
     const reservation = await HotelBooking.findOneAndUpdate(
@@ -389,7 +392,7 @@ export function createHotelBookingService({
       {
         $set: {
           paymentStatus: 'PAID',
-          amountPaid: { currency: (session.currency || 'aed').toUpperCase(), amount: Number((session.amount_total / 100).toFixed(2)) },
+          amountPaid: { currency: paidCurrency, amount: fromStripeMinorUnits(session.amount_total, paidCurrency) },
           transactionId: session.id,
         },
       },

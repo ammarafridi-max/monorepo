@@ -8,6 +8,7 @@ const CurrencySchema = new mongoose.Schema(
     rate: { type: Number, required: true, default: 1, min: 0 },
     isBaseCurrency: { type: Boolean, default: false },
     lastUpdated: { type: Date, default: Date.now },
+    updatedBy: { type: mongoose.Schema.ObjectId, ref: 'admin-user', default: null },
   },
   { timestamps: true },
 );

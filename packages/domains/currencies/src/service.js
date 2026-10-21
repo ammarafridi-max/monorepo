@@ -17,13 +17,17 @@ function buildSort(sort = 'base_first') {
   return map[sort] || map.base_first;
 }
 
+function isDuplicateKeyError(err) {
+  return err?.code === 11000;
+}
+
 async function demoteOtherBases(Currency, keepId) {
   const filter = { isBaseCurrency: true };
   if (keepId) filter._id = { $ne: keepId };
   await Currency.updateMany(filter, { $set: { isBaseCurrency: false } });
 }
 
-export function createCurrencyService({ Currency }) {
+export function createCurrencyService({ Currency, isCurrencyInUse }) {
   const getCurrencies = async (query = {}) => {
     const filter = {};
     const search = String(query.search || query.q || '').trim();
@@ -41,7 +45,7 @@ export function createCurrencyService({ Currency }) {
     return currency;
   };
 
-  const createCurrency = async ({ code, name, symbol, rate, isBaseCurrency }) => {
+  const createCurrency = async ({ code, name, symbol, rate, isBaseCurrency, updatedBy }) => {
     if (!code || !name || !symbol) throw new AppError('Code, name, and symbol are required', 400);
     const normalizedCode = String(code).toUpperCase();
     if (await Currency.exists({ code: normalizedCode })) throw new AppError('Currency already exists', 400);
@@ -52,20 +56,31 @@ export function createCurrencyService({ Currency }) {
     const hasBase = await Currency.exists({ isBaseCurrency: true });
     const shouldBeBase = hasBase ? !!isBaseCurrency : true;
 
-    if (shouldBeBase) await demoteOtherBases(Currency, null);
+    let currency;
+    try {
+      currency = await Currency.create({
+        code: normalizedCode,
+        name: String(name).trim(),
+        symbol: String(symbol).trim(),
+        rate: shouldBeBase ? 1 : parsedRate,
+        isBaseCurrency: false,
+        updatedBy: updatedBy || null,
+      });
+    } catch (err) {
+      if (isDuplicateKeyError(err)) throw new AppError('Currency already exists', 400);
+      throw err;
+    }
 
-    const currency = await Currency.create({
-      code: normalizedCode,
-      name: String(name).trim(),
-      symbol: String(symbol).trim(),
-      rate: shouldBeBase ? 1 : parsedRate,
-      isBaseCurrency: shouldBeBase,
-    });
+    if (!shouldBeBase) return currency;
+
+    await demoteOtherBases(Currency, currency._id);
+    currency.isBaseCurrency = true;
+    await currency.save();
 
     return currency;
   };
 
-  const updateCurrency = async (code, payload = {}) => {
+  const updateCurrency = async (code, payload = {}, updatedBy = null) => {
     const currency = await Currency.findOne({ code: String(code).toUpperCase() });
     if (!currency) throw new AppError('Currency not found', 404);
 
@@ -87,6 +102,7 @@ export function createCurrencyService({ Currency }) {
 
     if (currency.isBaseCurrency) currency.rate = 1;
     currency.lastUpdated = Date.now();
+    currency.updatedBy = updatedBy || currency.updatedBy;
 
     if (currency.isBaseCurrency) await demoteOtherBases(Currency, currency._id);
     await currency.save();
@@ -97,6 +113,11 @@ export function createCurrencyService({ Currency }) {
     const currency = await Currency.findOne({ code: String(code).toUpperCase() });
     if (!currency) throw new AppError('Currency not found', 404);
     if (currency.isBaseCurrency) throw new AppError('Base currency cannot be deleted', 400);
+
+    // Orders priced in a currency we can no longer convert drop out of every revenue and payout total.
+    const inUse = await isCurrencyInUse?.(currency.code);
+    if (inUse) throw new AppError(inUse, 409);
+
     await Currency.findOneAndDelete({ code: currency.code });
   };
 

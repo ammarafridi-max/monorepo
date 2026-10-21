@@ -13,11 +13,7 @@ export function useGetCurrencies(params = {}) {
 }
 
 export function useGetCurrencyByCode(code) {
-  const { data: currencies, isLoading: isLoadingCurrencies } = useQuery({
-    queryKey: ['currencies'],
-    queryFn: () => getCurrenciesApi(),
-  });
-
+  const { currencies, isLoadingCurrencies } = useGetCurrencies();
   const currency = (currencies || []).find((cur) => cur.code === code) || null;
   return { currency, isLoadingCurrency: isLoadingCurrencies };
 }

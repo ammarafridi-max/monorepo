@@ -97,7 +97,7 @@ function ErrorState({ supportEmail, sessionId, pending = false }) {
 }
 
 function SuccessContent({ sessionId, dummyTicket, onPurchaseEvent, supportEmail, productNoun, upsells }) {
-  const { pricing } = useDummyTicketPricing();
+  const { pricing } = useDummyTicketPricing(dummyTicket?.amountPaid?.currency || dummyTicket?.currency);
 
   const type = dummyTicket?.type;
   const ticketValidity = dummyTicket?.ticketValidity;
@@ -128,9 +128,9 @@ function SuccessContent({ sessionId, dummyTicket, onPurchaseEvent, supportEmail,
 
   const fallbackPrice = getTicketPriceByValidity(pricing, ticketValidity);
   const price =
-    totalPassengers > 0 && Number.isFinite(amount)
+    totalPassengers > 0 && amount > 0
       ? amount / totalPassengers
-      : fallbackPrice;
+      : fallbackPrice ?? undefined;
 
   useEffect(() => {
     if (!currency || !Number.isFinite(amount) || amount <= 0) return;

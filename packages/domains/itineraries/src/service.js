@@ -1,4 +1,5 @@
 import { AppError, logger, sanitizeAttribution, attributionChannelFilter } from '@travel-suite/utils';
+import { fromStripeMinorUnits, toStripeMinorUnits } from '@travel-suite/utils/currency';
 import { validateItinerary, computeMainDestination, computeReturnHome } from './validation.js';
 import { isValidDateString, inclusiveDayCount } from './dates.js';
 
@@ -482,6 +483,8 @@ export function createItineraryService({
     if (order.status !== 'GENERATED') throw new AppError('Itinerary is not ready for checkout', 400);
     if (order.paymentStatus === 'PAID') throw new AppError('This itinerary has already been paid', 400);
 
+    const orderCurrency = String(order.currency || currency).toUpperCase();
+
     return stripe.checkout.sessions.create(
       {
         mode: 'payment',
@@ -498,8 +501,8 @@ export function createItineraryService({
         line_items: [
           {
             price_data: {
-              currency: String(order.currency || currency).toLowerCase(),
-              unit_amount: Math.round(Number(order.price || price) * 100),
+              currency: orderCurrency.toLowerCase(),
+              unit_amount: toStripeMinorUnits(order.price || price, orderCurrency),
               product_data: { name: `Travel Itinerary — ${order.input.visaCountry} visa` },
             },
             quantity: 1,
@@ -524,9 +527,10 @@ export function createItineraryService({
 
     order.paymentStatus = 'PAID';
     order.transactionId = session.id;
+    const paidCurrency = (session.currency || order.currency || 'aed').toUpperCase();
     order.amountPaid = {
-      currency: (session.currency || order.currency || 'aed').toUpperCase(),
-      amount: Number(((session.amount_total ?? 0) / 100).toFixed(2)),
+      currency: paidCurrency,
+      amount: fromStripeMinorUnits(session.amount_total ?? 0, paidCurrency),
     };
     order.paidAt = new Date();
     await order.save();

@@ -44,6 +44,18 @@ export function createTicketController({ service, paidOrderBus }) {
     }
   };
 
+  const getTicketStats = async (req, res, next) => {
+    try {
+      const isAgent = req.user?.role === 'agent';
+      const query = isAgent && !req.query.createdAt ? { ...req.query, createdAt: '4_hours' } : req.query;
+      const stats = await service.getTicketStats(query);
+      if (isAgent) delete stats.revenue;
+      res.json({ status: 'success', data: stats });
+    } catch (err) {
+      next(err);
+    }
+  };
+
   const streamEvents = async (req, res) => {
     res.set({
       'Content-Type': 'text/event-stream',
@@ -219,5 +231,5 @@ export function createTicketController({ service, paidOrderBus }) {
     }
   };
 
-  return { getAllTickets, getLatestPaidTicket, streamEvents, getTicketBySessionId, getTicketQuote, getReservationFile, createTicketRequest, createStripePaymentUrl, createPayPalOrder, capturePayPalOrder, updateOrderStatus, updateDelivery, sendReservation, deleteTicket, refundByTransactionId };
+  return { getAllTickets, getTicketStats, getLatestPaidTicket, streamEvents, getTicketBySessionId, getTicketQuote, getReservationFile, createTicketRequest, createStripePaymentUrl, createPayPalOrder, capturePayPalOrder, updateOrderStatus, updateDelivery, sendReservation, deleteTicket, refundByTransactionId };
 }

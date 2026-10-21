@@ -2,8 +2,17 @@ import { apiFetch } from './apiClient.js';
 
 const URL = '/api/currencies';
 
-export async function getCurrenciesApi() {
-  return await apiFetch(URL);
+function currencyQuery(params = {}) {
+  const query = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') query.set(key, String(value));
+  });
+  const queryString = query.toString();
+  return queryString ? `?${queryString}` : '';
+}
+
+export async function getCurrenciesApi(params = {}) {
+  return await apiFetch(`${URL}${currencyQuery(params)}`);
 }
 
 export async function getCurrencyApi(code) {

@@ -23,7 +23,6 @@ import { pixelLead } from '../../../utils/pixel';
 import { normalizePricingOptions } from '../../../utils/dummyTicketPricing';
 import { useCurrency } from '../../../contexts/CurrencyContext.js';
 import { normalizeAmount } from '../../../utils/currency';
-import { FALLBACK_PRICING_OPTIONS } from '../../../utils/ticketValidity';
 import { todayDateOnlyDubai, compareDateOnly } from '../../../utils/dates';
 
 const validityDays = (value) => parseInt(String(value), 10) || 0;
@@ -60,7 +59,7 @@ export default function FlightForm() {
   const formRef = useRef(null);
   const { createDummyTicket, isCreatingDummyTicket } = useCreateDummyTicket();
   const { selectedCurrency, formatMoney } = useCurrency();
-  const { pricing } = useDummyTicketPricing(selectedCurrency?.code);
+  const { pricing, isLoadingPricing, isErrorPricing } = useDummyTicketPricing(selectedCurrency?.code);
   const {
     type,
     from,
@@ -95,18 +94,19 @@ export default function FlightForm() {
   const daysToDeparture = departureDate
     ? Math.round((new Date(departureDate) - new Date(todayDateOnlyDubai())) / 86_400_000)
     : null;
-  const displayPricingOptions = useMemo(() => {
-    return (pricingOptions.length > 0 ? pricingOptions : FALLBACK_PRICING_OPTIONS).map(
-      (option) => ({
+  const displayPricingOptions = useMemo(
+    () =>
+      pricingOptions.map((option) => ({
         ...option,
         price: normalizeAmount(formatMoney(option.price, pricing?.currency).amount),
-      }),
-    );
-  }, [formatMoney, pricing, pricingOptions]);
+      })),
+    [formatMoney, pricing, pricingOptions],
+  );
   const availableOptions = useMemo(
     () => withAvailability(displayPricingOptions, daysToDeparture),
     [displayPricingOptions, daysToDeparture],
   );
+  const pricingUnavailable = !isLoadingPricing && (isErrorPricing || availableOptions.length === 0);
 
   useEffect(() => {
     if (quantity && passengers.length === 0) {
@@ -184,10 +184,8 @@ export default function FlightForm() {
   }, [passengers, email, phoneNumber, receiveNow, deliveryDate, departureDate]);
 
   useEffect(() => {
-    const options =
-      availableOptions.length > 0
-        ? availableOptions
-        : withAvailability(FALLBACK_PRICING_OPTIONS, daysToDeparture);
+    const options = availableOptions;
+    if (options.length === 0) return;
     const current = options.find((option) => option.value === ticketValidity);
     const enabled = options.filter((option) => !option.disabled);
     const selectedOption =
@@ -207,7 +205,7 @@ export default function FlightForm() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (isCreatingDummyTicket) return;
+    if (isCreatingDummyTicket || pricingUnavailable) return;
     const next = buildErrors();
     if (Object.keys(next).length > 0) {
       setErrors(next);
@@ -301,7 +299,17 @@ export default function FlightForm() {
 
       <Message message={message} setMessage={setMessage} />
 
-      <PrimaryButton className="w-full mt-5" disabled={isCreatingDummyTicket}>
+      {pricingUnavailable && (
+        <p className="mt-4 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
+          Prices are not available right now, so we cannot take this booking. Please refresh the page or
+          email us and we will send you a quote.
+        </p>
+      )}
+
+      <PrimaryButton
+        className="w-full mt-5"
+        disabled={isCreatingDummyTicket || isLoadingPricing || pricingUnavailable}
+      >
         {isCreatingDummyTicket ? 'Processing...' : 'Review Your Information'}
       </PrimaryButton>
     </form>

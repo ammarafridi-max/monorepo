@@ -13,7 +13,7 @@ const PricingOptionSchema = new mongoose.Schema(
 
 const TicketPricingSchema = new mongoose.Schema(
   {
-    key: { type: String, required: true, default: 'dummy-ticket', enum: ['dummy-ticket'] },
+    key: { type: String, required: true, default: 'dummy-ticket' },
     currency: { type: String, required: true, default: 'AED', uppercase: true, trim: true },
     options: { type: [PricingOptionSchema], default: [] },
     updatedBy: { type: mongoose.Schema.ObjectId, ref: 'admin-user', default: null },

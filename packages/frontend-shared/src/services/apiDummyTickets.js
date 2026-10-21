@@ -35,6 +35,15 @@ export async function getTicketQuoteApi(sessionId, currency) {
   return await apiFetch(`${URL}/${sessionId}/quote${query}`);
 }
 
+export async function getDummyTicketStatsApi(params = {}) {
+  const query = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') query.set(key, String(value));
+  });
+  const queryString = query.toString();
+  return await apiFetch(`${URL}/stats${queryString ? `?${queryString}` : ''}`);
+}
+
 export async function getLatestPaidTicketApi() {
   return await apiFetch(`${URL}/latest-paid`);
 }
@@ -114,11 +123,11 @@ export async function createDummyTicketApi(data) {
   });
 }
 
-export async function createPayPalOrderApi({ sessionId }) {
+export async function createPayPalOrderApi({ sessionId, currencyCode }) {
   return await apiFetch(`${URL}/paypal/checkout`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ sessionId }),
+    body: JSON.stringify({ sessionId, currencyCode }),
   });
 }
 

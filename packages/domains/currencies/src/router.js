@@ -18,9 +18,9 @@ export function createCurrencyRouterFromParts({ controller, auth }) {
 
   router.get('/', controller.getCurrencies);
   router.get('/:code', controller.getCurrencyByCode);
-  router.post('/', protect, restrictTo('admin', 'agent'), validate(createCurrencySchema), controller.createCurrency);
-  router.put('/:code', protect, restrictTo('admin', 'agent'), validate(updateCurrencySchema), controller.updateCurrency);
-  router.delete('/:code', protect, restrictTo('admin', 'agent'), controller.deleteCurrency);
+  router.post('/', protect, restrictTo('admin'), validate(createCurrencySchema), controller.createCurrency);
+  router.put('/:code', protect, restrictTo('admin'), validate(updateCurrencySchema), controller.updateCurrency);
+  router.delete('/:code', protect, restrictTo('admin'), controller.deleteCurrency);
 
   return router;
 }

@@ -7,7 +7,7 @@ import { createCloudinaryStorage } from "@travel-suite/cloudinary";
 import { createCurrenciesRouter } from "@travel-suite/currencies";
 import { createAirportsRouter } from "@travel-suite/flights";
 import { createAirLabsClient } from "@travel-suite/airlabs";
-import { createBookingsRouter } from "@travel-suite/bookings";
+import { createTransferBookingsRouter } from "@travel-suite/transfer-bookings";
 import { createLocationsRouter } from "@travel-suite/locations";
 import { createNotificationsService } from "@travel-suite/notifications";
 import {
@@ -17,7 +17,7 @@ import {
   createPaymentsController,
   createPaymentsAdminRouter,
   PaymentLinkSchema,
-  ProductSchema,
+  StripeProductSchema,
 } from "@travel-suite/payments";
 import { db } from "../utils/db.js";
 import { sendEmail } from "../utils/email.js";
@@ -59,7 +59,22 @@ const imageStorage = createCloudinaryStorage({
 router.use("/blogs", createBlogRouter({ db, auth, imageStorage }));
 router.use("/blog-tags", createBlogTagRouter({ db, auth }));
 
-router.use("/currencies", createCurrenciesRouter({ db, auth }));
+const PAID_TRANSFER_STATUSES = ["paid", "confirmed", "completed"];
+
+const currencyInUseReason = async (code) => {
+  const paidBookings = await db
+    .collection("transfer-bookings")
+    .countDocuments({ status: { $in: PAID_TRANSFER_STATUSES }, "vehicle.price.currency": code });
+  if (paidBookings > 0) {
+    return `${code} cannot be removed: ${paidBookings} paid booking${paidBookings === 1 ? " was" : "s were"} charged in it and would drop out of revenue totals.`;
+  }
+  return null;
+};
+
+router.use(
+  "/currencies",
+  createCurrenciesRouter({ db, auth, isCurrencyInUse: currencyInUseReason }),
+);
 
 const airlabs = createAirLabsClient({ apiKey: config.airlabs.apiKey });
 router.use("/airports", createAirportsRouter({ airlabs }));
@@ -97,7 +112,7 @@ const {
   router: bookingsRouter,
   service: bookingService,
   controller: bookingController,
-} = createBookingsRouter({ db, stripe, auth });
+} = createTransferBookingsRouter({ db, stripe, auth });
 router.use("/bookings", bookingsRouter);
 
 router.get(
@@ -117,7 +132,7 @@ const paymentService = createPaymentService({
   stripe,
   db,
   PaymentLinkSchema,
-  ProductSchema,
+  StripeProductSchema,
 });
 const paymentsController = createPaymentsController({
   service: paymentService,
@@ -223,8 +238,8 @@ if (config.anthropicApiKey) {
     brand: { name: "Airport Rides" },
     logger,
     datasets: [
-      assistantDatasets.transferBookings(db.models.Booking),
-      assistantDatasets.blogPosts(db.models.Blog),
+      assistantDatasets.transferBookings(db.models["transfer-booking"]),
+      assistantDatasets.blogPosts(db.models.blog),
     ],
   });
   router.use("/assistant", assistantRouter);

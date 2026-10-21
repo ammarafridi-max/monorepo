@@ -1,3 +1,5 @@
+import { formatPayPalAmount, payPalCurrencyFor } from './currency.js';
+
 export function createPayPalClient({ clientId, clientSecret, mode = 'sandbox' }) {
   if (!clientId || !clientSecret) throw new Error('PayPal clientId and clientSecret are required');
 
@@ -35,7 +37,8 @@ export function createPayPalClient({ clientId, clientSecret, mode = 'sandbox' })
     return _cachedToken;
   }
 
-  async function createOrder({ amount, currency, returnUrl, cancelUrl, sessionId, description, brandName }) {
+  async function createOrder({ amount, currency, returnUrl, cancelUrl, sessionId, requestId, description, brandName }) {
+    const currencyCode = payPalCurrencyFor(currency);
     const token = await getAccessToken();
 
     const res = await fetch(`${baseUrl}/v2/checkout/orders`, {
@@ -43,7 +46,7 @@ export function createPayPalClient({ clientId, clientSecret, mode = 'sandbox' })
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
-        'PayPal-Request-Id': sessionId,
+        'PayPal-Request-Id': requestId || sessionId,
       },
       body: JSON.stringify({
         intent: 'CAPTURE',
@@ -52,8 +55,8 @@ export function createPayPalClient({ clientId, clientSecret, mode = 'sandbox' })
             custom_id: sessionId,
             description: description || 'Flight Reservation',
             amount: {
-              currency_code: String(currency).toUpperCase(),
-              value: Number(amount).toFixed(2),
+              currency_code: currencyCode,
+              value: formatPayPalAmount(amount, currencyCode),
             },
           },
         ],

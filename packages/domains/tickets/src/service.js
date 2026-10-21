@@ -1,6 +1,13 @@
 import mongoose from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 import { AppError, logger, sanitizeAttribution, attributionChannelFilter } from '@travel-suite/utils';
+import {
+  fromStripeMinorUnits,
+  normalizeCurrencyCode,
+  roundToCurrency,
+  toStripeMinorUnits,
+} from '@travel-suite/utils/currency';
+import { payPalCurrencyFor } from '@travel-suite/paypal';
 import { TICKET_VALIDITIES, VALIDITY_DAYS, SHORTEST_VALIDITY } from './validity.js';
 
 const AFFILIATE_ATTRIBUTION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
@@ -28,10 +35,6 @@ function isAffiliateAttributionWithinWindow(capturedAt, now = new Date()) {
 
 function escapeRegex(value = '') {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-function round2(value) {
-  return Number(Number(value).toFixed(2));
 }
 
 function trimmedString(value) {
@@ -85,8 +88,7 @@ function pickFlight(flight) {
 }
 
 function pickCurrencyCode(value) {
-  const code = String(value || '').trim().toUpperCase();
-  return /^[A-Z]{3}$/.test(code) ? code : 'AED';
+  return normalizeCurrencyCode(value);
 }
 
 function pickTicketInput(payload = {}) {
@@ -266,25 +268,48 @@ function applyDeliveryDateFilter(queryObj, deliveryDate) {
   if (!queryObj.paymentStatus) queryObj.paymentStatus = 'PAID';
 }
 
+function buildTicketFilter(query = {}) {
+  const queryObj = buildFieldFilters(query);
+  applyDeliveryDateFilter(queryObj, query.deliveryDate);
+  Object.assign(queryObj, attributionChannelFilter(query.channel));
+  const paidOnly = queryObj.paymentStatus === 'PAID';
+  const recency = buildRecencyFilter(query.createdAt, paidOnly);
+  return {
+    filter: {
+      ...queryObj,
+      ...buildSearchFilter(query.search),
+      ...(recency ? { $and: [recency] } : {}),
+    },
+    paidOnly,
+  };
+}
+
+const countWhen = (condition) => ({ $sum: { $cond: [condition, 1, 0] } });
+const IS_PAID = { $eq: ['$paymentStatus', 'PAID'] };
+
 export function createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, paypal, notifications, frontendUrl, brevo, reviewListId, paidOrderBus, reservationStorage, sendEmail, metaCapi, openaiCapi }) {
+  // getUnitPrice already prices in the requested currency, so nothing here converts a second time.
   const resolveTicketAmount = async ({ validity, passengers, targetCode }) => {
-    const { currency: bookCurrency, unitPrice, isExact } = await pricingService.getUnitPrice(
+    const { currency: currencyCode, unitPrice } = await pricingService.getUnitPrice(
       validity,
       targetCode,
     );
-    if (isExact) {
-      return {
-        unitPrice: round2(unitPrice),
-        totalAmount: round2(unitPrice * passengers),
-        currencyCode: bookCurrency,
-      };
-    }
-    // Convert per unit, then multiply: the displayed per-ticket price is what the buyer multiplies out.
-    const { amount, currencyCode } = await currencyService.convertFromBase({
-      amount: unitPrice,
-      targetCode: targetCode || bookCurrency,
+    return {
+      unitPrice: roundToCurrency(unitPrice, currencyCode),
+      totalAmount: roundToCurrency(unitPrice * passengers, currencyCode),
+      currencyCode,
+    };
+  };
+
+  // Null when the order cannot be priced in a currency PayPal accepts, so callers never send it one it will reject.
+  const resolvePayPalAmount = async ({ validity, passengers, preferredCode }) => {
+    const quote = await resolveTicketAmount({
+      validity,
+      passengers,
+      targetCode: payPalCurrencyFor(preferredCode),
     });
-    return { unitPrice: round2(amount), totalAmount: round2(amount * passengers), currencyCode };
+    if (payPalCurrencyFor(quote.currencyCode) !== quote.currencyCode) return null;
+    return quote;
   };
 
   const getTicketQuote = async (sessionId, requestedCurrency) => {
@@ -295,26 +320,85 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       Number(ticket.quantity?.adults || 0) + Number(ticket.quantity?.children || 0);
     if (passengers < 1) throw new AppError('At least 1 passenger is required for checkout', 400);
 
+    const targetCode = pickCurrencyCode(requestedCurrency || ticket.currency);
     const { unitPrice, totalAmount, currencyCode } = await resolveTicketAmount({
       validity: ticket.ticketValidity,
       passengers,
-      targetCode: pickCurrencyCode(requestedCurrency || ticket.currency),
+      targetCode,
     });
 
-    return { currency: currencyCode, unitPrice, passengers, totalAmount };
+    const payPalQuote = await resolvePayPalAmount({
+      validity: ticket.ticketValidity,
+      passengers,
+      preferredCode: currencyCode,
+    });
+
+    return {
+      currency: currencyCode,
+      unitPrice,
+      passengers,
+      totalAmount,
+      payPal: payPalQuote
+        ? {
+            currency: payPalQuote.currencyCode,
+            unitPrice: payPalQuote.unitPrice,
+            totalAmount: payPalQuote.totalAmount,
+          }
+        : null,
+    };
+  };
+
+  // Totals come from the database, not from a page of rows, so they stay right past the page limit.
+  const getTicketStats = async (query = {}) => {
+    const { filter } = buildTicketFilter(query);
+
+    const [[agg], baseCurrency] = await Promise.all([
+      Ticket.aggregate([
+        { $match: filter },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: 1 },
+            paid: countWhen(IS_PAID),
+            unpaid: countWhen({ $eq: ['$paymentStatus', 'UNPAID'] }),
+            refunded: countWhen({ $eq: ['$paymentStatus', 'REFUNDED'] }),
+            pending: countWhen({ $eq: ['$orderStatus', 'PENDING'] }),
+            delivered: countWhen({ $eq: ['$orderStatus', 'DELIVERED'] }),
+            progress: countWhen({ $eq: ['$orderStatus', 'PROGRESS'] }),
+            revenue: {
+              $sum: { $cond: [IS_PAID, { $ifNull: ['$amountPaidBase.amount', 0] }, 0] },
+            },
+            revenueUnconverted: countWhen({
+              $and: [IS_PAID, { $eq: [{ $ifNull: ['$amountPaidBase.amount', null] }, null] }],
+            }),
+          },
+        },
+      ]),
+      currencyService.getBaseCurrency(),
+    ]);
+
+    return {
+      total: agg?.total ?? 0,
+      paymentStatus: {
+        PAID: agg?.paid ?? 0,
+        UNPAID: agg?.unpaid ?? 0,
+        REFUNDED: agg?.refunded ?? 0,
+      },
+      orderStatus: {
+        PENDING: agg?.pending ?? 0,
+        DELIVERED: agg?.delivered ?? 0,
+        PROGRESS: agg?.progress ?? 0,
+      },
+      revenue: {
+        currency: baseCurrency.code,
+        amount: roundToCurrency(agg?.revenue ?? 0, baseCurrency.code),
+        unconvertedOrders: agg?.revenueUnconverted ?? 0,
+      },
+    };
   };
 
   const getAllTickets = async (query) => {
-    const queryObj = buildFieldFilters(query);
-    applyDeliveryDateFilter(queryObj, query.deliveryDate);
-    Object.assign(queryObj, attributionChannelFilter(query.channel));
-    const paidOnly = queryObj.paymentStatus === 'PAID';
-    const recency = buildRecencyFilter(query.createdAt, paidOnly);
-    const finalQuery = {
-      ...queryObj,
-      ...buildSearchFilter(query.search),
-      ...(recency ? { $and: [recency] } : {}),
-    };
+    const { filter: finalQuery, paidOnly } = buildTicketFilter(query);
 
     let page = Math.max(1, parseInt(query.page, 10) || 1);
     const limit = Math.min(MAX_PAGE_LIMIT, Math.max(1, parseInt(query.limit, 10) || 100));
@@ -539,6 +623,16 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
   const createTicketRequest = async (payload) => {
     assertTripShape(payload);
     assertDeliveryAndValidity(payload);
+
+    const input = pickTicketInput(payload);
+
+    // Priced before the ticket exists so a validity that is off sale never becomes an unpayable order.
+    const requestedCurrency = pickCurrencyCode(payload?.currency);
+    const { currency: quotedCurrency } = await pricingService.getUnitPrice(
+      input.ticketValidity,
+      requestedCurrency,
+    );
+
     const normalizedEmail = normalizeEmail(payload?.email);
     const incomingAffiliateId = payload?.affiliateId;
     const isValidAffiliateId = /^\d{9}$/.test(incomingAffiliateId || '');
@@ -558,9 +652,9 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     }
 
     return Ticket.create({
-      ...pickTicketInput(payload),
+      ...input,
       email: normalizedEmail,
-      currency: pickCurrencyCode(payload?.currency),
+      currency: requestedCurrency || quotedCurrency,
       sessionId: uuidv4(),
       affiliateId: affiliateDoc ? affiliateDoc.affiliateId : null,
       affiliateCapturedAt,
@@ -580,12 +674,17 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     const children = Number(ticket.quantity?.children || 0);
     if (adults + children < 1) throw new AppError('At least 1 passenger is required for checkout', 400);
 
-    const requestedCode = String(formData?.currencyCode || ticket.currency || '').toUpperCase();
+    const requestedCode = pickCurrencyCode(formData?.currencyCode || ticket.currency);
     const { totalAmount, currencyCode } = await resolveTicketAmount({
       validity: ticket.ticketValidity,
       passengers: adults + children,
       targetCode: requestedCode,
     });
+
+    const unitAmount = toStripeMinorUnits(totalAmount, currencyCode);
+    if (!unitAmount || unitAmount <= 0) {
+      throw new AppError('This reservation could not be priced for checkout', 400);
+    }
 
     const metaAttribution = {
       fbp: typeof formData.fbp === 'string' ? formData.fbp.slice(0, 200) : undefined,
@@ -618,8 +717,8 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       line_items: [
         {
           price_data: {
-            currency: String(currencyCode || 'AED').toLowerCase(),
-            unit_amount: Math.round(totalAmount * 100),
+            currency: currencyCode.toLowerCase(),
+            unit_amount: unitAmount,
             product_data: {
               name: `${ticket.type} flight reservation, ${ticket.ticketValidity} validity, ${adults + children} passenger${adults + children === 1 ? '' : 's'}, ${ticket.from} to ${ticket.to}`,
             },
@@ -629,7 +728,7 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       ],
       success_url: `${frontendUrl}/booking/payment?sessionId=${sessionId}`,
       cancel_url: `${frontendUrl}/booking/review-details`,
-    }, { idempotencyKey: sessionId });
+    }, { idempotencyKey: `${sessionId}:${currencyCode}:${unitAmount}` });
   };
 
   const reportPurchaseToOpenAI = async (ticket) => {
@@ -802,6 +901,12 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
           amount: base.amount,
           rate: base.rate,
         };
+      } else {
+        logger.error('[tickets] Could not convert a payment to the base currency', {
+          sessionId: existing.sessionId,
+          currency,
+          amount,
+        });
       }
     }
 
@@ -833,9 +938,14 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     if (session.payment_status !== 'paid') return;
 
     const sessionId = session.metadata.sessionId;
-    const currency = (session.currency || 'aed').toUpperCase();
-    const amount = Number((session.amount_total / 100).toFixed(2));
+    const currency =
+      normalizeCurrencyCode(session.currency) || (await currencyService.getBaseCurrency()).code;
+    const amount = fromStripeMinorUnits(session.amount_total, currency);
     const transactionId = session.id;
+
+    if (amount === null) {
+      throw new Error(`[tickets] Stripe session ${session.id} carried no usable amount_total`);
+    }
 
     const existing = await Ticket.findOne({ sessionId });
     if (!existing) {
@@ -916,11 +1026,15 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     const children = Number(ticket.quantity?.children || 0);
     if (adults + children < 1) throw new AppError('At least 1 passenger is required for checkout', 400);
 
-    const { totalAmount, currencyCode } = await resolveTicketAmount({
+    const payPalQuote = await resolvePayPalAmount({
       validity: ticket.ticketValidity,
       passengers: adults + children,
-      targetCode: 'USD',
+      preferredCode: pickCurrencyCode(formData?.currencyCode || ticket.currency),
     });
+    if (!payPalQuote) {
+      throw new AppError('PayPal cannot take this payment. Please pay by card instead.', 409);
+    }
+    const { totalAmount, currencyCode } = payPalQuote;
 
     const metaAttribution = {
       fbp: typeof formData.fbp === 'string' ? formData.fbp.slice(0, 200) : undefined,
@@ -936,9 +1050,10 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     await Ticket.findOneAndUpdate({ sessionId }, { $set: { totalAmount, currency: currencyCode, metaAttribution, openaiAttribution } });
 
     return paypal.createOrder({
-      amount: totalAmount.toFixed(2),
+      amount: totalAmount,
       currency: currencyCode,
       sessionId,
+      requestId: `${sessionId}:${currencyCode}:${totalAmount}`,
       description: `${ticket.type} Flight Reservation`,
       returnUrl: `${frontendUrl}/booking/payment?sessionId=${sessionId}&paymentMethod=paypal`,
       cancelUrl: `${frontendUrl}/booking/review-details`,
@@ -963,8 +1078,14 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
 
     const captureUnit = captureData.purchase_units?.[0];
     const capture = captureUnit?.payments?.captures?.[0];
-    const amount = parseFloat(capture?.amount?.value ?? existing.totalAmount ?? 0);
-    const currency = (capture?.amount?.currency_code ?? existing.currency ?? 'USD').toUpperCase();
+    const currency =
+      normalizeCurrencyCode(capture?.amount?.currency_code) ||
+      normalizeCurrencyCode(existing.currency) ||
+      (await currencyService.getBaseCurrency()).code;
+    const amount = roundToCurrency(
+      capture?.amount?.value ?? existing.totalAmount ?? 0,
+      currency,
+    );
     const transactionId = captureData.id;
 
     let shouldClearAffiliate = false;
@@ -1060,5 +1181,5 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     return refund;
   };
 
-  return { getAllTickets, getLatestPaidTicket, getTicketBySessionId, getTicketQuote, getReservationDownloadUrl, updateOrderStatus, updateDeliveryDate, deleteTicket, sendReservation, createTicketRequest, createStripePaymentUrl, handleStripeSuccess, createPayPalOrder, capturePayPalOrder, refundByTransactionId };
+  return { getAllTickets, getTicketStats, getLatestPaidTicket, getTicketBySessionId, getTicketQuote, getReservationDownloadUrl, updateOrderStatus, updateDeliveryDate, deleteTicket, sendReservation, createTicketRequest, createStripePaymentUrl, handleStripeSuccess, createPayPalOrder, capturePayPalOrder, refundByTransactionId };
 }

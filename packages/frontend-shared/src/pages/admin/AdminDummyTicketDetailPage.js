@@ -727,9 +727,21 @@ export default function AdminDummyTicketDetailPage({ basePath = '/admin/dummy-ti
               {!isAgent && Number.isFinite(ticket?.amountPaid?.amount) && (
                 <div className="flex items-center justify-between border-t border-gray-50 pt-3">
                   <span className="text-sm text-gray-500">Amount</span>
-                  <span className="text-sm font-bold text-gray-900">
-                    {ticket.amountPaid.currency} {formatAmount(ticket.amountPaid.amount)}
-                  </span>
+                  <div className="text-right">
+                    <span className="text-sm font-bold text-gray-900">
+                      {ticket.amountPaid.currency} {formatAmount(ticket.amountPaid.amount)}
+                    </span>
+                    {Number.isFinite(ticket?.amountPaidBase?.amount) &&
+                      ticket.amountPaidBase.currency !== ticket.amountPaid.currency && (
+                        <p className="text-[11px] text-gray-400">
+                          {ticket.amountPaidBase.currency} {formatAmount(ticket.amountPaidBase.amount)} at{' '}
+                          {ticket.amountPaidBase.rate}
+                        </p>
+                      )}
+                    {!Number.isFinite(ticket?.amountPaidBase?.amount) && (
+                      <p className="text-[11px] text-amber-600">not converted to base</p>
+                    )}
+                  </div>
                 </div>
               )}
               {!isAgent && ticket?.transactionId && (

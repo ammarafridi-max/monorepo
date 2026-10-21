@@ -21,7 +21,6 @@ export function useFinalizeInsurance() {
       addressLine2,
       city,
       country,
-      currency,
       fbp,
       fbc,
     }) =>
@@ -41,7 +40,6 @@ export function useFinalizeInsurance() {
         addressLine2,
         city,
         country,
-        currency,
         fbp,
         fbc,
       }),

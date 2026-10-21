@@ -75,14 +75,28 @@ export default function TicketReviewDetailsPage({ onBeginCheckout, enablePayPal 
   const totalQuantity =
     Number(dummyTicket?.quantity?.adults || 0) +
     Number(dummyTicket?.quantity?.children || 0);
-  const { quote } = useTicketQuote(sessionId, selectedCurrency?.code);
+  const { quote, isLoadingQuote, isErrorQuote } = useTicketQuote(sessionId, selectedCurrency?.code);
 
   // The server prices the order; these locals only cover the window before the quote lands.
   const baseTicketPrice = getTicketPriceByValidity(pricing, dummyTicket?.ticketValidity);
-  const localTicketPrice = normalizeAmount(formatMoney(baseTicketPrice, pricing?.currency).amount);
+  const localTicketPrice =
+    baseTicketPrice === null
+      ? null
+      : normalizeAmount(formatMoney(baseTicketPrice, pricing?.currency).amount);
   const ticketPrice = quote ? quote.unitPrice : localTicketPrice;
-  const totalAmount = quote ? quote.totalAmount : normalizeAmount(localTicketPrice * totalQuantity);
-  const currencyCode = quote?.currency || selectedCurrency?.code || 'AED';
+  const totalAmount = quote
+    ? quote.totalAmount
+    : localTicketPrice === null
+      ? null
+      : normalizeAmount(localTicketPrice * totalQuantity);
+  const currencyCode = quote?.currency || selectedCurrency?.code || pricing?.currency || '';
+
+  const payPalQuote = quote?.payPal ?? null;
+  const payPalUnavailable = Boolean(quote) && !payPalQuote;
+  const payPalChargedSeparately = Boolean(payPalQuote) && payPalQuote.currency !== currencyCode;
+  const payingWithPayPal = enablePayPal && paymentMethod === 'paypal' && !payPalUnavailable;
+  const chargeCurrency = payingWithPayPal && payPalQuote ? payPalQuote.currency : currencyCode;
+  const chargeTotal = payingWithPayPal && payPalQuote ? payPalQuote.totalAmount : totalAmount;
 
   useEffect(() => {
     if (sessionId === '') router.replace(searchPath);
@@ -97,16 +111,22 @@ export default function TicketReviewDetailsPage({ onBeginCheckout, enablePayPal 
   const isLoading = isLoadingStripePaymentURL || isLoadingPayPalOrder;
 
   const handleConfirm = () => {
-    if (!agreed || isLoading || !sessionId) return;
+    if (!agreed || isLoading || !sessionId || chargeTotal === null) return;
     onBeginCheckout?.({
-      currency: currencyCode,
-      value: totalAmount,
-      items: [{ item_name: `${type} flight reservation`, price: ticketPrice, quantity: totalQuantity }],
+      currency: chargeCurrency,
+      value: chargeTotal,
+      items: [
+        {
+          item_name: `${type} flight reservation`,
+          price: payingWithPayPal && payPalQuote ? payPalQuote.unitPrice : ticketPrice,
+          quantity: totalQuantity,
+        },
+      ],
     });
-    pixelInitiateCheckout({ currency: currencyCode, value: totalAmount, numItems: totalQuantity });
-    openaiCheckoutStarted({ currency: currencyCode, value: totalAmount });
-    if (enablePayPal && paymentMethod === 'paypal') {
-      createPayPalOrder({ sessionId });
+    pixelInitiateCheckout({ currency: chargeCurrency, value: chargeTotal, numItems: totalQuantity });
+    openaiCheckoutStarted({ currency: chargeCurrency, value: chargeTotal });
+    if (payingWithPayPal) {
+      createPayPalOrder({ sessionId, currencyCode });
     } else {
       createStripePayment({ ...dummyTicket, totalAmount, currencyCode, ...getMetaBrowserIds(), ...getOpenAIBrowserIds() });
     }
@@ -231,7 +251,9 @@ export default function TicketReviewDetailsPage({ onBeginCheckout, enablePayPal 
             <div className="px-5 py-4 flex flex-col gap-3">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Price per ticket</span>
-                <span className="font-medium text-gray-900">{currencyCode} {formatAmount(ticketPrice)}</span>
+                <span className="font-medium text-gray-900">
+                  {ticketPrice === null ? '—' : `${currencyCode} ${formatAmount(ticketPrice)}`}
+                </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Passengers</span>
@@ -240,9 +262,24 @@ export default function TicketReviewDetailsPage({ onBeginCheckout, enablePayPal 
               <div className="border-t border-gray-100 pt-3 flex justify-between items-baseline">
                 <span className="text-sm font-semibold text-gray-900">Total</span>
                 <span className="text-2xl font-bold text-gray-900">
-                  {currencyCode} {formatAmount(totalAmount)}
+                  {totalAmount === null ? '—' : `${currencyCode} ${formatAmount(totalAmount)}`}
                 </span>
               </div>
+              {(isErrorQuote || (!isLoadingQuote && chargeTotal === null)) && (
+                <p className="text-xs text-amber-700">
+                  We could not price this booking just now. Please refresh, or email us and we will send you a
+                  payment link.
+                </p>
+              )}
+              {payingWithPayPal && payPalChargedSeparately && (
+                <p className="text-xs text-gray-500">
+                  PayPal does not accept {currencyCode}, so it will charge{' '}
+                  <span className="font-semibold text-gray-700">
+                    {payPalQuote.currency} {formatAmount(payPalQuote.totalAmount)}
+                  </span>
+                  .
+                </p>
+              )}
             </div>
             {dummyTicket?.email && (
               <div className="px-5 py-3 bg-primary-50 border-t border-primary-100">
@@ -299,11 +336,13 @@ export default function TicketReviewDetailsPage({ onBeginCheckout, enablePayPal 
                 <button
                   type="button"
                   onClick={() => setPaymentMethod('paypal')}
-                  className={`cursor-pointer flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border text-xs font-semibold transition-colors ${
-                    paymentMethod === 'paypal'
+                  disabled={payPalUnavailable}
+                  title={payPalUnavailable ? 'PayPal cannot take this payment' : undefined}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border text-xs font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                    paymentMethod === 'paypal' && !payPalUnavailable
                       ? 'border-[#003087] bg-blue-50 text-[#003087]'
                       : 'border-gray-200 text-gray-500 hover:border-gray-300'
-                  }`}
+                  } ${payPalUnavailable ? '' : 'cursor-pointer'}`}
                 >
                   <FaPaypal size={13} className="text-[#009cde]" />
                   PayPal
@@ -313,9 +352,9 @@ export default function TicketReviewDetailsPage({ onBeginCheckout, enablePayPal 
 
             <button
               onClick={handleConfirm}
-              disabled={!agreed || isLoading}
+              disabled={!agreed || isLoading || chargeTotal === null}
               className={`cursor-pointer w-full inline-flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-bold py-3.5 rounded-xl transition-colors ${
-                enablePayPal && paymentMethod === 'paypal'
+                payingWithPayPal
                   ? 'bg-[#ffc439] hover:bg-[#f0b429] text-[#003087]'
                   : 'bg-accent-500 hover:bg-accent-600'
               }`}
@@ -325,7 +364,7 @@ export default function TicketReviewDetailsPage({ onBeginCheckout, enablePayPal 
                   <Loader2 size={14} className="animate-spin" />
                   Processing…
                 </>
-              ) : enablePayPal && paymentMethod === 'paypal' ? (
+              ) : payingWithPayPal ? (
                 <>
                   <FaPaypal size={15} className="text-[#003087]" />
                   <span className="text-[#003087]">Pay with PayPal</span>

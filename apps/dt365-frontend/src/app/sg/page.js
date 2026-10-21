@@ -11,8 +11,7 @@ import BlogPosts from '@travel-suite/frontend-shared/components/sections/v1/Blog
 import QuickAnswer from '@/components/QuickAnswer';
 import RelatedPages from '@/components/RelatedPages';
 import { testimonials } from '@/data/testimonials';
-import { getDummyTicketPricingServerApi } from '@travel-suite/frontend-shared/services/apiPricing';
-import { tiersFrom } from '@/lib/tiers';
+import { getLocalePrices, tiersFrom } from '@/lib/tiers';
 import {
   SITE_URL,
   buildFAQPage,
@@ -34,18 +33,11 @@ import {
 import { MdOutlineAirplaneTicket, MdOutlineHealthAndSafety } from 'react-icons/md';
 
 const CANONICAL = `${SITE_URL}/sg`;
-const FALLBACK = { '2 Days': 17, '7 Days': 25, '14 Days': 27 };
 
 export const revalidate = 300;
 
 async function getSgdPrices() {
-  try {
-    const data = await getDummyTicketPricingServerApi('SGD');
-    if (data?.currency !== 'SGD' || !data?.options?.length) return FALLBACK;
-    return Object.fromEntries(data.options.map((o) => [o.validity, o.price]));
-  } catch {
-    return FALLBACK;
-  }
+  return getLocalePrices('SGD');
 }
 
 const sgd = (n) => `SGD ${Number(n).toLocaleString('en-SG')}`;

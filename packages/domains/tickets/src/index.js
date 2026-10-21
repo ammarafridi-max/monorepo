@@ -1,21 +1,15 @@
 import TicketSchema from './schemas/ticket.schema.js';
 import TicketPricingSchema from './schemas/pricing.schema.js';
-import CurrencySchema from './schemas/currency.schema.js';
+import CurrencySchema from '@travel-suite/currencies/schema';
+import { createCurrencyConversionService } from '@travel-suite/currencies/conversion';
 import { createTicketService } from './service.js';
 import { createPricingService } from './pricing.service.js';
-import { createCurrencyService } from './currency.service.js';
 import { createTicketController } from './controller.js';
 import { createTicketRouter } from './router.js';
 import { createPricingRouter } from './pricing.router.js';
 import { createPaidOrderBus } from './paidOrderBus.js';
+import { getOrRegisterModel } from '@travel-suite/utils/model';
 
-function getOrRegisterModel(conn, name, schema) {
-  try {
-    return conn.model(name);
-  } catch {
-    return conn.model(name, schema);
-  }
-}
 
 export function createTicketsRouter({ db, auth, stripe, paypal, notifications, frontendUrl, AffiliateModel, brevo, reviewListId, reservationStorage, sendEmail, metaCapi, openaiCapi }) {
   if (!AffiliateModel) {
@@ -25,10 +19,10 @@ export function createTicketsRouter({ db, auth, stripe, paypal, notifications, f
   const Ticket = getOrRegisterModel(db, 'dummy-ticket', TicketSchema);
   const Affiliate = AffiliateModel;
   const TicketPricing = getOrRegisterModel(db, 'dummy-ticket-pricing', TicketPricingSchema);
-  const Currency = getOrRegisterModel(db, 'Currency', CurrencySchema);
+  const Currency = getOrRegisterModel(db, 'currency', CurrencySchema);
 
-  const pricingService = createPricingService({ TicketPricing, Currency });
-  const currencyService = createCurrencyService({ Currency });
+  const currencyService = createCurrencyConversionService({ Currency });
+  const pricingService = createPricingService({ TicketPricing, Currency, conversionService: currencyService });
 
   const paidOrderBus = createPaidOrderBus();
 

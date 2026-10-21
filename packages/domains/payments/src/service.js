@@ -1,17 +1,16 @@
 import { AppError } from '@travel-suite/utils';
+import { fromStripeMinorUnits, toStripeMinorUnits } from '@travel-suite/utils/currency';
+import { getOrRegisterModel } from '@travel-suite/utils/model';
 
-function getOrRegisterModel(conn, name, schema) {
-  try { return conn.model(name); } catch { return conn.model(name, schema); }
-}
 
-export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSchema }) {
+export function createPaymentService({ stripe, db, PaymentLinkSchema, StripeProductSchema }) {
   const PaymentLink =
     db && PaymentLinkSchema
       ? getOrRegisterModel(db, 'payment-link', PaymentLinkSchema)
       : null;
   const Product =
-    db && ProductSchema
-      ? getOrRegisterModel(db, 'Product', ProductSchema)
+    db && StripeProductSchema
+      ? getOrRegisterModel(db, 'stripe-product', StripeProductSchema)
       : null;
 
   const createCheckoutSession = async ({
@@ -40,7 +39,7 @@ export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSch
           {
             price_data: {
               currency,
-              unit_amount: Math.round(totalAmount * 100),
+              unit_amount: toStripeMinorUnits(totalAmount, currency),
               product_data: { name: productName },
             },
             quantity: 1,
@@ -69,7 +68,7 @@ export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSch
 
     const price = await stripe.prices.create({
       currency: normalizedCurrency,
-      unit_amount: Math.round(unit * 100),
+      unit_amount: toStripeMinorUnits(unit, normalizedCurrency),
       product_data: { name: trimmedName.slice(0, 250) },
     });
 
@@ -201,7 +200,7 @@ export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSch
       const newPrice = await stripe.prices.create({
         product: product.stripeProductId,
         currency: newCurrency,
-        unit_amount: Math.round(newUnit * 100),
+        unit_amount: toStripeMinorUnits(newUnit, newCurrency),
       });
       try {
         await stripe.prices.update(product.stripePriceId, { active: false });
@@ -323,7 +322,7 @@ export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSch
 
         const price = await stripe.prices.create({
           currency: itemCurrency,
-          unit_amount: Math.round(itemAmount * 100),
+          unit_amount: toStripeMinorUnits(itemAmount, itemCurrency),
           product_data: { name: label },
         });
 
@@ -550,14 +549,14 @@ export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSch
     const result = {};
     for (const [cur, totals] of Object.entries(byCurrency)) {
       const days = Object.entries(byDayByCurrency[cur] || {})
-        .map(([date, amt]) => ({ date, amount: amt / 100 }))
+        .map(([date, amt]) => ({ date, amount: fromStripeMinorUnits(amt, cur) }))
         .sort((a, b) => a.date.localeCompare(b.date));
       result[cur] = {
         currency: cur,
-        gross: totals.gross / 100,
-        net: totals.net / 100,
+        gross: fromStripeMinorUnits(totals.gross, cur),
+        net: fromStripeMinorUnits(totals.net, cur),
         count: totals.count,
-        average: totals.count ? totals.net / totals.count / 100 : 0,
+        average: totals.count ? fromStripeMinorUnits(totals.net / totals.count, cur) : 0,
         byDay: days,
       };
     }
@@ -576,8 +575,8 @@ export function createPaymentService({ stripe, db, PaymentLinkSchema, ProductSch
 
     const items = page.data.map((c) => ({
       id: c.id,
-      amount: c.amount / 100,
-      amountRefunded: c.amount_refunded / 100,
+      amount: fromStripeMinorUnits(c.amount, c.currency),
+      amountRefunded: fromStripeMinorUnits(c.amount_refunded, c.currency),
       currency: c.currency,
       status: c.status,
       paid: c.paid,
