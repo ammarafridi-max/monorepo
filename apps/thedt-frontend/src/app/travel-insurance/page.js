@@ -101,7 +101,7 @@ export const faqs = [
 
 export const pageData = {
   meta: {
-    title: 'Travel Insurance for UAE Residents | Instant Policy Delivery',
+    title: 'UAE Travel Insurance From AED 30 | Real AXA Cover, Minutes',
     description:
       'Genuine AXA travel insurance for UAE residents, meeting the EUR 30,000 Schengen minimum. Bought online, issued in minutes, valid the moment you pay.',
     canonical: 'https://www.thedummyticket.ae/travel-insurance',
