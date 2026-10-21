@@ -49,6 +49,9 @@ COPY packages/domains/visa/package.json            packages/domains/visa/package
 COPY packages/domains/visa-leads/package.json      packages/domains/visa-leads/package.json
 COPY packages/domains/visa-applications/package.json  packages/domains/visa-applications/package.json
 COPY packages/domains/visa-requirements/package.json  packages/domains/visa-requirements/package.json
+COPY packages/integrations/openai-capi/package.json  packages/integrations/openai-capi/package.json
+COPY packages/integrations/openai-ads/package.json   packages/integrations/openai-ads/package.json
+COPY packages/domains/openai-ads/package.json        packages/domains/openai-ads/package.json
 COPY apps/visawadi-backend/package.json       apps/visawadi-backend/package.json
 
 RUN pnpm install --frozen-lockfile
