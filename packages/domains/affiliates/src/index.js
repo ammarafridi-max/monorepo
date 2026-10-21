@@ -28,13 +28,15 @@ export function createAffiliatesRouter({
   const AffiliatePayout = getOrRegisterModel(db, 'AffiliatePayout', AffiliatePayoutSchema);
   const AffiliateClick = getOrRegisterModel(db, 'AffiliateClick', AffiliateClickSchema);
   const resolveCurrencyModel = () => CurrencyModel ?? db.models?.Currency ?? null;
+  const resolveInsuranceApplicationModel = () =>
+    InsuranceApplicationModel ?? db.models?.['insurance-application'] ?? null;
 
   const service = createAffiliateService({
     Affiliate,
     AffiliateClick,
     AffiliatePayout,
     Ticket: TicketModel,
-    InsuranceApplication: InsuranceApplicationModel,
+    resolveInsuranceApplicationModel,
     resolveCurrencyModel,
     notifications,
     trackingBaseUrl,

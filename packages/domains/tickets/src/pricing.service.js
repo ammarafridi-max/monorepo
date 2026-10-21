@@ -1,11 +1,8 @@
 import { AppError } from '@travel-suite/utils';
+import { DEFAULT_PRICING_OPTIONS, TICKET_VALIDITIES } from './validity.js';
 
-const DEFAULT_OPTIONS = [
-  { validity: '2 Days', price: 49, isActive: true, sortOrder: 0 },
-  { validity: '7 Days', price: 69, isActive: true, sortOrder: 1 },
-  { validity: '14 Days', price: 79, isActive: true, sortOrder: 2 },
-];
-const ALLOWED_VALIDITIES = new Set(DEFAULT_OPTIONS.map((o) => o.validity));
+const DEFAULT_OPTIONS = DEFAULT_PRICING_OPTIONS;
+const ALLOWED_VALIDITIES = new Set(TICKET_VALIDITIES);
 
 function sortOptions(options = []) {
   return [...options].sort((a, b) =>

@@ -23,6 +23,8 @@ import { formatAmount } from '../../utils/currency';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 import AttributionCard from '../../components/admin/AttributionCard';
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+
 const PAYMENT_CFG = {
   PAID:     { dot: 'bg-green-500', cls: 'bg-green-50  text-green-700  border-green-200'  },
   UNPAID:   { dot: 'bg-amber-400', cls: 'bg-amber-50  text-amber-700  border-amber-200'  },
@@ -33,6 +35,7 @@ const ORDER_CFG = {
   PENDING:   { dot: 'bg-amber-400', cls: 'bg-amber-50  text-amber-700  border-amber-200'  },
   PROGRESS:  { dot: 'bg-blue-400',  cls: 'bg-blue-50   text-blue-700   border-blue-200'   },
   DELIVERED: { dot: 'bg-green-500', cls: 'bg-green-50  text-green-700  border-green-200'  },
+  REFUNDED:  { dot: 'bg-gray-400',  cls: 'bg-gray-100   text-gray-600   border-gray-200'   },
 };
 
 function PaymentBadge({ status, small }) {
@@ -153,9 +156,51 @@ function PassengersTable({ passengers }) {
   );
 }
 
-function DeleteSection({ sessionId, disabled, disabledReason }) {
+function RefundSection({ ticket, disabled, onRefund, isRefunding }) {
   const [confirm, setConfirm] = useState(false);
-  const { deleteDummyTicket, isDeleting } = useDeleteDummyTicket();
+  const amount = ticket?.amountPaid?.amount;
+  const amountLabel = Number.isFinite(amount)
+    ? `${ticket?.amountPaid?.currency || ''} ${formatAmount(amount)}`.trim()
+    : 'the full charge';
+
+  if (!confirm) {
+    return (
+      <button
+        onClick={() => setConfirm(true)}
+        disabled={disabled}
+        className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold border border-gray-200 text-gray-600 bg-white hover:bg-gray-50 rounded-xl transition disabled:opacity-50"
+      >
+        <Undo size={13} /> Refund
+      </button>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-red-200 bg-red-50 p-3 flex items-center gap-2 flex-wrap">
+      <p className="text-xs font-semibold text-red-700">
+        Refund {amountLabel} to the customer? This cannot be undone.
+      </p>
+      <button
+        onClick={() => { setConfirm(false); onRefund(); }}
+        disabled={isRefunding}
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg transition disabled:opacity-60"
+      >
+        {isRefunding && <Loader2 size={11} className="animate-spin" />}
+        Confirm refund
+      </button>
+      <button
+        onClick={() => setConfirm(false)}
+        className="px-3 py-1.5 text-xs font-semibold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg transition"
+      >
+        Cancel
+      </button>
+    </div>
+  );
+}
+
+function DeleteSection({ sessionId, disabled, disabledReason, redirectTo }) {
+  const [confirm, setConfirm] = useState(false);
+  const { deleteDummyTicket, isDeleting } = useDeleteDummyTicket({ redirectTo });
 
   if (disabled) {
     return (
@@ -280,7 +325,7 @@ function DeliverySection({ ticket, canEdit }) {
   );
 }
 
-export default function AdminDummyTicketDetailPage({ basePath = '/admin/dummy-tickets', backLabel = 'Back to dummy tickets' }) {
+export default function AdminDummyTicketDetailPage({ basePath = '/admin/dummy-tickets', backLabel = 'Back to dummy tickets', brand }) {
   const { sessionId } = useParams();
   const { adminUser } = useAdminAuth();
   const isAgent = adminUser?.role === 'agent';
@@ -454,14 +499,25 @@ export default function AdminDummyTicketDetailPage({ basePath = '/admin/dummy-ti
                   Scheduled for {convertToDubaiDate(ticket.ticketDelivery.deliveryDate)}. Edit the delivery date to send earlier.
                 </span>
               )}
-              {deliveryDayReached && ticket?.orderStatus !== 'DELIVERED' && (
+              {deliveryDayReached && (
                 <button
                   onClick={() => setReservationOpen(true)}
                   disabled={isActionLoading || !ticket?.email}
                   title={!ticket?.email ? 'No customer email on file' : 'Compose and send the reservation email'}
                   className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold border border-green-200 text-green-700 bg-green-50 hover:bg-green-100 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Send size={13} /> Send Reservation
+                  <Send size={13} />
+                  {ticket?.orderStatus === 'DELIVERED' ? 'Resend Reservation' : 'Send Reservation'}
+                </button>
+              )}
+              {deliveryDayReached && ticket?.orderStatus !== 'DELIVERED' && (
+                <button
+                  onClick={() => updateDummyTicket({ sessionId, orderStatus: 'DELIVERED' })}
+                  disabled={isActionLoading}
+                  title="Mark delivered without emailing the customer (for tickets sent another way)"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold border border-green-200 text-green-700 bg-white hover:bg-green-50 rounded-xl transition disabled:opacity-50"
+                >
+                  <Check size={13} /> Mark Delivered
                 </button>
               )}
               {deliveryDayReached && ticket?.orderStatus !== 'PROGRESS' && (
@@ -491,13 +547,21 @@ export default function AdminDummyTicketDetailPage({ basePath = '/admin/dummy-ti
             <MdWhatsapp size={14} className="text-green-500" /> WhatsApp
           </button>
           {!isAgent && ticket?.paymentStatus === 'PAID' && ticket?.transactionId && (
-            <button
-              onClick={() => refundDummyTicket(ticket?.transactionId)}
-              disabled={isActionLoading}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold border border-gray-200 text-gray-600 bg-white hover:bg-gray-50 rounded-xl transition disabled:opacity-50"
-            >
-              <Undo size={13} /> Refund
-            </button>
+            ticket?.paymentMethod === 'paypal' ? (
+              <span
+                title="Refund this order from the PayPal dashboard, then mark it refunded here"
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-gray-500 bg-gray-50 border border-gray-200 rounded-xl"
+              >
+                <Undo size={13} /> Refund in PayPal
+              </span>
+            ) : (
+              <RefundSection
+                ticket={ticket}
+                disabled={isActionLoading}
+                isRefunding={isRefunding}
+                onRefund={() => refundDummyTicket(ticket?.transactionId)}
+              />
+            )
           )}
         </div>
       </div>
@@ -614,7 +678,7 @@ export default function AdminDummyTicketDetailPage({ basePath = '/admin/dummy-ti
                   )}
                 </div>
               )}
-              {!isAgent && ticket?.amountPaid?.amount && (
+              {!isAgent && Number.isFinite(ticket?.amountPaid?.amount) && (
                 <div className="flex items-center justify-between border-t border-gray-50 pt-3">
                   <span className="text-sm text-gray-500">Amount</span>
                   <span className="text-sm font-bold text-gray-900">
@@ -643,7 +707,7 @@ export default function AdminDummyTicketDetailPage({ basePath = '/admin/dummy-ti
             <InfoRow label="Session"     value={ticket?.sessionId} mono />
           </Card>
 
-          {ticket?.reservationUrl && (
+          {(ticket?.reservationFile?.publicId || ticket?.reservationUrl) && (
             <Card title="Reservation" icon={FileText}>
               <div className="space-y-3">
                 <InfoRow
@@ -653,13 +717,16 @@ export default function AdminDummyTicketDetailPage({ basePath = '/admin/dummy-ti
                     : '—'}
                 />
                 <a
-                  href={ticket.reservationUrl}
+                  href={`${BACKEND_URL}/api/tickets/${ticket.sessionId}/reservation`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full flex items-center justify-center gap-2 py-2.5 text-xs font-semibold text-primary-700 border border-primary-200 hover:bg-primary-50 rounded-xl transition"
                 >
-                  <FileText size={13} /> View PDF <ExternalLink size={11} />
+                  <FileText size={13} /> Open PDF <ExternalLink size={11} />
                 </a>
+                <p className="text-[11px] text-gray-400 text-center">
+                  Opens a link that expires in 5 minutes.
+                </p>
               </div>
             </Card>
           )}
@@ -671,6 +738,7 @@ export default function AdminDummyTicketDetailPage({ basePath = '/admin/dummy-ti
             <div className="p-5">
               <DeleteSection
                 sessionId={ticket?.sessionId}
+                redirectTo={basePath}
                 disabled={isAgent || ticket?.paymentStatus === 'PAID'}
                 disabledReason={
                   isAgent
@@ -689,6 +757,7 @@ export default function AdminDummyTicketDetailPage({ basePath = '/admin/dummy-ti
         onClose={() => setReservationOpen(false)}
         ticket={ticket}
         agentName={adminUser?.name}
+        brand={brand}
       />
     </div>
   );

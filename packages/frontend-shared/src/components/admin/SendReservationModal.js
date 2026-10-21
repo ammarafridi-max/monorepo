@@ -4,60 +4,45 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { X, Loader2, Upload, FileText } from 'lucide-react';
 import { useSendReservation } from '../../hooks/dummy-tickets/useSendReservation';
 
-const BRAND = process.env.NEXT_PUBLIC_BRAND;
-
-const BRANDS = {
-  mdt: {
-    label: 'MyDummyTicket',
-    website: 'www.MyDummyTicket.ae',
-    websiteUrl: 'https://www.MyDummyTicket.ae',
-  },
-  dt365: {
-    label: 'Dummy Ticket 365',
-    website: 'www.DummyTicket365.com',
-    websiteUrl: 'https://www.DummyTicket365.com',
-  },
-};
-
-const brand = BRANDS[BRAND] || BRANDS.mdt;
-
-function buildBody({ firstName, agentFirstName }) {
+function buildBody({ firstName, agentFirstName, label, website }) {
+  const signOff = [agentFirstName || 'Team', website].filter(Boolean).join('\n');
   return `Hi ${firstName || 'there'},
 
-Thank you for choosing ${brand.label}. Please find your flight reservation attached to this email.
+Thank you for choosing ${label || 'us'}. Please find your flight reservation attached to this email.
 
 If you also need a travel itinerary, hotel booking or travel insurance, feel free to reach out to us anytime.
 
 If you spot an error in the name, routes, or dates, feel free to reach out to us and we'll fix it free of cost.
 
 Kind regards,
-${agentFirstName || 'Team'}
-${brand.website}`;
+${signOff}`;
 }
 
 function escapeHtml(s) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function bodyToHtml(text) {
+function bodyToHtml(text, website, websiteUrl) {
   const safe = escapeHtml(text);
   const withBreaks = safe.split('\n').map((l) => l || '&nbsp;').join('<br>');
-  return withBreaks.replace(
-    brand.website,
-    `<a href="${brand.websiteUrl}">${brand.website}</a>`,
-  );
+  if (!website || !websiteUrl) return withBreaks;
+  return withBreaks.replace(website, `<a href="${websiteUrl}">${website}</a>`);
 }
 
-export default function SendReservationModal({ open, onClose, ticket, agentName }) {
+export default function SendReservationModal({ open, onClose, ticket, agentName, brand }) {
   const firstName = ticket?.passengers?.[0]?.firstName || '';
   const agentFirstName = (agentName || '').trim().split(/\s+/)[0] || '';
+  const label = brand?.label || '';
+  const website = brand?.website || '';
+  const websiteUrl = brand?.websiteUrl || '';
 
   const defaultBody = useMemo(
-    () => buildBody({ firstName, agentFirstName }),
-    [firstName, agentFirstName],
+    () => buildBody({ firstName, agentFirstName, label, website }),
+    [firstName, agentFirstName, label, website],
   );
 
-  const [subject, setSubject] = useState(`Your Flight Reservation — ${brand.label}`);
+  const subjectLine = label ? `Your Flight Reservation — ${label}` : 'Your Flight Reservation';
+  const [subject, setSubject] = useState(subjectLine);
   const [body, setBody] = useState(defaultBody);
   const [file, setFile] = useState(null);
   const fileInputRef = useRef(null);
@@ -66,12 +51,12 @@ export default function SendReservationModal({ open, onClose, ticket, agentName 
 
   useEffect(() => {
     if (open) {
-      setSubject(`Your Flight Reservation — ${brand.label}`);
+      setSubject(subjectLine);
       setBody(defaultBody);
       setFile(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
-  }, [open, defaultBody]);
+  }, [open, defaultBody, subjectLine]);
 
   if (!open) return null;
 
@@ -86,7 +71,7 @@ export default function SendReservationModal({ open, onClose, ticket, agentName 
         sessionId: ticket.sessionId,
         subject: subject.trim(),
         body,
-        bodyHtml: bodyToHtml(body),
+        bodyHtml: bodyToHtml(body, website, websiteUrl),
         file,
       });
       onClose();

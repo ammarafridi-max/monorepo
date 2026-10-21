@@ -3,13 +3,14 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { randomUUID } from 'crypto';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { logger, AppError, createErrorHandler } from '@travel-suite/utils';
 import { setupSentryErrorHandler } from '@travel-suite/utils/sentry';
 import { redactUrl } from '@travel-suite/utils/redact-url';
+import { sessionAwareRateLimitKey } from '@travel-suite/utils/rate-limit-key';
 import config from './utils/config.js';
 import indexRouter, { stripeWebhookHandler, whatsappWebhookHandlers } from './routes/index.js';
 
@@ -41,7 +42,7 @@ app.use(helmet());
 app.use(cors({ origin: config.corsOrigins, credentials: true }));
 app.use(compression());
 app.use(cookieParser());
-app.use(express.json({ limit: '10kb' }));
+app.use(express.json({ limit: '100kb' }));
 
 // The production build fetches every post and price book in one burst from a
 // single IP, which trips the limiter and fails the deploy.
@@ -50,6 +51,7 @@ app.use(
   rateLimit({
     windowMs: 60 * 60 * 1000,
     max: 500,
+    keyGenerator: sessionAwareRateLimitKey(ipKeyGenerator),
     standardHeaders: true,
     legacyHeaders: false,
     skip: (req) =>

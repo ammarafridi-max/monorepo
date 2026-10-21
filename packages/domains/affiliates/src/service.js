@@ -97,13 +97,17 @@ export function createAffiliateService({
   AffiliateClick = null,
   AffiliatePayout = null,
   Ticket,
-  InsuranceApplication,
+  InsuranceApplication = null,
+  resolveInsuranceApplicationModel = null,
   resolveCurrencyModel = () => null,
   notifications = null,
   trackingBaseUrl = null,
   logger = null,
 }) {
   const logFailure = logger?.error?.bind(logger) ?? console.error;
+
+  const insuranceApplicationModel = () =>
+    InsuranceApplication ?? resolveInsuranceApplicationModel?.() ?? null;
 
   const buildTrackingLink = (affiliateId) => {
     if (!trackingBaseUrl || !affiliateId) return null;
@@ -194,7 +198,7 @@ export function createAffiliateService({
     };
     const labelled = [
       [Ticket, 'tickets'],
-      [InsuranceApplication, 'insurance applications'],
+      [insuranceApplicationModel(), 'insurance applications'],
       [AffiliatePayout, 'payout records'],
     ];
     const labels = [];
@@ -283,9 +287,11 @@ export function createAffiliateService({
     const match = { affiliate: affiliate._id };
     if (createdAtRange) match.createdAt = createdAtRange;
 
+    const InsuranceApplicationModel = insuranceApplicationModel();
+
     const commissionableTypes = [];
     if (Ticket) commissionableTypes.push('ticket');
-    if (InsuranceApplication) commissionableTypes.push('insurance');
+    if (InsuranceApplicationModel) commissionableTypes.push('insurance');
 
     let ticketStats = null;
     if (Ticket) {
@@ -293,8 +299,8 @@ export function createAffiliateService({
     }
 
     let insuranceStats = null;
-    if (InsuranceApplication) {
-      insuranceStats = await aggregateStats(InsuranceApplication, match);
+    if (InsuranceApplicationModel) {
+      insuranceStats = await aggregateStats(InsuranceApplicationModel, match);
     }
 
     const baseCurrency = await resolveBaseCurrencyCode();
@@ -378,13 +384,14 @@ export function createAffiliateService({
     if (query.paymentStatus && ['PAID', 'UNPAID', 'REFUNDED'].includes(query.paymentStatus))
       filter.paymentStatus = query.paymentStatus;
 
-    if (!InsuranceApplication) return { applications: [], pagination: { total: 0, page: 1, totalPages: 1, limit } };
+    const InsuranceApplicationModel = insuranceApplicationModel();
+    if (!InsuranceApplicationModel) return { applications: [], pagination: { total: 0, page: 1, totalPages: 1, limit } };
 
-    const total = await InsuranceApplication.countDocuments(filter);
+    const total = await InsuranceApplicationModel.countDocuments(filter);
     const totalPages = Math.max(1, Math.ceil(total / limit));
     if (page > totalPages) page = totalPages;
 
-    const applications = await InsuranceApplication.find(filter)
+    const applications = await InsuranceApplicationModel.find(filter)
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)

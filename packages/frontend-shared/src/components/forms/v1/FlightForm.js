@@ -22,7 +22,9 @@ import { trackAddToCart } from '../../../utils/analytics';
 import { pixelLead } from '../../../utils/pixel';
 import { normalizePricingOptions } from '../../../utils/dummyTicketPricing';
 import { useCurrency } from '../../../contexts/CurrencyContext.js';
-import { todayDateOnly, compareDateOnly } from '../../../utils/dates';
+import { normalizeAmount } from '../../../utils/currency';
+import { FALLBACK_PRICING_OPTIONS } from '../../../utils/ticketValidity';
+import { todayDateOnlyDubai, compareDateOnly } from '../../../utils/dates';
 
 const validityDays = (value) => parseInt(String(value), 10) || 0;
 
@@ -45,12 +47,6 @@ function withAvailability(options, daysToDeparture) {
     };
   });
 }
-
-const PRICING_OPTIONS = [
-  { value: '2 Days', label: '2 Days', price: 49 },
-  { value: '7 Days', label: '7 Days', price: 69 },
-  { value: '14 Days', label: '14 Days', price: 79 },
-];
 
 const FormRow = ({ children }) => (
   <div className="block lg:grid lg:grid-cols-2 lg:gap-2.5">{children}</div>
@@ -97,13 +93,13 @@ export default function FlightForm() {
     [pricing],
   );
   const daysToDeparture = departureDate
-    ? Math.round((new Date(departureDate) - new Date(todayDateOnly())) / 86_400_000)
+    ? Math.round((new Date(departureDate) - new Date(todayDateOnlyDubai())) / 86_400_000)
     : null;
   const displayPricingOptions = useMemo(() => {
-    return (pricingOptions.length > 0 ? pricingOptions : PRICING_OPTIONS).map(
+    return (pricingOptions.length > 0 ? pricingOptions : FALLBACK_PRICING_OPTIONS).map(
       (option) => ({
         ...option,
-        price: formatMoney(option.price, pricing?.currency).amount,
+        price: normalizeAmount(formatMoney(option.price, pricing?.currency).amount),
       }),
     );
   }, [formatMoney, pricing, pricingOptions]);
@@ -191,7 +187,7 @@ export default function FlightForm() {
     const options =
       availableOptions.length > 0
         ? availableOptions
-        : withAvailability(PRICING_OPTIONS, daysToDeparture);
+        : withAvailability(FALLBACK_PRICING_OPTIONS, daysToDeparture);
     const current = options.find((option) => option.value === ticketValidity);
     const enabled = options.filter((option) => !option.disabled);
     const selectedOption =
@@ -498,7 +494,7 @@ function TicketDelivery({
             <DatePicker
               value={deliveryDate}
               onChange={setDeliveryDate}
-              minDate={todayDateOnly()}
+              minDate={todayDateOnlyDubai()}
               maxDate={departureDate || undefined}
               placeholder="Select delivery date"
               error={error}

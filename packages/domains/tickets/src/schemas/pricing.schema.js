@@ -1,8 +1,9 @@
 import mongoose from 'mongoose';
+import { TICKET_VALIDITIES } from '../validity.js';
 
 const PricingOptionSchema = new mongoose.Schema(
   {
-    validity: { type: String, required: true, trim: true, enum: ['2 Days', '7 Days', '14 Days'] },
+    validity: { type: String, required: true, trim: true, enum: TICKET_VALIDITIES },
     price: { type: Number, required: true, min: 0 },
     isActive: { type: Boolean, default: true },
     sortOrder: { type: Number, default: 0 },
@@ -17,7 +18,7 @@ const TicketPricingSchema = new mongoose.Schema(
     options: { type: [PricingOptionSchema], default: [] },
     updatedBy: { type: mongoose.Schema.ObjectId, ref: 'admin-user', default: null },
   },
-  { timestamps: true },
+  { collection: 'dummy-ticket-prices', timestamps: true },
 );
 
 TicketPricingSchema.index({ key: 1, currency: 1 }, { unique: true });

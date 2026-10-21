@@ -2,8 +2,9 @@
 
 import { createContext, useCallback, useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { compareDateOnly, todayDateOnly } from '../utils/dates.js';
+import { compareDateOnly, todayDateOnlyDubai } from '../utils/dates.js';
 import { recordAffiliateClickApi } from '../services/apiAffiliates.js';
+import { TICKET_VALIDITIES } from '../utils/ticketValidity.js';
 
 function safeParse(key, fallback) {
   try {
@@ -56,7 +57,7 @@ export function TicketProvider({ children }) {
   const [passengers, setPassengers] = useState([]);
   const [email, setEmail] = useState(storedEmail);
   const [phoneNumber, setPhoneNumber] = useState(storedPhone);
-  const [ticketValidity, setTicketValidity] = useState('2 Days');
+  const [ticketValidity, setTicketValidity] = useState(TICKET_VALIDITIES[0]);
   const [receiveNow, setReceiveNow] = useState(true);
   const [deliveryDate, setDeliveryDate] = useState('');
   const [message, setMessage] = useState('');
@@ -124,7 +125,7 @@ export function TicketProvider({ children }) {
   }, [hydrated, type, from, to, departureDate, returnDate, quantity, ticketValidity]);
 
   useEffect(() => {
-    const today = todayDateOnly();
+    const today = todayDateOnlyDubai();
     if (departureDate && compareDateOnly(departureDate, today) <= 0) setDepartureDate('');
     if (returnDate && compareDateOnly(returnDate, today) <= 0) setReturnDate('');
   }, [departureDate, returnDate]);

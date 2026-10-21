@@ -17,8 +17,9 @@ import {
   useDeleteDummyTicketPricing,
 } from '../../hooks/pricing/useUpdateDummyTicketPricing';
 import { normalizePricingOptions } from '../../utils/dummyTicketPricing';
+import { TICKET_VALIDITIES } from '../../utils/ticketValidity';
 
-const VALIDITIES = ['2 Days', '7 Days', '14 Days'];
+
 
 export default function AdminPricingPage() {
   const router = useRouter();
@@ -49,13 +50,16 @@ export default function AdminPricingPage() {
   useEffect(() => {
     if (!pricing || pricing.currency !== activeCode) return;
     const existing = normalizePricingOptions(pricing);
+    const rawOptions = Array.isArray(pricing.options) ? pricing.options : [];
     setFormOptions(
-      VALIDITIES.map((validity, index) => {
+      TICKET_VALIDITIES.map((validity, index) => {
         const match = existing.find((o) => o.value === validity);
+        const raw = rawOptions.find((o) => o.validity === validity);
         return {
           value: validity,
           label: validity,
           price: match ? String(match.price) : '',
+          isActive: raw ? raw.isActive !== false : true,
           sortOrder: index,
         };
       }),
@@ -76,6 +80,12 @@ export default function AdminPricingPage() {
     );
   }
 
+  function handleActiveChange(validity, isActive) {
+    setFormOptions((current) =>
+      current.map((o) => (o.value === validity ? { ...o, isActive } : o)),
+    );
+  }
+
   function handleSubmit(e) {
     e.preventDefault();
     updatePricing({
@@ -83,7 +93,7 @@ export default function AdminPricingPage() {
       options: formOptions.map((o, index) => ({
         validity: o.value,
         price: Number(o.price),
-        isActive: true,
+        isActive: o.isActive !== false,
         sortOrder: index,
       })),
     });
@@ -162,7 +172,8 @@ export default function AdminPricingPage() {
           })}
         </div>
         <p className="mt-3 text-xs text-gray-400">
-          A filled dot means that currency has its own prices.
+          A filled dot means that currency has its own prices. Clearing &ldquo;On sale&rdquo; hides a validity
+          from the booking form and blocks checkout for it.
         </p>
       </div>
 
@@ -188,7 +199,7 @@ export default function AdminPricingPage() {
             {formOptions.map((option) => (
               <div key={option.value} className="grid grid-cols-2 items-center gap-4">
                 <Label>{option.label}</Label>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <span className="text-sm font-bold text-gray-400">{symbolFor(activeCode)}</span>
                   <Input
                     type="number"
@@ -198,6 +209,15 @@ export default function AdminPricingPage() {
                     placeholder="0"
                     onChange={(e) => handlePriceChange(option.value, e.target.value)}
                   />
+                  <label className="flex shrink-0 items-center gap-1.5 text-xs font-semibold text-gray-500">
+                    <input
+                      type="checkbox"
+                      checked={option.isActive !== false}
+                      onChange={(e) => handleActiveChange(option.value, e.target.checked)}
+                      className="h-4 w-4 cursor-pointer accent-primary-600"
+                    />
+                    On sale
+                  </label>
                 </div>
               </div>
             ))}

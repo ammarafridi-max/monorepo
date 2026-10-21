@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { attributionSchemaField } from '@travel-suite/utils';
 import { v4 as uuidv4 } from 'uuid';
+import { TICKET_VALIDITIES, SHORTEST_VALIDITY } from '../validity.js';
 
 const PassengerSchema = new mongoose.Schema({
   type: String,
@@ -41,7 +42,7 @@ const TicketSchema = new mongoose.Schema(
     message: { type: String },
     paymentStatus: { type: String, enum: ['UNPAID', 'PAID', 'REFUNDED'], default: 'UNPAID' },
     paidAt: { type: Date, default: null },
-    ticketValidity: { type: String, enum: ['2 Days', '7 Days', '14 Days'], default: '2 Days' },
+    ticketValidity: { type: String, enum: TICKET_VALIDITIES, default: SHORTEST_VALIDITY },
     ticketDelivery: { immediate: { type: Boolean }, deliveryDate: { type: String } },
     adminDeliveryEmailSent: { type: Boolean, default: false },
     flightDetails: {
@@ -56,6 +57,11 @@ const TicketSchema = new mongoose.Schema(
     paymentMethod: { type: String, enum: ['stripe', 'paypal'], default: 'stripe' },
     handledBy: { type: mongoose.Schema.ObjectId, ref: 'admin-user', default: null },
     reservationUrl: { type: String, default: null },
+    reservationFile: {
+      publicId: { type: String, default: null },
+      format: { type: String, default: null },
+      resourceType: { type: String, default: null },
+    },
     reservationSentAt: { type: Date, default: null },
     affiliateId: { type: String, trim: true, default: null, match: [/^\d{9}$/, 'Affiliate ID must be exactly 9 digits'] },
     affiliateCapturedAt: { type: Date, default: null },
@@ -96,6 +102,7 @@ TicketSchema.virtual('leadPassenger').get(function () {
 });
 
 TicketSchema.index({ createdAt: -1 });
+TicketSchema.index({ 'ticketDelivery.deliveryDate': 1, paymentStatus: 1 });
 TicketSchema.index({ email: 1 });
 TicketSchema.index({ orderStatus: 1 });
 TicketSchema.index({ paymentStatus: 1 });

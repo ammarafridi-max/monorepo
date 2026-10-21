@@ -1,3 +1,27 @@
+const PUBLIC_TICKET_FIELDS = [
+  'sessionId', 'type', 'from', 'to', 'departureDate', 'returnDate', 'quantity',
+  'passengers', 'leadPassenger', 'email', 'phoneNumber', 'message',
+  'ticketValidity', 'ticketDelivery', 'flightDetails', 'paymentStatus',
+  'amountPaid', 'currency', 'createdAt',
+];
+
+const AGENT_HIDDEN_FIELDS = ['amountPaid', 'amountPaidBase', 'transactionId', 'affiliateCommission', 'affiliateCommissionPercent'];
+
+function toTicketView(ticket, role) {
+  const plain = ticket.toObject ? ticket.toObject() : { ...ticket };
+
+  if (role === 'admin') return plain;
+
+  if (role === 'agent') {
+    AGENT_HIDDEN_FIELDS.forEach((field) => delete plain[field]);
+    return plain;
+  }
+
+  return Object.fromEntries(
+    PUBLIC_TICKET_FIELDS.filter((field) => plain[field] !== undefined).map((field) => [field, plain[field]]),
+  );
+}
+
 export function createTicketController({ service, paidOrderBus }) {
   const getAllTickets = async (req, res, next) => {
     try {
@@ -10,12 +34,7 @@ export function createTicketController({ service, paidOrderBus }) {
       if (isAgent) {
         result = {
           ...result,
-          data: result.data.map((ticket) => {
-            const t = ticket.toObject ? ticket.toObject() : { ...ticket };
-            delete t.amountPaid;
-            delete t.transactionId;
-            return t;
-          }),
+          data: result.data.map((ticket) => toTicketView(ticket, 'agent')),
         };
       }
 
@@ -35,9 +54,13 @@ export function createTicketController({ service, paidOrderBus }) {
     res.flushHeaders?.();
     res.write('retry: 5000\n\n');
     res.write(': connected\n\n');
+    res.flush?.();
 
     const heartbeat = setInterval(() => {
-      try { res.write(': ping\n\n'); } catch { void 0; }
+      try {
+        res.write(': ping\n\n');
+        res.flush?.();
+      } catch { void 0; }
     }, 25_000);
 
     const unsubscribe = paidOrderBus.subscribe(res);
@@ -82,7 +105,25 @@ export function createTicketController({ service, paidOrderBus }) {
     try {
       const ticket = await service.getTicketBySessionId(req.params.sessionId);
       if (!ticket) return res.status(404).json({ status: 'fail', message: 'Ticket not found' });
-      res.json({ status: 'success', data: ticket });
+      res.json({ status: 'success', data: toTicketView(ticket, req.user?.role) });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  const getReservationFile = async (req, res, next) => {
+    try {
+      const url = await service.getReservationDownloadUrl(req.params.sessionId);
+      res.redirect(302, url);
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  const getTicketQuote = async (req, res, next) => {
+    try {
+      const quote = await service.getTicketQuote(req.params.sessionId, req.query.currency);
+      res.json({ status: 'success', data: quote });
     } catch (err) {
       next(err);
     }
@@ -167,5 +208,5 @@ export function createTicketController({ service, paidOrderBus }) {
     }
   };
 
-  return { getAllTickets, getLatestPaidTicket, streamEvents, getTicketBySessionId, createTicketRequest, createStripePaymentUrl, createPayPalOrder, capturePayPalOrder, updateOrderStatus, updateDelivery, sendReservation, deleteTicket, refundByTransactionId };
+  return { getAllTickets, getLatestPaidTicket, streamEvents, getTicketBySessionId, getTicketQuote, getReservationFile, createTicketRequest, createStripePaymentUrl, createPayPalOrder, capturePayPalOrder, updateOrderStatus, updateDelivery, sendReservation, deleteTicket, refundByTransactionId };
 }

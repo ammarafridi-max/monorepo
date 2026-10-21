@@ -4,7 +4,7 @@ import { deleteDummyTicketApi } from '../../services/apiDummyTickets.js';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
-export function useDeleteDummyTicket() {
+export function useDeleteDummyTicket({ redirectTo } = {}) {
   const queryClient = useQueryClient();
   const router = useRouter();
   const { mutate: deleteDummyTicket, isPending: isDeleting } = useMutation({
@@ -13,12 +13,10 @@ export function useDeleteDummyTicket() {
       toast.success('Dummy Ticket deleted successfully');
       queryClient.removeQueries({ queryKey: ['dummytickets'], exact: false });
       queryClient.removeQueries({ queryKey: ['dummyticket'], exact: false });
-      setTimeout(() => {
-        router.push('/admin/dummy-tickets');
-      }, 2000);
+      if (redirectTo) router.push(redirectTo);
     },
-    onError: () => {
-      toast.error('Could not delete dummy ticket');
+    onError: (err) => {
+      toast.error(err?.message || 'Could not delete dummy ticket');
     },
   });
 

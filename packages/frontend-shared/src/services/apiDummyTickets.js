@@ -30,6 +30,11 @@ export async function getDummyTicketApi(sessionId) {
   return result;
 }
 
+export async function getTicketQuoteApi(sessionId, currency) {
+  const query = currency ? `?currency=${encodeURIComponent(currency)}` : '';
+  return await apiFetch(`${URL}/${sessionId}/quote${query}`);
+}
+
 export async function getLatestPaidTicketApi() {
   return await apiFetch(`${URL}/latest-paid`);
 }

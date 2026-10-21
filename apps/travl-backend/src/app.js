@@ -3,13 +3,14 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { randomUUID } from 'crypto';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { logger, AppError, createErrorHandler } from '@travel-suite/utils';
 import { setupSentryErrorHandler } from '@travel-suite/utils/sentry';
 import { redactUrl } from '@travel-suite/utils/redact-url';
+import { sessionAwareRateLimitKey } from '@travel-suite/utils/rate-limit-key';
 import config from './utils/config.js';
 import indexRouter, { stripeWebhookHandler } from './routes/index.js';
 
@@ -37,7 +38,7 @@ app.use(compression());
 app.use(cookieParser());
 app.use(express.json({ limit: '2mb' }));
 
-app.use('/api', rateLimit({ windowMs: 60 * 60 * 1000, max: 500, standardHeaders: true, legacyHeaders: false }));
+app.use('/api', rateLimit({ windowMs: 60 * 60 * 1000, max: 500, keyGenerator: sessionAwareRateLimitKey(ipKeyGenerator), standardHeaders: true, legacyHeaders: false }));
 
 app.use('/airlines', express.static(join(__dirname, 'public/airlines'), {
   setHeaders: (res) => res.set('Cross-Origin-Resource-Policy', 'cross-origin'),

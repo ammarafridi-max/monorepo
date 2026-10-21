@@ -9,6 +9,8 @@
     "./env": "./src/env.js",
     "./sentry": "./src/sentry.js",
     "./csrf": "./src/csrf.js",
+    "./rate-limit-key": "./src/rate-limit-key.js",
+    "./fixed-window-limiter": "./src/fixed-window-limiter.js",
     "./redact-url": "./src/redact-url.js"
   },
   "scripts": {},

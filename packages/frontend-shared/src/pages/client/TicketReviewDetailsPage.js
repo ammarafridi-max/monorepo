@@ -20,7 +20,8 @@ import { useGetDummyTicket } from '../../hooks/dummy-tickets/useGetDummyTicket';
 import { useStripePaymentURL } from '../../hooks/dummy-tickets/useStripePaymentURL';
 import { usePayPalOrder } from '../../hooks/dummy-tickets/usePayPalOrder';
 import { useDummyTicketPricing } from '../../hooks/pricing/useDummyTicketPricing';
-import { formatAmount } from '../../utils/currency';
+import { useTicketQuote } from '../../hooks/dummy-tickets/useTicketQuote';
+import { formatAmount, normalizeAmount } from '../../utils/currency';
 import { getMetaBrowserIds, pixelInitiateCheckout } from '../../utils/pixel';
 import { getOpenAIBrowserIds, openaiCheckoutStarted } from '../../utils/openaiPixel';
 import { formatDate } from '../../utils/dates';
@@ -74,10 +75,14 @@ export default function TicketReviewDetailsPage({ onBeginCheckout, enablePayPal 
   const totalQuantity =
     Number(dummyTicket?.quantity?.adults || 0) +
     Number(dummyTicket?.quantity?.children || 0);
+  const { quote } = useTicketQuote(sessionId, selectedCurrency?.code);
+
+  // The server prices the order; these locals only cover the window before the quote lands.
   const baseTicketPrice = getTicketPriceByValidity(pricing, dummyTicket?.ticketValidity);
-  const ticketPrice = formatMoney(baseTicketPrice, pricing?.currency).amount;
-  const totalAmount = ticketPrice * totalQuantity;
-  const currencyCode = selectedCurrency?.code || 'AED';
+  const localTicketPrice = normalizeAmount(formatMoney(baseTicketPrice, pricing?.currency).amount);
+  const ticketPrice = quote ? quote.unitPrice : localTicketPrice;
+  const totalAmount = quote ? quote.totalAmount : normalizeAmount(localTicketPrice * totalQuantity);
+  const currencyCode = quote?.currency || selectedCurrency?.code || 'AED';
 
   useEffect(() => {
     if (sessionId === '') router.replace(searchPath);

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { AppError } from '@travel-suite/utils';
+import { createFixedWindowLimiter } from '@travel-suite/utils/fixed-window-limiter';
 import { createAffiliateSchema, updateAffiliateSchema } from './validators.js';
 
 function validate(schemaFn) {
@@ -19,35 +20,16 @@ function restrictCommissionToAdmin(req, res, next) {
   next(new AppError('Only an admin can set affiliate commission rates', 403));
 }
 
-function createFixedWindowLimiter({ windowMs, max }) {
-  const hits = new Map();
-
-  return (req, res, next) => {
-    const now = Date.now();
-
-    if (hits.size > 10_000) {
-      for (const [key, entry] of hits) if (entry.resetAt <= now) hits.delete(key);
-    }
-
-    const key = req.ip || 'unknown';
-    const entry = hits.get(key);
-
-    if (!entry || entry.resetAt <= now) {
-      hits.set(key, { count: 1, resetAt: now + windowMs });
-      return next();
-    }
-
-    entry.count += 1;
-    if (entry.count > max) return res.status(204).send();
-    next();
-  };
-}
-
 export function createAffiliateRouter({
   controller,
   payoutController,
   auth,
-  clickRateLimit = createFixedWindowLimiter({ windowMs: 60 * 60 * 1000, max: 60 }),
+  clickRateLimit = createFixedWindowLimiter({
+    windowMs: 60 * 60 * 1000,
+    max: 60,
+    keyOf: (req) => `${req.ip || 'unknown'}:${req.params?.affiliateId || 'none'}`,
+    onLimit: (_req, res) => res.status(204).send(),
+  }),
 }) {
   const router = Router();
   const { protect, restrictTo } = auth;
