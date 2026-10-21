@@ -40,7 +40,7 @@ export function createOpenAIEventsRouter({ capi, frontendUrl, logger }) {
         customEventName: "whatsapp_click",
         eventId,
         sourceUrl: clean(req.body?.sourceUrl, 500) || frontendUrl || undefined,
-        data: { type: "customer_action" },
+        data: { type: "custom" },
         user: {
           oppref: clean(req.body?.oppref, 200),
           obref: clean(req.body?.obref, 200),

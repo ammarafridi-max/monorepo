@@ -78,5 +78,5 @@ export function openaiLeadCreated({ eventId } = {}) {
 }
 
 export function openaiWhatsappClicked({ eventId } = {}) {
-  oaiq("measure", "whatsapp_click", { type: "customer_action" }, eventId ? { event_id: eventId } : undefined);
+  oaiq("measure", "whatsapp_click", { type: "custom" }, eventId ? { event_id: eventId } : undefined);
 }
