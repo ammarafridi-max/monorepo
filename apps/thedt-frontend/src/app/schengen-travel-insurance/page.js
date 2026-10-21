@@ -106,7 +106,7 @@ export const faqs = [
 export const pageData = {
   meta: {
     title:
-      'Schengen Travel Insurance UAE From AED 30 | Instant Policy',
+      'Schengen Insurance AED 30 | EUR 30,000 Cover, All 27 States',
     description:
       'Genuine AXA cover with the EUR 30,000 medical minimum, valid across all 27 Schengen states. Issued in minutes for UAE residents, from AED 30.',
     canonical: 'https://www.thedummyticket.ae/schengen-travel-insurance',

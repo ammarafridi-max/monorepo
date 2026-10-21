@@ -104,7 +104,7 @@ const keyword = 'dummy ticket';
 
 export const pageData = {
   meta: {
-    title: 'Dummy Ticket for Schengen Visa From AED 49 | Accepted by VFS',
+    title: 'Schengen Dummy Ticket, AED 49 | PNR You Verify Yourself',
     description:
       'A genuine Schengen flight reservation with a PNR your consulate can verify. From AED 49, emailed in minutes, handled daily at VFS and BLS in Dubai.',
     canonical: 'https://www.thedummyticket.ae/dummy-ticket-schengen-visa',

@@ -14,7 +14,7 @@ import {
 
 export const faqPageData = {
   meta: {
-    title: 'Dummy Ticket FAQ | Common Questions Answered',
+    title: 'Dummy Ticket Questions, Answered Plainly | Validity & PNR',
     description:
       'How long a reservation stays live, how to verify the PNR yourself, what delivery actually takes, and when we refund. Answered plainly.',
     canonical: 'https://www.thedummyticket.ae/faq',
@@ -25,7 +25,7 @@ export const faqPageData = {
   ],
   sections: {
     hero: {
-      title: 'Frequently Asked Questions',
+      title: 'Your Questions About Dummy Tickets',
       subtitle:
         'The questions people actually email us before they book: how long it lasts, how to check it is real, what happens when an appointment moves, and when we give money back. If yours is not here, write to us and we will answer it.',
     },

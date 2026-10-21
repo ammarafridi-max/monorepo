@@ -19,6 +19,11 @@ const nextConfig = {
         permanent: true,
       },
       {
+        source: '/:airline(emirates|etihad)-dummy-ticket',
+        destination: '/',
+        permanent: true,
+      },
+      {
         source: '/blog/tag/:slug',
         destination: 'https://www.thedummyticket.ae/blog/tags/:slug',
         permanent: true,
