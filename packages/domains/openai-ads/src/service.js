@@ -394,6 +394,7 @@ export function createOpenAIAdsService({ adsClient, countOwnConversions, maxDail
           body: a.creative?.body,
           targetUrl: a.creative?.target_url,
           imageFileId: a.creative?.file_id ?? null,
+          reviewReason: a.review?.reason ?? null,
           ...metricsFrom(deliveryByAd.get(a.id), conversionsByAd.get(a.id)),
         }));
       return {
@@ -641,6 +642,61 @@ export function createOpenAIAdsService({ adsClient, countOwnConversions, maxDail
     };
   };
 
+  const shapeAdReview = (ad) => ({
+    id: ad.id,
+    name: ad.name,
+    status: ad.status,
+    review: ad.review?.status ?? ad.review_status ?? null,
+    reviewReason: ad.review?.reason ?? ad.advertiser_reasoning_summary ?? null,
+    appealed: Boolean(ad.appeal),
+    title: ad.creative?.title ?? null,
+    body: ad.creative?.body ?? null,
+    targetUrl: ad.creative?.target_url ?? null,
+    imageFileId: ad.creative?.file_id ?? null,
+  });
+
+  const getAdDetail = async (id) => {
+    ensureConfigured();
+    assertId('ads', id);
+    const ad = await callApi(() => adsClient.getAd(id));
+    return { ...shapeAdReview(ad), submittedVersionId: ad.submitted_version_id ?? null };
+  };
+
+  const listReviewIssues = async () => {
+    ensureConfigured();
+    const ads = await callApi(() => adsClient.listAds());
+
+    const issues = ads
+      .filter((ad) => ad.status !== 'archived' && ['rejected', 'in_review'].includes(ad.review?.status ?? ad.review_status))
+      .map(shapeAdReview);
+
+    return {
+      rejected: issues.filter((ad) => ad.review === 'rejected'),
+      inReview: issues.filter((ad) => ad.review === 'in_review'),
+      note: 'OpenAI returns one generic sentence for a rejection and does not say which policy was broken.',
+    };
+  };
+
+  const replaceAd = async (adId, adGroupId, input, performedBy) => {
+    ensureConfigured();
+    assertId('ads', adId);
+    assertId('ad_groups', adGroupId);
+
+    const created = await createAdInGroup(adGroupId, input, performedBy);
+
+    try {
+      await setStatus('ads', adId, 'archive', performedBy);
+    } catch (err) {
+      logger?.warn('[openai-ads] replacement created but the old ad was not archived', { adId, error: err.message });
+      return {
+        ...created,
+        warnings: [`The replacement was created, but archiving the old ad failed: ${err.message}. Both are live until you archive it.`],
+      };
+    }
+
+    return { ...created, replaced: adId };
+  };
+
   const uploadImage = async (file) => {
     ensureConfigured();
     if (!file?.buffer) throw new AppError('Choose an image', 400);
@@ -674,6 +730,9 @@ export function createOpenAIAdsService({ adsClient, countOwnConversions, maxDail
     getCampaignDetail,
     createCampaignWithAd,
     duplicateCampaign,
+    getAdDetail,
+    listReviewIssues,
+    replaceAd,
     createAdGroupWithAd,
     createAdInGroup,
     uploadImage,

@@ -141,6 +141,10 @@ export function buildSystemPrompt({ brand, datasets, stripe, ads, adsWrite, nav,
       '  - Spend, clicks and orders come from the ads account. Read ads_setup first so you know the currency, the website ads must point at, and the daily budget ceiling.',
       '  - When you analyse performance, compare at the level the question asks about, and name the metric you judged on. Cost per order is the one that matters for the sales goal, cost per click for the clicks goal. Say when a figure rests on too few conversions to trust.',
       '  - Never state a campaign, ad group or ad is doing well or badly without the numbers from a tool in front of you.',
+      '  - Rejections: OpenAI returns one generic sentence, that the ad violates its Ads Policies, and never says which policy. Quote that sentence, then say plainly that OpenAI does not give a specific reason.',
+      '  - After quoting it, read the ad with ads_ad and give your own judgement on what most likely triggered it, naming the exact words you suspect. Label that as your reading of it, not something OpenAI told you. Usual suspects are urgency and pressure wording, price or guarantee claims, superlatives, and anything implying a document is official.',
+      '  - Then offer the fix: a rewritten headline and body that keeps the offer but drops the suspect wording, proposed through propose_ads_replace_ad. Change the wording you flagged and leave the rest of the ad alone, so that if it is rejected again the cause is narrower.',
+      '  - An ad sitting in review has no reason attached and nothing is wrong with it. Say it is still being reviewed rather than implying a problem.',
     );
   }
 
