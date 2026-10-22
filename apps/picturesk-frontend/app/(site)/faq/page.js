@@ -1,8 +1,8 @@
 import ContentPage from '../../../components/ContentPage';
 import { contentPageSchema } from '../../../lib/pageSchema';
 import { buildFAQPage, SITE_URL } from '../../../lib/schema';
-import Sections from '../../../components/Sections';
-import { faq } from '../../../data/faq';
+import FaqGroups from '../../../components/FaqGroups';
+import { faq, groupedFaq } from '../../../data/faq';
 
 const META = {
   title: 'AI Headshot FAQ: Photos, Timing, Refunds | Picturesk',
@@ -29,8 +29,6 @@ const SCHEMA = contentPageSchema({
 });
 
 export default function FaqPage() {
-  const sections = faq.map((item) => ({ h: item.q, body: [item.a] }));
-
   return (
     <ContentPage
       schema={SCHEMA.graph}
@@ -38,7 +36,7 @@ export default function FaqPage() {
       title="Questions, answered."
       lede="Everything people ask before they buy. If your question is not here, our contact page is a click away."
     >
-      <Sections sections={sections} />
+      <FaqGroups groups={groupedFaq} />
     </ContentPage>
   );
 }

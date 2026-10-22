@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import Footer from './Footer';
 import Container from './Container';
 import ProfileMenu from './ProfileMenu';
+import Image from 'next/image';
 import ServicesMenu from './ServicesMenu';
 import { tools } from '../data/services';
 import ServicePicker from './ServicePicker';
@@ -98,7 +99,7 @@ export default function SiteChrome({ authed, email, children }) {
           <Container>
             <div className="topbar__inner">
               <a className="brand" href="/" aria-label="Picturesk.ai home">
-                <span className="brand__word">Picturesk</span>
+                <Image className="brand__logo" src="/wordmark.png" alt="Picturesk" width={746} height={114} priority />
               </a>
               <a className="navlink" href="/contact" target="_blank" rel="noopener">
                 Need help?
@@ -120,7 +121,7 @@ export default function SiteChrome({ authed, email, children }) {
         <Container>
           <div className="topbar__inner">
             <a className="brand" href="/" aria-label="Picturesk.ai home">
-              <span className="brand__word">Picturesk</span>
+              <Image className="brand__logo" src="/wordmark.png" alt="Picturesk" width={746} height={114} priority />
             </a>
             <nav className="nav nav--desktop">{links('dropdown')}</nav>
             <Burger open={open} onClick={() => setOpen((v) => !v)} />

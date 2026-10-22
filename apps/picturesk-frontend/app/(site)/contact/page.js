@@ -28,9 +28,7 @@ export default function ContactPage() {
     >
       <div className="contactcard">
         <p className="contactcard__label">Email</p>
-        <a className="contactcard__email" href={`mailto:${CONTACT_EMAIL}`}>
-          {CONTACT_EMAIL}
-        </a>
+        <p className="contactcard__email">{CONTACT_EMAIL}</p>
         <a className="btn btn--primary contactcard__btn" href={`mailto:${CONTACT_EMAIL}`}>
           Email support
         </a>

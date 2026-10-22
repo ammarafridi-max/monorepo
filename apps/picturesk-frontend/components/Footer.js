@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Container from './Container';
 import { services, tools } from '../data/services';
 
@@ -6,7 +7,7 @@ export default function Footer() {
     <footer className="footer">
       <Container className="footer__inner">
         <div className="footer__brand">
-          <p className="footer__word">Picturesk.ai</p>
+          <Image className="footer__logo" src="/wordmark-light.png" alt="Picturesk.ai" width={746} height={114} />
           <p className="footer__tag">Headshots and dating photos from your selfies.</p>
         </div>
 

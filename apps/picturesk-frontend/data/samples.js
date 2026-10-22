@@ -22,8 +22,8 @@ export const datingShots = ['', '', ''];
 
 export const hubShots = [
   { src: '/work/hero-2.jpg', placeholder: 'Headshot' },
-  { src: datingShots[0], placeholder: 'Dating photo' },
-  { src: datingShots[1], placeholder: 'Dating photo' },
+  { src: datingShots[0] || '/work/hero-1.jpg', placeholder: 'Dating photo' },
+  { src: datingShots[1] || '/work/hero-3.jpg', placeholder: 'Dating photo' },
 ];
 
 export const datingSamples = [
@@ -39,3 +39,18 @@ export const datingSamples = [
     after: ['', '', '', ''],
   },
 ];
+
+export const proofShots = [
+  '/work/hero-2.jpg',
+  '/work/hero-1.jpg',
+  '/work/after-2.jpg',
+  '/work/hero-3.jpg',
+  '/work/after-1.jpg',
+  '/work/after-4.jpg',
+  '/work/after-3.jpg',
+];
+
+export const beforeAfter = {
+  before: ['/work/before-1.jpg', '/work/before-2.jpg', '/work/before-3.jpg'],
+  after: ['/work/hero-2.jpg', '/work/after-2.jpg', '/work/hero-3.jpg', '/work/after-1.jpg'],
+};

@@ -1,5 +1,7 @@
 import HubHero from '../../sections/HubHero';
 import HowItWorks from '../../sections/HowItWorks';
+import ProofStrip from '../../sections/ProofStrip';
+import BeforeAfter from '../../sections/BeforeAfter';
 import Services from '../../sections/Services';
 import Benefits from '../../sections/Benefits';
 import Showcase from '../../sections/Showcase';
@@ -9,7 +11,7 @@ import Container from '../../components/Container';
 import SectionHeading from '../../components/SectionHeading';
 import GetStartedButton from '../../components/GetStartedButton';
 import { hub } from '../../data/hub';
-import { samples, datingSamples } from '../../data/samples';
+import { samples, datingSamples, proofShots, beforeAfter } from '../../data/samples';
 import {
   SITE_URL,
   buildMetadata,
@@ -63,6 +65,13 @@ export default function HomePage() {
         <HubHero {...hub.hero} />
         <HowItWorks
           lede="Both services run on the same three steps. You upload once, we train a model on your face, and the set you chose lands in your inbox."
+        />
+        <ProofStrip images={proofShots} caption="Real delivered headshots. Every one came from the phone selfies below." />
+        <BeforeAfter
+          eyebrow="Before and after"
+          title="Five phone selfies in. A set you would actually use out."
+          lede="No studio, no photographer, no retouching by hand. The photos on the left are the whole input; everything on the right came from them."
+          {...beforeAfter}
         />
         <Services {...hub.services} />
         <Benefits />
