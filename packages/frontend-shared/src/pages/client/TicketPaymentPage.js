@@ -97,7 +97,7 @@ function ErrorState({ supportEmail, sessionId, pending = false }) {
 }
 
 function SuccessContent({ sessionId, dummyTicket, onPurchaseEvent, supportEmail, productNoun, upsells }) {
-  const { pricing } = useDummyTicketPricing();
+  const { pricing } = useDummyTicketPricing(dummyTicket?.amountPaid?.currency || dummyTicket?.currency);
 
   const type = dummyTicket?.type;
   const ticketValidity = dummyTicket?.ticketValidity;
@@ -128,9 +128,9 @@ function SuccessContent({ sessionId, dummyTicket, onPurchaseEvent, supportEmail,
 
   const fallbackPrice = getTicketPriceByValidity(pricing, ticketValidity);
   const price =
-    totalPassengers > 0 && Number.isFinite(amount)
+    totalPassengers > 0 && amount > 0
       ? amount / totalPassengers
-      : fallbackPrice;
+      : fallbackPrice ?? undefined;
 
   useEffect(() => {
     if (!currency || !Number.isFinite(amount) || amount <= 0) return;
@@ -154,6 +154,17 @@ function SuccessContent({ sessionId, dummyTicket, onPurchaseEvent, supportEmail,
 
   useEffect(() => {
     localStorage.removeItem("SESSION_ID");
+    try {
+      const url = new URL(window.location.href);
+      if (url.searchParams.has("sessionId")) {
+        url.searchParams.delete("sessionId");
+        url.searchParams.delete("token");
+        url.searchParams.delete("paymentMethod");
+        window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+      }
+    } catch {
+      void 0;
+    }
   }, []);
 
   return (
@@ -349,9 +360,16 @@ function SuccessContent({ sessionId, dummyTicket, onPurchaseEvent, supportEmail,
 
 function PaymentSuccessContent({ onPurchaseEvent, supportEmail, upsells, productNoun }) {
   const searchParams = useSearchParams();
-  const sessionId = searchParams.get("sessionId") || "";
-  const paymentMethod = searchParams.get("paymentMethod") || "card";
-  const paypalOrderId = searchParams.get("token") || "";
+  // Latched on first render: SuccessContent strips these from the URL once the order is confirmed.
+  const paramsRef = useRef(null);
+  if (paramsRef.current === null) {
+    paramsRef.current = {
+      sessionId: searchParams.get("sessionId") || "",
+      paymentMethod: searchParams.get("paymentMethod") || "card",
+      paypalOrderId: searchParams.get("token") || "",
+    };
+  }
+  const { sessionId, paymentMethod, paypalOrderId } = paramsRef.current;
 
   const isPayPal = paymentMethod === "paypal" && !!paypalOrderId;
 

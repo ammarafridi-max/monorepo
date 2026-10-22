@@ -15,7 +15,7 @@ export default function FlightCard({ flight, isExpanded, onSelectFlight }) {
   const { ticketValidity } = useContext(TicketContext);
 
   const basePrice = getTicketPriceByValidity(pricing, ticketValidity);
-  const displayPrice = formatMoney(basePrice, pricing?.currency);
+  const displayPrice = basePrice === null ? null : formatMoney(basePrice, pricing?.currency);
 
   return (
     <div className="w-full rounded-2xl bg-white mb-5 p-3 lg:p-3.75 transition-[box-shadow_0.3s_ease] shadow-(--flight-shadow) hover:shadow-(--flight-shadow-hover)">
@@ -33,10 +33,11 @@ export default function FlightCard({ flight, isExpanded, onSelectFlight }) {
         <div className="w-full lg:w-1/4 flex justify-between lg:block pt-1 lg:pt-2.5 lg:border-t-0 px-3">
           <div className="w-[60%] lg:w-full flex flex-col lg:flex-row gap-1 items-baseline justify-center font-nunito text-left lg:text-center lg:py-2">
             <p className="text-lg font-medium text-black mb-[-8px]">
-              {displayPrice.code || selectedCurrency?.code || "AED"}{" "}
-              {displayPrice.value}
+              {displayPrice
+                ? `${displayPrice.code || selectedCurrency?.code || ""} ${displayPrice.value}`.trim()
+                : "—"}
             </p>
-            <p className="text-sm font-light text-gray-400">/ person</p>
+            {displayPrice && <p className="text-sm font-light text-gray-400">/ person</p>}
           </div>
           <button
             className={`w-[40%] lg:w-full rounded-full py-1 lg:py-2 text-sm cursor-pointer duration-300 ${isExpanded ? "bg-black text-white" : "bg-gray-200 text-black hover:bg-gray-300"}`}

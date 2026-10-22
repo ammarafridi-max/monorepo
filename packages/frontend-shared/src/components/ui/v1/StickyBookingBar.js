@@ -3,13 +3,13 @@
 import { useEffect, useState } from 'react';
 import { useDummyTicketPricing } from '../../../hooks/pricing/useDummyTicketPricing';
 import { useCurrency } from '../../../contexts/CurrencyContext';
-import { normalizePricingOptions } from '../../../utils/dummyTicketPricing';
+import { lowestTicketPrice } from '../../../utils/dummyTicketPricing';
 
 export default function StickyBookingBar({ targetId = 'form', label = 'Book now', product = 'dummy ticket' }) {
   const [visible, setVisible] = useState(false);
   const { selectedCurrency, formatMoney } = useCurrency();
   const { pricing } = useDummyTicketPricing(selectedCurrency?.code);
-  const lowest = normalizePricingOptions(pricing)[0];
+  const lowest = lowestTicketPrice(pricing);
   const price = lowest ? formatMoney(lowest.price, pricing?.currency) : null;
 
   useEffect(() => {
@@ -38,7 +38,7 @@ export default function StickyBookingBar({ targetId = 'form', label = 'Book now'
           <p className="truncate text-[11px] uppercase tracking-wide text-gray-500">Verifiable {product}</p>
           {price && (
             <p className="truncate text-base font-semibold text-gray-900">
-              From {price.code || selectedCurrency?.code || 'AED'}{' '}
+              From {price.code || selectedCurrency?.code || ''}{' '}
               {Number(price.amount).toLocaleString('en', { maximumFractionDigits: 2 })}
             </p>
           )}

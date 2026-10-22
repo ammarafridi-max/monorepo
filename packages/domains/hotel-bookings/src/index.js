@@ -1,18 +1,13 @@
 import HotelBookingSchema from './schemas/hotel-booking.schema.js';
 import HotelBookingPricingSchema from './schemas/pricing.schema.js';
 import { createHotelBookingService } from './service.js';
+import { createCurrencyConversionService } from '@travel-suite/currencies/conversion';
 import { createHotelPricingService } from './pricing.service.js';
 import { createHotelBookingController } from './controller.js';
 import { createHotelBookingRouter, createHotelPricingRouter } from './router.js';
 import { createPaidOrderBus } from './paidOrderBus.js';
+import { getOrRegisterModel } from '@travel-suite/utils/model';
 
-function getOrRegisterModel(conn, name, schema) {
-  try {
-    return conn.model(name);
-  } catch {
-    return conn.model(name, schema);
-  }
-}
 
 export function createHotelBookingsRouter({
   db,
@@ -30,7 +25,14 @@ export function createHotelBookingsRouter({
   const HotelBooking = getOrRegisterModel(db, 'hotel-booking', HotelBookingSchema);
   const HotelBookingPricing = getOrRegisterModel(db, 'hotel-booking-pricing', HotelBookingPricingSchema);
 
-  const pricingService = createHotelPricingService({ HotelBookingPricing, Currency: CurrencyModel });
+  const conversionService = CurrencyModel
+    ? createCurrencyConversionService({ Currency: CurrencyModel })
+    : null;
+  const pricingService = createHotelPricingService({
+    HotelBookingPricing,
+    Currency: CurrencyModel,
+    conversionService,
+  });
   const paidOrderBus = injectedBus ?? createPaidOrderBus();
 
   const service = createHotelBookingService({

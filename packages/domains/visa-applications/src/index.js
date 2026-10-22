@@ -1,21 +1,15 @@
-import VisaApplicationSchema from './schemas/visaApplication.schema.js';
+import VisaApplicationSchema from './schemas/visa-application.schema.js';
 import ApplicantSchema from './schemas/applicant.schema.js';
-import ApplicationDocumentSchema from './schemas/applicationDocument.schema.js';
-import DocumentTypeSchema from './schemas/documentType.schema.js';
-import ChecklistTemplateSchema from './schemas/checklistTemplate.schema.js';
+import ApplicationDocumentSchema from './schemas/application-document.schema.js';
+import DocumentTypeSchema from './schemas/document-type.schema.js';
+import ChecklistTemplateSchema from './schemas/checklist-template.schema.js';
 import { createVisaApplicationService } from './service.js';
 import { createRegistryService } from './registry.service.js';
 import { createVisaApplicationController } from './controller.js';
 import { createVisaApplicationRouterFromParts } from './router.js';
 import { createReminderEngine } from './reminders.js';
+import { getOrRegisterModel } from '@travel-suite/utils/model';
 
-function getOrRegisterModel(conn, name, schema) {
-  try {
-    return conn.model(name);
-  } catch {
-    return conn.model(name, schema);
-  }
-}
 
 export function createVisaApplicationsRouter({ db, auth, userAuth, User, storage, notifications, apiBaseUrl, appBaseUrl, logger }) {
   const VisaApplication = getOrRegisterModel(db, 'visa-application', VisaApplicationSchema);
@@ -66,9 +60,9 @@ export function createVisaApplicationsRouter({ db, auth, userAuth, User, storage
   };
 }
 
-export { default as VisaApplicationSchema } from './schemas/visaApplication.schema.js';
+export { default as VisaApplicationSchema } from './schemas/visa-application.schema.js';
 export { default as ApplicantSchema } from './schemas/applicant.schema.js';
-export { default as ApplicationDocumentSchema } from './schemas/applicationDocument.schema.js';
-export { default as DocumentTypeSchema } from './schemas/documentType.schema.js';
-export { default as ChecklistTemplateSchema } from './schemas/checklistTemplate.schema.js';
+export { default as ApplicationDocumentSchema } from './schemas/application-document.schema.js';
+export { default as DocumentTypeSchema } from './schemas/document-type.schema.js';
+export { default as ChecklistTemplateSchema } from './schemas/checklist-template.schema.js';
 export * from './matcher.js';

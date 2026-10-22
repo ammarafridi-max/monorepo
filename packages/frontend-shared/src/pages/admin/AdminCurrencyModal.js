@@ -34,11 +34,11 @@ export default function AdminCurrencyModal({ initial, onClose, onSave, saving })
     });
   }
 
-  const canSave =
-    form.code.trim() &&
-    form.name.trim() &&
-    form.symbol.trim() &&
-    form.rate !== '';
+  const rateValue = Number(form.rate);
+  const rateInvalid = form.rate === '' || !Number.isFinite(rateValue) || rateValue <= 0;
+  const codeInvalid = !/^[A-Za-z]{3}$/.test(form.code.trim());
+
+  const canSave = (isEdit || !codeInvalid) && form.name.trim() && form.symbol.trim() && !rateInvalid;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -68,12 +68,15 @@ export default function AdminCurrencyModal({ initial, onClose, onSave, saving })
               <input
                 type="text"
                 value={form.code}
-                onChange={(e) => set('code', e.target.value.toUpperCase())}
+                onChange={(e) => set('code', e.target.value.toUpperCase().slice(0, 3))}
                 placeholder="USD"
-                maxLength={10}
+                maxLength={3}
                 disabled={isEdit}
                 className={`${inputCls} font-mono uppercase`}
               />
+              {!isEdit && form.code.trim() && codeInvalid && (
+                <p className="text-[11px] text-red-500 mt-1">Use the 3 letter ISO code, such as USD.</p>
+              )}
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1.5">
@@ -117,10 +120,13 @@ export default function AdminCurrencyModal({ initial, onClose, onSave, saving })
               disabled={form.isBaseCurrency}
               className={inputCls}
             />
+            {!form.isBaseCurrency && form.rate !== '' && rateInvalid && (
+              <p className="text-[11px] text-red-500 mt-1">The rate must be greater than zero.</p>
+            )}
             <p className="text-[11px] text-gray-400 mt-1">
               {form.isBaseCurrency
                 ? 'Base currency is always fixed to 1.00.'
-                : 'Rate relative to the base currency.'}
+                : 'Rate relative to the base currency. Changing it reprices every currency that has no prices of its own.'}
             </p>
           </div>
 

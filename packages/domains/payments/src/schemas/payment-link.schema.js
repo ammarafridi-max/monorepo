@@ -16,7 +16,7 @@ const PaymentLinkSchema = new mongoose.Schema(
       {
         productId: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: 'Product',
+          ref: 'stripe-product',
           default: null,
         },
         productName: { type: String, required: true },
@@ -28,7 +28,7 @@ const PaymentLinkSchema = new mongoose.Schema(
 
     productId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Product',
+      ref: 'stripe-product',
       default: null,
       index: true,
     },

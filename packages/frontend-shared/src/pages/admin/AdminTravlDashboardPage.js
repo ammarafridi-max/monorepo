@@ -21,11 +21,11 @@ import { useGetAffiliates } from '../../hooks/affiliates/useGetAffiliates';
 import { useGetBlogs } from '../../hooks/blog/useGetBlogs';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 
-function fmtMoney(amount, currency = 'AED') {
-  return `${currency} ${Number(amount).toLocaleString('en-US', {
+function fmtMoney(amount, currency) {
+  return `${currency ?? ''} ${Number(amount).toLocaleString('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  })}`;
+  })}`.trim();
 }
 
 function fmtDate(str) {
@@ -113,7 +113,7 @@ function DashboardContent() {
   const activeAffiliates = affiliates.filter((a) => a.isActive).length;
 
   const insTotal    = summary.totalApplications ?? 0;
-  const insRevenue  = summary.totalRevenue ?? { amount: 0, currency: 'AED' };
+  const insRevenue  = summary.totalRevenue ?? { amount: 0, currency: null };
   const insPending  = summary.pendingApplications ?? 0;
   const insFailed   = (summary.failedApplications ?? 0) + (summary.refundedApplications ?? 0);
   const insPaid     = insTotal - insPending - insFailed;

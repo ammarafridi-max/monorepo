@@ -12,6 +12,7 @@ import PrimaryButton from '../../components/ui/v1/PrimaryButton';
 import { TicketContext } from '../../contexts/TicketContext';
 import { useFlights } from '../../hooks/flights/useFlights';
 import { useDummyTicketPricing } from '../../hooks/pricing/useDummyTicketPricing';
+import { useCurrency } from '../../contexts/CurrencyContext';
 import { normalizePricingOptions } from '../../utils/dummyTicketPricing';
 import { transformItinerary } from '../../utils/transformItinerary';
 import { formatDate } from '../../utils/dates';
@@ -44,7 +45,8 @@ export default function TicketSelectFlightsPage({ supportEmail, searchPath = '/'
     returnDate,
     quantity,
   });
-  const { pricing } = useDummyTicketPricing();
+  const { selectedCurrency } = useCurrency();
+  const { pricing } = useDummyTicketPricing(selectedCurrency?.code);
   const options = normalizePricingOptions(pricing);
 
   useEffect(() => {

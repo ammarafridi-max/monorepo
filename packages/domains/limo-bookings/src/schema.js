@@ -21,7 +21,7 @@ const BookingSchema = new mongoose.Schema(
     bookingRef: { type: String, required: true, uppercase: true, match: /^[A-Z0-9]{6}$/ },
     pickup: {
       id: { type: String },
-      zone: { type: mongoose.Schema.Types.ObjectId, ref: 'Zone' },
+      zone: { type: mongoose.Schema.Types.ObjectId, ref: 'zone' },
       name: { type: String },
       address: { type: String },
       lat: { type: Number, required: true },
@@ -30,7 +30,7 @@ const BookingSchema = new mongoose.Schema(
     },
     dropoff: {
       id: { type: String },
-      zone: { type: mongoose.Schema.Types.ObjectId, ref: 'Zone' },
+      zone: { type: mongoose.Schema.Types.ObjectId, ref: 'zone' },
       name: { type: String },
       address: { type: String },
       lat: { type: Number },
@@ -40,7 +40,7 @@ const BookingSchema = new mongoose.Schema(
     pickupDate: { type: String, required: true },
     pickupTime: { type: String, required: true },
     hoursBooked: { type: Number },
-    vehicle: { type: mongoose.Schema.Types.ObjectId, ref: 'Vehicle' },
+    vehicle: { type: mongoose.Schema.Types.ObjectId, ref: 'vehicle' },
     bookingDetails: {
       firstName: { type: String, required: true, trim: true },
       lastName: { type: String, required: true, trim: true },

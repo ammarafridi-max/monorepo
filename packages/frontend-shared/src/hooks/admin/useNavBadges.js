@@ -1,6 +1,7 @@
 'use client';
 
-import { useQueries } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
+import { getAdminBadgeCountsApi } from '../../services/apiAdminBadges.js';
 import { getDummyTicketsApi } from '../../services/apiDummyTickets.js';
 import { getConversationsApi } from '../../services/apiConversations.js';
 import { getAdminVisaLeadsApi } from '../../services/apiVisaLeads.js';
@@ -23,6 +24,23 @@ export const BADGE_SOURCES = {
 
 export const NAV_BADGES_KEY = ['nav-badges'];
 
+async function fetchBadges(keys) {
+  const counts = await getAdminBadgeCountsApi();
+  if (counts && keys.some((key) => key in counts)) return counts;
+
+  // Brands that have not mounted /admin-badges still get their counts the slow way.
+  const pairs = await Promise.all(
+    keys.map(async (key) => {
+      try {
+        return [key, await BADGE_SOURCES[key]()];
+      } catch {
+        return [key, 0];
+      }
+    }),
+  );
+  return Object.fromEntries(pairs);
+}
+
 export function useNavBadges(nav = [], role, { enabled = true } = {}) {
   const keys = [
     ...new Set(
@@ -32,16 +50,14 @@ export function useNavBadges(nav = [], role, { enabled = true } = {}) {
     ),
   ];
 
-  const results = useQueries({
-    queries: keys.map((key) => ({
-      queryKey: [...NAV_BADGES_KEY, key],
-      queryFn: BADGE_SOURCES[key],
-      enabled: enabled && !!role,
-      refetchInterval: 30_000,
-      refetchOnWindowFocus: true,
-      retry: false,
-    })),
+  const { data } = useQuery({
+    queryKey: [...NAV_BADGES_KEY, keys.join(',')],
+    queryFn: () => fetchBadges(keys),
+    enabled: enabled && !!role && keys.length > 0,
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
+    retry: false,
   });
 
-  return Object.fromEntries(keys.map((key, i) => [key, results[i]?.data ?? 0]));
+  return Object.fromEntries(keys.map((key) => [key, data?.[key] ?? 0]));
 }

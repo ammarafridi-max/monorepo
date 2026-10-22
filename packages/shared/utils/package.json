@@ -9,9 +9,15 @@
     "./env": "./src/env.js",
     "./sentry": "./src/sentry.js",
     "./csrf": "./src/csrf.js",
+    "./model": "./src/model.js",
+    "./currency": "./src/currency.js",
+    "./rate-limit-key": "./src/rate-limit-key.js",
+    "./fixed-window-limiter": "./src/fixed-window-limiter.js",
     "./redact-url": "./src/redact-url.js"
   },
-  "scripts": {},
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
   "dependencies": {
     "@sentry/node": "^10.64.0"
   },

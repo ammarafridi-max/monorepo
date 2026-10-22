@@ -11,6 +11,8 @@ export function createPaidOrderBus() {
     for (const res of subscribers) {
       try {
         res.write(line);
+        // Without this the compression middleware buffers the frame and the client never sees it.
+        res.flush?.();
       } catch {
         subscribers.delete(res);
       }

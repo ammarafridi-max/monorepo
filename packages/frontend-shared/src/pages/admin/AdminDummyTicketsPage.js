@@ -30,6 +30,7 @@ const ORDER_TABS = [
   { value: 'PENDING',   label: 'Pending'   },
   { value: 'PROGRESS',  label: 'Progress'  },
   { value: 'DELIVERED', label: 'Delivered' },
+  { value: 'REFUNDED',  label: 'Refunded'  },
 ];
 
 const TIME_OPTIONS = [
@@ -53,6 +54,7 @@ const ORDER_CFG = {
   PENDING:   { dot: 'bg-amber-400', cls: 'bg-amber-50  text-amber-700  border-amber-200'  },
   PROGRESS:  { dot: 'bg-blue-400',  cls: 'bg-blue-50   text-blue-700   border-blue-200'   },
   DELIVERED: { dot: 'bg-green-500', cls: 'bg-green-50  text-green-700  border-green-200'  },
+  REFUNDED:  { dot: 'bg-gray-400',  cls: 'bg-gray-100   text-gray-600   border-gray-200'   },
 };
 
 function PaymentBadge({ status }) {

@@ -14,7 +14,7 @@ import {
   createPaymentsController,
   createPaymentsAdminRouter,
   PaymentLinkSchema,
-  ProductSchema,
+  StripeProductSchema,
 } from "@travel-suite/payments";
 import { createVehiclesRouter } from "@travel-suite/vehicles";
 import { createZonesRouter } from "@travel-suite/zones";
@@ -70,7 +70,20 @@ const vehicleImages = {
 router.use("/blogs", createBlogRouter({ db, auth, imageStorage: blogImageStorage, anthropicApiKey: config.anthropicApiKey }));
 router.use("/blog-tags", createBlogTagRouter({ db, auth }));
 
-router.use("/currencies", createCurrenciesRouter({ db, auth }));
+const currencyInUseReason = async (code) => {
+  const paidBookings = await db
+    .collection("bookings")
+    .countDocuments({ "payment.status": "paid", "payment.currency": code });
+  if (paidBookings > 0) {
+    return `${code} cannot be removed: ${paidBookings} paid booking${paidBookings === 1 ? " was" : "s were"} charged in it and would drop out of revenue totals.`;
+  }
+  return null;
+};
+
+router.use(
+  "/currencies",
+  createCurrenciesRouter({ db, auth, isCurrencyInUse: currencyInUseReason }),
+);
 
 router.use(
   "/locations",
@@ -92,7 +105,7 @@ router.use(
   createBookingsRouter({ db, auth, stripe, frontendUrl: config.frontendUrl }),
 );
 
-const paymentService = createPaymentService({ stripe, db, PaymentLinkSchema, ProductSchema });
+const paymentService = createPaymentService({ stripe, db, PaymentLinkSchema, StripeProductSchema });
 const paymentsController = createPaymentsController({ service: paymentService });
 router.use("/payments", createPaymentsAdminRouter({ controller: paymentsController, auth }));
 
@@ -127,8 +140,8 @@ if (config.anthropicApiKey) {
     brand: { name: "Emirates Limo" },
     logger,
     datasets: [
-      assistantDatasets.limoBookings(db.models.Booking),
-      assistantDatasets.blogPosts(db.models.Blog),
+      assistantDatasets.limoBookings(db.models.booking),
+      assistantDatasets.blogPosts(db.models.blog),
     ],
   });
   router.use("/assistant", assistantRouter);

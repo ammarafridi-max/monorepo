@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { getLatestPaidTicketApi } from '../../services/apiDummyTickets.js';
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL;
+const POLL_INTERVAL_MS = 45_000;
 
 function playPing() {
   if (typeof window === 'undefined') return;
@@ -39,11 +41,29 @@ export function useNewPaidOrderPing({ enabled = true } = {}) {
   useEffect(() => {
     if (!enabled || typeof window === 'undefined' || !BACKEND) return;
 
+    let cancelled = false;
+    const seen = new Set();
+
+    const announce = (sessionId) => {
+      if (!sessionId || seen.has(sessionId)) return;
+      seen.add(sessionId);
+      playPing();
+      queryClient.invalidateQueries({ queryKey: ['dummytickets'] });
+      queryClient.invalidateQueries({ queryKey: ['nav-badges'] });
+    };
+
     const es = new EventSource(`${BACKEND}/api/tickets/events`, {
       withCredentials: true,
     });
 
-    es.addEventListener('paid-order', () => {
+    es.addEventListener('paid-order', (event) => {
+      let sessionId = null;
+      try {
+        sessionId = JSON.parse(event.data)?.sessionId ?? null;
+      } catch {
+        void 0;
+      }
+      if (sessionId) return announce(sessionId);
       playPing();
       queryClient.invalidateQueries({ queryKey: ['dummytickets'] });
       queryClient.invalidateQueries({ queryKey: ['nav-badges'] });
@@ -52,6 +72,25 @@ export function useNewPaidOrderPing({ enabled = true } = {}) {
     es.addEventListener('error', () => {
     });
 
-    return () => es.close();
+    // The event bus lives in one backend process, so polling covers orders paid on another machine.
+    const poll = async ({ silent = false } = {}) => {
+      try {
+        const latest = await getLatestPaidTicketApi();
+        if (cancelled || !latest?.sessionId) return;
+        if (silent) seen.add(latest.sessionId);
+        else announce(latest.sessionId);
+      } catch {
+        void 0;
+      }
+    };
+
+    poll({ silent: true });
+    const interval = setInterval(poll, POLL_INTERVAL_MS);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+      es.close();
+    };
   }, [enabled, queryClient]);
 }

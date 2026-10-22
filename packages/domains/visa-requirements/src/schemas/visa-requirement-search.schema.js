@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const VisaQuerySchema = new mongoose.Schema(
+const VisaRequirementSearchSchema = new mongoose.Schema(
   {
     nationality: { type: String, required: true, uppercase: true, trim: true, index: true },
     residence: { type: String, uppercase: true, trim: true, default: null },
@@ -14,7 +14,7 @@ const VisaQuerySchema = new mongoose.Schema(
   { timestamps: { createdAt: true, updatedAt: false } },
 );
 
-VisaQuerySchema.index({ createdAt: -1 });
-VisaQuerySchema.index({ destination: 1, nationality: 1 });
+VisaRequirementSearchSchema.index({ createdAt: -1 });
+VisaRequirementSearchSchema.index({ destination: 1, nationality: 1 });
 
-export default VisaQuerySchema;
+export default VisaRequirementSearchSchema;

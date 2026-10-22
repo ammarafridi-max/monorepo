@@ -1,4 +1,5 @@
 import { AppError, attributionChannelFilter } from '@travel-suite/utils';
+import { toStripeMinorUnits } from '@travel-suite/utils/currency';
 import { resolveVehicle } from './catalog.js';
 
 function generateBookingRef() {
@@ -59,7 +60,7 @@ export function createBookingService({ Booking, stripe }) {
         {
           price_data: {
             currency: currency.toLowerCase(),
-            unit_amount: Math.round(Number(amount) * 100),
+            unit_amount: toStripeMinorUnits(amount, currency),
             product_data: { name: `Airport Transfer — ${resolved.name}` },
           },
           quantity: 1,

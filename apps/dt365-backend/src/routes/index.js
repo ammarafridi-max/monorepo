@@ -1,9 +1,9 @@
 import { Router } from "express";
 import { createAuthRouter } from "@travel-suite/auth";
-import { createAdminUsersRouter } from "@travel-suite/admin-users";
+import { createAdminUsersRouter, createAdminBadgesRouter } from "@travel-suite/admin-users";
 import {
   createAffiliatesRouter,
-  AffiliateSchema,
+  registerAffiliateModels,
 } from "@travel-suite/affiliates";
 import { createAssistantRouter, assistantDatasets } from "@travel-suite/assistant";
 import { createBlogRouter, createBlogTagRouter } from "@travel-suite/blog";
@@ -28,7 +28,7 @@ import {
   createPaymentsController,
   createPaymentsAdminRouter,
   PaymentLinkSchema,
-  ProductSchema,
+  StripeProductSchema,
 } from "@travel-suite/payments";
 import { createPayPalClient } from "@travel-suite/paypal";
 import { db } from "../utils/db.js";
@@ -41,15 +41,7 @@ import { sendEmail } from "../utils/email.js";
 import config from "../utils/config.js";
 import { logger } from "@travel-suite/utils";
 
-// -- Model pre-registration (ORDER CRITICAL) -----------------------------------
-function getOrRegisterModel(conn, name, schema) {
-  try {
-    return conn.model(name);
-  } catch {
-    return conn.model(name, schema);
-  }
-}
-const AffiliateModel = getOrRegisterModel(db, "Affiliate", AffiliateSchema);
+const { Affiliate: AffiliateModel } = registerAffiliateModels({ db });
 
 const router = Router();
 const brevo = createBrevoClient({ apiKey: config.brevoApiKey, logger });
@@ -85,7 +77,24 @@ const imageStorage = createCloudinaryStorage({
 router.use("/blogs", createBlogRouter({ db, auth, imageStorage, anthropicApiKey: config.anthropicApiKey }));
 router.use("/blog-tags", createBlogTagRouter({ db, auth }));
 
-router.use("/currencies", createCurrenciesRouter({ db, auth }));
+const currencyInUseReason = async (code) => {
+  const [paidOrders, priceBooks] = await Promise.all([
+    TicketModel.countDocuments({ "amountPaid.currency": code }),
+    db.collection("dummy-ticket-prices").countDocuments({ currency: code }),
+  ]);
+  if (paidOrders > 0) {
+    return `${code} cannot be removed: ${paidOrders} paid order${paidOrders === 1 ? " was" : "s were"} charged in it and would drop out of revenue totals.`;
+  }
+  if (priceBooks > 0) {
+    return `${code} cannot be removed while it still has a dummy ticket price book. Delete the price book first.`;
+  }
+  return null;
+};
+
+router.use(
+  "/currencies",
+  createCurrenciesRouter({ db, auth, isCurrencyInUse: currencyInUseReason }),
+);
 
 const airlabs = createAirLabsClient({ apiKey: config.airlabs.apiKey });
 const serpapi = createSerpApiClient({ apiKey: config.serpapi.apiKey });
@@ -183,7 +192,22 @@ const {
 router.use("/tickets", ticketsRouter);
 router.use("/pricing", pricingRouter);
 
-const CurrencyModel = db.models.Currency ?? null;
+router.use(
+  "/admin-badges",
+  createAdminBadgesRouter({
+    auth,
+    counters: {
+      pendingDummyTickets: () =>
+        TicketModel.countDocuments({ paymentStatus: "PAID", orderStatus: "PENDING" }),
+      unreadChats: () =>
+        db.models.conversation
+          ? db.models.conversation.countDocuments({ status: "OPEN", unreadCount: { $gt: 0 } })
+          : 0,
+    },
+  }),
+);
+
+const CurrencyModel = db.models.currency ?? null;
 const liteapiConfigured = Boolean(config.liteapi.apiKey);
 let handleHotelStripeSuccess = null;
 
@@ -257,7 +281,7 @@ const paymentService = createPaymentService({
   stripe,
   db,
   PaymentLinkSchema,
-  ProductSchema,
+  StripeProductSchema,
 });
 const paymentsController = createPaymentsController({
   service: paymentService,
@@ -328,8 +352,8 @@ if (config.anthropicApiKey) {
       assistantDatasets.dummyTickets(TicketModel),
       assistantDatasets.hotelBookings(db.models["hotel-booking"]),
       assistantDatasets.affiliates(AffiliateModel),
-      assistantDatasets.affiliatePayouts(db.models.AffiliatePayout),
-      assistantDatasets.blogPosts(db.models.Blog),
+      assistantDatasets.affiliatePayouts(db.models['affiliate-payout']),
+      assistantDatasets.blogPosts(db.models.blog),
     ],
   });
   router.use("/assistant", assistantRouter);

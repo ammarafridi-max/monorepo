@@ -3,17 +3,11 @@ import { createUserService } from './service.js';
 import { createUserMiddleware } from './middleware.js';
 import { createUserController } from './controller.js';
 import { createUserRouterFromParts } from './router.js';
+import { getOrRegisterModel } from '@travel-suite/utils/model';
 
-function getOrRegisterModel(conn, name, schema) {
-  try {
-    return conn.model(name);
-  } catch {
-    return conn.model(name, schema);
-  }
-}
 
 export function createUsersRouter({ db, jwtSecret, jwtExpiresIn = '7d', cookieExpiresInDays = 7, nodeEnv = 'development', notifications, appBaseUrl, apiBaseUrl } = {}) {
-  const User = getOrRegisterModel(db, 'User', UserSchema);
+  const User = getOrRegisterModel(db, 'user', UserSchema);
   const service = createUserService({ User, jwtSecret, jwtExpiresIn, notifications, apiBaseUrl });
   const middleware = createUserMiddleware({ User, jwtSecret });
   const controller = createUserController({ service, cookieExpiresInDays, nodeEnv, appBaseUrl });

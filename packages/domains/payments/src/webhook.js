@@ -1,9 +1,7 @@
 import { logger } from '@travel-suite/utils';
 import StripeWebhookEventSchema from './schemas/webhook-event.schema.js';
+import { getOrRegisterModel } from '@travel-suite/utils/model';
 
-function getOrRegisterModel(conn, name, schema) {
-  try { return conn.model(name); } catch { return conn.model(name, schema); }
-}
 
 export function createStripeWebhookHandler({ stripe, webhookSecret, db, handlers = {} }) {
   const StripeWebhookEvent = getOrRegisterModel(db, 'stripe-webhook-event', StripeWebhookEventSchema);

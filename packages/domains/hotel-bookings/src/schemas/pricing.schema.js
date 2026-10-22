@@ -8,7 +8,7 @@ const HotelBookingPricingSchema = new mongoose.Schema(
     perExtraNight: { type: Number, default: 0, min: 0 },
     updatedBy: { type: mongoose.Schema.ObjectId, ref: 'admin-user', default: null },
   },
-  { timestamps: true },
+  { collection: 'hotel-booking-prices', timestamps: true },
 );
 
 HotelBookingPricingSchema.index({ key: 1, currency: 1 }, { unique: true });

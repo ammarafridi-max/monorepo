@@ -33,9 +33,6 @@ importers:
       '@travel-suite/blog':
         specifier: workspace:*
         version: link:../../packages/domains/blog
-      '@travel-suite/bookings':
-        specifier: workspace:*
-        version: link:../../packages/domains/bookings
       '@travel-suite/brevo':
         specifier: workspace:*
         version: link:../../packages/integrations/brevo
@@ -57,9 +54,9 @@ importers:
       '@travel-suite/payments':
         specifier: workspace:*
         version: link:../../packages/domains/payments
-      '@travel-suite/tickets':
+      '@travel-suite/transfer-bookings':
         specifier: workspace:*
-        version: link:../../packages/domains/tickets
+        version: link:../../packages/domains/transfer-bookings
       '@travel-suite/utils':
         specifier: workspace:*
         version: link:../../packages/shared/utils
@@ -1016,6 +1013,15 @@ importers:
       '@travel-suite/notifications':
         specifier: workspace:*
         version: link:../../packages/shared/notifications
+      '@travel-suite/openai-ads':
+        specifier: workspace:*
+        version: link:../../packages/integrations/openai-ads
+      '@travel-suite/openai-ads-admin':
+        specifier: workspace:*
+        version: link:../../packages/domains/openai-ads
+      '@travel-suite/openai-capi':
+        specifier: workspace:*
+        version: link:../../packages/integrations/openai-capi
       '@travel-suite/payments':
         specifier: workspace:*
         version: link:../../packages/domains/payments
@@ -1268,19 +1274,6 @@ importers:
         specifier: ^1.4.5-lts.1
         version: 1.4.5-lts.2
 
-  packages/domains/bookings:
-    dependencies:
-      '@travel-suite/utils':
-        specifier: workspace:*
-        version: link:../../shared/utils
-    devDependencies:
-      express:
-        specifier: ^5.2.1
-        version: 5.2.1
-      mongoose:
-        specifier: ^9.0.2
-        version: 9.4.1(socks@2.8.9)
-
   packages/domains/conversations:
     dependencies:
       '@travel-suite/utils':
@@ -1328,6 +1321,9 @@ importers:
 
   packages/domains/hotel-bookings:
     dependencies:
+      '@travel-suite/currencies':
+        specifier: workspace:*
+        version: link:../currencies
       '@travel-suite/liteapi':
         specifier: workspace:*
         version: link:../../integrations/liteapi
@@ -1486,6 +1482,12 @@ importers:
 
   packages/domains/tickets:
     dependencies:
+      '@travel-suite/currencies':
+        specifier: workspace:*
+        version: link:../currencies
+      '@travel-suite/paypal':
+        specifier: workspace:*
+        version: link:../../integrations/paypal
       '@travel-suite/utils':
         specifier: workspace:*
         version: link:../../shared/utils
@@ -1495,6 +1497,19 @@ importers:
       uuid:
         specifier: ^11.0.0
         version: 11.1.0
+    devDependencies:
+      express:
+        specifier: ^5.2.1
+        version: 5.2.1
+      mongoose:
+        specifier: ^9.0.2
+        version: 9.4.1(socks@2.8.9)
+
+  packages/domains/transfer-bookings:
+    dependencies:
+      '@travel-suite/utils':
+        specifier: workspace:*
+        version: link:../../shared/utils
     devDependencies:
       express:
         specifier: ^5.2.1

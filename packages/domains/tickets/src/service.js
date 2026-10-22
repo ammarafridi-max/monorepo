@@ -1,9 +1,20 @@
 import mongoose from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 import { AppError, logger, sanitizeAttribution, attributionChannelFilter } from '@travel-suite/utils';
+import {
+  fromStripeMinorUnits,
+  normalizeCurrencyCode,
+  roundToCurrency,
+  toStripeMinorUnits,
+} from '@travel-suite/utils/currency';
+import { payPalCurrencyFor } from '@travel-suite/paypal';
+import { TICKET_VALIDITIES, VALIDITY_DAYS, SHORTEST_VALIDITY } from './validity.js';
 
 const AFFILIATE_ATTRIBUTION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const AFFILIATE_CAPTURE_FUTURE_TOLERANCE_MS = 5 * 60 * 1000;
+const MAX_PASSENGERS = 20;
+const MAX_SEGMENTS = 8;
+const MAX_MESSAGE_LENGTH = 2000;
 
 function normalizeEmail(email) {
   return typeof email === 'string' ? email.trim().toLowerCase() : email;
@@ -26,19 +37,132 @@ function escapeRegex(value = '') {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+function trimmedString(value) {
+  return typeof value === 'string' ? value.trim() : undefined;
+}
+
+function nonNegativeInteger(value) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 0) return 0;
+  return Math.floor(parsed);
+}
+
+function pickPassengers(passengers) {
+  if (!Array.isArray(passengers)) return [];
+  return passengers.slice(0, MAX_PASSENGERS).map((p) => ({
+    type: trimmedString(p?.type),
+    title: trimmedString(p?.title),
+    firstName: trimmedString(p?.firstName),
+    lastName: trimmedString(p?.lastName),
+  }));
+}
+
+function pickSegment(segment) {
+  return {
+    departure: {
+      iataCode: trimmedString(segment?.departure?.iataCode),
+      date: trimmedString(segment?.departure?.date),
+      time: trimmedString(segment?.departure?.time),
+    },
+    arrival: {
+      iataCode: trimmedString(segment?.arrival?.iataCode),
+      date: trimmedString(segment?.arrival?.date),
+      time: trimmedString(segment?.arrival?.time),
+    },
+    duration: trimmedString(segment?.duration),
+    carrierCode: trimmedString(segment?.carrierCode),
+    flightNumber: trimmedString(segment?.flightNumber),
+    aircraftCode: trimmedString(segment?.aircraftCode),
+    airline: {
+      name: trimmedString(segment?.airline?.name),
+      logo: trimmedString(segment?.airline?.logo),
+    },
+  };
+}
+
+function pickFlight(flight) {
+  if (!flight || typeof flight !== 'object' || !Array.isArray(flight.segments)) return null;
+  const segments = flight.segments.slice(0, MAX_SEGMENTS).map(pickSegment);
+  if (segments.length === 0) return null;
+  return { duration: trimmedString(flight.duration), segments };
+}
+
+function pickCurrencyCode(value) {
+  return normalizeCurrencyCode(value);
+}
+
+function pickTicketInput(payload = {}) {
+  return {
+    type: payload.type === 'Return' ? 'Return' : 'One Way',
+    from: trimmedString(payload.from),
+    to: trimmedString(payload.to),
+    departureDate: trimmedString(payload.departureDate),
+    returnDate: trimmedString(payload.returnDate) || undefined,
+    quantity: {
+      adults: nonNegativeInteger(payload.quantity?.adults),
+      children: nonNegativeInteger(payload.quantity?.children),
+      infants: nonNegativeInteger(payload.quantity?.infants),
+    },
+    passengers: pickPassengers(payload.passengers),
+    email: trimmedString(payload.email),
+    phoneNumber: {
+      code: trimmedString(payload.phoneNumber?.code),
+      digits: trimmedString(payload.phoneNumber?.digits),
+    },
+    message: trimmedString(payload.message)?.slice(0, MAX_MESSAGE_LENGTH),
+    ticketValidity: payload.ticketValidity,
+    ticketDelivery: {
+      immediate: Boolean(payload.ticketDelivery?.immediate),
+      deliveryDate: payload.ticketDelivery?.immediate
+        ? null
+        : trimmedString(payload.ticketDelivery?.deliveryDate) || null,
+    },
+    flightDetails: {
+      departureFlight: pickFlight(payload.flightDetails?.departureFlight),
+      returnFlight: pickFlight(payload.flightDetails?.returnFlight),
+    },
+  };
+}
+
 function buildSearchFilter(search) {
   if (!search) return {};
-  const regex = new RegExp(escapeRegex(search), 'i');
+  const term = String(search).trim();
+  if (!term) return {};
+  const regex = new RegExp(escapeRegex(term), 'i');
+  const digits = term.replace(/\D/g, '');
   return {
     $or: [
-      { 'passengers.0.firstName': regex },
-      { 'passengers.0.lastName': regex },
-      { 'passengers.0.title': regex },
+      { 'passengers.firstName': regex },
+      { 'passengers.lastName': regex },
       { email: regex },
       { from: regex },
       { to: regex },
+      { sessionId: regex },
+      ...(digits.length >= 4 ? [{ 'phoneNumber.digits': new RegExp(escapeRegex(digits)) }] : []),
     ],
   };
+}
+
+const FILTERABLE_FIELDS = {
+  paymentStatus: ['UNPAID', 'PAID', 'REFUNDED'],
+  orderStatus: ['PENDING', 'DELIVERED', 'PROGRESS', 'REFUNDED'],
+  type: ['One Way', 'Return'],
+  ticketValidity: TICKET_VALIDITIES,
+  paymentMethod: ['stripe', 'paypal'],
+};
+
+const MAX_PAGE_LIMIT = 200;
+
+function buildFieldFilters(query = {}) {
+  const filters = {};
+  Object.entries(FILTERABLE_FIELDS).forEach(([field, allowed]) => {
+    const value = query[field];
+    if (typeof value === 'string' && allowed.includes(value)) filters[field] = value;
+  });
+  if (typeof query.affiliateId === 'string' && /^\d{9}$/.test(query.affiliateId)) {
+    filters.affiliateId = query.affiliateId;
+  }
+  return filters;
 }
 
 const RECENCY_HOURS = { '4_hours': 4, '6_hours': 6, '12_hours': 12, '24_hours': 24, '7_days': 168, '14_days': 336, '30_days': 720, '90_days': 2160 };
@@ -59,8 +183,6 @@ function getDubaiDateString() {
   return `${y}-${m}-${d}`;
 }
 
-const VALIDITY_DAYS = { '2 Days': 2, '7 Days': 7, '14 Days': 14 };
-const SHORTEST_VALIDITY = '2 Days';
 
 function dateOnly(value) {
   return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value) ? value.slice(0, 10) : '';
@@ -73,6 +195,40 @@ function daysBetweenDateOnly(fromStr, toStr) {
   return Math.round((to - from) / 86_400_000);
 }
 
+function assertTripShape(payload) {
+  const departure = dateOnly(payload?.departureDate);
+  if (!departure) throw new AppError('A departure date is required', 400);
+  if (daysBetweenDateOnly(getDubaiDateString(), departure) < 0) {
+    throw new AppError('The departure date cannot be in the past', 400);
+  }
+
+  if (payload?.type === 'Return') {
+    const returnDate = dateOnly(payload?.returnDate);
+    if (!returnDate) throw new AppError('A return date is required for a return trip', 400);
+    if (daysBetweenDateOnly(departure, returnDate) < 0) {
+      throw new AppError('The return date cannot be before the departure date', 400);
+    }
+  }
+
+  const adults = nonNegativeInteger(payload?.quantity?.adults);
+  const children = nonNegativeInteger(payload?.quantity?.children);
+  const infants = nonNegativeInteger(payload?.quantity?.infants);
+  if (adults < 1) throw new AppError('At least one adult is required', 400);
+
+  const expected = adults + children + infants;
+  if (expected > MAX_PASSENGERS) {
+    throw new AppError(`A booking cannot hold more than ${MAX_PASSENGERS} passengers`, 400);
+  }
+
+  const passengers = Array.isArray(payload?.passengers) ? payload.passengers : [];
+  if (passengers.length !== expected) {
+    throw new AppError('The passenger details do not match the number of travellers selected', 400);
+  }
+  if (passengers.some((p) => !trimmedString(p?.firstName) || !trimmedString(p?.lastName))) {
+    throw new AppError('Every passenger needs a first and last name', 400);
+  }
+}
+
 function assertDeliveryAndValidity(payload) {
   const departure = dateOnly(payload?.departureDate);
   if (!departure) return;
@@ -80,6 +236,9 @@ function assertDeliveryAndValidity(payload) {
   const delivery = payload?.ticketDelivery?.immediate
     ? ''
     : dateOnly(payload?.ticketDelivery?.deliveryDate);
+  if (delivery && daysBetweenDateOnly(getDubaiDateString(), delivery) < 0) {
+    throw new AppError('Delivery date cannot be in the past', 400);
+  }
   if (delivery && daysBetweenDateOnly(delivery, departure) < 0) {
     throw new AppError('Delivery date cannot be after the departure date', 400);
   }
@@ -105,41 +264,144 @@ function applyDeliveryDateFilter(queryObj, deliveryDate) {
   if (!deliveryDate) return;
   const dateStr = deliveryDate === 'today' ? getDubaiDateString() : deliveryDate;
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return;
-  queryObj['ticketDelivery.deliveryDate'] = { $regex: new RegExp(`^${dateStr}`) };
-  queryObj.paymentStatus = 'PAID';
+  queryObj['ticketDelivery.deliveryDate'] = { $gte: dateStr, $lt: `${dateStr}~` };
+  if (!queryObj.paymentStatus) queryObj.paymentStatus = 'PAID';
 }
 
-export function createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, paypal, notifications, frontendUrl, brevo, reviewListId, paidOrderBus, reservationStorage, sendEmail, metaCapi, openaiCapi }) {
-  const resolveTicketAmount = async ({ validity, passengers, targetCode }) => {
-    const { currency: bookCurrency, unitPrice, isExact } = await pricingService.getUnitPrice(
-      validity,
-      targetCode,
-    );
-    const bookTotal = Number((unitPrice * passengers).toFixed(2));
-    if (isExact) return { totalAmount: bookTotal, currencyCode: bookCurrency };
-    const { amount, currencyCode } = await currencyService.convertFromBase({
-      amount: bookTotal,
-      targetCode: targetCode || bookCurrency,
-    });
-    return { totalAmount: amount, currencyCode };
-  };
-
-  const getAllTickets = async (query) => {
-    const queryObj = { ...query };
-    ['page', 'limit', 'search', 'createdAt', 'deliveryDate', 'channel'].forEach((f) => delete queryObj[f]);
-    Object.keys(queryObj).forEach((k) => queryObj[k] === 'all' && delete queryObj[k]);
-    applyDeliveryDateFilter(queryObj, query.deliveryDate);
-    Object.assign(queryObj, attributionChannelFilter(query.channel));
-    const paidOnly = queryObj.paymentStatus === 'PAID';
-    const recency = buildRecencyFilter(query.createdAt, paidOnly);
-    const finalQuery = {
+function buildTicketFilter(query = {}) {
+  const queryObj = buildFieldFilters(query);
+  applyDeliveryDateFilter(queryObj, query.deliveryDate);
+  Object.assign(queryObj, attributionChannelFilter(query.channel));
+  const paidOnly = queryObj.paymentStatus === 'PAID';
+  const recency = buildRecencyFilter(query.createdAt, paidOnly);
+  return {
+    filter: {
       ...queryObj,
       ...buildSearchFilter(query.search),
       ...(recency ? { $and: [recency] } : {}),
+    },
+    paidOnly,
+  };
+}
+
+const countWhen = (condition) => ({ $sum: { $cond: [condition, 1, 0] } });
+const IS_PAID = { $eq: ['$paymentStatus', 'PAID'] };
+
+export function createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, paypal, notifications, frontendUrl, brevo, reviewListId, paidOrderBus, reservationStorage, sendEmail, metaCapi, openaiCapi }) {
+  // getUnitPrice already prices in the requested currency, so nothing here converts a second time.
+  const resolveTicketAmount = async ({ validity, passengers, targetCode }) => {
+    const { currency: currencyCode, unitPrice } = await pricingService.getUnitPrice(
+      validity,
+      targetCode,
+    );
+    return {
+      unitPrice: roundToCurrency(unitPrice, currencyCode),
+      totalAmount: roundToCurrency(unitPrice * passengers, currencyCode),
+      currencyCode,
     };
+  };
+
+  // Null when the order cannot be priced in a currency PayPal accepts, so callers never send it one it will reject.
+  const resolvePayPalAmount = async ({ validity, passengers, preferredCode }) => {
+    const quote = await resolveTicketAmount({
+      validity,
+      passengers,
+      targetCode: payPalCurrencyFor(preferredCode),
+    });
+    if (payPalCurrencyFor(quote.currencyCode) !== quote.currencyCode) return null;
+    return quote;
+  };
+
+  const getTicketQuote = async (sessionId, requestedCurrency) => {
+    const ticket = await Ticket.findOne({ sessionId }).select('quantity ticketValidity currency');
+    if (!ticket) throw new AppError('Ticket not found', 404);
+
+    const passengers =
+      Number(ticket.quantity?.adults || 0) + Number(ticket.quantity?.children || 0);
+    if (passengers < 1) throw new AppError('At least 1 passenger is required for checkout', 400);
+
+    const targetCode = pickCurrencyCode(requestedCurrency || ticket.currency);
+    const { unitPrice, totalAmount, currencyCode } = await resolveTicketAmount({
+      validity: ticket.ticketValidity,
+      passengers,
+      targetCode,
+    });
+
+    const payPalQuote = await resolvePayPalAmount({
+      validity: ticket.ticketValidity,
+      passengers,
+      preferredCode: currencyCode,
+    });
+
+    return {
+      currency: currencyCode,
+      unitPrice,
+      passengers,
+      totalAmount,
+      payPal: payPalQuote
+        ? {
+            currency: payPalQuote.currencyCode,
+            unitPrice: payPalQuote.unitPrice,
+            totalAmount: payPalQuote.totalAmount,
+          }
+        : null,
+    };
+  };
+
+  // Totals come from the database, not from a page of rows, so they stay right past the page limit.
+  const getTicketStats = async (query = {}) => {
+    const { filter } = buildTicketFilter(query);
+
+    const [[agg], baseCurrency] = await Promise.all([
+      Ticket.aggregate([
+        { $match: filter },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: 1 },
+            paid: countWhen(IS_PAID),
+            unpaid: countWhen({ $eq: ['$paymentStatus', 'UNPAID'] }),
+            refunded: countWhen({ $eq: ['$paymentStatus', 'REFUNDED'] }),
+            pending: countWhen({ $eq: ['$orderStatus', 'PENDING'] }),
+            delivered: countWhen({ $eq: ['$orderStatus', 'DELIVERED'] }),
+            progress: countWhen({ $eq: ['$orderStatus', 'PROGRESS'] }),
+            revenue: {
+              $sum: { $cond: [IS_PAID, { $ifNull: ['$amountPaidBase.amount', 0] }, 0] },
+            },
+            revenueUnconverted: countWhen({
+              $and: [IS_PAID, { $eq: [{ $ifNull: ['$amountPaidBase.amount', null] }, null] }],
+            }),
+          },
+        },
+      ]),
+      currencyService.getBaseCurrency(),
+    ]);
+
+    return {
+      total: agg?.total ?? 0,
+      paymentStatus: {
+        PAID: agg?.paid ?? 0,
+        UNPAID: agg?.unpaid ?? 0,
+        REFUNDED: agg?.refunded ?? 0,
+      },
+      orderStatus: {
+        PENDING: agg?.pending ?? 0,
+        DELIVERED: agg?.delivered ?? 0,
+        PROGRESS: agg?.progress ?? 0,
+      },
+      revenue: {
+        currency: baseCurrency.code,
+        amount: roundToCurrency(agg?.revenue ?? 0, baseCurrency.code),
+        unconvertedOrders: agg?.revenueUnconverted ?? 0,
+      },
+    };
+  };
+
+  const getAllTickets = async (query) => {
+    const { filter: finalQuery, paidOnly } = buildTicketFilter(query);
 
     let page = Math.max(1, parseInt(query.page, 10) || 1);
-    const limit = Math.max(1, parseInt(query.limit, 10) || 100);
+    const limit = Math.min(MAX_PAGE_LIMIT, Math.max(1, parseInt(query.limit, 10) || 100));
     const total = await Ticket.countDocuments(finalQuery);
     const totalPages = Math.max(1, Math.ceil(total / limit));
     if (page > totalPages) page = totalPages;
@@ -164,11 +426,14 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       .select('sessionId paidAt')
       .lean();
 
-  const sendReservation = async ({ sessionId, agentId, subject, body, bodyHtml, file }) => {
+  const sendReservation = async ({ sessionId, agentId, agentName, subject, body, bodyHtml, file }) => {
     if (!reservationStorage || !sendEmail) {
       throw new AppError('Reservation sending is not configured on this server', 500);
     }
     if (!file?.buffer) throw new AppError('Reservation PDF is required', 400);
+    if (file.buffer.subarray(0, 5).toString('latin1') !== '%PDF-') {
+      throw new AppError('The reservation file is not a valid PDF', 400);
+    }
     if (!subject?.trim() || !body?.trim()) throw new AppError('Subject and body are required', 400);
 
     const ticket = await Ticket.findOne({ sessionId });
@@ -178,11 +443,17 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       throw new AppError('This ticket is scheduled for a later delivery date. Bring the delivery date forward before sending.', 409);
     }
 
-    const url = await reservationStorage.saveFile(
-      file.buffer,
-      `${sessionId}/reservation-file.pdf`,
-      { resourceType: 'image' },
-    );
+    const canStorePrivately = typeof reservationStorage.saveAuthenticatedFile === 'function';
+    const stored = canStorePrivately
+      ? await reservationStorage.saveAuthenticatedFile(file.buffer, `${sessionId}/reservation-file`, {
+          resourceType: 'image',
+        })
+      : null;
+    const url = canStorePrivately
+      ? null
+      : await reservationStorage.saveFile(file.buffer, `${sessionId}/reservation-file.pdf`, {
+          resourceType: 'image',
+        });
 
     const ok = await sendEmail({
       email: ticket.email,
@@ -200,10 +471,22 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     const updated = await Ticket.findOneAndUpdate(
       { sessionId },
       {
+        $push: {
+          events: ticketEvent({
+            actor: { id: agentId, name: agentName },
+            action: 'RESERVATION_SENT',
+            from: ticket.orderStatus,
+            to: 'DELIVERED',
+            detail: ticket.email,
+          }),
+        },
         $set: {
           orderStatus: 'DELIVERED',
           handledBy: agentId ? new mongoose.Types.ObjectId(agentId) : ticket.handledBy,
           reservationUrl: url,
+          reservationFile: stored
+            ? { publicId: stored.publicId, format: stored.format || 'pdf', resourceType: stored.resourceType || 'image' }
+            : { publicId: null, format: null, resourceType: null },
           reservationSentAt: new Date(),
         },
       },
@@ -212,23 +495,59 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     return updated;
   };
 
-  const updateOrderStatus = async (sessionId, userId, orderStatus) => {
+  const getReservationDownloadUrl = async (sessionId) => {
+    const ticket = await Ticket.findOne({ sessionId }).select('reservationFile reservationUrl');
+    if (!ticket) throw new AppError('Ticket not found', 404);
+
+    const publicId = ticket.reservationFile?.publicId;
+    if (publicId) {
+      if (typeof reservationStorage?.signSecureUrl !== 'function') {
+        throw new AppError('Secure file storage is not configured on this server', 500);
+      }
+      return reservationStorage.signSecureUrl(publicId, 300, {
+        resourceType: ticket.reservationFile?.resourceType || 'image',
+        format: ticket.reservationFile?.format || 'pdf',
+      });
+    }
+
+    if (ticket.reservationUrl) return ticket.reservationUrl;
+    throw new AppError('No reservation file has been sent for this ticket', 404);
+  };
+
+  const updateOrderStatus = async (sessionId, userId, orderStatus, actor = null) => {
     if (!orderStatus) throw new AppError('Order status is required', 400);
     const allowed = ['PENDING', 'DELIVERED', 'PROGRESS', 'REFUNDED'];
     if (!allowed.includes(orderStatus)) throw new AppError('Invalid order status', 400);
     if (!mongoose.Types.ObjectId.isValid(userId)) throw new AppError('Invalid user ID', 400);
 
+    const existing = await Ticket.findOne({ sessionId }).select('orderStatus ticketDelivery');
+    if (!existing) throw new AppError('Ticket not found', 404);
+
     if (orderStatus === 'PROGRESS' || orderStatus === 'DELIVERED') {
-      const existing = await Ticket.findOne({ sessionId });
-      if (!existing) throw new AppError('Ticket not found', 404);
       if (!isDeliveryDayReached(existing)) {
         throw new AppError('This ticket is scheduled for a later delivery date. Bring the delivery date forward first.', 409);
       }
     }
 
+    const changed = existing.orderStatus !== orderStatus;
+
     const updated = await Ticket.findOneAndUpdate(
       { sessionId },
-      { $set: { orderStatus, handledBy: new mongoose.Types.ObjectId(userId) } },
+      {
+        $set: { orderStatus, handledBy: new mongoose.Types.ObjectId(userId) },
+        ...(changed
+          ? {
+              $push: {
+                events: ticketEvent({
+                  actor: actor ?? { id: userId },
+                  action: 'ORDER_STATUS_CHANGED',
+                  from: existing.orderStatus,
+                  to: orderStatus,
+                }),
+              },
+            }
+          : {}),
+      },
       { new: true },
     ).populate('handledBy');
 
@@ -236,7 +555,10 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     return updated;
   };
 
-  const updateDeliveryDate = async (sessionId, userId, { deliveryDate, immediate } = {}) => {
+  const describeDelivery = (delivery) =>
+    delivery?.immediate ? 'Immediate' : delivery?.deliveryDate || 'Not set';
+
+  const updateDeliveryDate = async (sessionId, userId, { deliveryDate, immediate } = {}, actor = null) => {
     if (!mongoose.Types.ObjectId.isValid(userId)) throw new AppError('Invalid user ID', 400);
 
     let ticketDelivery;
@@ -250,9 +572,22 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       ticketDelivery = { immediate: false, deliveryDate: dateStr };
     }
 
+    const existing = await Ticket.findOne({ sessionId }).select('ticketDelivery');
+    if (!existing) throw new AppError('Ticket not found', 404);
+
     const updated = await Ticket.findOneAndUpdate(
       { sessionId },
-      { $set: { ticketDelivery, handledBy: new mongoose.Types.ObjectId(userId) } },
+      {
+        $set: { ticketDelivery, handledBy: new mongoose.Types.ObjectId(userId) },
+        $push: {
+          events: ticketEvent({
+            actor: actor ?? { id: userId },
+            action: 'DELIVERY_CHANGED',
+            from: describeDelivery(existing.ticketDelivery),
+            to: describeDelivery(ticketDelivery),
+          }),
+        },
+      },
       { new: true },
     ).populate('handledBy');
 
@@ -261,12 +596,43 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
   };
 
   const deleteTicket = async (sessionId) => {
-    const deleted = await Ticket.findOneAndDelete({ sessionId });
+    const existing = await Ticket.findOne({ sessionId }).select('paymentStatus');
+    if (!existing) throw new AppError('Ticket not found', 404);
+    if (existing.paymentStatus === 'PAID') {
+      throw new AppError('A paid ticket cannot be deleted. Refund it first.', 409);
+    }
+
+    const deleted = await Ticket.findOneAndDelete({ sessionId, paymentStatus: { $ne: 'PAID' } });
     if (!deleted) throw new AppError('Ticket not found', 404);
+
+    try {
+      const publicId = deleted.reservationFile?.publicId;
+      if (publicId && reservationStorage?.deleteAuthenticatedFile) {
+        await reservationStorage.deleteAuthenticatedFile(publicId, {
+          resourceType: deleted.reservationFile?.resourceType || 'image',
+        });
+      }
+      if (deleted.reservationUrl && reservationStorage?.deleteSubfolder) {
+        await reservationStorage.deleteSubfolder(sessionId);
+      }
+    } catch (err) {
+      logger.warn('[tickets] Reservation asset cleanup failed', { sessionId, error: err.message });
+    }
   };
 
   const createTicketRequest = async (payload) => {
+    assertTripShape(payload);
     assertDeliveryAndValidity(payload);
+
+    const input = pickTicketInput(payload);
+
+    // Priced before the ticket exists so a validity that is off sale never becomes an unpayable order.
+    const requestedCurrency = pickCurrencyCode(payload?.currency);
+    const { currency: quotedCurrency } = await pricingService.getUnitPrice(
+      input.ticketValidity,
+      requestedCurrency,
+    );
+
     const normalizedEmail = normalizeEmail(payload?.email);
     const incomingAffiliateId = payload?.affiliateId;
     const isValidAffiliateId = /^\d{9}$/.test(incomingAffiliateId || '');
@@ -286,9 +652,9 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     }
 
     return Ticket.create({
-      ...payload,
+      ...input,
       email: normalizedEmail,
-      currency: String(payload?.currency || 'AED').toUpperCase(),
+      currency: requestedCurrency || quotedCurrency,
       sessionId: uuidv4(),
       affiliateId: affiliateDoc ? affiliateDoc.affiliateId : null,
       affiliateCapturedAt,
@@ -308,12 +674,17 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     const children = Number(ticket.quantity?.children || 0);
     if (adults + children < 1) throw new AppError('At least 1 passenger is required for checkout', 400);
 
-    const requestedCode = String(formData?.currencyCode || ticket.currency || '').toUpperCase();
+    const requestedCode = pickCurrencyCode(formData?.currencyCode || ticket.currency);
     const { totalAmount, currencyCode } = await resolveTicketAmount({
       validity: ticket.ticketValidity,
       passengers: adults + children,
       targetCode: requestedCode,
     });
+
+    const unitAmount = toStripeMinorUnits(totalAmount, currencyCode);
+    if (!unitAmount || unitAmount <= 0) {
+      throw new AppError('This reservation could not be priced for checkout', 400);
+    }
 
     const metaAttribution = {
       fbp: typeof formData.fbp === 'string' ? formData.fbp.slice(0, 200) : undefined,
@@ -346,8 +717,8 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       line_items: [
         {
           price_data: {
-            currency: String(currencyCode || 'AED').toLowerCase(),
-            unit_amount: Math.round(totalAmount * 100),
+            currency: currencyCode.toLowerCase(),
+            unit_amount: unitAmount,
             product_data: {
               name: `${ticket.type} flight reservation, ${ticket.ticketValidity} validity, ${adults + children} passenger${adults + children === 1 ? '' : 's'}, ${ticket.from} to ${ticket.to}`,
             },
@@ -357,7 +728,7 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       ],
       success_url: `${frontendUrl}/booking/payment?sessionId=${sessionId}`,
       cancel_url: `${frontendUrl}/booking/review-details`,
-    }, { idempotencyKey: sessionId });
+    }, { idempotencyKey: `${sessionId}:${currencyCode}:${unitAmount}` });
   };
 
   const reportPurchaseToOpenAI = async (ticket) => {
@@ -419,103 +790,17 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     }
   };
 
-  const buildPaymentSnapshot = async ({ existing, currency, amount, clearAffiliate }) => {
-    const snapshot = {};
+  const ticketEvent = ({ actor, action, from = null, to = null, detail = null }) => ({
+    at: new Date(),
+    by: actor?.id && mongoose.Types.ObjectId.isValid(actor.id) ? new mongoose.Types.ObjectId(actor.id) : null,
+    byName: actor?.name || null,
+    action,
+    from: from === null || from === undefined ? null : String(from),
+    to: to === null || to === undefined ? null : String(to),
+    detail,
+  });
 
-    if (existing.amountPaidBase?.amount == null) {
-      const base = await currencyService.convertToBase({ amount, sourceCode: currency });
-      if (base) {
-        snapshot.amountPaidBase = {
-          currency: base.currencyCode,
-          amount: base.amount,
-          rate: base.rate,
-        };
-      }
-    }
-
-    if (clearAffiliate) {
-      snapshot.affiliateCommissionPercent = null;
-      snapshot.affiliateCommission = { currency: null, amount: null };
-      return snapshot;
-    }
-
-    if (!existing.affiliate || existing.affiliateCommission?.amount != null) return snapshot;
-
-    const affiliate = await Affiliate.findById(existing.affiliate).select('commissionPercent').lean();
-    const percent = Number(affiliate?.commissionPercent);
-    if (!Number.isFinite(percent)) return snapshot;
-
-    const baseCurrency = snapshot.amountPaidBase?.currency ?? existing.amountPaidBase?.currency;
-    const baseAmount = snapshot.amountPaidBase?.amount ?? existing.amountPaidBase?.amount;
-    if (baseAmount == null || !baseCurrency) return snapshot;
-
-    snapshot.affiliateCommissionPercent = percent;
-    snapshot.affiliateCommission = {
-      currency: baseCurrency,
-      amount: Number(((baseAmount * percent) / 100).toFixed(2)),
-    };
-    return snapshot;
-  };
-
-  const handleStripeSuccess = async (session) => {
-    if (session.payment_status !== 'paid') return;
-
-    const sessionId = session.metadata.sessionId;
-    const currency = (session.currency || 'aed').toUpperCase();
-    const amount = Number((session.amount_total / 100).toFixed(2));
-    const transactionId = session.id;
-
-    const existing = await Ticket.findOne({ sessionId });
-    if (!existing) {
-      throw new Error(`[tickets] Ticket not found for sessionId: ${sessionId}`);
-    }
-
-    let shouldClearAffiliate = false;
-    if (existing.affiliate || existing.affiliateId) {
-      const activeAffiliate = existing.affiliate
-        ? await Affiliate.findOne({ _id: existing.affiliate, isActive: true }).select('_id')
-        : null;
-      const withinWindow = isAffiliateAttributionWithinWindow(parseAffiliateCapturedAt(existing.affiliateCapturedAt));
-
-      if (!activeAffiliate || !withinWindow) {
-        shouldClearAffiliate = true;
-      } else if (existing.affiliate && existing.email) {
-        const hasPriorPaidAffiliatePurchase = await Ticket.exists({
-          _id: { $ne: existing._id },
-          email: normalizeEmail(existing.email),
-          paymentStatus: 'PAID',
-          affiliate: { $ne: null },
-        });
-        if (hasPriorPaidAffiliatePurchase) shouldClearAffiliate = true;
-      }
-    }
-
-    await Ticket.updateOne({ sessionId, paidAt: null }, { $set: { paidAt: new Date() } });
-
-    const paymentSnapshot = await buildPaymentSnapshot({
-      existing,
-      currency,
-      amount,
-      clearAffiliate: shouldClearAffiliate,
-    });
-
-    const ticket = await Ticket.findOneAndUpdate(
-      { sessionId },
-      {
-        $set: {
-          paymentStatus: 'PAID',
-          amountPaid: { currency, amount },
-          transactionId,
-          orderStatus: 'PENDING',
-          ...paymentSnapshot,
-          ...(shouldClearAffiliate ? { affiliate: null, affiliateId: null, affiliateCapturedAt: null } : {}),
-        },
-      },
-      { new: true },
-    );
-
-    paidOrderBus?.publish({ sessionId: ticket.sessionId, paidAt: ticket.paidAt });
-
+  const announcePaidTicket = async (ticket) => {
     await notifications.sendTicketPaymentToAdmin({
       createdAt: ticket.createdAt,
       type: ticket.type,
@@ -557,11 +842,175 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
         listId: reviewListId,
       });
     } catch (err) {
-      logger.warn('Brevo addContactToReviewList failed', {
-        email: ticket.email,
-        error: err,
-      });
+      logger.warn('Brevo addContactToReviewList failed', { email: ticket.email, error: err });
     }
+  };
+
+  // Buyer notifications must not hold the Stripe webhook open: a slow mail provider would time it out and trigger a replay.
+  const runDetached = (label, task) => {
+    setImmediate(() => {
+      Promise.resolve()
+        .then(task)
+        .catch((err) => logger.error(`[tickets] ${label} failed`, { error: err.message }));
+    });
+  };
+
+  // Two checkouts for one email can both pass the first-purchase check, so the earliest paid order keeps the affiliate.
+  const reconcileAffiliateExclusivity = async (ticket) => {
+    if (!ticket?.affiliate || !ticket.email || !ticket.paidAt) return ticket;
+
+    const earlierPaidAffiliateOrder = await Ticket.exists({
+      _id: { $ne: ticket._id },
+      email: normalizeEmail(ticket.email),
+      paymentStatus: 'PAID',
+      affiliate: { $ne: null },
+      $or: [
+        { paidAt: { $lt: ticket.paidAt } },
+        { paidAt: ticket.paidAt, _id: { $lt: ticket._id } },
+      ],
+    });
+    if (!earlierPaidAffiliateOrder) return ticket;
+
+    logger.info('[tickets] Affiliate cleared: an earlier paid order already used this email', {
+      sessionId: ticket.sessionId,
+    });
+
+    return Ticket.findOneAndUpdate(
+      { _id: ticket._id },
+      {
+        $set: {
+          affiliate: null,
+          affiliateId: null,
+          affiliateCapturedAt: null,
+          affiliateCommissionPercent: null,
+          affiliateCommission: { currency: null, amount: null },
+        },
+      },
+      { new: true },
+    );
+  };
+
+  const buildPaymentSnapshot = async ({ existing, currency, amount, clearAffiliate }) => {
+    const snapshot = {};
+
+    if (existing.amountPaidBase?.amount == null) {
+      const base = await currencyService.convertToBase({ amount, sourceCode: currency });
+      if (base) {
+        snapshot.amountPaidBase = {
+          currency: base.currencyCode,
+          amount: base.amount,
+          rate: base.rate,
+        };
+      } else {
+        logger.error('[tickets] Could not convert a payment to the base currency', {
+          sessionId: existing.sessionId,
+          currency,
+          amount,
+        });
+      }
+    }
+
+    if (clearAffiliate) {
+      snapshot.affiliateCommissionPercent = null;
+      snapshot.affiliateCommission = { currency: null, amount: null };
+      return snapshot;
+    }
+
+    if (!existing.affiliate || existing.affiliateCommission?.amount != null) return snapshot;
+
+    const affiliate = await Affiliate.findById(existing.affiliate).select('commissionPercent').lean();
+    const percent = Number(affiliate?.commissionPercent);
+    if (!Number.isFinite(percent)) return snapshot;
+
+    const baseCurrency = snapshot.amountPaidBase?.currency ?? existing.amountPaidBase?.currency;
+    const baseAmount = snapshot.amountPaidBase?.amount ?? existing.amountPaidBase?.amount;
+    if (baseAmount == null || !baseCurrency) return snapshot;
+
+    snapshot.affiliateCommissionPercent = percent;
+    snapshot.affiliateCommission = {
+      currency: baseCurrency,
+      amount: Number(((baseAmount * percent) / 100).toFixed(2)),
+    };
+    return snapshot;
+  };
+
+  const handleStripeSuccess = async (session) => {
+    if (session.payment_status !== 'paid') return;
+
+    const sessionId = session.metadata.sessionId;
+    const currency =
+      normalizeCurrencyCode(session.currency) || (await currencyService.getBaseCurrency()).code;
+    const amount = fromStripeMinorUnits(session.amount_total, currency);
+    const transactionId = session.id;
+
+    if (amount === null) {
+      throw new Error(`[tickets] Stripe session ${session.id} carried no usable amount_total`);
+    }
+
+    const existing = await Ticket.findOne({ sessionId });
+    if (!existing) {
+      throw new Error(`[tickets] Ticket not found for sessionId: ${sessionId}`);
+    }
+
+    if (existing.paymentStatus === 'PAID') {
+      logger.info('[tickets] Stripe success replayed for an already paid ticket, skipping', { sessionId });
+      return;
+    }
+
+    let shouldClearAffiliate = false;
+    if (existing.affiliate || existing.affiliateId) {
+      const activeAffiliate = existing.affiliate
+        ? await Affiliate.findOne({ _id: existing.affiliate, isActive: true }).select('_id')
+        : null;
+      const withinWindow = isAffiliateAttributionWithinWindow(parseAffiliateCapturedAt(existing.affiliateCapturedAt));
+
+      if (!activeAffiliate || !withinWindow) {
+        shouldClearAffiliate = true;
+      } else if (existing.affiliate && existing.email) {
+        const hasPriorPaidAffiliatePurchase = await Ticket.exists({
+          _id: { $ne: existing._id },
+          email: normalizeEmail(existing.email),
+          paymentStatus: 'PAID',
+          affiliate: { $ne: null },
+        });
+        if (hasPriorPaidAffiliatePurchase) shouldClearAffiliate = true;
+      }
+    }
+
+    const paymentSnapshot = await buildPaymentSnapshot({
+      existing,
+      currency,
+      amount,
+      clearAffiliate: shouldClearAffiliate,
+    });
+
+    // Idempotency: this update claims the unpaid-to-paid transition, so a replay sends no second email.
+    const ticket = await Ticket.findOneAndUpdate(
+      { sessionId, paymentStatus: { $ne: 'PAID' } },
+      {
+        $set: {
+          paymentStatus: 'PAID',
+          paidAt: existing.paidAt ?? new Date(),
+          amountPaid: { currency, amount },
+          transactionId,
+          orderStatus: 'PENDING',
+          ...paymentSnapshot,
+          ...(shouldClearAffiliate ? { affiliate: null, affiliateId: null, affiliateCapturedAt: null } : {}),
+        },
+      },
+      { new: true },
+    );
+
+    if (!ticket) {
+      logger.info('[tickets] Stripe success already applied by another delivery, skipping', { sessionId });
+      return;
+    }
+
+    await reconcileAffiliateExclusivity(ticket);
+
+    paidOrderBus?.publish({ sessionId: ticket.sessionId, paidAt: ticket.paidAt });
+
+    runDetached('paid-order follow-up', () => announcePaidTicket(ticket));
   };
 
   const createPayPalOrder = async (formData) => {
@@ -577,11 +1026,15 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     const children = Number(ticket.quantity?.children || 0);
     if (adults + children < 1) throw new AppError('At least 1 passenger is required for checkout', 400);
 
-    const { totalAmount, currencyCode } = await resolveTicketAmount({
+    const payPalQuote = await resolvePayPalAmount({
       validity: ticket.ticketValidity,
       passengers: adults + children,
-      targetCode: 'USD',
+      preferredCode: pickCurrencyCode(formData?.currencyCode || ticket.currency),
     });
+    if (!payPalQuote) {
+      throw new AppError('PayPal cannot take this payment. Please pay by card instead.', 409);
+    }
+    const { totalAmount, currencyCode } = payPalQuote;
 
     const metaAttribution = {
       fbp: typeof formData.fbp === 'string' ? formData.fbp.slice(0, 200) : undefined,
@@ -597,9 +1050,10 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     await Ticket.findOneAndUpdate({ sessionId }, { $set: { totalAmount, currency: currencyCode, metaAttribution, openaiAttribution } });
 
     return paypal.createOrder({
-      amount: totalAmount.toFixed(2),
+      amount: totalAmount,
       currency: currencyCode,
       sessionId,
+      requestId: `${sessionId}:${currencyCode}:${totalAmount}`,
       description: `${ticket.type} Flight Reservation`,
       returnUrl: `${frontendUrl}/booking/payment?sessionId=${sessionId}&paymentMethod=paypal`,
       cancelUrl: `${frontendUrl}/booking/review-details`,
@@ -624,8 +1078,14 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
 
     const captureUnit = captureData.purchase_units?.[0];
     const capture = captureUnit?.payments?.captures?.[0];
-    const amount = parseFloat(capture?.amount?.value ?? existing.totalAmount ?? 0);
-    const currency = (capture?.amount?.currency_code ?? existing.currency ?? 'USD').toUpperCase();
+    const currency =
+      normalizeCurrencyCode(capture?.amount?.currency_code) ||
+      normalizeCurrencyCode(existing.currency) ||
+      (await currencyService.getBaseCurrency()).code;
+    const amount = roundToCurrency(
+      capture?.amount?.value ?? existing.totalAmount ?? 0,
+      currency,
+    );
     const transactionId = captureData.id;
 
     let shouldClearAffiliate = false;
@@ -650,8 +1110,6 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       }
     }
 
-    await Ticket.updateOne({ sessionId, paidAt: null }, { $set: { paidAt: new Date() } });
-
     const paymentSnapshot = await buildPaymentSnapshot({
       existing,
       currency,
@@ -659,11 +1117,13 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       clearAffiliate: shouldClearAffiliate,
     });
 
+    // Idempotency: this update claims the unpaid-to-paid transition, so a retry sends no second email.
     const ticket = await Ticket.findOneAndUpdate(
-      { sessionId },
+      { sessionId, paymentStatus: { $ne: 'PAID' } },
       {
         $set: {
           paymentStatus: 'PAID',
+          paidAt: existing.paidAt ?? new Date(),
           paymentMethod: 'paypal',
           amountPaid: { currency, amount },
           transactionId,
@@ -675,47 +1135,24 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       { new: true },
     );
 
+    if (!ticket) return Ticket.findOne({ sessionId }).populate('handledBy');
+
+    const reconciled = await reconcileAffiliateExclusivity(ticket);
+
     paidOrderBus?.publish({ sessionId: ticket.sessionId, paidAt: ticket.paidAt });
 
-    await notifications.sendTicketPaymentToAdmin({
-      createdAt: ticket.createdAt,
-      type: ticket.type,
-      from: ticket.from,
-      to: ticket.to,
-      departureDate: ticket.departureDate,
-      returnDate: ticket.returnDate,
-      leadPassenger: ticket.leadPassenger,
-      email: ticket.email,
-      number:
-        ticket.phoneNumber?.code && ticket.phoneNumber?.digits
-          ? `${ticket.phoneNumber.code}${ticket.phoneNumber.digits}`
-          : 'Not provided',
-      flightDetails: ticket.flightDetails,
-      ticketValidity: ticket.ticketValidity,
-      ticketDelivery: ticket.ticketDelivery,
-      passengers: ticket.passengers,
-      message: ticket.message,
-    });
+    runDetached('paid-order follow-up', () => announcePaidTicket(ticket));
 
-    await notifications.sendTicketPaymentToCustomer?.({
-      email: ticket.email,
-      leadPassenger: ticket.leadPassenger,
-      passengers: ticket.passengers,
-      type: ticket.type,
-      from: ticket.from,
-      to: ticket.to,
-      departureDate: ticket.departureDate,
-      ticketValidity: ticket.ticketValidity,
-      ticketDelivery: ticket.ticketDelivery,
-    });
-
-    return ticket;
+    return reconciled ?? ticket;
   };
 
-  const refundByTransactionId = async (transactionId) => {
+  const refundByTransactionId = async (transactionId, actor = null) => {
     const ticket = await Ticket.findOne({ transactionId });
     if (!ticket) throw new AppError('Ticket not found', 404);
     if (ticket.paymentStatus !== 'PAID') throw new AppError('Payment not completed', 400);
+    if (ticket.paymentMethod === 'paypal') {
+      throw new AppError('This order was paid with PayPal. Refund it from the PayPal dashboard, then mark it refunded here.', 400);
+    }
 
     const session = await stripe.checkout.sessions.retrieve(ticket.transactionId);
     if (!session.payment_intent) throw new AppError('PaymentIntent not found', 400);
@@ -724,12 +1161,25 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
 
     await Ticket.findOneAndUpdate(
       { transactionId },
-      { $set: { paymentStatus: 'REFUNDED', orderStatus: 'REFUNDED', refundedAt: new Date() } },
+      {
+        $set: { paymentStatus: 'REFUNDED', orderStatus: 'REFUNDED', refundedAt: new Date() },
+        $push: {
+          events: ticketEvent({
+            actor,
+            action: 'REFUNDED',
+            from: ticket.orderStatus,
+            to: 'REFUNDED',
+            detail: ticket.amountPaid?.amount
+              ? `${ticket.amountPaid.currency} ${ticket.amountPaid.amount}`
+              : null,
+          }),
+        },
+      },
       { new: true },
     );
 
     return refund;
   };
 
-  return { getAllTickets, getLatestPaidTicket, getTicketBySessionId, updateOrderStatus, updateDeliveryDate, deleteTicket, sendReservation, createTicketRequest, createStripePaymentUrl, handleStripeSuccess, createPayPalOrder, capturePayPalOrder, refundByTransactionId };
+  return { getAllTickets, getTicketStats, getLatestPaidTicket, getTicketBySessionId, getTicketQuote, getReservationDownloadUrl, updateOrderStatus, updateDeliveryDate, deleteTicket, sendReservation, createTicketRequest, createStripePaymentUrl, handleStripeSuccess, createPayPalOrder, capturePayPalOrder, refundByTransactionId };
 }

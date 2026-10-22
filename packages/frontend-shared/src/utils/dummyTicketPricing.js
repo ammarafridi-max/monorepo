@@ -17,15 +17,15 @@ export function normalizePricingOptions(pricing, fallbackOptions = []) {
     .sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
-export function getTicketPriceByValidity(
-  pricing,
-  validity,
-  fallbackOptions = [],
-) {
+// Null rather than another validity's price: showing the wrong price is worse than showing none.
+export function getTicketPriceByValidity(pricing, validity, fallbackOptions = []) {
   const options = normalizePricingOptions(pricing, fallbackOptions);
   const match = options.find((option) => option.value === validity);
+  return match ? match.price : null;
+}
 
-  if (match) return match.price;
-
-  return options[0]?.price || 0;
+export function lowestTicketPrice(pricing, fallbackOptions = []) {
+  const options = normalizePricingOptions(pricing, fallbackOptions);
+  if (options.length === 0) return null;
+  return options.reduce((lowest, option) => (option.price < lowest.price ? option : lowest));
 }

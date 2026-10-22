@@ -13,7 +13,7 @@ import SelectAirport from '../../form-elements/v1/SelectAirport';
 import DatePicker from '../../form-elements/v1/DatePicker';
 import Counter from '../../form-elements/v1/Counter';
 import FieldError from '../../ui/v1/FieldError';
-import { todayDateOnly } from '../../../utils/dates';
+import { todayDateOnlyDubai } from '../../../utils/dates';
 
 export default function TicketForm() {
   const router = useRouter();
@@ -183,7 +183,7 @@ export default function TicketForm() {
           <DatePicker
             value={departureDate}
             onChange={date => handleFieldChange('departureDate', date)}
-            minDate={todayDateOnly()}
+            minDate={todayDateOnlyDubai()}
             placeholder="Select departure date"
             error={errors.departureDate}
             inputRef={departureRef}
@@ -197,7 +197,7 @@ export default function TicketForm() {
             <DatePicker
               value={returnDate}
               onChange={date => handleFieldChange('returnDate', date)}
-              minDate={departureDate || todayDateOnly()}
+              minDate={departureDate || todayDateOnlyDubai()}
               placeholder="Select return date"
               error={errors.returnDate}
               inputRef={returnRef}

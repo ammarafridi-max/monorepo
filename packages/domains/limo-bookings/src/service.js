@@ -1,5 +1,6 @@
 import { randomBytes } from 'crypto';
 import { AppError, attributionChannelFilter } from '@travel-suite/utils';
+import { toStripeMinorUnits } from '@travel-suite/utils/currency';
 
 function idOf(ref) {
   const id = ref?._id ?? ref;
@@ -72,6 +73,7 @@ export function createBookingService({ Booking, stripe, frontendUrl, pricing }) 
     if (!Number.isFinite(total) || total <= 0) {
       throw new AppError('Booking total could not be verified', 400);
     }
+    const bookingCurrency = String(booking?.orderSummary?.currency || 'AED').toUpperCase();
     return stripe.checkout.sessions.create({
       customer_email: booking?.bookingDetails?.email,
       success_url: `${frontendUrl}/payment?id=${booking?._id}`,
@@ -79,9 +81,9 @@ export function createBookingService({ Booking, stripe, frontendUrl, pricing }) 
       line_items: [
         {
           price_data: {
-            currency: (booking?.orderSummary?.currency || 'AED').toLowerCase(),
+            currency: bookingCurrency.toLowerCase(),
             product_data: { name: resolveServiceName(booking) },
-            unit_amount: Math.round(total * 100),
+            unit_amount: toStripeMinorUnits(total, bookingCurrency),
           },
           quantity: 1,
         },

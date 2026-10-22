@@ -1,5 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import { AppError, catchAsync, attributionChannelFilter } from '@travel-suite/utils';
+import { normalizeCurrencyCode } from '@travel-suite/utils/currency';
+
+const FALLBACK_PREMIUM_CURRENCY = 'AED';
 
 function escapeRegex(value = '') {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -37,7 +40,7 @@ function buildApplicationsFilter(query = {}) {
   return filter;
 }
 
-export function createInsuranceController({ service, wis, Nationality, InsuranceApplication, logger, brevo }) {
+export function createInsuranceController({ service, wis, WisNationality, InsuranceApplication, logger, brevo }) {
   const getAllApplications = catchAsync(async (req, res) => {
     const page  = Math.max(1, parseInt(req.query.page,  10) || 1);
     const limit = Math.max(1, parseInt(req.query.limit, 10) || 100);
@@ -61,6 +64,17 @@ export function createInsuranceController({ service, wis, Nationality, Insurance
 
   const getApplicationsSummary = catchAsync(async (req, res) => {
     const filter = buildApplicationsFilter(req.query);
+    const revenueByCurrencyPromise = InsuranceApplication.aggregate([
+      { $match: { ...filter, paymentStatus: 'PAID' } },
+      {
+        $group: {
+          _id: { $ifNull: ['$amountPaid.currency', null] },
+          amount: { $sum: { $ifNull: ['$amountPaid.amount', 0] } },
+          orders: { $sum: 1 },
+        },
+      },
+      { $sort: { amount: -1 } },
+    ]);
     const [summary] = await InsuranceApplication.aggregate([
       { $match: filter },
       {
@@ -82,6 +96,14 @@ export function createInsuranceController({ service, wis, Nationality, Insurance
       },
     ]);
 
+    const revenueByCurrency = (await revenueByCurrencyPromise).map((row) => ({
+      currency: row._id,
+      amount: Number((row.amount || 0).toFixed(2)),
+      orders: row.orders,
+    }));
+    // Only one currency in the data can honestly label a single total; otherwise the caller must use the split.
+    const currencies = revenueByCurrency.filter((row) => row.currency);
+
     res.status(200).json({
       message: 'Applications summary retrieved successfully',
       data: {
@@ -92,9 +114,11 @@ export function createInsuranceController({ service, wis, Nationality, Insurance
         failedApplications:   summary?.failedApplications   || 0,
         refundedApplications: summary?.refundedApplications || 0,
         totalRevenue: {
-          currency: 'AED',
+          currency: currencies.length === 1 ? currencies[0].currency : null,
           amount: Number((summary?.totalRevenue || 0).toFixed(2)),
+          mixedCurrencies: currencies.length > 1,
         },
+        revenueByCurrency,
         journeyBreakdown: {
           single:   summary?.singleJourneys   || 0,
           annual:   summary?.annualJourneys   || 0,
@@ -105,15 +129,15 @@ export function createInsuranceController({ service, wis, Nationality, Insurance
   });
 
   const getNationalities = catchAsync(async (req, res) => {
-    const nationalities = await Nationality.find();
+    const nationalities = await WisNationality.find();
     res.status(200).json({ message: 'Nationalities retrieved successfully', data: nationalities });
   });
 
   const createNationalities = catchAsync(async (req, res) => {
-    await Nationality.deleteMany();
+    await WisNationality.deleteMany();
     const nationalities = await wis.fetchWISNationalities();
     const nationalitiesArray = Object.entries(nationalities).map(([id, nationality]) => ({ id, nationality }));
-    const data = await Nationality.create(nationalitiesArray);
+    const data = await WisNationality.create(nationalitiesArray);
     res.status(200).json({ message: 'Nationalities created successfully', data });
   });
 
@@ -206,8 +230,17 @@ export function createInsuranceController({ service, wis, Nationality, Insurance
     const paymentSyncToken = service.generatePaymentSyncToken();
     const data = wis.buildWISFinalizePayload(payload, { paymentSyncToken });
 
-    const { policy_id, premium, directpay } = await wis.finalizeWISInsurance(data);
-    const currency = req.body.currency || 'AED';
+    const { policy_id, premium, currency: quotedCurrency, directpay } = await wis.finalizeWISInsurance(data);
+
+    // The premium comes from WIS, so its currency has to come from WIS too, never from the browser.
+    const currency = normalizeCurrencyCode(quotedCurrency) || FALLBACK_PREMIUM_CURRENCY;
+    if (!normalizeCurrencyCode(quotedCurrency)) {
+      logger.warn('WIS returned no premium currency; falling back', {
+        sessionId,
+        policyId: policy_id,
+        fallback: FALLBACK_PREMIUM_CURRENCY,
+      });
+    }
 
     await service.finalizeInsuranceMongoDbDocument(sessionId, policy_id, premium, currency, paymentSyncToken, {
       fbp: typeof req.body.fbp === 'string' ? req.body.fbp.slice(0, 200) : undefined,

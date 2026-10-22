@@ -133,6 +133,15 @@ function toDubaiDate(dateInput) {
   );
 }
 
+// The backend runs its date rules in Asia/Dubai, so booking deadlines must be measured there too.
+export function todayDateOnlyDubai() {
+  try {
+    return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Dubai" }).format(new Date());
+  } catch {
+    return todayDateOnly();
+  }
+}
+
 export function convertToDubaiDate(dateInput, format = "short") {
   if (!dateInput) return "—";
   const d = toDubaiDate(dateInput);

@@ -98,7 +98,7 @@ export function trackSelectFlight({ tripType, carrierCode, flightNumber, ticketV
   });
 }
 
-export function trackAddToCart({ tripType, ticketValidity, price, passengers, currency = 'AED' }) {
+export function trackAddToCart({ tripType, ticketValidity, price, passengers, currency }) {
   if (!shouldTrackAnalytics()) return;
   ReactGA.event('add_to_cart', {
     currency,
@@ -210,7 +210,7 @@ export function trackBeginCheckout({
   plan,
   total,
   value,
-  currency = 'AED',
+  currency,
   journeyType,
   region,
   days,
@@ -325,7 +325,7 @@ export function trackPurchase({
   const dedupeKey = policyNumber || transactionId;
   if (hasTrackedPurchase(transactionId, dedupeKey)) return;
 
-  const currency = amountPaid?.currency ?? 'AED';
+  const currency = amountPaid?.currency;
   const value = parseFloat(amountPaid?.amount ?? 0);
 
   ReactGA.event('purchase', {
@@ -346,7 +346,7 @@ export function trackPurchase({
 }
 
 
-function itineraryItem({ value = 49, currency = 'AED' } = {}) {
+function itineraryItem({ value, currency } = {}) {
   return {
     item_id: 'travel_itinerary',
     item_name: 'Travel Itinerary',
@@ -368,7 +368,7 @@ export function trackItineraryGenerate({ purpose, visaCountry, fromCountry, trav
   });
 }
 
-export function trackItineraryViewItem({ value = 49, currency = 'AED' } = {}) {
+export function trackItineraryViewItem({ value, currency } = {}) {
   if (!shouldTrackAnalytics()) return;
   ReactGA.event('view_item', {
     currency,
@@ -377,7 +377,7 @@ export function trackItineraryViewItem({ value = 49, currency = 'AED' } = {}) {
   });
 }
 
-export function trackItineraryBeginCheckout({ value = 49, currency = 'AED' } = {}) {
+export function trackItineraryBeginCheckout({ value, currency } = {}) {
   if (!shouldTrackAnalytics()) return;
   ReactGA.event('begin_checkout', {
     currency,
@@ -386,7 +386,7 @@ export function trackItineraryBeginCheckout({ value = 49, currency = 'AED' } = {
   });
 }
 
-export function trackItineraryPurchase({ sessionId, value = 49, currency = 'AED' } = {}) {
+export function trackItineraryPurchase({ sessionId, value, currency } = {}) {
   if (!shouldTrackAnalytics() || !sessionId || hasTrackedPurchase(sessionId)) return;
   ReactGA.event('purchase', {
     transaction_id: sessionId,

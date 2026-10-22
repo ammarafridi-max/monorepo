@@ -16,16 +16,17 @@ import {
 import StatCard from '../../components/admin/StatCard';
 import RecentTicketsTable from '../../components/admin/RecentTicketsTable';
 import { useDummyTickets } from '../../hooks/dummy-tickets/useDummyTickets';
+import { useDummyTicketStats } from '../../hooks/dummy-tickets/useDummyTicketStats';
 import { useGetAffiliates } from '../../hooks/affiliates/useGetAffiliates';
 import { useGetBlogs } from '../../hooks/blog/useGetBlogs';
 import { useGetInsuranceApplications } from '../../hooks/insurance/useGetInsuranceApplications';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 
-function fmtRevenue(amount) {
-  return `AED ${Number(amount).toLocaleString('en-US', {
+function fmtRevenue(amount, currency) {
+  return `${currency || ''} ${Number(amount || 0).toLocaleString('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  })}`;
+  })}`.trim();
 }
 
 function StatSkeleton() {
@@ -68,11 +69,11 @@ function DashboardContent() {
   const ticketTimeFilter = isAgent ? { createdAt: '4_hours' } : {};
 
   const { dummyTickets: recent } = useDummyTickets({ limit: 5, page: 1, ...ticketTimeFilter }, { staleTime: 300_000, refetchOnWindowFocus: false, refetchOnMount: false });
-  const {
-    dummyTickets: all,
-    pagination: allTicketsPagination,
-    isLoadingDummyTickets,
-  } = useDummyTickets({ limit: 1000, ...ticketTimeFilter }, { staleTime: 300_000, refetchOnWindowFocus: false, refetchOnMount: false });
+  const { stats, isLoadingStats } = useDummyTicketStats(ticketTimeFilter, {
+    staleTime: 300_000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+  });
   const { affiliates } = useGetAffiliates({ limit: 500 });
   const publishedBlogs = useGetBlogs({ status: 'published', limit: 1 });
   const draftBlogs = useGetBlogs({ status: 'draft', limit: 1 });
@@ -80,31 +81,16 @@ function DashboardContent() {
   const { pagination: insurancePagination } = useGetInsuranceApplications({ limit: 1 }, { staleTime: 300_000, refetchOnWindowFocus: false, refetchOnMount: false });
 
   const recentTickets = recent ?? [];
-  const allTickets = all ?? [];
-  const totalTickets = allTicketsPagination?.total ?? 0;
+  const totalTickets = stats?.total ?? 0;
 
-  const paidTickets = allTickets.filter(
-    (t) => t.paymentStatus === 'PAID',
-  ).length;
-  const unpaidTickets = allTickets.filter(
-    (t) => t.paymentStatus === 'UNPAID',
-  ).length;
-  const refundedTickets = allTickets.filter(
-    (t) => t.paymentStatus === 'REFUNDED',
-  ).length;
-  const pendingTickets = allTickets.filter(
-    (t) => t.orderStatus === 'PENDING',
-  ).length;
-  const deliveredTickets = allTickets.filter(
-    (t) => t.orderStatus === 'DELIVERED',
-  ).length;
-  const progressTickets = allTickets.filter(
-    (t) => t.orderStatus === 'PROGRESS',
-  ).length;
+  const paidTickets = stats?.paymentStatus?.PAID ?? 0;
+  const unpaidTickets = stats?.paymentStatus?.UNPAID ?? 0;
+  const refundedTickets = stats?.paymentStatus?.REFUNDED ?? 0;
+  const pendingTickets = stats?.orderStatus?.PENDING ?? 0;
+  const deliveredTickets = stats?.orderStatus?.DELIVERED ?? 0;
+  const progressTickets = stats?.orderStatus?.PROGRESS ?? 0;
 
-  const totalRevenue = allTickets
-    .filter((t) => t.paymentStatus === 'PAID')
-    .reduce((sum, t) => sum + Number(t.amountPaid?.amount || 0), 0);
+  const revenue = stats?.revenue;
 
   const activeAffiliates = affiliates.filter((a) => a.isActive).length;
 
@@ -119,7 +105,7 @@ function DashboardContent() {
     scheduled: scheduledBlogs.pagination?.total ?? 0,
   };
 
-  const statsLoading = isLoadingDummyTickets;
+  const statsLoading = isLoadingStats;
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -157,7 +143,7 @@ function DashboardContent() {
                 iconBg="bg-green-50"
                 iconColor="text-green-600"
                 label="Total Revenue"
-                value={fmtRevenue(totalRevenue)}
+                value={fmtRevenue(revenue?.amount, revenue?.currency)}
                 sub="Paid tickets only"
               />
             )}

@@ -6,7 +6,7 @@ const AffiliatePayoutSchema = new mongoose.Schema(
   {
     affiliate: {
       type: mongoose.Schema.ObjectId,
-      ref: 'Affiliate',
+      ref: 'affiliate',
       required: [true, 'Affiliate is required'],
       index: true,
     },

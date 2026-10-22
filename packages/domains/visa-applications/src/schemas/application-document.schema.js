@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { DOCUMENT_SOURCES } from './documentType.schema.js';
+import { DOCUMENT_SOURCES } from './document-type.schema.js';
 
 const { Schema, Types: { ObjectId } } = mongoose;
 

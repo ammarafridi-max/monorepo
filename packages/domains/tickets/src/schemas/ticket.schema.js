@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { attributionSchemaField } from '@travel-suite/utils';
 import { v4 as uuidv4 } from 'uuid';
+import { TICKET_VALIDITIES, SHORTEST_VALIDITY } from '../validity.js';
 
 const PassengerSchema = new mongoose.Schema({
   type: String,
@@ -21,6 +22,26 @@ const SegmentSchema = new mongoose.Schema({
 
 const FlightSchema = new mongoose.Schema({ duration: String, segments: [SegmentSchema] });
 
+export const TICKET_EVENT_ACTIONS = [
+  'ORDER_STATUS_CHANGED',
+  'DELIVERY_CHANGED',
+  'RESERVATION_SENT',
+  'REFUNDED',
+];
+
+const TicketEventSchema = new mongoose.Schema(
+  {
+    at: { type: Date, default: Date.now },
+    by: { type: mongoose.Schema.ObjectId, ref: 'admin-user', default: null },
+    byName: { type: String, default: null },
+    action: { type: String, enum: TICKET_EVENT_ACTIONS, required: true },
+    from: { type: String, default: null },
+    to: { type: String, default: null },
+    detail: { type: String, default: null },
+  },
+  { _id: false },
+);
+
 const TicketSchema = new mongoose.Schema(
   {
     sessionId: { type: String, default: uuidv4, unique: true },
@@ -28,7 +49,6 @@ const TicketSchema = new mongoose.Schema(
     passengers: [PassengerSchema],
     email: { type: String, required: true, match: /^\S+@\S+\.\S+$/ },
     phoneNumber: { code: { type: String }, digits: { type: String } },
-    pnr: { type: String },
     from: { type: String, required: true },
     to: { type: String, required: true },
     departureDate: { type: String, required: true },
@@ -41,7 +61,7 @@ const TicketSchema = new mongoose.Schema(
     message: { type: String },
     paymentStatus: { type: String, enum: ['UNPAID', 'PAID', 'REFUNDED'], default: 'UNPAID' },
     paidAt: { type: Date, default: null },
-    ticketValidity: { type: String, enum: ['2 Days', '7 Days', '14 Days'], default: '2 Days' },
+    ticketValidity: { type: String, enum: TICKET_VALIDITIES, default: SHORTEST_VALIDITY },
     ticketDelivery: { immediate: { type: Boolean }, deliveryDate: { type: String } },
     adminDeliveryEmailSent: { type: Boolean, default: false },
     flightDetails: {
@@ -56,10 +76,15 @@ const TicketSchema = new mongoose.Schema(
     paymentMethod: { type: String, enum: ['stripe', 'paypal'], default: 'stripe' },
     handledBy: { type: mongoose.Schema.ObjectId, ref: 'admin-user', default: null },
     reservationUrl: { type: String, default: null },
+    reservationFile: {
+      publicId: { type: String, default: null },
+      format: { type: String, default: null },
+      resourceType: { type: String, default: null },
+    },
     reservationSentAt: { type: Date, default: null },
     affiliateId: { type: String, trim: true, default: null, match: [/^\d{9}$/, 'Affiliate ID must be exactly 9 digits'] },
     affiliateCapturedAt: { type: Date, default: null },
-    affiliate: { type: mongoose.Schema.ObjectId, ref: 'Affiliate', default: null },
+    affiliate: { type: mongoose.Schema.ObjectId, ref: 'affiliate', default: null },
     affiliateCommissionPercent: { type: Number, default: null, min: 0, max: 100 },
     affiliateCommission: {
       currency: { type: String, default: null, uppercase: true, trim: true },
@@ -70,8 +95,9 @@ const TicketSchema = new mongoose.Schema(
       amount: { type: Number, default: null },
       rate: { type: Number, default: null },
     },
-    affiliatePayout: { type: mongoose.Schema.ObjectId, ref: 'AffiliatePayout', default: null },
+    affiliatePayout: { type: mongoose.Schema.ObjectId, ref: 'affiliate-payout', default: null },
     refundedAt: { type: Date, default: null },
+    events: { type: [TicketEventSchema], default: [] },
     attribution: attributionSchemaField(),
     openaiAttribution: {
       oppref: { type: String },
@@ -96,6 +122,7 @@ TicketSchema.virtual('leadPassenger').get(function () {
 });
 
 TicketSchema.index({ createdAt: -1 });
+TicketSchema.index({ 'ticketDelivery.deliveryDate': 1, paymentStatus: 1 });
 TicketSchema.index({ email: 1 });
 TicketSchema.index({ orderStatus: 1 });
 TicketSchema.index({ paymentStatus: 1 });

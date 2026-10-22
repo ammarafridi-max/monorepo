@@ -1,15 +1,32 @@
 import { getDummyTicketPricingServerApi } from '@travel-suite/frontend-shared/services/apiPricing';
 
-export const USD_FALLBACK = { '2 Days': 13, '7 Days': 19, '14 Days': 21 };
+const RETRY_DELAY_MS = 750;
+
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Throws rather than falling back to a hardcoded figure: a locale page that advertises a price we would
+// not charge is worse than one that fails and lets the last good render stay up. One retry keeps a blip
+// from failing a build.
+export async function getLocalePrices(currency) {
+  let lastError;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    if (attempt > 0) await wait(RETRY_DELAY_MS);
+    try {
+      const data = await getDummyTicketPricingServerApi(currency);
+      const options = Array.isArray(data?.options) ? data.options : [];
+      if (data?.currency !== currency || options.length === 0) {
+        throw new Error(`No live ${currency} dummy ticket pricing is available`);
+      }
+      return Object.fromEntries(options.map((o) => [o.validity, o.price]));
+    } catch (err) {
+      lastError = err;
+    }
+  }
+  throw lastError;
+}
 
 export async function getUsdPrices() {
-  try {
-    const data = await getDummyTicketPricingServerApi('USD');
-    if (data?.currency !== 'USD' || !data?.options?.length) return USD_FALLBACK;
-    return Object.fromEntries(data.options.map((o) => [o.validity, o.price]));
-  } catch {
-    return USD_FALLBACK;
-  }
+  return getLocalePrices('USD');
 }
 
 export const usd = (n) => `USD ${Number(n)}`;

@@ -74,7 +74,6 @@ export async function finalizeInsuranceApi({
   addressLine2,
   city,
   country,
-  currency,
   fbp,
   fbc,
 }) {
@@ -97,7 +96,6 @@ export async function finalizeInsuranceApi({
       addressLine2,
       city,
       country,
-      currency,
       fbp,
       fbc,
     }),

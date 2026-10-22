@@ -34,10 +34,11 @@ export function CurrencyProvider({
     if (!apiCurrencies.length) return;
 
     const known = (code) => apiCurrencies.find((currency) => currency.code === code)?.code;
+    // defaultCode comes from the locale in the URL, so it outranks a currency stored on an earlier visit.
     const nextCode =
       known(chosenCodeRef.current) ||
-      known(readStoredCurrency()) ||
       known(defaultCode) ||
+      known(readStoredCurrency()) ||
       known(detectedCode) ||
       apiCurrencies.find((currency) => currency.isBaseCurrency)?.code ||
       apiCurrencies[0]?.code ||
@@ -81,7 +82,7 @@ export function CurrencyProvider({
     if (!apiCurrencies.length || !selectedCurrency) {
       return {
         amount: numericAmount,
-        currency: sourceCurrencyCode || 'AED',
+        currency: sourceCurrencyCode || null,
       };
     }
 
@@ -93,16 +94,25 @@ export function CurrencyProvider({
       baseCurrency;
     const targetCurrency = selectedCurrency;
 
-    const baseAmount = sourceCurrency.isBaseCurrency
-      ? numericAmount
-      : numericAmount / Number(sourceCurrency.rate || 1);
+    const usableRate = (currency) => {
+      const rate = Number(currency?.rate);
+      return Number.isFinite(rate) && rate > 0 ? rate : null;
+    };
 
-    const convertedAmount = targetCurrency.isBaseCurrency
-      ? baseAmount
-      : baseAmount * Number(targetCurrency.rate || 1);
+    const sourceRate = sourceCurrency.isBaseCurrency ? 1 : usableRate(sourceCurrency);
+    const targetRate = targetCurrency.isBaseCurrency ? 1 : usableRate(targetCurrency);
+
+    // A missing or broken rate must not quietly pass the amount through as if it converted.
+    if (sourceRate === null || targetRate === null) {
+      return {
+        amount: numericAmount,
+        currency: sourceCurrency.code,
+        symbol: sourceCurrency.symbol,
+      };
+    }
 
     return {
-      amount: convertedAmount,
+      amount: (numericAmount / sourceRate) * targetRate,
       currency: targetCurrency.code,
       symbol: targetCurrency.symbol,
     };
@@ -113,7 +123,7 @@ export function CurrencyProvider({
 
     if (!converted) {
       return {
-        code: sourceCurrencyCode || 'AED',
+        code: sourceCurrencyCode || null,
         value: '0.00',
         amount: 0,
       };
@@ -149,12 +159,12 @@ const SINGLE_CURRENCY = {
   convertAmount: (amount, sourceCurrencyCode) => {
     const numericAmount = Number(amount);
     if (!Number.isFinite(numericAmount)) return null;
-    const currency = sourceCurrencyCode || 'AED';
+    const currency = sourceCurrencyCode || null;
     return { amount: numericAmount, currency, symbol: currency };
   },
   formatMoney: (amount, sourceCurrencyCode) => {
     const numericAmount = Number(amount);
-    const code = sourceCurrencyCode || 'AED';
+    const code = sourceCurrencyCode || null;
     if (!Number.isFinite(numericAmount)) return { code, value: '0.00', amount: 0 };
     return { code, symbol: code, amount: numericAmount, value: numericAmount.toFixed(2) };
   },

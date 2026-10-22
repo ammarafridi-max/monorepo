@@ -53,7 +53,7 @@ describe('role scoping', () => {
   });
 
   it('withholds money fields from an agent and keeps them for an admin', () => {
-    assert.deepEqual([...tickets('agent').hiddenFieldNames], ['amountPaid', 'totalAmount']);
+    assert.deepEqual([...tickets('agent').hiddenFieldNames], ['amountPaid', 'amountPaidBase', 'totalAmount']);
     assert.equal(tickets('admin').hiddenFieldNames.size, 0);
   });
 

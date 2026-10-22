@@ -5,14 +5,8 @@ import { createConversationService } from './service.js';
 import { createConversationController } from './controller.js';
 import { createConversationRouter } from './router.js';
 import { createWhatsAppWebhookHandlers } from './webhook.js';
+import { getOrRegisterModel } from '@travel-suite/utils/model';
 
-function getOrRegisterModel(conn, name, schema) {
-  try {
-    return conn.model(name);
-  } catch {
-    return conn.model(name, schema);
-  }
-}
 
 export function createConversationsRouter({ db, auth, whatsapp, AdminUser, appSecret, verifyToken, onInboundMessage }) {
   const Conversation = getOrRegisterModel(db, 'conversation', ConversationSchema);

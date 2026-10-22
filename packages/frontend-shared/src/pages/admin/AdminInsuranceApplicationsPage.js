@@ -338,8 +338,10 @@ function ApplicationsContent() {
             )}
             {summaryCard(
               "Paid Revenue",
-              `${summary?.totalRevenue?.currency ?? "AED"} ${Number(summary?.totalRevenue?.amount || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-              "Confirmed paid policies",
+              `${summary?.totalRevenue?.currency ?? ""} ${Number(summary?.totalRevenue?.amount || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`.trim(),
+              summary?.totalRevenue?.mixedCurrencies
+                ? `Mixed currencies: ${(summary.revenueByCurrency ?? []).map((r) => `${r.currency} ${r.amount}`).join(", ")}`
+                : "Confirmed paid policies",
               "text-green-700",
             )}
             {summaryCard(

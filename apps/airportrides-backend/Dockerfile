@@ -11,7 +11,7 @@ COPY packages/domains/assistant/package.json         packages/domains/assistant/
 COPY packages/domains/auth/package.json            packages/domains/auth/package.json
 COPY packages/domains/admin-users/package.json     packages/domains/admin-users/package.json
 COPY packages/domains/blog/package.json            packages/domains/blog/package.json
-COPY packages/domains/bookings/package.json        packages/domains/bookings/package.json
+COPY packages/domains/transfer-bookings/package.json packages/domains/transfer-bookings/package.json
 COPY packages/domains/currencies/package.json      packages/domains/currencies/package.json
 COPY packages/domains/flights/package.json         packages/domains/flights/package.json
 COPY packages/domains/locations/package.json       packages/domains/locations/package.json

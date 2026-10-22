@@ -1,17 +1,12 @@
 import { logger } from '@travel-suite/utils';
+import { fromStripeMinorUnits } from '@travel-suite/utils/currency';
 import BookingSchema from './schema.js';
 import { deliverPaymentConfirmations } from './confirmation-delivery.js';
+import { getOrRegisterModel } from '@travel-suite/utils/model';
 
-function getOrRegisterModel(conn, name, schema) {
-  try {
-    return conn.model(name);
-  } catch {
-    return conn.model(name, schema);
-  }
-}
 
 export function createBookingPaymentHandler({ db, notifications, metaCapi, frontendUrl }) {
-  const Booking = getOrRegisterModel(db, 'Booking', BookingSchema);
+  const Booking = getOrRegisterModel(db, 'booking', BookingSchema);
 
   const reportPurchaseToMeta = async (booking) => {
     if (!metaCapi?.isConfigured?.()) return;
@@ -51,8 +46,11 @@ export function createBookingPaymentHandler({ db, notifications, metaCapi, front
 
     booking.payment.status = 'paid';
     booking.payment.transactionId = session.id;
-    booking.payment.amount = session.amount_total ? session.amount_total / 100 : booking.payment.amount;
-    booking.payment.currency = session.currency ? session.currency.toUpperCase() : booking.payment.currency;
+    const paidCurrency = session.currency ? session.currency.toUpperCase() : booking.payment.currency;
+    booking.payment.amount = session.amount_total
+      ? fromStripeMinorUnits(session.amount_total, paidCurrency)
+      : booking.payment.amount;
+    booking.payment.currency = paidCurrency;
     booking.status = 'pending';
     await booking.save();
 

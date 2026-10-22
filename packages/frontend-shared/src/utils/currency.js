@@ -15,6 +15,6 @@ export function formatAmount(value) {
   return normalizeAmount(value).toFixed(2);
 }
 
-export function formatCurrencyAmount(value, code = "AED") {
-  return `${code} ${formatAmount(value)}`;
+export function formatCurrencyAmount(value, code) {
+  return `${code ?? ""} ${formatAmount(value)}`.trim();
 }

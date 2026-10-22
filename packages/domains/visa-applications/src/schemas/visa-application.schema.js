@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { ACCOMMODATION_TYPES } from './checklistTemplate.schema.js';
+import { ACCOMMODATION_TYPES } from './checklist-template.schema.js';
 
 const { Schema, Types: { ObjectId } } = mongoose;
 
@@ -44,7 +44,7 @@ const visaApplicationSchema = new Schema(
   {
     applicationRef: { type: String, required: true, unique: true, index: true, uppercase: true, trim: true },
 
-    user: { type: ObjectId, ref: 'User', required: true, index: true },
+    user: { type: ObjectId, ref: 'user', required: true, index: true },
     visaLead: { type: ObjectId, ref: 'visa-lead', default: null },
 
     destinationCountry: { type: String, required: true, trim: true, maxlength: 100 },

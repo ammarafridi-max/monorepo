@@ -44,6 +44,10 @@ const ORDER_CFG = {
     dot: "bg-green-500",
     cls: "bg-green-50  text-green-700  border-green-200",
   },
+  REFUNDED: {
+    dot: "bg-gray-400",
+    cls: "bg-gray-100   text-gray-600   border-gray-200",
+  },
 };
 
 function PaymentBadge({ status }) {
