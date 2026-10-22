@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Check, ImagePlus, Loader2, Pencil, Settings2, X } from 'lucide-react';
+import { Check, ImagePlus, Info, Loader2, Pencil, Settings2, X } from 'lucide-react';
 import {
   useRenameOpenAIAds,
   useSetOpenAIAdsStatus,
@@ -33,11 +33,17 @@ const REVIEW_CFG = {
   rejected:  { label: 'Rejected', cls: 'bg-red-50 text-red-600 border-red-200', dot: 'bg-red-500' },
 };
 
-function Pill({ cfg }) {
+function Pill({ cfg, title, hint }) {
   return (
-    <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border whitespace-nowrap ${cfg.cls}`}>
+    <span
+      title={title}
+      className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border whitespace-nowrap ${cfg.cls} ${
+        title ? 'cursor-help' : ''
+      }`}
+    >
       <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
       {cfg.label}
+      {hint}
     </span>
   );
 }
@@ -46,9 +52,17 @@ export function StatusPill({ status }) {
   return <Pill cfg={STATUS_CFG[status] ?? { label: status, cls: 'bg-gray-100 text-gray-500 border-gray-200', dot: 'bg-gray-400' }} />;
 }
 
-export function ReviewPill({ review }) {
+export function ReviewPill({ review, reason }) {
   if (!review) return null;
-  return <Pill cfg={REVIEW_CFG[review] ?? { label: review, cls: 'bg-gray-100 text-gray-500 border-gray-200', dot: 'bg-gray-400' }} />;
+
+  const cfg = REVIEW_CFG[review] ?? { label: review, cls: 'bg-gray-100 text-gray-500 border-gray-200', dot: 'bg-gray-400' };
+  const title = reason
+    ? `${reason}\n\nOpenAI does not say which policy was broken. Ask the assistant to look at the wording.`
+    : review === 'in_review'
+      ? 'OpenAI is still reviewing this ad. Nothing is wrong with it.'
+      : undefined;
+
+  return <Pill cfg={cfg} title={title} hint={reason ? <Info size={11} className="opacity-70" /> : null} />;
 }
 
 export function Sheet({ title, onClose, children }) {

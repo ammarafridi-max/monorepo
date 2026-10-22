@@ -1,6 +1,6 @@
 import { AppError } from '@travel-suite/utils';
 
-export const ADS_READ_TOOLS = ['ads_setup', 'ads_overview', 'ads_campaign', 'ads_find_locations'];
+export const ADS_READ_TOOLS = ['ads_setup', 'ads_overview', 'ads_campaign', 'ads_ad', 'ads_review_issues', 'ads_find_locations'];
 export const ADS_WRITE_TOOLS = [
   'propose_ads_campaign',
   'propose_ads_duplicate',
@@ -55,6 +55,22 @@ export function buildAdsToolDefinitions({ canWrite }) {
         },
         required: ['campaignId'],
       },
+    },
+    {
+      name: 'ads_ad',
+      description:
+        'One ad in full: its review status, the rejection reason if it was rejected, its headline, body, landing page and image id. Read this before proposing a rewrite, so the replacement keeps what was fine and changes what was not.',
+      input_schema: {
+        type: 'object',
+        properties: { adId: { type: 'string' } },
+        required: ['adId'],
+      },
+    },
+    {
+      name: 'ads_review_issues',
+      description:
+        'Every ad across the account that is rejected or still in review, with the rejection reason attached. Use this for "why was my ad rejected" or "what is being held up" without walking each campaign.',
+      input_schema: { type: 'object', properties: {} },
     },
     {
       name: 'ads_find_locations',
@@ -505,18 +521,7 @@ export async function executeAdsAction({ kind, params, ads, performedBy }) {
   }
 
   if (kind === 'propose_ads_replace_ad') {
-    const created = await ads.createAdInGroup(params.adGroupId, params.ad, performedBy);
-
-    try {
-      await ads.setStatus('ads', params.adId, 'archive', performedBy);
-    } catch (err) {
-      return {
-        ...created,
-        warnings: [`The replacement ad was created, but archiving the old one failed: ${err.message}. Both are live until you archive it.`],
-      };
-    }
-
-    return { ...created, replaced: params.adId };
+    return ads.replaceAd(params.adId, params.adGroupId, params.ad, performedBy);
   }
 
   if (kind === 'propose_ads_adgroup_settings') {
@@ -557,6 +562,16 @@ export async function executeAdsRead({ name, input, ads }) {
   if (name === 'ads_campaign') {
     const detail = await ads.getCampaignDetail(requireId('campaign', input?.campaignId), { days: clampDays(input?.days) });
     return { result: { source: 'openai-ads', ...detail }, rowCount: detail?.adGroups?.length ?? 0 };
+  }
+
+  if (name === 'ads_ad') {
+    const ad = await ads.getAdDetail(requireId('ad', input?.adId));
+    return { result: { source: 'openai-ads', ...ad }, rowCount: 1 };
+  }
+
+  if (name === 'ads_review_issues') {
+    const issues = await ads.listReviewIssues();
+    return { result: { source: 'openai-ads', ...issues }, rowCount: issues.rejected.length + issues.inReview.length };
   }
 
   if (name === 'ads_find_locations') {

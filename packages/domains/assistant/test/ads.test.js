@@ -307,28 +307,6 @@ describe('building inside an existing campaign', () => {
     assert.match(details.join(' '), /creates the replacement first and archives the old ad after/);
   });
 
-  it('creates the replacement then archives the original, in that order', async () => {
-    const ads = adsStub();
-    ads.createAdInGroup = async (groupId, ad, by) => { ads.calls.push(['createAd', groupId, ad.title, by]); return { id: 'a_new' }; };
-
-    const result = await executeAdsAction({ kind: 'propose_ads_replace_ad', params: { adId: 'a_old', adGroupId: 'g_1', ad: AD }, ads, performedBy: 'Ammar' });
-
-    assert.deepEqual(ads.calls[0], ['createAd', 'g_1', AD.title, 'Ammar']);
-    assert.deepEqual(ads.calls[1], ['status', 'ads', 'a_old', 'archive', 'Ammar']);
-    assert.equal(result.replaced, 'a_old');
-  });
-
-  it('warns rather than lying when archiving the old ad fails', async () => {
-    const ads = adsStub();
-    ads.createAdInGroup = async () => ({ id: 'a_new' });
-    ads.setStatus = async () => { throw new Error('ad is already archived'); };
-
-    const result = await executeAdsAction({ kind: 'propose_ads_replace_ad', params: { adId: 'a_old', adGroupId: 'g_1', ad: AD }, ads, performedBy: 'Ammar' });
-
-    assert.match(result.warnings[0], /archiving the old one failed/);
-    assert.match(result.warnings[0], /Both are live/);
-  });
-
   it('keeps the current hints when only the bid changes', async () => {
     const ads = adsStub();
     ads.getAdGroupSettings = async (id) => ({ id, name: 'Schengen', bid: 12, contextHints: ['keep me'] });
@@ -346,5 +324,66 @@ describe('building inside an existing campaign', () => {
     ads.rename = async (kind, id, name, by) => { ads.calls.push(['rename', kind, id, name, by]); return { id, name }; };
     await executeAdsAction({ kind: 'propose_ads_rename', params: { kind: 'campaigns', id: 'c_1', name: 'New name' }, ads, performedBy: 'Ammar' });
     assert.deepEqual(ads.calls[0], ['rename', 'campaigns', 'c_1', 'New name', 'Ammar']);
+  });
+});
+
+describe('rejection reasons', () => {
+  function reviewStub() {
+    const ads = {
+      getAdDetail: async (id) => ({
+        id,
+        name: 'Need Dummy Ticket Urgently? Book Now From AED 49',
+        status: 'active',
+        review: 'rejected',
+        reviewReason: 'We rejected your ad because it violates our Ads Policies. If you believe this was a mistake, you can appeal here.',
+        appealed: false,
+        title: 'Need Dummy Ticket Urgently? Book Now From AED 49',
+        body: 'Get a verifiable flight booking for AED 49.',
+        targetUrl: 'https://www.dummyticket365.com/ae',
+        imageFileId: 'file_1',
+      }),
+      listReviewIssues: async () => ({
+        rejected: [{ id: 'ad_1', review: 'rejected', reviewReason: 'We rejected your ad because it violates our Ads Policies.' }],
+        inReview: [{ id: 'ad_2', review: 'in_review', reviewReason: null }],
+        note: 'OpenAI returns one generic sentence for a rejection and does not say which policy was broken.',
+      }),
+    };
+    return ads;
+  }
+
+  it('offers a tool for one ad and one for every ad stuck in review', () => {
+    const names = buildAdsToolDefinitions({ canWrite: false }).map((t) => t.name);
+    assert.ok(names.includes('ads_ad'));
+    assert.ok(names.includes('ads_review_issues'));
+  });
+
+  it('returns the rejection reason with the wording that caused it', async () => {
+    const { result } = await executeAdsRead({ name: 'ads_ad', input: { adId: 'ad_1' }, ads: reviewStub() });
+    assert.equal(result.review, 'rejected');
+    assert.match(result.reviewReason, /violates our Ads Policies/);
+    assert.match(result.title, /Urgently/);
+  });
+
+  it('separates rejected from still-in-review and says the reason is generic', async () => {
+    const { result, rowCount } = await executeAdsRead({ name: 'ads_review_issues', input: {}, ads: reviewStub() });
+    assert.equal(rowCount, 2);
+    assert.equal(result.rejected.length, 1);
+    assert.equal(result.inReview[0].reviewReason, null);
+    assert.match(result.note, /does not say which policy/);
+  });
+
+  it('refuses an ad read with no id', async () => {
+    await assert.rejects(executeAdsRead({ name: 'ads_ad', input: {}, ads: reviewStub() }), /ad id is required/);
+  });
+
+  it('sends a rewrite through the service, which archives the original', async () => {
+    const calls = [];
+    const ads = { replaceAd: async (adId, groupId, ad, by) => { calls.push([adId, groupId, ad.title, by]); return { id: 'ad_new', replaced: adId }; } };
+    const ad = { title: 'Dummy ticket for your visa from AED 49', body: 'Verifiable booking, delivered in minutes.', targetUrl: 'https://dummyticket365.com/ae', imageFileId: 'file_1' };
+
+    const result = await executeAdsAction({ kind: 'propose_ads_replace_ad', params: { adId: 'ad_old', adGroupId: 'g_1', ad }, ads, performedBy: 'Ammar' });
+
+    assert.deepEqual(calls[0], ['ad_old', 'g_1', ad.title, 'Ammar']);
+    assert.equal(result.replaced, 'ad_old');
   });
 });

@@ -14,6 +14,11 @@ export function createOpenAIAdsController({ service }) {
     createAd: catchAsync(async (req, res) => ok(res, await service.createAdInGroup(req.params.id, req.body, performer(req)), 201)),
     uploadImage: catchAsync(async (req, res) => ok(res, await service.uploadImage(req.file), 201)),
     previewAd: catchAsync(async (req, res) => ok(res, await service.previewAd(req.params.id))),
+    getAd: catchAsync(async (req, res) => ok(res, await service.getAdDetail(req.params.id))),
+    getReviewIssues: catchAsync(async (req, res) => ok(res, await service.listReviewIssues())),
+    replaceAd: catchAsync(async (req, res) =>
+      ok(res, await service.replaceAd(req.params.id, req.body?.adGroupId, req.body?.ad, performer(req)), 201),
+    ),
     getCampaignSettings: catchAsync(async (req, res) => ok(res, await service.getCampaignSettings(req.params.id))),
     updateCampaignSettings: catchAsync(async (req, res) => ok(res, await service.updateCampaignSettings(req.params.id, req.body, performer(req)))),
     getAdGroupSettings: catchAsync(async (req, res) => ok(res, await service.getAdGroupSettings(req.params.id))),

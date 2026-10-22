@@ -29,9 +29,10 @@ Everything is ESM (`"type": "module"`), Node 22, React 19, Tailwind v4.
   webhooks, account for idempotency (Stripe retries and resends events),
   concurrency, and failure paths. A duplicate webhook must never double-issue a
   ticket or double-charge.
-- Tests exist in exactly four places: `apps/picturesk-backend`,
-  `packages/domains/assistant`, `packages/domains/tickets` and
-  `packages/shared/utils` (all `node --test`). Everything else has none.
+- Tests exist in exactly five places: `apps/picturesk-backend`,
+  `packages/domains/assistant`, `packages/domains/openai-ads`,
+  `packages/domains/tickets` and `packages/shared/utils` (all `node --test`).
+  Everything else has none.
   Never claim tests pass for code they do not cover. When you finish, state
   plainly what you changed and what you did and did not verify.
 - Do not commit or push unless I ask. Show me the diff first.
@@ -85,7 +86,7 @@ Backends run directly on Node's built-in watcher and env-file loader (no nodemon
 pnpm dev        # node --env-file=.env.development --watch src/server.js
 ```
 
-**Testing:** the travel apps have no tests. Four packages do, all `node --test`: `apps/picturesk-backend`; `packages/domains/assistant` (the admin assistant's access gates, query building and Stripe maths); `packages/domains/tickets` (dummy ticket pricing, currency conversion and the Stripe/PayPal checkout and webhook amounts); and `packages/shared/utils` (currency decimals and minor-unit conversion). A root `pnpm test` runs those four and nothing else. All pass, with no DB or network. **Linting** exists only on frontends (`next lint`); shared packages have no lint/build step (they're consumed as raw source via subpath exports).
+**Testing:** the travel apps have no tests. Five packages do, all `node --test`: `apps/picturesk-backend`; `packages/domains/assistant` (the admin assistant's access gates, query building, Stripe maths and ads proposals); `packages/domains/openai-ads` (replacing an ad, and reading review and rejection state); `packages/domains/tickets` (dummy ticket pricing, currency conversion and the Stripe/PayPal checkout and webhook amounts); and `packages/shared/utils` (currency decimals and minor-unit conversion). A root `pnpm test` runs those five and nothing else. All pass, with no DB or network. **Linting** exists only on frontends (`next lint`); shared packages have no lint/build step (they're consumed as raw source via subpath exports).
 
 ## Architecture
 

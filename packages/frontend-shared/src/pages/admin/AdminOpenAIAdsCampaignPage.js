@@ -3,7 +3,7 @@
 import { Fragment, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { AlertCircle, ArrowLeft, CalendarDays, ChevronDown, ChevronRight, Eye, Loader2, Plus } from 'lucide-react';
+import { AlertCircle, ArrowLeft, CalendarDays, ChevronDown, ChevronRight, Eye, Loader2, Pencil, Plus } from 'lucide-react';
 import FilterMenu from '../../components/admin/FilterMenu';
 import {
   AdFields,
@@ -24,7 +24,12 @@ import {
 } from '../../components/admin/OpenAIAdsParts';
 import { useOpenAIAdsCampaign } from '../../hooks/openai-ads/useOpenAIAdsCampaign';
 import { useOpenAIAdsSetup } from '../../hooks/openai-ads/useOpenAIAdsSetup';
-import { useCreateOpenAIAd, useCreateOpenAIAdGroup, usePreviewOpenAIAd } from '../../hooks/openai-ads/useOpenAIAdsMutations';
+import {
+  useCreateOpenAIAd,
+  useCreateOpenAIAdGroup,
+  usePreviewOpenAIAd,
+  useReplaceOpenAIAd,
+} from '../../hooks/openai-ads/useOpenAIAdsMutations';
 
 const RANGE_OPTIONS = [
   { value: '7', label: 'Last 7 days' },
@@ -68,6 +73,37 @@ function SubmitButton({ label, disabled, isPending, onClick }) {
       {isPending && <Loader2 size={14} className="animate-spin" />}
       {label}
     </button>
+  );
+}
+
+function EditAdSheet({ ad: existing, adGroupId, onClose }) {
+  const [ad, setAd] = useState({
+    title: existing.title ?? '',
+    body: existing.body ?? '',
+    targetUrl: existing.targetUrl ?? '',
+    imageFileId: existing.imageFileId ?? '',
+    imagePreview: '',
+  });
+  const { mutate, isPending } = useReplaceOpenAIAd();
+
+  return (
+    <Sheet title="Edit ad" onClose={() => !isPending && onClose()}>
+      {existing.reviewReason && (
+        <p className="rounded-xl bg-red-50 px-3 py-2 text-xs text-red-700">
+          {existing.reviewReason} OpenAI does not say which policy was broken.
+        </p>
+      )}
+      <p className="text-xs text-gray-400">
+        Ads cannot be edited in place. Saving creates a replacement in this ad group and archives the current ad.
+      </p>
+      <AdFields ad={ad} onChange={setAd} />
+      <SubmitButton
+        label="Replace ad"
+        disabled={!adIsReady(ad)}
+        isPending={isPending}
+        onClick={() => mutate({ adId: existing.id, adGroupId, ...ad }, { onSuccess: onClose })}
+      />
+    </Sheet>
   );
 }
 
@@ -258,13 +294,22 @@ export default function AdminOpenAIAdsCampaignPage({ basePath = '/admin/chatgpt-
                               <td className="px-4 py-3 whitespace-nowrap">
                                 <div className="flex flex-col items-start gap-1.5">
                                   <StatusSelect kind="ads" id={ad.id} name={ad.title} status={ad.status} />
-                                  <ReviewPill review={ad.review} />
+                                  <ReviewPill review={ad.review} reason={ad.reviewReason} />
                                 </div>
                               </td>
                               <td className="px-4 py-3 text-gray-400">—</td>
                               <MetricCells row={ad} currency={currency} />
                               <td className="px-4 py-3">
-                                <PreviewButton adId={ad.id} />
+                                <div className="flex items-center gap-1">
+                                  <PreviewButton adId={ad.id} />
+                                  <button
+                                    onClick={() => setSheet({ type: 'edit-ad', ad, adGroupId: group.id })}
+                                    title="Edit this ad"
+                                    className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition"
+                                  >
+                                    <Pencil size={14} />
+                                  </button>
+                                </div>
                               </td>
                             </tr>
                           ))}
@@ -297,6 +342,9 @@ export default function AdminOpenAIAdsCampaignPage({ basePath = '/admin/chatgpt-
       </div>
 
       {sheet?.type === 'ad' && <NewAdSheet adGroupId={sheet.adGroupId} website={website} onClose={() => setSheet(null)} />}
+      {sheet?.type === 'edit-ad' && (
+        <EditAdSheet ad={sheet.ad} adGroupId={sheet.adGroupId} onClose={() => setSheet(null)} />
+      )}
       {sheet?.type === 'group' && <NewAdGroupSheet campaign={campaign} website={website} currency={currency} onClose={() => setSheet(null)} />}
       {sheet?.type === 'campaign-settings' && <CampaignSettingsSheet campaignId={campaign.id} onClose={() => setSheet(null)} />}
       {sheet?.type === 'group-settings' && (
