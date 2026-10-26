@@ -23,7 +23,7 @@ export function createOpenAIAdsRouterFromParts({ controller, auth }) {
   // Must stay above the '/ads/:id/...' status routes below so 'review-issues' is not read as an ad id.
   router.get('/review-issues', controller.getReviewIssues);
   router.get('/ads/:id', controller.getAd);
-  router.post('/ads/:id/replace', controller.replaceAd);
+  router.post('/ads/:id/edit', controller.editAd);
   router.get('/campaigns/:id/settings', controller.getCampaignSettings);
   router.post('/campaigns/:id/settings', controller.updateCampaignSettings);
   router.get('/ad-groups/:id/settings', controller.getAdGroupSettings);

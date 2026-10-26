@@ -6,7 +6,7 @@ export const ADS_WRITE_TOOLS = [
   'propose_ads_duplicate',
   'propose_ads_adgroup',
   'propose_ads_ad',
-  'propose_ads_replace_ad',
+  'propose_ads_edit_ad',
   'propose_ads_adgroup_settings',
   'propose_ads_rename',
   'propose_ads_budget',
@@ -110,7 +110,8 @@ export function buildAdsToolDefinitions({ canWrite }) {
               contextHints: {
                 type: 'array',
                 items: { type: 'string' },
-                description: 'Up to 20 audience hints, each at most 300 characters',
+                description:
+                  'Up to 20 audience hints, each one whole idea and at most 300 characters. Keep a comma separated list inside a single hint rather than splitting it into one hint per item',
               },
             },
             required: ['name', 'bid'],
@@ -179,7 +180,8 @@ export function buildAdsToolDefinitions({ canWrite }) {
               contextHints: {
                 type: 'array',
                 items: { type: 'string' },
-                description: 'Up to 20 audience hints, each at most 300 characters',
+                description:
+                  'Up to 20 audience hints, each one whole idea and at most 300 characters. Keep a comma separated list inside a single hint rather than splitting it into one hint per item',
               },
             },
             required: ['name', 'bid'],
@@ -225,13 +227,13 @@ export function buildAdsToolDefinitions({ canWrite }) {
       },
     },
     {
-      name: 'propose_ads_replace_ad',
+      name: 'propose_ads_edit_ad',
       description:
-        'Propose rewriting an ad. Ads cannot be edited in place, so this creates a replacement in the same ad group with the new wording and archives the old one. Use it to fix ad text, a landing page or an image.',
+        'Propose rewriting an ad in place: its headline, text, landing page or image. The ad keeps its id and its stats, and OpenAI reviews it again. If OpenAI refuses the edit, a replacement is created in the same ad group and the old ad is archived instead.',
       input_schema: {
         type: 'object',
         properties: {
-          adId: { type: 'string', description: 'The ad to replace' },
+          adId: { type: 'string', description: 'The ad to edit' },
           adGroupId: { type: 'string', description: 'The ad group it belongs to' },
           ad: {
         type: 'object',
@@ -253,14 +255,23 @@ export function buildAdsToolDefinitions({ canWrite }) {
     },
     {
       name: 'propose_ads_adgroup_settings',
-      description: 'Propose changing an ad group audience hints, its bid, or both.',
+      description:
+        'Propose changing an ad group audience hints, its bid, or both. Each audience hint is one whole idea: keep a comma separated list inside a single hint rather than splitting it into one hint per item.',
       input_schema: {
         type: 'object',
         properties: {
           adGroupId: { type: 'string' },
           campaignId: { type: 'string', description: 'The campaign the ad group belongs to' },
-          contextHints: { type: 'array', items: { type: 'string' }, description: 'Replaces the existing hints' },
+          contextHints: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'Replaces the existing hints. One whole idea per hint, commas inside a hint are fine',
+          },
           bid: { type: 'number', description: 'Leave out to keep the current bid' },
+          clearBid: {
+            type: 'boolean',
+            description: 'True resets the bid so OpenAI bids automatically for the campaign goal. Cannot be combined with bid',
+          },
         },
         required: ['adGroupId', 'campaignId'],
       },
@@ -398,16 +409,16 @@ async function describeAdProposal(ads, input) {
   };
 }
 
-async function describeReplaceAdProposal(ads, input) {
+async function describeEditAdProposal(ads, input) {
   const group = await ads.getAdGroupSettings(requireId('ad group', input.adGroupId));
   requireId('ad', input.adId);
 
   return {
-    summary: `Replace an ad in "${group.name}"`,
+    summary: `Edit an ad in "${group.name}"`,
     details: [
-      'Ads cannot be edited, so this creates the replacement first and archives the old ad after',
       ...adDetails(input.ad, 'New'),
-      'If the new ad is created but archiving the old one fails, both will be live until you archive it yourself',
+      'The ad keeps its id and its stats, and OpenAI reviews it again',
+      'If OpenAI refuses the edit, a replacement is created and the old ad archived instead',
     ],
   };
 }
@@ -423,9 +434,11 @@ async function describeAdGroupSettingsProposal(ads, input) {
     details.push('Audience hints: unchanged');
   }
   details.push(
-    input.bid != null
-      ? `Bid: ${money(group.bid, setup.currency)} to ${money(input.bid, setup.currency)}`
-      : `Bid: unchanged at ${money(group.bid, setup.currency)}`,
+    input.clearBid
+      ? `Bid: ${money(group.bid, setup.currency)} reset so OpenAI bids automatically`
+      : input.bid != null
+        ? `Bid: ${money(group.bid, setup.currency)} to ${money(input.bid, setup.currency)}`
+        : `Bid: unchanged at ${money(group.bid, setup.currency)}`,
   );
 
   return { summary: `Change the ad group "${group.name}"`, details };
@@ -471,7 +484,7 @@ export async function describeAdsProposal({ name, input, ads }) {
   if (name === 'propose_ads_duplicate') return describeDuplicateProposal(ads, input);
   if (name === 'propose_ads_adgroup') return describeAdGroupProposal(ads, input);
   if (name === 'propose_ads_ad') return describeAdProposal(ads, input);
-  if (name === 'propose_ads_replace_ad') return describeReplaceAdProposal(ads, input);
+  if (name === 'propose_ads_edit_ad') return describeEditAdProposal(ads, input);
   if (name === 'propose_ads_adgroup_settings') return describeAdGroupSettingsProposal(ads, input);
   if (name === 'propose_ads_rename') return describeRenameProposal(ads, input);
   if (name === 'propose_ads_budget') return describeBudgetProposal(ads, input);
@@ -520,8 +533,8 @@ export async function executeAdsAction({ kind, params, ads, performedBy }) {
     return ads.createAdInGroup(params.adGroupId, params.ad, performedBy);
   }
 
-  if (kind === 'propose_ads_replace_ad') {
-    return ads.replaceAd(params.adId, params.adGroupId, params.ad, performedBy);
+  if (kind === 'propose_ads_edit_ad') {
+    return ads.updateAd(params.adId, params.adGroupId, params.ad, performedBy);
   }
 
   if (kind === 'propose_ads_adgroup_settings') {
@@ -531,7 +544,7 @@ export async function executeAdsAction({ kind, params, ads, performedBy }) {
       {
         campaignId: params.campaignId,
         contextHints: params.contextHints ?? current.contextHints,
-        bid: params.bid ?? current.bid,
+        ...(params.clearBid ? { clearBid: true } : { bid: params.bid ?? current.bid }),
       },
       performedBy,
     );

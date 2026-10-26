@@ -103,6 +103,7 @@ export function createOpenAIAdsClient({ apiKey, logger } = {}) {
       return request('POST', '/upload', { form });
     },
     getAd: (id) => request('GET', `/ads/${encodeURIComponent(id)}`),
+    updateAd: (id, body) => request('POST', `/ads/${encodeURIComponent(id)}`, { body }),
     getAdGroup: (id) => request('GET', `/ad_groups/${encodeURIComponent(id)}`),
     updateCampaign: (id, body) => request('POST', `/campaigns/${encodeURIComponent(id)}`, { body }),
     updateAdGroup: (id, body) => request('POST', `/ad_groups/${encodeURIComponent(id)}`, { body }),

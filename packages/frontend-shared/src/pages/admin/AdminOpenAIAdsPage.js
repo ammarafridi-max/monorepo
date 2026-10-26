@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { AlertCircle, CalendarDays, Loader2, Megaphone, Plus } from 'lucide-react';
 import FilterMenu from '../../components/admin/FilterMenu';
-import { CampaignSettingsSheet, EditableName, StatusSelect, fmtInt, fmtMoney, fmtPct } from '../../components/admin/OpenAIAdsParts';
+import { CampaignSettingsSheet, DeleteAction, EditableName, StatusSelect, fmtInt, fmtMoney, fmtPct } from '../../components/admin/OpenAIAdsParts';
 import { useOpenAIAdsOverview } from '../../hooks/openai-ads/useOpenAIAdsOverview';
 
 const RANGE_OPTIONS = [
@@ -24,7 +24,7 @@ function Stat({ label, value }) {
   );
 }
 
-const COLUMNS = ['Campaign', 'Status', 'Goal', 'Budget / day', 'Spent', 'Impressions', 'Clicks', 'CTR', 'CPC', 'Orders', 'Cost / order'];
+const COLUMNS = ['Campaign', 'Status', 'Goal', 'Budget / day', 'Spent', 'Impressions', 'Clicks', 'CTR', 'CPC', 'Orders', 'Cost / order', ''];
 
 export default function AdminOpenAIAdsPage({ basePath = '/admin/chatgpt-ads' }) {
   const [days, setDays] = useState('30');
@@ -116,6 +116,9 @@ export default function AdminOpenAIAdsPage({ basePath = '/admin/chatgpt-ads' }) 
                         <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{c.cpc != null ? fmtMoney(c.cpc, currency) : '—'}</td>
                         <td className="px-4 py-3 text-gray-900 whitespace-nowrap">{fmtInt(c.orders)}</td>
                         <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{c.costPerOrder != null ? fmtMoney(c.costPerOrder, currency) : '—'}</td>
+                        <td className="px-4 py-3">
+                          <DeleteAction kind="campaigns" id={c.id} name={c.name} />
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -129,6 +132,7 @@ export default function AdminOpenAIAdsPage({ basePath = '/admin/chatgpt-ads' }) 
                       <td className="px-4 py-3 whitespace-nowrap">{cpc != null ? fmtMoney(cpc, currency) : '—'}</td>
                       <td className="px-4 py-3 whitespace-nowrap">{fmtInt(totals?.orders)}</td>
                       <td className="px-4 py-3 whitespace-nowrap">{totals?.costPerOrder != null ? fmtMoney(totals.costPerOrder, currency) : '—'}</td>
+                      <td className="px-4 py-3" />
                     </tr>
                   </tfoot>
                 </table>
