@@ -86,7 +86,7 @@ Backends run directly on Node's built-in watcher and env-file loader (no nodemon
 pnpm dev        # node --env-file=.env.development --watch src/server.js
 ```
 
-**Testing:** the travel apps have no tests. Five packages do, all `node --test`: `apps/picturesk-backend`; `packages/domains/assistant` (the admin assistant's access gates, query building, Stripe maths and ads proposals); `packages/domains/openai-ads` (replacing an ad, and reading review and rejection state); `packages/domains/tickets` (dummy ticket pricing, currency conversion and the Stripe/PayPal checkout and webhook amounts); and `packages/shared/utils` (currency decimals and minor-unit conversion). A root `pnpm test` runs those five and nothing else. All pass, with no DB or network. **Linting** exists only on frontends (`next lint`); shared packages have no lint/build step (they're consumed as raw source via subpath exports).
+**Testing:** the travel apps have no tests. Five packages do, all `node --test`: `apps/picturesk-backend`; `packages/domains/assistant` (the admin assistant's access gates, query building, Stripe maths and ads proposals); `packages/domains/openai-ads` (editing and replacing an ad, audience hint normalisation, bid resets, and reading review and rejection state); `packages/domains/tickets` (dummy ticket pricing, currency conversion and the Stripe/PayPal checkout and webhook amounts); and `packages/shared/utils` (currency decimals and minor-unit conversion). A root `pnpm test` runs those five and nothing else. All pass, with no DB or network. **Linting** exists only on frontends (`next lint`); shared packages have no lint/build step (they're consumed as raw source via subpath exports).
 
 ## Architecture
 

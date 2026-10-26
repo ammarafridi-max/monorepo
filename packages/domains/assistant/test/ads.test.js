@@ -264,7 +264,7 @@ describe('building inside an existing campaign', () => {
 
   it('offers a tool for every part of a campaign', () => {
     const names = buildAdsToolDefinitions({ canWrite: true }).map((t) => t.name);
-    for (const expected of ['propose_ads_adgroup', 'propose_ads_ad', 'propose_ads_replace_ad', 'propose_ads_adgroup_settings', 'propose_ads_rename']) {
+    for (const expected of ['propose_ads_adgroup', 'propose_ads_ad', 'propose_ads_edit_ad', 'propose_ads_adgroup_settings', 'propose_ads_rename']) {
       assert.ok(names.includes(expected), `missing ${expected}`);
     }
   });
@@ -297,14 +297,15 @@ describe('building inside an existing campaign', () => {
     assert.equal(ads.calls.length, 0);
   });
 
-  it('explains that replacing an ad archives the old one', async () => {
+  it('explains that editing an ad keeps it and sends it back for review', async () => {
     const { summary, details } = await describeAdsProposal({
-      name: 'propose_ads_replace_ad',
+      name: 'propose_ads_edit_ad',
       input: { adId: 'a_1', adGroupId: 'g_1', ad: AD },
       ads: adsStub(),
     });
-    assert.match(summary, /Replace an ad in "Schengen"/);
-    assert.match(details.join(' '), /creates the replacement first and archives the old ad after/);
+    assert.match(summary, /Edit an ad in "Schengen"/);
+    assert.match(details.join(' '), /keeps its id and its stats/);
+    assert.match(details.join(' '), /refuses the edit/);
   });
 
   it('keeps the current hints when only the bid changes', async () => {
@@ -376,14 +377,31 @@ describe('rejection reasons', () => {
     await assert.rejects(executeAdsRead({ name: 'ads_ad', input: {}, ads: reviewStub() }), /ad id is required/);
   });
 
-  it('sends a rewrite through the service, which archives the original', async () => {
+  it('sends a rewrite through the service, which edits the ad in place', async () => {
     const calls = [];
-    const ads = { replaceAd: async (adId, groupId, ad, by) => { calls.push([adId, groupId, ad.title, by]); return { id: 'ad_new', replaced: adId }; } };
+    const ads = { updateAd: async (adId, groupId, ad, by) => { calls.push([adId, groupId, ad.title, by]); return { id: adId, edited: true }; } };
     const ad = { title: 'Dummy ticket for your visa from AED 49', body: 'Verifiable booking, delivered in minutes.', targetUrl: 'https://dummyticket365.com/ae', imageFileId: 'file_1' };
 
-    const result = await executeAdsAction({ kind: 'propose_ads_replace_ad', params: { adId: 'ad_old', adGroupId: 'g_1', ad }, ads, performedBy: 'Ammar' });
+    const result = await executeAdsAction({ kind: 'propose_ads_edit_ad', params: { adId: 'ad_old', adGroupId: 'g_1', ad }, ads, performedBy: 'Ammar' });
 
     assert.deepEqual(calls[0], ['ad_old', 'g_1', ad.title, 'Ammar']);
-    assert.equal(result.replaced, 'ad_old');
+    assert.equal(result.edited, true);
+  });
+
+  it('resets an ad group bid to automatic without sending a bid alongside it', async () => {
+    const ads = adsStub();
+    ads.getAdGroupSettings = async (id) => ({ id, name: 'Schengen', bid: 12, contextHints: ['keep me'] });
+    ads.updateAdGroupSettings = async (id, input, by) => { ads.calls.push(['update', id, input, by]); return { id }; };
+
+    await executeAdsAction({
+      kind: 'propose_ads_adgroup_settings',
+      params: { adGroupId: 'g_1', campaignId: 'c_1', clearBid: true },
+      ads,
+      performedBy: 'Ammar',
+    });
+
+    const [, , input] = ads.calls[0];
+    assert.equal(input.clearBid, true);
+    assert.equal(input.bid, undefined);
   });
 });

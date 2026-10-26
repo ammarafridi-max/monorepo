@@ -2,7 +2,7 @@
 
 import { Fragment, useState } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { AlertCircle, ArrowLeft, CalendarDays, ChevronDown, ChevronRight, Eye, Loader2, Pencil, Plus } from 'lucide-react';
 import FilterMenu from '../../components/admin/FilterMenu';
 import {
@@ -10,6 +10,7 @@ import {
   AdGroupSettingsSheet,
   AudienceFields,
   CampaignSettingsSheet,
+  DeleteAction,
   EditableName,
   ReviewPill,
   Sheet,
@@ -27,8 +28,8 @@ import { useOpenAIAdsSetup } from '../../hooks/openai-ads/useOpenAIAdsSetup';
 import {
   useCreateOpenAIAd,
   useCreateOpenAIAdGroup,
+  useEditOpenAIAd,
   usePreviewOpenAIAd,
-  useReplaceOpenAIAd,
 } from '../../hooks/openai-ads/useOpenAIAdsMutations';
 
 const RANGE_OPTIONS = [
@@ -82,9 +83,10 @@ function EditAdSheet({ ad: existing, adGroupId, onClose }) {
     body: existing.body ?? '',
     targetUrl: existing.targetUrl ?? '',
     imageFileId: existing.imageFileId ?? '',
+    imageCrop: existing.imageCrop ?? null,
     imagePreview: '',
   });
-  const { mutate, isPending } = useReplaceOpenAIAd();
+  const { mutate, isPending } = useEditOpenAIAd();
 
   return (
     <Sheet title="Edit ad" onClose={() => !isPending && onClose()}>
@@ -93,12 +95,13 @@ function EditAdSheet({ ad: existing, adGroupId, onClose }) {
           {existing.reviewReason} OpenAI does not say which policy was broken.
         </p>
       )}
-      <p className="text-xs text-gray-400">
-        Ads cannot be edited in place. Saving creates a replacement in this ad group and archives the current ad.
-      </p>
-      <AdFields ad={ad} onChange={setAd} />
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-xs text-gray-400">Saving sends the ad back to OpenAI for review. It keeps its stats.</p>
+        <PreviewButton adId={existing.id} label="Preview" />
+      </div>
+      <AdFields ad={ad} onChange={setAd} keptImage={!ad.imagePreview && Boolean(ad.imageFileId)} />
       <SubmitButton
-        label="Replace ad"
+        label="Save ad"
         disabled={!adIsReady(ad)}
         isPending={isPending}
         onClick={() => mutate({ adId: existing.id, adGroupId, ...ad }, { onSuccess: onClose })}
@@ -140,7 +143,7 @@ function NewAdGroupSheet({ campaign, website, currency, onClose }) {
   );
 }
 
-function PreviewButton({ adId }) {
+function PreviewButton({ adId, label }) {
   const { previewAd, isPreviewing } = usePreviewOpenAIAd();
   async function open() {
     const res = await previewAd(adId).catch(() => null);
@@ -150,16 +153,69 @@ function PreviewButton({ adId }) {
     <button
       onClick={open}
       disabled={isPreviewing}
-      title="Preview"
-      className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition disabled:opacity-60"
+      title="See how this ad looks in ChatGPT"
+      className="inline-flex items-center gap-1.5 p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition disabled:opacity-60"
     >
       {isPreviewing ? <Loader2 size={14} className="animate-spin" /> : <Eye size={14} />}
+      {label && <span className="text-xs font-medium">{label}</span>}
     </button>
+  );
+}
+
+function AdMetric({ label, value }) {
+  return (
+    <span className="text-xs text-gray-500">
+      {label} <span className="font-medium text-gray-800">{value}</span>
+    </span>
+  );
+}
+
+function AdCard({ ad, currency, onEdit }) {
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={onEdit}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onEdit();
+        }
+      }}
+      className="group/ad bg-white border border-gray-200 rounded-xl p-3 cursor-pointer transition hover:border-primary-300 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-gray-900">{ad.title || ad.name}</p>
+          <p className="text-xs text-gray-500 mt-0.5">{ad.body}</p>
+          <p className="text-[11px] text-gray-400 mt-1 truncate">{ad.targetUrl}</p>
+        </div>
+        <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+          <ReviewPill review={ad.review} reason={ad.reviewReason} />
+          <StatusSelect kind="ads" id={ad.id} name={ad.title || ad.name} status={ad.status} />
+          <PreviewButton adId={ad.id} />
+          <DeleteAction kind="ads" id={ad.id} name={ad.title || ad.name} />
+        </div>
+      </div>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2.5 pt-2.5 border-t border-gray-100">
+        <AdMetric label="Spent" value={fmtMoney(ad.spend, currency)} />
+        <AdMetric label="Impressions" value={fmtInt(ad.impressions)} />
+        <AdMetric label="Clicks" value={fmtInt(ad.clicks)} />
+        <AdMetric label="CTR" value={fmtPct(ad.ctr)} />
+        <AdMetric label="CPC" value={ad.cpc != null ? fmtMoney(ad.cpc, currency) : '—'} />
+        <AdMetric label="Orders" value={fmtInt(ad.orders)} />
+        <AdMetric label="Cost / order" value={ad.costPerOrder != null ? fmtMoney(ad.costPerOrder, currency) : '—'} />
+        <span className="ml-auto inline-flex items-center gap-1 text-xs font-medium text-primary-700 opacity-0 group-hover/ad:opacity-100 transition-opacity">
+          <Pencil size={12} /> Edit
+        </span>
+      </div>
+    </div>
   );
 }
 
 export default function AdminOpenAIAdsCampaignPage({ basePath = '/admin/chatgpt-ads' }) {
   const { id } = useParams();
+  const router = useRouter();
   const [days, setDays] = useState('30');
   const { campaign, isLoadingCampaign, campaignError } = useOpenAIAdsCampaign(id, days);
   const { setup } = useOpenAIAdsSetup();
@@ -207,6 +263,7 @@ export default function AdminOpenAIAdsCampaignPage({ basePath = '/admin/chatgpt-
               status={campaign.status}
               note={campaign.dailyBudget != null ? `starts showing in ChatGPT and can spend up to ${fmtMoney(campaign.dailyBudget, currency)} a day.` : undefined}
             />
+            <DeleteAction kind="campaigns" id={campaign.id} name={campaign.name} onDeleted={() => router.push(basePath)} />
           </div>
           <p className="text-sm text-gray-500 mt-1">
             {[
@@ -278,52 +335,40 @@ export default function AdminOpenAIAdsCampaignPage({ basePath = '/admin/chatgpt-
                         <td className="px-4 py-3 whitespace-nowrap">
                           <StatusSelect kind="ad-groups" id={group.id} name={group.name} status={group.status} />
                         </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-gray-600">{group.bid != null ? fmtMoney(group.bid, currency) : 'Automatic'}</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-gray-600">
+                          {group.bid != null ? fmtMoney(group.bid, currency) : <span className="text-gray-400">Automatic</span>}
+                        </td>
                         <MetricCells row={group} currency={currency} strong />
-                        <td className="px-4 py-3" />
+                        <td className="px-4 py-3">
+                          <DeleteAction kind="ad-groups" id={group.id} name={group.name} />
+                        </td>
                       </tr>
 
                       {isOpen && (
-                        <>
-                          {group.ads.map((ad) => (
-                            <tr key={ad.id} className="bg-gray-50/40">
-                              <td className="pl-12 pr-4 py-3">
-                                <EditableName kind="ads" id={ad.id} name={ad.name || ad.title} className="text-gray-800" />
-                                <p className="text-xs text-gray-400 mt-0.5 max-w-sm truncate">{ad.title} · {ad.body}</p>
-                              </td>
-                              <td className="px-4 py-3 whitespace-nowrap">
-                                <div className="flex flex-col items-start gap-1.5">
-                                  <StatusSelect kind="ads" id={ad.id} name={ad.title} status={ad.status} />
-                                  <ReviewPill review={ad.review} reason={ad.reviewReason} />
-                                </div>
-                              </td>
-                              <td className="px-4 py-3 text-gray-400">—</td>
-                              <MetricCells row={ad} currency={currency} />
-                              <td className="px-4 py-3">
-                                <div className="flex items-center gap-1">
-                                  <PreviewButton adId={ad.id} />
-                                  <button
-                                    onClick={() => setSheet({ type: 'edit-ad', ad, adGroupId: group.id })}
-                                    title="Edit this ad"
-                                    className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition"
-                                  >
-                                    <Pencil size={14} />
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                          <tr className="bg-gray-50/40">
-                            <td colSpan={COLUMNS.length} className="pl-12 pr-4 py-2.5">
+                        <tr>
+                          <td colSpan={COLUMNS.length} className="pl-10 pr-4 pb-4 pt-1">
+                            <div className="bg-gray-100 rounded-2xl p-3 space-y-2">
+                              {group.ads.length === 0 ? (
+                                <p className="text-xs text-gray-500 px-1 py-2">No ads in this ad group yet.</p>
+                              ) : (
+                                group.ads.map((ad) => (
+                                  <AdCard
+                                    key={ad.id}
+                                    ad={ad}
+                                    currency={currency}
+                                    onEdit={() => setSheet({ type: 'edit-ad', ad, adGroupId: group.id })}
+                                  />
+                                ))
+                              )}
                               <button
                                 onClick={() => setSheet({ type: 'ad', adGroupId: group.id })}
-                                className="inline-flex items-center gap-1.5 text-xs text-primary-700 hover:text-primary-800"
+                                className="inline-flex items-center gap-1.5 text-xs font-medium text-primary-700 hover:text-primary-800 px-1 pt-1"
                               >
                                 <Plus size={13} /> Add ad
                               </button>
-                            </td>
-                          </tr>
-                        </>
+                            </div>
+                          </td>
+                        </tr>
                       )}
                     </Fragment>
                   );

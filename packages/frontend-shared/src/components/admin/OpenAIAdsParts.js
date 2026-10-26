@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Check, ImagePlus, Info, Loader2, Pencil, Settings2, X } from 'lucide-react';
+import { Check, ImagePlus, Info, Loader2, Pencil, Settings2, Trash2, X } from 'lucide-react';
 import {
   useRenameOpenAIAds,
   useSetOpenAIAdsStatus,
@@ -246,6 +246,63 @@ export function StatusSelect({ kind, id, name, status, note }) {
   );
 }
 
+export function DeleteAction({ kind, id, name, onDeleted, iconOnly = true, className = '' }) {
+  const [confirming, setConfirming] = useState(false);
+  const { mutate, isPending } = useSetOpenAIAdsStatus();
+  const noun = KIND_NOUN[kind];
+
+  return (
+    <>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setConfirming(true);
+        }}
+        title={`Delete this ${noun}`}
+        className={`inline-flex items-center gap-1.5 p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition ${className}`}
+      >
+        <Trash2 size={14} />
+        {!iconOnly && <span className="text-xs font-medium">Delete</span>}
+      </button>
+      {confirming && (
+        <Sheet title={`Delete this ${noun}?`} onClose={() => !isPending && setConfirming(false)}>
+          <p className="text-sm text-gray-600">
+            <span className="font-medium text-gray-900">{name}</span> stops showing in ChatGPT straight away and leaves your lists.
+          </p>
+          <p className="text-xs text-gray-400">
+            OpenAI has no delete, so this archives the {noun} instead. That cannot be undone, and you cannot turn it back on.
+            Its past spend and results stay in OpenAI reporting.
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setConfirming(false)}
+              className="flex-1 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition"
+            >
+              Cancel
+            </button>
+            <button
+              disabled={isPending}
+              onClick={() =>
+                mutate(
+                  { kind, id, action: 'archive' },
+                  {
+                    onSuccess: () => onDeleted?.(),
+                    onSettled: () => setConfirming(false),
+                  },
+                )
+              }
+              className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-xl transition disabled:opacity-60"
+            >
+              {isPending && <Loader2 size={14} className="animate-spin" />}
+              Delete
+            </button>
+          </div>
+        </Sheet>
+      )}
+    </>
+  );
+}
+
 export function Field({ label, hint, counter, children }) {
   return (
     <div className="space-y-1.5">
@@ -264,13 +321,13 @@ function Counter({ value, max }) {
   return <span className={`text-xs ${n > max ? 'text-red-600 font-medium' : 'text-gray-400'}`}>{n}/{max}</span>;
 }
 
-export const emptyAd = (website = '') => ({ title: '', body: '', targetUrl: website, imageFileId: '', imagePreview: '' });
+export const emptyAd = (website = '') => ({ title: '', body: '', targetUrl: website, imageFileId: '', imageCrop: null, imagePreview: '' });
 
 export function adIsReady(ad) {
   return ad.title.trim().length >= 3 && ad.title.length <= 50 && ad.body.trim() && ad.body.length <= 100 && ad.targetUrl.trim() && ad.imageFileId;
 }
 
-export function AdFields({ ad, onChange }) {
+export function AdFields({ ad, onChange, keptImage = false }) {
   const fileRef = useRef(null);
   const { uploadImage, isUploadingImage } = useUploadOpenAIAdImage();
   const set = (key, value) => onChange({ ...ad, [key]: value });
@@ -282,7 +339,7 @@ export function AdFields({ ad, onChange }) {
     const preview = URL.createObjectURL(file);
     try {
       const { fileId } = await uploadImage(file);
-      onChange({ ...ad, imageFileId: fileId, imagePreview: preview });
+      onChange({ ...ad, imageFileId: fileId, imagePreview: preview, imageCrop: null });
     } catch {
       URL.revokeObjectURL(preview);
     }
@@ -299,12 +356,14 @@ export function AdFields({ ad, onChange }) {
       <Field label="Link" hint="Must be a page on your own website.">
         <input className={inputCls} value={ad.targetUrl} onChange={(e) => set('targetUrl', e.target.value)} placeholder="https://" />
       </Field>
-      <Field label="Image" hint="PNG, JPG or WebP, up to 5 MB.">
+      <Field label="Image" hint={keptImage ? 'The current image stays unless you upload a new one. OpenAI does not give it back as a thumbnail, so use Preview to see it.' : 'PNG, JPG or WebP, up to 5 MB.'}>
         <div className="flex items-center gap-3">
           {ad.imagePreview ? (
             <img src={ad.imagePreview} alt="" className="w-20 h-14 object-cover rounded-lg border border-gray-200" />
           ) : (
-            <div className="w-20 h-14 rounded-lg border border-dashed border-gray-300 bg-gray-50" />
+            <div className="w-20 h-14 rounded-lg border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-center text-[10px] leading-tight text-gray-400 px-1">
+              {keptImage ? 'Current image' : ''}
+            </div>
           )}
           <button
             type="button"
@@ -341,7 +400,7 @@ export function AudienceFields({ audience, onChange, goal, currency, showName = 
           <input className={inputCls} value={audience.name} onChange={(e) => set('name', e.target.value)} placeholder="Schengen visa travellers" />
         </Field>
       )}
-      <Field label="Who is this for?" hint="One idea per line. ChatGPT uses these to decide when to show your ad.">
+      <Field label="Who is this for?" hint="One whole idea per line. Commas inside a line are fine, so keep a list on one line.">
         <textarea
           rows={3}
           className={inputCls}
@@ -508,21 +567,59 @@ export function CampaignSettingsSheet({ campaignId, onClose }) {
   );
 }
 
+function BidModeTabs({ automatic, onChange, autoLabel }) {
+  const options = [
+    { value: false, label: 'Set my own bid' },
+    { value: true, label: autoLabel },
+  ];
+  return (
+    <div className="inline-flex p-0.5 bg-gray-100 rounded-xl">
+      {options.map((option) => (
+        <button
+          key={String(option.value)}
+          type="button"
+          onClick={() => onChange(option.value)}
+          className={`px-3 py-1.5 text-xs font-medium rounded-[10px] transition ${
+            automatic === option.value ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function AdGroupSettingsForm({ settings, campaignId, goal, currency, onClose }) {
   const [hints, setHints] = useState(settings.contextHints.join('\n'));
+  const [automatic, setAutomatic] = useState(settings.bid == null);
   const [bid, setBid] = useState(settings.bid ?? '');
   const { mutate, isPending } = useUpdateOpenAIAdGroupSettings();
   const bidLabel = goal === 'sales' ? `Target cost per order (${currency})` : `Max cost per click (${currency})`;
+  const autoLabel = goal === 'sales' ? 'Let OpenAI bid for orders' : 'Let OpenAI bid for clicks';
+  const problem = !automatic && !(Number(bid) > 0) ? 'Set a bid, or let OpenAI bid for you' : null;
 
   return (
     <div className="space-y-4">
-      <Field label="Who is this for?" hint="One idea per line. ChatGPT uses these to decide when to show your ads.">
+      <Field label="Who is this for?" hint="One whole idea per line. Commas inside a line are fine, so keep a list on one line.">
         <textarea rows={4} className={inputCls} value={hints} onChange={(e) => setHints(e.target.value)} />
       </Field>
-      <Field label={bidLabel} hint={settings.bid == null ? 'Bidding is automatic now. Leave empty to keep it that way.' : 'Leave as it is to keep the current bid.'}>
-        <input type="number" min="0" step="0.5" className={inputCls} value={bid} onChange={(e) => setBid(e.target.value)} placeholder={settings.bid == null ? 'Automatic' : ''} />
+      <Field label="Bidding">
+        <BidModeTabs automatic={automatic} onChange={setAutomatic} autoLabel={autoLabel} />
       </Field>
+      {automatic ? (
+        <p className="text-xs text-gray-400">
+          OpenAI sets each bid to win as many {goal === 'sales' ? 'orders' : 'clicks'} as it can inside the campaign daily budget.
+          {settings.bid != null && ` Saving clears the current bid of ${fmtMoney(settings.bid, currency)}.`}
+        </p>
+      ) : (
+        <Field label={bidLabel} hint={goal === 'sales' ? 'What you are happy to pay for one order.' : 'The most you will pay for one click.'}>
+          <input type="number" min="0" step="0.5" className={inputCls} value={bid} onChange={(e) => setBid(e.target.value)} />
+        </Field>
+      )}
+      {problem && <p className="text-sm text-gray-500">{problem}</p>}
       <SaveButton
+        disabled={Boolean(problem)}
         isPending={isPending}
         onClick={() =>
           mutate(
@@ -530,7 +627,7 @@ function AdGroupSettingsForm({ settings, campaignId, goal, currency, onClose }) 
               id: settings.id,
               campaignId,
               contextHints: hints.split('\n').map((h) => h.trim()).filter(Boolean),
-              bid: bid === '' || Number(bid) === settings.bid ? '' : Number(bid),
+              ...(automatic ? { clearBid: true } : { bid: Number(bid) }),
             },
             { onSuccess: onClose },
           )

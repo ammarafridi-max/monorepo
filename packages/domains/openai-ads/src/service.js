@@ -8,6 +8,44 @@ const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 const toMicros = (amount) => Math.round(Number(amount) * 1e6);
 
+const MAX_HINT_LENGTH = 300;
+const HINT_ENDS_IDEA = /[.!?:;]$/;
+const HINT_CONTINUES = /^(and|or|plus|&)\b/i;
+const words = (value) => value.split(/\s+/).filter(Boolean).length;
+
+const isHintFragment = (hint) => HINT_CONTINUES.test(hint) || /^[a-z]/.test(hint) || words(hint) <= 4;
+
+const mergeHintFragments = (hints) =>
+  hints.reduce((kept, hint) => {
+    const previous = kept.at(-1);
+    const joinable =
+      previous &&
+      !HINT_ENDS_IDEA.test(previous) &&
+      words(previous) >= 3 &&
+      isHintFragment(hint) &&
+      previous.length + hint.length + 2 <= MAX_HINT_LENGTH;
+    if (joinable) kept[kept.length - 1] = `${previous}, ${hint}`;
+    else kept.push(hint);
+    return kept;
+  }, []);
+
+function normaliseHints(input) {
+  const hints = (Array.isArray(input) ? input : []).map((h) => (typeof h === 'string' ? h.trim() : '')).filter(Boolean);
+  const merged = mergeHintFragments(hints).slice(0, 20);
+  if (merged.some((h) => h.length > MAX_HINT_LENGTH)) throw new AppError(`Each audience hint can be at most ${MAX_HINT_LENGTH} characters`, 400);
+  return merged;
+}
+
+const AUTO_STRATEGY = { sales: 'maximize_conversions', clicks: 'maximize_clicks' };
+
+const sourceBidOf = (group) =>
+  group?.bidding_config?.max_bid_micros != null ? group.bidding_config.max_bid_micros / 1e6 : null;
+
+const biddingConfig = ({ goal, billingEventType = 'click', bid }) =>
+  bid == null
+    ? { billing_event_type: billingEventType, strategy: AUTO_STRATEGY[goal], custom_audience_bid_multipliers: [] }
+    : { billing_event_type: billingEventType, strategy: 'fixed_bid', max_bid_micros: toMicros(bid) };
+
 function text(value, { field, min = 0, max }) {
   const v = typeof value === 'string' ? value.trim() : '';
   if (v.length < min) throw new AppError(min > 1 ? `${field} needs at least ${min} characters` : `${field} is required`, 400);
@@ -263,8 +301,9 @@ export function createOpenAIAdsService({ adsClient, countOwnConversions, maxDail
     return {
       id: group.id,
       name: group.name,
-      contextHints: group.context_hints ?? [],
+      contextHints: normaliseHints(group.context_hints),
       bid: group.bidding_config?.max_bid_micros != null ? group.bidding_config.max_bid_micros / 1e6 : null,
+      bidStrategy: group.bidding_config?.strategy ?? null,
     };
   };
 
@@ -272,22 +311,24 @@ export function createOpenAIAdsService({ adsClient, countOwnConversions, maxDail
     ensureConfigured();
     assertId('ad_groups', id);
     assertId('campaigns', input?.campaignId);
-    const hints = (Array.isArray(input?.contextHints) ? input.contextHints : []).map((h) => (typeof h === 'string' ? h.trim() : '')).filter(Boolean);
-    if (hints.length > 20) throw new AppError('Use at most 20 audience hints', 400);
-    if (hints.some((h) => h.length > 300)) throw new AppError('Each audience hint can be at most 300 characters', 400);
+    const hints = normaliseHints(input?.contextHints);
 
     const [group, campaign] = await callApi(() => Promise.all([adsClient.getAdGroup(id), adsClient.getCampaign(input.campaignId)]));
     const goal = campaign.bidding_type === 'conversions' ? 'sales' : 'clicks';
     const dailyBudget = campaign.budget?.daily_spend_limit_micros != null ? campaign.budget.daily_spend_limit_micros / 1e6 : maxDailyBudget;
+    const clearBid = input?.clearBid === true;
     const hasBid = input?.bid !== '' && input?.bid != null;
+    if (clearBid && hasBid) throw new AppError('Either set a bid or reset it, not both', 400);
     const bid = hasBid ? amount(input.bid, { field: goal === 'sales' ? 'Target cost per order' : 'Max cost per click', max: dailyBudget }) : null;
 
     const body = {
       context_hints: hints,
-      ...(hasBid ? { bidding_config: { billing_event_type: group.bidding_config?.billing_event_type ?? 'click', max_bid_micros: toMicros(bid) } } : {}),
+      ...(clearBid || hasBid
+        ? { bidding_config: biddingConfig({ goal, billingEventType: group.bidding_config?.billing_event_type ?? 'click', bid }) }
+        : {}),
     };
     await callApi(() => adsClient.updateAdGroup(id, body));
-    logger?.info('[openai-ads] ad group settings changed', { adGroupId: id, hints: hints.length, bid, performedBy });
+    logger?.info('[openai-ads] ad group settings changed', { adGroupId: id, hints: hints.length, bid: clearBid ? 'automatic' : bid, performedBy });
     return getAdGroupSettings(id);
   };
 
@@ -394,6 +435,7 @@ export function createOpenAIAdsService({ adsClient, countOwnConversions, maxDail
           body: a.creative?.body,
           targetUrl: a.creative?.target_url,
           imageFileId: a.creative?.file_id ?? null,
+          imageCrop: a.creative?.image_crop ?? null,
           reviewReason: a.review?.reason ?? null,
           ...metricsFrom(deliveryByAd.get(a.id), conversionsByAd.get(a.id)),
         }));
@@ -402,7 +444,8 @@ export function createOpenAIAdsService({ adsClient, countOwnConversions, maxDail
         name: g.name,
         status: g.status,
         bid: g.bidding_config?.max_bid_micros != null ? g.bidding_config.max_bid_micros / 1e6 : null,
-        contextHints: g.context_hints ?? [],
+        bidStrategy: g.bidding_config?.strategy ?? null,
+        contextHints: normaliseHints(g.context_hints),
         ads,
         ...sumMetrics(ads),
       };
@@ -434,26 +477,42 @@ export function createOpenAIAdsService({ adsClient, countOwnConversions, maxDail
     return target.toString();
   };
 
-  const buildAd = async (input) => ({
-    name: text(input?.title, { field: 'Ad title', min: 3, max: 50 }),
-    creative: {
-      type: 'chat_card',
-      title: text(input?.title, { field: 'Ad title', min: 3, max: 50 }),
-      body: text(input?.body, { field: 'Ad text', min: 1, max: 100 }),
-      target_url: await assertOwnSite(text(input?.targetUrl, { field: 'Landing page', min: 1, max: 2000 })),
-      file_id: text(input?.imageFileId, { field: 'Image', min: 1, max: 200 }),
-    },
-  });
+  const cropOf = (input) => {
+    const crop = input?.imageCrop;
+    if (!crop) return null;
+    const box = {};
+    for (const key of ['x', 'y', 'width', 'height']) {
+      const value = Number(crop[key]);
+      if (!Number.isFinite(value) || value < 0 || value > 1) return null;
+      box[key] = value;
+    }
+    return box;
+  };
+
+  const buildAd = async (input) => {
+    const crop = cropOf(input);
+    return {
+      name: text(input?.title, { field: 'Ad title', min: 3, max: 50 }),
+      creative: {
+        type: 'chat_card',
+        title: text(input?.title, { field: 'Ad title', min: 3, max: 50 }),
+        body: text(input?.body, { field: 'Ad text', min: 1, max: 100 }),
+        target_url: await assertOwnSite(text(input?.targetUrl, { field: 'Landing page', min: 1, max: 2000 })),
+        file_id: text(input?.imageFileId, { field: 'Image', min: 1, max: 200 }),
+        ...(crop ? { image_crop: crop } : {}),
+      },
+    };
+  };
 
   const buildAdGroup = (input, { goal, dailyBudget }) => {
-    const hints = Array.isArray(input?.contextHints) ? input.contextHints : [];
-    const contextHints = hints.map((h) => (typeof h === 'string' ? h.trim() : '')).filter(Boolean).slice(0, 20);
-    if (contextHints.some((h) => h.length > 300)) throw new AppError('Each audience hint can be at most 300 characters', 400);
-    const bid = amount(input?.bid, { field: goal === 'sales' ? 'Target cost per order' : 'Max cost per click', max: dailyBudget ?? maxDailyBudget });
+    const automatic = input?.clearBid === true;
+    const bid = automatic
+      ? null
+      : amount(input?.bid, { field: goal === 'sales' ? 'Target cost per order' : 'Max cost per click', max: dailyBudget ?? maxDailyBudget });
     return {
       name: text(input?.name, { field: 'Ad group name', min: 3, max: 200 }),
-      context_hints: contextHints,
-      bidding_config: { billing_event_type: 'click', max_bid_micros: toMicros(bid) },
+      context_hints: normaliseHints(input?.contextHints),
+      bidding_config: biddingConfig({ goal, bid }),
     };
   };
 
@@ -588,13 +647,12 @@ export function createOpenAIAdsService({ adsClient, countOwnConversions, maxDail
         const created = await callApi(() =>
           adsClient.createAdGroup({
             name: group.name,
-            context_hints: group.context_hints ?? [],
-            bidding_config: {
-              billing_event_type: group.bidding_config?.billing_event_type ?? 'click',
-              ...(clearBid
-                ? {}
-                : { max_bid_micros: bid != null ? toMicros(bid) : group.bidding_config?.max_bid_micros }),
-            },
+            context_hints: normaliseHints(group.context_hints),
+            bidding_config: biddingConfig({
+              goal,
+              billingEventType: group.bidding_config?.billing_event_type ?? 'click',
+              bid: clearBid ? null : (bid ?? sourceBidOf(group)),
+            }),
             campaign_id: campaign.id,
             status: 'active',
           }),
@@ -653,6 +711,7 @@ export function createOpenAIAdsService({ adsClient, countOwnConversions, maxDail
     body: ad.creative?.body ?? null,
     targetUrl: ad.creative?.target_url ?? null,
     imageFileId: ad.creative?.file_id ?? null,
+    imageCrop: ad.creative?.image_crop ?? null,
   });
 
   const getAdDetail = async (id) => {
@@ -697,6 +756,36 @@ export function createOpenAIAdsService({ adsClient, countOwnConversions, maxDail
     return { ...created, replaced: adId };
   };
 
+  const sameCreative = (a, b) =>
+    Boolean(a) && ['title', 'body', 'target_url', 'file_id'].every((key) => a[key] === b[key]);
+
+  const updateAd = async (adId, adGroupId, input, performedBy) => {
+    ensureConfigured();
+    assertId('ads', adId);
+    assertId('ad_groups', adGroupId);
+    const ad = await buildAd(input);
+
+    try {
+      const updated = await callApi(() => adsClient.updateAd(adId, ad));
+      logger?.info('[openai-ads] ad edited', { adId, performedBy });
+      return { id: updated?.id ?? adId, edited: true };
+    } catch (err) {
+      const current = await callApi(() => adsClient.getAd(adId)).catch(() => null);
+      if (sameCreative(current?.creative, ad.creative)) {
+        logger?.info('[openai-ads] ad edit already applied', { adId, performedBy });
+        return { id: adId, edited: true };
+      }
+      logger?.warn('[openai-ads] editing in place failed, replacing the ad instead', { adId, error: err.message });
+    }
+
+    const replaced = await replaceAd(adId, adGroupId, input, performedBy);
+    return {
+      ...replaced,
+      edited: false,
+      warning: ['OpenAI would not apply the edit, so a replacement ad was created and the old one archived.', ...(replaced.warnings ?? [])].join(' '),
+    };
+  };
+
   const uploadImage = async (file) => {
     ensureConfigured();
     if (!file?.buffer) throw new AppError('Choose an image', 400);
@@ -733,6 +822,7 @@ export function createOpenAIAdsService({ adsClient, countOwnConversions, maxDail
     getAdDetail,
     listReviewIssues,
     replaceAd,
+    updateAd,
     createAdGroupWithAd,
     createAdInGroup,
     uploadImage,

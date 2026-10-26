@@ -16,8 +16,8 @@ export function createOpenAIAdsController({ service }) {
     previewAd: catchAsync(async (req, res) => ok(res, await service.previewAd(req.params.id))),
     getAd: catchAsync(async (req, res) => ok(res, await service.getAdDetail(req.params.id))),
     getReviewIssues: catchAsync(async (req, res) => ok(res, await service.listReviewIssues())),
-    replaceAd: catchAsync(async (req, res) =>
-      ok(res, await service.replaceAd(req.params.id, req.body?.adGroupId, req.body?.ad, performer(req)), 201),
+    editAd: catchAsync(async (req, res) =>
+      ok(res, await service.updateAd(req.params.id, req.body?.adGroupId, req.body?.ad, performer(req))),
     ),
     getCampaignSettings: catchAsync(async (req, res) => ok(res, await service.getCampaignSettings(req.params.id))),
     updateCampaignSettings: catchAsync(async (req, res) => ok(res, await service.updateCampaignSettings(req.params.id, req.body, performer(req)))),

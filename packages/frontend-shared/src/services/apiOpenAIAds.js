@@ -18,8 +18,8 @@ export const createOpenAICampaignApi = (body) => postJson('/campaigns', body);
 export const createOpenAIAdGroupApi = ({ campaignId, ...body }) => postJson(`/campaigns/${encodeURIComponent(campaignId)}/ad-groups`, body);
 export const createOpenAIAdApi = ({ adGroupId, ...body }) => postJson(`/ad-groups/${encodeURIComponent(adGroupId)}/ads`, body);
 export const previewOpenAIAdApi = (id) => postJson(`/ads/${encodeURIComponent(id)}/preview`);
-export const replaceOpenAIAdApi = ({ adId, adGroupId, ...ad }) =>
-  postJson(`/ads/${encodeURIComponent(adId)}/replace`, { adGroupId, ad });
+export const editOpenAIAdApi = ({ adId, adGroupId, ...ad }) =>
+  postJson(`/ads/${encodeURIComponent(adId)}/edit`, { adGroupId, ad });
 
 const STATUS_ACTIONS = ['pause', 'activate', 'archive'];
 

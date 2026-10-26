@@ -6,7 +6,7 @@ import {
   createOpenAIAdGroupApi,
   createOpenAICampaignApi,
   previewOpenAIAdApi,
-  replaceOpenAIAdApi,
+  editOpenAIAdApi,
   renameOpenAIAdsApi,
   updateOpenAIAdGroupSettingsApi,
   updateOpenAICampaignSettingsApi,
@@ -35,8 +35,8 @@ export const useRenameOpenAIAds = () => useAdsMutation(renameOpenAIAdsApi, 'Name
 export const useCreateOpenAICampaign = () => useAdsMutation(createOpenAICampaignApi, 'Campaign created. It is paused until you activate it.');
 export const useCreateOpenAIAdGroup = () => useAdsMutation(createOpenAIAdGroupApi, 'Ad group created.');
 export const useCreateOpenAIAd = () => useAdsMutation(createOpenAIAdApi, 'Ad created. OpenAI will review it.');
-export const useReplaceOpenAIAd = () =>
-  useAdsMutation(replaceOpenAIAdApi, 'Replacement created and the old ad archived. OpenAI will review it.');
+export const useEditOpenAIAd = () =>
+  useAdsMutation(editOpenAIAdApi, 'Ad saved. OpenAI will review it again.');
 
 export function useUploadOpenAIAdImage() {
   const { mutateAsync, isPending } = useMutation({
