@@ -123,7 +123,12 @@ export default function TicketReviewDetailsPage({ onBeginCheckout, enablePayPal 
         },
       ],
     });
-    pixelInitiateCheckout({ currency: chargeCurrency, value: chargeTotal, numItems: totalQuantity });
+    pixelInitiateCheckout({
+      currency: chargeCurrency,
+      value: chargeTotal,
+      numItems: totalQuantity,
+      eventId: `dummy-ticket-checkout:${sessionId}`,
+    });
     openaiCheckoutStarted({ currency: chargeCurrency, value: chargeTotal });
     if (payingWithPayPal) {
       createPayPalOrder({ sessionId, currencyCode });

@@ -7,6 +7,7 @@ import {
   roundToCurrency,
   toStripeMinorUnits,
 } from '@travel-suite/utils/currency';
+import { dialCodeToCountry, genderFromTitle, toE164 } from '@travel-suite/utils/contact';
 import { payPalCurrencyFor } from '@travel-suite/paypal';
 import { TICKET_VALIDITIES, VALIDITY_DAYS, SHORTEST_VALIDITY } from './validity.js';
 
@@ -286,6 +287,18 @@ function buildTicketFilter(query = {}) {
 
 const countWhen = (condition) => ({ $sum: { $cond: [condition, 1, 0] } });
 const IS_PAID = { $eq: ['$paymentStatus', 'PAID'] };
+
+function rebuildFbc(ticket) {
+  const touches = [ticket?.attribution?.last, ticket?.attribution?.first];
+  for (const touch of touches) {
+    const fbclid = typeof touch?.fbclid === 'string' ? touch.fbclid.trim() : '';
+    if (!fbclid) continue;
+    const capturedAt = new Date(touch.capturedAt ?? ticket?.createdAt ?? Date.now()).getTime();
+    const stamp = Number.isFinite(capturedAt) ? capturedAt : Date.now();
+    return `fb.1.${stamp}.${fbclid}`;
+  }
+  return undefined;
+}
 
 export function createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, paypal, notifications, frontendUrl, brevo, reviewListId, paidOrderBus, reservationStorage, sendEmail, metaCapi, openaiCapi }) {
   // getUnitPrice already prices in the requested currency, so nothing here converts a second time.
@@ -630,7 +643,7 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
 
     // Priced before the ticket exists so a validity that is off sale never becomes an unpayable order.
     const requestedCurrency = pickCurrencyCode(payload?.currency);
-    const { currency: quotedCurrency } = await pricingService.getUnitPrice(
+    const { currency: quotedCurrency, unitPrice: quotedUnitPrice } = await pricingService.getUnitPrice(
       input.ticketValidity,
       requestedCurrency,
     );
@@ -653,7 +666,7 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       if (affiliateDoc) affiliateCapturedAt = parsedCapturedAt;
     }
 
-    return Ticket.create({
+    const ticket = await Ticket.create({
       ...input,
       email: normalizedEmail,
       currency: requestedCurrency || quotedCurrency,
@@ -663,6 +676,18 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       affiliate: affiliateDoc ? affiliateDoc._id : null,
       attribution: sanitizeAttribution(payload?.attribution),
     });
+
+    const leadKey = String(payload?.leadEventId ?? '').trim();
+    if (/^[A-Za-z0-9-]{8,64}$/.test(leadKey)) {
+      const paying = Number(input.quantity?.adults || 0) + Number(input.quantity?.children || 0);
+      reportLeadToMeta(ticket, {
+        eventId: `dummy-ticket-lead:${leadKey}`,
+        value: Number.isFinite(quotedUnitPrice) ? Number((quotedUnitPrice * paying).toFixed(2)) : undefined,
+        currency: requestedCurrency || quotedCurrency,
+      });
+    }
+
+    return ticket;
   };
 
   const createStripePaymentUrl = async (formData) => {
@@ -699,9 +724,13 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       obref: typeof formData.obref === 'string' ? formData.obref.slice(0, 200) : undefined,
     };
 
-    await Ticket.findOneAndUpdate({ sessionId }, { $set: { totalAmount, currency: currencyCode, metaAttribution, openaiAttribution } });
+    const updated = await Ticket.findOneAndUpdate(
+      { sessionId },
+      { $set: { totalAmount, currency: currencyCode, metaAttribution, openaiAttribution } },
+      { returnDocument: 'after' },
+    );
 
-    return stripe.checkout.sessions.create({
+    const checkoutSession = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
       customer_email: ticket.email,
@@ -731,6 +760,14 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       success_url: `${frontendUrl}/booking/payment?sessionId=${sessionId}`,
       cancel_url: `${frontendUrl}/booking/review-details`,
     }, { idempotencyKey: `${sessionId}:${currencyCode}:${unitAmount}` });
+
+    reportInitiateCheckoutToMeta(updated ?? ticket, {
+      value: totalAmount,
+      currency: currencyCode,
+      numItems: adults + children,
+    });
+
+    return checkoutSession;
   };
 
   const reportPurchaseToOpenAI = async (ticket) => {
@@ -762,12 +799,27 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     }
   };
 
+  const metaUserFromTicket = (ticket) => {
+    const lead = ticket.passengers?.[0];
+    return {
+      email: ticket.email,
+      phone: toE164(ticket.phoneNumber?.code, ticket.phoneNumber?.digits),
+      firstName: lead?.firstName,
+      lastName: lead?.lastName,
+      gender: genderFromTitle(lead?.title),
+      country: dialCodeToCountry(ticket.phoneNumber?.code, {
+        currency: ticket.amountPaid?.currency ?? ticket.currency,
+      }),
+      externalId: ticket.email?.trim().toLowerCase(),
+      clientIp: ticket.metaAttribution?.clientIp,
+      userAgent: ticket.metaAttribution?.userAgent,
+      fbp: ticket.metaAttribution?.fbp,
+      fbc: ticket.metaAttribution?.fbc || rebuildFbc(ticket),
+    };
+  };
+
   const reportPurchaseToMeta = async (ticket) => {
     if (!metaCapi?.isConfigured?.()) return;
-    const lead = ticket.passengers?.[0];
-    const phone = ticket.phoneNumber?.code && ticket.phoneNumber?.digits
-      ? `${ticket.phoneNumber.code}${ticket.phoneNumber.digits}`
-      : undefined;
     try {
       await metaCapi.trackPurchase({
         eventId: `dummy-ticket:${ticket.sessionId}`,
@@ -775,21 +827,50 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
         eventSourceUrl: `${frontendUrl}/booking/payment`,
         value: ticket.amountPaid?.amount,
         currency: ticket.amountPaid?.currency,
-        user: {
-          email: ticket.email,
-          phone,
-          firstName: lead?.firstName,
-          lastName: lead?.lastName,
-          externalId: ticket.email?.toLowerCase(),
-          clientIp: ticket.metaAttribution?.clientIp,
-          userAgent: ticket.metaAttribution?.userAgent,
-          fbp: ticket.metaAttribution?.fbp,
-          fbc: ticket.metaAttribution?.fbc,
-        },
+        user: metaUserFromTicket(ticket),
       });
     } catch (err) {
       logger.warn('[tickets] Meta purchase event failed', { sessionId: ticket.sessionId, error: err.message });
     }
+  };
+
+  const reportLeadToMeta = (ticket, { eventId, value, currency }) => {
+    if (!metaCapi?.isConfigured?.() || !eventId) return;
+    metaCapi
+      .trackLead({
+        eventId,
+        eventTime: new Date(),
+        eventSourceUrl: `${frontendUrl}/booking/passenger-details`,
+        value,
+        currency,
+        user: metaUserFromTicket(ticket),
+      })
+      .catch((err) => {
+        logger.warn('[tickets] Meta lead event failed', {
+          sessionId: ticket.sessionId,
+          error: err.message,
+        });
+      });
+  };
+
+  const reportInitiateCheckoutToMeta = (ticket, { value, currency, numItems }) => {
+    if (!metaCapi?.isConfigured?.()) return;
+    metaCapi
+      .trackInitiateCheckout({
+        eventId: `dummy-ticket-checkout:${ticket.sessionId}`,
+        eventTime: new Date(),
+        eventSourceUrl: `${frontendUrl}/booking/review-details`,
+        value,
+        currency,
+        numItems,
+        user: metaUserFromTicket(ticket),
+      })
+      .catch((err) => {
+        logger.warn('[tickets] Meta checkout event failed', {
+          sessionId: ticket.sessionId,
+          error: err.message,
+        });
+      });
   };
 
   const ticketEvent = ({ actor, action, from = null, to = null, detail = null }) => ({
@@ -1049,7 +1130,17 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       obref: typeof formData.obref === 'string' ? formData.obref.slice(0, 200) : undefined,
     };
 
-    await Ticket.findOneAndUpdate({ sessionId }, { $set: { totalAmount, currency: currencyCode, metaAttribution, openaiAttribution } });
+    const updated = await Ticket.findOneAndUpdate(
+      { sessionId },
+      { $set: { totalAmount, currency: currencyCode, metaAttribution, openaiAttribution } },
+      { returnDocument: 'after' },
+    );
+
+    reportInitiateCheckoutToMeta(updated ?? ticket, {
+      value: totalAmount,
+      currency: currencyCode,
+      numItems: adults + children,
+    });
 
     return paypal.createOrder({
       amount: totalAmount,

@@ -6,3 +6,4 @@ export * from './error-handler.js';
 export * from './attribution.js';
 export * from './env.js';
 export * from './currency.js';
+export * from './contact.js';

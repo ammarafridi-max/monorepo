@@ -26,6 +26,7 @@ export function useCreateDummyTicket({ onAnalytics } = {}) {
       ticketDelivery,
       flightDetails,
       paymentStatus = 'UNPAID',
+      leadEventId,
     }) =>
       createDummyTicketApi({
         type,
@@ -45,6 +46,7 @@ export function useCreateDummyTicket({ onAnalytics } = {}) {
         ticketDelivery,
         flightDetails,
         paymentStatus,
+        leadEventId,
       }),
 
     onSuccess: (data, variables) => {
