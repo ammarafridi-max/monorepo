@@ -27,6 +27,7 @@ export const TICKET_EVENT_ACTIONS = [
   'DELIVERY_CHANGED',
   'RESERVATION_SENT',
   'REFUNDED',
+  'PARTIALLY_REFUNDED',
 ];
 
 const TicketEventSchema = new mongoose.Schema(
@@ -59,7 +60,11 @@ const TicketSchema = new mongoose.Schema(
       infants: { type: Number },
     },
     message: { type: String },
-    paymentStatus: { type: String, enum: ['UNPAID', 'PAID', 'REFUNDED'], default: 'UNPAID' },
+    paymentStatus: {
+      type: String,
+      enum: ['UNPAID', 'PAID', 'REFUNDED', 'PARTIALLY_REFUNDED'],
+      default: 'UNPAID',
+    },
     paidAt: { type: Date, default: null },
     ticketValidity: { type: String, enum: TICKET_VALIDITIES, default: SHORTEST_VALIDITY },
     ticketDelivery: { immediate: { type: Boolean }, deliveryDate: { type: String } },
@@ -97,6 +102,10 @@ const TicketSchema = new mongoose.Schema(
     },
     affiliatePayout: { type: mongoose.Schema.ObjectId, ref: 'affiliate-payout', default: null },
     refundedAt: { type: Date, default: null },
+    refundedAmount: {
+      currency: { type: String, default: null, uppercase: true, trim: true },
+      amount: { type: Number, default: null, min: 0 },
+    },
     events: { type: [TicketEventSchema], default: [] },
     attribution: attributionSchemaField(),
     openaiAttribution: {

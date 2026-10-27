@@ -144,7 +144,7 @@ function buildSearchFilter(search) {
 }
 
 const FILTERABLE_FIELDS = {
-  paymentStatus: ['UNPAID', 'PAID', 'REFUNDED'],
+  paymentStatus: ['UNPAID', 'PAID', 'REFUNDED', 'PARTIALLY_REFUNDED'],
   orderStatus: ['PENDING', 'DELIVERED', 'PROGRESS', 'REFUNDED'],
   type: ['One Way', 'Return'],
   ticketValidity: TICKET_VALIDITIES,
@@ -362,6 +362,7 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
             paid: countWhen(IS_PAID),
             unpaid: countWhen({ $eq: ['$paymentStatus', 'UNPAID'] }),
             refunded: countWhen({ $eq: ['$paymentStatus', 'REFUNDED'] }),
+            partiallyRefunded: countWhen({ $eq: ['$paymentStatus', 'PARTIALLY_REFUNDED'] }),
             pending: countWhen({ $eq: ['$orderStatus', 'PENDING'] }),
             delivered: countWhen({ $eq: ['$orderStatus', 'DELIVERED'] }),
             progress: countWhen({ $eq: ['$orderStatus', 'PROGRESS'] }),
@@ -383,6 +384,7 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
         PAID: agg?.paid ?? 0,
         UNPAID: agg?.unpaid ?? 0,
         REFUNDED: agg?.refunded ?? 0,
+        PARTIALLY_REFUNDED: agg?.partiallyRefunded ?? 0,
       },
       orderStatus: {
         PENDING: agg?.pending ?? 0,

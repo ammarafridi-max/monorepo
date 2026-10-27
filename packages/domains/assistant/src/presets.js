@@ -22,7 +22,7 @@ export const dummyTickets = (model, overrides = {}) =>
     fields: [
       { name: 'createdAt', type: 'date' },
       { name: 'paidAt', type: 'date' },
-      { name: 'paymentStatus', type: 'enum', values: ['UNPAID', 'PAID', 'REFUNDED'] },
+      { name: 'paymentStatus', type: 'enum', values: ['UNPAID', 'PAID', 'REFUNDED', 'PARTIALLY_REFUNDED'] },
       { name: 'orderStatus', type: 'enum', values: ['PENDING', 'DELIVERED', 'PROGRESS', 'REFUNDED'] },
       { name: 'type', type: 'enum', values: ['One Way', 'Return'] },
       { name: 'from', type: 'string', searchable: true },

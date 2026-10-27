@@ -45,9 +45,10 @@ const TIME_OPTIONS = [
 ];
 
 const PAYMENT_CFG = {
-  PAID:     { dot: 'bg-green-500', cls: 'bg-green-50  text-green-700  border-green-200'  },
-  UNPAID:   { dot: 'bg-amber-400', cls: 'bg-amber-50  text-amber-700  border-amber-200'  },
-  REFUNDED: { dot: 'bg-gray-400',  cls: 'bg-gray-100  text-gray-600   border-gray-200'   },
+  PAID:               { dot: 'bg-green-500',  cls: 'bg-green-50  text-green-700  border-green-200'  },
+  UNPAID:             { dot: 'bg-amber-400',  cls: 'bg-amber-50  text-amber-700  border-amber-200'  },
+  REFUNDED:           { dot: 'bg-gray-400',   cls: 'bg-gray-100  text-gray-600   border-gray-200'   },
+  PARTIALLY_REFUNDED: { dot: 'bg-orange-400', cls: 'bg-orange-50 text-orange-700 border-orange-200' },
 };
 
 const ORDER_CFG = {
