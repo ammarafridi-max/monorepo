@@ -16,6 +16,15 @@ export function createFlightController({ service }) {
     res.status(200).json({ status: 'success', results: data.length, data });
   });
 
+  const updateAirline = catchAsync(async (req, res) => {
+    const airline = await service.updateAirline({
+      iataCode: req.params.airlineCode,
+      isVisible: req.body?.isVisible,
+      ticketValidities: req.body?.ticketValidities,
+    });
+    res.status(200).json({ status: 'success', data: airline });
+  });
+
   const updateAirlineLogo = catchAsync(async (req, res) => {
     const airline = await service.setAirlineLogo({
       iataCode: req.params.airlineCode,
@@ -23,6 +32,19 @@ export function createFlightController({ service }) {
       mimetype: req.file?.mimetype,
     });
     res.status(200).json({ status: 'success', data: airline });
+  });
+
+  const adoptAirlineLogo = catchAsync(async (req, res) => {
+    const airline = await service.adoptLogoCandidate({
+      iataCode: req.params.airlineCode,
+      url: req.body?.url,
+    });
+    res.status(200).json({ status: 'success', data: airline });
+  });
+
+  const adoptHighConfidenceLogos = catchAsync(async (req, res) => {
+    const result = await service.adoptHighConfidenceLogos({ dryRun: req.body?.dryRun === true });
+    res.status(200).json({ status: 'success', data: result });
   });
 
   const deleteAirlineLogo = catchAsync(async (req, res) => {
@@ -39,7 +61,10 @@ export function createFlightController({ service }) {
     fetchFlightsList,
     addAirlineInfoByCode,
     fetchAirlines,
+    updateAirline,
     updateAirlineLogo,
+    adoptAirlineLogo,
+    adoptHighConfidenceLogos,
     deleteAirlineLogo,
     fetchAirports,
   };

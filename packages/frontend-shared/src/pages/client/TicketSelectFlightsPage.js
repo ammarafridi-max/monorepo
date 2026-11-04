@@ -44,6 +44,7 @@ export default function TicketSelectFlightsPage({ supportEmail, searchPath = '/'
     departureDate,
     returnDate,
     quantity,
+    ticketValidity,
   });
   const { selectedCurrency } = useCurrency();
   const { pricing } = useDummyTicketPricing(selectedCurrency?.code);

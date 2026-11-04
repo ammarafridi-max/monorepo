@@ -6,14 +6,17 @@ export default function SectionHeading({
   as: Tag = 'h2',
   className = '',
 }) {
-  const cls = ['sechead', align === 'center' ? 'sechead--center' : '', className]
+  const split = align !== 'center' && Boolean(lede);
+  const cls = ['sechead', align === 'center' ? 'sechead--center' : '', split ? 'sechead--split' : '', className]
     .filter(Boolean)
     .join(' ');
 
   return (
     <header className={cls}>
-      {eyebrow && <p className="eyebrow">{eyebrow}</p>}
-      <Tag className="h2">{title}</Tag>
+      <div className="sechead__main">
+        {eyebrow && <p className="eyebrow">{eyebrow}</p>}
+        <Tag className="h2">{title}</Tag>
+      </div>
       {lede && <p className="section__lede">{lede}</p>}
     </header>
   );

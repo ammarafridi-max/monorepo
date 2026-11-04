@@ -1,24 +1,27 @@
 import { tiersFor, fromPriceFor, isFreeTier } from '@travel-suite/picturesk-shared/pricing';
 import { planNotes } from '../data/landing';
 import Check from '../components/Check';
+import Guarantee from '../components/Guarantee';
 import Container from '../components/Container';
 import SectionHeading from '../components/SectionHeading';
 
 const usd = (cents) => `$${Math.round(cents / 100)}`;
 
-const TURNAROUND = { 3: 'Standard queue', 2: 'Priority queue', 1: 'Front of the queue' };
+const queueLabel = (priority) =>
+  priority <= 1 ? 'Front of the queue' : priority <= 2 ? 'Priority queue' : 'Standard queue';
 const NOUN = { headshots: 'headshots', dating: 'photos' };
 const LOOK_NOUN = { headshots: 'background', dating: 'scene' };
 
 const optionLabel = (n, noun) =>
   n == null ? `All ${noun} options` : `${n} ${noun} option${n === 1 ? '' : 's'}`;
 
-const includesFor = (tier) => [
-  `${tier.deliverCount} ${NOUN[tier.product]}`,
-  optionLabel(tier.attireCount, 'outfit'),
-  optionLabel(tier.lookCount, LOOK_NOUN[tier.product]),
-  TURNAROUND[tier.priority],
-];
+const includesFor = (tier) =>
+  [
+    `${tier.deliverCount} ${NOUN[tier.product]}`,
+    optionLabel(tier.attireCount, 'outfit'),
+    optionLabel(tier.lookCount, LOOK_NOUN[tier.product]),
+    queueLabel(tier.priority),
+  ].filter(Boolean);
 
 export default function Pricing({
   eyebrow = 'Pricing',
@@ -75,6 +78,8 @@ export default function Pricing({
             );
           })}
         </div>
+
+        <Guarantee />
 
         <a className="btn btn--primary btn--block" href={href}>
           {cta} <span className="btn__price">from ${from}</span>

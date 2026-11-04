@@ -12,6 +12,7 @@ import { createCurrenciesRouter } from "@travel-suite/currencies";
 import {
   createFlightRouter,
   createAirportsRouter,
+  createAirlineSellabilityGate,
 } from "@travel-suite/flights";
 import { createAirLabsClient } from "@travel-suite/airlabs";
 import { createSerpApiClient } from "@travel-suite/serpapi";
@@ -176,6 +177,7 @@ const {
   TicketModel,
 } = createTicketsRouter({
   db,
+  airlineRules: createAirlineSellabilityGate({ db }),
   auth,
   stripe,
   paypal,

@@ -14,12 +14,14 @@ import Cross from '../Cross';
 const usd = (cents) => `$${Math.round(cents / 100)}`;
 const plural = (n, noun) => `${n} ${noun}${n === 1 ? '' : 's'}`;
 const scope = (n, noun) => (n == null ? `All ${noun}s` : plural(n, noun));
+const queueLabel = (priority) =>
+  priority <= 1 ? 'Front of the queue' : priority <= 2 ? 'Priority queue' : 'Standard queue';
 
 const featuresFor = (t, lookNoun) => [
   { ok: true, text: `${t.deliverCount} photos` },
   { ok: true, text: scope(t.attireCount, 'outfit') },
   { ok: true, text: scope(t.lookCount, lookNoun) },
-  { ok: t.priority <= 2, text: t.priority === 1 ? 'Front of the queue' : 'Priority queue' },
+  { ok: t.priority <= 2, text: queueLabel(t.priority) },
   { ok: !isFreeTier(t), text: 'Look-like-you money-back guarantee' },
 ];
 

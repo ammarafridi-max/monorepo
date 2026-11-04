@@ -14,6 +14,14 @@ const hashed = (value, normalize) => {
 const normalizeEmail = (v) => v.trim().toLowerCase();
 const normalizePhone = (v) => v.replace(/\D/g, '');
 const normalizeName = (v) => v.trim().toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+const normalizeGender = (v) => {
+  const g = v.trim().toLowerCase();
+  return g === 'm' || g === 'f' ? g : '';
+};
+const normalizeCountry = (v) => {
+  const c = v.trim().toLowerCase();
+  return /^[a-z]{2}$/.test(c) ? c : '';
+};
 
 export function createMetaCapiClient({ pixelId, accessToken, testEventCode, logger } = {}) {
   const isConfigured = () => Boolean(pixelId && accessToken);
@@ -33,6 +41,8 @@ export function createMetaCapiClient({ pixelId, accessToken, testEventCode, logg
       ph: hashed(user.phone, normalizePhone),
       fn: hashed(user.firstName, normalizeName),
       ln: hashed(user.lastName, normalizeName),
+      ge: hashed(user.gender, normalizeGender),
+      country: hashed(user.country, normalizeCountry),
       external_id: hashed(user.externalId, (v) => v.trim()),
       client_ip_address: user.clientIp || undefined,
       client_user_agent: user.userAgent || undefined,
@@ -74,5 +84,16 @@ export function createMetaCapiClient({ pixelId, accessToken, testEventCode, logg
   const trackPurchase = ({ eventId, value, currency, ...rest }) =>
     sendEvent({ eventName: 'Purchase', eventId, customData: { value, currency }, ...rest });
 
-  return { isConfigured, sendEvent, trackPurchase };
+  const trackInitiateCheckout = ({ eventId, value, currency, numItems, ...rest }) =>
+    sendEvent({
+      eventName: 'InitiateCheckout',
+      eventId,
+      customData: { value, currency, ...(numItems ? { num_items: numItems } : {}) },
+      ...rest,
+    });
+
+  const trackLead = ({ eventId, value, currency, ...rest }) =>
+    sendEvent({ eventName: 'Lead', eventId, customData: { value, currency }, ...rest });
+
+  return { isConfigured, sendEvent, trackPurchase, trackInitiateCheckout, trackLead };
 }

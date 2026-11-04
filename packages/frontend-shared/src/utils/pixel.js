@@ -61,8 +61,17 @@ export function pixelCustomEvent(event, data = {}) {
   fbq("trackCustom", event, data);
 }
 
-export function pixelLead({ currency, value = 0 } = {}) {
-  pixelEvent("Lead", { currency, value });
+export function newEventKey() {
+  try {
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+      return crypto.randomUUID();
+    }
+  } catch {}
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+}
+
+export function pixelLead({ currency, value = 0, eventId } = {}) {
+  pixelEvent("Lead", { currency, value }, eventId);
 }
 
 export function pixelViewContent({
@@ -77,8 +86,9 @@ export function pixelInitiateCheckout({
   currency,
   value = 0,
   numItems = 1,
+  eventId,
 } = {}) {
-  pixelEvent("InitiateCheckout", { currency, value, num_items: numItems });
+  pixelEvent("InitiateCheckout", { currency, value, num_items: numItems }, eventId);
 }
 
 export function pixelPurchase({ currency, value = 0, eventId } = {}) {

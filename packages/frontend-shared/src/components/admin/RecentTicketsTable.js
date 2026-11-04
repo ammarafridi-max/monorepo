@@ -21,6 +21,11 @@ function PaymentBadge({ status }) {
         cls: "bg-gray-100 text-gray-600 border-gray-200",
         dot: "bg-gray-400",
       },
+      PARTIALLY_REFUNDED: {
+        label: "Partly refunded",
+        cls: "bg-orange-50 text-orange-700 border-orange-200",
+        dot: "bg-orange-400",
+      },
     }[status] || {
       label: status || "—",
       cls: "bg-gray-100 text-gray-600 border-gray-200",

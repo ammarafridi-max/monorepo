@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ChevronDown, Mail, Plane, Rss, ShieldPlus } from 'lucide-react';
 import Container from './Container';
-import Currency from '../flight/Currency';
+import Currency from '../Currency';
 import BrandMark from './BrandMark';
 
 export const defaultPages = [

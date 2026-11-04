@@ -6,7 +6,7 @@ import { ChevronRight, Menu, X, User, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../../contexts/AuthContextBase.js";
 import { logoutUserSessionApi } from "../../../services/apiAuth.js";
-import Currency from "../../ui/v2/Currency.js";
+import Currency from "../../shared/Currency.js";
 
 export default function MobileNavigation({
   pages = [],

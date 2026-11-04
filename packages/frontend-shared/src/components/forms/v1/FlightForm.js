@@ -19,7 +19,7 @@ import { FaInfo } from 'react-icons/fa';
 
 import { useDummyTicketPricing } from '../../../hooks/pricing/useDummyTicketPricing';
 import { trackAddToCart } from '../../../utils/analytics';
-import { pixelLead } from '../../../utils/pixel';
+import { newEventKey, pixelLead } from '../../../utils/pixel';
 import { normalizePricingOptions } from '../../../utils/dummyTicketPricing';
 import { useCurrency } from '../../../contexts/CurrencyContext.js';
 import { normalizeAmount } from '../../../utils/currency';
@@ -226,12 +226,15 @@ export default function FlightForm() {
       passengers: quantity.adults + quantity.children,
       currency: selectedCurrency?.code || 'AED',
     });
+    const leadEventId = newEventKey();
     pixelLead({
       currency: selectedCurrency?.code || 'AED',
       value: parseFloat(((ticketPrice || 0) * (quantity.adults + quantity.children || 1)).toFixed(2)),
+      eventId: `dummy-ticket-lead:${leadEventId}`,
     });
 
     createDummyTicket({
+      leadEventId,
       type,
       from,
       to,

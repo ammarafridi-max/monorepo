@@ -117,6 +117,7 @@ const pillStyle = (text) => {
     PENDING:   { bg: '#fac775', fg: '#633806' },
     DELIVERED: { bg: '#97c459', fg: '#173404' },
     REFUNDED:  { bg: '#f09595', fg: '#501313' },
+    PARTIALLY_REFUNDED: { bg: '#f5c08a', fg: '#4a2c06' },
     UNPAID:    { bg: '#5f5e5a', fg: '#ffffff' },
   };
   const c = map[String(text).toUpperCase()] || { bg: '#5f5e5a', fg: '#fff' };
