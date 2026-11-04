@@ -1,4 +1,5 @@
 import { AppError } from '@travel-suite/utils';
+import { TICKET_VALIDITIES } from '@travel-suite/utils/ticket-validity';
 
 const AIRLINE_LOGO_EXT = {
   A3:'png', AA:'jpg', AF:'png', AI:'jpg', AT:'png', AY:'png', AZ:'png',
@@ -121,39 +122,78 @@ function wrapFlight(itineraries) {
   return { itineraries, validatingAirlineCodes };
 }
 
-const LOGO_CACHE_TTL_MS = 10 * 60 * 1000;
+function isCarrierSellable(rule, validity) {
+  if (!rule) return true;
+  if (rule.isVisible === false) return false;
+  if (!Array.isArray(rule.ticketValidities)) return true;
+  if (rule.ticketValidities.length === 0) return false;
+  if (!validity) return true;
+  return rule.ticketValidities.includes(validity);
+}
 
-export function createFlightService({ Airline, airlabs, serpapi, logoStorage, logoCacheTtlMs = LOGO_CACHE_TTL_MS }) {
+function itineraryFilter(rules, validity) {
+  return (itinerary) =>
+    itinerary.segments.every((s) => isCarrierSellable(rules.get(s.carrierCode), validity));
+}
+
+const AIRLINE_CACHE_TTL_MS = 10 * 60 * 1000;
+const LOGO_MAX_BYTES = 2 * 1024 * 1024;
+const LOGO_FIT = [{ width: 500, height: 500, crop: 'fit' }];
+const HIGH_CONFIDENCE_SCORE = 100;
+const ADOPT_CONCURRENCY = 4;
+
+function bestCandidate(airline) {
+  const list = airline.logoCandidates || [];
+  if (!list.length) return null;
+  return [...list].sort((a, b) => (b.score ?? 0) - (a.score ?? 0))[0];
+}
+
+function isHighConfidence(candidate) {
+  if (!candidate || candidate.lowRes) return false;
+  if (candidate.source !== 'wikimedia') return false;
+  return (candidate.score ?? 0) >= HIGH_CONFIDENCE_SCORE;
+}
+
+async function runWithConcurrency(items, limit, worker) {
+  const queue = [...items];
+  const runners = Array.from({ length: Math.min(limit, queue.length) }, async () => {
+    while (queue.length) {
+      const item = queue.shift();
+      await worker(item);
+    }
+  });
+  await Promise.all(runners);
+}
+
+export function createFlightService({ Airline, airlabs, serpapi, logoStorage, airlineCacheTtlMs = AIRLINE_CACHE_TTL_MS }) {
   function requireAirLabs() {
     if (!airlabs) throw new AppError('Airport search is not configured on this server', 503);
   }
 
-  let logoCache = new Map();
-  let logoCacheExpiry = 0;
+  let airlineCache = new Map();
+  let airlineCacheExpiry = 0;
 
-  const refreshLogoCache = async () => {
-    if (!Airline) return logoCache;
-    const rows = await Airline.find({ logo: { $nin: [null, ''] } })
-      .select('iataCode logo')
-      .lean();
-    logoCache = new Map(rows.map((r) => [r.iataCode, r.logo]));
-    logoCacheExpiry = Date.now() + logoCacheTtlMs;
-    return logoCache;
+  const refreshAirlineCache = async () => {
+    if (!Airline) return airlineCache;
+    const rows = await Airline.find().select('iataCode logo isVisible ticketValidities').lean();
+    airlineCache = new Map(rows.map((r) => [r.iataCode, r]));
+    airlineCacheExpiry = Date.now() + airlineCacheTtlMs;
+    return airlineCache;
   };
 
-  const getLogoResolver = async () => {
-    if (Airline && Date.now() >= logoCacheExpiry) {
+  const getAirlineRules = async () => {
+    if (Airline && Date.now() >= airlineCacheExpiry) {
       try {
-        await refreshLogoCache();
+        await refreshAirlineCache();
       } catch {
-        logoCacheExpiry = Date.now() + logoCacheTtlMs;
+        airlineCacheExpiry = Date.now() + airlineCacheTtlMs;
       }
     }
-    return (code) => logoCache.get(code) ?? airlineLogo(code);
+    return airlineCache;
   };
 
-  const invalidateLogoCache = () => {
-    logoCacheExpiry = 0;
+  const invalidateAirlineCache = () => {
+    airlineCacheExpiry = 0;
   };
 
   const addAirlineByCode = async (airlineCode) => {
@@ -175,7 +215,10 @@ export function createFlightService({ Airline, airlabs, serpapi, logoStorage, lo
 
   const listAirlines = async () => {
     if (!Airline) throw new AppError('Airline management is not configured on this server', 503);
-    return Airline.find().select('iataCode icaoCode businessName commonName logo').sort({ iataCode: 1 }).lean();
+    return Airline.find()
+      .select('iataCode icaoCode businessName commonName logo isVisible ticketValidities logoCandidates logoCandidatesAt')
+      .sort({ iataCode: 1 })
+      .lean();
   };
 
   const IATA_PATTERN = /^[A-Z0-9]{2}$/;
@@ -196,9 +239,9 @@ export function createFlightService({ Airline, airlabs, serpapi, logoStorage, lo
     const airline = await Airline.findOne({ iataCode: code });
     if (!airline) throw new AppError('No airline found for that code', 404);
 
-    airline.logo = await logoStorage.saveFile(buffer, code);
+    airline.logo = await logoStorage.saveFile(buffer, code, { transformation: LOGO_FIT, format: 'png' });
     await airline.save();
-    invalidateLogoCache();
+    invalidateAirlineCache();
     return airline;
   };
 
@@ -211,17 +254,145 @@ export function createFlightService({ Airline, airlabs, serpapi, logoStorage, lo
     if (airline.logo && logoStorage) await logoStorage.deleteImage(airline.logo);
     airline.logo = null;
     await airline.save();
-    invalidateLogoCache();
+    invalidateAirlineCache();
     return airline;
   };
 
-  const buildSerpApiFlights = async ({ type, origin, dest, departureDate, returnDate }) => {
+  const updateAirline = async ({ iataCode, isVisible, ticketValidities }) => {
+    if (!Airline) throw new AppError('Airline management is not configured on this server', 503);
+    const code = normaliseCode(iataCode);
+    const airline = await Airline.findOne({ iataCode: code });
+    if (!airline) throw new AppError('No airline found for that code', 404);
+
+    if (isVisible !== undefined) {
+      if (typeof isVisible !== 'boolean') throw new AppError('isVisible must be true or false', 400);
+      airline.isVisible = isVisible;
+    }
+
+    if (ticketValidities !== undefined) {
+      if (!Array.isArray(ticketValidities)) throw new AppError('ticketValidities must be a list', 400);
+      const wanted = new Set(ticketValidities.map((value) => String(value).trim()));
+      const unknown = [...wanted].find((value) => !TICKET_VALIDITIES.includes(value));
+      if (unknown) throw new AppError(`Invalid validity option: ${unknown}`, 400);
+      airline.ticketValidities = TICKET_VALIDITIES.filter((value) => wanted.has(value));
+    }
+
+    await airline.save();
+    invalidateAirlineCache();
+    return airline;
+  };
+
+  const storeLogoFromUrl = async (airline, url) => {
+    let res;
+    try {
+      res = await fetch(url, { redirect: 'follow', signal: AbortSignal.timeout(15000) });
+    } catch {
+      throw new AppError('Could not reach the logo source', 502);
+    }
+    if (!res.ok) throw new AppError(`Logo source returned ${res.status}`, 502);
+
+    const mimetype = res.headers.get('content-type') || '';
+    if (!/^image\//.test(mimetype)) throw new AppError('The logo source did not return an image', 502);
+
+    const buffer = Buffer.from(await res.arrayBuffer());
+    if (!buffer.length) throw new AppError('The logo source returned an empty file', 502);
+    if (buffer.length > LOGO_MAX_BYTES) throw new AppError('That logo is over 2 MB', 400);
+
+    airline.logo = await logoStorage.saveFile(buffer, airline.iataCode, {
+      transformation: LOGO_FIT,
+      format: 'png',
+    });
+    await airline.save();
+    return airline;
+  };
+
+  const adoptLogoCandidate = async ({ iataCode, url }) => {
+    if (!Airline) throw new AppError('Airline management is not configured on this server', 503);
+    if (!logoStorage) throw new AppError('Logo storage is not configured on this server', 503);
+    const code = normaliseCode(iataCode);
+
+    const airline = await Airline.findOne({ iataCode: code });
+    if (!airline) throw new AppError('No airline found for that code', 404);
+
+    const candidate = (airline.logoCandidates || []).find((c) => c.url === url);
+    if (!candidate) throw new AppError('That logo is not one of this airline\'s candidates', 400);
+
+    await storeLogoFromUrl(airline, candidate.url);
+    invalidateAirlineCache();
+    return airline;
+  };
+
+  const adoptHighConfidenceLogos = async ({ dryRun = false } = {}) => {
+    if (!Airline) throw new AppError('Airline management is not configured on this server', 503);
+    if (!logoStorage && !dryRun) throw new AppError('Logo storage is not configured on this server', 503);
+
+    const airlines = await Airline.find({
+      $and: [
+        { $or: [{ logo: { $in: [null, ''] } }, { logo: { $exists: false } }] },
+        { 'logoCandidates.0': { $exists: true } },
+      ],
+    });
+
+    const picks = [];
+    for (const airline of airlines) {
+      const candidate = bestCandidate(airline);
+      if (isHighConfidence(candidate)) picks.push({ airline, candidate });
+    }
+    picks.sort((a, b) => a.airline.iataCode.localeCompare(b.airline.iataCode));
+
+    const pending = picks.map(({ airline, candidate }) => ({
+      iataCode: airline.iataCode,
+      name: airline.commonName || airline.businessName || airline.iataCode,
+      label: candidate.sourceLabel,
+      width: candidate.width,
+      height: candidate.height,
+      mime: candidate.mime,
+      licence: candidate.licence,
+      score: candidate.score,
+    }));
+
+    if (dryRun) return { threshold: HIGH_CONFIDENCE_SCORE, dryRun: true, pending, adopted: [], failed: [] };
+
+    const adopted = [];
+    const failed = [];
+    await runWithConcurrency(picks, ADOPT_CONCURRENCY, async ({ airline, candidate }) => {
+      try {
+        await storeLogoFromUrl(airline, candidate.url);
+        adopted.push({ iataCode: airline.iataCode, logo: airline.logo });
+      } catch (err) {
+        failed.push({ iataCode: airline.iataCode, message: err.message });
+      }
+    });
+
+    if (adopted.length) invalidateAirlineCache();
+    return { threshold: HIGH_CONFIDENCE_SCORE, dryRun: false, pending, adopted, failed };
+  };
+
+  const assertSellable = async ({ carrierCodes = [], validity }) => {
+    const rules = await getAirlineRules();
+    const blocked = [...new Set(carrierCodes.filter(Boolean))].find(
+      (code) => !isCarrierSellable(rules.get(code), validity),
+    );
+    if (!blocked) return;
+    const rule = rules.get(blocked);
+    const offersNothing = rule?.isVisible === false || rule?.ticketValidities?.length === 0;
+    throw new AppError(
+      offersNothing || !validity
+        ? `We are not issuing reservations on ${blocked} right now`
+        : `${blocked} does not offer a ${validity} reservation`,
+      400,
+    );
+  };
+
+  const buildSerpApiFlights = async ({ type, origin, dest, departureDate, returnDate, isSellable }) => {
     const outboundOffers = await serpapi.searchOneWay({
       departureId: origin,
       arrivalId: dest,
       outboundDate: departureDate,
     });
-    const outbound = rankOffers(outboundOffers).map(offerToItinerary).filter((it) => it.segments.length);
+    const outbound = rankOffers(outboundOffers)
+      .map(offerToItinerary)
+      .filter((it) => it.segments.length && isSellable(it));
     if (!outbound.length) return [];
 
     if (type !== 'Return') {
@@ -233,13 +404,15 @@ export function createFlightService({ Airline, airlabs, serpapi, logoStorage, lo
       arrivalId: origin,
       outboundDate: returnDate,
     });
-    const inbound = rankOffers(inboundOffers).map(offerToItinerary).filter((it) => it.segments.length);
+    const inbound = rankOffers(inboundOffers)
+      .map(offerToItinerary)
+      .filter((it) => it.segments.length && isSellable(it));
     if (!inbound.length) return [];
 
     return outbound.slice(0, 12).map((out, i) => wrapFlight([out, inbound[i % inbound.length]]));
   };
 
-  const searchFlights = async ({ type, from, to, departureDate, returnDate, quantity = {} }) => {
+  const searchFlights = async ({ type, from, to, departureDate, returnDate, quantity = {}, ticketValidity }) => {
     if (!serpapi) {
       throw new AppError('Flight search is not configured on this server', 503);
     }
@@ -256,6 +429,11 @@ export function createFlightService({ Airline, airlabs, serpapi, logoStorage, lo
       throw new AppError('Please provide valid airport selections', 400);
     }
 
+    const validity = String(ticketValidity || '').trim();
+    if (validity && !TICKET_VALIDITIES.includes(validity)) {
+      throw new AppError('Please provide a valid ticket validity', 400);
+    }
+
     const adults = Number(quantity.adults || 1);
     const totalPassengers = adults + Number(quantity.children || 0) + Number(quantity.infants || 0);
     if (adults < 1 || totalPassengers < 1 || totalPassengers > 9) {
@@ -263,8 +441,18 @@ export function createFlightService({ Airline, airlabs, serpapi, logoStorage, lo
     }
 
     try {
-      const serpFlights = await buildSerpApiFlights({ type, origin, dest, departureDate, returnDate });
-      if (serpFlights.length) return attachAirlines(serpFlights, await getLogoResolver());
+      const rules = await getAirlineRules();
+      const serpFlights = await buildSerpApiFlights({
+        type,
+        origin,
+        dest,
+        departureDate,
+        returnDate,
+        isSellable: itineraryFilter(rules, validity),
+      });
+      if (serpFlights.length) {
+        return attachAirlines(serpFlights, (code) => rules.get(code)?.logo || airlineLogo(code));
+      }
     } catch (err) {
       console.error('[flights] serpapi search failed:', err.message);
     }
@@ -324,6 +512,10 @@ export function createFlightService({ Airline, airlabs, serpapi, logoStorage, lo
     searchFlights,
     fetchAirports,
     fetchCities,
-    invalidateLogoCache,
+    updateAirline,
+    adoptLogoCandidate,
+    adoptHighConfidenceLogos,
+    assertSellable,
+    invalidateAirlineCache,
   };
 }

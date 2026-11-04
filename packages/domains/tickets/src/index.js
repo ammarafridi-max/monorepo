@@ -11,7 +11,7 @@ import { createPaidOrderBus } from './paidOrderBus.js';
 import { getOrRegisterModel } from '@travel-suite/utils/model';
 
 
-export function createTicketsRouter({ db, auth, stripe, paypal, notifications, frontendUrl, AffiliateModel, brevo, reviewListId, reservationStorage, sendEmail, metaCapi, openaiCapi }) {
+export function createTicketsRouter({ db, auth, stripe, paypal, notifications, frontendUrl, AffiliateModel, brevo, reviewListId, reservationStorage, sendEmail, metaCapi, openaiCapi, airlineRules = null }) {
   if (!AffiliateModel) {
     throw new Error('createTicketsRouter requires AffiliateModel: pass the Affiliate model registered from @travel-suite/affiliates');
   }
@@ -26,7 +26,7 @@ export function createTicketsRouter({ db, auth, stripe, paypal, notifications, f
 
   const paidOrderBus = createPaidOrderBus();
 
-  const service = createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, paypal, notifications, frontendUrl, brevo, reviewListId, paidOrderBus, reservationStorage, sendEmail, metaCapi, openaiCapi });
+  const service = createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, paypal, notifications, frontendUrl, brevo, reviewListId, paidOrderBus, reservationStorage, sendEmail, metaCapi, openaiCapi, airlineRules });
   const controller = createTicketController({ service, paidOrderBus });
   const router = createTicketRouter({ controller, auth });
 

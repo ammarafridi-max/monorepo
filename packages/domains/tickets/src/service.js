@@ -125,6 +125,13 @@ function pickTicketInput(payload = {}) {
   };
 }
 
+function carrierCodesOf(flightDetails) {
+  return [flightDetails?.departureFlight, flightDetails?.returnFlight]
+    .flatMap((flight) => flight?.segments || [])
+    .map((segment) => segment?.carrierCode)
+    .filter(Boolean);
+}
+
 function buildSearchFilter(search) {
   if (!search) return {};
   const term = String(search).trim();
@@ -300,7 +307,7 @@ function rebuildFbc(ticket) {
   return undefined;
 }
 
-export function createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, paypal, notifications, frontendUrl, brevo, reviewListId, paidOrderBus, reservationStorage, sendEmail, metaCapi, openaiCapi }) {
+export function createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, paypal, notifications, frontendUrl, brevo, reviewListId, paidOrderBus, reservationStorage, sendEmail, metaCapi, openaiCapi, airlineRules = null }) {
   // getUnitPrice already prices in the requested currency, so nothing here converts a second time.
   const resolveTicketAmount = async ({ validity, passengers, targetCode }) => {
     const { currency: currencyCode, unitPrice } = await pricingService.getUnitPrice(
@@ -640,6 +647,13 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     assertDeliveryAndValidity(payload);
 
     const input = pickTicketInput(payload);
+
+    if (airlineRules) {
+      await airlineRules.assertSellable({
+        carrierCodes: carrierCodesOf(input.flightDetails),
+        validity: input.ticketValidity,
+      });
+    }
 
     // Priced before the ticket exists so a validity that is off sale never becomes an unpayable order.
     const requestedCurrency = pickCurrencyCode(payload?.currency);

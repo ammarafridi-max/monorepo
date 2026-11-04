@@ -12,13 +12,26 @@ export function createFlightRouterFromParts({ controller, auth }) {
 
   router.post('/', controller.fetchFlightsList);
   router.get('/airlines', protect, restrictTo('admin'), controller.fetchAirlines);
+  router.post(
+    '/airlines/logos/adopt-high-confidence',
+    protect,
+    restrictTo('admin'),
+    controller.adoptHighConfidenceLogos,
+  );
   router.post('/airlines/:airlineCode', protect, restrictTo('admin'), controller.addAirlineInfoByCode);
+  router.patch('/airlines/:airlineCode', protect, restrictTo('admin'), controller.updateAirline);
   router.patch(
     '/airlines/:airlineCode/logo',
     protect,
     restrictTo('admin'),
     uploadLogo.single('logo'),
     controller.updateAirlineLogo,
+  );
+  router.post(
+    '/airlines/:airlineCode/logo/from-candidate',
+    protect,
+    restrictTo('admin'),
+    controller.adoptAirlineLogo,
   );
   router.delete('/airlines/:airlineCode/logo', protect, restrictTo('admin'), controller.deleteAirlineLogo);
 

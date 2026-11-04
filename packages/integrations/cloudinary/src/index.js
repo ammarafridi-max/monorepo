@@ -36,13 +36,15 @@ export function createCloudinaryStorage({ cloudName, apiKey, apiSecret, logger, 
     return uploadBuffer(buffer, { folder: `${folder}/${blogId}` });
   };
 
-  const saveFile = async (buffer, subPath, { resourceType = 'image' } = {}) => {
+  const saveFile = async (buffer, subPath, { resourceType = 'image', transformation, format } = {}) => {
     if (!isConfigured) throw new AppError('File upload service is not configured', 500);
     return uploadBuffer(buffer, {
       public_id: `${folder}/${subPath}`,
       resource_type: resourceType,
       overwrite: true,
       invalidate: true,
+      ...(transformation ? { transformation } : {}),
+      ...(format ? { format } : {}),
     });
   };
 

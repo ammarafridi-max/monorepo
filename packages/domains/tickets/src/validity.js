@@ -1,10 +1,6 @@
-export const TICKET_VALIDITIES = ['2 Days', '7 Days', '14 Days'];
+import { TICKET_VALIDITIES } from '@travel-suite/utils/ticket-validity';
 
-export const SHORTEST_VALIDITY = TICKET_VALIDITIES[0];
-
-export const VALIDITY_DAYS = Object.fromEntries(
-  TICKET_VALIDITIES.map((validity) => [validity, parseInt(validity, 10)]),
-);
+export { TICKET_VALIDITIES, SHORTEST_VALIDITY, VALIDITY_DAYS } from '@travel-suite/utils/ticket-validity';
 
 const DEFAULT_PRICES = { '2 Days': 49, '7 Days': 69, '14 Days': 79 };
 

@@ -8,7 +8,11 @@ import { createBlogRouter, createBlogTagRouter } from "@travel-suite/blog";
 import { createItinerariesRouter } from "@travel-suite/itineraries";
 import { createLocationsRouter } from "@travel-suite/locations";
 import { createAirLabsClient } from "@travel-suite/airlabs";
-import { createFlightRouter, createAirportsRouter } from "@travel-suite/flights";
+import {
+  createFlightRouter,
+  createAirportsRouter,
+  createAirlineSellabilityGate,
+} from "@travel-suite/flights";
 import { createSerpApiClient } from "@travel-suite/serpapi";
 import { createTicketsRouter } from "@travel-suite/tickets";
 import {
@@ -180,6 +184,7 @@ const {
   TicketModel,
 } = createTicketsRouter({
   db,
+  airlineRules: createAirlineSellabilityGate({ db }),
   auth,
   stripe,
   notifications,

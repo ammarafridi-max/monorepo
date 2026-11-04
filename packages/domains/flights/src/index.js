@@ -12,6 +12,12 @@ export function createFlightRouter({ db, airlabs, serpapi, auth, logoStorage }) 
   return createFlightRouterFromParts({ controller, auth });
 }
 
+export function createAirlineSellabilityGate({ db }) {
+  const Airline = getOrRegisterModel(db, 'airline', AirlineSchema);
+  const service = createFlightService({ Airline });
+  return { assertSellable: service.assertSellable };
+}
+
 export function createAirportsRouter({ airlabs }) {
   const service = createFlightService({ Airline: null, airlabs });
   const controller = createFlightController({ service });

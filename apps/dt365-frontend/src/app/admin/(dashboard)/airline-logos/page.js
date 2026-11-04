@@ -1,2 +1,2 @@
 'use client';
-export { default } from '@travel-suite/frontend-shared/pages/admin/AdminAirlineLogosPage';
+export { default } from '@travel-suite/frontend-shared/pages/admin/AdminAirlinesPage';
