@@ -37,6 +37,13 @@ export default function FaqPage() {
       lede="Everything people ask before they buy. If your question is not here, our contact page is a click away."
     >
       <FaqGroups groups={groupedFaq} />
+      <p>
+        Still deciding? Compare <a href="/pricing">every plan and price</a>, see how the{' '}
+        <a href="/ai-headshot-generator">AI headshot generator</a> works, or read{' '}
+        <a href="/ai-headshots-vs-photographer">AI headshots vs a photographer</a>. For dating
+        profiles, see <a href="/ai-dating-photos">AI dating photos</a>. More detail in the{' '}
+        <a href="/blog">guides</a>.
+      </p>
     </ContentPage>
   );
 }

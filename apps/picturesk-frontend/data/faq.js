@@ -84,7 +84,7 @@ export const faq = [
 
 export const homeFaq = faq.filter((item) => item.home);
 
-export const FAQ_GROUPS = ['Results and likeness', 'Your photos', 'Plans, payment and refunds', 'Delivery and use'];
+const FAQ_GROUPS = ['Results and likeness', 'Your photos', 'Plans, payment and refunds', 'Delivery and use'];
 
 export const groupedFaq = FAQ_GROUPS.map((label) => ({
   label,

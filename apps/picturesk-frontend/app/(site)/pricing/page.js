@@ -22,7 +22,14 @@ export default function PricingPage() {
       />
       <main>
         <LandingHero {...hero} cta="Get my headshots" href={FUNNEL} />
-        <Pricing {...pricing} />
+        <Pricing
+          {...pricing}
+          related={[
+            { before: 'Buying for a profile? ', label: 'LinkedIn headshots', href: '/linkedin-headshots', after: '. Weighing up a studio? ' },
+            { before: '', label: 'AI headshots vs a photographer', href: '/ai-headshots-vs-photographer', after: '. New to this? ' },
+            { before: '', label: 'How the generator works', href: '/ai-headshot-generator', after: '.' },
+          ]}
+        />
         <Pricing
           eyebrow="Dating photos"
           title="Dating photos. Three packs, one time."

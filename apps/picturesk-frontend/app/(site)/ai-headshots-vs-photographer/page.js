@@ -35,7 +35,14 @@ export default function AiHeadshotsVsPhotographerPage() {
           variant="grid"
         />
         <Showcase />
-        <Pricing {...pricing} />
+        <Pricing
+          {...pricing}
+          related={[
+            { before: 'Every plan is listed on our ', label: 'pricing page', href: '/pricing', after: '. For the profile most people need first, see ' },
+            { before: '', label: 'LinkedIn headshots', href: '/linkedin-headshots', after: ', or read ' },
+            { before: '', label: 'what professional headshots cost', href: '/blog/how-much-do-professional-headshots-cost', after: ' in full.' },
+          ]}
+        />
         <Faq {...faq} />
 
         <section className="section start">

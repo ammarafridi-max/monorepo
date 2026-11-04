@@ -32,6 +32,7 @@ export function createPipeline({
   scoreIdentity = async () => ({ score: 0, costUsd: 0 }),
   swapFace,
   enhanceFace,
+  blurBackground,
   persistImage,
   persistWeights,
   generateCount = 14,
@@ -279,6 +280,24 @@ export function createPipeline({
         console.log(`[worker] order ${orderId} enhanced ${i + 1}/${deliveredImageUrls.length}`);
       }
       deliveredImageUrls = enhanced;
+    }
+
+    if (blurBackground && deliveredImageUrls.length > 0) {
+      const blurred = [...(order.blurredImageUrls ?? [])];
+      for (let i = 0; i < deliveredImageUrls.length; i++) {
+        if (blurred[i]) continue;
+        const { imageUrl, costUsd } = await blurBackground(
+          deliveredImageUrls[i],
+          `blurred/${orderId}/${i}`
+        );
+        blurred[i] = imageUrl;
+        await Order.updateOne(
+          { _id: orderId },
+          { $set: { blurredImageUrls: blurred }, $inc: { computeCostCents: usdToCents(costUsd) } }
+        );
+        console.log(`[worker] order ${orderId} blurred ${i + 1}/${deliveredImageUrls.length}`);
+      }
+      deliveredImageUrls = blurred;
     }
 
     if (persistImage && deliveredImageUrls.length > 0) {

@@ -95,6 +95,15 @@ const enhanceFace = ENHANCE_FACE
     ).enhanceFace
   : undefined;
 
+const BLUR_BACKGROUND = (process.env.BLUR_BACKGROUND ?? 'off') === 'on';
+const blurBackground = BLUR_BACKGROUND
+  ? (
+      USE_FAKE_REPLICATE
+        ? await import('./pipeline/blurBackground.fake.js')
+        : await import('./pipeline/blurBackground.js')
+    ).createBackgroundBlurrer()
+  : undefined;
+
 const PERSIST_DELIVERED = (process.env.PERSIST_DELIVERED ?? 'on') !== 'off';
 const persistImage = PERSIST_DELIVERED
   ? (
@@ -117,6 +126,9 @@ console.log(
 console.log(`[worker] face swap ${FACE_SWAP ? 'ON' : 'OFF (set REPLICATE_FACE_SWAP_MODEL to enable)'}`);
 console.log(
   `[worker] realism enhance ${ENHANCE_FACE ? 'ON' : 'OFF (set REPLICATE_ENHANCE_MODEL to enable)'}`
+);
+console.log(
+  `[worker] background blur ${BLUR_BACKGROUND ? 'ON' : 'OFF (set BLUR_BACKGROUND=on to enable)'}`
 );
 console.log(
   `[worker] delivered-image persistence ${PERSIST_DELIVERED ? 'ON (copied to R2)' : 'OFF (PERSIST_DELIVERED=off)'}`
@@ -228,6 +240,7 @@ const pipeline = createPipeline({
   scoreIdentity,
   swapFace,
   enhanceFace,
+  blurBackground,
   persistImage,
   persistWeights,
   generateCount: GENERATE_COUNT,

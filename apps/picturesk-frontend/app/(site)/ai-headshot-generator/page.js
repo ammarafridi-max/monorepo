@@ -64,7 +64,13 @@ export default function AiHeadshotGeneratorPage() {
       <main>
         <Hero />
         <HowItWorks />
-        <Pricing />
+        <Pricing
+          related={[
+            { before: 'Need it for a profile? ', label: 'LinkedIn headshots', href: '/linkedin-headshots', after: '. Selling property? ' },
+            { before: '', label: 'Real estate agent headshots', href: '/real-estate-agent-headshots', after: '. Comparing with a studio? ' },
+            { before: '', label: 'AI headshots vs a photographer', href: '/ai-headshots-vs-photographer', after: '.' },
+          ]}
+        />
         <Benefits />
         <UseCases />
         <Showcase />

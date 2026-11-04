@@ -6,6 +6,7 @@ import {
 } from '@travel-suite/frontend-shared/services/blogPost';
 import BlogPostPage from '@travel-suite/frontend-shared/pages/client/BlogPostPage';
 import * as schema from '../../../../lib/schema';
+import { blogOffersFor } from '../../../../lib/blogOffers';
 
 
 const { SITE_URL } = schema;
@@ -30,6 +31,8 @@ export default async function Page({ params }) {
     slug,
   });
 
+  const { offers, inlineOffer } = blogOffersFor(slug, blog.tags);
+
   return (
     <main className="shared-ui blogpage">
       <BlogPostPage
@@ -37,6 +40,8 @@ export default async function Page({ params }) {
         recentPosts={recentPosts}
         relatedPosts={relatedPosts}
         allBlogTags={allBlogTags}
+        offers={offers}
+        inlineOffer={inlineOffer}
         canonical={canonical}
         siteUrl={SITE_URL}
         graph={graph}

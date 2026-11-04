@@ -17,37 +17,40 @@ studio's site, not a generic SaaS dashboard.
 3. No em dashes. Use short sentences or a comma.
 4. Confident, plain, human. Talk like a good studio owner, not a chatbot.
 
-## Color tokens (Forest & Gold)
+## Color tokens (Indigo)
 - white:      #FFFFFF   (the page ground, everywhere: body, sections, cards)
-- black:      #000000   (all primary text; the old green-tinted ink is gone)
-- green:      #0E4A44   (workhorse accent: CTAs, links, focus states, ticks)
-- gold:       #E7B24C   (secondary accent: hero CTA, badges, dark-surface labels)
-- muted:      #4B5563   (neutral grey: captions, ledes, metadata)
-- line:       #E5E7EB   (neutral hairline borders, dividers)
-- band:       #F4F5F6   (the one quiet fill: card backgrounds, table headers)
-- footer:     #0A3833   (the only dark surface left; nav and hero are white)
-- ivory:      #F4EEE1   (text on green: buttons, the footer, filled panels)
+- ink:        #16163A   (all primary text, and the deepest surface)
+- indigo:     #3A3FB0   (the one accent: CTAs, links, focus states, ticks, badges)
+- deep:       #2B2F8C   (indigo pressed/hover, and small emphasis marks)
+- wash:       #E8E9FB   (indigo at 8%: selected chips, soft highlight fills)
+- muted:      #5D5D7A   (captions, ledes, metadata)
+- line:       #E2E2EE   (hairline borders, dividers)
+- surface:    #F7F7FB   (the one quiet fill: bands, table headers, card grounds)
+- sink:       #ECECF5   (a step darker than surface: image frames, inset wells)
+- footer:     #1B1C4B   (the only dark surface; nav and hero are white)
+- on-dark:    #EEEEFA   (text on the footer and on filled indigo)
 - ok:         #1F9D57   (success/delivered)
 - warn:       #C4462B   (error/failed/refund)
 
-Rule: green is the workhorse accent; gold is the second accent, reserved for the
-"popular" badge, the step numerals, and labels on the dark footer. Keep both
-restrained. The page is WHITE from the nav to the footer: body, hero, every marketing section, and
-every card are #FFFFFF, and a card is told apart by its hairline border, not by a
-tinted fill. The footer is the one dark green surface. The warm sand ground and the
-dark green nav and hero this identity launched with are both gone.
+Rule: one accent, used sparingly. Indigo carries every action, link and tick;
+there is no second accent colour, so emphasis comes from weight, size and space
+instead. The page is WHITE from the nav to the footer: body, hero, every
+marketing section and every card are #FFFFFF, and a card is told apart by its
+hairline border, not by a tinted fill. Surface and sink exist for bands and
+image wells only, never for body copy backgrounds. The footer is the one dark
+surface.
 
 Note: in CSS the original token NAMES were kept to avoid churn, so existing
-`var()` refs keep working. `--cobalt` now resolves to green (#0E4A44), `--ink` to
-deep-green, `--bone` to WHITE (it doubles as the text colour on the dark green
-chrome), `--card` to white, `--serif` to the Commissioner sans stack. Do not read a
-token's name literally; read its value here.
+`var()` refs keep working. `--cobalt` and `--gold` both resolve to indigo
+(#3A3FB0), `--ink` to #16163A, `--bone` to WHITE, `--card` to white, `--serif`
+to the Commissioner sans stack. Do not read a token's name literally; read its
+value here.
 
 ## Typography
 - One typeface everywhere: **Commissioner** (Google Fonts, variable, 400–800),
   loaded once in the root layout so the site and the admin share it. Headings are
   NOT serif in this identity.
-- Text is black. Secondary text is the neutral grey above, never a tinted one.
+- Text is ink (#16163A). Secondary text is the muted grey above.
 - Five weights, and only these five:
   - **800** small heavy marks only: the wordmarks, prices, step numerals. Weight
     here reads as a mark, not as type.
@@ -70,5 +73,5 @@ token's name literally; read its value here.
 - DO show real before/after and result grids as the hero of the product.
 - DO keep the buy action singular and obvious.
 - DON'T use gradients, glassmorphism, emoji in UI, or stock "AI" purple.
-- DON'T tint the page or card surfaces. They are pure white; warmth comes from the
-  green and gold accents, never from the ground.
+- DON'T tint the page or card surfaces. They are pure white; colour comes from the
+  indigo accent, never from the ground.

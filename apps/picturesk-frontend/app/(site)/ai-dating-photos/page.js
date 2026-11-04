@@ -34,7 +34,15 @@ export default function AiDatingPhotosPage() {
       <main>
         <LandingHero {...hero} cta="Get my dating photos" href={DATING_FUNNEL} from={19} />
         <HowItWorks {...process} />
-        <Pricing {...pricing} product="dating" href={DATING_FUNNEL} />
+        <Pricing
+          {...pricing}
+          product="dating"
+          href={DATING_FUNNEL}
+          related={[
+            { before: 'See ', label: 'every pack side by side', href: '/pricing#pricing-dating', after: ', or read ' },
+            { before: '', label: 'AI dating photos vs a photographer', href: '/ai-dating-photos-vs-photographer', after: ' before you decide.' },
+          ]}
+        />
         <Benefits {...benefits} />
         <UseCases
           eyebrow={useCases.eyebrow}

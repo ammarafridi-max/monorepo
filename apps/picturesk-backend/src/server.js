@@ -396,8 +396,8 @@ app.use(globalLimiter);
 // Picturesk client is a factory with named senders, so adapt rather than
 // reshape a client the pipeline and worker also use.
 const sendAdminEmail = emailClient
-  ? async ({ email, subject, htmlContent }) =>
-      emailClient.sendRawEmail({ to: email, subject, html: htmlContent })
+  ? async ({ email, subject, htmlContent, textContent }) =>
+      emailClient.sendRawEmail({ to: email, subject, html: htmlContent, text: textContent })
   : undefined;
 
 const admin = createAdminSubsystem({

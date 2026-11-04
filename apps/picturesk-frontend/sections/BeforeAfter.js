@@ -1,5 +1,5 @@
-import Image from 'next/image';
 import Container from '../components/Container';
+import Frame from '../components/Frame';
 import SectionHeading from '../components/SectionHeading';
 
 export default function BeforeAfter({ eyebrow, title, lede, before, after }) {
@@ -12,9 +12,7 @@ export default function BeforeAfter({ eyebrow, title, lede, before, after }) {
             <p className="ba__label">What he uploaded</p>
             <div className="ba__grid ba__grid--before">
               {before.map((src) => (
-                <div className="ba__shot" key={src}>
-                  <Image src={src} alt="" width={1024} height={1024} sizes="(max-width: 760px) 30vw, 14vw" />
-                </div>
+                <Frame className="ba__shot" src={src} sizes="(max-width: 760px) 30vw, 14vw" key={src} />
               ))}
             </div>
           </div>
@@ -27,9 +25,7 @@ export default function BeforeAfter({ eyebrow, title, lede, before, after }) {
             <p className="ba__label">What he got back</p>
             <div className="ba__grid ba__grid--after">
               {after.map((src) => (
-                <div className="ba__shot" key={src}>
-                  <Image src={src} alt="" width={1024} height={1024} sizes="(max-width: 760px) 44vw, 18vw" />
-                </div>
+                <Frame className="ba__shot" src={src} sizes="(max-width: 760px) 44vw, 18vw" key={src} />
               ))}
             </div>
           </div>

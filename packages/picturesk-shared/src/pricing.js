@@ -127,3 +127,11 @@ export function isValidTier(id) {
 export function getTier(id) {
   return TIERS_BY_ID[id] || TIERS_BY_ID[DEFAULT_TIER];
 }
+
+export function usd(cents) {
+  return `$${Math.round(cents / 100)}`;
+}
+
+export function queueLabel(priority) {
+  return priority <= 1 ? 'Front of the queue' : priority <= 2 ? 'Priority queue' : 'Standard queue';
+}

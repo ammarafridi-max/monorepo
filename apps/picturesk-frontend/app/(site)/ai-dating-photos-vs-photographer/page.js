@@ -33,7 +33,15 @@ export default function Page() {
           useCases={useCases.items}
           variant="grid"
         />
-        <Pricing {...pricing} product="dating" href={DATING_FUNNEL} />
+        <Pricing
+          {...pricing}
+          product="dating"
+          href={DATING_FUNNEL}
+          related={[
+            { before: 'Every pack is listed on the ', label: 'pricing page', href: '/pricing#pricing-dating', after: '. For the full service, see ' },
+            { before: '', label: 'AI dating photos', href: '/ai-dating-photos', after: '.' },
+          ]}
+        />
         <Faq {...faq} />
 
         <section className="section start">

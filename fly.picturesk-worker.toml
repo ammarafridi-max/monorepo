@@ -9,11 +9,13 @@ primary_region = "iad"
   build-target = "worker"
 
 [env]
-  # LoRA generation strength for real orders (read at call time by the worker's
-  # defaultLoraScale). 1.0 is neutral; 1.15 pulls harder toward the trained face to
-  # improve likeness. This is slightly above the documented 0.8-1.1 range, so watch
-  # for an over-baked / artifacty look and dial back if it appears.
-  GEN_LORA_SCALE = "1.15"
+  GEN_LORA_SCALE = "1.05"
+  GEN_GUIDANCE_SCALE = "3"
+  GEN_OUTPUT_QUALITY = "95"
+  GEN_EXTRA_LORA = "huggingface.co/XLabs-AI/flux-RealismLora"
+  GEN_EXTRA_LORA_SCALE = "0.8"
+  BLUR_BACKGROUND = "on"
+  BLUR_STRENGTH = "1"
 
 # concurrency is 1 in code (one order at a time); a single machine is the default.
 # The pipeline is resumable + idempotent, so a restart safely reattaches.

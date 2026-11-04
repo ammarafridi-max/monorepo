@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { catalogFor } from '@travel-suite/picturesk-shared/catalog';
-import { tiersFor, getTier, isFreeTier } from '@travel-suite/picturesk-shared/pricing';
+import { tiersFor, getTier, isFreeTier, usd, queueLabel } from '@travel-suite/picturesk-shared/pricing';
 import { readState, writeState } from '../../lib/generator';
 import { funnelPaths, productConfig } from '../../lib/products';
 import { useFunnel, useNextHref } from './FunnelContext';
@@ -11,12 +11,8 @@ import StepNav from './StepNav';
 import Check from '../Check';
 import Cross from '../Cross';
 
-const usd = (cents) => `$${Math.round(cents / 100)}`;
 const plural = (n, noun) => `${n} ${noun}${n === 1 ? '' : 's'}`;
 const scope = (n, noun) => (n == null ? `All ${noun}s` : plural(n, noun));
-const queueLabel = (priority) =>
-  priority <= 1 ? 'Front of the queue' : priority <= 2 ? 'Priority queue' : 'Standard queue';
-
 const featuresFor = (t, lookNoun) => [
   { ok: true, text: `${t.deliverCount} photos` },
   { ok: true, text: scope(t.attireCount, 'outfit') },

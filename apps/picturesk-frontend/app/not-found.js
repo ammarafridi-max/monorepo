@@ -9,7 +9,7 @@ export default function NotFound() {
       <div className="container container--narrow">
         <Link className="brand notfound__brand" href="/" aria-label="Picturesk.ai home">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="brand__logo" src="/wordmark.png" alt="Picturesk" width={746} height={114} />
+          <img className="brand__logo" src="/wordmark.png" alt="Picturesk" width={750} height={131} />
         </Link>
         <p className="eyebrow">404</p>
         <h1 className="display">That page has moved on.</h1>

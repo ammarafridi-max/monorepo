@@ -12,7 +12,7 @@ import {
   BUILDS,
   HEIGHTS,
 } from '@travel-suite/picturesk-shared/catalog';
-import { getTier, isFreeTier } from '@travel-suite/picturesk-shared/pricing';
+import { getTier, isFreeTier, usd } from '@travel-suite/picturesk-shared/pricing';
 import { readState, writeState } from '../../lib/generator';
 import { createCheckout } from '../../lib/api';
 import { track, EVENTS } from '../../lib/analytics';
@@ -20,7 +20,6 @@ import { funnelPaths, productConfig } from '../../lib/products';
 import { useFunnel } from './FunnelContext';
 import StepNav from './StepNav';
 
-const usd = (cents) => `$${Math.round(cents / 100)}`;
 const labels = (list) => Object.fromEntries(list.map((x) => [x.id, x.label]));
 const GENDER_LABEL = labels(GENDERS);
 const AGE_LABEL = labels(AGE_RANGES);

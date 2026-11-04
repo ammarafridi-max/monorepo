@@ -35,7 +35,14 @@ export default function RealEstateAgentHeadshotsPage() {
           useCases={useCases.items}
           variant="grid"
         />
-        <Pricing {...pricing} />
+        <Pricing
+          {...pricing}
+          related={[
+            { before: 'See ', label: 'every plan and price', href: '/pricing', after: ', read how these compare to ' },
+            { before: '', label: 'booking a photographer', href: '/ai-headshots-vs-photographer', after: ', or start with ' },
+            { before: '', label: 'LinkedIn headshots', href: '/linkedin-headshots', after: ' if the profile matters most.' },
+          ]}
+        />
         <Faq {...faq} />
 
         <section className="section start">

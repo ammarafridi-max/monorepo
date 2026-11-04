@@ -7,7 +7,7 @@ export default function Footer() {
     <footer className="footer">
       <Container className="footer__inner">
         <div className="footer__brand">
-          <Image className="footer__logo" src="/wordmark-light.png" alt="Picturesk.ai" width={746} height={114} />
+          <Image className="footer__logo" src="/wordmark-light.png" alt="Picturesk.ai" width={750} height={136} />
           <p className="footer__tag">Headshots and dating photos from your selfies.</p>
         </div>
 

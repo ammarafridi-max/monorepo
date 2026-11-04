@@ -6,9 +6,9 @@ const LINES = [
   'One payment. No subscription, no credits that expire.',
 ];
 
-export default function Guarantee({ className = '' }) {
+export default function Guarantee() {
   return (
-    <div className={`guarantee${className ? ` ${className}` : ''}`}>
+    <div className="guarantee">
       <ul className="guarantee__list">
         {LINES.map((line) => (
           <li className="guarantee__item" key={line}>

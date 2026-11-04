@@ -88,6 +88,16 @@ export default function LinkedInPhotoAnalyzerPage() {
               <a className="btn btn--primary" href="/ai-headshot-generator/about">
                 Get my headshots <span className="btn__price">from $9</span>
               </a>
+              <p className="pricecard__fine">
+                Replacing the photo you just scored? See{' '}
+                <a href="/linkedin-headshots">LinkedIn headshots</a>, or compare{' '}
+                <a href="/pricing">every plan and price</a>. For what makes a profile photo work,
+                read{' '}
+                <a href="/blog/what-makes-a-good-linkedin-profile-photo">
+                  what makes a good LinkedIn profile photo
+                </a>
+                .
+              </p>
             </div>
           </Container>
         </section>

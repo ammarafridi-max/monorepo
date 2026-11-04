@@ -1,27 +1,22 @@
-import { tiersFor, fromPriceFor, isFreeTier } from '@travel-suite/picturesk-shared/pricing';
+import { tiersFor, fromPriceFor, isFreeTier, usd, queueLabel } from '@travel-suite/picturesk-shared/pricing';
 import { planNotes } from '../data/landing';
 import Check from '../components/Check';
 import Guarantee from '../components/Guarantee';
 import Container from '../components/Container';
 import SectionHeading from '../components/SectionHeading';
 
-const usd = (cents) => `$${Math.round(cents / 100)}`;
-
-const queueLabel = (priority) =>
-  priority <= 1 ? 'Front of the queue' : priority <= 2 ? 'Priority queue' : 'Standard queue';
 const NOUN = { headshots: 'headshots', dating: 'photos' };
 const LOOK_NOUN = { headshots: 'background', dating: 'scene' };
 
 const optionLabel = (n, noun) =>
   n == null ? `All ${noun} options` : `${n} ${noun} option${n === 1 ? '' : 's'}`;
 
-const includesFor = (tier) =>
-  [
-    `${tier.deliverCount} ${NOUN[tier.product]}`,
-    optionLabel(tier.attireCount, 'outfit'),
-    optionLabel(tier.lookCount, LOOK_NOUN[tier.product]),
-    queueLabel(tier.priority),
-  ].filter(Boolean);
+const includesFor = (tier) => [
+  `${tier.deliverCount} ${NOUN[tier.product]}`,
+  optionLabel(tier.attireCount, 'outfit'),
+  optionLabel(tier.lookCount, LOOK_NOUN[tier.product]),
+  queueLabel(tier.priority),
+];
 
 export default function Pricing({
   eyebrow = 'Pricing',
@@ -30,6 +25,7 @@ export default function Pricing({
   cta = 'Get my headshots',
   product = 'headshots',
   href = '/ai-headshot-generator/about',
+  related = [],
 }) {
   const tiers = tiersFor(product);
   const from = fromPriceFor(product);
@@ -44,7 +40,7 @@ export default function Pricing({
             return (
               <a
                 className={`plan plan--link${t.popular ? ' plan--on' : ''}`}
-                href={`/ai-headshot-generator/about?tier=${t.id}`}
+                href={`${href}?tier=${t.id}`}
                 key={t.id}
                 aria-label={`Choose ${t.label}, ${usd(t.priceCents)}`}
               >
@@ -89,6 +85,18 @@ export default function Pricing({
           set does not look like you (tell us within 3 days). See our <a href="/terms">Terms</a>{' '}
           and <a href="/refunds">Refund Policy</a>.
         </p>
+        {related.length > 0 && (
+          <p className="pricecard__fine">
+            {related.map((r, i) => (
+              <span key={r.href}>
+                {i > 0 && ' '}
+                {r.before}
+                <a href={r.href}>{r.label}</a>
+                {r.after}
+              </span>
+            ))}
+          </p>
+        )}
       </Container>
     </section>
   );

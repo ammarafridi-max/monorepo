@@ -84,6 +84,8 @@ const orderSchema = new Schema(
 
     enhancedImageUrls: [String],
 
+    blurredImageUrls: [String],
+
     persistedImageUrls: [String],
 
     // score, best-first. This is the idempotency anchor for SELECTION

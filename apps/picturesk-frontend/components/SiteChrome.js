@@ -99,7 +99,7 @@ export default function SiteChrome({ authed, email, children }) {
           <Container>
             <div className="topbar__inner">
               <a className="brand" href="/" aria-label="Picturesk.ai home">
-                <Image className="brand__logo" src="/wordmark.png" alt="Picturesk" width={746} height={114} priority />
+                <Image className="brand__logo" src="/wordmark.png" alt="Picturesk" width={750} height={131} priority />
               </a>
               <a className="navlink" href="/contact" target="_blank" rel="noopener">
                 Need help?
@@ -121,7 +121,7 @@ export default function SiteChrome({ authed, email, children }) {
         <Container>
           <div className="topbar__inner">
             <a className="brand" href="/" aria-label="Picturesk.ai home">
-              <Image className="brand__logo" src="/wordmark.png" alt="Picturesk" width={746} height={114} priority />
+              <Image className="brand__logo" src="/wordmark.png" alt="Picturesk" width={750} height={131} priority />
             </a>
             <nav className="nav nav--desktop">{links('dropdown')}</nav>
             <Burger open={open} onClick={() => setOpen((v) => !v)} />

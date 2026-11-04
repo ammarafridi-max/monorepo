@@ -12,7 +12,24 @@ const GENERATION_USD_PER_SEC = 0.001525;
 
 export function defaultLoraScale() {
   const raw = parseFloat(process.env.GEN_LORA_SCALE);
-  return Number.isFinite(raw) ? raw : 1.0;
+  return Number.isFinite(raw) ? raw : 1.05;
+}
+
+function defaultGuidanceScale() {
+  const raw = parseFloat(process.env.GEN_GUIDANCE_SCALE);
+  return Number.isFinite(raw) ? raw : 3;
+}
+
+function defaultOutputQuality() {
+  const raw = parseInt(process.env.GEN_OUTPUT_QUALITY, 10);
+  return Number.isInteger(raw) ? raw : 95;
+}
+
+function extraLora() {
+  const model = process.env.GEN_EXTRA_LORA;
+  if (!model) return undefined;
+  const raw = parseFloat(process.env.GEN_EXTRA_LORA_SCALE);
+  return { extra_lora: model, extra_lora_scale: Number.isFinite(raw) ? raw : 0.8 };
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -203,7 +220,10 @@ export async function startGeneration(modelVersion, prompt, loraScale = defaultL
             num_outputs: 1,
             aspect_ratio: '1:1',
             output_format: 'jpg',
+            output_quality: defaultOutputQuality(),
+            guidance_scale: defaultGuidanceScale(),
             lora_scale: loraScale,
+            ...extraLora(),
           },
         },
         signal,

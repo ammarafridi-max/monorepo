@@ -35,7 +35,14 @@ export default function LinkedinHeadshotsPage() {
           useCases={useCases.items}
           variant="grid"
         />
-        <Pricing {...pricing} />
+        <Pricing
+          {...pricing}
+          related={[
+            { before: 'Comparing options? ', label: 'AI headshots vs a photographer', href: '/ai-headshots-vs-photographer', after: ' puts real prices on both sides, and ' },
+            { before: '', label: 'full pricing', href: '/pricing', after: ' lists every plan. Still deciding? ' },
+            { before: '', label: 'Score your current LinkedIn photo', href: '/tools/linkedin-photo-analyzer', after: ' first, free.' },
+          ]}
+        />
         <Faq {...faq} />
 
         <section className="section start">

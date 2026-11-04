@@ -128,12 +128,12 @@ export function renderVerificationEmail({ code }) {
   return { subject, html, text };
 }
 
-const INK = '#163A33';
-const BONE = '#F5EFE2';
-const COBALT = '#0E4A44';
-const ASH = '#5F6B62';
-const LINE = '#E4DCC8';
-const GOLD = '#E7B24C';
+const INK = '#16163A';
+const BONE = '#FFFFFF';
+const COBALT = '#3A3FB0';
+const ASH = '#5D5D7A';
+const LINE = '#E2E2EE';
+const GOLD = '#3A3FB0';
 
 const SANS = "Inter, -apple-system, 'Segoe UI', Arial, sans-serif";
 const SERIF = SANS;
