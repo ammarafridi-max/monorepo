@@ -45,6 +45,14 @@ export function policyIssuedEmail(data) {
   });
 }
 
+export function insurancePaymentReminderEmail(data) {
+  return customer.sendInsurancePaymentReminder({
+    ...data,
+    supportEmail: config.adminEmail,
+    footerNote: 'Underwritten by AXA. Travl Technologies LLC.',
+  });
+}
+
 export async function insurancePaymentCompletionEmail({
   leadTraveler, email, sessionId, policyId, policyNumber,
   amount, currency, journeyType, startDate, endDate, region, quoteId, mobile,

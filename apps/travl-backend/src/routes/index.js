@@ -35,14 +35,33 @@ import { db } from "../utils/db.js";
 import { wis } from "../utils/wis.js";
 import { createBrevoClient } from "@travel-suite/brevo";
 import { createMetaCapiClient } from "@travel-suite/meta-capi";
+import { createGoogleAdsConversionsClient } from "@travel-suite/google-ads-conversions";
 import { sendEmail } from "../utils/email.js";
-import { insurancePaymentCompletionEmail, policyIssuedEmail } from "../notifications/insurance.js";
+import { insurancePaymentCompletionEmail, policyIssuedEmail, insurancePaymentReminderEmail } from "../notifications/insurance.js";
 import { itineraryPaymentCustomerEmail } from "../notifications/itinerary.js";
 import config from "../utils/config.js";
 
 const { Affiliate: AffiliateModel } = registerAffiliateModels({ db });
 
 const router = Router();
+
+const googleAds = createGoogleAdsConversionsClient({
+  customerId: config.googleAds.customerId,
+  loginCustomerId: config.googleAds.loginCustomerId,
+  developerToken: config.googleAds.developerToken,
+  clientId: config.googleAds.clientId,
+  clientSecret: config.googleAds.clientSecret,
+  refreshToken: config.googleAds.refreshToken,
+  apiVersion: config.googleAds.apiVersion,
+  timezoneOffset: config.googleAds.timezoneOffset,
+  logger,
+});
+if (!googleAds.isConfigured()) {
+  logger.warn("[google-ads-conversions] Credentials not configured — server-side conversion uploads disabled");
+}
+const insuranceConversions = googleAds.forAction(config.googleAds.insurance);
+const ticketsConversions = googleAds.forAction(config.googleAds.tickets);
+
 const brevo = createBrevoClient({ apiKey: config.brevoApiKey, logger });
 
 
@@ -81,8 +100,9 @@ router.use(
     wis,
     brevo,
     auth,
-    notifications: { insurancePaymentCompletionEmail, policyIssuedEmail },
+    notifications: { insurancePaymentCompletionEmail, policyIssuedEmail, insurancePaymentReminderEmail },
     metaCapi,
+    googleAds: insuranceConversions,
     frontendUrl: config.frontendUrl,
   }),
 );
@@ -195,6 +215,7 @@ const {
   reservationStorage,
   sendEmail,
   metaCapi,
+  googleAds: ticketsConversions,
 });
 router.use("/tickets", ticketsRouter);
 router.use("/pricing", pricingRouter);

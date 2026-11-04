@@ -1,5 +1,6 @@
 import { renderInsurancePaymentTemplate } from './templates/insurance-payment.js';
 import { renderPolicyIssuedTemplate, renderPolicyIssuedText } from './templates/policy-issued.js';
+import { renderInsuranceReminderTemplate, renderInsuranceReminderText } from './templates/insurance-payment-reminder.js';
 import { renderTicketPaymentTemplate } from './templates/ticket-payment.js';
 import { renderBookingPaymentTemplate } from './templates/booking-payment.js';
 import { renderBookingPaymentAdminTemplate } from './templates/booking-payment-admin.js';
@@ -519,6 +520,45 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
     }
   }
 
+  async function sendInsurancePaymentReminder({
+    email, firstName, journeyType, region, startDate, endDate,
+    passengers = [], amount, currency, paymentUrl, quoteExpiresAt, supportEmail, footerNote,
+  }) {
+    try {
+      if (!email || !paymentUrl) return { ok: false, error: 'Missing customer email or payment link' };
+      const amountLabel = [currency, typeof amount === 'number' ? amount.toFixed(2) : amount].filter(Boolean).join(' ');
+      const travellers = passengers
+        .map((p) => [p.title, p.firstName, p.lastName].filter(Boolean).join(' '))
+        .filter(Boolean)
+        .join(', ');
+      const data = {
+        brand,
+        firstName,
+        plan: JOURNEY_LABEL[journeyType] || journeyType,
+        region,
+        coverStart: coverDate(startDate),
+        coverEnd: coverDate(endDate),
+        travellers,
+        amount: amountLabel,
+        paymentUrl,
+        expiresOn: quoteExpiresAt ? coverDate(quoteExpiresAt) : '',
+        supportEmail: supportEmail || brand.adminEmail,
+        footerNote,
+      };
+      const result = await sendEmail({
+        email,
+        name: firstName,
+        subject: `Your travel insurance quote is ready to pay`,
+        htmlContent: renderInsuranceReminderTemplate(data),
+        textContent: renderInsuranceReminderText(data),
+      });
+      return result?.ok === false ? { ok: false, error: result.error } : { ok: true };
+    } catch (err) {
+      log('[notifications] sendInsurancePaymentReminder failed', { email, err: err.message });
+      return { ok: false, error: err.message };
+    }
+  }
+
   async function sendHotelBookingPaymentToAdmin(data) {
     try {
       const htmlContent = renderHotelBookingPaidTemplate({ brand, ...data });
@@ -615,6 +655,7 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
   return {
     sendInsuranceFormSubmission,
     sendPolicyIssuedToCustomer,
+    sendInsurancePaymentReminder,
     sendInsurancePaymentToAdmin,
     sendTicketPaymentToAdmin,
     sendTicketPaymentToCustomer,

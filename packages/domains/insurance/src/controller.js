@@ -203,6 +203,10 @@ export function createInsuranceController({ service, wis, WisNationality, Insura
 
     if (!application) return next(new AppError('Insurance application not found', 404));
 
+    if (paymentStatus === 'REFUNDED') {
+      await service.retractConversionFromGoogleAds(application);
+    }
+
     if (paymentStatus === 'PAID' || paymentStatus === 'REFUNDED') {
       try {
         await brevo.updateContactAttribute({ email: application.email, attribute: 'PAYMENT_STATUS', value: paymentStatus });
@@ -247,7 +251,7 @@ export function createInsuranceController({ service, wis, WisNationality, Insura
       fbc: typeof req.body.fbc === 'string' ? req.body.fbc.slice(0, 500) : undefined,
       clientIp: req.ip,
       userAgent: req.get('user-agent')?.slice(0, 500),
-    });
+    }, directpay);
 
     res.status(200).json({
       message: 'Insurance finalized successfully',

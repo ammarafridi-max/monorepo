@@ -2,6 +2,7 @@ import ReactGA from 'react-ga4';
 const GA4_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID;
 
 const isProduction = process.env.NODE_ENV === 'production';
+const COMMISSION_RATE = Number(process.env.NEXT_PUBLIC_COMMISSION_RATE);
 
 const isAdminPath = () =>
   typeof window !== 'undefined' &&
@@ -33,6 +34,46 @@ function markPurchaseTracked(transactionId, dedupeKey) {
       '1',
     );
   } catch {}
+}
+
+const buildCommissionStorageKey = (dedupeKey) => `ga4:commission:${dedupeKey}`;
+
+function hasTrackedCommission(dedupeKey) {
+  if (typeof window === 'undefined' || !dedupeKey) return false;
+  try {
+    return window.localStorage.getItem(buildCommissionStorageKey(dedupeKey)) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function markCommissionTracked(dedupeKey) {
+  if (typeof window === 'undefined' || !dedupeKey) return;
+  try {
+    window.localStorage.setItem(buildCommissionStorageKey(dedupeKey), '1');
+  } catch {}
+}
+
+export function trackCommissionEvent({
+  currency,
+  value,
+  transactionId,
+  dedupeKey = transactionId,
+  rate = COMMISSION_RATE,
+}) {
+  if (!shouldTrackAnalytics() || !dedupeKey) return;
+  if (!Number.isFinite(rate) || rate <= 0 || rate > 1) return;
+  const gross = Number(value);
+  if (!Number.isFinite(gross) || gross <= 0) return;
+  if (hasTrackedCommission(dedupeKey)) return;
+
+  ReactGA.event('commission', {
+    transaction_id: transactionId,
+    value: parseFloat((gross * rate).toFixed(2)),
+    currency,
+  });
+
+  markCommissionTracked(dedupeKey);
 }
 
 function buildItem(

@@ -1,6 +1,9 @@
 import { randomBytes } from "crypto";
 import { AppError, coverEndDate, sanitizeAttribution } from "@travel-suite/utils";
+import { googleClickIdsFrom } from "@travel-suite/google-ads-conversions";
 import { parseAmount } from "@travel-suite/utils/currency";
+
+const QUOTE_VALIDITY_DAYS = 7;
 
 export function createInsuranceService({
   InsuranceApplication,
@@ -10,6 +13,7 @@ export function createInsuranceService({
   logger,
   notifications,
   metaCapi,
+  googleAds,
   frontendUrl,
 }) {
   const validateForm = (body) => {
@@ -234,6 +238,7 @@ export function createInsuranceService({
     currency,
     paymentSyncToken,
     metaAttribution,
+    paymentUrl,
   ) => {
     const normalizedAmount = premium != null ? Number(premium) : undefined;
     const normalizedCurrency =
@@ -250,6 +255,10 @@ export function createInsuranceService({
           paymentReturnStatus: "PENDING",
           paymentVerifiedAt: null,
           issuedAt: null,
+          quoteExpiresAt: new Date(Date.now() + QUOTE_VALIDITY_DAYS * 86400000),
+          ...(typeof paymentUrl === "string" && paymentUrl.trim()
+            ? { paymentUrl: paymentUrl.trim() }
+            : {}),
           ...(metaAttribution ? { metaAttribution } : {}),
           ...(normalizedAmount !== undefined && !Number.isNaN(normalizedAmount)
             ? {
@@ -301,6 +310,93 @@ export function createInsuranceService({
     } catch (err) {
       logger?.warn("[insurance] Meta purchase event failed", { sessionId: application.sessionId, error: err.message });
     }
+  };
+
+  const reportConversionToGoogleAds = async (application) => {
+    if (!googleAds?.isConfigured?.()) return;
+    try {
+      await googleAds.uploadConversion({
+        ...googleClickIdsFrom(application.attribution),
+        email: application.email,
+        phone: application.mobile?.code && application.mobile?.digits
+          ? `${application.mobile.code}${application.mobile.digits}`
+          : undefined,
+        orderId: application.sessionId,
+        value: application.amountPaid?.amount,
+        currency: application.amountPaid?.currency,
+        conversionTime: application.issuedAt ?? new Date(),
+      });
+    } catch (err) {
+      logger?.warn("[insurance] Google Ads conversion upload failed", { sessionId: application.sessionId, error: err.message });
+    }
+  };
+
+  const retractConversionFromGoogleAds = async (application) => {
+    if (!googleAds?.isConfigured?.()) return;
+    try {
+      await googleAds.uploadAdjustment({
+        orderId: application.sessionId,
+        adjustmentType: "RETRACTION",
+      });
+    } catch (err) {
+      logger?.warn("[insurance] Google Ads retraction failed", { sessionId: application.sessionId, error: err.message });
+    }
+  };
+
+  const sendAbandonedPaymentReminders = async ({ olderThanMinutes = 180, limit = 50 } = {}) => {
+    if (!notifications?.insurancePaymentReminderEmail) {
+      return { candidates: 0, sent: 0, failed: 0 };
+    }
+
+    const now = new Date();
+    const candidates = await InsuranceApplication.find({
+      paymentStatus: "PENDING",
+      issuanceStatus: "PENDING",
+      paymentUrl: { $exists: true, $nin: [null, ""] },
+      quoteExpiresAt: { $gt: now },
+      createdAt: { $lte: new Date(now.getTime() - olderThanMinutes * 60000) },
+      "reminderEmail.status": "NOT_SENT",
+    })
+      .select("+paymentUrl")
+      .limit(limit);
+
+    let sent = 0;
+    let failed = 0;
+
+    for (const application of candidates) {
+      const claimed = await InsuranceApplication.findOneAndUpdate(
+        { _id: application._id, "reminderEmail.status": "NOT_SENT" },
+        { $set: { "reminderEmail.status": "SENT", "reminderEmail.sentAt": new Date() } },
+      );
+      if (!claimed) continue;
+
+      const result = await notifications.insurancePaymentReminderEmail({
+        email: application.email,
+        firstName: application.passengers?.[0]?.firstName,
+        journeyType: application.journeyType,
+        region: application.region?.name,
+        startDate: application.startDate,
+        endDate: application.endDate,
+        passengers: application.passengers,
+        amount: application.amountPaid?.amount,
+        currency: application.amountPaid?.currency,
+        paymentUrl: application.paymentUrl,
+        quoteExpiresAt: application.quoteExpiresAt,
+      });
+
+      if (result?.ok === false) {
+        failed += 1;
+        await InsuranceApplication.updateOne(
+          { _id: application._id },
+          { $set: { "reminderEmail.status": "FAILED", "reminderEmail.error": String(result.error ?? "").slice(0, 300) } },
+        );
+        logger?.warn("[insurance] abandoned payment reminder failed", { sessionId: application.sessionId, error: result.error });
+      } else {
+        sent += 1;
+      }
+    }
+
+    return { candidates: candidates.length, sent, failed };
   };
 
   const confirmDirectPayInsurance = async (
@@ -429,6 +525,8 @@ export function createInsuranceService({
 
     await reportPurchaseToMeta(updated);
 
+    await reportConversionToGoogleAds(updated);
+
     await notifications.insurancePaymentCompletionEmail({
       leadTraveler: updated?.leadPassenger,
       email: updated?.email,
@@ -465,6 +563,8 @@ export function createInsuranceService({
   };
 
   return {
+    retractConversionFromGoogleAds,
+    sendAbandonedPaymentReminders,
     validateForm,
     validateCreateBody,
     validateApplicationBody,

@@ -77,6 +77,8 @@ const InsuranceApplicationSchema = new mongoose.Schema(
     },
 
     paymentSyncToken:   { type: String, trim: true, select: false },
+    paymentUrl:         { type: String, trim: true, select: false },
+    quoteExpiresAt:     { type: Date },
     paymentReturnStatus: { type: String, trim: true },
     paymentVerifiedAt:  { type: Date },
     issuedAt:           { type: Date },
@@ -95,6 +97,11 @@ const InsuranceApplicationSchema = new mongoose.Schema(
       userAgent: { type: String },
     },
     reviewEmailSent: { type: Boolean, default: false },
+    reminderEmail: {
+      status: { type: String, enum: ['NOT_SENT', 'SENT', 'FAILED'], default: 'NOT_SENT' },
+      sentAt: { type: Date },
+      error: { type: String, trim: true },
+    },
     policyEmail: {
       status: { type: String, enum: ['NOT_SENT', 'SENT', 'FAILED'], default: 'NOT_SENT' },
       sentAt: { type: Date },

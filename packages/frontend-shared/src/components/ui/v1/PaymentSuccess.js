@@ -23,7 +23,7 @@ import { InsuranceContext } from '../../../contexts/InsuranceContext.js';
 import UpsellCard from '../../shared/UpsellCard.js';
 import { confirmInsurancePaymentApi } from '../../../services/apiInsurance.js';
 import { useGetInsuranceDocuments } from '../../../hooks/insurance/useGetInsuranceDocuments.js';
-import { trackPurchaseEvent } from '../../../utils/analytics';
+import { trackPurchaseEvent, trackCommissionEvent } from '../../../utils/analytics';
 import { pixelPurchase } from '../../../utils/pixel';
 import { calcDays } from '../../../utils/insuranceHelpers.js';
 
@@ -278,6 +278,12 @@ export default function PaymentSuccess({ upsells = [] }) {
           transactionId: `insurance:${sessionId}`,
           dedupeKey: `insurance:${sessionId}`,
           items: [{ item_name: 'Travel Insurance Policy', quantity: 1, price: amount }],
+        });
+        trackCommissionEvent({
+          currency,
+          value: amount,
+          transactionId: `insurance:${sessionId}`,
+          dedupeKey: `insurance:${sessionId}`,
         });
         pixelPurchase({ currency, value: amount, eventId: `insurance:${sessionId}` });
       }

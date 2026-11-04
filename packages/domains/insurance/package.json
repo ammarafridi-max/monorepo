@@ -9,6 +9,7 @@
   },
   "scripts": {},
   "dependencies": {
+    "@travel-suite/google-ads-conversions": "workspace:*",
     "@travel-suite/utils": "workspace:*",
     "uuid": "^10.0.0",
     "validator": "^13.12.0"

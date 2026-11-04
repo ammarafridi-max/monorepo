@@ -7,7 +7,7 @@ import { logger } from '@travel-suite/utils';
 import { getOrRegisterModel } from '@travel-suite/utils/model';
 
 
-export function createInsuranceRouter({ db, wis, brevo, auth, notifications, logger: injectedLogger, Affiliate = null, metaCapi, frontendUrl }) {
+export function createInsuranceRouter({ db, wis, brevo, auth, notifications, logger: injectedLogger, Affiliate = null, metaCapi, googleAds, frontendUrl }) {
   const log = injectedLogger ?? logger;
 
   const InsuranceApplication = getOrRegisterModel(db, 'insurance-application', InsuranceApplicationSchema);
@@ -21,6 +21,7 @@ export function createInsuranceRouter({ db, wis, brevo, auth, notifications, log
     logger: log,
     notifications,
     metaCapi,
+    googleAds,
     frontendUrl,
   });
 
