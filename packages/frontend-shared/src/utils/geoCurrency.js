@@ -219,7 +219,7 @@ const ZONE_COUNTRY = {
   'Pacific/Guam': 'GU',
 };
 
-const COUNTRY_CURRENCY = {
+export const COUNTRY_CURRENCY = {
   AE: 'AED',
   SA: 'SAR',
   QA: 'QAR',

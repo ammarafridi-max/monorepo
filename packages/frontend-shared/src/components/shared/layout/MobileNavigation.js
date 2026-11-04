@@ -10,7 +10,7 @@ import { HiOutlineEnvelope, HiOutlineXMark } from 'react-icons/hi2';
 import { CgMenuRightAlt } from 'react-icons/cg';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import Container from './Container';
-import Currency from '../flight/Currency';
+import Currency from '../Currency';
 import BrandMark from './BrandMark';
 
 export default function MobileNavigation({ pages = travlDefaultPages, logoAlt = 'Logo', onDark = false, logoSrc, logoSrcOnDark, brandName }) {
