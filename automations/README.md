@@ -23,6 +23,8 @@ cd automations && node src/cli.mjs blog-generate --target travl --dry-run
 | `pricing-sync` | — | Mon + Thu 05:00 UTC | `pricing-sync-emirateslimo.yml` |
 | `affiliate-payouts` | dt365 | 5th of the month 05:00 UTC | `affiliate-payouts-dt365.yml` |
 | `affiliate-payouts` | mdt | 5th of the month 05:00 UTC | `affiliate-payouts-mdt.yml` |
+| `meta-audiences` | dt365 | 1st of the month 06:00 UTC | `meta-audiences-dt365.yml` |
+| `ads-profitability` | travl | manual (on demand) | — |
 
 Travl's cron was off between 2026-07-19 and 2026-09-09, covered by a backlog that
 ran out on 2026-08-28. It is back on against an insurance-only topic list running
@@ -47,6 +49,35 @@ UTC, for the two brands running an affiliate programme. `--period YYYY-MM`
 backfills a month that was missed. Generating is idempotent, so a retry or a
 double cron fire creates no duplicates and re-claims nothing. The job never marks
 a payout paid: recording payment stays a deliberate action in the admin UI.
+
+`ads-profitability` answers whether one Google Ads campaign pays for itself. It
+reads the campaign's daily spend, clicks, impressions and conversions straight
+from the Ads API, pulls the brand's paid orders out of Mongo, and credits an
+order to the campaign when its stored `utm_campaign` matches or when its `gclid`
+appears in that campaign's clicks. `click_view` only retains 90 days, so days
+older than that fall back to `utm_campaign` alone and the workbook says so. Days
+are bucketed in the Ads account's own timezone, not UTC, so the rows line up with
+what the Ads UI shows. Output is an `.xlsx`: a Daily tab with running totals and
+a totals row, a Weekly tab, and a Notes tab recording every assumption the run
+made. Only `PAID` orders count, so refunded and failed ones drop out. Spend is
+dated by click and orders by payment, so a single day is not a strict cohort —
+read the running totals, not one row.
+
+```bash
+node --env-file=.env.local src/cli.mjs ads-profitability --target travl \
+  --campaign "Schengen Travel Insurance" [--from 2026-01-01] [--to 2026-11-02] \
+  [--commission 0.3] [--utm extra-utm,another] [--no-gclid] [--out report.xlsx]
+```
+
+Pass `--campaign` with no value and the run prints every campaign in the account
+with its id, which is the quickest way to find the exact name.
+
+`meta-audiences` asks the backend to build the Meta advertising audience CSVs and
+email them to the business owner. The job only triggers the endpoint: the backend
+does the querying, the CSV writing and the sending, so the run prints the address
+it went to and each file with its row count. It needs the same admin login as
+`affiliate-payouts`, and it runs on the 1st rather than the 5th so the two never
+contend.
 
 Both blog targets carry the same machinery: a format per length tier, an official
 citation allowlist, forbidden link patterns, content checks, and a per-topic

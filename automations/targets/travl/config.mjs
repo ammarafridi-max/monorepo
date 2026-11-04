@@ -15,6 +15,12 @@ export const TARGET = {
 
   ctaClass: 'travl-cta',
 
+  adsProfitability: {
+    ordersCollection: 'insurance-applications',
+    commissionRate: 0.3,
+    utmCampaigns: [],
+  },
+
   excludedTags: ['Visa Tips', 'Visa Documents', 'Dummy Ticket', 'Flight Itinerary'],
 
   blogSchedule: {

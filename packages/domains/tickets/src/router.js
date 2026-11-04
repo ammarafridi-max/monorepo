@@ -34,6 +34,7 @@ export function createTicketRouter({ controller, auth }) {
   router.post('/paypal/capture', controller.capturePayPalOrder);
 
   // Must stay above the public /:sessionId route or Express matches these literal paths as a sessionId.
+  router.post('/audience-export', protect, restrictTo('admin'), controller.exportAudiences);
   router.get('/latest-paid', protect, restrictTo('admin', 'agent'), controller.getLatestPaidTicket);
   router.get('/stats', protect, restrictTo('admin', 'agent'), controller.getTicketStats);
   router.get('/events', protect, restrictTo('admin', 'agent'), controller.streamEvents);

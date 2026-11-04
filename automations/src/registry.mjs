@@ -8,6 +8,22 @@ export const TARGETS_DIR = join(HERE, '..', 'targets');
 const JOBS_DIR = join(HERE, '..', 'jobs');
 
 export const JOBS = {
+  'ads-profitability': {
+    describe: 'Score one Google Ads campaign day by day against the orders it produced',
+    module: join(JOBS_DIR, 'ads-profitability', 'index.mjs'),
+    needsTarget: true,
+    env: [
+      'MONGO_URI',
+      'GOOGLE_ADS_DEVELOPER_TOKEN',
+      'GOOGLE_ADS_CLIENT_ID',
+      'GOOGLE_ADS_CLIENT_SECRET',
+      'GOOGLE_ADS_REFRESH_TOKEN',
+      'GOOGLE_ADS_CUSTOMER_ID',
+    ],
+    optionalEnv: ['GOOGLE_ADS_LOGIN_CUSTOMER_ID'],
+    dryRunEnv: [],
+    needsAdminLogin: false,
+  },
   'affiliate-payouts': {
     describe: 'Generate the previous calendar month\'s affiliate payouts (never marks them paid)',
     module: join(JOBS_DIR, 'affiliate-payouts', 'index.mjs'),
@@ -26,6 +42,13 @@ export const JOBS = {
   'blog-schedule': {
     describe: 'Space existing draft posts one per day, oldest first',
     module: join(JOBS_DIR, 'blog-schedule', 'index.mjs'),
+    needsTarget: true,
+    env: [],
+    dryRunEnv: [],
+  },
+  'meta-audiences': {
+    describe: 'Build the Meta advertising audience CSVs and email them to the owner',
+    module: join(JOBS_DIR, 'meta-audiences', 'index.mjs'),
     needsTarget: true,
     env: [],
     dryRunEnv: [],
@@ -70,7 +93,7 @@ export function assertEnv(job, target = null, { dryRun = false } = {}) {
   const spec = JOBS[job];
   const required = dryRun ? (spec.dryRunEnv ?? []) : (spec.env ?? []);
   const missing = required.filter((k) => !process.env[k]);
-  if (target && !dryRun) {
+  if (target && !dryRun && spec.needsAdminLogin !== false) {
     for (const k of [target.adminEmailEnv, target.adminPasswordEnv]) {
       if (k && !process.env[k]) missing.push(k);
     }

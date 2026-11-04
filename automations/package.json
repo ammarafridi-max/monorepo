@@ -16,6 +16,8 @@
     "@travel-suite/utils": "workspace:*",
     "@travel-suite/vehicles": "workspace:*",
     "@travel-suite/zones": "workspace:*",
+    "exceljs": "^4.4.0",
+    "google-ads-api": "^25.1.0",
     "googleapis": "^144.0.0",
     "mongoose": "^9.0.2"
   },

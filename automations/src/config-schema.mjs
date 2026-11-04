@@ -24,10 +24,16 @@ const REQUIRED_BY_JOB = {
     backendUrl: 'string',
     blogSchedule: 'object',
   },
+  'meta-audiences': {
+    backendUrl: 'string',
+    adminEmailEnv: 'string',
+    adminPasswordEnv: 'string',
+  },
 };
 
 const OPTIONAL = {
   jobs: 'array',
+  adsProfitability: 'object',
   citationDomains: 'array',
   allowedLinkPrefixes: 'array',
   forbiddenLinkPatterns: 'array',

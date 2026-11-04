@@ -1,0 +1,24 @@
+name: Dummy Ticket 365 Monthly Meta Audience Export
+
+on:
+  schedule:
+    - cron: '0 6 1 * *' # 10:00 Asia/Dubai on the 1st
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Print the target and endpoint without building or emailing
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  audiences:
+    uses: ./.github/workflows/_automation.yml
+    secrets: inherit
+    with:
+      job: meta-audiences
+      target: dt365
+      dry_run: ${{ inputs.dry_run || false }}

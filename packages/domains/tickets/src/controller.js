@@ -22,7 +22,7 @@ function toTicketView(ticket, role) {
   );
 }
 
-export function createTicketController({ service, paidOrderBus }) {
+export function createTicketController({ service, paidOrderBus, audienceService }) {
   const getAllTickets = async (req, res, next) => {
     try {
       const isAgent = req.user?.role === 'agent';
@@ -142,6 +142,15 @@ export function createTicketController({ service, paidOrderBus }) {
     }
   };
 
+  const exportAudiences = async (req, res, next) => {
+    try {
+      const result = await audienceService.exportAudiences({});
+      res.json({ status: 'success', data: result });
+    } catch (err) {
+      next(err);
+    }
+  };
+
   const createTicketRequest = async (req, res, next) => {
     try {
       const ticket = await service.createTicketRequest(req.body);
@@ -231,5 +240,5 @@ export function createTicketController({ service, paidOrderBus }) {
     }
   };
 
-  return { getAllTickets, getTicketStats, getLatestPaidTicket, streamEvents, getTicketBySessionId, getTicketQuote, getReservationFile, createTicketRequest, createStripePaymentUrl, createPayPalOrder, capturePayPalOrder, updateOrderStatus, updateDelivery, sendReservation, deleteTicket, refundByTransactionId };
+  return { exportAudiences, getAllTickets, getTicketStats, getLatestPaidTicket, streamEvents, getTicketBySessionId, getTicketQuote, getReservationFile, createTicketRequest, createStripePaymentUrl, createPayPalOrder, capturePayPalOrder, updateOrderStatus, updateDelivery, sendReservation, deleteTicket, refundByTransactionId };
 }
