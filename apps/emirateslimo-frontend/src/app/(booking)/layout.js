@@ -16,7 +16,7 @@ export default function BookingLayout({ children }) {
           </Link>
           <BookingStepsLg />
           <div className="flex justify-end gap-3">
-            <Currency triggerClassName="relative flex items-center text-[12px] gap-2 border border-primary-200 bg-white hover:bg-primary-100 rounded-md px-3 py-1.5 cursor-pointer transition-colors" />
+            <Currency variant="bordered" />
           </div>
         </Container>
       </PrimarySection>
@@ -25,7 +25,7 @@ export default function BookingLayout({ children }) {
       <PrimarySection className="block lg:hidden bg-gray-50 relative pt-4 lg:py-5">
         <Container className="grid grid-cols-[1fr_auto] lg:grid-cols-[2fr_8fr_2fr] items-center h-fit">
           <BookingStepsSm />
-          <Currency triggerClassName="relative flex items-center text-[12px] gap-2 border border-primary-200 bg-white hover:bg-primary-100 rounded-md px-3 py-1.5 cursor-pointer transition-colors" />
+          <Currency variant="bordered" />
         </Container>
       </PrimarySection>
 

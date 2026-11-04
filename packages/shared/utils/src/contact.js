@@ -75,25 +75,6 @@ const DIAL_CODE_COUNTRY = {
   994: 'AZ',
 };
 
-const CURRENCY_COUNTRY = {
-  AED: 'AE',
-  AUD: 'AU',
-  CAD: 'CA',
-  GBP: 'GB',
-  IDR: 'ID',
-  INR: 'IN',
-  NGN: 'NG',
-  PHP: 'PH',
-  PKR: 'PK',
-  QAR: 'QA',
-  SAR: 'SA',
-  SGD: 'SG',
-  THB: 'TH',
-  TRY: 'TR',
-  USD: 'US',
-  ZAR: 'ZA',
-};
-
 const digits = (value) => String(value ?? '').replace(/\D/g, '');
 
 function normalizeDialCode(value) {
@@ -108,10 +89,7 @@ export function dialCodeToCountry(code, { currency } = {}) {
   const iso = DIAL_CODE_COUNTRY[key];
   if (!iso) return undefined;
 
-  if (iso === 'US') {
-    const byCurrency = CURRENCY_COUNTRY[String(currency ?? '').trim().toUpperCase()];
-    if (byCurrency === 'CA') return 'CA';
-  }
+  if (iso === 'US' && String(currency ?? '').trim().toUpperCase() === 'CAD') return 'CA';
   return iso;
 }
 

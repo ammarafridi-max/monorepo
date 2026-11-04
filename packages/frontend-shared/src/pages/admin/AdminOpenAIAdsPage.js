@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { AlertCircle, CalendarDays, Loader2, Megaphone, Plus } from 'lucide-react';
 import FilterMenu from '../../components/admin/FilterMenu';
-import { CampaignSettingsSheet, DeleteAction, EditableName, StatusSelect, fmtInt, fmtMoney, fmtPct } from '../../components/admin/OpenAIAdsParts';
+import { CampaignSettingsSheet, DeleteAction, EditableName, MetricCells, StatusSelect, fmtInt, fmtMoney, fmtPct } from '../../components/admin/OpenAIAdsParts';
 import { useOpenAIAdsOverview } from '../../hooks/openai-ads/useOpenAIAdsOverview';
 
 const RANGE_OPTIONS = [
@@ -109,13 +109,7 @@ export default function AdminOpenAIAdsPage({ basePath = '/admin/chatgpt-ads' }) 
                         </td>
                         <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{GOAL_LABEL[c.goal] ?? c.goal ?? '—'}</td>
                         <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{fmtMoney(c.dailyBudget, currency)}</td>
-                        <td className="px-4 py-3 text-gray-900 whitespace-nowrap">{fmtMoney(c.spend, currency)}</td>
-                        <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{fmtInt(c.impressions)}</td>
-                        <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{fmtInt(c.clicks)}</td>
-                        <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{fmtPct(c.ctr)}</td>
-                        <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{c.cpc != null ? fmtMoney(c.cpc, currency) : '—'}</td>
-                        <td className="px-4 py-3 text-gray-900 whitespace-nowrap">{fmtInt(c.orders)}</td>
-                        <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{c.costPerOrder != null ? fmtMoney(c.costPerOrder, currency) : '—'}</td>
+                        <MetricCells row={c} currency={currency} strong />
                         <td className="px-4 py-3">
                           <DeleteAction kind="campaigns" id={c.id} name={c.name} />
                         </td>

@@ -48,6 +48,31 @@ function Pill({ cfg, title, hint }) {
   );
 }
 
+export const AD_METRICS = [
+  { label: 'Spent', strong: true, value: (row, currency) => fmtMoney(row.spend, currency) },
+  { label: 'Impressions', value: (row) => fmtInt(row.impressions) },
+  { label: 'Clicks', value: (row) => fmtInt(row.clicks) },
+  { label: 'CTR', value: (row) => fmtPct(row.ctr) },
+  { label: 'CPC', value: (row, currency) => (row.cpc != null ? fmtMoney(row.cpc, currency) : '—') },
+  { label: 'Orders', strong: true, value: (row) => fmtInt(row.orders) },
+  { label: 'Cost / order', value: (row, currency) => (row.costPerOrder != null ? fmtMoney(row.costPerOrder, currency) : '—') },
+];
+
+export function MetricCells({ row, currency, strong = false }) {
+  return (
+    <>
+      {AD_METRICS.map((metric) => (
+        <td
+          key={metric.label}
+          className={`px-4 py-3 whitespace-nowrap ${strong && metric.strong ? 'text-gray-900' : 'text-gray-600'}`}
+        >
+          {metric.value(row, currency)}
+        </td>
+      ))}
+    </>
+  );
+}
+
 export function StatusPill({ status }) {
   return <Pill cfg={STATUS_CFG[status] ?? { label: status, cls: 'bg-gray-100 text-gray-500 border-gray-200', dot: 'bg-gray-400' }} />;
 }
@@ -246,7 +271,7 @@ export function StatusSelect({ kind, id, name, status, note }) {
   );
 }
 
-export function DeleteAction({ kind, id, name, onDeleted, iconOnly = true, className = '' }) {
+export function DeleteAction({ kind, id, name, onDeleted }) {
   const [confirming, setConfirming] = useState(false);
   const { mutate, isPending } = useSetOpenAIAdsStatus();
   const noun = KIND_NOUN[kind];
@@ -259,10 +284,9 @@ export function DeleteAction({ kind, id, name, onDeleted, iconOnly = true, class
           setConfirming(true);
         }}
         title={`Delete this ${noun}`}
-        className={`inline-flex items-center gap-1.5 p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition ${className}`}
+        className="inline-flex items-center gap-1.5 p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition"
       >
         <Trash2 size={14} />
-        {!iconOnly && <span className="text-xs font-medium">Delete</span>}
       </button>
       {confirming && (
         <Sheet title={`Delete this ${noun}?`} onClose={() => !isPending && setConfirming(false)}>

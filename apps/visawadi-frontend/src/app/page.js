@@ -83,9 +83,9 @@ const HOW_IT_WORKS = [
 
 const pageData = {
   meta: {
-    title: "Visa Assistance for UAE Residents | VisaWadi",
+    title: "Schengen, UK, US & Canada Visa Help for UAE Residents",
     description:
-      "Expert visa application support for UAE residents. Schengen, UK, US and Canada. Document review, appointment booking and full file preparation from AED 299.",
+      "Schengen, UK, US and Canada visas from AED 299. We check every document against embassy requirements and book your VFS appointment. Free consultation first.",
     canonical: SITE_URL,
   },
   hero: {

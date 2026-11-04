@@ -7,11 +7,13 @@ import { AlertCircle, ArrowLeft, CalendarDays, ChevronDown, ChevronRight, Eye, L
 import FilterMenu from '../../components/admin/FilterMenu';
 import {
   AdFields,
+  AD_METRICS,
   AdGroupSettingsSheet,
   AudienceFields,
   CampaignSettingsSheet,
   DeleteAction,
   EditableName,
+  MetricCells,
   ReviewPill,
   Sheet,
   StatusSelect,
@@ -21,7 +23,6 @@ import {
   emptyAudience,
   fmtInt,
   fmtMoney,
-  fmtPct,
 } from '../../components/admin/OpenAIAdsParts';
 import { useOpenAIAdsCampaign } from '../../hooks/openai-ads/useOpenAIAdsCampaign';
 import { useOpenAIAdsSetup } from '../../hooks/openai-ads/useOpenAIAdsSetup';
@@ -46,21 +47,6 @@ function Stat({ label, value }) {
       <p className="text-xs text-gray-500 mb-1">{label}</p>
       <p className="text-xl font-semibold text-gray-900">{value}</p>
     </div>
-  );
-}
-
-function MetricCells({ row, currency, strong = false }) {
-  const main = strong ? 'text-gray-900' : 'text-gray-600';
-  return (
-    <>
-      <td className={`px-4 py-3 whitespace-nowrap ${main}`}>{fmtMoney(row.spend, currency)}</td>
-      <td className="px-4 py-3 whitespace-nowrap text-gray-600">{fmtInt(row.impressions)}</td>
-      <td className="px-4 py-3 whitespace-nowrap text-gray-600">{fmtInt(row.clicks)}</td>
-      <td className="px-4 py-3 whitespace-nowrap text-gray-600">{fmtPct(row.ctr)}</td>
-      <td className="px-4 py-3 whitespace-nowrap text-gray-600">{row.cpc != null ? fmtMoney(row.cpc, currency) : '—'}</td>
-      <td className={`px-4 py-3 whitespace-nowrap ${main}`}>{fmtInt(row.orders)}</td>
-      <td className="px-4 py-3 whitespace-nowrap text-gray-600">{row.costPerOrder != null ? fmtMoney(row.costPerOrder, currency) : '—'}</td>
-    </>
   );
 }
 
@@ -198,13 +184,9 @@ function AdCard({ ad, currency, onEdit }) {
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2.5 pt-2.5 border-t border-gray-100">
-        <AdMetric label="Spent" value={fmtMoney(ad.spend, currency)} />
-        <AdMetric label="Impressions" value={fmtInt(ad.impressions)} />
-        <AdMetric label="Clicks" value={fmtInt(ad.clicks)} />
-        <AdMetric label="CTR" value={fmtPct(ad.ctr)} />
-        <AdMetric label="CPC" value={ad.cpc != null ? fmtMoney(ad.cpc, currency) : '—'} />
-        <AdMetric label="Orders" value={fmtInt(ad.orders)} />
-        <AdMetric label="Cost / order" value={ad.costPerOrder != null ? fmtMoney(ad.costPerOrder, currency) : '—'} />
+        {AD_METRICS.map((metric) => (
+          <AdMetric key={metric.label} label={metric.label} value={metric.value(ad, currency)} />
+        ))}
         <span className="ml-auto inline-flex items-center gap-1 text-xs font-medium text-primary-700 opacity-0 group-hover/ad:opacity-100 transition-opacity">
           <Pencil size={12} /> Edit
         </span>

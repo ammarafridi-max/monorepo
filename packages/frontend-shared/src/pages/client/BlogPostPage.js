@@ -143,6 +143,7 @@ export default function BlogPostPage({
 
           <BlogOfferRail
             headings={headings}
+            offers={offers}
             recentPosts={recentPosts}
             title={blog.title}
             slug={blog.slug}

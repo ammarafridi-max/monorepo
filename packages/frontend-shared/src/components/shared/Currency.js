@@ -23,7 +23,14 @@ function Flag({ flag, size = 'md' }) {
   );
 }
 
-export default function Currency({ onDark = false, className = '', triggerClassName }) {
+const TRIGGER = {
+  bare: ({ onDark }) =>
+    `relative flex min-h-11 items-center gap-2 px-2 py-2 text-[13px] font-medium cursor-pointer transition-colors ${onDark ? 'text-white/85 hover:text-white' : 'text-gray-700 hover:text-gray-900'}`,
+  bordered: () =>
+    'relative flex items-center text-[12px] gap-2 border border-primary-200 bg-white hover:bg-primary-100 rounded-md px-3 py-1.5 cursor-pointer transition-colors',
+};
+
+export default function Currency({ onDark = false, className = '', variant = 'bare' }) {
   const { selectedCurrency, currencies, setCurrency } = useCurrency();
   const [open, setOpen] = useState(false);
   const [entered, setEntered] = useState(false);
@@ -109,10 +116,7 @@ export default function Currency({ onDark = false, className = '', triggerClassN
     <div className={`relative ${className}`} ref={wrapperRef}>
       <button
         type="button"
-        className={
-          triggerClassName ??
-          `relative flex min-h-11 items-center gap-2 px-2 py-2 text-[13px] font-medium cursor-pointer transition-colors ${onDark ? 'text-white/85 hover:text-white' : 'text-gray-700 hover:text-gray-900'}`
-        }
+        className={TRIGGER[variant]({ onDark })}
         onClick={() => setOpen((val) => !val)}
         aria-label="Select currency"
         aria-haspopup="listbox"
@@ -177,14 +181,11 @@ export default function Currency({ onDark = false, className = '', triggerClassN
                     role="option"
                     data-index={index}
                     aria-selected={isSelected}
-                    onMouseEnter={() => setActiveIndex(index)}
                     onClick={() => choose(cur.code)}
                     className={`w-full flex items-center gap-3 rounded-xl px-2.5 py-2 text-sm text-left transition-colors cursor-pointer ${
                       isSelected
                         ? 'bg-primary-50 text-primary-700 font-semibold'
-                        : isActive
-                          ? 'bg-gray-50 text-gray-700'
-                          : 'text-gray-700'
+                        : `text-gray-700 hover:bg-gray-50 ${isActive ? 'bg-gray-50' : ''}`
                     }`}
                   >
                     <Flag flag={cur.flag} />
