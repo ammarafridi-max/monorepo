@@ -10,6 +10,7 @@
   "scripts": {},
   "dependencies": {
     "@travel-suite/availability-rules": "workspace:*",
+    "@travel-suite/google-ads-conversions": "workspace:*",
     "@travel-suite/pricing-rules": "workspace:*",
     "@travel-suite/utils": "workspace:*",
     "@travel-suite/vehicles": "workspace:*",

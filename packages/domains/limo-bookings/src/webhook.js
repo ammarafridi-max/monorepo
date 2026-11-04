@@ -1,11 +1,12 @@
 import { logger } from '@travel-suite/utils';
+import { googleClickIdsFrom } from '@travel-suite/google-ads-conversions';
 import { fromStripeMinorUnits } from '@travel-suite/utils/currency';
 import BookingSchema from './schema.js';
 import { deliverPaymentConfirmations } from './confirmation-delivery.js';
 import { getOrRegisterModel } from '@travel-suite/utils/model';
 
 
-export function createBookingPaymentHandler({ db, notifications, metaCapi, frontendUrl }) {
+export function createBookingPaymentHandler({ db, notifications, metaCapi, googleAds, frontendUrl }) {
   const Booking = getOrRegisterModel(db, 'booking', BookingSchema);
 
   const reportPurchaseToMeta = async (booking) => {
@@ -35,6 +36,24 @@ export function createBookingPaymentHandler({ db, notifications, metaCapi, front
     }
   };
 
+  const reportConversionToGoogleAds = async (booking) => {
+    if (!googleAds?.isConfigured?.()) return;
+    const { email, phoneNumber } = booking.bookingDetails || {};
+    try {
+      await googleAds.uploadConversion({
+        ...googleClickIdsFrom(booking.attribution),
+        email,
+        phone: phoneNumber?.code && phoneNumber?.number ? `${phoneNumber.code}${phoneNumber.number}` : undefined,
+        orderId: String(booking._id),
+        value: booking.payment.amount,
+        currency: booking.payment.currency,
+        conversionTime: new Date(),
+      });
+    } catch (err) {
+      logger.warn('[limo-bookings] Google Ads conversion upload failed', { bookingId: String(booking._id), error: err.message });
+    }
+  };
+
   return async (session) => {
     const bookingId = session.metadata?.bookingId;
     const booking = await Booking.findById(bookingId);
@@ -57,5 +76,7 @@ export function createBookingPaymentHandler({ db, notifications, metaCapi, front
     await deliverPaymentConfirmations({ Booking, booking, notifications });
 
     await reportPurchaseToMeta(booking);
+
+    await reportConversionToGoogleAds(booking);
   };
 }

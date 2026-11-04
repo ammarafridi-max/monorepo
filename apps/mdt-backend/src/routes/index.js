@@ -31,6 +31,7 @@ import { db } from "../utils/db.js";
 import { wis } from "../utils/wis.js";
 import { createBrevoClient } from "@travel-suite/brevo";
 import { createMetaCapiClient } from "@travel-suite/meta-capi";
+import { createGoogleAdsConversionsClient } from "@travel-suite/google-ads-conversions";
 import { createOpenAICapiClient } from "@travel-suite/openai-capi";
 import { createOpenAIAdsClient } from "@travel-suite/openai-ads";
 import { createOpenAIAdsRouter } from "@travel-suite/openai-ads-admin";
@@ -42,6 +43,24 @@ import { logger } from "@travel-suite/utils";
 const { Affiliate: AffiliateModel } = registerAffiliateModels({ db });
 
 const router = Router();
+
+const googleAds = createGoogleAdsConversionsClient({
+  customerId: config.googleAds.customerId,
+  loginCustomerId: config.googleAds.loginCustomerId,
+  developerToken: config.googleAds.developerToken,
+  clientId: config.googleAds.clientId,
+  clientSecret: config.googleAds.clientSecret,
+  refreshToken: config.googleAds.refreshToken,
+  apiVersion: config.googleAds.apiVersion,
+  timezoneOffset: config.googleAds.timezoneOffset,
+  logger,
+});
+if (!googleAds.isConfigured()) {
+  logger.warn("[google-ads-conversions] Credentials not configured — server-side conversion uploads disabled");
+}
+const insuranceConversions = googleAds.forAction(config.googleAds.insurance);
+const ticketsConversions = googleAds.forAction(config.googleAds.tickets);
+
 const brevo = createBrevoClient({ apiKey: config.brevoApiKey, logger });
 
 
@@ -97,6 +116,7 @@ router.use(
     auth,
     Affiliate: AffiliateModel,
     notifications: { insurancePaymentCompletionEmail, policyIssuedEmail },
+    googleAds: insuranceConversions,
   }),
 );
 
@@ -168,6 +188,7 @@ const {
   sendEmail,
   metaCapi,
   openaiCapi,
+  googleAds: ticketsConversions,
 });
 router.use("/tickets", ticketsRouter);
 router.use("/pricing", pricingRouter);

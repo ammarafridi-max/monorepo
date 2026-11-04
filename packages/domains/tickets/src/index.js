@@ -3,15 +3,17 @@ import TicketPricingSchema from './schemas/pricing.schema.js';
 import CurrencySchema from '@travel-suite/currencies/schema';
 import { createCurrencyConversionService } from '@travel-suite/currencies/conversion';
 import { createTicketService } from './service.js';
+import { createAudienceService } from './audience.service.js';
 import { createPricingService } from './pricing.service.js';
 import { createTicketController } from './controller.js';
 import { createTicketRouter } from './router.js';
 import { createPricingRouter } from './pricing.router.js';
 import { createPaidOrderBus } from './paidOrderBus.js';
 import { getOrRegisterModel } from '@travel-suite/utils/model';
+import { logger } from '@travel-suite/utils';
 
 
-export function createTicketsRouter({ db, auth, stripe, paypal, notifications, frontendUrl, AffiliateModel, brevo, reviewListId, reservationStorage, sendEmail, metaCapi, openaiCapi, airlineRules = null }) {
+export function createTicketsRouter({ db, auth, stripe, paypal, notifications, frontendUrl, AffiliateModel, brevo, reviewListId, reservationStorage, sendEmail, metaCapi, openaiCapi, googleAds, audienceRecipient = null, brandName = 'Dummy ticket', airlineRules = null }) {
   if (!AffiliateModel) {
     throw new Error('createTicketsRouter requires AffiliateModel: pass the Affiliate model registered from @travel-suite/affiliates');
   }
@@ -26,8 +28,17 @@ export function createTicketsRouter({ db, auth, stripe, paypal, notifications, f
 
   const paidOrderBus = createPaidOrderBus();
 
-  const service = createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, paypal, notifications, frontendUrl, brevo, reviewListId, paidOrderBus, reservationStorage, sendEmail, metaCapi, openaiCapi, airlineRules });
-  const controller = createTicketController({ service, paidOrderBus });
+  const service = createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, paypal, notifications, frontendUrl, brevo, reviewListId, paidOrderBus, reservationStorage, sendEmail, metaCapi, openaiCapi, googleAds, airlineRules });
+  const audienceService = createAudienceService({
+    Ticket,
+    Currency,
+    sendEmail,
+    recipient: audienceRecipient,
+    brandName,
+    logger,
+  });
+
+  const controller = createTicketController({ service, paidOrderBus, audienceService });
   const router = createTicketRouter({ controller, auth });
 
   const pricingRouter = createPricingRouter({ service: pricingService, auth });

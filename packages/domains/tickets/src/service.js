@@ -9,6 +9,7 @@ import {
 } from '@travel-suite/utils/currency';
 import { dialCodeToCountry, genderFromTitle, toE164 } from '@travel-suite/utils/contact';
 import { payPalCurrencyFor } from '@travel-suite/paypal';
+import { googleClickIdsFrom } from '@travel-suite/google-ads-conversions';
 import { TICKET_VALIDITIES, VALIDITY_DAYS, SHORTEST_VALIDITY } from './validity.js';
 
 const AFFILIATE_ATTRIBUTION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
@@ -307,7 +308,7 @@ function rebuildFbc(ticket) {
   return undefined;
 }
 
-export function createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, paypal, notifications, frontendUrl, brevo, reviewListId, paidOrderBus, reservationStorage, sendEmail, metaCapi, openaiCapi, airlineRules = null }) {
+export function createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, paypal, notifications, frontendUrl, brevo, reviewListId, paidOrderBus, reservationStorage, sendEmail, metaCapi, openaiCapi, googleAds, airlineRules = null }) {
   // getUnitPrice already prices in the requested currency, so nothing here converts a second time.
   const resolveTicketAmount = async ({ validity, passengers, targetCode }) => {
     const { currency: currencyCode, unitPrice } = await pricingService.getUnitPrice(
@@ -704,6 +705,25 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     return ticket;
   };
 
+  const saveCheckoutAttribution = async ({ sessionId, formData, totalAmount, currencyCode }) => {
+    const metaAttribution = {
+      fbp: typeof formData.fbp === 'string' ? formData.fbp.slice(0, 200) : undefined,
+      fbc: typeof formData.fbc === 'string' ? formData.fbc.slice(0, 500) : undefined,
+      clientIp: formData.clientIp,
+      userAgent: typeof formData.userAgent === 'string' ? formData.userAgent.slice(0, 500) : undefined,
+    };
+    const openaiAttribution = {
+      oppref: typeof formData.oppref === 'string' ? formData.oppref.slice(0, 500) : undefined,
+      obref: typeof formData.obref === 'string' ? formData.obref.slice(0, 200) : undefined,
+    };
+
+    return Ticket.findOneAndUpdate(
+      { sessionId },
+      { $set: { totalAmount, currency: currencyCode, metaAttribution, openaiAttribution } },
+      { returnDocument: 'after' },
+    );
+  };
+
   const createStripePaymentUrl = async (formData) => {
     const { sessionId } = formData;
     if (!sessionId) throw new AppError('Session ID is required', 400);
@@ -727,22 +747,7 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       throw new AppError('This reservation could not be priced for checkout', 400);
     }
 
-    const metaAttribution = {
-      fbp: typeof formData.fbp === 'string' ? formData.fbp.slice(0, 200) : undefined,
-      fbc: typeof formData.fbc === 'string' ? formData.fbc.slice(0, 500) : undefined,
-      clientIp: formData.clientIp,
-      userAgent: typeof formData.userAgent === 'string' ? formData.userAgent.slice(0, 500) : undefined,
-    };
-    const openaiAttribution = {
-      oppref: typeof formData.oppref === 'string' ? formData.oppref.slice(0, 500) : undefined,
-      obref: typeof formData.obref === 'string' ? formData.obref.slice(0, 200) : undefined,
-    };
-
-    const updated = await Ticket.findOneAndUpdate(
-      { sessionId },
-      { $set: { totalAmount, currency: currencyCode, metaAttribution, openaiAttribution } },
-      { returnDocument: 'after' },
-    );
+    const updated = await saveCheckoutAttribution({ sessionId, formData, totalAmount, currencyCode });
 
     const checkoutSession = await stripe.checkout.sessions.create({
       mode: 'payment',
@@ -848,6 +853,37 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     }
   };
 
+  const reportConversionToGoogleAds = async (ticket) => {
+    if (!googleAds?.isConfigured?.()) return;
+    try {
+      await googleAds.uploadConversion({
+        ...googleClickIdsFrom(ticket.attribution),
+        email: ticket.email,
+        phone: toE164(ticket.phoneNumber?.code, ticket.phoneNumber?.digits),
+        orderId: ticket.sessionId,
+        value: ticket.amountPaid?.amount,
+        currency: ticket.amountPaid?.currency,
+        conversionTime: ticket.paidAt ?? new Date(),
+      });
+    } catch (err) {
+      logger.warn('[tickets] Google Ads conversion upload failed', { sessionId: ticket.sessionId, error: err.message });
+    }
+  };
+
+  const adjustConversionInGoogleAds = async (ticket, { adjustmentType, value }) => {
+    if (!googleAds?.isConfigured?.()) return;
+    try {
+      await googleAds.uploadAdjustment({
+        orderId: ticket.sessionId,
+        adjustmentType,
+        value,
+        currency: ticket.amountPaid?.currency,
+      });
+    } catch (err) {
+      logger.warn('[tickets] Google Ads adjustment failed', { sessionId: ticket.sessionId, adjustmentType, error: err.message });
+    }
+  };
+
   const reportLeadToMeta = (ticket, { eventId, value, currency }) => {
     if (!metaCapi?.isConfigured?.() || !eventId) return;
     metaCapi
@@ -931,6 +967,7 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
 
     await reportPurchaseToMeta(ticket);
     await reportPurchaseToOpenAI(ticket);
+    await reportConversionToGoogleAds(ticket);
 
     try {
       await brevo?.addContactToReviewList?.({
@@ -1133,22 +1170,7 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     }
     const { totalAmount, currencyCode } = payPalQuote;
 
-    const metaAttribution = {
-      fbp: typeof formData.fbp === 'string' ? formData.fbp.slice(0, 200) : undefined,
-      fbc: typeof formData.fbc === 'string' ? formData.fbc.slice(0, 500) : undefined,
-      clientIp: formData.clientIp,
-      userAgent: typeof formData.userAgent === 'string' ? formData.userAgent.slice(0, 500) : undefined,
-    };
-    const openaiAttribution = {
-      oppref: typeof formData.oppref === 'string' ? formData.oppref.slice(0, 500) : undefined,
-      obref: typeof formData.obref === 'string' ? formData.obref.slice(0, 200) : undefined,
-    };
-
-    const updated = await Ticket.findOneAndUpdate(
-      { sessionId },
-      { $set: { totalAmount, currency: currencyCode, metaAttribution, openaiAttribution } },
-      { returnDocument: 'after' },
-    );
+    const updated = await saveCheckoutAttribution({ sessionId, formData, totalAmount, currencyCode });
 
     reportInitiateCheckoutToMeta(updated ?? ticket, {
       value: totalAmount,
@@ -1284,6 +1306,8 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
       },
       { new: true },
     );
+
+    await adjustConversionInGoogleAds(ticket, { adjustmentType: 'RETRACTION' });
 
     return refund;
   };

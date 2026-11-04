@@ -1,5 +1,6 @@
 import { parsePhoneNumber } from 'libphonenumber-js';
 import { AppError, sanitizeAttribution, attributionChannelFilter } from '@travel-suite/utils';
+import { googleClickIdsFrom } from '@travel-suite/google-ads-conversions';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const VALID_SOURCES = ['hero_cta', 'package_card', 'final_cta', 'sticky_bar', 'inline_cta'];
@@ -22,7 +23,7 @@ function isValidPhone(phone) {
   }
 }
 
-export function createVisaLeadService({ VisaLead, Visa, notificationsService, metaCapi, openaiCapi, frontendUrl }) {
+export function createVisaLeadService({ VisaLead, Visa, notificationsService, metaCapi, openaiCapi, googleAds, frontendUrl }) {
 
   const submitLead = async ({
     firstName, lastName, nationality, email, phone,
@@ -98,6 +99,18 @@ export function createVisaLeadService({ VisaLead, Visa, notificationsService, me
         visaCountryName:  lead.visaCountryName,
       }).catch((err) => {
         console.error('[visa-leads] customer email failed', err?.message);
+      });
+    }
+
+    if (googleAds?.isConfigured?.()) {
+      googleAds.uploadConversion({
+        ...googleClickIdsFrom(lead.attribution),
+        email: lead.email,
+        phone: lead.phone,
+        orderId: String(lead._id),
+        conversionTime: lead.createdAt,
+      }).catch((err) => {
+        console.error('[visa-leads] Google Ads conversion upload failed', err?.message);
       });
     }
 

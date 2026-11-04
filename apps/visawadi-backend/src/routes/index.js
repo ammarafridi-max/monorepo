@@ -6,6 +6,7 @@ import { createBlogRouter, createBlogTagRouter } from "@travel-suite/blog";
 import { createVisaRouter } from "@travel-suite/visa";
 import { createVisaLeadRouter } from "@travel-suite/visa-leads";
 import { createMetaCapiClient } from "@travel-suite/meta-capi";
+import { createGoogleAdsConversionsClient } from "@travel-suite/google-ads-conversions";
 import { createOpenAICapiClient } from "@travel-suite/openai-capi";
 import { createOpenAIAdsClient } from "@travel-suite/openai-ads";
 import { createOpenAIAdsRouter } from "@travel-suite/openai-ads-admin";
@@ -30,6 +31,23 @@ import { sendEmail } from "../utils/email.js";
 import config from "../utils/config.js";
 
 const router = Router();
+
+const googleAds = createGoogleAdsConversionsClient({
+  customerId: config.googleAds.customerId,
+  loginCustomerId: config.googleAds.loginCustomerId,
+  developerToken: config.googleAds.developerToken,
+  clientId: config.googleAds.clientId,
+  clientSecret: config.googleAds.clientSecret,
+  refreshToken: config.googleAds.refreshToken,
+  apiVersion: config.googleAds.apiVersion,
+  timezoneOffset: config.googleAds.timezoneOffset,
+  logger,
+});
+if (!googleAds.isConfigured()) {
+  logger.warn("[google-ads-conversions] Credentials not configured — server-side conversion uploads disabled");
+}
+const leadConversions = googleAds.forAction(config.googleAds.lead);
+
 
 const { router: authRouter, middleware: auth, AdminUser } = createAuthRouter({
   db,
@@ -114,7 +132,7 @@ if (!openaiWhatsappCapi.isConfigured()) {
 
 router.use(
   "/visa-leads",
-  createVisaLeadRouter({ db, auth, notificationsService: notifications, metaCapi, openaiCapi, frontendUrl: config.frontendUrl }),
+  createVisaLeadRouter({ db, auth, notificationsService: notifications, metaCapi, openaiCapi, googleAds: leadConversions, frontendUrl: config.frontendUrl }),
 );
 
 router.use(

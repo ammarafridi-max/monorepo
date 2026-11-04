@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@travel-suite/currencies": "workspace:*",
+    "@travel-suite/google-ads-conversions": "workspace:*",
     "@travel-suite/paypal": "workspace:*",
     "@travel-suite/utils": "workspace:*",
     "multer": "^1.4.5-lts.1",

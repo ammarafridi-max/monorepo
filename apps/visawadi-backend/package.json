@@ -15,6 +15,7 @@
     "@travel-suite/blog": "workspace:*",
     "@travel-suite/brevo": "workspace:*",
     "@travel-suite/cloudinary": "workspace:*",
+    "@travel-suite/google-ads-conversions": "workspace:*",
     "@travel-suite/meta-capi": "workspace:*",
     "@travel-suite/notifications": "workspace:*",
     "@travel-suite/openai-ads": "workspace:*",

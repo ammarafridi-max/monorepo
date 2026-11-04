@@ -11,14 +11,15 @@
     "resend-confirmations:prod": "node --env-file=.env.production scripts/resend-booking-confirmations.js"
   },
   "dependencies": {
-    "@travel-suite/assistant": "workspace:*",
     "@travel-suite/admin-users": "workspace:*",
+    "@travel-suite/assistant": "workspace:*",
     "@travel-suite/auth": "workspace:*",
     "@travel-suite/availability-rules": "workspace:*",
     "@travel-suite/blog": "workspace:*",
     "@travel-suite/brevo": "workspace:*",
     "@travel-suite/cloudinary": "workspace:*",
     "@travel-suite/currencies": "workspace:*",
+    "@travel-suite/google-ads-conversions": "workspace:*",
     "@travel-suite/limo-bookings": "workspace:*",
     "@travel-suite/locations": "workspace:*",
     "@travel-suite/meta-capi": "workspace:*",

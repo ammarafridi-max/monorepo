@@ -1,0 +1,15 @@
+{
+  "name": "@travel-suite/google-ads-conversions",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {},
+  "peerDependencies": {}
+}

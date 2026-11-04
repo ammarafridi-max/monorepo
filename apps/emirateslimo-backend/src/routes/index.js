@@ -22,12 +22,30 @@ import { createPricingRulesRouter } from "@travel-suite/pricing-rules";
 import { createAvailabilityRulesRouter } from "@travel-suite/availability-rules";
 import { createBookingsRouter, createBookingPaymentHandler } from "@travel-suite/limo-bookings";
 import { createMetaCapiClient } from "@travel-suite/meta-capi";
+import { createGoogleAdsConversionsClient } from "@travel-suite/google-ads-conversions";
 import { db } from "../utils/db.js";
 import { sendEmail } from "../utils/email.js";
 import { createLimoNotifications, bookingNotifications } from "../notifications/booking.js";
 import config from "../utils/config.js";
 
 const router = Router();
+
+const googleAds = createGoogleAdsConversionsClient({
+  customerId: config.googleAds.customerId,
+  loginCustomerId: config.googleAds.loginCustomerId,
+  developerToken: config.googleAds.developerToken,
+  clientId: config.googleAds.clientId,
+  clientSecret: config.googleAds.clientSecret,
+  refreshToken: config.googleAds.refreshToken,
+  apiVersion: config.googleAds.apiVersion,
+  timezoneOffset: config.googleAds.timezoneOffset,
+  logger,
+});
+if (!googleAds.isConfigured()) {
+  logger.warn("[google-ads-conversions] Credentials not configured — server-side conversion uploads disabled");
+}
+const bookingConversions = googleAds.forAction(config.googleAds.booking);
+
 
 const { router: authRouter, middleware: auth, AdminUser } = createAuthRouter({
   db,
@@ -158,6 +176,7 @@ export const stripeWebhookHandler = createStripeWebhookHandler({
       db,
       notifications: bookingNotifications(notifications),
       metaCapi,
+      googleAds: bookingConversions,
       frontendUrl: config.frontendUrl,
     }),
     "payment-link": handlePaymentLinkSuccess,

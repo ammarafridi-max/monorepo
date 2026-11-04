@@ -11,6 +11,11 @@ const parseNumber = (value, fallback) => {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 };
 
+const parseRate = (value) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 && parsed <= 1 ? parsed : 1;
+};
+
 export default {
   nodeEnv: process.env.NODE_ENV ?? "development",
   port: parseNumber(process.env.PORT, 4000),
@@ -52,6 +57,21 @@ export default {
     pixelId: process.env.META_PIXEL_ID,
     capiAccessToken: process.env.META_CAPI_ACCESS_TOKEN,
     testEventCode: process.env.META_TEST_EVENT_CODE,
+  },
+
+  googleAds: {
+    customerId: process.env.GOOGLE_ADS_CUSTOMER_ID,
+    loginCustomerId: process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID,
+    developerToken: process.env.GOOGLE_ADS_DEVELOPER_TOKEN,
+    clientId: process.env.GOOGLE_ADS_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_ADS_CLIENT_SECRET,
+    refreshToken: process.env.GOOGLE_ADS_REFRESH_TOKEN,
+    apiVersion: process.env.GOOGLE_ADS_API_VERSION ?? "v26",
+    timezoneOffset: process.env.GOOGLE_ADS_TIMEZONE_OFFSET ?? "+04:00",
+    lead: {
+      conversionAction: process.env.GOOGLE_ADS_CONVERSION_ACTION_LEAD,
+      valueRate: parseRate(process.env.GOOGLE_ADS_VALUE_RATE_LEAD),
+    },
   },
 
   cloudinary: {
