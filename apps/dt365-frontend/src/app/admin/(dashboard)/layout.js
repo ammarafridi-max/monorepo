@@ -20,6 +20,7 @@ const nav = [
     items: [
       { label: 'Dummy Tickets', href: '/admin/dummy-tickets', mobile: 2, mobileLabel: 'Tickets', icon: 'Ticket', exact: true, badge: 'pendingDummyTickets', roles: ['admin', 'agent'] },
       { label: "Today's Deliveries", href: '/admin/dummy-tickets/today', icon: 'CalendarCheck', roles: ['admin', 'agent', 'blog-manager'] },
+      { label: 'Hotel Bookings', href: '/admin/hotel-bookings', icon: 'BedDouble', roles: ['admin', 'agent'] },
     ],
   },
   {

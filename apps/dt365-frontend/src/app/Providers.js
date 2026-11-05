@@ -9,6 +9,7 @@ import { localeCurrency } from '@/lib/locales';
 import { HelpCircle, Mail, Plane, Rss } from 'lucide-react';
 import { CurrencyProvider } from '@travel-suite/frontend-shared/contexts/CurrencyContext';
 import { TicketProvider } from '@travel-suite/frontend-shared/contexts/TicketContext';
+import { HotelProvider } from '@travel-suite/frontend-shared/contexts/HotelContext';
 import { InsuranceProvider } from '@travel-suite/frontend-shared/contexts/InsuranceContext';
 import AppLayout from '@travel-suite/frontend-shared/layouts/AppLayout';
 import AnalyticsInit from '@travel-suite/frontend-shared/components/shared/AnalyticsInit';
@@ -16,6 +17,7 @@ import AnalyticsInit from '@travel-suite/frontend-shared/components/shared/Analy
 const LIGHT_HEADER_ROUTES = [
   '/blog',
   '/booking',
+  '/hotel-booking',
   '/insurance-booking',
   '/faq',
   '/privacy-policy',
@@ -140,12 +142,14 @@ export default function Providers({ children }) {
         <QueryClientProvider client={queryClient}>
           <CurrencyProvider defaultCode={defaultCurrency} detectCurrency>
             <TicketProvider>
+            <HotelProvider>
                 <InsuranceProvider>
                   <AppLayout logoSrc={LOGO_SRC} brandName={BRAND_NAME} pages={flightItineraryPages} footerLinkGroups={footerLinkGroups} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark}>
                     <main>{children}</main>
                   </AppLayout>
                 </InsuranceProvider>
-            </TicketProvider>
+            </HotelProvider>
+          </TicketProvider>
           </CurrencyProvider>
         </QueryClientProvider>
       </>
@@ -159,11 +163,13 @@ export default function Providers({ children }) {
       <QueryClientProvider client={queryClient}>
         <CurrencyProvider defaultCode={defaultCurrency} detectCurrency>
           <TicketProvider>
+            <HotelProvider>
               <InsuranceProvider>
                 <AppLayout logoSrc={LOGO_SRC} brandName={BRAND_NAME} pages={defaultPages} footerLinkGroups={footerLinkGroups} logoAlt={LOGO_ALT} email={EMAIL} onDark={headerOnDark}>
                   <main>{children}</main>
                 </AppLayout>
               </InsuranceProvider>
+          </HotelProvider>
           </TicketProvider>
         </CurrencyProvider>
       </QueryClientProvider>

@@ -7,6 +7,7 @@ export function useHotelBooking(sessionId, options = {}) {
     data: reservation,
     isLoading: isLoadingReservation,
     isError: isErrorReservation,
+    error: reservationError,
   } = useQuery({
     queryKey: ['hotelBooking', sessionId],
     queryFn: () => getHotelBookingApi(sessionId),
@@ -15,5 +16,5 @@ export function useHotelBooking(sessionId, options = {}) {
     ...options,
   });
 
-  return { reservation, isLoadingReservation, isErrorReservation };
+  return { reservation, isLoadingReservation, isErrorReservation, reservationError };
 }

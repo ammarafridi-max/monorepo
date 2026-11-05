@@ -23,7 +23,6 @@
     "@travel-suite/flights": "workspace:*",
     "@travel-suite/google-ads-conversions": "workspace:*",
     "@travel-suite/hotel-bookings": "workspace:^",
-    "@travel-suite/liteapi": "workspace:^",
     "@travel-suite/meta-capi": "workspace:*",
     "@travel-suite/notifications": "workspace:*",
     "@travel-suite/openai-ads": "workspace:*",

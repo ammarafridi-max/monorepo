@@ -161,7 +161,7 @@ export default async function Page() {
       <Hero
         title={`Dummy Tickets in Germany from ${from}`}
         subtitle={`A dummy ticket is a real flight reservation with a verifiable PNR on Amadeus, Sabre or Travelport. From Germany the need is for the trips that leave Schengen: a US, Canadian, Chinese or Indian visa file, or an airline asking for onward travel. Priced and charged in euros from ${from}.`}
-        form={<AllForms forms={['ticket']} />}
+        form={<AllForms forms={['ticket', 'hotel']} />}
         pills={[
           `From ${from}, charged in euros`,
           'Valid 6-digit PNR',

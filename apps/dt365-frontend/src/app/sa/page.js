@@ -161,7 +161,7 @@ export default async function Page() {
       <Hero
         title={`Dummy Tickets in Saudi Arabia from ${from}`}
         subtitle={`A dummy ticket is a real flight reservation with a verifiable PNR, created on global GDS platforms (Amadeus, Sabre, Travelport). Residents of the Kingdom use it for Schengen, UK, US and Canadian visa files, for airline check-in and as proof of onward travel. Priced and charged in riyals from ${from}, delivered by email in minutes.`}
-        form={<AllForms forms={['ticket']} />}
+        form={<AllForms forms={['ticket', 'hotel']} />}
         pills={[
           `From ${from}, charged in riyals`,
           'Valid 6-digit PNR',

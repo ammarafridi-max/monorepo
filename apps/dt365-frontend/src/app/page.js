@@ -145,7 +145,7 @@ const pageData = {
       title: "Dummy Tickets for Visa, Onward Travel From USD 13",
       subtitle:
         "A dummy ticket is a real flight reservation with a verifiable PNR, created through global GDS platforms (Amadeus, Sabre, Travelport). You will also see it called a dummy flight ticket or a dummy air ticket, and it is the same document. Use it for visa applications, airline check-in, proof of onward travel, and immigration checks. You pay for the reservation, not the flight, from USD 13, delivered by email in minutes.",
-      form: <AllForms forms={["ticket"]} />,
+      form: <AllForms forms={["ticket", "hotel"]} />,
     },
     process: {
       title: "Get Your Dummy Ticket in 3 Simple Steps",
@@ -252,7 +252,7 @@ export default async function HomePage() {
       <Hero
         title={pageData.sections.hero.title}
         subtitle={pageData.sections.hero.subtitle}
-        form={<AllForms forms={["ticket"]} />}
+        form={<AllForms forms={["ticket", "hotel"]} />}
         pills={[
           "Dummy tickets from USD 13",
           "Valid 6-digit PNR",

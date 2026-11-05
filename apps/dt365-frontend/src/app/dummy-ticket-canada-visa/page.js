@@ -114,7 +114,7 @@ const pageData = {
       title: "Book Your Dummy Ticket For Canada Visa From USD 13",
       subtitle:
         "IRCC asks for travel dates and a flight itinerary in the visitor visa application, and at the same time advises against booking flights before approval. A dummy ticket fits that guidance exactly. You get a verifiable PNR on global GDS platforms for the file, without locking in a paid ticket while IRCC reviews. From USD 13.",
-      form: <AllForms forms={["ticket"]} />,
+      form: <AllForms forms={["ticket", "hotel"]} />,
     },
     process: {
       title: "How to Book Your Dummy Flight Ticket for a Canada Visa?",

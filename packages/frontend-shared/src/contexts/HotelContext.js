@@ -45,11 +45,10 @@ export function HotelProvider({ children }) {
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [occupancy, setOccupancy] = useState({ rooms: 1, adults: 2, children: [] });
-  const [guestNationality, setGuestNationality] = useState('');
   const [guests, setGuests] = useState([]);
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState({ code: '', digits: '' });
-  const [selectedOffer, setSelectedOffer] = useState(null);
+  const [message, setMessage] = useState('');
   const [affiliateAttribution, setAffiliateAttribution] = useState(null);
   const [hydrated, setHydrated] = useState(false);
 
@@ -82,8 +81,6 @@ export function HotelProvider({ children }) {
       if (saved.checkIn) setCheckIn(saved.checkIn);
       if (saved.checkOut) setCheckOut(saved.checkOut);
       if (saved.occupancy) setOccupancy(saved.occupancy);
-      if (saved.guestNationality) setGuestNationality(saved.guestNationality);
-      if (saved.selectedOffer) setSelectedOffer(saved.selectedOffer);
     }
     setAffiliateAttribution(getStoredAttribution());
     setHydrated(true);
@@ -94,10 +91,10 @@ export function HotelProvider({ children }) {
     try {
       sessionStorage.setItem(
         SEARCH_STORAGE_KEY,
-        JSON.stringify({ cityName, countryCode, checkIn, checkOut, occupancy, guestNationality, selectedOffer }),
+        JSON.stringify({ cityName, countryCode, checkIn, checkOut, occupancy }),
       );
     } catch {}
-  }, [hydrated, cityName, countryCode, checkIn, checkOut, occupancy, guestNationality, selectedOffer]);
+  }, [hydrated, cityName, countryCode, checkIn, checkOut, occupancy]);
 
   useEffect(() => {
     const today = todayDateOnly();
@@ -117,11 +114,10 @@ export function HotelProvider({ children }) {
         checkIn,
         checkOut,
         occupancy,
-        guestNationality,
         guests,
         email,
         phoneNumber,
-        selectedOffer,
+        message,
         affiliateAttribution,
         hydrated,
 
@@ -130,11 +126,10 @@ export function HotelProvider({ children }) {
         setCheckIn,
         setCheckOut,
         setOccupancy,
-        setGuestNationality,
         setGuests,
         setEmail,
         setPhoneNumber,
-        setSelectedOffer,
+        setMessage,
 
         initializeGuests,
         updateGuestData,

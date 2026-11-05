@@ -6,6 +6,7 @@ export function useAirports(query) {
   const {
     data: airports = [],
     isLoading: isLoadingAirports,
+    isFetching: isFetchingAirports,
     isError: isErrorAirports,
   } = useQuery({
     queryKey: ['airports', query],
@@ -14,5 +15,5 @@ export function useAirports(query) {
     staleTime: 1000 * 60 * 5,
   });
 
-  return { airports, isLoadingAirports, isErrorAirports };
+  return { airports, isLoadingAirports, isFetchingAirports, isErrorAirports };
 }

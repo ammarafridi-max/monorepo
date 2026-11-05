@@ -171,7 +171,7 @@ export default async function Page() {
       <Hero
         title="Multi City Dummy Tickets From USD 13"
         subtitle="Flying into one country and out of another is the normal shape of a European trip, and it is the shape most visa files have to describe. A multi city reservation puts every leg under one PNR on Amadeus, Sabre or Travelport, so the whole route shows up in a single lookup. Delivered by email in minutes."
-        form={<AllForms forms={['ticket']} />}
+        form={<AllForms forms={['ticket', 'hotel']} />}
         pills={[
           'All legs under one PNR',
           'Open jaw routings supported',

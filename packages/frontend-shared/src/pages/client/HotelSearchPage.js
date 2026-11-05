@@ -4,9 +4,9 @@ import { BedDouble, ShieldCheck, Clock, FileCheck2 } from 'lucide-react';
 import HotelForm from '../../components/forms/v1/HotelForm';
 
 const POINTS = [
-  { icon: ShieldCheck, title: 'A real booking', body: 'We book a genuine refundable room in your name, so the reference checks out.' },
-  { icon: FileCheck2, title: 'Visa ready', body: 'You get the hotel confirmation you need for your accommodation proof.' },
-  { icon: Clock, title: 'Sent in minutes', body: 'Your confirmation lands in your inbox right after payment.' },
+  { icon: ShieldCheck, title: 'Booked by our team', body: 'An agent books your room by hand and sends you the confirmation, so a real person checks it.' },
+  { icon: FileCheck2, title: 'Visa ready', body: 'You get the hotel confirmation you need as proof of accommodation.' },
+  { icon: Clock, title: 'Usually within a few hours', body: 'Nothing is automated, so allow a little time. We email you as soon as it is done.' },
 ];
 
 export default function HotelSearchPage() {
@@ -18,7 +18,7 @@ export default function HotelSearchPage() {
         </div>
         <h1 className="text-3xl font-extrabold text-gray-900">Hotel Reservation for Your Visa</h1>
         <p className="text-sm text-gray-500 mt-2 max-w-lg">
-          A confirmed, refundable hotel booking in your name for your visa application. Search your city and dates to get started.
+          A hotel reservation in your name for your visa application, booked by our team and emailed to you. Search your city and dates to get started.
         </p>
       </div>
 

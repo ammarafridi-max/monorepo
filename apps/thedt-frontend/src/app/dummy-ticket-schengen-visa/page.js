@@ -27,7 +27,6 @@ import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms
 import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
 import PricingTiers from '@/components/PricingTiers';
 import BookCta from '@/components/BookCta';
-import StickyBookingBar from '@travel-suite/frontend-shared/components/ui/v1/StickyBookingBar';
 import { processSteps } from '@/data/processSteps';
 import About from '@travel-suite/frontend-shared/components/sections/v1/About';
 import Benefits from '@travel-suite/frontend-shared/components/sections/v1/Benefits';
@@ -269,7 +268,6 @@ export default function Page() {
         subtitle={pageData.sections.contact.subtitle}
         text={pageData.sections.contact.text}
       />
-      <StickyBookingBar label="Book now" />
     </>
   );
 }

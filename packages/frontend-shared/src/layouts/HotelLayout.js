@@ -1,11 +1,12 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
-import { Check, ArrowLeft } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { Check } from 'lucide-react';
 import Link from 'next/link';
+import BookingStepperMobile from '../components/shared/BookingStepperMobile.js';
 
 const HOTEL_STEPS = [
-  { id: 1, label: 'Select Room',    path: '/hotel-booking/select-room' },
+  { id: 1, label: 'Select Hotel',   path: '/hotel-booking/select-hotel' },
   { id: 2, label: 'Review Details', path: '/hotel-booking/review-details' },
   { id: 3, label: 'Payment',        path: '/hotel-booking/payment' },
 ];
@@ -15,7 +16,7 @@ export default function HotelLayout({ children }) {
     <div className="flex flex-col min-h-screen bg-gray-50 text-gray-900 font-sans mt-17 lg:mt-20">
       <div className="bg-white border-b border-gray-200 shadow-sm">
         <StepperDesktop />
-        <StepperMobile />
+        <BookingStepperMobile steps={HOTEL_STEPS} />
       </div>
       <main className="flex-1 pb-24">
         <div className="w-[95%] lg:w-[70%] mx-auto py-6">{children}</div>
@@ -69,52 +70,6 @@ function StepperDesktop() {
           </div>
         );
       })}
-    </div>
-  );
-}
-
-function StepperMobile() {
-  const pathname = usePathname();
-  const router = useRouter();
-  const currentIndex = HOTEL_STEPS.findIndex((s) => s.path === pathname);
-  const currentStep = HOTEL_STEPS[currentIndex];
-  const previousStep = HOTEL_STEPS[currentIndex - 1];
-
-  function goBack() {
-    if (previousStep?.path) router.push(previousStep.path);
-    else router.back();
-  }
-
-  return (
-    <div className="flex lg:hidden items-center gap-4 px-6 py-4">
-      <button
-        type="button"
-        onClick={goBack}
-        disabled={currentIndex === 0}
-        className="text-gray-600 hover:text-gray-900 disabled:text-gray-300 transition-colors shrink-0"
-      >
-        <ArrowLeft size={18} />
-      </button>
-
-      <div className="flex-1 min-w-0">
-        <p className="text-xs text-gray-400 font-medium leading-none mb-0.5">
-          Step {currentIndex + 1} of {HOTEL_STEPS.length}
-        </p>
-        <p className="text-sm font-bold text-gray-900 truncate">{currentStep?.label}</p>
-      </div>
-
-      <div className="flex items-center gap-1 shrink-0">
-        {HOTEL_STEPS.map((_, i) => (
-          <div
-            key={i}
-            className={`h-1.5 rounded-full transition-all duration-300 ${
-              i < currentIndex   ? 'w-5 bg-primary-600' :
-              i === currentIndex ? 'w-7 bg-gray-900'   :
-                                   'w-5 bg-gray-200'
-            }`}
-          />
-        ))}
-      </div>
     </div>
   );
 }

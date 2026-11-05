@@ -124,7 +124,7 @@ const pageData = {
       title: 'Book a Dummy Ticket on Air France from USD 13',
       subtitle:
         "We issue Air France flight reservations through global GDS platforms (Amadeus, Sabre, Travelport) with a six-character PNR your consulate or any travel agent can look up during validity. Real AF flight numbers, real CDG routing, no paid ticket required. Suitable for Schengen visa files and any embassy that asks for proof of travel. From USD 13.",
-      form: <AllForms forms={['ticket']} />,
+      form: <AllForms forms={['ticket', 'hotel']} />,
     },
     process: {
       title: 'How to Book Your Air France Dummy Ticket',

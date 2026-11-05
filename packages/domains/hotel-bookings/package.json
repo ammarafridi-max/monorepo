@@ -10,8 +10,8 @@
   "scripts": {},
   "dependencies": {
     "@travel-suite/currencies": "workspace:*",
-    "@travel-suite/liteapi": "workspace:*",
     "@travel-suite/utils": "workspace:*",
+    "multer": "^1.4.5-lts.1",
     "uuid": "^11.0.0"
   },
   "peerDependencies": {

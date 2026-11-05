@@ -17,7 +17,6 @@ import {
 } from 'react-icons/hi2';
 import Hero from '@travel-suite/frontend-shared/components/sections/v1/Hero';
 import BookCta from '@/components/BookCta';
-import StickyBookingBar from '@travel-suite/frontend-shared/components/ui/v1/StickyBookingBar';
 import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms';
 import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
 import Benefits from '@travel-suite/frontend-shared/components/sections/v1/Benefits';
@@ -194,7 +193,6 @@ export default function Page() {
         title={pageData.sections.contact.title}
         text={pageData.sections.contact.text}
       />
-      <StickyBookingBar label="Book now" />
     </>
   );
 }

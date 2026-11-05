@@ -18,22 +18,6 @@ const HotelSnapshotSchema = new mongoose.Schema({
   phone: String,
 }, { _id: false });
 
-const SupplierSchema = new mongoose.Schema({
-  name: { type: String, default: 'liteapi' },
-  hotelId: String,
-  offerId: String,
-  prebookId: String,
-  bookingId: String,
-  supplierBookingId: String,
-  hotelConfirmationCode: String,
-  price: { amount: Number, currency: String },
-  quotedPrice: { amount: Number, currency: String },
-  offerReplaced: { type: Boolean, default: false },
-  bookClaimedAt: { type: Date, default: null },
-  bookedAt: { type: Date, default: null },
-  lastError: { type: String, default: null },
-}, { _id: false });
-
 const HotelBookingSchema = new mongoose.Schema(
   {
     sessionId: { type: String, default: uuidv4, unique: true },
@@ -45,7 +29,6 @@ const HotelBookingSchema = new mongoose.Schema(
       adults: { type: Number, default: 1, min: 1 },
       children: { type: [Number], default: [] },
     },
-    guestNationality: { type: String, uppercase: true, trim: true },
     destination: {
       cityName: { type: String, trim: true },
       countryCode: { type: String, uppercase: true, trim: true },
@@ -54,18 +37,7 @@ const HotelBookingSchema = new mongoose.Schema(
     checkOut: { type: String, required: true },
     nights: { type: Number, min: 1 },
     hotel: HotelSnapshotSchema,
-    supplier: { type: SupplierSchema, default: () => ({}) },
-
-    freeCancellationUntil: { type: Date, default: null },
-    cancellationStatus: {
-      type: String,
-      enum: ['NOT_BOOKED', 'SCHEDULED', 'CANCELLED', 'FAILED'],
-      default: 'NOT_BOOKED',
-    },
-    cancelledAt: { type: Date, default: null },
-    cancellationFee: { amount: { type: Number }, currency: { type: String } },
-    cancellationAttempts: { type: Number, default: 0 },
-
+    message: { type: String, trim: true, maxlength: 2000 },
     paymentStatus: { type: String, enum: ['UNPAID', 'PAID', 'REFUNDED'], default: 'UNPAID' },
     paidAt: { type: Date, default: null },
     totalAmount: { type: Number },
@@ -76,11 +48,15 @@ const HotelBookingSchema = new mongoose.Schema(
 
     orderStatus: {
       type: String,
-      enum: ['PENDING', 'BOOKED', 'DELIVERED', 'BOOKING_FAILED', 'REFUNDED'],
+      enum: ['PENDING', 'PROGRESS', 'DELIVERED', 'REFUNDED'],
       default: 'PENDING',
     },
-    confirmationEmailSentAt: { type: Date, default: null },
     documentUrl: { type: String, default: null },
+    reservationFile: {
+      publicId: { type: String, default: null },
+      format: { type: String, default: null },
+      resourceType: { type: String, default: null },
+    },
     documentSentAt: { type: Date, default: null },
     adminDeliveryEmailSent: { type: Boolean, default: false },
     handledBy: { type: mongoose.Schema.ObjectId, ref: 'admin-user', default: null },
@@ -110,7 +86,6 @@ HotelBookingSchema.index({ email: 1 });
 HotelBookingSchema.index({ orderStatus: 1 });
 HotelBookingSchema.index({ paymentStatus: 1 });
 HotelBookingSchema.index({ paymentStatus: 1, paidAt: -1 });
-HotelBookingSchema.index({ cancellationStatus: 1, freeCancellationUntil: 1 });
 HotelBookingSchema.index({ affiliateId: 1 });
 HotelBookingSchema.index({ affiliate: 1 });
 
