@@ -124,7 +124,7 @@ const pageData = {
       title: 'Book a Dummy Ticket on Turkish Airlines from USD 13',
       subtitle:
         'We issue Turkish Airlines flight reservations through global GDS platforms (Amadeus, Sabre, Travelport) with a six-character PNR your consulate or any travel agent can look up during validity. Real TK flight numbers, Istanbul routing, no paid ticket required. Accepted on Schengen, UK, US, Canadian, and many other visa files. From USD 13.',
-      form: <AllForms forms={['ticket']} />,
+      form: <AllForms forms={['ticket', 'hotel']} />,
     },
     process: {
       title: 'How to Book Your Turkish Airlines Dummy Ticket',

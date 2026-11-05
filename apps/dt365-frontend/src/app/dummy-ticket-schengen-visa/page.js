@@ -122,7 +122,7 @@ const pageData = {
       title: 'Book Your Dummy Ticket For Schengen Visa From USD 13',
       subtitle:
         'Schengen embassies and visa centres accept a flight reservation in place of a paid ticket at the application stage, and EU Visa Code Article 14 lists it among the supporting documents. Our dummy ticket carries a verifiable PNR on Amadeus, Sabre, and Travelport, so consulates, VFS, and BLS can confirm it directly. From USD 13.',
-      form: <AllForms forms={['ticket']} />,
+      form: <AllForms forms={['ticket', 'hotel']} />,
     },
     process: {
       title: 'How to Book Your Dummy Flight Ticket for a Schengen Visa?',

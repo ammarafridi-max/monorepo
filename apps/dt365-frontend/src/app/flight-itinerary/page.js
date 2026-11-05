@@ -55,7 +55,7 @@ export const pageData = {
       title: 'Flight Itineraries for Travel from USD 13',
       subtitle:
         'Receive a real itinerary in standard booking format with a valid PNR and trip details delivered by email.',
-      form: <AllForms forms={['ticket']} />,
+      form: <AllForms forms={['ticket', 'hotel']} />,
     },
     process: {
       title: 'How To Get Your Flight Itinerary?',

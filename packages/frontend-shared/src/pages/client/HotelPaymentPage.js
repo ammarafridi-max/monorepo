@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
-  CheckCircle2, BedDouble, CreditCard, Users, Mail, AlertCircle, Loader2, CalendarDays, ShieldCheck,
+  CheckCircle2, BedDouble, CreditCard, Users, Mail, AlertCircle, Loader2, CalendarDays,
 } from 'lucide-react';
 import { useHotelBooking } from '../../hooks/hotel-bookings/useHotelBooking';
 import { formatAmount } from '../../utils/currency';
@@ -73,13 +73,7 @@ function PaymentContent({ onPurchaseEvent, supportEmail }) {
   }, []);
 
   const { reservation, isLoadingReservation, isErrorReservation } = useHotelBooking(sessionId, {
-    refetchInterval: (query) => {
-      const data = query.state.data;
-      if (!data) return 2000;
-      if (data.paymentStatus !== 'PAID') return 2000;
-      if (data.orderStatus === 'PENDING') return 2000;
-      return false;
-    },
+    refetchInterval: (query) => (query.state.data?.paymentStatus === 'PAID' ? false : 2000),
   });
 
   const amount = reservation?.amountPaid?.amount;
@@ -99,10 +93,8 @@ function PaymentContent({ onPurchaseEvent, supportEmail }) {
   }, [amount, currency, sessionId, onPurchaseEvent]);
 
   useEffect(() => {
-    if (reservation?.orderStatus === 'BOOKED' || reservation?.orderStatus === 'DELIVERED') {
-      localStorage.removeItem('HOTEL_SESSION_ID');
-    }
-  }, [reservation?.orderStatus]);
+    if (reservation?.paymentStatus === 'PAID') localStorage.removeItem('HOTEL_SESSION_ID');
+  }, [reservation?.paymentStatus]);
 
   if (sessionId === null || isLoadingReservation) return <LoadingState />;
   if (!sessionId || isErrorReservation || !reservation) {
@@ -115,32 +107,6 @@ function PaymentContent({ onPurchaseEvent, supportEmail }) {
         title="Confirming your payment"
         body="Stripe is sending us the confirmation. This usually takes a few seconds. Please keep this page open."
       />
-    );
-  }
-
-  if (reservation.orderStatus === 'PENDING') {
-    return (
-      <ConfirmingState
-        title="Booking your room"
-        body="We are placing a real refundable booking with the hotel. This usually takes a few seconds. Please keep this page open."
-      />
-    );
-  }
-
-  if (reservation.orderStatus === 'BOOKING_FAILED') {
-    return (
-      <div className="max-w-lg mx-auto px-6 py-24 flex flex-col items-center text-center gap-5">
-        <div className="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center">
-          <AlertCircle size={26} className="text-amber-500" />
-        </div>
-        <div>
-          <p className="text-lg font-bold text-gray-900">Your payment went through</p>
-          <p className="text-sm text-gray-500 mt-1">
-            The room did not confirm automatically, so our team is finishing it by hand. You will get your
-            confirmation by email shortly. Reference <span className="font-mono text-xs">{reservation.sessionId}</span>.
-          </p>
-        </div>
-      </div>
     );
   }
 
@@ -157,13 +123,13 @@ function PaymentContent({ onPurchaseEvent, supportEmail }) {
             <BedDouble size={14} className="text-primary-700" />
           </div>
         </div>
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-2">Reservation Confirmed!</h1>
+        <h1 className="text-3xl font-extrabold text-gray-900 mb-2">Order Confirmed!</h1>
         <p className="text-sm text-gray-500 max-w-md">
           Your payment of{' '}
           <span className="font-semibold text-gray-700">
             {currency} {formatAmount(amount)}
           </span>{' '}
-          has been processed and your room is booked. The confirmation is on its way to your email.
+          has been processed. Our team is preparing your hotel reservation and will email it to you shortly.
         </p>
       </div>
 
@@ -182,8 +148,7 @@ function PaymentContent({ onPurchaseEvent, supportEmail }) {
                 <DetailRow label="Check-out" value={formatDate(reservation.checkOut)} />
                 <DetailRow label="Nights" value={reservation.nights} />
                 <DetailRow label="Guests" value={guestsLabel} />
-                <DetailRow label="Confirmation" value={reservation.supplier?.hotelConfirmationCode} />
-                <DetailRow label="Booking reference" value={reservation.supplier?.bookingId} />
+                <DetailRow label="Reference" value={reservation.sessionId} />
               </div>
             </div>
           </section>
@@ -217,16 +182,6 @@ function PaymentContent({ onPurchaseEvent, supportEmail }) {
               <DetailRow label="Reference" value={reservation.sessionId} />
             </div>
           </div>
-
-          {reservation.freeCancellationUntil && (
-            <div className="rounded-2xl border border-green-200 bg-green-50 p-4 flex items-start gap-2.5">
-              <ShieldCheck size={15} className="text-green-700 shrink-0 mt-0.5" />
-              <p className="text-xs text-green-800 leading-relaxed">
-                This is a genuine refundable booking. It stays valid until{' '}
-                <span className="font-semibold">{formatDate(reservation.freeCancellationUntil)}</span>.
-              </p>
-            </div>
-          )}
 
           {reservation.email && (
             <div className="rounded-2xl border border-primary-100 bg-primary-50 p-4 flex items-start gap-2.5">

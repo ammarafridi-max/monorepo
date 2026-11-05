@@ -2,10 +2,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import {
-  cancelHotelBookingApi,
-  retryHotelBookingApi,
   updateHotelBookingStatusApi,
   deleteHotelBookingApi,
+  sendHotelReservationApi,
 } from '../../services/apiHotelBookings.js';
 
 function useReservationMutation({ mutationFn, success }) {
@@ -22,20 +21,12 @@ function useReservationMutation({ mutationFn, success }) {
   });
 }
 
-export function useCancelHotelBooking() {
+export function useSendHotelReservation() {
   const { mutate, isPending } = useReservationMutation({
-    mutationFn: cancelHotelBookingApi,
-    success: 'Reservation cancelled',
+    mutationFn: sendHotelReservationApi,
+    success: 'Reservation sent',
   });
-  return { cancelReservation: mutate, isCancelling: isPending };
-}
-
-export function useRetryHotelBooking() {
-  const { mutate, isPending } = useReservationMutation({
-    mutationFn: retryHotelBookingApi,
-    success: 'Booking retried',
-  });
-  return { retryBooking: mutate, isRetrying: isPending };
+  return { sendReservation: mutate, isSending: isPending };
 }
 
 export function useUpdateHotelBookingStatus() {

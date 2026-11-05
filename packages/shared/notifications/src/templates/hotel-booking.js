@@ -38,43 +38,9 @@ function shell({ brand, eyebrow, heading, accent, body }) {
 </html>`;
 }
 
-export function renderHotelBookingPaidTemplate({ brand, sessionId, email, leadGuest, hotel, checkIn, checkOut, nights, destination }) {
-  const body = `
-    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;margin-bottom:20px;">
-      ${row('Lead guest', leadGuest, 0)}
-      ${row('Email', email, 1)}
-      ${row('Hotel', hotel?.name ?? destination?.cityName, 2)}
-      ${row('City', hotel?.city ?? destination?.cityName, 3)}
-      ${row('Check-in', checkIn, 4)}
-      ${row('Check-out', checkOut, 5)}
-      ${row('Nights', nights, 6)}
-      ${row('Session', sessionId, 7)}
-    </table>
-    <p style="margin:0;color:#64748b;font-size:12px;line-height:1.6;">
-      The supplier booking runs automatically straight after payment. Check the reservation in the admin panel to confirm it landed.
-    </p>`;
-  return shell({ brand, eyebrow: 'Hotel reservation', heading: 'Payment received', body });
-}
-
-export function renderHotelBookingFailedTemplate({ brand, sessionId, email, reason }) {
-  const body = `
-    <p style="margin:0 0 20px;color:#b91c1c;font-size:14px;line-height:1.6;font-weight:600;">
-      The customer has paid but the supplier booking did not go through. They are owed a room.
-    </p>
-    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;margin-bottom:20px;">
-      ${row('Session', sessionId, 0)}
-      ${row('Customer', email, 1)}
-      ${row('Reason', reason, 2)}
-    </table>
-    <p style="margin:0;color:#64748b;font-size:12px;line-height:1.6;">
-      Retry the booking from the reservation detail page, or refund the customer if no refundable room is available.
-    </p>`;
-  return shell({ brand, accent: '#991b1b', eyebrow: 'Hotel reservation', heading: 'Supplier booking failed', body });
-}
-
-export function renderHotelBookingConfirmedTemplate({
-  brand, leadGuest, hotel, checkIn, checkOut, nights, occupancy, guests,
-  hotelConfirmationCode, bookingReference, freeCancellationUntil,
+export function renderHotelBookingPaidTemplate({
+  brand, sessionId, email, leadGuest, hotel, checkIn, checkOut, nights,
+  destination, occupancy, guests, phoneNumber, amountPaid,
 }) {
   const guestList = (guests ?? [])
     .map((g) => [g.title, g.firstName, g.lastName].filter(Boolean).join(' '))
@@ -85,31 +51,32 @@ export function renderHotelBookingConfirmedTemplate({
     ? `${occupancy.rooms ?? 1} room${(occupancy.rooms ?? 1) > 1 ? 's' : ''}, ${occupancy.adults ?? 1} adult${(occupancy.adults ?? 1) > 1 ? 's' : ''}`
     : null;
 
+  const phone = phoneNumber?.digits ? `${phoneNumber.code ?? ''}${phoneNumber.digits}` : null;
+  const paid = amountPaid?.amount ? `${amountPaid.currency ?? ''} ${amountPaid.amount}` : null;
+  const listed = hotel?.listedRate?.amount ? `${hotel.listedRate.currency ?? ''} ${hotel.listedRate.amount}` : null;
+
   const body = `
-    <p style="margin:0 0 20px;font-size:14px;color:#334155;line-height:1.6;">
-      Hi ${leadGuest || 'there'}, your hotel reservation is confirmed. The details below are what the embassy needs, so keep this email or print it for your file.
-    </p>
-
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;margin-bottom:20px;">
-      ${row('Confirmation number', hotelConfirmationCode, 0)}
-      ${row('Booking reference', bookingReference, 1)}
-      ${row('Hotel', hotel?.name, 2)}
-      ${row('Address', hotel?.address, 3)}
-      ${row('City', hotel?.city, 4)}
-      ${row('Check-in', checkIn, 5)}
-      ${row('Check-out', checkOut, 6)}
-      ${row('Nights', nights, 7)}
-      ${row('Rooms and guests', roomsLine, 8)}
-      ${row('Guest names', guestList, 9)}
+      ${row('Lead guest', leadGuest, 0)}
+      ${row('All guests', guestList, 1)}
+      ${row('Email', email, 2)}
+      ${row('Phone', phone, 3)}
+      ${row('Hotel', hotel?.name, 4)}
+      ${row('Stars', hotel?.stars, 5)}
+      ${row('Google rating', hotel?.rating, 6)}
+      ${row('City', hotel?.city ?? destination?.cityName, 7)}
+      ${row('Country', hotel?.country ?? destination?.countryCode, 8)}
+      ${row('Check-in', checkIn, 9)}
+      ${row('Check-out', checkOut, 10)}
+      ${row('Nights', nights, 11)}
+      ${row('Rooms and guests', roomsLine, 12)}
+      ${row('Room listed at', listed, 13)}
+      ${row('Customer paid', paid, 14)}
+      ${row('Session', sessionId, 15)}
     </table>
-
-    ${freeCancellationUntil ? `<p style="margin:0 0 16px;font-size:13px;color:#166534;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 14px;line-height:1.6;">
-      This is a genuine booking held in your name. It can be cancelled free of charge up to ${freeCancellationUntil}.
-    </p>` : ''}
-
+    ${hotel?.link ? `<p style="margin:0 0 16px;font-size:13px;"><a href="${hotel.link}" style="color:#1e60a6;">Open the hotel on Google</a></p>` : ''}
     <p style="margin:0;color:#64748b;font-size:12px;line-height:1.6;">
-      If anything above is wrong, reply to this email and we will fix it. ${brand?.name ? `Sent by ${brand.name}.` : ''}
+      Book this reservation and send it to the customer from the admin panel.
     </p>`;
-
-  return shell({ brand, eyebrow: 'Hotel reservation', heading: 'Your reservation is confirmed', body });
+  return shell({ brand, eyebrow: 'Hotel booking', heading: 'Payment received', body });
 }

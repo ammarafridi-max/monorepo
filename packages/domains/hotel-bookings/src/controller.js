@@ -1,8 +1,8 @@
 export function createHotelBookingController({ service, pricingService, paidOrderBus }) {
-  const searchOffers = async (req, res, next) => {
+  const searchHotels = async (req, res, next) => {
     try {
-      const offers = await service.searchOffers(req.body);
-      res.json({ status: 'success', results: offers.length, data: offers });
+      const hotels = await service.searchHotels(req.body);
+      res.json({ status: 'success', results: hotels.length, data: hotels });
     } catch (err) {
       next(err);
     }
@@ -12,15 +12,6 @@ export function createHotelBookingController({ service, pricingService, paidOrde
     try {
       const cities = await service.suggestCities(req.query.search);
       res.json({ status: 'success', results: cities.length, data: cities });
-    } catch (err) {
-      next(err);
-    }
-  };
-
-  const listCountries = async (_req, res, next) => {
-    try {
-      const countries = await service.listCountries();
-      res.json({ status: 'success', results: countries.length, data: countries });
     } catch (err) {
       next(err);
     }
@@ -131,21 +122,17 @@ export function createHotelBookingController({ service, pricingService, paidOrde
     }
   };
 
-  const retryBooking = async (req, res, next) => {
+  const sendReservation = async (req, res, next) => {
     try {
-      const booked = await service.bookWithSupplier(req.params.sessionId);
-      if (!booked) return res.status(409).json({ status: 'fail', message: 'Reservation is not payable or already claimed' });
-      res.json({ status: 'success', data: booked });
-    } catch (err) {
-      next(err);
-    }
-  };
-
-  const cancelReservation = async (req, res, next) => {
-    try {
-      const force = req.body?.force === true && req.user?.role === 'admin';
-      const cancelled = await service.cancelReservation(req.params.sessionId, { force });
-      res.json({ status: 'success', data: cancelled });
+      const updated = await service.sendReservation({
+        sessionId: req.params.sessionId,
+        agentId: req.user?._id,
+        subject: req.body?.subject,
+        body: req.body?.body,
+        bodyHtml: req.body?.bodyHtml,
+        file: req.file,
+      });
+      res.json({ status: 'success', data: updated });
     } catch (err) {
       next(err);
     }
@@ -186,9 +173,8 @@ export function createHotelBookingController({ service, pricingService, paidOrde
   };
 
   return {
-    searchOffers,
+    searchHotels,
     suggestCities,
-    listCountries,
     createReservationRequest,
     createStripePaymentUrl,
     getReservationBySessionId,
@@ -197,8 +183,7 @@ export function createHotelBookingController({ service, pricingService, paidOrde
     getLatestPaidReservation,
     streamEvents,
     updateOrderStatus,
-    retryBooking,
-    cancelReservation,
+    sendReservation,
     deleteReservation,
     updatePricing,
     listPriceBooks,

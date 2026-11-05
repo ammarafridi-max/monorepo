@@ -3,7 +3,7 @@ import { getAttribution } from '../utils/attribution.js';
 
 const URL = '/api/hotel-bookings';
 
-export async function searchHotelOffersApi(payload) {
+export async function searchHotelsApi(payload) {
   return await apiFetchPublic(`${URL}/search`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -65,18 +65,6 @@ export async function updateHotelBookingStatusApi({ sessionId, orderStatus }) {
   });
 }
 
-export async function cancelHotelBookingApi({ sessionId, force = false }) {
-  return await apiFetch(`${URL}/${sessionId}/cancel`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ force }),
-  });
-}
-
-export async function retryHotelBookingApi(sessionId) {
-  return await apiFetch(`${URL}/${sessionId}/retry-booking`, { method: 'POST' });
-}
-
 export async function deleteHotelBookingApi(sessionId) {
   return await apiFetch(`${URL}/${sessionId}`, { method: 'DELETE' });
 }
@@ -90,6 +78,11 @@ export async function suggestHotelCitiesApi(search, { signal } = {}) {
   return await apiFetchPublic(`${URL}/cities?search=${encodeURIComponent(search)}`, { signal });
 }
 
-export async function getHotelCountriesApi() {
-  return await apiFetchPublic(`${URL}/countries`);
+export async function sendHotelReservationApi({ sessionId, subject, body, bodyHtml, file }) {
+  const fd = new FormData();
+  fd.append('subject', subject);
+  fd.append('body', body);
+  if (bodyHtml) fd.append('bodyHtml', bodyHtml);
+  fd.append('file', file);
+  return await apiFetch(`${URL}/${sessionId}/send-reservation`, { method: 'POST', body: fd });
 }

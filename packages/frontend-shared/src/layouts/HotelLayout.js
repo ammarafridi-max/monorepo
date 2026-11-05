@@ -5,7 +5,7 @@ import { Check, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 const HOTEL_STEPS = [
-  { id: 1, label: 'Select Room',    path: '/hotel-booking/select-room' },
+  { id: 1, label: 'Select Hotel',   path: '/hotel-booking/select-hotel' },
   { id: 2, label: 'Review Details', path: '/hotel-booking/review-details' },
   { id: 3, label: 'Payment',        path: '/hotel-booking/payment' },
 ];

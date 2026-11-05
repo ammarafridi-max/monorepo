@@ -124,7 +124,7 @@ const pageData = {
       title: 'Book a Dummy Ticket on Lufthansa from USD 13',
       subtitle:
         'We issue Lufthansa flight reservations through global GDS platforms (Amadeus, Sabre, Travelport) with a six-character PNR that German consulates and travel agents can confirm during validity. Real LH flight numbers, Frankfurt or Munich routing, no paid ticket required. Schengen-ready and accepted at VFS and TLScontact German visa centres. From USD 13.',
-      form: <AllForms forms={['ticket']} />,
+      form: <AllForms forms={['ticket', 'hotel']} />,
     },
     process: {
       title: 'How to Book Your Lufthansa Dummy Ticket',

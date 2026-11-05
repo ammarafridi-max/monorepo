@@ -82,7 +82,7 @@ const pageData = {
       title: 'Book Your Onward Ticket From USD 13',
       subtitle:
         'Proof of onward travel is a flight reservation showing you will leave the destination country within the permitted stay. Airlines and immigration officers accept a real reservation with a verifiable PNR and do not require a paid ticket. Ours is issued on Amadeus, Sabre, and Travelport in three validity tiers: 2 days USD 13, 7 days USD 19, 14 days USD 21.',
-      form: <AllForms forms={['ticket']} />,
+      form: <AllForms forms={['ticket', 'hotel']} />,
     },
     process: {
       title: 'Your Onward Ticket, Ready in 3 Easy Steps',

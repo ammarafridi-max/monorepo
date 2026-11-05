@@ -4,11 +4,9 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { useState, useRef, useTransition, Fragment } from 'react';
 import { useHotelContext } from '../../../contexts/HotelContext.js';
-import { useHotelCountries } from '../../../hooks/hotel-bookings/useHotelCountries.js';
 import { suggestHotelCitiesApi } from '../../../services/apiHotelBookings.js';
 import Label from '../../form-elements/v1/Label';
 import CitySelect from '../../form-elements/v1/CitySelect';
-import NationalitySelect from '../../form-elements/v1/NationalitySelect';
 import PrimaryButton from '../../ui/v1/PrimaryButton';
 import DatePicker from '../../form-elements/v1/DatePicker';
 import Counter from '../../form-elements/v1/Counter';
@@ -29,31 +27,25 @@ export default function HotelForm() {
   const [isPending, startTransition] = useTransition();
   const [errors, setErrors] = useState({});
   const cityRef = useRef(null);
-  const nationalityRef = useRef(null);
   const checkInRef = useRef(null);
   const checkOutRef = useRef(null);
 
   const {
     cityName,
     countryCode,
-    guestNationality,
     checkIn,
     checkOut,
     occupancy,
     setCityName,
     setCountryCode,
-    setGuestNationality,
     setCheckIn,
     setCheckOut,
     setOccupancy,
   } = useHotelContext();
 
-  const { countries } = useHotelCountries();
-
   const selectedCity = cityName && countryCode
     ? { name: cityName, countryCode, label: `${cityName}, ${countryCode}` }
     : null;
-  const selectedNationality = countries.find((c) => c.code === guestNationality) ?? null;
 
   const handleCitySearch = (search, options) => suggestHotelCitiesApi(search, options);
 
@@ -63,15 +55,9 @@ export default function HotelForm() {
     clearError('cityName', city.name);
   }
 
-  function handleNationalitySelect(nationality) {
-    setGuestNationality(nationality.code);
-    clearError('guestNationality', nationality.code);
-  }
-
   function buildErrors() {
     const next = {};
     if (!cityName?.trim() || !countryCode) next.cityName = 'Select the city you are staying in';
-    if (!/^[A-Z]{2}$/.test(guestNationality || '')) next.guestNationality = 'Select your nationality';
     if (!checkIn) next.checkIn = 'Select a check in date';
     if (!checkOut) next.checkOut = 'Select a check out date';
     if (checkIn && checkOut && compareDateOnly(checkOut, checkIn) <= 0) {
@@ -83,7 +69,6 @@ export default function HotelForm() {
   function focusFirstError(next) {
     const order = [
       ['cityName', cityRef],
-      ['guestNationality', nationalityRef],
       ['checkIn', checkInRef],
       ['checkOut', checkOutRef],
     ];
@@ -139,7 +124,7 @@ export default function HotelForm() {
     }
     setErrors({});
     startTransition(() => {
-      router.push('/hotel-booking/select-room');
+      router.push('/hotel-booking/select-hotel');
     });
   };
 
@@ -159,18 +144,6 @@ export default function HotelForm() {
           inputClassName={`${FIELD_CLASS} pl-11`}
         />
         {errors.cityName && <FieldError>{errors.cityName}</FieldError>}
-      </div>
-
-      <div className="w-full flex flex-col gap-1 mb-3 md:mb-3">
-        <Label htmlFor="hotel-nationality">Nationality</Label>
-        <NationalitySelect
-          inputId="hotel-nationality"
-          value={selectedNationality}
-          onChange={handleNationalitySelect}
-          nationalities={countries}
-          inputClassName={FIELD_CLASS}
-        />
-        {errors.guestNationality && <FieldError>{errors.guestNationality}</FieldError>}
       </div>
 
       <div className="flex gap-3 md:gap-3.5">
@@ -210,7 +183,7 @@ export default function HotelForm() {
       </div>
 
       <p className="mt-3 text-center text-[12px] leading-5 text-gray-500">
-        We book a real refundable room in your name. A reservation supports your visa file; it does
+        We book a real hotel reservation in your name. A reservation supports your visa file; it does
         not guarantee approval.
       </p>
     </form>

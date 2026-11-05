@@ -176,7 +176,7 @@ export default async function Page() {
       <Hero
         title="Dummy Tickets for Visa Applications From USD 13"
         subtitle="Almost every visitor visa checklist asks for a flight reservation rather than a purchased ticket, and a reservation with a verifiable PNR is what satisfies it. Ours are issued on Amadeus, Sabre and Travelport in three validity tiers and delivered by email within minutes. Pick your visa type below for what that specific application expects."
-        form={<AllForms forms={['ticket']} />}
+        form={<AllForms forms={['ticket', 'hotel']} />}
         pills={[
           'Reservation, not a paid ticket',
           'Verifiable GDS PNR',

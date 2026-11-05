@@ -12,20 +12,18 @@ import PhoneInput from '../../form-elements/v1/PhoneInput';
 import Label from '../../form-elements/v1/Label';
 import FieldError from '../../ui/v1/FieldError';
 
-export default function HotelGuestForm({ offer, onAnalytics }) {
+export default function HotelGuestForm({ hotel, onAnalytics }) {
   const {
     cityName,
     countryCode,
     checkIn,
     checkOut,
     occupancy,
-    guestNationality,
     guests,
     email,
     setEmail,
     phoneNumber,
     setPhoneNumber,
-    setSelectedOffer,
     initializeGuests,
     updateGuestData,
     affiliateAttribution,
@@ -56,20 +54,24 @@ export default function HotelGuestForm({ offer, onAnalytics }) {
     event.preventDefault();
     if (!validate() || isCreatingHotelBooking) return;
 
-    setSelectedOffer(offer);
     createHotelBooking({
       email,
       phoneNumber,
       guests,
       occupancy,
-      guestNationality: guestNationality.toUpperCase(),
       destination: { cityName, countryCode },
       checkIn,
       checkOut,
-      offerId: offer.offerId,
-      hotelId: offer.hotelId,
-      offerPrice: offer.price,
-      hotel: offer.hotel,
+      hotel: {
+        name: hotel.name,
+        stars: hotel.stars,
+        rating: hotel.rating,
+        city: cityName,
+        country: countryCode,
+        propertyToken: hotel.propertyToken,
+        link: hotel.link,
+        listedRate: hotel.totalRate ?? hotel.ratePerNight ?? null,
+      },
       currency: selectedCurrency?.code,
       affiliateId: affiliateAttribution?.affiliateId,
       affiliateCapturedAt: affiliateAttribution?.capturedAt,

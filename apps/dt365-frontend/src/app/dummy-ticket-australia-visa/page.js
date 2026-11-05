@@ -116,7 +116,7 @@ const pageData = {
       title: "Book Your Dummy Ticket For Australia Visa From USD 13",
       subtitle:
         "The Department of Home Affairs asks for travel dates and a flight itinerary on the Subclass 600 application, while also telling applicants not to finalise travel until the visa is granted. A dummy ticket satisfies both: a real reservation with a verifiable PNR for your ImmiAccount file, with no expensive ticket bought before a decision. From USD 13.",
-      form: <AllForms forms={["ticket"]} />,
+      form: <AllForms forms={["ticket", "hotel"]} />,
     },
     process: {
       title: "How to Book Your Dummy Flight Ticket for an Australia Visa?",

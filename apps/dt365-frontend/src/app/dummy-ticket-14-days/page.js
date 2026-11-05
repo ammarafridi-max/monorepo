@@ -170,7 +170,7 @@ export default async function Page() {
       <Hero
         title="Dummy Tickets Valid for 14 Days, USD 21"
         subtitle="Fourteen days is our longest validity tier. The PNR sits live on Amadeus, Sabre or Travelport for a full fortnight from the day the ticket is delivered, which is what you want when a consulate is going to hold your file for a week and a half before anyone looks at it."
-        form={<AllForms forms={['ticket']} />}
+        form={<AllForms forms={['ticket', 'hotel']} />}
         pills={[
           '14 days live validity',
           'USD 21 per person',
