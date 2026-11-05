@@ -23,7 +23,7 @@ import {
   renderFileReadyForStaff,
 } from './templates/visa-applications.js';
 import { format } from 'date-fns';
-import { formatDate, formatToDDMMM, formatToDDMMMYYYYMixed, extractIataCode } from './helpers.js';
+import { formatDate, formatToDDMMM, formatToDDMMMYYYYMixed, formatToDDMonthYYYY, extractIataCode } from './helpers.js';
 
 export function createNotificationsService({ sendEmail, logger, brand }) {
   const log = logger?.error?.bind(logger) ?? console.error;
@@ -562,7 +562,7 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
       await sendEmail({
         email: brand.adminEmail,
         name: brand.paymentsSenderName,
-        subject: `Hotel reservation paid — ${data.leadGuest || 'customer'} · ${where} · ${data.checkIn}`,
+        subject: `Hotel reservation paid — ${data.leadGuest || 'customer'} · ${where} · ${formatToDDMonthYYYY(data.checkIn)}`,
         htmlContent,
       });
     } catch (err) {

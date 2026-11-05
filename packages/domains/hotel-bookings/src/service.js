@@ -123,6 +123,7 @@ export function createHotelBookingService({
       checkOut,
       nights,
       hotel: payload?.hotel,
+      message: payload?.message,
       totalAmount,
       currency: currencyCode,
       affiliateId: affiliateDoc ? affiliateDoc.affiliateId : null,
@@ -172,8 +173,8 @@ export function createHotelBookingService({
           },
         },
       }],
-      success_url: `${frontendUrl}/hotel-booking/${sessionId}?status=success`,
-      cancel_url: `${frontendUrl}/hotel-booking/${sessionId}?status=cancelled`,
+      success_url: `${frontendUrl}/hotel-booking/payment?sessionId=${sessionId}`,
+      cancel_url: `${frontendUrl}/hotel-booking/review-details`,
     });
   };
 
@@ -212,6 +213,7 @@ export function createHotelBookingService({
       nights: reservation.nights,
       occupancy: reservation.occupancy,
       guests: reservation.guests,
+      message: reservation.message,
       phoneNumber: reservation.phoneNumber,
       amountPaid: reservation.amountPaid,
       destination: reservation.destination,

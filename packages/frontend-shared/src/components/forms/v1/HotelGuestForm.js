@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Loader2, User } from 'lucide-react';
+import { Loader2, User, Info } from 'lucide-react';
 import { useHotelContext } from '../../../contexts/HotelContext';
 import { useCreateHotelBooking } from '../../../hooks/hotel-bookings/useCreateHotelBooking';
 import { useCurrency } from '../../../contexts/CurrencyContext';
@@ -9,6 +9,7 @@ import SelectTitle from '../../form-elements/v1/SelectTitle';
 import Input from '../../form-elements/v1/Input';
 import Email from '../../form-elements/v1/Email';
 import PhoneInput from '../../form-elements/v1/PhoneInput';
+import TextArea from '../../form-elements/v1/TextArea';
 import Label from '../../form-elements/v1/Label';
 import FieldError from '../../ui/v1/FieldError';
 
@@ -24,6 +25,8 @@ export default function HotelGuestForm({ hotel, onAnalytics }) {
     setEmail,
     phoneNumber,
     setPhoneNumber,
+    message,
+    setMessage,
     initializeGuests,
     updateGuestData,
     affiliateAttribution,
@@ -62,6 +65,7 @@ export default function HotelGuestForm({ hotel, onAnalytics }) {
       destination: { cityName, countryCode },
       checkIn,
       checkOut,
+      message,
       hotel: {
         name: hotel.name,
         stars: hotel.stars,
@@ -134,6 +138,26 @@ export default function HotelGuestForm({ hotel, onAnalytics }) {
           <PhoneInput value={phoneNumber} onChange={setPhoneNumber} inputId="phone" />
           {errors.phone && <FieldError>{errors.phone}</FieldError>}
         </div>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="hotel-message" optional>Any special requirements</Label>
+        <TextArea
+          id="hotel-message"
+          rows={3}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="Anything we should know? Preferred room type, a nearby area you would rather stay in, accessibility needs."
+        />
+      </div>
+
+      <div className="flex items-start gap-2.5 rounded-xl bg-amber-50 border border-amber-200 p-3.5">
+        <Info size={15} className="text-amber-600 shrink-0 mt-0.5" />
+        <p className="text-xs text-amber-900 leading-relaxed">
+          If we cannot reserve this hotel, we will book another one at a similar price in the same
+          area and send you that confirmation instead. Tell us above if you would rather we checked
+          with you first.
+        </p>
       </div>
 
       <button

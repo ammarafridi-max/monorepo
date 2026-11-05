@@ -134,6 +134,12 @@ export default function HotelReviewDetailsPage({ onBeginCheckout, searchPath = '
                 value={`${reservation.phoneNumber?.code || ''}${reservation.phoneNumber?.digits || ''}`}
               />
             </div>
+            {reservation.message && (
+              <div className="mt-3 pt-3 border-t border-gray-50">
+                <p className="text-xs text-gray-400 mb-1">Your requirements</p>
+                <p className="text-sm text-gray-800 whitespace-pre-line">{reservation.message}</p>
+              </div>
+            )}
           </SectionCard>
 
           {reservation.guests?.length > 0 && (

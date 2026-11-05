@@ -37,6 +37,7 @@ const HotelBookingSchema = new mongoose.Schema(
     checkOut: { type: String, required: true },
     nights: { type: Number, min: 1 },
     hotel: HotelSnapshotSchema,
+    message: { type: String, trim: true, maxlength: 2000 },
     paymentStatus: { type: String, enum: ['UNPAID', 'PAID', 'REFUNDED'], default: 'UNPAID' },
     paidAt: { type: Date, default: null },
     totalAmount: { type: Number },

@@ -18,8 +18,8 @@ function buildBody({ firstName, hotelName, checkIn, checkOut, agentFirstName, la
     '',
     'If anything looks wrong, just reply to this email and we will fix it.',
     '',
-    'Talk soon,',
-    [agentFirstName, label].filter(Boolean).join(' at ') || label,
+    'Regards,',
+    agentFirstName || label,
     website,
   ].filter((line) => line !== undefined).join('\n');
 }

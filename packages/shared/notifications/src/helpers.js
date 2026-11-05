@@ -2,6 +2,7 @@ import { format } from 'date-fns';
 
 const MONTHS     = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 const MONTHS_MMM = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTHS_FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 export function formatDate(d) {
   if (!d) return '—';
@@ -28,6 +29,14 @@ export function formatToDDMMMYYYY(dateStr) {
   if (!dateStr) return '';
   const [year, month, day] = String(dateStr).split('-');
   return `${Number(day)} ${MONTHS[Number(month) - 1]} ${year}`;
+}
+
+export function formatToDDMonthYYYY(dateStr) {
+  if (!dateStr) return '';
+  const [year, month, day] = String(dateStr).slice(0, 10).split('-');
+  const name = MONTHS_FULL[Number(month) - 1];
+  if (!name || !day || !year) return dateStr;
+  return `${Number(day)} ${name} ${year}`;
 }
 
 export function formatToDDMMMYYYYMixed(dateStr) {

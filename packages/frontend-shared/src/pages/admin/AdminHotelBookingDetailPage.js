@@ -8,6 +8,7 @@ import {
   CreditCard, Calendar, Users, Hash, Send,
 } from 'lucide-react';
 import { useHotelBooking } from '../../hooks/hotel-bookings/useHotelBooking';
+import { useAdminAuth } from '../../contexts/AdminAuthContext';
 import {
   useUpdateHotelBookingStatus,
   useDeleteHotelBooking,
@@ -121,6 +122,7 @@ export default function AdminHotelBookingDetailPage({ brand }) {
   const { sessionId } = useParams();
 
   const { reservation, isLoadingReservation, isErrorReservation } = useHotelBooking(sessionId);
+  const { adminUser } = useAdminAuth();
   const [sendOpen, setSendOpen] = useState(false);
   const { updateStatus, isUpdatingStatus } = useUpdateHotelBookingStatus();
 
@@ -217,7 +219,6 @@ export default function AdminHotelBookingDetailPage({ brand }) {
             <Row label="Rooms" value={r.occupancy?.rooms} />
             <Row label="Adults" value={r.occupancy?.adults} />
             <Row label="Children" value={r.occupancy?.children?.length || 0} />
-            <Row label="Guest nationality" value={r.guestNationality} />
           </Card>
 
           <Card icon={Users} title={`Guests (${guestCount})`}>
@@ -239,6 +240,12 @@ export default function AdminHotelBookingDetailPage({ brand }) {
                 ))}
               </div>
             )}
+          </Card>
+
+          <Card icon={MessageSquare} title="Customer requirements">
+            {r.message
+              ? <p className="text-sm text-gray-800 whitespace-pre-line">{r.message}</p>
+              : <p className="text-sm text-gray-400">None given.</p>}
           </Card>
 
           <Card icon={BedDouble} title="Listed rate">
@@ -287,7 +294,7 @@ export default function AdminHotelBookingDetailPage({ brand }) {
             open={sendOpen}
             onClose={() => setSendOpen(false)}
             booking={r}
-            agentName={r.handledBy?.name}
+            agentName={adminUser?.name}
             brand={brand}
           />
         </div>

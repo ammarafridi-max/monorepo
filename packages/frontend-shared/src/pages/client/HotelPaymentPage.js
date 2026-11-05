@@ -1,7 +1,8 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import {
   CheckCircle2, BedDouble, CreditCard, Users, Mail, AlertCircle, Loader2, CalendarDays,
 } from 'lucide-react';
@@ -27,53 +28,77 @@ function LoadingState() {
   );
 }
 
-function ConfirmingState({ title, body }) {
+function ConfirmingState() {
   return (
     <div className="max-w-lg mx-auto px-6 py-24 flex flex-col items-center text-center gap-5">
       <Loader2 size={28} className="animate-spin text-primary-600" />
       <div>
-        <p className="text-lg font-bold text-gray-900">{title}</p>
-        <p className="text-sm text-gray-400 mt-1 max-w-sm">{body}</p>
+        <p className="text-lg font-bold text-gray-900">Confirming your payment</p>
+        <p className="text-sm text-gray-400 mt-1 max-w-sm">
+          Stripe is sending us the confirmation. This usually takes a few seconds. Please keep this
+          page open.
+        </p>
       </div>
     </div>
   );
 }
 
-function ErrorState({ supportEmail, sessionId }) {
+function ErrorState({ supportEmail, sessionId, pending = false }) {
   return (
     <div className="max-w-lg mx-auto px-6 py-24 flex flex-col items-center text-center gap-5">
-      <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center">
-        <AlertCircle size={26} className="text-red-400" />
+      <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center">
+        <AlertCircle size={28} className="text-red-400" />
       </div>
       <div>
-        <p className="text-lg font-bold text-gray-900">We could not load your reservation</p>
-        <p className="text-sm text-gray-500 mt-1">
-          Your payment may still have gone through. Email us at{' '}
-          <a href={`mailto:${supportEmail}`} className="font-semibold text-primary-700 hover:underline">
-            {supportEmail}
-          </a>{' '}
-          quoting reference <span className="font-mono text-xs">{sessionId}</span> and we will sort it out.
+        <p className="text-lg font-bold text-gray-900">
+          {pending ? 'Still waiting for Stripe' : 'Payment not found'}
         </p>
+        <p className="text-sm text-gray-400 mt-1 max-w-sm">
+          {pending
+            ? "We have not received Stripe's confirmation yet. If your card was charged, your order is safe: reply to the Stripe receipt or email us and quote the reference below."
+            : "We couldn't find a successful payment linked to this booking. If you were charged, please contact our support team with your transaction details."}
+        </p>
+        {sessionId && (
+          <p className="text-xs text-gray-400 mt-3 break-all">Reference: {sessionId}</p>
+        )}
       </div>
-      <Link
-        href="/"
-        className="text-sm font-bold px-5 py-2.5 bg-primary-700 hover:bg-primary-800 text-white rounded-xl transition-colors"
-      >
-        Back to home
-      </Link>
+      <div className="flex items-center gap-3">
+        <Link
+          href="/"
+          className="text-sm font-bold px-5 py-2.5 bg-primary-700 hover:bg-primary-800 text-white rounded-xl transition-colors"
+        >
+          Back to home
+        </Link>
+        {supportEmail && (
+          <a
+            href={`mailto:${supportEmail}`}
+            className="text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors"
+          >
+            Contact support
+          </a>
+        )}
+      </div>
     </div>
   );
 }
 
 function PaymentContent({ onPurchaseEvent, supportEmail }) {
-  const [sessionId, setSessionId] = useState(null);
+  const searchParams = useSearchParams();
+  const paramsRef = useRef(null);
+  if (paramsRef.current === null) {
+    paramsRef.current = { sessionId: searchParams.get('sessionId') || '' };
+  }
+  const { sessionId } = paramsRef.current;
 
+  const [pollTimedOut, setPollTimedOut] = useState(false);
   useEffect(() => {
-    setSessionId(localStorage.getItem('HOTEL_SESSION_ID') || '');
+    const t = setTimeout(() => setPollTimedOut(true), 60_000);
+    return () => clearTimeout(t);
   }, []);
 
   const { reservation, isLoadingReservation, isErrorReservation } = useHotelBooking(sessionId, {
-    refetchInterval: (query) => (query.state.data?.paymentStatus === 'PAID' ? false : 2000),
+    refetchInterval: (query) =>
+      !pollTimedOut && query.state.data?.paymentStatus === 'UNPAID' ? 2000 : false,
   });
 
   const amount = reservation?.amountPaid?.amount;
@@ -96,18 +121,16 @@ function PaymentContent({ onPurchaseEvent, supportEmail }) {
     if (reservation?.paymentStatus === 'PAID') localStorage.removeItem('HOTEL_SESSION_ID');
   }, [reservation?.paymentStatus]);
 
-  if (sessionId === null || isLoadingReservation) return <LoadingState />;
-  if (!sessionId || isErrorReservation || !reservation) {
+  if (isLoadingReservation) return <LoadingState />;
+
+  if (isErrorReservation || !sessionId || !reservation) {
     return <ErrorState supportEmail={supportEmail} sessionId={sessionId} />;
   }
 
-  if (reservation.paymentStatus !== 'PAID') {
-    return (
-      <ConfirmingState
-        title="Confirming your payment"
-        body="Stripe is sending us the confirmation. This usually takes a few seconds. Please keep this page open."
-      />
-    );
+  if (reservation.paymentStatus === 'UNPAID') {
+    return pollTimedOut
+      ? <ErrorState supportEmail={supportEmail} sessionId={sessionId} pending />
+      : <ConfirmingState />;
   }
 
   const guestsLabel = `${reservation.occupancy?.rooms ?? 1} Room${(reservation.occupancy?.rooms ?? 1) > 1 ? 's' : ''}, ${reservation.occupancy?.adults ?? 1} Adult${(reservation.occupancy?.adults ?? 1) > 1 ? 's' : ''}`;
@@ -129,7 +152,8 @@ function PaymentContent({ onPurchaseEvent, supportEmail }) {
           <span className="font-semibold text-gray-700">
             {currency} {formatAmount(amount)}
           </span>{' '}
-          has been processed. Our team is preparing your hotel reservation and will email it to you shortly.
+          has been processed. One of our agents is booking your hotel reservation now and will email it
+          to you, usually within a few hours.
         </p>
       </div>
 

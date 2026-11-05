@@ -14,6 +14,14 @@ import {
 } from "lucide-react";
 import { useHotelBookings } from "../../hooks/hotel-bookings/useHotelBookings";
 import AdminSearchInput from "../../components/admin/AdminSearchInput";
+import SourceBadge from "../../components/admin/SourceBadge";
+import { convertToDubaiDate } from "../../utils/dates";
+
+const PAYMENT_TABS = [
+  { value: "PAID", label: "Paid" },
+  { value: "UNPAID", label: "Unpaid" },
+  { value: "REFUNDED", label: "Refunded" },
+];
 
 const ORDER_TABS = [
   { value: "PENDING", label: "Pending" },
@@ -21,6 +29,24 @@ const ORDER_TABS = [
   { value: "DELIVERED", label: "Delivered" },
   { value: "REFUNDED", label: "Refunded" },
 ];
+
+const PAYMENT_CFG = {
+  PAID:               { dot: 'bg-green-500',  cls: 'bg-green-50  text-green-700  border-green-200'  },
+  UNPAID:             { dot: 'bg-amber-400',  cls: 'bg-amber-50  text-amber-700  border-amber-200'  },
+  REFUNDED:           { dot: 'bg-gray-400',   cls: 'bg-gray-100  text-gray-600   border-gray-200'   },
+  PARTIALLY_REFUNDED: { dot: 'bg-orange-400', cls: 'bg-orange-50 text-orange-700 border-orange-200' },
+};
+
+function PaymentBadge({ status }) {
+  const cfg = PAYMENT_CFG[status] ?? { dot: 'bg-gray-400', cls: 'bg-gray-100 text-gray-500 border-gray-200' };
+  const label = String(status ?? '—').replace(/_/g, ' ').toLowerCase().replace(/^./, (c) => c.toUpperCase());
+  return (
+    <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-full border ${cfg.cls}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+      {label}
+    </span>
+  );
+}
 
 const ORDER_CFG = {
   PENDING: { dot: "bg-amber-400", cls: "bg-amber-50 text-amber-700 border-amber-200" },
@@ -45,11 +71,6 @@ function fmtDate(str) {
   return new Date(str).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 }
 
-function fmtAmount(amountPaid) {
-  if (!amountPaid?.amount) return "—";
-  return `${amountPaid.currency ?? ""} ${Number(amountPaid.amount).toLocaleString("en-US", { minimumFractionDigits: 2 })}`.trim();
-}
-
 function ReservationsContent() {
   const router = useRouter();
   const pathname = usePathname();
@@ -63,6 +84,7 @@ function ReservationsContent() {
 
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [localSearch, setLocalSearch] = useState(searchParams.get("search") ?? "");
+  const [localPayment, setLocalPayment] = useState(searchParams.get("paymentStatus") ?? "");
   const [localOrder, setLocalOrder] = useState(searchParams.get("orderStatus") ?? "");
   const [localCreatedAt, setLocalCreatedAt] = useState(searchParams.get("createdAt") ?? "");
 
@@ -87,7 +109,7 @@ function ReservationsContent() {
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   }
 
-  const activeFilterCount = [localOrder, localCreatedAt].filter(Boolean).length;
+  const activeFilterCount = [localPayment, localOrder, localCreatedAt].filter(Boolean).length;
   const selectCls =
     "text-sm border border-gray-200 rounded-xl px-3 py-2 bg-white text-gray-700 focus:outline-none focus:border-primary-400";
 
@@ -156,6 +178,17 @@ function ReservationsContent() {
             </div>
 
             <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Payment status</label>
+              {selectControl(
+                localPayment,
+                (v) => { setLocalPayment(v); setParam("paymentStatus", v); },
+                "All payment states",
+                PAYMENT_TABS,
+                "w-full",
+              )}
+            </div>
+
+            <div className="space-y-1.5">
               <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Order status</label>
               {selectControl(
                 localOrder,
@@ -205,7 +238,7 @@ function ReservationsContent() {
               <table className="w-full text-sm min-w-[940px]">
                 <thead>
                   <tr className="border-b border-gray-100 bg-gray-50/60">
-                    {["Lead Guest", "Email", "Hotel", "Stay", "Amount", "Order", "Created", ""].map((h, i) => (
+                    {["Lead Guest", "Email", "Hotel", "Stay", "Handled By", "Payment", "Order", "Source", "Date", ""].map((h, i) => (
                       <th
                         key={i}
                         className="text-left text-xs font-bold text-gray-400 uppercase tracking-wide px-4 py-3 whitespace-nowrap"
@@ -238,15 +271,25 @@ function ReservationsContent() {
                         {fmtDate(r.checkIn)} → {fmtDate(r.checkOut)}
                       </td>
 
-                      <td className="px-4 py-3 text-sm font-semibold text-gray-700 whitespace-nowrap">
-                        {fmtAmount(r.amountPaid)}
+                      <td className="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">
+                        {r.handledBy?.name ? r.handledBy.name.split(' ')[0] : '—'}
+                      </td>
+
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <PaymentBadge status={r.paymentStatus} />
                       </td>
 
                       <td className="px-4 py-3 whitespace-nowrap">
                         <OrderBadge status={r.orderStatus} />
                       </td>
 
-                      <td className="px-4 py-3 text-sm text-gray-400 whitespace-nowrap">{fmtDate(r.createdAt)}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <SourceBadge attribution={r.attribution} />
+                      </td>
+
+                      <td className="px-4 py-3 text-sm text-gray-400 whitespace-nowrap">
+                        {convertToDubaiDate(r.paidAt || r.createdAt)}
+                      </td>
 
                       <td className="px-4 py-3 w-14">
                         <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">

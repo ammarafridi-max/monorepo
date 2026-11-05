@@ -1,3 +1,5 @@
+import { formatToDDMonthYYYY } from '../helpers.js';
+
 function row(label, value, i) {
   const border = i > 0 ? 'border-top:1px solid #e2e8f0;' : '';
   return `
@@ -40,7 +42,7 @@ function shell({ brand, eyebrow, heading, accent, body }) {
 
 export function renderHotelBookingPaidTemplate({
   brand, sessionId, email, leadGuest, hotel, checkIn, checkOut, nights,
-  destination, occupancy, guests, phoneNumber, amountPaid,
+  destination, occupancy, guests, phoneNumber, amountPaid, message,
 }) {
   const guestList = (guests ?? [])
     .map((g) => [g.title, g.firstName, g.lastName].filter(Boolean).join(' '))
@@ -66,14 +68,22 @@ export function renderHotelBookingPaidTemplate({
       ${row('Google rating', hotel?.rating, 6)}
       ${row('City', hotel?.city ?? destination?.cityName, 7)}
       ${row('Country', hotel?.country ?? destination?.countryCode, 8)}
-      ${row('Check-in', checkIn, 9)}
-      ${row('Check-out', checkOut, 10)}
+      ${row('Check-in', formatToDDMonthYYYY(checkIn), 9)}
+      ${row('Check-out', formatToDDMonthYYYY(checkOut), 10)}
       ${row('Nights', nights, 11)}
       ${row('Rooms and guests', roomsLine, 12)}
       ${row('Room listed at', listed, 13)}
       ${row('Customer paid', paid, 14)}
       ${row('Session', sessionId, 15)}
     </table>
+    ${message ? `<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px;">
+      <tr>
+        <td style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px 16px;">
+          <div style="font-size:10px;font-weight:700;color:#92400e;letter-spacing:1px;margin-bottom:4px;">CUSTOMER REQUIREMENTS</div>
+          <div style="font-size:13px;color:#78350f;">${message}</div>
+        </td>
+      </tr>
+    </table>` : ''}
     ${hotel?.link ? `<p style="margin:0 0 16px;font-size:13px;"><a href="${hotel.link}" style="color:#1e60a6;">Open the hotel on Google</a></p>` : ''}
     <p style="margin:0;color:#64748b;font-size:12px;line-height:1.6;">
       Book this reservation and send it to the customer from the admin panel.

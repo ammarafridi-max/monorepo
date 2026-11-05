@@ -48,6 +48,7 @@ export function HotelProvider({ children }) {
   const [guests, setGuests] = useState([]);
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState({ code: '', digits: '' });
+  const [message, setMessage] = useState('');
   const [affiliateAttribution, setAffiliateAttribution] = useState(null);
   const [hydrated, setHydrated] = useState(false);
 
@@ -116,6 +117,7 @@ export function HotelProvider({ children }) {
         guests,
         email,
         phoneNumber,
+        message,
         affiliateAttribution,
         hydrated,
 
@@ -127,6 +129,7 @@ export function HotelProvider({ children }) {
         setGuests,
         setEmail,
         setPhoneNumber,
+        setMessage,
 
         initializeGuests,
         updateGuestData,
