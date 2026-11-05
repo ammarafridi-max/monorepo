@@ -116,6 +116,7 @@ export function InsuranceProvider({ children, maxStartDays = null }) {
   const [addressLine2, setAddressLine2] = useState('');
   const [city, setCity] = useState('');
   const [country, setCountry] = useState('');
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     const stored = safeParse('travelInsurance', {});
@@ -140,6 +141,8 @@ export function InsuranceProvider({ children, maxStartDays = null }) {
 
     const storedPhone = safeParse('phoneNumber', null);
     if (storedPhone) setMobile(storedPhone);
+
+    setHydrated(true);
   }, []);
 
   const selectedQuote = getSelectedQuote(quotes, schemeId);
@@ -377,6 +380,7 @@ export function InsuranceProvider({ children, maxStartDays = null }) {
 
         isSubmitting,
         setIsSubmitting,
+        hydrated,
       }}
     >
       {children}

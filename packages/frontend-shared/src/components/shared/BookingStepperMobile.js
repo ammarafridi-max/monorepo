@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Check, ChevronDown } from 'lucide-react';
+import Container from '../shared/layout/Container.js';
 
 export default function BookingStepperMobile({ steps = [] }) {
   const pathname = usePathname();
@@ -30,7 +31,7 @@ export default function BookingStepperMobile({ steps = [] }) {
   }
 
   const headerRow = (
-    <div className="flex items-center gap-4 px-6 py-4">
+    <Container className="flex items-center gap-4 py-4">
       <div className="flex-1 min-w-0">
         <p className="text-xs text-gray-400 font-medium leading-none mb-0.5">
           Step {currentIndex + 1} of {steps.length}
@@ -60,7 +61,7 @@ export default function BookingStepperMobile({ steps = [] }) {
       >
         <ChevronDown size={18} className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
       </button>
-    </div>
+    </Container>
   );
 
   return (
@@ -100,10 +101,11 @@ export default function BookingStepperMobile({ steps = [] }) {
                     tabIndex={open ? 0 : -1}
                     onClick={() => goToStep(step, i)}
                     disabled={!isDone}
-                    className={`w-full flex items-center gap-3 px-6 py-3.5 text-left border-b border-gray-50 last:border-0 transition-colors ${
+                    className={`w-full py-3.5 text-left border-b border-gray-50 last:border-0 transition-colors ${
                       isDone ? 'hover:bg-primary-50 cursor-pointer' : 'cursor-default'
                     }`}
                   >
+                    <Container className="flex items-center gap-3">
                     <span
                       className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 ${
                         isDone    ? 'bg-green-100 text-green-700' :
@@ -122,6 +124,7 @@ export default function BookingStepperMobile({ steps = [] }) {
 
                     {isDone && <span className="text-xs font-semibold text-primary-700 shrink-0">Edit</span>}
                     {isCurrent && <span className="text-xs font-medium text-gray-400 shrink-0">Current</span>}
+                    </Container>
                   </button>
                 );
               })}

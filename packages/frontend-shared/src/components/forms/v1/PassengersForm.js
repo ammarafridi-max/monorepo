@@ -25,17 +25,14 @@ const TYPE_CONFIG = {
   adults: {
     label: 'Adult',
     ageRange: 'Age 17 – 65',
-    badge: 'bg-primary-50 text-primary-700 border-primary-200',
   },
   children: {
     label: 'Child',
     ageRange: 'Age 0 – 16',
-    badge: 'bg-accent-50 text-accent-700 border-accent-200',
   },
   seniors: {
     label: 'Senior',
     ageRange: 'Age 66 – 75',
-    badge: 'bg-gray-100 text-gray-600 border-gray-300',
   },
 };
 
@@ -102,7 +99,7 @@ function PassengerCard({
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
-      <div className="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center gap-3">
+      <div className="px-4 sm:px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center gap-3">
         <div className="w-9 h-9 rounded-full bg-primary-100 flex items-center justify-center shrink-0">
           <User size={15} className="text-primary-700" />
         </div>
@@ -119,7 +116,10 @@ function PassengerCard({
         )}
       </div>
 
-      <div className="p-6 flex flex-col gap-6">
+      <div className="p-4 sm:p-6 flex flex-col gap-6">
+        <p className="text-xs text-gray-500">
+          Enter all names and dates exactly as they appear on this traveller&apos;s passport.
+        </p>
         <div className="grid grid-cols-1 sm:grid-cols-[110px_1fr_1fr] gap-4">
           <Field label="Title" required>
             <select
@@ -362,32 +362,12 @@ export default function PassengersForm() {
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="max-w-3xl mx-auto px-6 py-10">
-        <div className="mb-8">
-          <h1 className="text-2xl font-extrabold text-gray-900">
-            Passenger Details
-          </h1>
-          <p className="text-sm text-gray-500 mt-1.5">
-            Enter all names and dates exactly as they appear on each traveller's
-            passport.
-          </p>
-        </div>
-
-        <div className="flex flex-col gap-12">
+      <div className="w-full max-w-3xl mx-auto px-0 sm:px-6 py-3">
+        <div className="flex flex-col gap-6">
           {grouped.map(({ key, list }) => {
             const config = TYPE_CONFIG[key];
             return (
               <section key={key}>
-                <div className="flex items-center gap-3 mb-5">
-                  <span
-                    className={`text-xs font-bold px-3 py-1 rounded-full border ${config.badge}`}
-                  >
-                    {config.label}s
-                  </span>
-                  <span className="text-xs text-gray-400">
-                    {config.ageRange}
-                  </span>
-                </div>
                 <div className="flex flex-col gap-5">
                   {list.map((passenger, index) => (
                     <PassengerCard

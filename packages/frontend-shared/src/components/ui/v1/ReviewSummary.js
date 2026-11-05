@@ -258,7 +258,7 @@ export default function ReviewSummary() {
 
   if (!selectedQuote || passengers.length === 0) {
     return (
-      <div className="max-w-3xl mx-auto px-6 py-24 text-center">
+      <div className="max-w-3xl mx-auto px-6 py-12 text-center">
         <AlertCircle size={40} className="text-gray-300 mx-auto mb-4" />
         <p className="text-gray-500 mb-6">
           Your session looks incomplete. Please start from the beginning.
@@ -274,16 +274,10 @@ export default function ReviewSummary() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-10">
-      <div className="mb-8">
-        <h1 className="text-2xl font-extrabold text-gray-900">
-          Review Your Policy
-        </h1>
-        <p className="text-sm text-gray-500 mt-1.5">
-          Please check all details carefully. You can edit any section before
-          confirming.
-        </p>
-      </div>
+    <div className="w-full max-w-5xl mx-auto px-0 sm:px-6 py-3">
+      <p className="text-xs text-gray-500 mb-3">
+        Please check all details carefully. You can edit any section before confirming.
+      </p>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start">
         <div className="flex flex-col gap-5">

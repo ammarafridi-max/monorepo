@@ -1,7 +1,7 @@
 "use client";
 
 import { useContext } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   Check,
   ArrowLeft,
@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { InsuranceContext } from "../contexts/InsuranceContext";
+import BookingStepperMobile from "../components/shared/BookingStepperMobile.js";
+import Container from "../components/shared/layout/Container.js";
 import {
   calcDays,
   formatPremium,
@@ -29,13 +31,13 @@ export const INSURANCE_STEPS = [
 export default function InsuranceLayout({ children }) {
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 text-gray-900 font-sans">
-      <div className="bg-white border-b border-gray-200 shadow-sm mt-4">
+      <div className="bg-white border-b border-gray-200 shadow-sm">
         <StepperDesktop />
-        <StepperMobile />
+        <BookingStepperMobile steps={INSURANCE_STEPS} />
       </div>
       <TripSummaryBar />
       <main className="flex-1 pb-24">
-        <div className="w-[90%] md:w-[85%] lg:w-[70%] mx-auto py-6">{children}</div>
+        <div className="w-[90%] md:w-[85%] lg:w-[70%] mx-auto py-3 lg:py-5">{children}</div>
       </main>
       <BookingFooterConditional />
     </div>
@@ -86,7 +88,7 @@ function TripSummaryBar() {
 
   return (
     <div className="bg-white border-b border-gray-100">
-      <div className="max-w-5xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+      <Container className="max-w-5xl py-2.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-gray-600">
           {region?.name && (
             <div className="flex items-center gap-1">
@@ -116,7 +118,7 @@ function TripSummaryBar() {
           )}
         </div>
 
-      </div>
+      </Container>
     </div>
   );
 }
@@ -161,7 +163,7 @@ function BookingFooter() {
 
   return (
     <div className="fixed bottom-0 inset-x-0 z-50 bg-white border-t border-gray-200 shadow-2xl">
-      <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+      <Container className="max-w-5xl py-3 flex items-center justify-between gap-4">
         {selectedQuote ? (
           <div className="min-w-0">
             <p className="text-sm font-bold text-gray-900 truncate">
@@ -200,7 +202,7 @@ function BookingFooter() {
             </>
           )}
         </Link>
-      </div>
+      </Container>
     </div>
   );
 }
@@ -256,48 +258,6 @@ function StepperDesktop() {
           </div>
         );
       })}
-    </div>
-  );
-}
-
-function StepperMobile() {
-  const pathname = usePathname();
-  const router = useRouter();
-  const currentIndex = INSURANCE_STEPS.findIndex((s) => s.path === pathname);
-  const currentStep = INSURANCE_STEPS[currentIndex];
-  const previousStep = INSURANCE_STEPS[currentIndex - 1];
-
-  function goBack() {
-    if (previousStep?.path) router.push(previousStep.path);
-    else router.back();
-  }
-
-  return (
-    <div className="flex lg:hidden items-center gap-4 px-6 py-4">
-
-      <div className="flex-1 min-w-0">
-        <p className="text-xs text-gray-400 font-medium leading-none mb-0.5">
-          Step {currentIndex + 1} of {INSURANCE_STEPS.length}
-        </p>
-        <p className="text-sm font-bold text-gray-900 truncate">
-          {currentStep?.label}
-        </p>
-      </div>
-
-      <div className="flex items-center gap-1 shrink-0">
-        {INSURANCE_STEPS.map((_, i) => (
-          <div
-            key={i}
-            className={`h-1.5 rounded-full transition-all duration-300 ${
-              i < currentIndex
-                ? "w-5 bg-primary-600"
-                : i === currentIndex
-                  ? "w-7 bg-gray-900"
-                  : "w-5 bg-gray-200"
-            }`}
-          />
-        ))}
-      </div>
     </div>
   );
 }

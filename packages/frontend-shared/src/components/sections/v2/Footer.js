@@ -54,7 +54,7 @@ export default function Footer({
 
   return (
     <footer className="bg-gray-900 text-gray-400 text-sm">
-      <Container className="py-14 grid grid-cols-2 md:grid-cols-4 gap-10">
+      <Container className="py-10 md:py-14 grid grid-cols-2 md:grid-cols-4 gap-x-10 gap-y-8">
         <div className="col-span-2 md:col-span-1">
           <Link
             href="/"
@@ -108,7 +108,7 @@ export default function Footer({
                   <li key={label}>
                     <Link
                       href={href}
-                      className="inline-flex min-h-11 items-center hover:text-white transition-colors md:min-h-0 md:py-0.5"
+                      className="inline-flex min-h-9 items-center hover:text-white transition-colors md:min-h-0 md:py-0.5"
                     >
                       {label}
                     </Link>

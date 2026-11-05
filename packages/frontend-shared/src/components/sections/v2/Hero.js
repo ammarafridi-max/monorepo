@@ -94,7 +94,7 @@ export default function Hero({
         <div className="absolute -bottom-20 -left-20 w-[350px] h-[350px] rounded-full bg-primary-100/30" />
       </div>
 
-      <Container className="relative pt-10 pb-14 md:pb-20 grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+      <Container className="relative pt-10 pb-14 md:pb-20 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
         <div>
           {breadcrumbPaths.length > 0 && (
             <nav className="flex items-center gap-1.5 text-gray-400 text-xs mb-6 flex-wrap">

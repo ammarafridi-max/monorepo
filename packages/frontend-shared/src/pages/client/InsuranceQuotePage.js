@@ -1,8 +1,8 @@
 'use client';
 
 import { useContext, useEffect, useState } from 'react';
+import Link from 'next/link';
 import {
-  SlidersHorizontal,
   LayoutList,
   TableProperties,
   Loader2,
@@ -15,8 +15,6 @@ import PlanComparison from '../../components/sections/v1/PlanComparison';
 import InsuranceLayout from '../../layouts/InsuranceLayout';
 import { calcDays } from '../../utils/insuranceHelpers';
 
-const sortOptions = ['Recommended', 'Price: Low to high', 'Price: High to low'];
-
 function QuoteResults({ onViewItemList, onSelectItem }) {
   const {
     region,
@@ -27,9 +25,9 @@ function QuoteResults({ onViewItemList, onSelectItem }) {
     startDate,
     endDate,
     setQuotes,
+    hydrated,
   } = useContext(InsuranceContext);
   const [view, setView] = useState('cards');
-  const [sortBy, setSortBy] = useState('Recommended');
 
   const { insuranceQuotes, getInsuranceQuotes, isPendingInsuranceQuotes } =
     useGetInsuranceQuotes();
@@ -37,9 +35,13 @@ function QuoteResults({ onViewItemList, onSelectItem }) {
   const totalTravellers = quantity.adults + quantity.children + quantity.seniors;
   const days = calcDays(journeyType, startDate, endDate);
 
+  const isMultiYear = journeyType === 'annual' || journeyType === 'biennial';
+  const canQuote = Boolean(startDate) && Boolean(region?.id) && (isMultiYear || Boolean(endDate));
+
   useEffect(() => {
+    if (!hydrated || !canQuote) return;
     getInsuranceQuotes({ journeyType, startDate, endDate, region, quantity });
-  }, [endDate, getInsuranceQuotes, journeyType, quantity, region, startDate]);
+  }, [hydrated, canQuote, endDate, getInsuranceQuotes, journeyType, quantity, region, startDate]);
 
   useEffect(() => {
     if (insuranceQuotes?.quotes) {
@@ -54,17 +56,26 @@ function QuoteResults({ onViewItemList, onSelectItem }) {
     : [];
   const quoteId = insuranceQuotes?.quote_id;
 
-  const sortedQuotes = [...quotes].sort((a, b) => {
-    if (sortBy === 'Price: Low to high')
-      return Number(a.premium) - Number(b.premium);
-    if (sortBy === 'Price: High to low')
-      return Number(b.premium) - Number(a.premium);
-    return 0;
-  });
-
-  if (isPendingInsuranceQuotes) {
+  if (hydrated && !canQuote) {
     return (
-      <div className="max-w-5xl mx-auto px-6 py-20 flex flex-col items-center gap-4">
+      <div className="max-w-5xl mx-auto px-6 py-20 flex flex-col items-center gap-4 text-center">
+        <AlertCircle size={28} className="text-gray-300" />
+        <p className="text-sm text-gray-500">
+          Your trip details are missing. Please start from the beginning.
+        </p>
+        <Link
+          href="/"
+          className="text-sm font-bold px-5 py-2.5 bg-primary-700 hover:bg-primary-800 text-white rounded-xl transition-colors"
+        >
+          Start a new quote
+        </Link>
+      </div>
+    );
+  }
+
+  if (!hydrated || isPendingInsuranceQuotes) {
+    return (
+      <div className="max-w-5xl mx-auto px-6 py-12 flex flex-col items-center gap-4">
         <Loader2 size={32} className="animate-spin text-primary-500" />
         <p className="text-sm text-gray-500">
           Finding the best plans for your trip…
@@ -74,27 +85,8 @@ function QuoteResults({ onViewItemList, onSelectItem }) {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-2 py-5">
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">
-            {quotes.length} plan{quotes.length !== 1 ? 's' : ''} available
-          </h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            Showing results for{' '}
-            <span className="font-medium text-gray-700">
-              {region?.name || 'your trip'}
-            </span>
-            {totalTravellers > 0 && (
-              <span>
-                {' '}
-                · {totalTravellers} traveller{totalTravellers > 1 ? 's' : ''}
-              </span>
-            )}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
+    <div className="max-w-5xl mx-auto px-2 py-2">
+      <div className="flex items-center justify-end mb-3">
           <div className="flex items-center bg-gray-100 rounded-xl p-1 gap-1">
             <button
               type="button"
@@ -121,26 +113,10 @@ function QuoteResults({ onViewItemList, onSelectItem }) {
               <TableProperties size={15} />
             </button>
           </div>
-
-          {view === 'cards' && (
-            <div className="flex items-center gap-1.5">
-              <SlidersHorizontal size={14} className="text-gray-400 shrink-0" />
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="text-sm font-medium text-gray-700 border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-              >
-                {sortOptions?.map((o) => (
-                  <option key={o}>{o}</option>
-                ))}
-              </select>
-            </div>
-          )}
-        </div>
       </div>
 
       {quotes.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 py-16 text-center">
+        <div className="flex flex-col items-center gap-3 py-10 text-center">
           <AlertCircle size={28} className="text-gray-300" />
           <p className="text-sm text-gray-500">
             No plans found for your trip details.
@@ -148,7 +124,7 @@ function QuoteResults({ onViewItemList, onSelectItem }) {
         </div>
       ) : view === 'cards' ? (
         <div className="flex flex-col gap-5">
-          {sortedQuotes?.map((quote, index) => (
+          {quotes?.map((quote, index) => (
             <QuoteCard
               key={quote.scheme_id}
               quote={quote}

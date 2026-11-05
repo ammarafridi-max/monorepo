@@ -29,7 +29,7 @@ export default function AppMegaLayout({
         cta={cta}
         ctaOnMobile={ctaOnMobile}
       />
-      <div className="h-[45px] lg:h-[53px] shrink-0" aria-hidden="true" />
+      <div className="h-[53px] lg:h-[61px] shrink-0" aria-hidden="true" />
       {children}
       {footer ?? <Footer />}
     </>
