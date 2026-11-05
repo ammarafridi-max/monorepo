@@ -13,14 +13,15 @@ export function createHotelBookingsRouter({
   db,
   auth,
   stripe,
-  supplier,
+  hotelSearch,
   citySuggest,
   notifications,
   frontendUrl,
   AffiliateModel,
   CurrencyModel,
   paidOrderBus: injectedBus,
-  minFreeCancellationMarginMs,
+  reservationStorage,
+  sendEmail,
 }) {
   const HotelBooking = getOrRegisterModel(db, 'hotel-booking', HotelBookingSchema);
   const HotelBookingPricing = getOrRegisterModel(db, 'hotel-booking-pricing', HotelBookingPricingSchema);
@@ -38,14 +39,15 @@ export function createHotelBookingsRouter({
   const service = createHotelBookingService({
     HotelBooking,
     Affiliate: AffiliateModel,
-    supplier,
+    hotelSearch,
     citySuggest,
     pricingService,
     stripe,
     notifications,
     frontendUrl,
     paidOrderBus,
-    ...(minFreeCancellationMarginMs ? { minFreeCancellationMarginMs } : {}),
+    reservationStorage,
+    sendEmail,
   });
 
   const controller = createHotelBookingController({ service, pricingService, paidOrderBus });

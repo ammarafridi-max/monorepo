@@ -36,11 +36,12 @@ export default function CitySelect({
   useEffect(() => {
     if (!open || query.trim().length < minChars) {
       setResults([]);
+      setLoading(false);
       return;
     }
     const controller = new AbortController();
+    setLoading(true);
     const timer = setTimeout(async () => {
-      setLoading(true);
       try {
         const found = await onSearch(query.trim(), { signal: controller.signal });
         if (!controller.signal.aborted) setResults(found ?? []);
@@ -96,7 +97,9 @@ export default function CitySelect({
 
       {open && (query.trim().length >= minChars || results.length > 0) && (
         <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-56 overflow-y-auto">
-          {showEmpty ? (
+          {loading ? (
+            <p className="text-xs text-gray-400 px-4 py-3">Searching cities…</p>
+          ) : showEmpty ? (
             <p className="text-xs text-gray-400 px-4 py-3">No cities found for &quot;{query}&quot;</p>
           ) : (
             results.map((city) => {

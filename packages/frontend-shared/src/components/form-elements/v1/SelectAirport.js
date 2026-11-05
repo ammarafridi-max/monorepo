@@ -9,7 +9,10 @@ export default function SelectAirport({ value, onChange, id, icon, error, inputR
   const [query, setQuery] = useState(value || '');
   const [isOpen, setIsOpen] = useState(false);
   const debouncedQuery = useDebounce(query, 250);
-  const { airports, isLoadingAirports } = useAirports(isOpen ? debouncedQuery : '');
+  const { airports, isFetchingAirports } = useAirports(isOpen ? debouncedQuery : '');
+  const term = debouncedQuery.trim();
+  const isSettling = query.trim() !== term;
+  const isBusy = isSettling || isFetchingAirports;
   const containerRef = useRef();
 
   useOutsideClick(containerRef, () => setIsOpen(false));
@@ -61,17 +64,17 @@ export default function SelectAirport({ value, onChange, id, icon, error, inputR
       {isOpen && (
         <div className="absolute z-50 mt-1.5 w-full bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden">
           <ul className="max-h-72 overflow-y-auto py-1">
-            {isLoadingAirports && <ListItem muted>Loading airports…</ListItem>}
+            {isBusy && <ListItem muted>Loading airports…</ListItem>}
 
-            {!isLoadingAirports && query.trim().length < 3 && (
+            {!isBusy && term.length < 3 && (
               <ListItem muted>Enter at least 3 characters</ListItem>
             )}
 
-            {!isLoadingAirports && query.trim().length >= 3 && airports.length === 0 && (
+            {!isBusy && term.length >= 3 && airports.length === 0 && (
               <ListItem muted>No airports found</ListItem>
             )}
 
-            {!isLoadingAirports &&
+            {!isBusy &&
               airports.map((airport) => (
                 <ListItem key={airport.iataCode} onClick={() => handleSelect(airport)}>
                   <span className="uppercase">{airport.address.cityName}</span>{' '}

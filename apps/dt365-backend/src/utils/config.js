@@ -96,8 +96,5 @@ export default {
     mode: process.env.PAYPAL_MODE ?? 'sandbox',
   },
 
-  liteapi: {
-    apiKey: process.env.LITEAPI_API_KEY,
-  },
 
 };

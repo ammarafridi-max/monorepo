@@ -5,11 +5,7 @@ import { renderTicketPaymentTemplate } from './templates/ticket-payment.js';
 import { renderBookingPaymentTemplate } from './templates/booking-payment.js';
 import { renderBookingPaymentAdminTemplate } from './templates/booking-payment-admin.js';
 import { renderPaymentLinkPaidTemplate } from './templates/payment-link-paid.js';
-import {
-  renderHotelBookingPaidTemplate,
-  renderHotelBookingFailedTemplate,
-  renderHotelBookingConfirmedTemplate,
-} from './templates/hotel-booking.js';
+import { renderHotelBookingPaidTemplate } from './templates/hotel-booking.js';
 import { renderVisaLeadTemplate, renderVisaLeadCustomerTemplate } from './templates/visa-lead.js';
 import {
   renderAffiliateWelcomeTemplate,
@@ -27,7 +23,7 @@ import {
   renderFileReadyForStaff,
 } from './templates/visa-applications.js';
 import { format } from 'date-fns';
-import { formatDate, formatToDDMMM, formatToDDMMMYYYYMixed, extractIataCode } from './helpers.js';
+import { formatDate, formatToDDMMM, formatToDDMMMYYYYMixed, formatToDDMonthYYYY, extractIataCode } from './helpers.js';
 
 export function createNotificationsService({ sendEmail, logger, brand }) {
   const log = logger?.error?.bind(logger) ?? console.error;
@@ -566,86 +562,11 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
       await sendEmail({
         email: brand.adminEmail,
         name: brand.paymentsSenderName,
-        subject: `Hotel reservation paid — ${data.leadGuest || 'customer'} · ${where} · ${data.checkIn}`,
+        subject: `Hotel reservation paid — ${data.leadGuest || 'customer'} · ${where} · ${formatToDDMonthYYYY(data.checkIn)}`,
         htmlContent,
       });
     } catch (err) {
       log('[notifications] sendHotelBookingPaymentToAdmin failed', {
-        sessionId: data.sessionId,
-        err: err.message,
-      });
-    }
-  }
-
-  async function sendHotelBookingFailureToAdmin(data) {
-    try {
-      const htmlContent = renderHotelBookingFailedTemplate({ brand, ...data });
-      await sendEmail({
-        email: brand.adminEmail,
-        name: brand.paymentsSenderName,
-        subject: `ACTION NEEDED — hotel booking failed after payment (${data.sessionId})`,
-        htmlContent,
-      });
-    } catch (err) {
-      log('[notifications] sendHotelBookingFailureToAdmin failed', {
-        sessionId: data.sessionId,
-        err: err.message,
-      });
-    }
-  }
-
-  async function sendHotelBookingToCustomer(data) {
-    try {
-      if (!data?.email) return;
-
-      const firstName = data.guests?.[0]?.firstName?.trim() || 'there';
-      const hotelName = data.hotel?.name || 'your hotel';
-      const checkIn = formatToDDMMMYYYYMixed(data.checkIn);
-      const checkOut = formatToDDMMMYYYYMixed(data.checkOut);
-      const freeUntil = data.freeCancellationUntil
-        ? formatToDDMMMYYYYMixed(new Date(data.freeCancellationUntil).toISOString().slice(0, 10))
-        : null;
-
-      const textContent = [
-        `Hi ${firstName},`,
-        ``,
-        `Your hotel reservation is confirmed. Here are the details you need for your visa application.`,
-        ``,
-        `Your reservation`,
-        `- Confirmation number: ${data.hotelConfirmationCode || '—'}`,
-        `- Booking reference: ${data.bookingReference || '—'}`,
-        `- Hotel: ${hotelName}`,
-        data.hotel?.address ? `- Address: ${data.hotel.address}` : null,
-        `- Check-in: ${checkIn}`,
-        `- Check-out: ${checkOut}`,
-        `- Nights: ${data.nights ?? '—'}`,
-        ``,
-        `This is a real booking held in your name, so the embassy can verify it with the hotel.`,
-        freeUntil ? `It can be cancelled free of charge up to ${freeUntil}.` : null,
-        ``,
-        `Keep this email for your file, or print it and attach it to your application.`,
-        ``,
-        `If anything above looks wrong, just reply to this email and we will fix it.`,
-        ``,
-        `Talk soon,`,
-        `The ${brand.name} team`,
-      ].filter((line) => line !== null).join('\n');
-
-      await sendEmail({
-        email: data.email,
-        name: data.leadGuest,
-        subject: `Your hotel reservation is confirmed: ${hotelName}, ${checkIn}`,
-        textContent,
-        htmlContent: renderHotelBookingConfirmedTemplate({
-          brand,
-          ...data,
-          checkIn,
-          checkOut,
-          freeCancellationUntil: freeUntil,
-        }),
-      });
-    } catch (err) {
-      log('[notifications] sendHotelBookingToCustomer failed', {
         sessionId: data.sessionId,
         err: err.message,
       });
@@ -663,8 +584,6 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
     sendBookingConfirmationToCustomer,
     sendPaymentLinkPaidToAdmin,
     sendHotelBookingPaymentToAdmin,
-    sendHotelBookingToCustomer,
-    sendHotelBookingFailureToAdmin,
     sendContactFormToAdmin,
     sendVisaLeadToAdmin,
     sendVisaLeadToCustomer,

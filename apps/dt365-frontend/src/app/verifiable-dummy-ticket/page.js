@@ -169,7 +169,7 @@ export default async function Page() {
       <Hero
         title="Verifiable Dummy Tickets From USD 13"
         subtitle="The word that matters here is verifiable. Our reservations are created on Amadeus, Sabre and Travelport and carry a real six-character PNR, so a consulate or a travel agent can pull the record up and confirm it rather than take the PDF on trust. Delivered by email within minutes."
-        form={<AllForms forms={['ticket']} />}
+        form={<AllForms forms={['ticket', 'hotel']} />}
         pills={[
           'Live GDS PNR, not a PDF mock-up',
           'Checkable by any IATA agent',

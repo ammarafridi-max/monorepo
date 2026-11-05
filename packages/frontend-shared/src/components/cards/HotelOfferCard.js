@@ -1,7 +1,6 @@
 'use client';
 
-import { BedDouble, ShieldCheck, Utensils, Star, Tag } from 'lucide-react';
-import { formatDate } from '../../utils/dates';
+import { BedDouble, Star } from 'lucide-react';
 import { formatAmount } from '../../utils/currency';
 
 function StarRating({ stars }) {
@@ -16,47 +15,50 @@ function StarRating({ stars }) {
   );
 }
 
-export default function HotelOfferCard({ offer, price, currency, nights, isExpanded, onSelect, children }) {
-  const listedAmount = offer.price?.amount;
-  const listedCurrency = offer.price?.currency;
+export default function HotelOfferCard({ hotel, price, currency, nights, isExpanded, onSelect, children }) {
+  const listed = hotel.totalRate?.amount ?? hotel.ratePerNight?.amount;
+  const listedIsTotal = Boolean(hotel.totalRate?.amount);
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-4">
       <div className="p-5 flex flex-col sm:flex-row sm:items-center gap-4">
-        <div className="w-11 h-11 rounded-xl bg-primary-50 flex items-center justify-center shrink-0">
-          <BedDouble size={20} className="text-primary-700" />
-        </div>
+        {hotel.thumbnail ? (
+          <img
+            src={hotel.thumbnail}
+            alt={hotel.name ?? 'Hotel'}
+            loading="lazy"
+            className="w-full h-36 sm:w-24 sm:h-20 rounded-xl object-cover shrink-0 bg-gray-100"
+          />
+        ) : (
+          <div className="w-full h-36 sm:w-24 sm:h-20 rounded-xl bg-primary-50 flex items-center justify-center shrink-0">
+            <BedDouble size={20} className="text-primary-700" />
+          </div>
+        )}
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 min-w-0">
-            <p className="text-sm font-bold text-gray-900 truncate">{offer.hotel?.name ?? 'Hotel'}</p>
-            <StarRating stars={offer.hotel?.stars} />
+            <p className="text-sm font-bold text-gray-900 truncate">{hotel.name ?? 'Hotel'}</p>
+            <StarRating stars={hotel.stars} />
           </div>
-          {offer.hotel?.address && (
-            <p className="text-xs text-gray-400 truncate mt-0.5">{offer.hotel.address}</p>
-          )}
-          <p className="text-xs text-gray-600 truncate mt-1">{offer.roomName ?? 'Room'}</p>
+
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5">
-            {offer.boardName && (
-              <span className="inline-flex items-center gap-1.5 text-xs text-gray-500">
-                <Utensils size={12} className="text-gray-400" />
-                {offer.boardName}
+            {hotel.rating && (
+              <span className="inline-flex items-center gap-1.5 text-xs text-gray-600">
+                <span className="font-bold text-gray-900">{hotel.rating}</span>
+                {hotel.reviews ? `(${Number(hotel.reviews).toLocaleString('en-US')} reviews)` : null}
               </span>
             )}
-            {Number.isFinite(listedAmount) && (
-              <span className="inline-flex items-center gap-1.5 text-xs text-gray-500">
-                <Tag size={12} className="text-gray-400" />
-                Room lists at {listedCurrency} {formatAmount(listedAmount)}
-                {nights ? ` for ${nights} night${nights > 1 ? 's' : ''}` : ''}
-              </span>
-            )}
-            {offer.freeCancellationUntil && (
-              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-green-700">
-                <ShieldCheck size={12} />
-                Free cancellation until {formatDate(offer.freeCancellationUntil)}
+            {Number.isFinite(listed) && (
+              <span className="text-xs text-gray-500">
+                Room lists at {currency} {formatAmount(listed)}
+                {listedIsTotal && nights ? ` for ${nights} night${nights > 1 ? 's' : ''}` : ' per night'}
               </span>
             )}
           </div>
+
+          {hotel.amenities?.length > 0 && (
+            <p className="text-xs text-gray-400 truncate mt-1">{hotel.amenities.join(' · ')}</p>
+          )}
         </div>
 
         <div className="w-full sm:w-auto flex items-center justify-between gap-4 shrink-0">
@@ -75,7 +77,7 @@ export default function HotelOfferCard({ offer, price, currency, nights, isExpan
             className={`w-[40%] sm:w-auto sm:min-w-[120px] rounded-full py-2 sm:px-6 text-sm cursor-pointer duration-300 ${
               isExpanded ? 'bg-black text-white' : 'bg-gray-200 text-black hover:bg-gray-300'
             }`}
-            aria-label={`Select ${offer.hotel?.name ?? 'hotel'} ${offer.roomName ?? ''}`.trim()}
+            aria-label={`Select ${hotel.name ?? 'hotel'}`}
           >
             {isExpanded ? 'Selected' : 'Select'}
           </button>

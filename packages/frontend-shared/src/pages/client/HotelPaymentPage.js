@@ -1,9 +1,10 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import {
-  CheckCircle2, BedDouble, CreditCard, Users, Mail, AlertCircle, Loader2, CalendarDays, ShieldCheck,
+  CheckCircle2, BedDouble, CreditCard, Users, Mail, AlertCircle, Loader2, CalendarDays,
 } from 'lucide-react';
 import { useHotelBooking } from '../../hooks/hotel-bookings/useHotelBooking';
 import { formatAmount } from '../../utils/currency';
@@ -27,59 +28,79 @@ function LoadingState() {
   );
 }
 
-function ConfirmingState({ title, body }) {
+function ConfirmingState() {
   return (
     <div className="max-w-lg mx-auto px-6 py-24 flex flex-col items-center text-center gap-5">
       <Loader2 size={28} className="animate-spin text-primary-600" />
       <div>
-        <p className="text-lg font-bold text-gray-900">{title}</p>
-        <p className="text-sm text-gray-400 mt-1 max-w-sm">{body}</p>
+        <p className="text-lg font-bold text-gray-900">Confirming your payment</p>
+        <p className="text-sm text-gray-400 mt-1 max-w-sm">
+          Stripe is sending us the confirmation. This usually takes a few seconds. Please keep this
+          page open.
+        </p>
       </div>
     </div>
   );
 }
 
-function ErrorState({ supportEmail, sessionId }) {
+function ErrorState({ supportEmail, sessionId, pending = false, unreachable = false }) {
   return (
     <div className="max-w-lg mx-auto px-6 py-24 flex flex-col items-center text-center gap-5">
-      <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center">
-        <AlertCircle size={26} className="text-red-400" />
+      <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center">
+        <AlertCircle size={28} className="text-red-400" />
       </div>
       <div>
-        <p className="text-lg font-bold text-gray-900">We could not load your reservation</p>
-        <p className="text-sm text-gray-500 mt-1">
-          Your payment may still have gone through. Email us at{' '}
-          <a href={`mailto:${supportEmail}`} className="font-semibold text-primary-700 hover:underline">
-            {supportEmail}
-          </a>{' '}
-          quoting reference <span className="font-mono text-xs">{sessionId}</span> and we will sort it out.
+        <p className="text-lg font-bold text-gray-900">
+          {unreachable ? 'We cannot load your booking right now' : pending ? 'Still waiting for Stripe' : 'Payment not found'}
         </p>
+        <p className="text-sm text-gray-400 mt-1 max-w-sm">
+          {unreachable
+            ? 'Your payment is safe and your order is recorded. We just could not reach our servers to show it. Refresh in a moment, or email us with the reference below.'
+            : pending
+              ? "We have not received Stripe's confirmation yet. If your card was charged, your order is safe: reply to the Stripe receipt or email us and quote the reference below."
+              : "We couldn't find a successful payment linked to this booking. If you were charged, please contact our support team with your transaction details."}
+        </p>
+        {sessionId && (
+          <p className="text-xs text-gray-400 mt-3 break-all">Reference: {sessionId}</p>
+        )}
       </div>
-      <Link
-        href="/"
-        className="text-sm font-bold px-5 py-2.5 bg-primary-700 hover:bg-primary-800 text-white rounded-xl transition-colors"
-      >
-        Back to home
-      </Link>
+      <div className="flex items-center gap-3">
+        <Link
+          href="/"
+          className="text-sm font-bold px-5 py-2.5 bg-primary-700 hover:bg-primary-800 text-white rounded-xl transition-colors"
+        >
+          Back to home
+        </Link>
+        {supportEmail && (
+          <a
+            href={`mailto:${supportEmail}`}
+            className="text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors"
+          >
+            Contact support
+          </a>
+        )}
+      </div>
     </div>
   );
 }
 
 function PaymentContent({ onPurchaseEvent, supportEmail }) {
-  const [sessionId, setSessionId] = useState(null);
+  const searchParams = useSearchParams();
+  const paramsRef = useRef(null);
+  if (paramsRef.current === null) {
+    paramsRef.current = { sessionId: searchParams.get('sessionId') || '' };
+  }
+  const { sessionId } = paramsRef.current;
 
+  const [pollTimedOut, setPollTimedOut] = useState(false);
   useEffect(() => {
-    setSessionId(localStorage.getItem('HOTEL_SESSION_ID') || '');
+    const t = setTimeout(() => setPollTimedOut(true), 60_000);
+    return () => clearTimeout(t);
   }, []);
 
-  const { reservation, isLoadingReservation, isErrorReservation } = useHotelBooking(sessionId, {
-    refetchInterval: (query) => {
-      const data = query.state.data;
-      if (!data) return 2000;
-      if (data.paymentStatus !== 'PAID') return 2000;
-      if (data.orderStatus === 'PENDING') return 2000;
-      return false;
-    },
+  const { reservation, isLoadingReservation, isErrorReservation, reservationError } = useHotelBooking(sessionId, {
+    refetchInterval: (query) =>
+      !pollTimedOut && query.state.data?.paymentStatus === 'UNPAID' ? 2000 : false,
   });
 
   const amount = reservation?.amountPaid?.amount;
@@ -99,49 +120,20 @@ function PaymentContent({ onPurchaseEvent, supportEmail }) {
   }, [amount, currency, sessionId, onPurchaseEvent]);
 
   useEffect(() => {
-    if (reservation?.orderStatus === 'BOOKED' || reservation?.orderStatus === 'DELIVERED') {
-      localStorage.removeItem('HOTEL_SESSION_ID');
-    }
-  }, [reservation?.orderStatus]);
+    if (reservation?.paymentStatus === 'PAID') localStorage.removeItem('HOTEL_SESSION_ID');
+  }, [reservation?.paymentStatus]);
 
-  if (sessionId === null || isLoadingReservation) return <LoadingState />;
-  if (!sessionId || isErrorReservation || !reservation) {
-    return <ErrorState supportEmail={supportEmail} sessionId={sessionId} />;
+  if (isLoadingReservation) return <LoadingState />;
+
+  if (isErrorReservation || !sessionId || !reservation) {
+    const missing = !sessionId || reservationError?.status === 404;
+    return <ErrorState supportEmail={supportEmail} sessionId={sessionId} unreachable={!missing} />;
   }
 
-  if (reservation.paymentStatus !== 'PAID') {
-    return (
-      <ConfirmingState
-        title="Confirming your payment"
-        body="Stripe is sending us the confirmation. This usually takes a few seconds. Please keep this page open."
-      />
-    );
-  }
-
-  if (reservation.orderStatus === 'PENDING') {
-    return (
-      <ConfirmingState
-        title="Booking your room"
-        body="We are placing a real refundable booking with the hotel. This usually takes a few seconds. Please keep this page open."
-      />
-    );
-  }
-
-  if (reservation.orderStatus === 'BOOKING_FAILED') {
-    return (
-      <div className="max-w-lg mx-auto px-6 py-24 flex flex-col items-center text-center gap-5">
-        <div className="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center">
-          <AlertCircle size={26} className="text-amber-500" />
-        </div>
-        <div>
-          <p className="text-lg font-bold text-gray-900">Your payment went through</p>
-          <p className="text-sm text-gray-500 mt-1">
-            The room did not confirm automatically, so our team is finishing it by hand. You will get your
-            confirmation by email shortly. Reference <span className="font-mono text-xs">{reservation.sessionId}</span>.
-          </p>
-        </div>
-      </div>
-    );
+  if (reservation.paymentStatus === 'UNPAID') {
+    return pollTimedOut
+      ? <ErrorState supportEmail={supportEmail} sessionId={sessionId} pending />
+      : <ConfirmingState />;
   }
 
   const guestsLabel = `${reservation.occupancy?.rooms ?? 1} Room${(reservation.occupancy?.rooms ?? 1) > 1 ? 's' : ''}, ${reservation.occupancy?.adults ?? 1} Adult${(reservation.occupancy?.adults ?? 1) > 1 ? 's' : ''}`;
@@ -157,13 +149,14 @@ function PaymentContent({ onPurchaseEvent, supportEmail }) {
             <BedDouble size={14} className="text-primary-700" />
           </div>
         </div>
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-2">Reservation Confirmed!</h1>
+        <h1 className="text-3xl font-extrabold text-gray-900 mb-2">Order Confirmed!</h1>
         <p className="text-sm text-gray-500 max-w-md">
           Your payment of{' '}
           <span className="font-semibold text-gray-700">
             {currency} {formatAmount(amount)}
           </span>{' '}
-          has been processed and your room is booked. The confirmation is on its way to your email.
+          has been processed. One of our agents is booking your hotel reservation now and will email it
+          to you, usually within a few hours.
         </p>
       </div>
 
@@ -182,8 +175,7 @@ function PaymentContent({ onPurchaseEvent, supportEmail }) {
                 <DetailRow label="Check-out" value={formatDate(reservation.checkOut)} />
                 <DetailRow label="Nights" value={reservation.nights} />
                 <DetailRow label="Guests" value={guestsLabel} />
-                <DetailRow label="Confirmation" value={reservation.supplier?.hotelConfirmationCode} />
-                <DetailRow label="Booking reference" value={reservation.supplier?.bookingId} />
+                <DetailRow label="Reference" value={reservation.sessionId} />
               </div>
             </div>
           </section>
@@ -217,16 +209,6 @@ function PaymentContent({ onPurchaseEvent, supportEmail }) {
               <DetailRow label="Reference" value={reservation.sessionId} />
             </div>
           </div>
-
-          {reservation.freeCancellationUntil && (
-            <div className="rounded-2xl border border-green-200 bg-green-50 p-4 flex items-start gap-2.5">
-              <ShieldCheck size={15} className="text-green-700 shrink-0 mt-0.5" />
-              <p className="text-xs text-green-800 leading-relaxed">
-                This is a genuine refundable booking. It stays valid until{' '}
-                <span className="font-semibold">{formatDate(reservation.freeCancellationUntil)}</span>.
-              </p>
-            </div>
-          )}
 
           {reservation.email && (
             <div className="rounded-2xl border border-primary-100 bg-primary-50 p-4 flex items-start gap-2.5">

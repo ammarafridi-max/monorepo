@@ -114,7 +114,7 @@ export default function HotelReviewDetailsPage({ onBeginCheckout, searchPath = '
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start">
         <div className="flex flex-col gap-5">
-          <SectionCard title="Stay Details" editHref="/hotel-booking/select-room">
+          <SectionCard title="Stay Details" editHref="/hotel-booking/select-hotel">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
               <Row label="Hotel" value={reservation.hotel?.name} />
               <Row label="City" value={reservation.hotel?.city ?? reservation.destination?.cityName} />
@@ -123,7 +123,6 @@ export default function HotelReviewDetailsPage({ onBeginCheckout, searchPath = '
               <Row label="Nights" value={reservation.nights} />
               <Row label="Rooms" value={reservation.occupancy?.rooms} />
               <Row label="Adults" value={reservation.occupancy?.adults} />
-              <Row label="Guest nationality" value={reservation.guestNationality} />
             </div>
           </SectionCard>
 
@@ -135,6 +134,12 @@ export default function HotelReviewDetailsPage({ onBeginCheckout, searchPath = '
                 value={`${reservation.phoneNumber?.code || ''}${reservation.phoneNumber?.digits || ''}`}
               />
             </div>
+            {reservation.message && (
+              <div className="mt-3 pt-3 border-t border-gray-50">
+                <p className="text-xs text-gray-400 mb-1">Your requirements</p>
+                <p className="text-sm text-gray-800 whitespace-pre-line">{reservation.message}</p>
+              </div>
+            )}
           </SectionCard>
 
           {reservation.guests?.length > 0 && (
@@ -198,7 +203,7 @@ export default function HotelReviewDetailsPage({ onBeginCheckout, searchPath = '
             <div className="flex items-start gap-2 rounded-xl bg-green-50 border border-green-100 p-3">
               <ShieldCheck size={14} className="text-green-700 shrink-0 mt-0.5" />
               <p className="text-xs text-green-800 leading-relaxed">
-                We book a real refundable room in your name. The confirmation is genuine and verifiable.
+                Our team books your hotel reservation by hand and emails it to you, usually within a few hours.
               </p>
             </div>
 
@@ -253,10 +258,10 @@ export default function HotelReviewDetailsPage({ onBeginCheckout, searchPath = '
 
           <div className="text-center">
             <Link
-              href="/hotel-booking/select-room"
+              href="/hotel-booking/select-hotel"
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-gray-600 transition-colors"
             >
-              <ArrowLeft size={13} /> Back to rooms
+              <ArrowLeft size={13} /> Back to hotels
             </Link>
           </div>
         </div>

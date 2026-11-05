@@ -18,7 +18,6 @@ import { createAirLabsClient } from "@travel-suite/airlabs";
 import { createSerpApiClient } from "@travel-suite/serpapi";
 import { createTicketsRouter } from "@travel-suite/tickets";
 import { createHotelBookingsRouter } from "@travel-suite/hotel-bookings";
-import { createLiteApiClient } from "@travel-suite/liteapi";
 import { createConversationsRouter } from "@travel-suite/conversations";
 import { createWhatsAppClient } from "@travel-suite/whatsapp";
 import { createNotificationsService } from "@travel-suite/notifications";
@@ -231,35 +230,29 @@ router.use(
 );
 
 const CurrencyModel = db.models.currency ?? null;
-const liteapiConfigured = Boolean(config.liteapi.apiKey);
-let handleHotelStripeSuccess = null;
-
-if (liteapiConfigured) {
-  const {
-    router: hotelBookingsRouter,
-    pricingRouter: hotelPricingRouter,
-    handleStripeSuccess: onHotelPaid,
-  } = createHotelBookingsRouter({
-    db,
-    auth,
-    stripe,
-    supplier: createLiteApiClient({ apiKey: config.liteapi.apiKey, logger }),
-    citySuggest: async (search) =>
-      (await airlabs.suggestCities(search))
-        .filter((c) => c?.city_code)
-        .sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0))
-        .map((c) => ({ name: c.name, countryCode: c.country_code, cityCode: c.city_code })),
-    notifications,
-    frontendUrl: config.frontendUrl,
-    AffiliateModel,
-    CurrencyModel,
-  });
-  handleHotelStripeSuccess = onHotelPaid;
-  router.use("/hotel-bookings", hotelBookingsRouter);
-  router.use("/hotel-booking-pricing", hotelPricingRouter);
-} else {
-  logger.warn("[hotel-bookings] LITEAPI_API_KEY not configured — hotel reservations disabled");
-}
+const {
+  router: hotelBookingsRouter,
+  pricingRouter: hotelPricingRouter,
+  handleStripeSuccess: handleHotelStripeSuccess,
+} = createHotelBookingsRouter({
+  db,
+  auth,
+  stripe,
+  hotelSearch: (params) => serpapi.searchHotels(params),
+  citySuggest: async (search) =>
+    (await airlabs.suggestCities(search))
+      .filter((c) => c?.city_code)
+      .sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0))
+      .map((c) => ({ name: c.name, countryCode: c.country_code, cityCode: c.city_code })),
+  notifications,
+  frontendUrl: config.frontendUrl,
+  AffiliateModel,
+  CurrencyModel,
+  reservationStorage,
+  sendEmail,
+});
+router.use("/hotel-bookings", hotelBookingsRouter);
+router.use("/hotel-booking-pricing", hotelPricingRouter);
 
 router.use(
   "/affiliates",
@@ -394,7 +387,7 @@ export const stripeWebhookHandler = createStripeWebhookHandler({
   handlers: {
     ticket: handleStripeSuccess,
     "payment-link": handlePaymentLinkSuccess,
-    ...(handleHotelStripeSuccess ? { "hotel-booking": handleHotelStripeSuccess } : {}),
+    "hotel-booking": handleHotelStripeSuccess,
   },
 });
 

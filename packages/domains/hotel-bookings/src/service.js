@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 import { AppError, logger, sanitizeAttribution } from '@travel-suite/utils';
 import { fromStripeMinorUnits, toStripeMinorUnits } from '@travel-suite/utils/currency';
@@ -45,8 +46,7 @@ function buildSearchFilter(search) {
       { 'guests.lastName': regex },
       { 'hotel.name': regex },
       { 'hotel.city': regex },
-      { 'supplier.bookingId': regex },
-      { 'supplier.hotelConfirmationCode': regex },
+      { 'destination.cityName': regex },
       { sessionId: regex },
     ],
   };
@@ -55,54 +55,33 @@ function buildSearchFilter(search) {
 export function createHotelBookingService({
   HotelBooking,
   Affiliate,
-  supplier,
+  hotelSearch,
   citySuggest,
   pricingService,
   stripe,
   notifications,
   frontendUrl,
   paidOrderBus,
-  minFreeCancellationMarginMs = 48 * 60 * 60 * 1000,
-  maxReplacementPriceMultiplier = 1.25,
-  maxReplacementAttempts = 5,
-  maxOffersReturned = 30,
+  reservationStorage,
+  sendEmail,
+  maxHotelsReturned = 20,
 }) {
-  const searchOffers = async ({ cityName, countryCode, hotelIds, checkIn, checkOut, occupancy, guestNationality, currency }) => {
+  const searchHotels = async ({ cityName, countryCode, checkIn, checkOut, occupancy, currency }) => {
     const { checkIn: from, checkOut: to } = assertStayDates({ checkIn, checkOut });
-    let offers;
-    try {
-      offers = await supplier.refundableOffers(
-        {
-          ...(hotelIds ? { hotelIds } : { cityName, countryCode }),
-          checkin: from,
-          checkout: to,
-          occupancies: [{
-            rooms: Number(occupancy?.rooms || 1),
-            adults: Number(occupancy?.adults || 1),
-            ...(occupancy?.children?.length ? { children: occupancy.children } : {}),
-          }],
-          currency: String(currency || 'USD').toUpperCase(),
-          guestNationality: String(guestNationality || 'AE').toUpperCase(),
-        },
-        { marginMs: minFreeCancellationMarginMs },
-      );
-    } catch (err) {
-      if (err.code === 2001) throw new AppError('No refundable rooms available for those dates', 404);
-      throw err;
-    }
-    if (offers.length === 0) throw new AppError('No refundable rooms available for those dates', 404);
+    if (!cityName) throw new AppError('A city is required to search hotels', 400);
 
-    const cheapestPerHotel = new Map();
-    for (const offer of offers) {
-      const current = cheapestPerHotel.get(offer.hotelId);
-      if (!current || Number(offer.price?.amount ?? Infinity) < Number(current.price?.amount ?? Infinity)) {
-        cheapestPerHotel.set(offer.hotelId, offer);
-      }
-    }
+    const hotels = await hotelSearch({
+      query: countryCode ? `${cityName}, ${countryCode}` : cityName,
+      checkIn: from,
+      checkOut: to,
+      adults: Number(occupancy?.adults || 2),
+      children: occupancy?.children?.length ?? 0,
+      currency: String(currency || 'USD').toUpperCase(),
+      countryCode,
+    });
 
-    return [...cheapestPerHotel.values()]
-      .sort((a, b) => Number(a.price?.amount ?? 0) - Number(b.price?.amount ?? 0))
-      .slice(0, maxOffersReturned);
+    if (hotels.length === 0) throw new AppError('No hotels found for those dates', 404);
+    return hotels.slice(0, maxHotelsReturned);
   };
 
   const suggestCities = async (search) => {
@@ -118,14 +97,6 @@ export function createHotelBookingService({
         cityCode: c.cityCode ?? null,
         label: `${c.name}, ${c.countryCode}`,
       }));
-  };
-
-  const listCountries = async () => {
-    const countries = await supplier.getCountries();
-    return countries
-      .filter((c) => c.code && c.name)
-      .map((c) => ({ id: c.code, code: c.code, nationality: c.name }))
-      .sort((a, b) => a.nationality.localeCompare(b.nationality));
   };
 
   const createReservationRequest = async (payload) => {
@@ -147,17 +118,12 @@ export function createHotelBookingService({
       phoneNumber: payload?.phoneNumber,
       guests: payload?.guests ?? [],
       occupancy: payload?.occupancy,
-      guestNationality: payload?.guestNationality,
       destination: payload?.destination,
       checkIn,
       checkOut,
       nights,
-      supplier: {
-        offerId: payload?.offerId,
-        hotelId: payload?.hotelId,
-        quotedPrice: payload?.offerPrice ?? null,
-      },
       hotel: payload?.hotel,
+      message: payload?.message,
       totalAmount,
       currency: currencyCode,
       affiliateId: affiliateDoc ? affiliateDoc.affiliateId : null,
@@ -207,173 +173,9 @@ export function createHotelBookingService({
           },
         },
       }],
-      success_url: `${frontendUrl}/hotel-booking/${sessionId}?status=success`,
-      cancel_url: `${frontendUrl}/hotel-booking/${sessionId}?status=cancelled`,
+      success_url: `${frontendUrl}/hotel-booking/payment?sessionId=${sessionId}`,
+      cancel_url: `${frontendUrl}/hotel-booking/review-details`,
     });
-  };
-
-  const isAcceptable = (prebook) =>
-    supplier.isCancellationAcceptable(supplier.prebookCancellation(prebook), {
-      marginMs: minFreeCancellationMarginMs,
-    });
-
-  const acquirePrebook = async (reservation) => {
-    try {
-      const prebook = await supplier.prebook({ offerId: reservation.supplier.offerId });
-      if (prebook?.prebookId && isAcceptable(prebook)) {
-        return { prebook, offerId: reservation.supplier.offerId, replaced: false };
-      }
-    } catch (err) {
-      logger?.warn('[hotel-bookings] stored offer no longer prebooks, re-searching', {
-        sessionId: reservation.sessionId,
-        message: err.message,
-      });
-    }
-
-    const hotelId = reservation.supplier?.hotelId;
-    if (!hotelId) throw new AppError('Offer expired and no hotel is recorded to re-search', 409);
-
-    const offers = await supplier.refundableOffers(
-      {
-        hotelIds: [hotelId],
-        checkin: reservation.checkIn,
-        checkout: reservation.checkOut,
-        occupancies: [{
-          rooms: Number(reservation.occupancy?.rooms || 1),
-          adults: Number(reservation.occupancy?.adults || 1),
-          ...(reservation.occupancy?.children?.length ? { children: reservation.occupancy.children } : {}),
-        }],
-        currency: reservation.supplier?.quotedPrice?.currency ?? 'USD',
-        guestNationality: reservation.guestNationality ?? 'AE',
-      },
-      { marginMs: minFreeCancellationMarginMs },
-    );
-
-    const quoted = Number(reservation.supplier?.quotedPrice?.amount);
-    const ceiling = Number.isFinite(quoted) ? quoted * maxReplacementPriceMultiplier : Infinity;
-
-    const candidates = offers
-      .filter((offer) => Number(offer.price?.amount ?? Infinity) <= ceiling)
-      .sort((a, b) => Number(a.price?.amount ?? 0) - Number(b.price?.amount ?? 0))
-      .slice(0, maxReplacementAttempts);
-
-    for (const offer of candidates) {
-      try {
-        const prebook = await supplier.prebook({ offerId: offer.offerId });
-        if (prebook?.prebookId && isAcceptable(prebook)) {
-          logger?.warn('[hotel-bookings] booked a replacement offer', {
-            sessionId: reservation.sessionId,
-            hotelId,
-            price: offer.price?.amount,
-          });
-          return { prebook, offerId: offer.offerId, replaced: true };
-        }
-      } catch {
-      }
-    }
-
-    throw new AppError('No refundable room could be held for this stay; not booking', 409);
-  };
-
-  const sendConfirmationOnce = async (reservation) => {
-    if (!reservation?.supplier?.bookingId) return;
-    const claimed = await HotelBooking.findOneAndUpdate(
-      { sessionId: reservation.sessionId, confirmationEmailSentAt: null },
-      { $set: { confirmationEmailSentAt: new Date() } },
-    );
-    if (!claimed) return;
-
-    try {
-      await notifications.sendHotelBookingToCustomer?.({
-        sessionId: reservation.sessionId,
-        email: reservation.email,
-        leadGuest: reservation.leadGuest,
-        guests: reservation.guests,
-        hotel: reservation.hotel,
-        checkIn: reservation.checkIn,
-        checkOut: reservation.checkOut,
-        nights: reservation.nights,
-        occupancy: reservation.occupancy,
-        hotelConfirmationCode: reservation.supplier.hotelConfirmationCode,
-        bookingReference: reservation.supplier.bookingId,
-        freeCancellationUntil: reservation.freeCancellationUntil,
-      });
-      await HotelBooking.updateOne(
-        { sessionId: reservation.sessionId },
-        { $set: { orderStatus: 'DELIVERED', documentSentAt: new Date() } },
-      );
-    } catch (err) {
-      await HotelBooking.updateOne(
-        { sessionId: reservation.sessionId },
-        { $set: { confirmationEmailSentAt: null } },
-      );
-      logger?.error('[hotel-bookings] confirmation email failed', {
-        sessionId: reservation.sessionId,
-        message: err.message,
-      });
-    }
-  };
-
-  const bookWithSupplier = async (sessionId) => {
-    const claimed = await HotelBooking.findOneAndUpdate(
-      { sessionId, paymentStatus: 'PAID', 'supplier.bookClaimedAt': null },
-      { $set: { 'supplier.bookClaimedAt': new Date() } },
-      { new: true },
-    );
-    if (!claimed) return null;
-
-    try {
-      const { prebook, offerId, replaced } = await acquirePrebook(claimed);
-
-      const lead = claimed.guests?.find((g) => g.isLead) ?? claimed.guests?.[0] ?? {};
-      const booking = await supplier.book({
-        prebookId: prebook.prebookId,
-        holder: { firstName: lead.firstName, lastName: lead.lastName, email: claimed.email },
-        guests: claimed.guests.map((g, i) => ({
-          occupancyNumber: i + 1,
-          firstName: g.firstName,
-          lastName: g.lastName,
-          email: claimed.email,
-        })),
-        clientReference: claimed.sessionId,
-      });
-
-      const deadline = supplier.bookingFreeCancellationUntil(booking);
-      if (!deadline) throw new Error('Confirmed booking carries no free-cancellation deadline');
-
-      const booked = await HotelBooking.findOneAndUpdate(
-        { sessionId },
-        {
-          $set: {
-            orderStatus: 'BOOKED',
-            cancellationStatus: 'SCHEDULED',
-            freeCancellationUntil: deadline,
-            'supplier.offerId': offerId,
-            'supplier.offerReplaced': replaced,
-            'supplier.prebookId': prebook.prebookId,
-            'supplier.bookingId': booking?.bookingId,
-            'supplier.supplierBookingId': booking?.supplierBookingId,
-            'supplier.hotelConfirmationCode': booking?.hotelConfirmationCode,
-            'supplier.price': { amount: prebook?.price, currency: prebook?.currency },
-            'supplier.bookedAt': new Date(),
-            'supplier.lastError': null,
-            ...(booking?.hotel ? { hotel: booking.hotel } : {}),
-          },
-        },
-        { new: true },
-      );
-
-      await sendConfirmationOnce(booked);
-      return booked;
-    } catch (err) {
-      logger?.error('[hotel-bookings] supplier booking failed', { sessionId, message: err.message });
-      await HotelBooking.updateOne(
-        { sessionId },
-        { $set: { orderStatus: 'BOOKING_FAILED', 'supplier.bookClaimedAt': null, 'supplier.lastError': err.message } },
-      );
-      await notifications.sendHotelBookingFailureToAdmin?.({ sessionId, email: (await HotelBooking.findOne({ sessionId }))?.email, reason: err.message });
-      throw err;
-    }
   };
 
   const handleStripeSuccess = async (session) => {
@@ -409,53 +211,72 @@ export function createHotelBookingService({
       checkIn: reservation.checkIn,
       checkOut: reservation.checkOut,
       nights: reservation.nights,
+      occupancy: reservation.occupancy,
+      guests: reservation.guests,
+      message: reservation.message,
+      phoneNumber: reservation.phoneNumber,
+      amountPaid: reservation.amountPaid,
+      destination: reservation.destination,
     });
 
-    return bookWithSupplier(sessionId);
+    return reservation;
   };
 
-  const cancelReservation = async (sessionId, { force = false } = {}) => {
+  const sendReservation = async ({ sessionId, agentId, subject, body, bodyHtml, file }) => {
+    if (!reservationStorage || !sendEmail) {
+      throw new AppError('Reservation sending is not configured on this server', 500);
+    }
+    if (!file?.buffer) throw new AppError('Reservation PDF is required', 400);
+    if (file.buffer.subarray(0, 5).toString('latin1') !== '%PDF-') {
+      throw new AppError('The reservation file is not a valid PDF', 400);
+    }
+    if (!subject?.trim() || !body?.trim()) throw new AppError('Subject and body are required', 400);
+
     const reservation = await HotelBooking.findOne({ sessionId });
-    if (!reservation) throw new AppError('Reservation not found', 404);
-    if (reservation.cancellationStatus === 'CANCELLED') return reservation;
-    if (!reservation.supplier?.bookingId) throw new AppError('Reservation has no supplier booking to cancel', 409);
+    if (!reservation) throw new AppError('Booking not found', 404);
+    if (!reservation.email) throw new AppError('Booking has no customer email on file', 400);
 
-    const deadline = reservation.freeCancellationUntil;
-    if (!force && deadline && Date.now() >= deadline.getTime()) {
-      throw new AppError('Free-cancellation window has closed; cancel manually with force to accept the fee', 409);
-    }
+    const canStorePrivately = typeof reservationStorage.saveAuthenticatedFile === 'function';
+    const stored = canStorePrivately
+      ? await reservationStorage.saveAuthenticatedFile(file.buffer, `${sessionId}/reservation-file`, {
+          resourceType: 'image',
+        })
+      : null;
+    const url = canStorePrivately
+      ? null
+      : await reservationStorage.saveFile(file.buffer, `${sessionId}/reservation-file.pdf`, {
+          resourceType: 'image',
+        });
 
-    const result = await supplier.cancelBooking(reservation.supplier.bookingId);
-    const cancelled = result.status === 'CANCELLED';
-
-    if (!cancelled) {
-      logger?.error('[hotel-bookings] cancellation did not come back clean', {
-        sessionId, status: result.status, fee: result.cancellationFee,
-      });
-    }
+    const ok = await sendEmail({
+      email: reservation.email,
+      name: reservation.leadGuest || '',
+      subject: subject.trim(),
+      textContent: body,
+      htmlContent: bodyHtml || body.split('\n').map((l) => l || '&nbsp;').join('<br>'),
+      attachment: [{
+        name: 'hotel-reservation.pdf',
+        content: file.buffer.toString('base64'),
+      }],
+    });
+    if (!ok?.ok) throw new AppError('Could not send reservation email', 502);
 
     return HotelBooking.findOneAndUpdate(
       { sessionId },
       {
         $set: {
-          cancellationStatus: cancelled ? 'CANCELLED' : 'FAILED',
-          cancelledAt: new Date(),
-          cancellationFee: { amount: result.cancellationFee, currency: result.currency },
+          orderStatus: 'DELIVERED',
+          handledBy: agentId ? new mongoose.Types.ObjectId(agentId) : reservation.handledBy,
+          documentUrl: url,
+          reservationFile: stored
+            ? { publicId: stored.publicId, format: stored.format || 'pdf', resourceType: stored.resourceType || 'image' }
+            : { publicId: null, format: null, resourceType: null },
+          documentSentAt: new Date(),
         },
-        $inc: { cancellationAttempts: 1 },
       },
       { new: true },
-    );
+    ).populate('handledBy');
   };
-
-  const listDueForCancellation = ({ before = new Date(), limit = 100 } = {}) =>
-    HotelBooking.find({
-      cancellationStatus: { $in: ['SCHEDULED', 'FAILED'] },
-      'supplier.bookingId': { $ne: null },
-      freeCancellationUntil: { $ne: null, $lte: before },
-    })
-      .sort({ freeCancellationUntil: 1 })
-      .limit(limit);
 
   const getAllReservations = async (query = {}) => {
     const page = Math.max(1, Number(query.page) || 1);
@@ -463,7 +284,6 @@ export function createHotelBookingService({
     const filter = {};
     if (query.orderStatus) filter.orderStatus = query.orderStatus;
     if (query.paymentStatus) filter.paymentStatus = query.paymentStatus;
-    if (query.cancellationStatus) filter.cancellationStatus = query.cancellationStatus;
     const hours = RECENCY_HOURS[query.createdAt];
     if (hours) filter.createdAt = { $gte: new Date(Date.now() - hours * 3_600_000) };
     const search = buildSearchFilter(typeof query.search === 'string' ? query.search.trim() : '');
@@ -498,15 +318,12 @@ export function createHotelBookingService({
   };
 
   return {
-    searchOffers,
+    searchHotels,
     suggestCities,
-    listCountries,
+    sendReservation,
     createReservationRequest,
     createStripePaymentUrl,
     handleStripeSuccess,
-    bookWithSupplier,
-    cancelReservation,
-    listDueForCancellation,
     getAllReservations,
     getReservationBySessionId,
     getLatestPaidReservation,

@@ -39,21 +39,20 @@ export default function AllForms({ forms = ['ticket', 'insurance'], defaultTab }
 
   return (
     <>
-      <div className="flex items-center gap-3 mb-3 py-2 overflow-x-auto">
+      <div className="flex items-center gap-2 mb-3 py-2 overflow-x-auto">
         {tabs.map(({ name, label, Icon }) => (
           <button
             key={name}
             type="button"
             onClick={() => setActiveForm(name)}
-            className={`flex items-center gap-2 py-2 px-3 text-sm font-normal rounded-xl border-2 border-gray-100 cursor-pointer duration-300 ${
+            aria-pressed={activeForm === name}
+            className={`flex items-center gap-1.5 py-1.5 px-3 text-[13px] rounded-lg cursor-pointer transition-colors duration-200 ${
               activeForm === name
-                ? 'bg-white border-primary-500'
-                : 'bg-white hover:bg-gray-50'
+                ? 'bg-accent-500 text-white font-semibold shadow-md'
+                : 'bg-white text-primary-800 font-medium hover:bg-primary-50'
             }`}
           >
-            <span>
-              <Icon size={18} />
-            </span>
+            <Icon size={15} className="shrink-0" />
             <span>{label}</span>
           </button>
         ))}

@@ -53,13 +53,6 @@ export const JOBS = {
     env: [],
     dryRunEnv: [],
   },
-  'hotel-cancellations': {
-    describe: 'Cancel refundable hotel reservations before their free window closes',
-    module: join(JOBS_DIR, 'hotel-cancellations', 'index.mjs'),
-    needsTarget: false,
-    env: ['MONGO_URI', 'LITEAPI_API_KEY', 'BREVO_API_KEY'],
-    dryRunEnv: ['MONGO_URI'],
-  },
   'pricing-sync': {
     describe: 'Sync limo pricing rules from the Google Sheet',
     module: join(JOBS_DIR, 'pricing-sync', 'index.mjs'),

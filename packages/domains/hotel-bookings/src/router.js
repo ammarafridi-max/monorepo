@@ -1,15 +1,17 @@
 import { Router } from 'express';
+import multer from 'multer';
+
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 export function createHotelBookingRouter({ controller, auth }) {
   const router = Router();
   const { protect, restrictTo } = auth;
 
-  router.post('/search', controller.searchOffers);
+  router.post('/search', controller.searchHotels);
   router.post('/', controller.createReservationRequest);
   router.post('/checkout', controller.createStripePaymentUrl);
   router.get('/pricing', controller.getPricingPublic);
   router.get('/cities', controller.suggestCities);
-  router.get('/countries', controller.listCountries);
 
   // Must stay above the public /:sessionId route or Express matches these literal paths as a sessionId.
   router.get('/latest-paid', protect, restrictTo('admin', 'agent'), controller.getLatestPaidReservation);
@@ -19,8 +21,7 @@ export function createHotelBookingRouter({ controller, auth }) {
 
   router.get('/', protect, restrictTo('admin', 'agent'), controller.getAllReservations);
   router.patch('/:sessionId/order-status', protect, restrictTo('admin', 'agent'), controller.updateOrderStatus);
-  router.post('/:sessionId/retry-booking', protect, restrictTo('admin'), controller.retryBooking);
-  router.post('/:sessionId/cancel', protect, restrictTo('admin', 'agent'), controller.cancelReservation);
+  router.post('/:sessionId/send-reservation', protect, restrictTo('admin', 'agent'), upload.single('file'), controller.sendReservation);
   router.delete('/:sessionId', protect, restrictTo('admin'), controller.deleteReservation);
 
   return router;
