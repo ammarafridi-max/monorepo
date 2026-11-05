@@ -10,7 +10,6 @@ import Contact from '@travel-suite/frontend-shared/components/sections/v1/Contac
 import BlogPosts from '@travel-suite/frontend-shared/components/sections/v1/BlogPosts';
 import PricingTiers from '@/components/lp/PricingTiers';
 import BookCta from '@/components/lp/BookCta';
-import StickyBookingBar from '@/components/lp/StickyBookingBar';
 import { SITE_URL } from '@/lib/schema';
 import { Check, Clock, DollarSign } from 'lucide-react';
 import {
@@ -300,7 +299,6 @@ export default function FlightReservationLandingPage() {
         subtitle={pageData.sections.blogs.subtitle}
       />
       <Contact email={EMAIL} replyTime="within 10 to 15 minutes, 24/7" />
-      <StickyBookingBar label="Book now" product={keyword} />
     </>
   );
 }

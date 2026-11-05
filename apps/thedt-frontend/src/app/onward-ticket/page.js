@@ -25,7 +25,6 @@ import AllForms from '@travel-suite/frontend-shared/components/forms/v1/AllForms
 import Process from '@travel-suite/frontend-shared/components/sections/v1/Process';
 import PricingTiers from '@/components/PricingTiers';
 import BookCta from '@/components/BookCta';
-import StickyBookingBar from '@travel-suite/frontend-shared/components/ui/v1/StickyBookingBar';
 import { processSteps } from '@/data/processSteps';
 import { testimonials, formatTestimonialsArray } from '@/data/testimonials';
 import About from '@travel-suite/frontend-shared/components/sections/v1/About';
@@ -252,7 +251,6 @@ export default function Page() {
         subtitle={pageData.sections.blogs.subtitle}
       />
       <Contact email={EMAIL} replyTime="within 10 to 15 minutes, 24/7" />
-      <StickyBookingBar label="Book now" />
     </>
   );
 }

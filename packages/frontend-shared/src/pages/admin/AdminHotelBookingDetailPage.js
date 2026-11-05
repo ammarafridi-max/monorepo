@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft, Loader2, AlertCircle, Trash2, BedDouble, Mail, Phone,
-  CreditCard, Calendar, Users, Hash, Send,
+  CreditCard, Calendar, Users, Hash, Send, MessageSquare,
 } from 'lucide-react';
 import { useHotelBooking } from '../../hooks/hotel-bookings/useHotelBooking';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
