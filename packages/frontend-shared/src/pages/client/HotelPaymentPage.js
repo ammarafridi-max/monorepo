@@ -43,7 +43,7 @@ function ConfirmingState() {
   );
 }
 
-function ErrorState({ supportEmail, sessionId, pending = false }) {
+function ErrorState({ supportEmail, sessionId, pending = false, unreachable = false }) {
   return (
     <div className="max-w-lg mx-auto px-6 py-24 flex flex-col items-center text-center gap-5">
       <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center">
@@ -51,12 +51,14 @@ function ErrorState({ supportEmail, sessionId, pending = false }) {
       </div>
       <div>
         <p className="text-lg font-bold text-gray-900">
-          {pending ? 'Still waiting for Stripe' : 'Payment not found'}
+          {unreachable ? 'We cannot load your booking right now' : pending ? 'Still waiting for Stripe' : 'Payment not found'}
         </p>
         <p className="text-sm text-gray-400 mt-1 max-w-sm">
-          {pending
-            ? "We have not received Stripe's confirmation yet. If your card was charged, your order is safe: reply to the Stripe receipt or email us and quote the reference below."
-            : "We couldn't find a successful payment linked to this booking. If you were charged, please contact our support team with your transaction details."}
+          {unreachable
+            ? 'Your payment is safe and your order is recorded. We just could not reach our servers to show it. Refresh in a moment, or email us with the reference below.'
+            : pending
+              ? "We have not received Stripe's confirmation yet. If your card was charged, your order is safe: reply to the Stripe receipt or email us and quote the reference below."
+              : "We couldn't find a successful payment linked to this booking. If you were charged, please contact our support team with your transaction details."}
         </p>
         {sessionId && (
           <p className="text-xs text-gray-400 mt-3 break-all">Reference: {sessionId}</p>
@@ -96,7 +98,7 @@ function PaymentContent({ onPurchaseEvent, supportEmail }) {
     return () => clearTimeout(t);
   }, []);
 
-  const { reservation, isLoadingReservation, isErrorReservation } = useHotelBooking(sessionId, {
+  const { reservation, isLoadingReservation, isErrorReservation, reservationError } = useHotelBooking(sessionId, {
     refetchInterval: (query) =>
       !pollTimedOut && query.state.data?.paymentStatus === 'UNPAID' ? 2000 : false,
   });
@@ -124,7 +126,8 @@ function PaymentContent({ onPurchaseEvent, supportEmail }) {
   if (isLoadingReservation) return <LoadingState />;
 
   if (isErrorReservation || !sessionId || !reservation) {
-    return <ErrorState supportEmail={supportEmail} sessionId={sessionId} />;
+    const missing = !sessionId || reservationError?.status === 404;
+    return <ErrorState supportEmail={supportEmail} sessionId={sessionId} unreachable={!missing} />;
   }
 
   if (reservation.paymentStatus === 'UNPAID') {

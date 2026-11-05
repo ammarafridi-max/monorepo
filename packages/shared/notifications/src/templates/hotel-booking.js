@@ -1,4 +1,4 @@
-import { formatToDDMonthYYYY } from '../helpers.js';
+import { formatToDDMMMYYYYMixed } from '../helpers.js';
 
 function row(label, value, i) {
   const border = i > 0 ? 'border-top:1px solid #e2e8f0;' : '';
@@ -68,8 +68,8 @@ export function renderHotelBookingPaidTemplate({
       ${row('Google rating', hotel?.rating, 6)}
       ${row('City', hotel?.city ?? destination?.cityName, 7)}
       ${row('Country', hotel?.country ?? destination?.countryCode, 8)}
-      ${row('Check-in', formatToDDMonthYYYY(checkIn), 9)}
-      ${row('Check-out', formatToDDMonthYYYY(checkOut), 10)}
+      ${row('Check-in', formatToDDMMMYYYYMixed(checkIn), 9)}
+      ${row('Check-out', formatToDDMMMYYYYMixed(checkOut), 10)}
       ${row('Nights', nights, 11)}
       ${row('Rooms and guests', roomsLine, 12)}
       ${row('Room listed at', listed, 13)}
