@@ -1,8 +1,9 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { useAdminListParams } from '../../hooks/admin/useAdminListParams';
 import {
   ClipboardList,
   ChevronLeft,
@@ -10,7 +11,6 @@ import {
   Loader2,
   ArrowUpRight,
   Search,
-  X,
   AlertTriangle,
   Bell,
   BellOff,
@@ -21,6 +21,10 @@ import { useCreateApplication, useToggleReminders } from '../../hooks/visa-appli
 import AdminSearchInput from '../../components/admin/AdminSearchInput';
 import FilterMenu from '../../components/admin/FilterMenu';
 import AdminFab from '../../components/admin/AdminFab';
+import { Sheet } from '../../components/admin/ModalShell';
+import { Pagination } from '../../components/admin/Pagination';
+import { AdminSuspense } from '../../components/admin/AdminSuspense';
+import { inputCls } from '../../components/admin/formClasses';
 
 const STATUS_CFG = {
   DRAFT: { dot: 'bg-gray-400', cls: 'bg-gray-100 text-gray-600 border-gray-200' },
@@ -66,7 +70,6 @@ function CreateModal({ onClose }) {
   const { mutate, isPending } = useCreateApplication();
   const [form, setForm] = useState({ email: '', destinationCountry: 'Schengen', packageName: '', applicantCount: 1 });
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
-  const inputCls = 'w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500';
 
   function submit(e) {
     e.preventDefault();
@@ -77,13 +80,15 @@ function CreateModal({ onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40" onClick={onClose}>
-      <form onClick={(e) => e.stopPropagation()} onSubmit={submit}
-        className="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-5 space-y-4 max-h-[85vh] overflow-y-auto">
-        <div className="flex items-center justify-between">
-          <h3 className="text-base font-bold text-gray-900">New application</h3>
-          <button type="button" onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition"><X size={18} /></button>
-        </div>
+    <Sheet
+      as="form"
+      onSubmit={submit}
+      size="md"
+      title="New application"
+      titleClass="text-base font-bold text-gray-900"
+      maxHeight="max-h-[85vh]"
+      onClose={onClose}
+    >
         <div className="space-y-1.5">
           <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Customer email</label>
           <input type="email" required value={form.email} onChange={set('email')} placeholder="customer@email.com" className={inputCls} />
@@ -106,8 +111,7 @@ function CreateModal({ onClose }) {
           className="w-full inline-flex items-center justify-center gap-2 py-2.5 text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 rounded-xl transition disabled:opacity-60">
           {isPending ? <Loader2 size={14} className="animate-spin" /> : 'Create & email customer'}
         </button>
-      </form>
-    </div>
+    </Sheet>
   );
 }
 
@@ -139,45 +143,25 @@ function ReminderToggle({ app }) {
 }
 
 function ApplicationsContent() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  const page = Number(searchParams.get('page') || 1);
-  const urlSearch = searchParams.get('search') ?? '';
-  const urlQueue = searchParams.get('queue') || 'all';
+  const {
+    params,
+    page,
+    search: localSearch,
+    setSearch: setLocalSearch,
+    setParam,
+    goToPage,
+  } = useAdminListParams({ defaults: { search: '', queue: 'all' }, clearValues: ['all'] });
+  const urlQueue = params.queue;
 
   const { applications, summary, pagination, isLoading } = useAdminApplications({
-    page, search: urlSearch || undefined, queue: urlQueue,
+    page, search: params.search || undefined, queue: urlQueue,
   });
   const totalPages = pagination?.totalPages ?? 1;
   const total = pagination?.total ?? 0;
 
-  const [localSearch, setLocalSearch] = useState(urlSearch);
   const [creating, setCreating] = useState(false);
-  useEffect(() => setLocalSearch(urlSearch), [urlSearch]);
 
-  function pushParams(p) { p.delete('page'); router.push(`${pathname}?${p.toString()}`); }
-  function setQueue(key) {
-    const p = new URLSearchParams(searchParams.toString());
-    if (key && key !== 'all') p.set('queue', key); else p.delete('queue');
-    pushParams(p);
-  }
-  useEffect(() => {
-    if (localSearch === urlSearch) return;
-    const t = setTimeout(() => {
-      const p = new URLSearchParams(searchParams.toString());
-      if (localSearch) p.set('search', localSearch); else p.delete('search');
-      pushParams(p);
-    }, 300);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [localSearch, urlSearch]);
-  function goToPage(p) {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('page', String(p));
-    router.push(`${pathname}?${params.toString()}`);
-  }
+  function setQueue(key) { setParam('queue', key); }
 
   function summaryCard(label, value, sub, accent = 'text-gray-900') {
     return (
@@ -282,15 +266,7 @@ function ApplicationsContent() {
               </table>
             </div>
 
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-                <p className="text-sm text-gray-400">Page {page} of {totalPages} · {total} total</p>
-                <div className="flex items-center gap-2">
-                  <button disabled={page === 1} onClick={() => goToPage(page - 1)} className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-primary-300 hover:text-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition"><ChevronLeft size={14} /></button>
-                  <button disabled={page === totalPages} onClick={() => goToPage(page + 1)} className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-primary-300 hover:text-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition"><ChevronRight size={14} /></button>
-                </div>
-              </div>
-            )}
+            <Pagination page={page} totalPages={totalPages} total={total} onPageChange={goToPage} />
           </>
         )}
       </div>
@@ -302,8 +278,8 @@ function ApplicationsContent() {
 
 export default function AdminApplicationsPage() {
   return (
-    <Suspense fallback={<div className="flex items-center justify-center min-h-[60vh]"><Loader2 size={24} className="animate-spin text-gray-300" /></div>}>
+    <AdminSuspense>
       <ApplicationsContent />
-    </Suspense>
+    </AdminSuspense>
   );
 }

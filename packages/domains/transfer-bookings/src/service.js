@@ -6,7 +6,7 @@ function generateBookingRef() {
   return String(Math.floor(100000 + Math.random() * 900000));
 }
 
-export function createBookingService({ Booking, stripe }) {
+export function createTransferBookingService({ Booking, stripe }) {
   async function listBookings({ page = 1, limit = 20, status, channel } = {}) {
     const filter = { ...(status ? { status } : {}), ...attributionChannelFilter(channel) };
     const skip = (page - 1) * limit;

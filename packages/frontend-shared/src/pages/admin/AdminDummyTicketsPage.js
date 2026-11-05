@@ -18,6 +18,12 @@ import AdminSearchInput from '../../components/admin/AdminSearchInput';
 import FilterMenu from '../../components/admin/FilterMenu';
 import SourceBadge from '../../components/admin/SourceBadge';
 import { CHANNEL_OPTIONS } from '../../utils/attribution';
+import { useAdminListParams } from '../../hooks/admin/useAdminListParams';
+import { Sheet } from '../../components/admin/ModalShell';
+import { PaymentBadge } from '../../components/admin/paymentStatus';
+import { Pagination } from '../../components/admin/Pagination';
+import { AdminSuspense } from '../../components/admin/AdminSuspense';
+import { selectCls } from '../../components/admin/formClasses';
 
 const PAYMENT_TABS = [
   { value: '',       label: 'All'      },
@@ -44,29 +50,12 @@ const TIME_OPTIONS = [
   { value: '90_days',  label: 'Last 90 days'  },
 ];
 
-const PAYMENT_CFG = {
-  PAID:               { dot: 'bg-green-500',  cls: 'bg-green-50  text-green-700  border-green-200'  },
-  UNPAID:             { dot: 'bg-amber-400',  cls: 'bg-amber-50  text-amber-700  border-amber-200'  },
-  REFUNDED:           { dot: 'bg-gray-400',   cls: 'bg-gray-100  text-gray-600   border-gray-200'   },
-  PARTIALLY_REFUNDED: { dot: 'bg-orange-400', cls: 'bg-orange-50 text-orange-700 border-orange-200' },
-};
-
 const ORDER_CFG = {
   PENDING:   { dot: 'bg-amber-400', cls: 'bg-amber-50  text-amber-700  border-amber-200'  },
   PROGRESS:  { dot: 'bg-blue-400',  cls: 'bg-blue-50   text-blue-700   border-blue-200'   },
   DELIVERED: { dot: 'bg-green-500', cls: 'bg-green-50  text-green-700  border-green-200'  },
   REFUNDED:  { dot: 'bg-gray-400',  cls: 'bg-gray-100   text-gray-600   border-gray-200'   },
 };
-
-function PaymentBadge({ status }) {
-  const cfg = PAYMENT_CFG[status] ?? { dot: 'bg-gray-400', cls: 'bg-gray-100 text-gray-500 border-gray-200' };
-  return (
-    <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-full border ${cfg.cls}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
-      {status ?? '—'}
-    </span>
-  );
-}
 
 function OrderBadge({ status }) {
   const cfg = ORDER_CFG[status] ?? { dot: 'bg-gray-400', cls: 'bg-gray-100 text-gray-500 border-gray-200' };
@@ -90,30 +79,31 @@ function DummyTicketsContent({ basePath, heading, itemNoun }) {
   const { dummyTickets = [], pagination, isLoadingDummyTickets, isErrorDummyTickets } = useDummyTickets();
   const { deleteDummyTicket, isDeleting }                        = useDeleteDummyTicket();
 
-  const page           = Number(searchParams.get('page')          || 1);
+  const {
+    params,
+    page,
+    search: localSearch,
+    setSearch: setLocalSearch,
+    setParam,
+    goToPage,
+  } = useAdminListParams({
+    defaults: {
+      search: '',
+      paymentStatus: 'PAID',
+      orderStatus: '',
+      deliveryDate: '',
+      createdAt: 'all_time',
+      channel: '',
+    },
+  });
 
-  const urlPayment      = searchParams.get('paymentStatus')        || 'PAID';
-  const urlOrder        = searchParams.get('orderStatus')          || '';
-  const urlSearch       = searchParams.get('search')               ?? '';
-  const urlDeliveryDate = searchParams.get('deliveryDate')         ?? '';
-  const urlCreatedAt    = searchParams.get('createdAt')            ?? 'all_time';
-  const urlChannel      = searchParams.get('channel')              ?? '';
-
-  const [localSearch,       setLocalSearch]       = useState(urlSearch);
-  const [localPayment,      setLocalPayment]      = useState(urlPayment);
-  const [localOrder,        setLocalOrder]        = useState(urlOrder);
-  const [localCreatedAt,    setLocalCreatedAt]    = useState(urlCreatedAt);
-  const [localDeliveryDate, setLocalDeliveryDate] = useState(urlDeliveryDate);
-  const [localChannel,      setLocalChannel]      = useState(urlChannel);
+  const localPayment      = params.paymentStatus;
+  const localOrder        = params.orderStatus;
+  const localCreatedAt    = params.createdAt;
+  const localDeliveryDate = params.deliveryDate;
+  const localChannel      = params.channel;
 
   const [filtersOpen, setFiltersOpen] = useState(false);
-
-  useEffect(() => { setLocalSearch(urlSearch);             }, [urlSearch]);
-  useEffect(() => { setLocalPayment(urlPayment);           }, [urlPayment]);
-  useEffect(() => { setLocalOrder(urlOrder);               }, [urlOrder]);
-  useEffect(() => { setLocalCreatedAt(urlCreatedAt);       }, [urlCreatedAt]);
-  useEffect(() => { setLocalDeliveryDate(urlDeliveryDate); }, [urlDeliveryDate]);
-  useEffect(() => { setLocalChannel(urlChannel);           }, [urlChannel]);
 
   const hasSearch       = localSearch.trim().length > 0;
   const agentTimeLocked = isAgent && !hasSearch;
@@ -132,35 +122,6 @@ function DummyTicketsContent({ basePath, heading, itemNoun }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function pushParams(nextParams) {
-    const p = new URLSearchParams(nextParams);
-    p.delete('page');
-    router.push(`${pathname}?${p.toString()}`);
-  }
-
-  function setParam(key, value) {
-    const p = new URLSearchParams(searchParams.toString());
-    if (value) p.set(key, value); else p.delete(key);
-    pushParams(p);
-  }
-
-  useEffect(() => {
-    if (localSearch === urlSearch) return;
-    const t = setTimeout(() => {
-      const p = new URLSearchParams(searchParams.toString());
-      if (localSearch) p.set('search', localSearch); else p.delete('search');
-      pushParams(p);
-    }, 300);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [localSearch, urlSearch]);
-
-  function goToPage(p) {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('page', String(p));
-    router.push(`${pathname}?${params.toString()}`);
-  }
-
   const activeFilterCount = [
     localPayment !== 'PAID',
     localOrder !== '',
@@ -169,12 +130,11 @@ function DummyTicketsContent({ basePath, heading, itemNoun }) {
     localChannel !== '',
   ].filter(Boolean).length;
 
-  const selectCls = 'px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white';
 
   const paymentControl = (className = '') => (
     <select
       value={localPayment}
-      onChange={(e) => { setLocalPayment(e.target.value); setParam('paymentStatus', e.target.value); }}
+      onChange={(e) => setParam('paymentStatus', e.target.value)}
       className={`${selectCls} ${className}`}
     >
       <option value="all">All payments</option>
@@ -187,7 +147,7 @@ function DummyTicketsContent({ basePath, heading, itemNoun }) {
   const orderControl = (className = '') => (
     <select
       value={localOrder}
-      onChange={(e) => { setLocalOrder(e.target.value); setParam('orderStatus', e.target.value); }}
+      onChange={(e) => setParam('orderStatus', e.target.value)}
       className={`${selectCls} ${className}`}
     >
       <option value="">All orders</option>
@@ -200,7 +160,7 @@ function DummyTicketsContent({ basePath, heading, itemNoun }) {
   const sourceControl = (className = '') => (
     <select
       value={localChannel}
-      onChange={(e) => { setLocalChannel(e.target.value); setParam('channel', e.target.value); }}
+      onChange={(e) => setParam('channel', e.target.value)}
       className={`${selectCls} ${className}`}
     >
       <option value="">All sources</option>
@@ -221,7 +181,7 @@ function DummyTicketsContent({ basePath, heading, itemNoun }) {
     ) : (
       <select
         value={createdAt}
-        onChange={(e) => { setLocalCreatedAt(e.target.value); setParam('createdAt', e.target.value); }}
+        onChange={(e) => setParam('createdAt', e.target.value)}
         className={`${selectCls} ${className}`}
       >
         <option value="all_time">All time</option>
@@ -237,12 +197,12 @@ function DummyTicketsContent({ basePath, heading, itemNoun }) {
       <input
         type="date"
         value={localDeliveryDate}
-        onChange={(e) => { setLocalDeliveryDate(e.target.value); setParam('deliveryDate', e.target.value); }}
+        onChange={(e) => setParam('deliveryDate', e.target.value)}
         className={`${selectCls} w-full`}
       />
       {localDeliveryDate && (
         <button
-          onClick={() => { setLocalDeliveryDate(''); setParam('deliveryDate', ''); }}
+          onClick={() => setParam('deliveryDate', '')}
           className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
           title="Clear delivery date filter"
         >
@@ -291,7 +251,7 @@ function DummyTicketsContent({ basePath, heading, itemNoun }) {
           <FilterMenu
             variant="text"
             value={localPayment}
-            onChange={(value) => { setLocalPayment(value); setParam('paymentStatus', value); }}
+            onChange={(value) => setParam('paymentStatus', value)}
             label="Filter by payment"
             options={[
               { value: 'all', label: 'All payments' },
@@ -301,7 +261,7 @@ function DummyTicketsContent({ basePath, heading, itemNoun }) {
           <FilterMenu
             variant="text"
             value={localOrder}
-            onChange={(value) => { setLocalOrder(value); setParam('orderStatus', value); }}
+            onChange={(value) => setParam('orderStatus', value)}
             label="Filter by order status"
             options={[
               { value: '', label: 'All orders' },
@@ -311,7 +271,7 @@ function DummyTicketsContent({ basePath, heading, itemNoun }) {
           <FilterMenu
             variant="text"
             value={localChannel}
-            onChange={(value) => { setLocalChannel(value); setParam('channel', value); }}
+            onChange={(value) => setParam('channel', value)}
             label="Filter by source"
             options={[{ value: '', label: 'All sources' }, ...CHANNEL_OPTIONS]}
           />
@@ -326,7 +286,7 @@ function DummyTicketsContent({ basePath, heading, itemNoun }) {
             <FilterMenu
               variant="text"
               value={createdAt}
-              onChange={(value) => { setLocalCreatedAt(value); setParam('createdAt', value); }}
+              onChange={(value) => setParam('createdAt', value)}
               label="Filter by time"
               options={TIME_OPTIONS}
             />
@@ -336,13 +296,13 @@ function DummyTicketsContent({ basePath, heading, itemNoun }) {
             <input
               type="date"
               value={localDeliveryDate}
-              onChange={(e) => { setLocalDeliveryDate(e.target.value); setParam('deliveryDate', e.target.value); }}
+              onChange={(e) => setParam('deliveryDate', e.target.value)}
               aria-label="Delivery date"
               className="px-0 py-1 text-sm bg-transparent text-gray-900 border-0 rounded-none focus:outline-none"
             />
             {localDeliveryDate && (
               <button
-                onClick={() => { setLocalDeliveryDate(''); setParam('deliveryDate', ''); }}
+                onClick={() => setParam('deliveryDate', '')}
                 className="text-gray-500 hover:text-gray-900 transition"
                 title="Clear delivery date filter"
               >
@@ -354,23 +314,14 @@ function DummyTicketsContent({ basePath, heading, itemNoun }) {
       </div>
 
       {filtersOpen && (
-        <div
-          className="sm:hidden fixed inset-0 z-50 flex items-end justify-center bg-black/40"
-          onClick={() => setFiltersOpen(false)}
+        <Sheet
+          mobileOnly
+          title="Filters"
+          titleClass="text-base font-bold text-gray-900"
+          spacing="space-y-5"
+          maxHeight="max-h-[85vh]"
+          onClose={() => setFiltersOpen(false)}
         >
-          <div
-            className="bg-white w-full rounded-t-2xl p-5 space-y-5 max-h-[85vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-gray-900">Filters</h3>
-              <button
-                onClick={() => setFiltersOpen(false)}
-                className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition"
-              >
-                <X size={18} />
-              </button>
-            </div>
 
             <div className="space-y-1.5">
               <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Payment</label>
@@ -403,8 +354,7 @@ function DummyTicketsContent({ basePath, heading, itemNoun }) {
             >
               Done
             </button>
-          </div>
-        </div>
+        </Sheet>
       )}
 
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
@@ -536,19 +486,7 @@ function DummyTicketsContent({ basePath, heading, itemNoun }) {
               </table>
             </div>
 
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-                <p className="text-sm text-gray-400">Page {page} of {totalPages} · {total} total</p>
-                <div className="flex items-center gap-2">
-                  <button disabled={page === 1} onClick={() => goToPage(page - 1)} className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-primary-300 hover:text-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition">
-                    <ChevronLeft size={14} />
-                  </button>
-                  <button disabled={page === totalPages} onClick={() => goToPage(page + 1)} className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-primary-300 hover:text-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition">
-                    <ChevronRight size={14} />
-                  </button>
-                </div>
-              </div>
-            )}
+            <Pagination page={page} totalPages={totalPages} total={total} onPageChange={goToPage} />
           </>
         )}
       </div>
@@ -558,12 +496,8 @@ function DummyTicketsContent({ basePath, heading, itemNoun }) {
 
 export default function AdminDummyTicketsPage({ basePath = '/admin/dummy-tickets', heading = 'Dummy Tickets', itemNoun = 'ticket' }) {
   return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 size={24} className="animate-spin text-gray-300" />
-      </div>
-    }>
+    <AdminSuspense>
       <DummyTicketsContent basePath={basePath} heading={heading} itemNoun={itemNoun} />
-    </Suspense>
+    </AdminSuspense>
   );
 }

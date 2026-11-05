@@ -4,35 +4,25 @@ import { Suspense, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
-  ArrowLeft, Loader2, AlertCircle, Pencil, Trash2, X,
+  ArrowLeft, Loader2, AlertCircle, Pencil, Trash2,
   Handshake, BarChart2, Ticket, ShieldCheck, Mail,
   ChevronLeft, ChevronRight, ExternalLink, Wallet,
 } from 'lucide-react';
+import { Modal } from '../../components/admin/ModalShell';
 import { useGetAffiliate } from '../../hooks/affiliates/useGetAffiliate';
 import { useGetAffiliateStats } from '../../hooks/affiliates/useGetAffiliateStats';
 import { useGetAffiliateTickets } from '../../hooks/affiliates/useGetAffiliateTickets';
 import { useGetAffiliateApplications } from '../../hooks/affiliates/useGetAffiliateApplications';
 import { useUpdateAffiliate } from '../../hooks/affiliates/useUpdateAffiliate';
 import { useDeleteAffiliate } from '../../hooks/affiliates/useDeleteAffiliate';
+import { fmtDate, fmtDatetime, fmtMoney as fmtAmount } from '../../components/admin/format';
+import { InfoRow as InfoRowBase, DetailCard, Toggle } from '../../components/admin/DetailCard';
+import { Pagination } from '../../components/admin/Pagination';
+import { AdminSuspense } from '../../components/admin/AdminSuspense';
+import { inputSoftCls as inputCls } from '../../components/admin/formClasses';
 
-function fmtDate(iso) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-}
-
-function fmtDatetime(iso) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleString('en-GB', {
-    day: '2-digit', month: 'short', year: 'numeric',
-    hour: '2-digit', minute: '2-digit',
-  });
-}
-
-function fmtAmount(val, currency) {
-  if (val == null) return '—';
-  const formatted = Number(val).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  return currency ? `${currency} ${formatted}` : formatted;
-}
+const Card = (props) => <DetailCard {...props} titleSize="text-[11px]" />;
+const InfoRow = (props) => <InfoRowBase {...props} size="text-xs" />;
 
 function statAmount(value) {
   if (value == null) return '—';
@@ -57,29 +47,6 @@ function leadPassenger(passengers) {
   return [p.title, p.firstName, p.lastName].filter(Boolean).join(' ') || '—';
 }
 
-function Card({ title, icon: Icon, children }) {
-  return (
-    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-      <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-gray-100">
-        {Icon && <Icon size={14} className="text-gray-400 shrink-0" />}
-        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">{title}</p>
-      </div>
-      <div className="p-5">{children}</div>
-    </div>
-  );
-}
-
-function InfoRow({ label, value, mono }) {
-  return (
-    <div className="flex items-start justify-between gap-4 py-2 border-b border-gray-50 last:border-0">
-      <span className="text-xs text-gray-400 shrink-0">{label}</span>
-      <span className={`text-xs font-semibold text-gray-800 text-right break-all ${mono ? 'font-mono' : ''}`}>
-        {value ?? '—'}
-      </span>
-    </div>
-  );
-}
-
 function StatPill({ label, value, sub }) {
   return (
     <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
@@ -90,24 +57,6 @@ function StatPill({ label, value, sub }) {
   );
 }
 
-function Toggle({ checked, onChange, disabled }) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      disabled={disabled}
-      onClick={onChange}
-      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none disabled:opacity-50 ${
-        checked ? 'bg-green-500' : 'bg-gray-200'
-      }`}
-    >
-      <span className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm ring-0 transition-transform duration-200 ${checked ? 'translate-x-4' : 'translate-x-0'}`} />
-    </button>
-  );
-}
-
-const inputCls = 'w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300 transition disabled:bg-gray-50 disabled:text-gray-400';
 
 function EditModal({ affiliate, onClose, onSave, saving }) {
   const [form, setForm] = useState({
@@ -121,18 +70,13 @@ function EditModal({ affiliate, onClose, onSave, saving }) {
   const canSave = form.name.trim() && form.commissionPercent !== '';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <div>
-            <p className="text-sm font-bold text-gray-900">Edit Affiliate</p>
-            <p className="text-[11px] text-gray-400 mt-0.5 font-mono">ID: {affiliate.affiliateId}</p>
-          </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition">
-            <X size={15} />
-          </button>
-        </div>
+    <Modal
+      size="md"
+      title="Edit Affiliate"
+      subtitle={`ID: ${affiliate.affiliateId}`}
+      subtitleClass="text-[11px] text-gray-400 mt-0.5 font-mono"
+      onClose={onClose}
+    >
 
         <div className="px-6 py-5 space-y-4">
           <div>
@@ -171,8 +115,7 @@ function EditModal({ affiliate, onClose, onSave, saving }) {
             Save Changes
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }
 
@@ -214,7 +157,7 @@ function DeleteSection({ id }) {
   );
 }
 
-function Pagination({ page, totalPages, paramKey }) {
+function TablePagination({ page, totalPages, paramKey }) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -224,20 +167,14 @@ function Pagination({ page, totalPages, paramKey }) {
     router.push(`?${params.toString()}`);
   }
 
-  if (totalPages <= 1) return null;
-
   return (
-    <div className="flex items-center justify-between pt-4 border-t border-gray-100 mt-4">
-      <p className="text-xs text-gray-400">Page {page} of {totalPages}</p>
-      <div className="flex gap-2">
-        <button disabled={page === 1} onClick={() => goToPage(page - 1)} className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-primary-300 hover:text-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition">
-          <ChevronLeft size={14} />
-        </button>
-        <button disabled={page === totalPages} onClick={() => goToPage(page + 1)} className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-primary-300 hover:text-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition">
-          <ChevronRight size={14} />
-        </button>
-      </div>
-    </div>
+    <Pagination
+      page={page}
+      totalPages={totalPages}
+      onPageChange={goToPage}
+      labelSize="text-xs"
+      wrapperClass="flex items-center justify-between pt-4 border-t border-gray-100 mt-4"
+    />
   );
 }
 
@@ -301,7 +238,7 @@ function TicketsTable({ affiliateId, commissionPercent }) {
           </tbody>
         </table>
       </div>
-      <Pagination page={page} totalPages={pagination?.totalPages ?? 1} paramKey="ticketPage" />
+      <TablePagination page={page} totalPages={pagination?.totalPages ?? 1} paramKey="ticketPage" />
     </>
   );
 }
@@ -367,7 +304,7 @@ function ApplicationsTable({ affiliateId, commissionPercent }) {
           </tbody>
         </table>
       </div>
-      <Pagination page={page} totalPages={pagination?.totalPages ?? 1} paramKey="appPage" />
+      <TablePagination page={page} totalPages={pagination?.totalPages ?? 1} paramKey="appPage" />
     </>
   );
 }
@@ -628,12 +565,8 @@ function AffiliateDetailContent() {
 
 export default function AdminAffiliateDetailPage() {
   return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 size={24} className="animate-spin text-gray-300" />
-      </div>
-    }>
+    <AdminSuspense>
       <AffiliateDetailContent />
-    </Suspense>
+    </AdminSuspense>
   );
 }

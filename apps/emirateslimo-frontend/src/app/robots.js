@@ -1,12 +1,8 @@
-import { SITE_URL } from '@/lib/schema';
+import { getBrand } from '@travel-suite/config';
+import { buildRobots } from '@travel-suite/frontend-shared/seo/robots';
 
 export default function robots() {
-  return {
-    rules: {
-      userAgent: '*',
-      allow: '/',
-      disallow: ['/admin', '/book', '/payment'],
-    },
-    sitemap: `${SITE_URL}/sitemap.xml`,
-  };
+  return buildRobots(getBrand('emirateslimo'), {
+    disallow: ['/admin', '/book', '/payment'],
+  });
 }

@@ -7,3 +7,4 @@ export * from './attribution.js';
 export * from './env.js';
 export * from './currency.js';
 export * from './contact.js';
+export * from './regex.js';

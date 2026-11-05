@@ -15,6 +15,8 @@ import { useDeleteVisaLead }         from '../../hooks/visa-leads/useDeleteVisaL
 import { useGetAdminUsers }          from '../../hooks/admin-users/useGetAdminUsers.js';
 import { useAdminAuth }              from '../../contexts/AdminAuthContext.js';
 import AttributionCard from '../../components/admin/AttributionCard';
+import { timeAgo as timeAgoBase, fmtDatetimeLong as fmtFull } from '../../components/admin/format';
+import { PlainCard as Card, PlainCardHeader as CardHeader, PlainCardBody as CardBody, StackedInfoRow as InfoRow } from '../../components/admin/DetailCard';
 
 const STATUSES = ['new', 'contacted', 'qualified', 'converted', 'lost'];
 
@@ -36,23 +38,7 @@ function StatusBadge({ status }) {
   );
 }
 
-function fmtFull(iso) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleString('en-GB', {
-    day: 'numeric', month: 'long', year: 'numeric',
-    hour: '2-digit', minute: '2-digit',
-    hour12: true,
-  });
-}
-
-function timeAgo(iso) {
-  if (!iso) return '';
-  const secs = Math.floor((Date.now() - new Date(iso)) / 1000);
-  if (secs < 60)    return 'just now';
-  if (secs < 3600)  { const m = Math.floor(secs / 60);   return `${m}m ago`; }
-  if (secs < 86400) { const h = Math.floor(secs / 3600); return `${h}h ago`; }
-  return fmtFull(iso);
-}
+const timeAgo = (iso) => timeAgoBase(iso, { empty: '', maxDays: 0, beyond: fmtFull });
 
 function describeActivity(entry) {
   const who = entry.performedBy?.name || 'System';
@@ -70,41 +56,6 @@ function describeActivity(entry) {
     default:
       return `${who}: ${entry.action}`;
   }
-}
-
-function Card({ children, className = '' }) {
-  return (
-    <div className={`bg-white border border-gray-200 rounded-2xl overflow-hidden ${className}`}>
-      {children}
-    </div>
-  );
-}
-
-function CardHeader({ children }) {
-  return (
-    <div className="px-5 py-4 border-b border-gray-100">
-      <h3 className="text-sm font-bold text-gray-700">{children}</h3>
-    </div>
-  );
-}
-
-function CardBody({ children, className = '' }) {
-  return (
-    <div className={`px-5 py-4 ${className}`}>{children}</div>
-  );
-}
-
-function InfoRow({ label, value }) {
-  return (
-    <div className="flex items-start gap-3 py-2.5 border-b border-gray-50 last:border-0">
-      <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide w-32 shrink-0 mt-0.5">
-        {label}
-      </span>
-      <span className="text-sm text-gray-800 leading-5 flex-1 min-w-0 break-words">
-        {value ?? '—'}
-      </span>
-    </div>
-  );
 }
 
 const SOURCE_LABELS = {

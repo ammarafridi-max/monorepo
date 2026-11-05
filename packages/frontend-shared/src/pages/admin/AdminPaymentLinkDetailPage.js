@@ -29,6 +29,7 @@ import {
   useSetPaymentLinkActive,
   useUpdatePaymentLink,
 } from '../../hooks/payments/usePaymentLinks';
+import { DetailCard as Card, InfoRow } from '../../components/admin/DetailCard';
 
 function formatMoney(amount, currency) {
   try {
@@ -51,38 +52,6 @@ function formatTimestamp(value) {
     hour: '2-digit',
     minute: '2-digit',
   }).format(new Date(value));
-}
-
-function Card({ title, icon: Icon, children, action }) {
-  return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
-      <div className="flex items-center justify-between gap-3 border-b border-gray-100 px-5 py-3.5">
-        <div className="flex items-center gap-2.5">
-          {Icon && <Icon size={14} className="shrink-0 text-gray-400" />}
-          <p className="text-xs font-bold uppercase tracking-wider text-gray-400">
-            {title}
-          </p>
-        </div>
-        {action}
-      </div>
-      <div className="p-5">{children}</div>
-    </div>
-  );
-}
-
-function InfoRow({ label, value, mono }) {
-  return (
-    <div className="flex items-start justify-between gap-4 border-b border-gray-50 py-2 last:border-0">
-      <span className="shrink-0 text-sm text-gray-400">{label}</span>
-      <span
-        className={`break-all text-right text-sm font-semibold text-gray-800 ${
-          mono ? 'font-mono' : ''
-        }`}
-      >
-        {value ?? '—'}
-      </span>
-    </div>
-  );
 }
 
 function StatusBadge({ status }) {

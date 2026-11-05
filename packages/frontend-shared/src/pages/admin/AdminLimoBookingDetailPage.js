@@ -20,6 +20,10 @@ import { useUpdateBooking } from '../../hooks/limo-bookings/useUpdateBooking';
 import { useDeleteBooking } from '../../hooks/limo-bookings/useDeleteBooking';
 import { useRefundBooking } from '../../hooks/limo-bookings/useRefundBooking';
 import AttributionCard from '../../components/admin/AttributionCard';
+import { fmtDate } from '../../components/admin/format';
+import { PlainCard as Card, PlainCardHeader as CardHeader, PlainCardBody as CardBody, StackedInfoRow as InfoRowBase } from '../../components/admin/DetailCard';
+
+const InfoRow = (props) => <InfoRowBase {...props} labelWidth="w-36" />;
 
 const STATUSES = [
   'pending',
@@ -29,61 +33,6 @@ const STATUSES = [
   'completed',
   'cancelled',
 ];
-
-function fmtFull(iso) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleString('en-GB', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-  });
-}
-
-function fmtDate(iso) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
-}
-
-function Card({ children, className = '' }) {
-  return (
-    <div className={`bg-white border border-gray-200 rounded-2xl overflow-hidden ${className}`}>
-      {children}
-    </div>
-  );
-}
-
-function CardHeader({ children }) {
-  return (
-    <div className="px-5 py-4 border-b border-gray-100">
-      <h3 className="text-sm font-bold text-gray-700">{children}</h3>
-    </div>
-  );
-}
-
-function CardBody({ children, className = '' }) {
-  return <div className={`px-5 py-4 ${className}`}>{children}</div>;
-}
-
-function InfoRow({ label, value, icon: Icon }) {
-  return (
-    <div className="flex items-start gap-3 py-2.5 border-b border-gray-50 last:border-0">
-      <span className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wide w-36 shrink-0 mt-0.5">
-        {Icon && <Icon size={13} />}
-        {label}
-      </span>
-      <span className="text-sm text-gray-800 leading-5 flex-1 min-w-0 break-words">
-        {value ?? '—'}
-      </span>
-    </div>
-  );
-}
 
 export default function AdminLimoBookingDetailPage() {
   const { id } = useParams();

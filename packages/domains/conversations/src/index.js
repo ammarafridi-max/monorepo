@@ -1,6 +1,6 @@
 import ConversationSchema from './schemas/conversation.schema.js';
 import MessageSchema from './schemas/message.schema.js';
-import SavedReplySchema from './schemas/savedReply.schema.js';
+import SavedReplySchema from './schemas/saved-reply.schema.js';
 import { createConversationService } from './service.js';
 import { createConversationController } from './controller.js';
 import { createConversationRouter } from './router.js';

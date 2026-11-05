@@ -26,25 +26,7 @@ import { useGetInsuranceDocuments } from '../../../hooks/insurance/useGetInsuran
 import { trackPurchaseEvent, trackCommissionEvent } from '../../../utils/analytics';
 import { pixelPurchase } from '../../../utils/pixel';
 import { calcDays } from '../../../utils/insuranceHelpers.js';
-
-function fmtDate(str) {
-  if (!str) return '—';
-  return new Date(str).toLocaleDateString('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
-}
-
-function fmtAmount(amountPaid) {
-  if (!amountPaid?.amount) return '—';
-  return `${amountPaid.currency ?? 'AED'} ${Number(
-    amountPaid.amount,
-  ).toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-}
+import { fmtDateLoose as fmtDate, fmtAmountPaidFixed as fmtAmount } from '../../admin/format';
 
 function CopyButton({ value }) {
   const [copied, setCopied] = useState(false);

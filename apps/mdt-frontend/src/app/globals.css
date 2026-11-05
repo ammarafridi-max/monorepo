@@ -40,8 +40,6 @@
   --color-accent-900: #4d180b;
   --color-accent-950: #3d0d00;
 
-  /* font-outfit, font-nunito and font-merriweather are legacy utility names
-     still used across frontend-shared; they all resolve to Commissioner here. */
   --font-sans:         var(--font-commissioner);
   --font-nunito:       var(--font-commissioner);
   --font-merriweather: var(--font-commissioner);
@@ -346,12 +344,6 @@ a {
     min-width: 140px;
     padding: 12px 14px;
   }
-
-  /* p {
-    font-size: 15px;
-    line-height: 1.7;
-    font-weight: 300;
-  } */
 }
 
 @utility py-section {

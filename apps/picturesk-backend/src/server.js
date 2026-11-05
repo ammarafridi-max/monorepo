@@ -148,6 +148,22 @@ function internalOnly(req, res, next) {
 const MODEL_REUSE_MAX_AGE_MS = 365 * 24 * 60 * 60 * 1000;
 const FREE_TIER_IDS = TIERS.filter(isFreeTier).map((t) => t.id);
 
+const isSet = (value) => value != null && value !== '';
+
+function firstFieldError(checks) {
+  for (const [ok, error, status = 400] of checks) {
+    if (!ok) return { status, error };
+  }
+  return null;
+}
+
+function rejectFieldErrors(res, checks) {
+  const failure = firstFieldError(checks);
+  if (!failure) return false;
+  res.status(failure.status).json({ error: failure.error });
+  return true;
+}
+
 const emailClient = BREVO_API_KEY
   ? createEmailClient({ apiKey: BREVO_API_KEY, sender: BREVO_SENDER })
   : null;
@@ -168,25 +184,25 @@ const deleteTrainedModel = process.env.REPLICATE_API_TOKEN
 const connection = createRedisConnection(REDIS_URL);
 const orderPipeline = new Queue(QUEUE_NAMES.ORDER_PIPELINE, { connection });
 
-// makes the enqueue idempotent: the same order can never be queued twice.
 function pipelineJobOpts(orderId, priority) {
   return {
     jobId: orderId,
     priority,
-    // idempotent (never retrains, never regenerates a started slot), so extra
     attempts: 5,
     backoff: { type: 'exponential', delay: 5000 },
     removeOnComplete: true,
   };
 }
 
+function deliverableImageUrls(order) {
+  if (order.status !== ORDER_STATES.DELIVERED) return [];
+  return order.deliveredImageUrls?.length ? order.deliveredImageUrls : (order.resultImageUrls ?? []);
+}
+
 function toPublicOrder(order) {
-  const isDelivered = order.status === ORDER_STATES.DELIVERED;
   const isGenerating = order.status === ORDER_STATES.GENERATING;
 
-  const resultImageUrls = isDelivered
-    ? (order.deliveredImageUrls?.length ? order.deliveredImageUrls : (order.resultImageUrls ?? []))
-    : [];
+  const resultImageUrls = deliverableImageUrls(order);
 
   const generatedCount = isGenerating ? (order.resultImageUrls?.length ?? 0) : 0;
   const totalCount = isGenerating ? (order.replicate?.generationIds?.length ?? 0) : 0;
@@ -337,7 +353,6 @@ app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), async (r
 
     const orderId = order._id.toString();
 
-    // b. Idempotent + atomic. Money figures come from STRIPE, never the client.
     try {
       await transitionOrder(orderId, ORDER_STATES.AWAITING_PAYMENT, ORDER_STATES.PAID, {
         amountPaidCents: session.amount_total,
@@ -392,9 +407,6 @@ app.get('/health', (req, res) => {
 
 app.use(globalLimiter);
 
-// The auth domain expects sendEmail({ email, name, subject, htmlContent }). The
-// Picturesk client is a factory with named senders, so adapt rather than
-// reshape a client the pipeline and worker also use.
 const sendAdminEmail = emailClient
   ? async ({ email, subject, htmlContent, textContent }) =>
       emailClient.sendRawEmail({ to: email, subject, html: htmlContent, text: textContent })
@@ -495,26 +507,23 @@ app.post('/checkout', checkoutLimiter, internalOnly, async (req, res) => {
       tier,
       product: productIn,
     } = req.body ?? {};
-    if (!email) {
-      return res.status(400).json({ error: 'email is required' });
-    }
-    if (!userId || !mongoose.isValidObjectId(userId)) {
-      return res.status(400).json({ error: 'userId is required' });
-    }
-    if (productIn != null && productIn !== '' && !isValidProduct(productIn)) {
-      return res.status(400).json({ error: 'product is not a known product' });
-    }
     const product = productOf(productIn);
-    if (!Array.isArray(selectedLooks) || selectedLooks.length === 0) {
-      return res.status(400).json({ error: 'selectedLooks must be a non-empty array' });
-    }
-    if (!Array.isArray(selectedAttire) || selectedAttire.length === 0) {
-      return res.status(400).json({ error: 'selectedAttire must be a non-empty array' });
-    }
-    const reusing = reuseFromOrderId != null && reuseFromOrderId !== '';
-    if (!reusing && (!Array.isArray(uploadedImageUrls) || uploadedImageUrls.length === 0)) {
-      return res.status(400).json({ error: 'uploadedImageUrls must be a non-empty array' });
-    }
+    const reusing = isSet(reuseFromOrderId);
+
+    const nonEmptyArray = (value) => Array.isArray(value) && value.length > 0;
+
+    if (
+      rejectFieldErrors(res, [
+        [Boolean(email), 'email is required'],
+        [Boolean(userId) && mongoose.isValidObjectId(userId), 'userId is required'],
+        [!isSet(productIn) || isValidProduct(productIn), 'product is not a known product'],
+        [nonEmptyArray(selectedLooks), 'selectedLooks must be a non-empty array'],
+        [nonEmptyArray(selectedAttire), 'selectedAttire must be a non-empty array'],
+        [reusing || nonEmptyArray(uploadedImageUrls), 'uploadedImageUrls must be a non-empty array'],
+      ])
+    )
+      return;
+
     let source = null;
     if (reusing) {
       if (!mongoose.isValidObjectId(reuseFromOrderId)) {
@@ -527,47 +536,37 @@ app.post('/checkout', checkoutLimiter, internalOnly, async (req, res) => {
         return res.status(400).json({ error: 'That order has no photos we can reuse' });
       }
     }
-    if (!selectedLooks.every((id) => isValidLook(id, product))) {
-      return res.status(400).json({ error: 'selectedLooks contains an unknown look id' });
-    }
-    if (!selectedAttire.every((id) => isValidAttire(id, product))) {
-      return res.status(400).json({ error: 'selectedAttire contains an unknown attire id' });
-    }
-    if (!isValidGender(gender)) {
-      return res.status(400).json({ error: 'gender is required and must be a known option' });
-    }
-    if (!isValidAgeRange(ageRange)) {
-      return res.status(400).json({ error: 'ageRange is required and must be a known option' });
-    }
-    if (race != null && race !== '' && !isValidRace(race)) {
-      return res.status(400).json({ error: 'race contains an unknown option' });
-    }
-    if (facialHair != null && facialHair !== '' && !isValidFacialHair(facialHair)) {
-      return res.status(400).json({ error: 'facialHair contains an unknown option' });
-    }
-    if (build != null && build !== '' && !isValidBuild(build)) {
-      return res.status(400).json({ error: 'build contains an unknown option' });
-    }
-    if (height != null && height !== '' && !isValidHeight(height)) {
-      return res.status(400).json({ error: 'height contains an unknown option' });
-    }
-    if (tier != null && tier !== '' && !isValidTier(tier)) {
-      return res.status(400).json({ error: 'tier is not a known pricing tier' });
-    }
+    if (
+      rejectFieldErrors(res, [
+        [selectedLooks.every((id) => isValidLook(id, product)), 'selectedLooks contains an unknown look id'],
+        [selectedAttire.every((id) => isValidAttire(id, product)), 'selectedAttire contains an unknown attire id'],
+        [isValidGender(gender), 'gender is required and must be a known option'],
+        [isValidAgeRange(ageRange), 'ageRange is required and must be a known option'],
+        [!isSet(race) || isValidRace(race), 'race contains an unknown option'],
+        [!isSet(facialHair) || isValidFacialHair(facialHair), 'facialHair contains an unknown option'],
+        [!isSet(build) || isValidBuild(build), 'build contains an unknown option'],
+        [!isSet(height) || isValidHeight(height), 'height contains an unknown option'],
+        [!isSet(tier) || isValidTier(tier), 'tier is not a known pricing tier'],
+      ])
+    )
+      return;
+
     const selectedTier = getTier(tier || DEFAULT_TIER);
-    if (selectedTier.product !== product) {
-      return res.status(400).json({ error: 'tier does not belong to this product' });
-    }
-    if (selectedTier.lookCount != null && selectedLooks.length > selectedTier.lookCount) {
-      return res.status(400).json({
-        error: `${selectedTier.label} includes up to ${selectedTier.lookCount} backgrounds`,
-      });
-    }
-    if (selectedTier.attireCount != null && selectedAttire.length > selectedTier.attireCount) {
-      return res.status(400).json({
-        error: `${selectedTier.label} includes up to ${selectedTier.attireCount} outfits`,
-      });
-    }
+    if (
+      rejectFieldErrors(res, [
+        [selectedTier.product === product, 'tier does not belong to this product'],
+        [
+          selectedTier.lookCount == null || selectedLooks.length <= selectedTier.lookCount,
+          `${selectedTier.label} includes up to ${selectedTier.lookCount} backgrounds`,
+        ],
+        [
+          selectedTier.attireCount == null || selectedAttire.length <= selectedTier.attireCount,
+          `${selectedTier.label} includes up to ${selectedTier.attireCount} outfits`,
+        ],
+      ])
+    )
+      return;
+
     const free = isFreeTier(selectedTier);
     if (free && (await Order.exists({ userId, tier: { $in: FREE_TIER_IDS } }))) {
       return res.status(409).json({ error: 'You have already used your free set' });
@@ -616,7 +615,6 @@ app.post('/checkout', checkoutLimiter, internalOnly, async (req, res) => {
     const orderId = order._id.toString();
     const successUrl = `${WEB_BASE_URL}/success?orderId=${orderId}&t=${order.publicToken}`;
 
-    // idempotent guard, so a double submit cannot enqueue twice.
     if (free) {
       await transitionOrder(orderId, ORDER_STATES.AWAITING_PAYMENT, ORDER_STATES.PAID, {
         amountPaidCents: 0,
@@ -700,12 +698,7 @@ app.get('/orders/:id/download/:index', async (req, res) => {
     if (!order) return res.status(404).json({ error: 'order not found' });
     if (!orderAuthorized(req, order)) return res.status(404).json({ error: 'order not found' });
 
-    const urls =
-      order.status === ORDER_STATES.DELIVERED
-        ? order.deliveredImageUrls?.length
-          ? order.deliveredImageUrls
-          : (order.resultImageUrls ?? [])
-        : [];
+    const urls = deliverableImageUrls(order);
 
     const index = Number.parseInt(req.params.index, 10);
     if (!Number.isInteger(index) || index < 0 || index >= urls.length) {
@@ -751,12 +744,7 @@ app.get('/orders/:id/download-all', async (req, res) => {
     if (!order) return res.status(404).json({ error: 'order not found' });
     if (!orderAuthorized(req, order)) return res.status(404).json({ error: 'order not found' });
 
-    const urls =
-      order.status === ORDER_STATES.DELIVERED
-        ? order.deliveredImageUrls?.length
-          ? order.deliveredImageUrls
-          : (order.resultImageUrls ?? [])
-        : [];
+    const urls = deliverableImageUrls(order);
     if (urls.length === 0) return res.status(404).json({ error: 'no images to download' });
 
     let failure = null;

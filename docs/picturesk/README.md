@@ -649,7 +649,7 @@ identity, not overall image appearance (which is why CLIP is the wrong tool here
 
 **The embedding model.** No off-the-shelf face-embedding model on Replicate returns
 a usable vector, so we deployed our own tiny CPU Cog, `ammarafridi-max/face-embed`
-(source in the scratchpad build dir: `cog.yaml` + `predict.py`). It takes `{ image }`
+(source tracked in the repo at `tools/face-embed/`: `cog.yaml` + `predict.py`). It takes `{ image }`
 and returns a 512-dim vector (or `[]` when no face is found -> that candidate scores
 low and is culled). It runs on CPU, so a call costs CPU-cents, not a GPU prediction.
 The model scales to zero when idle, so the first call of an order cold-boots for a
@@ -686,7 +686,7 @@ legacy pre-tier orders fall back to the `DELIVER_COUNT` / `GENERATE_COUNT` env d
 embedding calls (each a few CPU-seconds, ~cents total) plus the extra generations. Far
 cheaper than a pairwise face-verification model, which is why we deploy the embedding Cog.
 
-**Rebuilding the embed Cog:** from the build dir, `cog push r8.im/ammarafridi-max/face-embed`
+**Rebuilding the embed Cog:** from `tools/face-embed/`, `cog push r8.im/ammarafridi-max/face-embed`
 (needs Docker + `cog`, and `docker login r8.im` with the Replicate API token). The
 weights are baked at an absolute path (`root="/src"`) so setup never re-downloads at
 runtime -- do not remove that or the model fails to boot on Replicate.

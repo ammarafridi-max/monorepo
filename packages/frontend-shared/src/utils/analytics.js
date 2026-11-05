@@ -10,49 +10,34 @@ const isAdminPath = () =>
 
 const shouldTrackAnalytics = () => isProduction && !isAdminPath();
 
-const buildPurchaseStorageKey = (transactionId, dedupeKey = transactionId) =>
-  `ga4:purchase:${dedupeKey || transactionId}`;
-
-function hasTrackedPurchase(transactionId, dedupeKey) {
-  if (typeof window === 'undefined' || !transactionId) return false;
-  try {
-    return (
-      window.localStorage.getItem(
-        buildPurchaseStorageKey(transactionId, dedupeKey),
-      ) === '1'
-    );
-  } catch {
-    return false;
-  }
+function gaEvent(name, params) {
+  if (!shouldTrackAnalytics()) return false;
+  ReactGA.event(name, params);
+  return true;
 }
 
-function markPurchaseTracked(transactionId, dedupeKey) {
-  if (typeof window === 'undefined' || !transactionId) return;
-  try {
-    window.localStorage.setItem(
-      buildPurchaseStorageKey(transactionId, dedupeKey),
-      '1',
-    );
-  } catch {}
+function onceFlag(namespace) {
+  const storageKey = (key) => `${namespace}${key}`;
+  return {
+    seen(key) {
+      if (typeof window === 'undefined' || !key) return false;
+      try {
+        return window.localStorage.getItem(storageKey(key)) === '1';
+      } catch {
+        return false;
+      }
+    },
+    mark(key) {
+      if (typeof window === 'undefined' || !key) return;
+      try {
+        window.localStorage.setItem(storageKey(key), '1');
+      } catch {}
+    },
+  };
 }
 
-const buildCommissionStorageKey = (dedupeKey) => `ga4:commission:${dedupeKey}`;
-
-function hasTrackedCommission(dedupeKey) {
-  if (typeof window === 'undefined' || !dedupeKey) return false;
-  try {
-    return window.localStorage.getItem(buildCommissionStorageKey(dedupeKey)) === '1';
-  } catch {
-    return false;
-  }
-}
-
-function markCommissionTracked(dedupeKey) {
-  if (typeof window === 'undefined' || !dedupeKey) return;
-  try {
-    window.localStorage.setItem(buildCommissionStorageKey(dedupeKey), '1');
-  } catch {}
-}
+const purchaseOnce = onceFlag('ga4:purchase:');
+const commissionOnce = onceFlag('ga4:commission:');
 
 export function trackCommissionEvent({
   currency,
@@ -65,15 +50,15 @@ export function trackCommissionEvent({
   if (!Number.isFinite(rate) || rate <= 0 || rate > 1) return;
   const gross = Number(value);
   if (!Number.isFinite(gross) || gross <= 0) return;
-  if (hasTrackedCommission(dedupeKey)) return;
+  if (commissionOnce.seen(dedupeKey)) return;
 
-  ReactGA.event('commission', {
+  gaEvent('commission', {
     transaction_id: transactionId,
     value: parseFloat((gross * rate).toFixed(2)),
     currency,
   });
 
-  markCommissionTracked(dedupeKey);
+  commissionOnce.mark(dedupeKey);
 }
 
 function buildItem(
@@ -109,21 +94,18 @@ export function trackFlightSearch({
   returnDate,
   quantity,
 }) {
-  if (shouldTrackAnalytics()) {
-    ReactGA.event('flight_search', {
-      type,
-      from,
-      to,
-      departureDate,
-      returnDate: returnDate || null,
-      passengers: quantity.adults + quantity.children,
-    });
-  }
+  gaEvent('flight_search', {
+    type,
+    from,
+    to,
+    departureDate,
+    returnDate: returnDate || null,
+    passengers: quantity.adults + quantity.children,
+  });
 }
 
 export function trackSelectFlight({ tripType, carrierCode, flightNumber, ticketValidity, price, index = 0 }) {
-  if (!shouldTrackAnalytics()) return;
-  ReactGA.event('select_item', {
+  gaEvent('select_item', {
     item_list_id: 'flight_results',
     item_list_name: 'Flight Results',
     items: [
@@ -140,8 +122,7 @@ export function trackSelectFlight({ tripType, carrierCode, flightNumber, ticketV
 }
 
 export function trackAddToCart({ tripType, ticketValidity, price, passengers, currency }) {
-  if (!shouldTrackAnalytics()) return;
-  ReactGA.event('add_to_cart', {
+  gaEvent('add_to_cart', {
     currency,
     value: parseFloat(((price || 0) * (passengers || 1)).toFixed(2)),
     items: [
@@ -156,24 +137,20 @@ export function trackAddToCart({ tripType, ticketValidity, price, passengers, cu
 }
 
 export function trackVisaLeadOpen({ visaSlug, packageRequested, source }) {
-  if (shouldTrackAnalytics()) {
-    ReactGA.event('lead_form_open', {
-      visa_slug: visaSlug || 'unknown',
-      package: packageRequested || 'undecided',
-      lead_source: source || 'unknown',
-    });
-  }
+  gaEvent('lead_form_open', {
+    visa_slug: visaSlug || 'unknown',
+    package: packageRequested || 'undecided',
+    lead_source: source || 'unknown',
+  });
 }
 
 export function trackVisaLeadSubmit({ visaSlug, packageRequested, applicantCount, source }) {
-  if (shouldTrackAnalytics()) {
-    ReactGA.event('generate_lead', {
-      visa_slug: visaSlug || 'unknown',
-      package: packageRequested || 'undecided',
-      applicant_count: applicantCount || 1,
-      lead_source: source || 'unknown',
-    });
-  }
+  gaEvent('generate_lead', {
+    visa_slug: visaSlug || 'unknown',
+    package: packageRequested || 'undecided',
+    applicant_count: applicantCount || 1,
+    lead_source: source || 'unknown',
+  });
 }
 
 export function trackQuoteStarted({
@@ -185,17 +162,15 @@ export function trackQuoteStarted({
   children,
   seniors,
 }) {
-  if (shouldTrackAnalytics()) {
-    ReactGA.event('quote_started', {
-      journey_type: journeyType,
-      start_date: startDate,
-      end_date: endDate,
-      region,
-      adults,
-      children,
-      seniors,
-    });
-  }
+  gaEvent('quote_started', {
+    journey_type: journeyType,
+    start_date: startDate,
+    end_date: endDate,
+    region,
+    adults,
+    children,
+    seniors,
+  });
 }
 
 export function trackViewItemList({
@@ -207,7 +182,7 @@ export function trackViewItemList({
 }) {
   if (!shouldTrackAnalytics()) return;
 
-  ReactGA.event('view_item_list', {
+  gaEvent('view_item_list', {
     item_list_id: 'quote_results',
     item_list_name: 'Quote Results',
     items: plans.map((plan, index) =>
@@ -232,7 +207,7 @@ export function trackSelectItem({
 }) {
   if (!shouldTrackAnalytics()) return;
 
-  ReactGA.event('select_item', {
+  gaEvent('select_item', {
     item_list_id: 'quote_results',
     item_list_name: 'Quote Results',
     items: [
@@ -264,65 +239,11 @@ export function trackBeginCheckout({
     ? [buildItem(plan, { journeyType, regionName: region?.name, days, totalTravellers })]
     : []);
 
-  ReactGA.event('begin_checkout', {
+  gaEvent('begin_checkout', {
     currency,
     value: parseFloat(value ?? total ?? 0),
     items: finalItems,
   });
-}
-
-export function trackQuoteCompleted({
-  journeyType,
-  region,
-  days,
-  totalTravellers,
-  resultsCount,
-}) {
-  if (!shouldTrackAnalytics()) return;
-
-  ReactGA.event('quote_completed', {
-    journey_type: journeyType,
-    region: region?.name,
-    days,
-    total_travellers: totalTravellers,
-    results_count: resultsCount,
-  });
-}
-
-export function trackPassengersCompleted({
-  adults,
-  children,
-  seniors,
-  totalTravellers,
-}) {
-  if (!shouldTrackAnalytics()) return;
-
-  ReactGA.event('passengers_completed', {
-    adults,
-    children,
-    seniors,
-    total_travellers: totalTravellers,
-  });
-}
-
-export function trackTripTypeSelected({ tripType }) {
-  if (!shouldTrackAnalytics()) return;
-  ReactGA.event('trip_type_selected', { trip_type: tripType });
-}
-
-export function trackDestinationSelected({ region }) {
-  if (!shouldTrackAnalytics()) return;
-  ReactGA.event('destination_selected', { region: region?.name ?? region });
-}
-
-export function trackLogin({ provider }) {
-  if (!shouldTrackAnalytics()) return;
-  ReactGA.event('login', { method: provider });
-}
-
-export function trackSignUp({ provider }) {
-  if (!shouldTrackAnalytics()) return;
-  ReactGA.event('sign_up', { method: provider });
 }
 
 export function trackPurchaseEvent({
@@ -336,18 +257,18 @@ export function trackPurchaseEvent({
   if (
     !shouldTrackAnalytics() ||
     !transactionId ||
-    hasTrackedPurchase(transactionId, dedupeKey)
+    purchaseOnce.seen(dedupeKey || transactionId)
   )
     return;
 
-  ReactGA.event('purchase', {
+  gaEvent('purchase', {
     transaction_id: transactionId,
     value,
     currency,
     items,
   });
 
-  markPurchaseTracked(transactionId, dedupeKey);
+  purchaseOnce.mark(dedupeKey || transactionId);
 }
 
 export function trackPurchase({
@@ -364,12 +285,12 @@ export function trackPurchase({
   if (!transactionId) return;
 
   const dedupeKey = policyNumber || transactionId;
-  if (hasTrackedPurchase(transactionId, dedupeKey)) return;
+  if (purchaseOnce.seen(dedupeKey)) return;
 
   const currency = amountPaid?.currency;
   const value = parseFloat(amountPaid?.amount ?? 0);
 
-  ReactGA.event('purchase', {
+  gaEvent('purchase', {
     transaction_id: transactionId,
     value,
     currency,
@@ -383,9 +304,8 @@ export function trackPurchase({
     ],
   });
 
-  markPurchaseTracked(transactionId, dedupeKey);
+  purchaseOnce.mark(dedupeKey);
 }
-
 
 function itineraryItem({ value, currency } = {}) {
   return {
@@ -399,8 +319,7 @@ function itineraryItem({ value, currency } = {}) {
 }
 
 export function trackItineraryGenerate({ purpose, visaCountry, fromCountry, travellers, segmentCount } = {}) {
-  if (!shouldTrackAnalytics()) return;
-  ReactGA.event('itinerary_generate', {
+  gaEvent('itinerary_generate', {
     purpose,
     visa_country: visaCountry,
     from_country: fromCountry,
@@ -410,8 +329,7 @@ export function trackItineraryGenerate({ purpose, visaCountry, fromCountry, trav
 }
 
 export function trackItineraryViewItem({ value, currency } = {}) {
-  if (!shouldTrackAnalytics()) return;
-  ReactGA.event('view_item', {
+  gaEvent('view_item', {
     currency,
     value: parseFloat(value),
     items: [itineraryItem({ value, currency })],
@@ -419,8 +337,7 @@ export function trackItineraryViewItem({ value, currency } = {}) {
 }
 
 export function trackItineraryBeginCheckout({ value, currency } = {}) {
-  if (!shouldTrackAnalytics()) return;
-  ReactGA.event('begin_checkout', {
+  gaEvent('begin_checkout', {
     currency,
     value: parseFloat(value),
     items: [itineraryItem({ value, currency })],
@@ -428,12 +345,15 @@ export function trackItineraryBeginCheckout({ value, currency } = {}) {
 }
 
 export function trackItineraryPurchase({ sessionId, value, currency } = {}) {
-  if (!shouldTrackAnalytics() || !sessionId || hasTrackedPurchase(sessionId)) return;
-  ReactGA.event('purchase', {
-    transaction_id: sessionId,
-    value: parseFloat(value),
-    currency,
-    items: [itineraryItem({ value, currency })],
-  });
-  markPurchaseTracked(sessionId);
+  if (!sessionId || purchaseOnce.seen(sessionId)) return;
+  if (
+    !gaEvent('purchase', {
+      transaction_id: sessionId,
+      value: parseFloat(value),
+      currency,
+      items: [itineraryItem({ value, currency })],
+    })
+  )
+    return;
+  purchaseOnce.mark(sessionId);
 }

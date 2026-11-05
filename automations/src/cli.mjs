@@ -1,15 +1,9 @@
 #!/usr/bin/env node
 
 import { JOBS, listTargets, loadTarget, assertEnv } from './registry.mjs';
+import { flagValue } from './args.mjs';
 
 const argv = process.argv.slice(2);
-
-function flagValue(name) {
-  const i = argv.indexOf(`--${name}`);
-  if (i !== -1 && argv[i + 1] && !argv[i + 1].startsWith('--')) return argv[i + 1];
-  const eq = argv.find((a) => a.startsWith(`--${name}=`));
-  return eq ? eq.slice(name.length + 3) : null;
-}
 
 function usage() {
   console.log('Usage: pnpm automation <job> [--target <key>] [--dry-run] [job flags]\n');
@@ -69,7 +63,7 @@ let target = null;
 
 try {
   if (spec.needsTarget) {
-    const key = flagValue('target');
+    const key = flagValue(argv, 'target');
     if (!key) {
       throw new Error(`Job "${job}" needs --target <key>. Available: ${listTargets().join(', ')}`);
     }

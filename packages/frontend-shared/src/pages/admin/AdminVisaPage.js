@@ -22,6 +22,8 @@ import { useUnpublishVisa }  from '../../hooks/visa/useUnpublishVisa.js';
 import AdminSearchInput from '../../components/admin/AdminSearchInput';
 import FilterMenu from '../../components/admin/FilterMenu';
 import AdminFab from '../../components/admin/AdminFab';
+import { fmtDate } from '../../components/admin/format';
+import { Pagination } from '../../components/admin/Pagination';
 
 const STATUS_TABS = ['all', 'published', 'draft'];
 
@@ -38,11 +40,6 @@ function StatusBadge({ status }) {
       {cfg.label}
     </span>
   );
-}
-
-function fmtDate(iso) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
 export default function AdminVisaPage() {
@@ -255,27 +252,7 @@ export default function AdminVisaPage() {
           </div>
         )}
 
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-            <p className="text-xs text-gray-400">Page {page} of {totalPages}</p>
-            <div className="flex items-center gap-2">
-              <button
-                disabled={page === 1}
-                onClick={() => setPage((p) => p - 1)}
-                className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-primary-300 hover:text-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition"
-              >
-                <ChevronLeft size={14} />
-              </button>
-              <button
-                disabled={page === totalPages}
-                onClick={() => setPage((p) => p + 1)}
-                className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-primary-300 hover:text-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition"
-              >
-                <ChevronRight size={14} />
-              </button>
-            </div>
-          </div>
-        )}
+        <Pagination page={page} totalPages={totalPages} onPageChange={setPage} labelSize="text-xs" />
       </div>
     </div>
   );

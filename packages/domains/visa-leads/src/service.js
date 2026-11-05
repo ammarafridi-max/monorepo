@@ -1,14 +1,20 @@
 import { parsePhoneNumber } from 'libphonenumber-js';
-import { AppError, sanitizeAttribution, attributionChannelFilter } from '@travel-suite/utils';
+import { AppError, sanitizeAttribution, attributionChannelFilter, escapeRegex } from '@travel-suite/utils';
 import { googleClickIdsFrom } from '@travel-suite/google-ads-conversions';
+import { metaUser } from '@travel-suite/utils/contact';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const VALID_SOURCES = ['hero_cta', 'package_card', 'final_cta', 'sticky_bar', 'inline_cta'];
 const VALID_STATUSES = ['new', 'contacted', 'qualified', 'converted', 'lost'];
 
-function escapeRegex(value = '') {
-  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function phoneCountryOf(phone) {
+  try {
+    return parsePhoneNumber(String(phone || '').trim())?.country;
+  } catch {
+    return undefined;
+  }
 }
+
 
 function isValidEmail(email) {
   return EMAIL_REGEX.test(String(email || '').trim());
@@ -23,7 +29,7 @@ function isValidPhone(phone) {
   }
 }
 
-export function createVisaLeadService({ VisaLead, Visa, notificationsService, metaCapi, openaiCapi, googleAds, frontendUrl }) {
+export function createVisaLeadService({ VisaLead, Visa, notifications, metaCapi, openaiCapi, googleAds, frontendUrl }) {
 
   const submitLead = async ({
     firstName, lastName, nationality, email, phone,
@@ -72,8 +78,8 @@ export function createVisaLeadService({ VisaLead, Visa, notificationsService, me
       attribution: sanitizeAttribution(attribution),
     });
 
-    if (notificationsService?.sendVisaLeadToAdmin) {
-      notificationsService.sendVisaLeadToAdmin({
+    if (notifications?.sendVisaLeadToAdmin) {
+      notifications.sendVisaLeadToAdmin({
         leadId:           lead._id.toString(),
         firstName:        lead.firstName,
         lastName:         lead.lastName,
@@ -90,8 +96,8 @@ export function createVisaLeadService({ VisaLead, Visa, notificationsService, me
       });
     }
 
-    if (notificationsService?.sendVisaLeadToCustomer) {
-      notificationsService.sendVisaLeadToCustomer({
+    if (notifications?.sendVisaLeadToCustomer) {
+      notifications.sendVisaLeadToCustomer({
         email:            lead.email,
         firstName:        lead.firstName,
         packageRequested: lead.packageRequested,
@@ -120,17 +126,22 @@ export function createVisaLeadService({ VisaLead, Visa, notificationsService, me
         eventId:        `visa-lead:${lead._id}`,
         eventTime:      lead.createdAt,
         eventSourceUrl: frontendUrl || undefined,
-        user: {
+        user: metaUser({
           email:      lead.email,
           phone:      lead.phone,
+          country:    phoneCountryOf(lead.phone),
           firstName:  lead.firstName,
           lastName:   lead.lastName,
           externalId: lead.email || lead.phone,
-          clientIp:   ipAddress !== 'unknown' ? ipAddress : undefined,
-          userAgent,
-          fbp,
-          fbc,
-        },
+          attribution: lead.attribution,
+          metaAttribution: {
+            clientIp: ipAddress !== 'unknown' ? ipAddress : undefined,
+            userAgent,
+            fbp,
+            fbc,
+          },
+          createdAt:  lead.createdAt,
+        }),
         customData: { content_name: visaSlug },
       }).catch((err) => {
         console.error('[visa-leads] Meta lead event failed', err?.message);

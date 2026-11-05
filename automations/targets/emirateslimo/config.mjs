@@ -1,8 +1,9 @@
+import { defineTarget } from '../../src/define-target.mjs';
 
 const SITE = 'https://www.emirateslimo.com';
 const pageUrl = (slug) => `${SITE}/${slug}`;
 
-export const TARGET = {
+export const TARGET = defineTarget({
   key: 'emirateslimo',
   name: 'Emirates Limo',
   backendUrl: 'https://api.emirateslimo.com',
@@ -20,11 +21,6 @@ export const TARGET = {
     excludeSlugs: [],
   },
 
-  formatsByTier: {
-    short: 'quick-answer',
-    medium: 'sourced-guide',
-    long: 'sourced-guide',
-  },
 
   citationDomains: [
     'dubaiairports.ae',           
@@ -83,7 +79,6 @@ export const TARGET = {
     },
   ],
 
-  blogUrl: (slug) => `${SITE}/blog/${slug}`,
   adminBlogUrl: (id) => `${SITE}/admin/blog/${id}/edit`,
 
   imagePrompt: (title) =>
@@ -220,7 +215,7 @@ Example shape (write your own copy, do not reuse this wording verbatim):
 
     return links;
   },
-};
+});
 
 export const BRAND = TARGET;
 export default TARGET;

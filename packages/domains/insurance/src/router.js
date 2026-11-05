@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-export function createInsuranceRouterFromController({ controller, auth }) {
+export function createInsuranceRouterFromParts({ controller, auth }) {
   const { protect, restrictTo } = auth;
   const router = Router();
 

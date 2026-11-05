@@ -5,11 +5,7 @@ import { renderTicketPaymentTemplate } from './templates/ticket-payment.js';
 import { renderBookingPaymentTemplate } from './templates/booking-payment.js';
 import { renderBookingPaymentAdminTemplate } from './templates/booking-payment-admin.js';
 import { renderPaymentLinkPaidTemplate } from './templates/payment-link-paid.js';
-import {
-  renderHotelBookingPaidTemplate,
-  renderHotelBookingFailedTemplate,
-  renderHotelBookingConfirmedTemplate,
-} from './templates/hotel-booking.js';
+import { renderHotelBookingPaidTemplate } from './templates/hotel-booking.js';
 import { renderVisaLeadTemplate, renderVisaLeadCustomerTemplate } from './templates/visa-lead.js';
 import {
   renderAffiliateWelcomeTemplate,
@@ -33,439 +29,325 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
   const log = logger?.error?.bind(logger) ?? console.error;
   const productNoun = brand.productNoun ?? 'dummy ticket';
 
-  async function sendInsuranceFormSubmission({ passengers }) {
+  const neverThrow = (fn, context = () => ({}), fallback) => async (...args) => {
     try {
-      const lead = passengers?.[0];
-      const leadPassenger = lead ? `${lead.firstName} ${lead.lastName}` : 'unknown';
-
-      await sendEmail({
-        email: brand.adminEmail,
-        name: brand.teamName,
-        subject: `Travel insurance form submission by ${leadPassenger}`,
-      });
+      return await fn(...args);
     } catch (err) {
-      log('[notifications] sendInsuranceFormSubmission failed', { err: err.message });
+      log(`[notifications] ${fn.name} failed`, { ...context(...args), err: err.message });
+      return typeof fallback === 'function' ? fallback(err) : fallback;
     }
+  };
+  const failed = (err) => ({ ok: false, error: err.message });
+
+  async function sendInsuranceFormSubmission({ passengers }) {
+    const lead = passengers?.[0];
+    const leadPassenger = lead ? `${lead.firstName} ${lead.lastName}` : 'unknown';
+
+    await sendEmail({
+      email: brand.adminEmail,
+      name: brand.teamName,
+      subject: `Travel insurance form submission by ${leadPassenger}`,
+    });
   }
 
   async function sendInsurancePaymentToAdmin(data) {
-    try {
-      const htmlContent = renderInsurancePaymentTemplate({ brand, ...data });
-      await sendEmail({
-        email: brand.adminEmail,
-        name: brand.teamName,
-        subject: `Travel insurance payment received by ${data.leadTraveler || 'customer'}`,
-        htmlContent,
-      });
-    } catch (err) {
-      log('[notifications] sendInsurancePaymentToAdmin failed', {
-        leadTraveler: data.leadTraveler,
-        err: err.message,
-      });
-    }
+    const htmlContent = renderInsurancePaymentTemplate({ brand, ...data });
+    await sendEmail({
+      email: brand.adminEmail,
+      name: brand.teamName,
+      subject: `Travel insurance payment received by ${data.leadTraveler || 'customer'}`,
+      htmlContent,
+    });
   }
 
   async function sendTicketPaymentToAdmin(data) {
-    try {
-      const htmlContent = renderTicketPaymentTemplate({ brand, ...data });
-      const fromCode = extractIataCode(data.from) || data.from || '';
-      const toCode   = extractIataCode(data.to)   || data.to   || '';
-      const depDDMMM = formatToDDMMM(data.departureDate);
+    const htmlContent = renderTicketPaymentTemplate({ brand, ...data });
+    const fromCode = extractIataCode(data.from) || data.from || '';
+    const toCode   = extractIataCode(data.to)   || data.to   || '';
+    const depDDMMM = formatToDDMMM(data.departureDate);
 
-      const isLaterDate = !data.ticketDelivery?.immediate;
-      const deliveryPrefix = isLaterDate
-        ? `${formatToDDMMMYYYYMixed(data.ticketDelivery?.deliveryDate)} Delivery Date - `
-        : '';
+    const isLaterDate = !data.ticketDelivery?.immediate;
+    const deliveryPrefix = isLaterDate
+      ? `${formatToDDMMMYYYYMixed(data.ticketDelivery?.deliveryDate)} Delivery Date - `
+      : '';
 
-      await sendEmail({
-        email: brand.adminEmail,
-        name: brand.paymentsSenderName,
-        subject: `${deliveryPrefix}Payment received — ${data.leadPassenger} · ${fromCode} → ${toCode} · ${depDDMMM}`,
-        htmlContent,
-      });
-    } catch (err) {
-      log('[notifications] sendTicketPaymentToAdmin failed', {
-        leadPassenger: data.leadPassenger,
-        err: err.message,
-      });
-    }
+    await sendEmail({
+      email: brand.adminEmail,
+      name: brand.paymentsSenderName,
+      subject: `${deliveryPrefix}Payment received — ${data.leadPassenger} · ${fromCode} → ${toCode} · ${depDDMMM}`,
+      htmlContent,
+    });
   }
 
   async function sendTicketPaymentToCustomer(data) {
-    try {
-      if (!data?.email) return;
+    if (!data?.email) return;
 
-      const firstName = data.passengers?.[0]?.firstName?.trim() || 'there';
-      const fromCode = extractIataCode(data.from) || data.from || '';
-      const toCode = extractIataCode(data.to) || data.to || '';
-      const depFull = formatToDDMMMYYYYMixed(data.departureDate);
-      const isScheduled = !data.ticketDelivery?.immediate;
-      const deliveryDate = formatToDDMMMYYYYMixed(data.ticketDelivery?.deliveryDate);
-      const paxCount = (data.passengers || []).length;
-      const paxLine = paxCount > 1
-        ? `${data.leadPassenger} + ${paxCount - 1}`
-        : data.leadPassenger || '—';
+    const firstName = data.passengers?.[0]?.firstName?.trim() || 'there';
+    const fromCode = extractIataCode(data.from) || data.from || '';
+    const toCode = extractIataCode(data.to) || data.to || '';
+    const depFull = formatToDDMMMYYYYMixed(data.departureDate);
+    const isScheduled = !data.ticketDelivery?.immediate;
+    const deliveryDate = formatToDDMMMYYYYMixed(data.ticketDelivery?.deliveryDate);
+    const paxCount = (data.passengers || []).length;
+    const paxLine = paxCount > 1
+      ? `${data.leadPassenger} + ${paxCount - 1}`
+      : data.leadPassenger || '—';
 
-      const subject = isScheduled
-        ? `Order confirmed — your ${productNoun} is scheduled for ${deliveryDate}`
-        : `Order confirmed — we're preparing your ${productNoun}`;
+    const copy = isScheduled
+      ? {
+          subject: `Order confirmed — your ${productNoun} is scheduled for ${deliveryDate}`,
+          intro: `Thanks for your order. We've received your payment and your ${productNoun} is scheduled for delivery on ${deliveryDate}.`,
+          whatHappensNext: `What happens next\nWe'll email your ${productNoun} to this address on the morning of your chosen delivery date. You don't need to do anything until then.`,
+          deliveryLine: `- Delivery scheduled: ${deliveryDate}`,
+          closingHelp: `If your plans change before then, reply to this email and we'll bring the delivery forward (or adjust the dates).`,
+        }
+      : {
+          subject: `Order confirmed — we're preparing your ${productNoun}`,
+          intro: `Thanks for your order. We've received your payment and our team is preparing your ${productNoun} now.`,
+          whatHappensNext: `What happens next\nYou'll receive your ${productNoun} by email shortly. Most orders are delivered within 15 minutes, any time of day.`,
+          deliveryLine: null,
+          closingHelp: `If you need to make any changes or have a question, just reply to this email.`,
+        };
 
-      const whatHappensNext = isScheduled
-        ? `What happens next\nWe'll email your ${productNoun} to this address on the morning of your chosen delivery date. You don't need to do anything until then.`
-        : `What happens next\nYou'll receive your ${productNoun} by email shortly. Most orders are delivered within 15 minutes, any time of day.`;
+    const orderLines = [
+      `- Route: ${fromCode} → ${toCode} (Departure ${depFull})`,
+      `- Passengers: ${paxLine}`,
+      `- Type: ${data.type || '—'}`,
+      `- Validity: ${data.ticketValidity || '—'}`,
+      copy.deliveryLine,
+    ].filter(Boolean).join('\n');
 
-      const orderLines = [
-        `- Route: ${fromCode} → ${toCode} (Departure ${depFull})`,
-        `- Passengers: ${paxLine}`,
-        `- Type: ${data.type || '—'}`,
-        `- Validity: ${data.ticketValidity || '—'}`,
-        isScheduled ? `- Delivery scheduled: ${deliveryDate}` : null,
-      ].filter(Boolean).join('\n');
+    const textContent = [
+      `Hi ${firstName},`,
+      ``,
+      copy.intro,
+      ``,
+      copy.whatHappensNext,
+      ``,
+      `Your order`,
+      orderLines,
+      ``,
+      copy.closingHelp,
+      ``,
+      `Talk soon,`,
+      `The ${brand.name} team`,
+    ].join('\n');
 
-      const closingHelp = isScheduled
-        ? `If your plans change before then, reply to this email and we'll bring the delivery forward (or adjust the dates).`
-        : `If you need to make any changes or have a question, just reply to this email.`;
-
-      const textContent = [
-        `Hi ${firstName},`,
-        ``,
-        isScheduled
-          ? `Thanks for your order. We've received your payment and your ${productNoun} is scheduled for delivery on ${deliveryDate}.`
-          : `Thanks for your order. We've received your payment and our team is preparing your ${productNoun} now.`,
-        ``,
-        whatHappensNext,
-        ``,
-        `Your order`,
-        orderLines,
-        ``,
-        closingHelp,
-        ``,
-        `Talk soon,`,
-        `The ${brand.name} team`,
-      ].join('\n');
-
-      await sendEmail({
-        email: data.email,
-        name: data.leadPassenger,
-        subject,
-        textContent,
-      });
-    } catch (err) {
-      log('[notifications] sendTicketPaymentToCustomer failed', {
-        email: data?.email,
-        err: err.message,
-      });
-    }
+    await sendEmail({
+      email: data.email,
+      name: data.leadPassenger,
+      subject: copy.subject,
+      textContent,
+    });
   }
 
   async function sendPaymentLinkPaidToAdmin(data) {
-    try {
-      const currency = String(data.currency || '').toUpperCase();
-      const amountFormatted = `${currency} ${Number(data.amount || 0).toFixed(2)}`;
-      const payerName = data.payerName || 'customer';
+    const currency = String(data.currency || '').toUpperCase();
+    const amountFormatted = `${currency} ${Number(data.amount || 0).toFixed(2)}`;
+    const payerName = data.payerName || 'customer';
 
-      const htmlContent = renderPaymentLinkPaidTemplate({
-        brand,
-        amountFormatted,
-        payerName,
-        payerEmail: data.payerEmail,
-        description: data.description,
-        createdByName: data.createdByName,
-        paymentLinkId: data.paymentLinkId,
-        sessionId: data.sessionId,
-        paidAt: data.paidAt ? formatDate(data.paidAt) : '',
-      });
+    const htmlContent = renderPaymentLinkPaidTemplate({
+      brand,
+      amountFormatted,
+      payerName,
+      payerEmail: data.payerEmail,
+      description: data.description,
+      createdByName: data.createdByName,
+      paymentLinkId: data.paymentLinkId,
+      sessionId: data.sessionId,
+      paidAt: data.paidAt ? formatDate(data.paidAt) : '',
+    });
 
-      await sendEmail({
-        email: brand.adminEmail,
-        name: brand.paymentsSenderName,
-        subject: `${amountFormatted} paid by ${payerName} using custom payment link`,
-        htmlContent,
-      });
-    } catch (err) {
-      log('[notifications] sendPaymentLinkPaidToAdmin failed', {
-        paymentLinkId: data.paymentLinkId,
-        err: err.message,
-      });
-    }
+    await sendEmail({
+      email: brand.adminEmail,
+      name: brand.paymentsSenderName,
+      subject: `${amountFormatted} paid by ${payerName} using custom payment link`,
+      htmlContent,
+    });
   }
 
   async function sendBookingPaymentToAdmin(data) {
-    try {
-      const htmlContent = renderBookingPaymentAdminTemplate({ brand, ...data });
-      const fullName = `${data.firstName || ''} ${data.lastName || ''}`.trim() || 'Customer';
-      const sent = await sendEmail({
-        email: brand.adminEmail,
-        name: brand.paymentsSenderName,
-        subject: `New booking paid — ${fullName} · ${data.bookingRef || ''}`,
-        htmlContent,
-      });
-      return sent?.ok ?? false;
-    } catch (err) {
-      log('[notifications] sendBookingPaymentToAdmin failed', {
-        bookingRef: data?.bookingRef,
-        err: err.message,
-      });
-      return false;
-    }
+    const htmlContent = renderBookingPaymentAdminTemplate({ brand, ...data });
+    const fullName = `${data.firstName || ''} ${data.lastName || ''}`.trim() || 'Customer';
+    const sent = await sendEmail({
+      email: brand.adminEmail,
+      name: brand.paymentsSenderName,
+      subject: `New booking paid — ${fullName} · ${data.bookingRef || ''}`,
+      htmlContent,
+    });
+    return sent?.ok ?? false;
   }
 
   async function sendBookingConfirmationToCustomer(data) {
-    try {
-      if (!data?.email) return false;
-      const htmlContent = renderBookingPaymentTemplate({ brand, ...data });
-      const sent = await sendEmail({
-        email: data.email,
-        name: `${data.firstName || ''} ${data.lastName || ''}`.trim() || data.email,
-        subject: `Booking confirmed — ${data.serviceName || 'Airport Transfer'} on ${data.date ? new Date(data.date + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}`,
-        htmlContent,
-      });
-      return sent?.ok ?? false;
-    } catch (err) {
-      log('[notifications] sendBookingConfirmationToCustomer failed', {
-        email: data?.email,
-        err: err.message,
-      });
-      return false;
-    }
+    if (!data?.email) return false;
+    const htmlContent = renderBookingPaymentTemplate({ brand, ...data });
+    const sent = await sendEmail({
+      email: data.email,
+      name: `${data.firstName || ''} ${data.lastName || ''}`.trim() || data.email,
+      subject: `Booking confirmed — ${data.serviceName || 'Airport Transfer'} on ${data.date ? new Date(data.date + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}`,
+      htmlContent,
+    });
+    return sent?.ok ?? false;
   }
 
   async function sendContactFormToAdmin({ name, email, subject, message }) {
-    try {
-      const textContent = [
-        `Name: ${name}`,
-        `Email: ${email}`,
-        ``,
-        `Subject: ${subject}`,
-        ``,
-        message,
-      ].join('\n');
-      const sent = await sendEmail({
-        email: brand.adminEmail,
-        name: brand.teamName,
-        subject: `Contact form: ${subject} — ${name}`,
-        textContent,
-      });
-      return sent?.ok ?? false;
-    } catch (err) {
-      log('[notifications] sendContactFormToAdmin failed', { name, err: err.message });
-      return false;
-    }
+    const textContent = [
+      `Name: ${name}`,
+      `Email: ${email}`,
+      ``,
+      `Subject: ${subject}`,
+      ``,
+      message,
+    ].join('\n');
+    const sent = await sendEmail({
+      email: brand.adminEmail,
+      name: brand.teamName,
+      subject: `Contact form: ${subject} — ${name}`,
+      textContent,
+    });
+    return sent?.ok ?? false;
   }
 
   async function sendVisaLeadToAdmin(data) {
-    try {
-      const htmlContent = renderVisaLeadTemplate({ brand, ...data });
-      const subject = `New visa lead: ${data.visaCountryName || ''} — ${data.firstName || ''} ${data.lastName || ''}`.trim();
-      await sendEmail({
-        email: brand.adminEmail,
-        name: brand.teamName,
-        subject,
-        htmlContent,
-      });
-    } catch (err) {
-      log('[notifications] sendVisaLeadToAdmin failed', {
-        leadId: data.leadId,
-        err: err.message,
-      });
-    }
+    const htmlContent = renderVisaLeadTemplate({ brand, ...data });
+    const subject = `New visa lead: ${data.visaCountryName || ''} — ${data.firstName || ''} ${data.lastName || ''}`.trim();
+    await sendEmail({
+      email: brand.adminEmail,
+      name: brand.teamName,
+      subject,
+      htmlContent,
+    });
   }
 
   async function sendVisaLeadToCustomer(data) {
-    try {
-      if (!data.email) return false;
-      await sendEmail({
-        email: data.email,
-        name: data.firstName || data.email,
-        subject: `We have your ${data.visaCountryName || ''} visa request`.replace('  ', ' '),
-        htmlContent: renderVisaLeadCustomerTemplate({ brand, ...data }),
-      });
-      return true;
-    } catch (err) {
-      log('[notifications] sendVisaLeadToCustomer failed', { email: data.email, err: err.message });
-      return false;
-    }
+    if (!data.email) return false;
+    await sendEmail({
+      email: data.email,
+      name: data.firstName || data.email,
+      subject: `We have your ${data.visaCountryName || ''} visa request`.replace('  ', ' '),
+      htmlContent: renderVisaLeadCustomerTemplate({ brand, ...data }),
+    });
+    return true;
   }
 
   async function sendAffiliateWelcome(data) {
-    try {
-      if (!data?.email) return false;
-      await sendEmail({
-        email: data.email,
-        name: data.name || data.email,
-        subject: brand.name
-          ? `You're set up as a ${brand.name} affiliate`
-          : "You're set up as an affiliate",
-        htmlContent: renderAffiliateWelcomeTemplate({ brand, ...data }),
-      });
-      return true;
-    } catch (err) {
-      log('[notifications] sendAffiliateWelcome failed', {
-        affiliateId: data?.affiliateId,
-        err: err.message,
-      });
-      return false;
-    }
+    if (!data?.email) return false;
+    await sendEmail({
+      email: data.email,
+      name: data.name || data.email,
+      subject: brand.name
+        ? `You're set up as a ${brand.name} affiliate`
+        : "You're set up as an affiliate",
+      htmlContent: renderAffiliateWelcomeTemplate({ brand, ...data }),
+    });
+    return true;
   }
 
   async function sendAffiliatePayoutStatement(data) {
-    try {
-      if (!data?.email) return false;
-      await sendEmail({
-        email: data.email,
-        name: data.name || data.email,
-        subject: `Your affiliate statement${data.periodLabel ? ` for ${data.periodLabel}` : ''}`,
-        htmlContent: renderAffiliateStatementTemplate({ brand, ...data }),
-      });
-      return true;
-    } catch (err) {
-      log('[notifications] sendAffiliatePayoutStatement failed', {
-        affiliateId: data?.affiliateId,
-        err: err.message,
-      });
-      return false;
-    }
+    if (!data?.email) return false;
+    await sendEmail({
+      email: data.email,
+      name: data.name || data.email,
+      subject: `Your affiliate statement${data.periodLabel ? ` for ${data.periodLabel}` : ''}`,
+      htmlContent: renderAffiliateStatementTemplate({ brand, ...data }),
+    });
+    return true;
   }
 
   async function sendMagicLink({ email, magicLinkUrl }) {
-    try {
-      if (!email || !magicLinkUrl) return false;
-      await sendEmail({
-        email,
-        name: email,
-        subject: `Your ${brand.name} sign-in link`,
-        htmlContent: renderMagicLink({ brand, magicLinkUrl }),
-      });
-      return true;
-    } catch (err) {
-      log('[notifications] sendMagicLink failed', { email, err: err.message });
-      return false;
-    }
+    if (!email || !magicLinkUrl) return false;
+    await sendEmail({
+      email,
+      name: email,
+      subject: `Your ${brand.name} sign-in link`,
+      htmlContent: renderMagicLink({ brand, magicLinkUrl }),
+    });
+    return true;
   }
 
   async function sendApplicationAssigned({ email, applicationRef, destinationCountry, magicLinkUrl }) {
-    try {
-      if (!email || !magicLinkUrl) return false;
-      await sendEmail({
-        email,
-        name: email,
-        subject: `Your ${destinationCountry || 'Schengen'} visa application ${applicationRef} is ready`,
-        htmlContent: renderApplicationAssigned({ brand, applicationRef, destinationCountry, magicLinkUrl }),
-      });
-      return true;
-    } catch (err) {
-      log('[notifications] sendApplicationAssigned failed', { applicationRef, err: err.message });
-      return false;
-    }
+    if (!email || !magicLinkUrl) return false;
+    await sendEmail({
+      email,
+      name: email,
+      subject: `Your ${destinationCountry || 'Schengen'} visa application ${applicationRef} is ready`,
+      htmlContent: renderApplicationAssigned({ brand, applicationRef, destinationCountry, magicLinkUrl }),
+    });
+    return true;
   }
 
   async function sendDocumentRejected({ email, applicationRef, docType, rejectionReason, link }) {
-    try {
-      if (!email) return false;
-      await sendEmail({
-        email,
-        name: email,
-        subject: `Action needed on application ${applicationRef}`,
-        htmlContent: renderDocumentRejected({ brand, applicationRef, docType, rejectionReason, link }),
-      });
-      return true;
-    } catch (err) {
-      log('[notifications] sendDocumentRejected failed', { applicationRef, err: err.message });
-      return false;
-    }
+    if (!email) return false;
+    await sendEmail({
+      email,
+      name: email,
+      subject: `Action needed on application ${applicationRef}`,
+      htmlContent: renderDocumentRejected({ brand, applicationRef, docType, rejectionReason, link }),
+    });
+    return true;
   }
 
   async function sendAllDocumentsApproved({ email, applicationRef, destinationCountry, link }) {
-    try {
-      if (!email) return false;
-      await sendEmail({
-        email,
-        name: email,
-        subject: `All documents approved — application ${applicationRef}`,
-        htmlContent: renderAllApproved({ brand, applicationRef, destinationCountry, link }),
-      });
-      return true;
-    } catch (err) {
-      log('[notifications] sendAllDocumentsApproved failed', { applicationRef, err: err.message });
-      return false;
-    }
+    if (!email) return false;
+    await sendEmail({
+      email,
+      name: email,
+      subject: `All documents approved — application ${applicationRef}`,
+      htmlContent: renderAllApproved({ brand, applicationRef, destinationCountry, link }),
+    });
+    return true;
   }
 
   async function sendChecklistCompleteToAdmin({ applicationRef, destinationCountry }) {
-    try {
-      await sendEmail({
-        email: brand.adminEmail,
-        name: brand.teamName,
-        subject: `Documents complete — application ${applicationRef}`,
-        htmlContent: renderChecklistCompleteAdmin({ brand, applicationRef, destinationCountry }),
-      });
-      return true;
-    } catch (err) {
-      log('[notifications] sendChecklistCompleteToAdmin failed', { applicationRef, err: err.message });
-      return false;
-    }
+    await sendEmail({
+      email: brand.adminEmail,
+      name: brand.teamName,
+      subject: `Documents complete — application ${applicationRef}`,
+      htmlContent: renderChecklistCompleteAdmin({ brand, applicationRef, destinationCountry }),
+    });
+    return true;
   }
 
   async function sendDocumentsStillNeeded({ email, applicationRef, destinationCountry, missing, link }) {
-    try {
-      if (!email) return false;
-      await sendEmail({
-        email,
-        name: email,
-        subject: `Reminder — documents still needed for application ${applicationRef}`,
-        htmlContent: renderDocumentsStillNeeded({ brand, applicationRef, destinationCountry, missing, link }),
-      });
-      return true;
-    } catch (err) {
-      log('[notifications] sendDocumentsStillNeeded failed', { applicationRef, err: err.message });
-      return false;
-    }
+    if (!email) return false;
+    await sendEmail({
+      email,
+      name: email,
+      subject: `Reminder — documents still needed for application ${applicationRef}`,
+      htmlContent: renderDocumentsStillNeeded({ brand, applicationRef, destinationCountry, missing, link }),
+    });
+    return true;
   }
 
   async function sendRejectionReminder({ email, applicationRef, destinationCountry, rejected, link }) {
-    try {
-      if (!email) return false;
-      await sendEmail({
-        email,
-        name: email,
-        subject: `Reminder — a document still needs fixing for application ${applicationRef}`,
-        htmlContent: renderRejectionReminder({ brand, applicationRef, destinationCountry, rejected, link }),
-      });
-      return true;
-    } catch (err) {
-      log('[notifications] sendRejectionReminder failed', { applicationRef, err: err.message });
-      return false;
-    }
+    if (!email) return false;
+    await sendEmail({
+      email,
+      name: email,
+      subject: `Reminder — a document still needs fixing for application ${applicationRef}`,
+      htmlContent: renderRejectionReminder({ brand, applicationRef, destinationCountry, rejected, link }),
+    });
+    return true;
   }
 
   async function sendFileReadyForStaff({ applicationRef, destinationCountry }) {
-    try {
-      await sendEmail({
-        email: brand.adminEmail,
-        name: brand.teamName,
-        subject: `Your turn — ${applicationRef} is ready to prepare`,
-        htmlContent: renderFileReadyForStaff({ brand, applicationRef, destinationCountry }),
-      });
-      return true;
-    } catch (err) {
-      log('[notifications] sendFileReadyForStaff failed', { applicationRef, err: err.message });
-      return false;
-    }
+    await sendEmail({
+      email: brand.adminEmail,
+      name: brand.teamName,
+      subject: `Your turn — ${applicationRef} is ready to prepare`,
+      htmlContent: renderFileReadyForStaff({ brand, applicationRef, destinationCountry }),
+    });
+    return true;
   }
 
   async function sendApplicationEscalated({ applicationRef, destinationCountry, customerEmail, reminderCount, link }) {
-    try {
-      await sendEmail({
-        email: brand.adminEmail,
-        name: brand.teamName,
-        subject: `Application ${applicationRef} has gone quiet — needs a call`,
-        htmlContent: renderApplicationEscalated({ brand, applicationRef, destinationCountry, customerEmail, reminderCount, link }),
-      });
-      return true;
-    } catch (err) {
-      log('[notifications] sendApplicationEscalated failed', { applicationRef, err: err.message });
-      return false;
-    }
+    await sendEmail({
+      email: brand.adminEmail,
+      name: brand.teamName,
+      subject: `Application ${applicationRef} has gone quiet — needs a call`,
+      htmlContent: renderApplicationEscalated({ brand, applicationRef, destinationCountry, customerEmail, reminderCount, link }),
+    });
+    return true;
   }
 
 
@@ -480,204 +362,110 @@ export function createNotificationsService({ sendEmail, logger, brand }) {
     passengers = [], amount, currency, documents = [], attachments = [],
     refundBeforeStart = true, claimsUrl, supportEmail, upsells = [], footerNote,
   }) {
-    try {
-      if (!email || !policyNumber) return { ok: false, error: 'Missing customer email or policy number' };
-      const amountLabel = [currency, typeof amount === 'number' ? amount.toFixed(2) : amount].filter(Boolean).join(' ');
-      const travellers = passengers
-        .map((p) => [p.title, p.firstName, p.lastName].filter(Boolean).join(' '))
-        .filter(Boolean)
-        .join(', ');
-      const data = {
-        brand,
-        firstName,
-        policyNumber,
-        plan: JOURNEY_LABEL[journeyType] || journeyType,
-        region,
-        coverStart: coverDate(startDate),
-        coverEnd: coverDate(endDate),
-        travellers,
-        amount: amountLabel,
-        documents,
-        attachedCount: attachments.length,
-        refundBeforeStart,
-        claimsUrl,
-        supportEmail: supportEmail || brand.adminEmail,
-        upsells,
-        footerNote,
-      };
-      const result = await sendEmail({
-        email,
-        name: firstName,
-        subject: `Your travel insurance is issued: policy ${policyNumber}`,
-        htmlContent: renderPolicyIssuedTemplate(data),
-        textContent: renderPolicyIssuedText(data),
-        attachment: attachments,
-      });
-      return result?.ok === false ? { ok: false, error: result.error } : { ok: true };
-    } catch (err) {
-      log('[notifications] sendPolicyIssuedToCustomer failed', { policyNumber, err: err.message });
-      return { ok: false, error: err.message };
-    }
+    if (!email || !policyNumber) return { ok: false, error: 'Missing customer email or policy number' };
+    const amountLabel = [currency, typeof amount === 'number' ? amount.toFixed(2) : amount].filter(Boolean).join(' ');
+    const travellers = passengers
+      .map((p) => [p.title, p.firstName, p.lastName].filter(Boolean).join(' '))
+      .filter(Boolean)
+      .join(', ');
+    const data = {
+      brand,
+      firstName,
+      policyNumber,
+      plan: JOURNEY_LABEL[journeyType] || journeyType,
+      region,
+      coverStart: coverDate(startDate),
+      coverEnd: coverDate(endDate),
+      travellers,
+      amount: amountLabel,
+      documents,
+      attachedCount: attachments.length,
+      refundBeforeStart,
+      claimsUrl,
+      supportEmail: supportEmail || brand.adminEmail,
+      upsells,
+      footerNote,
+    };
+    const result = await sendEmail({
+      email,
+      name: firstName,
+      subject: `Your travel insurance is issued: policy ${policyNumber}`,
+      htmlContent: renderPolicyIssuedTemplate(data),
+      textContent: renderPolicyIssuedText(data),
+      attachment: attachments,
+    });
+    return result?.ok === false ? { ok: false, error: result.error } : { ok: true };
   }
 
   async function sendInsurancePaymentReminder({
     email, firstName, journeyType, region, startDate, endDate,
     passengers = [], amount, currency, paymentUrl, quoteExpiresAt, supportEmail, footerNote,
   }) {
-    try {
-      if (!email || !paymentUrl) return { ok: false, error: 'Missing customer email or payment link' };
-      const amountLabel = [currency, typeof amount === 'number' ? amount.toFixed(2) : amount].filter(Boolean).join(' ');
-      const travellers = passengers
-        .map((p) => [p.title, p.firstName, p.lastName].filter(Boolean).join(' '))
-        .filter(Boolean)
-        .join(', ');
-      const data = {
-        brand,
-        firstName,
-        plan: JOURNEY_LABEL[journeyType] || journeyType,
-        region,
-        coverStart: coverDate(startDate),
-        coverEnd: coverDate(endDate),
-        travellers,
-        amount: amountLabel,
-        paymentUrl,
-        expiresOn: quoteExpiresAt ? coverDate(quoteExpiresAt) : '',
-        supportEmail: supportEmail || brand.adminEmail,
-        footerNote,
-      };
-      const result = await sendEmail({
-        email,
-        name: firstName,
-        subject: `Your travel insurance quote is ready to pay`,
-        htmlContent: renderInsuranceReminderTemplate(data),
-        textContent: renderInsuranceReminderText(data),
-      });
-      return result?.ok === false ? { ok: false, error: result.error } : { ok: true };
-    } catch (err) {
-      log('[notifications] sendInsurancePaymentReminder failed', { email, err: err.message });
-      return { ok: false, error: err.message };
-    }
+    if (!email || !paymentUrl) return { ok: false, error: 'Missing customer email or payment link' };
+    const amountLabel = [currency, typeof amount === 'number' ? amount.toFixed(2) : amount].filter(Boolean).join(' ');
+    const travellers = passengers
+      .map((p) => [p.title, p.firstName, p.lastName].filter(Boolean).join(' '))
+      .filter(Boolean)
+      .join(', ');
+    const data = {
+      brand,
+      firstName,
+      plan: JOURNEY_LABEL[journeyType] || journeyType,
+      region,
+      coverStart: coverDate(startDate),
+      coverEnd: coverDate(endDate),
+      travellers,
+      amount: amountLabel,
+      paymentUrl,
+      expiresOn: quoteExpiresAt ? coverDate(quoteExpiresAt) : '',
+      supportEmail: supportEmail || brand.adminEmail,
+      footerNote,
+    };
+    const result = await sendEmail({
+      email,
+      name: firstName,
+      subject: `Your travel insurance quote is ready to pay`,
+      htmlContent: renderInsuranceReminderTemplate(data),
+      textContent: renderInsuranceReminderText(data),
+    });
+    return result?.ok === false ? { ok: false, error: result.error } : { ok: true };
   }
 
   async function sendHotelBookingPaymentToAdmin(data) {
-    try {
-      const htmlContent = renderHotelBookingPaidTemplate({ brand, ...data });
-      const where = data.hotel?.name || data.destination?.cityName || 'hotel';
-      await sendEmail({
-        email: brand.adminEmail,
-        name: brand.paymentsSenderName,
-        subject: `Hotel reservation paid — ${data.leadGuest || 'customer'} · ${where} · ${data.checkIn}`,
-        htmlContent,
-      });
-    } catch (err) {
-      log('[notifications] sendHotelBookingPaymentToAdmin failed', {
-        sessionId: data.sessionId,
-        err: err.message,
-      });
-    }
-  }
-
-  async function sendHotelBookingFailureToAdmin(data) {
-    try {
-      const htmlContent = renderHotelBookingFailedTemplate({ brand, ...data });
-      await sendEmail({
-        email: brand.adminEmail,
-        name: brand.paymentsSenderName,
-        subject: `ACTION NEEDED — hotel booking failed after payment (${data.sessionId})`,
-        htmlContent,
-      });
-    } catch (err) {
-      log('[notifications] sendHotelBookingFailureToAdmin failed', {
-        sessionId: data.sessionId,
-        err: err.message,
-      });
-    }
-  }
-
-  async function sendHotelBookingToCustomer(data) {
-    try {
-      if (!data?.email) return;
-
-      const firstName = data.guests?.[0]?.firstName?.trim() || 'there';
-      const hotelName = data.hotel?.name || 'your hotel';
-      const checkIn = formatToDDMMMYYYYMixed(data.checkIn);
-      const checkOut = formatToDDMMMYYYYMixed(data.checkOut);
-      const freeUntil = data.freeCancellationUntil
-        ? formatToDDMMMYYYYMixed(new Date(data.freeCancellationUntil).toISOString().slice(0, 10))
-        : null;
-
-      const textContent = [
-        `Hi ${firstName},`,
-        ``,
-        `Your hotel reservation is confirmed. Here are the details you need for your visa application.`,
-        ``,
-        `Your reservation`,
-        `- Confirmation number: ${data.hotelConfirmationCode || '—'}`,
-        `- Booking reference: ${data.bookingReference || '—'}`,
-        `- Hotel: ${hotelName}`,
-        data.hotel?.address ? `- Address: ${data.hotel.address}` : null,
-        `- Check-in: ${checkIn}`,
-        `- Check-out: ${checkOut}`,
-        `- Nights: ${data.nights ?? '—'}`,
-        ``,
-        `This is a real booking held in your name, so the embassy can verify it with the hotel.`,
-        freeUntil ? `It can be cancelled free of charge up to ${freeUntil}.` : null,
-        ``,
-        `Keep this email for your file, or print it and attach it to your application.`,
-        ``,
-        `If anything above looks wrong, just reply to this email and we will fix it.`,
-        ``,
-        `Talk soon,`,
-        `The ${brand.name} team`,
-      ].filter((line) => line !== null).join('\n');
-
-      await sendEmail({
-        email: data.email,
-        name: data.leadGuest,
-        subject: `Your hotel reservation is confirmed: ${hotelName}, ${checkIn}`,
-        textContent,
-        htmlContent: renderHotelBookingConfirmedTemplate({
-          brand,
-          ...data,
-          checkIn,
-          checkOut,
-          freeCancellationUntil: freeUntil,
-        }),
-      });
-    } catch (err) {
-      log('[notifications] sendHotelBookingToCustomer failed', {
-        sessionId: data.sessionId,
-        err: err.message,
-      });
-    }
+    const htmlContent = renderHotelBookingPaidTemplate({ brand, ...data });
+    const where = data.hotel?.name || data.destination?.cityName || 'hotel';
+    await sendEmail({
+      email: brand.adminEmail,
+      name: brand.paymentsSenderName,
+      subject: `Hotel reservation paid — ${data.leadGuest || 'customer'} · ${where} · ${formatToDDMMMYYYYMixed(data.checkIn)}`,
+      htmlContent,
+    });
   }
 
   return {
-    sendInsuranceFormSubmission,
-    sendPolicyIssuedToCustomer,
-    sendInsurancePaymentReminder,
-    sendInsurancePaymentToAdmin,
-    sendTicketPaymentToAdmin,
-    sendTicketPaymentToCustomer,
-    sendBookingPaymentToAdmin,
-    sendBookingConfirmationToCustomer,
-    sendPaymentLinkPaidToAdmin,
-    sendHotelBookingPaymentToAdmin,
-    sendHotelBookingToCustomer,
-    sendHotelBookingFailureToAdmin,
-    sendContactFormToAdmin,
-    sendVisaLeadToAdmin,
-    sendVisaLeadToCustomer,
-    sendAffiliateWelcome,
-    sendAffiliatePayoutStatement,
-    sendMagicLink,
-    sendApplicationAssigned,
-    sendDocumentRejected,
-    sendAllDocumentsApproved,
-    sendChecklistCompleteToAdmin,
-    sendDocumentsStillNeeded,
-    sendRejectionReminder,
-    sendApplicationEscalated,
-    sendFileReadyForStaff,
+    sendInsuranceFormSubmission: neverThrow(sendInsuranceFormSubmission),
+    sendPolicyIssuedToCustomer: neverThrow(sendPolicyIssuedToCustomer, ({ policyNumber }) => ({ policyNumber }), failed),
+    sendInsurancePaymentReminder: neverThrow(sendInsurancePaymentReminder, ({ email }) => ({ email }), failed),
+    sendInsurancePaymentToAdmin: neverThrow(sendInsurancePaymentToAdmin, (data) => ({ leadTraveler: data.leadTraveler })),
+    sendTicketPaymentToAdmin: neverThrow(sendTicketPaymentToAdmin, (data) => ({ leadPassenger: data.leadPassenger })),
+    sendTicketPaymentToCustomer: neverThrow(sendTicketPaymentToCustomer, (data) => ({ email: data?.email })),
+    sendBookingPaymentToAdmin: neverThrow(sendBookingPaymentToAdmin, (data) => ({ bookingRef: data?.bookingRef }), false),
+    sendBookingConfirmationToCustomer: neverThrow(sendBookingConfirmationToCustomer, (data) => ({ email: data?.email }), false),
+    sendPaymentLinkPaidToAdmin: neverThrow(sendPaymentLinkPaidToAdmin, (data) => ({ paymentLinkId: data.paymentLinkId })),
+    sendHotelBookingPaymentToAdmin: neverThrow(sendHotelBookingPaymentToAdmin, (data) => ({ sessionId: data.sessionId })),
+    sendContactFormToAdmin: neverThrow(sendContactFormToAdmin, ({ name }) => ({ name }), false),
+    sendVisaLeadToAdmin: neverThrow(sendVisaLeadToAdmin, (data) => ({ leadId: data.leadId })),
+    sendVisaLeadToCustomer: neverThrow(sendVisaLeadToCustomer, (data) => ({ email: data.email }), false),
+    sendAffiliateWelcome: neverThrow(sendAffiliateWelcome, (data) => ({ affiliateId: data?.affiliateId }), false),
+    sendAffiliatePayoutStatement: neverThrow(sendAffiliatePayoutStatement, (data) => ({ affiliateId: data?.affiliateId }), false),
+    sendMagicLink: neverThrow(sendMagicLink, ({ email }) => ({ email }), false),
+    sendApplicationAssigned: neverThrow(sendApplicationAssigned, ({ applicationRef }) => ({ applicationRef }), false),
+    sendDocumentRejected: neverThrow(sendDocumentRejected, ({ applicationRef }) => ({ applicationRef }), false),
+    sendAllDocumentsApproved: neverThrow(sendAllDocumentsApproved, ({ applicationRef }) => ({ applicationRef }), false),
+    sendChecklistCompleteToAdmin: neverThrow(sendChecklistCompleteToAdmin, ({ applicationRef }) => ({ applicationRef }), false),
+    sendDocumentsStillNeeded: neverThrow(sendDocumentsStillNeeded, ({ applicationRef }) => ({ applicationRef }), false),
+    sendRejectionReminder: neverThrow(sendRejectionReminder, ({ applicationRef }) => ({ applicationRef }), false),
+    sendApplicationEscalated: neverThrow(sendApplicationEscalated, ({ applicationRef }) => ({ applicationRef }), false),
+    sendFileReadyForStaff: neverThrow(sendFileReadyForStaff, ({ applicationRef }) => ({ applicationRef }), false),
   };
 }

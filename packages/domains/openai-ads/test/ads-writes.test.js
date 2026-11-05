@@ -9,7 +9,7 @@ const AD = {
   imageFileId: 'file_1',
 };
 
-function stub({ archiveFails = false, editFails = false, editLands = false, hints = [], biddingType = 'conversions' } = {}) {
+function stub({ archiveFails = false, editFails = false, editLands = false, editStatus = 400, hints = [], biddingType = 'conversions' } = {}) {
   const calls = [];
   let stored = null;
 
@@ -21,7 +21,9 @@ function stub({ archiveFails = false, editFails = false, editLands = false, hint
       calls.push(['updateAd', id, body.creative]);
       if (editFails) {
         if (editLands) stored = body.creative;
-        throw new Error('ad update refused');
+        const err = new Error('ad update refused');
+        err.httpStatus = editStatus;
+        throw err;
       }
       stored = body.creative;
       return { id };
@@ -155,6 +157,13 @@ describe('editing an ad', () => {
     assert.equal(result.replaced, 'ad_old');
     assert.deepEqual(calls.map((c) => c[0]), ['updateAd', 'createAd', 'setStatus']);
     assert.match(result.warning, /replacement ad was created/);
+  });
+
+  it('propagates a transient failure instead of archiving a live ad', async () => {
+    const { service, calls } = stub({ editFails: true, editStatus: 503 });
+
+    await assert.rejects(service.updateAd('ad_old', 'adgrp_1', AD, 'Ammar'), /OpenAI Ads API/);
+    assert.deepEqual(calls.map((c) => c[0]), ['updateAd']);
   });
 
   it('does not create a second ad when the edit landed but the response was lost', async () => {

@@ -1,6 +1,8 @@
 import { Commissioner, Geist_Mono, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "./Providers";
+import { getBrand } from "@travel-suite/config";
+import { buildRootMetadata } from "@travel-suite/frontend-shared/seo/metadata";
 
 const brandSans = Commissioner({
   variable: "--font-brand",
@@ -36,14 +38,10 @@ export const viewport = {
   themeColor: "#254b8e",
 };
 
-export const metadata = {
-  metadataBase: new URL("https://www.visawadi.com"),
-  title: {
-    default: "VisaWadi — Visa Assistance for UAE Residents",
-    template: "%s | VisaWadi",
-  },
-  description:
-    "Visa application support for UAE residents. We prepare your file, check every document against embassy requirements, and track the application to a decision.",
+const brand = getBrand("visawadi");
+
+export const metadata = buildRootMetadata(brand, {
+  title: { default: brand.seo.defaultTitle, template: brand.seo.titleTemplate },
   robots: { index: true, follow: true },
   icons: {
     icon: [
@@ -53,15 +51,12 @@ export const metadata = {
     apple: "/apple-touch-icon.png",
   },
   manifest: "/manifest.json",
-  appleWebApp: { capable: true, statusBarStyle: "default", title: "VisaWadi" },
+  appleWebApp: { capable: true, statusBarStyle: "default", title: brand.name },
   openGraph: {
-    title: "VisaWadi — Visa Assistance for UAE Residents",
     description:
       "Visa application support for UAE residents. Schengen, UK, US and Canada.",
-    url: "https://www.visawadi.com",
-    siteName: "VisaWadi",
   },
-};
+});
 
 export default function RootLayout({ children }) {
   return (

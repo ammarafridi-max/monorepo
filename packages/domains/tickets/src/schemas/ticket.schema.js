@@ -23,6 +23,7 @@ const SegmentSchema = new mongoose.Schema({
 const FlightSchema = new mongoose.Schema({ duration: String, segments: [SegmentSchema] });
 
 export const TICKET_EVENT_ACTIONS = [
+  'EDITED_BEFORE_PAYMENT',
   'ORDER_STATUS_CHANGED',
   'DELIVERY_CHANGED',
   'RESERVATION_SENT',

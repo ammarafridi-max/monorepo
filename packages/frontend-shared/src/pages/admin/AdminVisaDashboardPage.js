@@ -13,7 +13,7 @@ import { useGetAdminVisaLeads } from '../../hooks/visa-leads/useGetAdminVisaLead
 import { useAdminApplications } from '../../hooks/visa-applications/useAdminApplications';
 import { useGetBlogs } from '../../hooks/blog/useGetBlogs';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
-
+import { timeAgo } from '../../components/admin/format';
 
 const STATUS_STYLES = {
   new: 'bg-accent-50 text-accent-700 border-accent-200',
@@ -30,17 +30,6 @@ function StatusPill({ status }) {
       {status || 'unknown'}
     </span>
   );
-}
-
-function timeAgo(value) {
-  if (!value) return '—';
-  const diff = Date.now() - new Date(value).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
 }
 
 function leadName(lead) {

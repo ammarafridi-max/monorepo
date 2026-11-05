@@ -4,7 +4,11 @@ import { logger } from "@travel-suite/utils";
 import { createAuthRouter } from "@travel-suite/auth";
 import { createAdminUsersRouter } from "@travel-suite/admin-users";
 import { createBlogRouter, createBlogTagRouter } from "@travel-suite/blog";
-import { createCloudinaryStorage } from "@travel-suite/cloudinary";
+import { createBrandStorage } from "@travel-suite/backend-app/storage";
+import {
+  createGoogleAdsConversions,
+  createMetaCapi,
+} from "@travel-suite/backend-app/tracking";
 import { createCurrenciesRouter } from "@travel-suite/currencies";
 import { createLocationsRouter } from "@travel-suite/locations";
 import {
@@ -30,20 +34,13 @@ import config from "../utils/config.js";
 
 const router = Router();
 
-const googleAds = createGoogleAdsConversionsClient({
-  customerId: config.googleAds.customerId,
-  loginCustomerId: config.googleAds.loginCustomerId,
-  developerToken: config.googleAds.developerToken,
-  clientId: config.googleAds.clientId,
-  clientSecret: config.googleAds.clientSecret,
-  refreshToken: config.googleAds.refreshToken,
-  apiVersion: config.googleAds.apiVersion,
-  timezoneOffset: config.googleAds.timezoneOffset,
+const storage = createBrandStorage({ config });
+
+const googleAds = createGoogleAdsConversions({
+  create: createGoogleAdsConversionsClient,
+  config: config.googleAds,
   logger,
 });
-if (!googleAds.isConfigured()) {
-  logger.warn("[google-ads-conversions] Credentials not configured — server-side conversion uploads disabled");
-}
 const bookingConversions = googleAds.forAction(config.googleAds.booking);
 
 
@@ -53,10 +50,8 @@ const { router: authRouter, middleware: auth, AdminUser } = createAuthRouter({
   jwtExpiresIn: config.jwtExpiresIn,
   cookieExpiresInDays: config.jwtCookieExpiresInDays,
   nodeEnv: config.nodeEnv,
-  // Without sendEmail the OTP service reports itself disabled and every
-  // /auth/otp/* call answers 503, which is what these routes did until now.
   sendEmail,
-  brandName: "Emirates Limo",
+  brandName: config.brand.name,
   loginUrl: `${config.frontendUrl}/admin/login`,
   logger,
 });
@@ -64,25 +59,14 @@ router.use("/auth", authRouter);
 
 router.use("/admin-users", createAdminUsersRouter({ AdminUser, auth }));
 
-const blogImageStorage = createCloudinaryStorage({
-  cloudName: config.cloudinary.cloudName,
-  apiKey: config.cloudinary.apiKey,
-  apiSecret: config.cloudinary.apiSecret,
-  logger,
-  folder: "emirateslimo/blog",
-});
+const blogImageStorage = storage("blog");
 
-const vehicleStorage = createCloudinaryStorage({
-  cloudName: config.cloudinary.cloudName,
-  apiKey: config.cloudinary.apiKey,
-  apiSecret: config.cloudinary.apiSecret,
-  logger,
-  folder: "emirateslimo",
-});
+const vehicleStorage = storage();
 const vehicleImages = {
   uploadImage: (buffer, folder) => vehicleStorage.saveImage(buffer, folder),
   deleteImage: (url) => vehicleStorage.deleteImage(url),
-  deleteFolder: (folder) => vehicleStorage.deleteFolder(`emirateslimo/${folder}`),
+  deleteFolder: (folder) =>
+    vehicleStorage.deleteFolder(`${config.brand.cloudinaryFolder}/${folder}`),
 };
 
 router.use("/blogs", createBlogRouter({ db, auth, imageStorage: blogImageStorage, anthropicApiKey: config.anthropicApiKey }));
@@ -139,15 +123,11 @@ async function handlePaymentLinkSuccess(session) {
 
 const notifications = createLimoNotifications({ sendEmail });
 
-const metaCapi = createMetaCapiClient({
-  pixelId: config.meta.pixelId,
-  accessToken: config.meta.capiAccessToken,
-  testEventCode: config.meta.testEventCode,
+const metaCapi = createMetaCapi({
+  create: createMetaCapiClient,
+  config: config.meta,
   logger,
 });
-if (!metaCapi.isConfigured()) {
-  logger.warn("[meta-capi] Pixel ID or access token not configured — server-side purchase events disabled");
-}
 
 if (config.anthropicApiKey) {
   const { router: assistantRouter } = createAssistantRouter({
@@ -155,7 +135,7 @@ if (config.anthropicApiKey) {
     auth,
     anthropicApiKey: config.anthropicApiKey,
     stripe,
-    brand: { name: "Emirates Limo" },
+    brand: { name: config.brand.name },
     logger,
     datasets: [
       assistantDatasets.limoBookings(db.models.booking),

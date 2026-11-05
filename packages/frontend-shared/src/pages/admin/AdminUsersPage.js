@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Users, Plus, Pencil, Trash2, X, Loader2, Eye, EyeOff, KeyRound } from 'lucide-react';
+import { Users, Plus, Pencil, Trash2, Loader2, Eye, EyeOff, KeyRound } from 'lucide-react';
 import { useGetAdminUsers } from '../../hooks/admin-users/useGetAdminUsers';
 import { useCreateAdminUser } from '../../hooks/admin-users/useCreateAdminUser';
 import { useUpdateAdminUser } from '../../hooks/admin-users/useUpdateAdminUser';
@@ -10,6 +10,9 @@ import { useDeleteAdminUser } from '../../hooks/admin-users/useDeleteAdminUser';
 import AdminSearchInput from '../../components/admin/AdminSearchInput';
 import FilterMenu from '../../components/admin/FilterMenu';
 import AdminFab from '../../components/admin/AdminFab';
+import { fmtDate } from '../../components/admin/format';
+import { Modal } from '../../components/admin/ModalShell';
+import { inputSoftCls as inputCls } from '../../components/admin/formClasses';
 
 const DEFAULT_ROLES = ['admin', 'agent', 'blog-manager'];
 const STATUSES = ['ACTIVE', 'INACTIVE'];
@@ -25,11 +28,6 @@ const STATUS_CFG = {
   ACTIVE:   { dot: 'bg-green-500', cls: 'text-green-700'  },
   INACTIVE: { dot: 'bg-gray-400',  cls: 'text-gray-500'   },
 };
-
-function fmtDate(iso) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-}
 
 function RoleBadge({ role }) {
   const cfg = ROLE_CFG[role] ?? { label: role, cls: 'bg-gray-100 text-gray-500 border-gray-200' };
@@ -50,8 +48,6 @@ function StatusDot({ status }) {
   );
 }
 
-const inputCls =
-  'w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300 transition disabled:bg-gray-50 disabled:text-gray-400';
 
 function UserModal({ initial, onClose, onSave, saving, roles }) {
   const isEdit = !!initial;
@@ -69,17 +65,7 @@ function UserModal({ initial, onClose, onSave, saving, roles }) {
     : form.name.trim() && form.username.trim() && form.email.trim() && form.password.length >= 8;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
-
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <p className="text-sm font-bold text-gray-900">{isEdit ? 'Edit User' : 'New User'}</p>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition">
-            <X size={15} />
-          </button>
-        </div>
-
+    <Modal size="md" title={isEdit ? 'Edit User' : 'New User'} onClose={onClose}>
         <div className="px-6 py-5 space-y-4 max-h-[70vh] overflow-y-auto">
 
           <div>
@@ -155,8 +141,7 @@ function UserModal({ initial, onClose, onSave, saving, roles }) {
             {isEdit ? 'Save Changes' : 'Create User'}
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }
 
@@ -169,20 +154,13 @@ function SetPasswordModal({ user, onClose, onSave, saving }) {
   const canSave = password.length >= 8 && password === passwordConfirm;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
-
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <div>
-            <p className="text-sm font-bold text-gray-900">Set Password</p>
-            <p className="text-[11px] text-gray-400 font-mono mt-0.5">@{user.username}</p>
-          </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition">
-            <X size={15} />
-          </button>
-        </div>
-
+    <Modal
+      size="md"
+      title="Set Password"
+      subtitle={`@${user.username}`}
+      subtitleClass="text-[11px] text-gray-400 font-mono mt-0.5"
+      onClose={onClose}
+    >
         <div className="px-6 py-5 space-y-4">
           <p className="text-xs text-gray-500">
             Setting a new password signs this user out of all their existing sessions.
@@ -229,8 +207,7 @@ function SetPasswordModal({ user, onClose, onSave, saving }) {
             Set Password
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }
 

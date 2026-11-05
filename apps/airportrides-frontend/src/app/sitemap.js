@@ -1,4 +1,5 @@
 import { SITE_URL } from '@/config';
+import { staticEntries } from '@travel-suite/frontend-shared/seo/sitemap';
 
 const staticPages = [
   { url: '/', changeFrequency: 'weekly', priority: 1.0 },
@@ -13,12 +14,5 @@ const staticPages = [
 export default async function sitemap() {
   const now = new Date().toISOString();
 
-  const staticEntries = staticPages.map(({ url, changeFrequency, priority }) => ({
-    url: `${SITE_URL}${url}`,
-    lastModified: now,
-    changeFrequency,
-    priority,
-  }));
-
-  return [...staticEntries];
+  return staticEntries({ siteUrl: SITE_URL, pages: staticPages, now });
 }

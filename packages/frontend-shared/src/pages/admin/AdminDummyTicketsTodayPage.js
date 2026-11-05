@@ -15,25 +15,10 @@ import { FaPaypal } from "react-icons/fa";
 import { getDummyTicketsApi } from "../../services/apiDummyTickets.js";
 import { extractIataCode } from "../../utils/extractIataCode";
 import { convertToDubaiDate } from "../../utils/dates";
-
-const PAYMENT_CFG = {
-  PAID: {
-    dot: "bg-green-500",
-    cls: "bg-green-50  text-green-700  border-green-200",
-  },
-  UNPAID: {
-    dot: "bg-amber-400",
-    cls: "bg-amber-50  text-amber-700  border-amber-200",
-  },
-  REFUNDED: {
-    dot: "bg-gray-400",
-    cls: "bg-gray-100  text-gray-600   border-gray-200",
-  },
-  PARTIALLY_REFUNDED: {
-    dot: "bg-orange-400",
-    cls: "bg-orange-50 text-orange-700 border-orange-200",
-  },
-};
+import { fmtTodayLong } from "../../components/admin/format";
+import { PaymentBadge } from "../../components/admin/paymentStatus";
+import { Pagination } from '../../components/admin/Pagination';
+import { AdminSuspense } from '../../components/admin/AdminSuspense';
 
 const ORDER_CFG = {
   PENDING: {
@@ -53,21 +38,6 @@ const ORDER_CFG = {
     cls: "bg-gray-100   text-gray-600   border-gray-200",
   },
 };
-
-function PaymentBadge({ status }) {
-  const cfg = PAYMENT_CFG[status] ?? {
-    dot: "bg-gray-400",
-    cls: "bg-gray-100 text-gray-500 border-gray-200",
-  };
-  return (
-    <span
-      className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-full border ${cfg.cls}`}
-    >
-      <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
-      {status ?? "—"}
-    </span>
-  );
-}
 
 function OrderBadge({ status }) {
   const cfg = ORDER_CFG[status] ?? {
@@ -109,13 +79,7 @@ function TodayDeliveriesContent({ basePath }) {
     router.push(`?${ps.toString()}`);
   }
 
-  const todayLabel = new Date().toLocaleDateString("en-GB", {
-    timeZone: "Asia/Dubai",
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  const todayLabel = fmtTodayLong({ timeZone: "Asia/Dubai" });
 
   return (
     <div className="max-w-7xl mx-auto space-y-5">
@@ -266,29 +230,7 @@ function TodayDeliveriesContent({ basePath }) {
               </table>
             </div>
 
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-                <p className="text-sm text-gray-400">
-                  Page {page} of {totalPages} · {total} total
-                </p>
-                <div className="flex items-center gap-2">
-                  <button
-                    disabled={page === 1}
-                    onClick={() => goToPage(page - 1)}
-                    className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-primary-300 hover:text-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition"
-                  >
-                    <ChevronLeft size={14} />
-                  </button>
-                  <button
-                    disabled={page === totalPages}
-                    onClick={() => goToPage(page + 1)}
-                    className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-primary-300 hover:text-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition"
-                  >
-                    <ChevronRight size={14} />
-                  </button>
-                </div>
-              </div>
-            )}
+            <Pagination page={page} totalPages={totalPages} total={total} onPageChange={goToPage} />
           </>
         )}
       </div>
@@ -298,14 +240,8 @@ function TodayDeliveriesContent({ basePath }) {
 
 export default function AdminDummyTicketsTodayPage({ basePath = '/admin/dummy-tickets' }) {
   return (
-    <Suspense
-      fallback={
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <Loader2 size={24} className="animate-spin text-gray-300" />
-        </div>
-      }
-    >
+    <AdminSuspense>
       <TodayDeliveriesContent basePath={basePath} />
-    </Suspense>
+    </AdminSuspense>
   );
 }

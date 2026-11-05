@@ -1,8 +1,7 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   ClipboardList,
   ChevronLeft,
@@ -12,7 +11,6 @@ import {
   Trash2,
   RefreshCw,
   SlidersHorizontal,
-  X,
 } from "lucide-react";
 import { useGetInsuranceApplications } from "../../hooks/insurance/useGetInsuranceApplications";
 import { useDeleteInsuranceApplication } from "../../hooks/insurance/useDeleteInsuranceApplication";
@@ -21,6 +19,11 @@ import { useGetInsuranceApplicationsSummary } from "../../hooks/insurance/useGet
 import AdminSearchInput from '../../components/admin/AdminSearchInput';
 import SourceBadge from '../../components/admin/SourceBadge';
 import { CHANNEL_OPTIONS } from '../../utils/attribution';
+import { useAdminListParams } from '../../hooks/admin/useAdminListParams';
+import { fmtDate, fmtAmountPaid as fmtAmount } from '../../components/admin/format';
+import { Sheet } from '../../components/admin/ModalShell';
+import { AdminSuspense } from '../../components/admin/AdminSuspense';
+import { selectCls } from '../../components/admin/formClasses';
 
 const PAYMENT_TABS = [
   { value: "", label: "All" },
@@ -99,20 +102,6 @@ function JourneyBadge({ type }) {
   );
 }
 
-function fmtDate(str) {
-  if (!str) return "—";
-  return new Date(str).toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-function fmtAmount(amountPaid) {
-  if (!amountPaid?.amount) return "—";
-  return `${amountPaid.currency ?? ""} ${Number(amountPaid.amount).toLocaleString("en-US", { minimumFractionDigits: 2 })}`.trim();
-}
-
 function leadName(app) {
   if (app.leadPassenger) return app.leadPassenger;
   const p = app.passengers?.[0];
@@ -122,10 +111,6 @@ function leadName(app) {
 }
 
 function ApplicationsContent() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
   const {
     applications = [],
     pagination,
@@ -137,77 +122,34 @@ function ApplicationsContent() {
   const { createNationalities, isCreatingNationalities } =
     useCreateNationalities();
 
-  const page = Number(searchParams.get("page") || 1);
+  const {
+    params,
+    page,
+    search: localSearch,
+    setSearch: setLocalSearch,
+    setParam,
+    goToPage,
+    activeFilterCount,
+  } = useAdminListParams({
+    defaults: {
+      search: "",
+      paymentStatus: "",
+      journeyType: "",
+      createdAt: "all_time",
+      channel: "",
+    },
+  });
+
   const totalPages = pagination?.totalPages ?? 1;
   const total = pagination?.total ?? 0;
 
-  const urlSearch = searchParams.get("search") ?? "";
-  const urlPayment = searchParams.get("paymentStatus") || "";
-  const urlJourney = searchParams.get("journeyType") || "";
-  const urlCreatedAt = searchParams.get("createdAt") ?? "all_time";
-  const urlChannel = searchParams.get("channel") ?? "";
-
-  const [localSearch, setLocalSearch] = useState(urlSearch);
-  const [localPayment, setLocalPayment] = useState(urlPayment);
-  const [localJourney, setLocalJourney] = useState(urlJourney);
-  const [localCreatedAt, setLocalCreatedAt] = useState(urlCreatedAt);
-  const [localChannel, setLocalChannel] = useState(urlChannel);
-
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  useEffect(() => setLocalSearch(urlSearch), [urlSearch]);
-  useEffect(() => setLocalPayment(urlPayment), [urlPayment]);
-  useEffect(() => setLocalJourney(urlJourney), [urlJourney]);
-  useEffect(() => setLocalCreatedAt(urlCreatedAt), [urlCreatedAt]);
-  useEffect(() => setLocalChannel(urlChannel), [urlChannel]);
-
-  function pushParams(p) {
-    p.delete("page");
-    router.push(`${pathname}?${p.toString()}`);
-  }
-
-  function setParam(key, value) {
-    const p = new URLSearchParams(searchParams.toString());
-    if (value) p.set(key, value);
-    else p.delete(key);
-    pushParams(p);
-  }
-
-  useEffect(() => {
-    if (localSearch === urlSearch) return;
-    const t = setTimeout(() => {
-      const p = new URLSearchParams(searchParams.toString());
-      if (localSearch) p.set("search", localSearch);
-      else p.delete("search");
-      pushParams(p);
-    }, 300);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [localSearch, urlSearch]);
-
-  function goToPage(p) {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", String(p));
-    router.push(`${pathname}?${params.toString()}`);
-  }
-
-  const activeFilterCount = [
-    localPayment !== "",
-    localJourney !== "",
-    localCreatedAt !== "all_time",
-    localChannel !== "",
-  ].filter(Boolean).length;
-
-  const selectCls =
-    "px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white";
 
   const paymentControl = (className = "") => (
     <select
-      value={localPayment}
-      onChange={(e) => {
-        setLocalPayment(e.target.value);
-        setParam("paymentStatus", e.target.value);
-      }}
+      value={params.paymentStatus}
+      onChange={(e) => setParam("paymentStatus", e.target.value)}
       className={`${selectCls} ${className}`}
     >
       <option value="">All statuses</option>
@@ -223,11 +165,8 @@ function ApplicationsContent() {
 
   const journeyControl = (className = "") => (
     <select
-      value={localJourney}
-      onChange={(e) => {
-        setLocalJourney(e.target.value);
-        setParam("journeyType", e.target.value);
-      }}
+      value={params.journeyType}
+      onChange={(e) => setParam("journeyType", e.target.value)}
       className={`${selectCls} ${className}`}
     >
       <option value="">All journeys</option>
@@ -243,11 +182,8 @@ function ApplicationsContent() {
 
   const sourceControl = (className = "") => (
     <select
-      value={localChannel}
-      onChange={(e) => {
-        setLocalChannel(e.target.value);
-        setParam("channel", e.target.value);
-      }}
+      value={params.channel}
+      onChange={(e) => setParam("channel", e.target.value)}
       className={`${selectCls} ${className}`}
     >
       <option value="">All sources</option>
@@ -261,11 +197,8 @@ function ApplicationsContent() {
 
   const timeControl = (className = "") => (
     <select
-      value={localCreatedAt}
-      onChange={(e) => {
-        setLocalCreatedAt(e.target.value);
-        setParam("createdAt", e.target.value);
-      }}
+      value={params.createdAt}
+      onChange={(e) => setParam("createdAt", e.target.value)}
       className={`${selectCls} ${className}`}
     >
       <option value="all_time">All time</option>
@@ -387,23 +320,14 @@ function ApplicationsContent() {
       </div>
 
       {filtersOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40"
-          onClick={() => setFiltersOpen(false)}
+        <Sheet
+          size="md"
+          title="Filters"
+          titleClass="text-base font-bold text-gray-900"
+          spacing="space-y-5"
+          maxHeight="max-h-[85vh]"
+          onClose={() => setFiltersOpen(false)}
         >
-          <div
-            className="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-5 space-y-5 max-h-[85vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-gray-900">Filters</h3>
-              <button
-                onClick={() => setFiltersOpen(false)}
-                className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition"
-              >
-                <X size={18} />
-              </button>
-            </div>
 
             <div className="space-y-1.5">
               <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
@@ -439,8 +363,7 @@ function ApplicationsContent() {
             >
               Done
             </button>
-          </div>
-        </div>
+        </Sheet>
       )}
 
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
@@ -604,14 +527,8 @@ function ApplicationsContent() {
 
 export default function AdminInsuranceApplicationsPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <Loader2 size={24} className="animate-spin text-gray-300" />
-        </div>
-      }
-    >
+    <AdminSuspense>
       <ApplicationsContent />
-    </Suspense>
+    </AdminSuspense>
   );
 }

@@ -15,11 +15,6 @@ const dt365 = {
     primaryColor: '#1e60a6',
     accentColor: '#ff603a',
   },
-  features: {
-    dummyTickets: true,
-    insurance: false,
-    hotelBookings: true,
-  },
   seo: {
     titleTemplate: '%s | Dummy Ticket 365',
     defaultTitle: 'Dummy Ticket 365',
@@ -30,6 +25,12 @@ const dt365 = {
   legal: {
     companyName: 'TRAVL Technologies',
     address: 'Abraj Al Mamzar, Al Mamzar, Dubai, United Arab Emirates',
+    postalAddress: {
+      streetAddress: 'Abraj Al Mamzar',
+      addressLocality: 'Al Mamzar',
+      addressRegion: 'Dubai',
+      addressCountry: 'AE',
+    },
   },
 };
 

@@ -16,12 +16,13 @@ import { useRefundDummyTicket } from '../../hooks/dummy-tickets/useRefundDummyTi
 import { useUpdateDummyTicket } from '../../hooks/dummy-tickets/useUpdateDummyTicket';
 import { useUpdateDeliveryDate } from '../../hooks/dummy-tickets/useUpdateDeliveryDate';
 import SendReservationModal from '../../components/admin/SendReservationModal';
-import OrderPiPButton from '../../components/admin/FloatingOrderPanel';
+import FloatingOrderPanel from '../../components/admin/FloatingOrderPanel';
 import { convertToDubaiTime, convertToDubaiDate, formatDate, formatTravelportDate } from '../../utils/dates';
 import { extractIataCode } from '../../utils/extractIataCode';
 import { formatAmount } from '../../utils/currency';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 import AttributionCard from '../../components/admin/AttributionCard';
+import { DetailCard as Card, InfoRow } from '../../components/admin/DetailCard';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -57,29 +58,6 @@ function OrderBadge({ status, small }) {
       <span className={`${small ? 'w-1.5 h-1.5' : 'w-2 h-2'} rounded-full ${cfg.dot}`} />
       {status ?? '—'}
     </span>
-  );
-}
-
-function Card({ title, icon: Icon, children }) {
-  return (
-    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-      <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-gray-100">
-        {Icon && <Icon size={14} className="text-gray-400 shrink-0" />}
-        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{title}</p>
-      </div>
-      <div className="p-5">{children}</div>
-    </div>
-  );
-}
-
-function InfoRow({ label, value, mono }) {
-  return (
-    <div className="flex items-start justify-between gap-4 py-2 border-b border-gray-50 last:border-0">
-      <span className="text-sm text-gray-400 shrink-0">{label}</span>
-      <span className={`text-sm font-semibold text-gray-800 text-right break-all ${mono ? 'font-mono' : ''}`}>
-        {value ?? '—'}
-      </span>
-    </div>
   );
 }
 
@@ -199,6 +177,7 @@ function RefundSection({ ticket, disabled, onRefund, isRefunding }) {
 }
 
 const EVENT_LABELS = {
+  EDITED_BEFORE_PAYMENT: 'Customer edited booking',
   ORDER_STATUS_CHANGED: 'Status changed',
   DELIVERY_CHANGED: 'Delivery changed',
   RESERVATION_SENT: 'Reservation sent',
@@ -529,7 +508,7 @@ export default function AdminDummyTicketDetailPage({ basePath = '/admin/dummy-ti
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <OrderPiPButton
+          <FloatingOrderPanel
             order={orderForPanel}
             label="Pop out overview"
             className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold border border-gray-200 text-gray-600 bg-white hover:bg-gray-50 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed"

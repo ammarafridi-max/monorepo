@@ -20,13 +20,8 @@ import { useDummyTicketStats } from '../../hooks/dummy-tickets/useDummyTicketSta
 import { useGetAffiliates } from '../../hooks/affiliates/useGetAffiliates';
 import { useGetBlogs } from '../../hooks/blog/useGetBlogs';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
-
-function fmtRevenue(amount, currency) {
-  return `${currency || ''} ${Number(amount || 0).toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`.trim();
-}
+import { fmtRevenue, fmtTodayLong } from '../../components/admin/format';
+import { SectionCard } from '../../components/admin/DetailCard';
 
 function StatSkeleton() {
   return (
@@ -40,31 +35,9 @@ function StatSkeleton() {
   );
 }
 
-function SectionCard({ title, subtitle, children, action }) {
-  return (
-    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-        <div>
-          <p className="font-bold text-gray-900 text-sm">{title}</p>
-          {subtitle && (
-            <p className="text-xs text-gray-400 mt-0.5">{subtitle}</p>
-          )}
-        </div>
-        {action}
-      </div>
-      <div className="p-5">{children}</div>
-    </div>
-  );
-}
-
 function DashboardContent() {
   const { adminUser } = useAdminAuth();
-  const today = new Date().toLocaleDateString('en-GB', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  });
+  const today = fmtTodayLong();
 
   const isAgent = adminUser?.role === 'agent';
   const ticketTimeFilter = isAgent ? { createdAt: '4_hours' } : {};

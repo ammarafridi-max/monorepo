@@ -5,6 +5,7 @@ import { google } from "googleapis";
 import { PricingRuleSchema } from "@travel-suite/pricing-rules";
 import { ZoneSchema } from "@travel-suite/zones";
 import { VehicleSchema } from "@travel-suite/vehicles";
+import { hasFlag } from "../../src/args.mjs";
 
 const CONFIG = {
   sheetId: process.env.PRICING_SHEET_ID,
@@ -21,7 +22,7 @@ const CONFIG = {
   returnStrategy: "double",
 };
 
-let DRY = process.argv.includes("--dry") || process.argv.includes("--dry-run");
+let DRY = hasFlag(process.argv, "dry", "dry-run");
 
 function createRuleName(vehicles, pickupZones, dropoffZones) {
   return `${vehicles.map((veh) => `${veh.brand} ${veh.model}`).join(" / ")} - ${pickupZones

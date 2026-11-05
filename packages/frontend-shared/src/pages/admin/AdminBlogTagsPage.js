@@ -18,15 +18,7 @@ import { useDuplicateBlogTag } from '../../hooks/blog-tags/useDuplicateBlogTag';
 import AdminBlogTagModal from './AdminBlogTagModal';
 import AdminSearchInput from '../../components/admin/AdminSearchInput';
 import AdminFab from '../../components/admin/AdminFab';
-
-function fmtDate(iso) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
-}
+import { fmtDate } from '../../components/admin/format';
 
 export default function AdminBlogTagsPage() {
   const [search, setSearch] = useState('');

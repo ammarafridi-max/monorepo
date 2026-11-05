@@ -2,6 +2,7 @@
 import { readFileSync } from "node:fs";
 import { loadTarget } from "../src/registry.mjs";
 import { resolveFormat } from "../src/lib/formats.mjs";
+import { flagValue } from "../src/args.mjs";
 import {
   LENGTH_TIERS,
   BANNED_WORDS,
@@ -15,10 +16,7 @@ import {
   countWords,
 } from "../src/lib/blog-utils.mjs";
 
-const arg = (name) => {
-  const i = process.argv.indexOf(`--${name}`);
-  return i !== -1 ? process.argv[i + 1] : null;
-};
+const arg = (name) => flagValue(process.argv.slice(2), name);
 
 const targetKey = arg("target");
 const slug = arg("slug");

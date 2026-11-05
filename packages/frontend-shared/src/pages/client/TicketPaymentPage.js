@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import UpsellCard from "../../components/shared/UpsellCard.js";
 import { useGetDummyTicket } from "../../hooks/dummy-tickets/useGetDummyTicket";
+import { DRAFT_STORAGE_KEY } from "../../contexts/TicketContext.js";
 import { useDummyTicketPricing } from "../../hooks/pricing/useDummyTicketPricing";
 import { formatAmount } from "../../utils/currency";
 import { pixelPurchase } from "../../utils/pixel";
@@ -154,6 +155,11 @@ function SuccessContent({ sessionId, dummyTicket, onPurchaseEvent, supportEmail,
 
   useEffect(() => {
     localStorage.removeItem("SESSION_ID");
+    try {
+      sessionStorage.removeItem(DRAFT_STORAGE_KEY);
+    } catch {
+      void 0;
+    }
     try {
       const url = new URL(window.location.href);
       if (url.searchParams.has("sessionId")) {

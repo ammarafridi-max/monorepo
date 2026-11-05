@@ -5,6 +5,7 @@ import { User, Lock, Eye, EyeOff, Loader2, Save, ShieldCheck, Mail, BadgeCheck, 
 import { useGetMyAccount }     from '../../hooks/account/useGetMyAccount.js';
 import { useUpdateMyAccount }  from '../../hooks/account/useUpdateMyAccount.js';
 import { useUpdateMyPassword } from '../../hooks/account/useUpdateMyPassword.js';
+import { fmtDatetime as formatDate } from '../../components/admin/format';
 
 const inputCls = 'w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300 transition disabled:bg-gray-50 disabled:text-gray-400';
 
@@ -37,17 +38,6 @@ function Field({ label, children, hint }) {
       {hint && <p className="text-[11px] text-gray-400 mt-1">{hint}</p>}
     </div>
   );
-}
-
-function formatDate(value) {
-  if (!value) return '—';
-  return new Date(value).toLocaleString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
 }
 
 function roleLabel(role) {

@@ -14,6 +14,8 @@ import { useDeleteInsuranceApplication } from '../../hooks/insurance/useDeleteIn
 import { useGetInsuranceDocuments } from '../../hooks/insurance/useGetInsuranceDocuments';
 import { useResendPolicyEmail } from '../../hooks/insurance/useResendPolicyEmail';
 import AttributionCard from '../../components/admin/AttributionCard';
+import { fmtDate, fmtDatetime, fmtAmountPaid as fmtAmount } from '../../components/admin/format';
+import { DetailCard as Card, InfoRow } from '../../components/admin/DetailCard';
 
 const PAYMENT_CFG = {
   PAID:     { dot: 'bg-green-500',  cls: 'bg-green-50   text-green-700   border-green-200'  },
@@ -48,53 +50,12 @@ function JourneyBadge({ type }) {
   );
 }
 
-function fmtDate(str) {
-  if (!str) return '—';
-  return new Date(str).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-}
-
-function fmtDatetime(str) {
-  if (!str) return '—';
-  return new Date(str).toLocaleString('en-GB', {
-    day: '2-digit', month: 'short', year: 'numeric',
-    hour: '2-digit', minute: '2-digit',
-  });
-}
-
-function fmtAmount(amountPaid) {
-  if (!amountPaid?.amount) return '—';
-  return `${amountPaid.currency ?? ''} ${Number(amountPaid.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}`.trim();
-}
-
 function leadName(app) {
   if (app.leadPassenger) return app.leadPassenger;
   const p = app.passengers?.[0];
   if (!p) return '—';
   const name = [p.firstName, p.lastName].filter(Boolean).join(' - ');
   return [p.title, name].filter(Boolean).join(' ') || '—';
-}
-
-function Card({ title, icon: Icon, children }) {
-  return (
-    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-      <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-gray-100">
-        {Icon && <Icon size={14} className="text-gray-400 shrink-0" />}
-        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{title}</p>
-      </div>
-      <div className="p-5">{children}</div>
-    </div>
-  );
-}
-
-function InfoRow({ label, value, mono }) {
-  return (
-    <div className="flex items-start justify-between gap-4 py-2 border-b border-gray-50 last:border-0">
-      <span className="text-sm text-gray-400 shrink-0">{label}</span>
-      <span className={`text-sm font-semibold text-gray-800 text-right break-all ${mono ? 'font-mono' : ''}`}>
-        {value ?? '—'}
-      </span>
-    </div>
-  );
 }
 
 const TYPE_CFG = {

@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
+import { useOutsideClick } from '../../hooks/general/useOutsideClick';
 import { SlidersHorizontal, Check, ChevronDown } from 'lucide-react';
 
 export default function FilterMenu({
@@ -14,12 +15,7 @@ export default function FilterMenu({
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
-  useEffect(() => {
-    if (!open) return undefined;
-    const close = (e) => { if (!ref.current?.contains(e.target)) setOpen(false); };
-    document.addEventListener('mousedown', close);
-    return () => document.removeEventListener('mousedown', close);
-  }, [open]);
+  useOutsideClick(ref, () => setOpen(false));
 
   const isFiltered = options.length > 0 && value !== options[0].value;
   const current = options.find((o) => o.value === value) ?? options[0];

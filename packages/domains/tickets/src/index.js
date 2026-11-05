@@ -8,7 +8,7 @@ import { createPricingService } from './pricing.service.js';
 import { createTicketController } from './controller.js';
 import { createTicketRouter } from './router.js';
 import { createPricingRouter } from './pricing.router.js';
-import { createPaidOrderBus } from './paidOrderBus.js';
+import { createPaidOrderBus } from './paid-order-bus.js';
 import { getOrRegisterModel } from '@travel-suite/utils/model';
 import { logger } from '@travel-suite/utils';
 

@@ -9,7 +9,6 @@ import {
   ChevronLeft,
   ChevronRight,
   SlidersHorizontal,
-  X,
   Play,
   CheckCircle2,
   Ban,
@@ -19,12 +18,21 @@ import {
   Activity,
   Lock,
 } from 'lucide-react';
+import { Modal, Sheet } from '../../components/admin/ModalShell';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 import { useGetAffiliatePayouts } from '../../hooks/affiliates/useGetAffiliatePayouts';
 import { useGetAffiliatePayout } from '../../hooks/affiliates/useGetAffiliatePayout';
 import { useGenerateAffiliatePayouts } from '../../hooks/affiliates/useGenerateAffiliatePayouts';
 import { useMarkAffiliatePayoutPaid } from '../../hooks/affiliates/useMarkAffiliatePayoutPaid';
 import { useVoidAffiliatePayout } from '../../hooks/affiliates/useVoidAffiliatePayout';
+import { fmtDate, fmtDatetime, fmtMoney } from '../../components/admin/format';
+import { useAdminListParams } from '../../hooks/admin/useAdminListParams';
+import { InfoRow as InfoRowBase } from '../../components/admin/DetailCard';
+import { Pagination } from '../../components/admin/Pagination';
+import { AdminSuspense } from '../../components/admin/AdminSuspense';
+import { inputSoftCls as inputCls, selectCls } from '../../components/admin/formClasses';
+
+const InfoRow = (props) => <InfoRowBase {...props} size="text-xs" />;
 
 const STATUS_CFG = {
   PENDING: { label: 'Pending', dot: 'bg-amber-400', cls: 'bg-amber-50 text-amber-700 border-amber-200' },
@@ -41,38 +49,12 @@ const STATUS_OPTIONS = [
 
 const PERIOD_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
 
-const inputCls =
-  'w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300 transition disabled:bg-gray-50 disabled:text-gray-400';
 
-const selectCls =
-  'px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white';
 
 function lastCompleteMonth() {
   const now = new Date();
   const d = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-}
-
-function fmtDate(iso) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-}
-
-function fmtDatetime(iso) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
-function fmtMoney(value, currency) {
-  if (value == null) return '—';
-  const formatted = Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  return currency ? `${currency} ${formatted}` : formatted;
 }
 
 function periodLabel(payout) {
@@ -149,37 +131,18 @@ function StatSkeletons() {
   ));
 }
 
-function InfoRow({ label, value, mono }) {
-  return (
-    <div className="flex items-start justify-between gap-4 py-2 border-b border-gray-50 last:border-0">
-      <span className="text-xs text-gray-400 shrink-0">{label}</span>
-      <span className={`text-xs font-semibold text-gray-800 text-right break-all ${mono ? 'font-mono' : ''}`}>
-        {value ?? '—'}
-      </span>
-    </div>
-  );
-}
-
 function GenerateModal({ onClose, onRun, running, run, onReset }) {
   const [period, setPeriod] = useState(lastCompleteMonth());
   const valid = PERIOD_PATTERN.test(period) && period <= lastCompleteMonth();
   const claimed = run?.payouts?.filter((p) => p.claimed) ?? [];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <div>
-            <p className="text-sm font-bold text-gray-900">Run a payout month</p>
-            <p className="text-[11px] text-gray-400 mt-0.5">
-              Claims every unclaimed commissionable order in the month into a pending payout.
-            </p>
-          </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition">
-            <X size={15} />
-          </button>
-        </div>
+    <Modal
+      size="lg"
+      title="Run a payout month"
+      subtitle="Claims every unclaimed commissionable order in the month into a pending payout."
+      onClose={onClose}
+    >
 
         <div className="px-6 py-5 space-y-4 max-h-[60vh] overflow-y-auto">
           <div>
@@ -254,8 +217,7 @@ function GenerateModal({ onClose, onRun, running, run, onReset }) {
             {run ? 'Run again' : 'Run month'}
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }
 
@@ -265,18 +227,13 @@ function MarkPaidModal({ payout, onClose, onConfirm, saving }) {
   const canSave = reference.trim().length > 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <div>
-            <p className="text-sm font-bold text-gray-900">Record this payout as paid</p>
-            <p className="text-[11px] text-gray-400 mt-0.5 font-mono">{payout.affiliateId} · {periodLabel(payout)}</p>
-          </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition">
-            <X size={15} />
-          </button>
-        </div>
+    <Modal
+      size="md"
+      title="Record this payout as paid"
+      subtitle={`${payout.affiliateId} · ${periodLabel(payout)}`}
+      subtitleClass="text-[11px] text-gray-400 mt-0.5 font-mono"
+      onClose={onClose}
+    >
 
         <div className="px-6 py-5 space-y-4">
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
@@ -337,20 +294,20 @@ function MarkPaidModal({ payout, onClose, onConfirm, saving }) {
             Confirm payment sent
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }
 
 function VoidModal({ payout, onClose, onConfirm, saving }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100">
-          <p className="text-sm font-bold text-gray-900">Void this payout</p>
-          <p className="text-[11px] text-gray-400 mt-0.5 font-mono">{payout.affiliateId} · {periodLabel(payout)}</p>
-        </div>
+    <Modal
+      size="sm"
+      title="Void this payout"
+      subtitle={`${payout.affiliateId} · ${periodLabel(payout)}`}
+      subtitleClass="text-[11px] text-gray-400 mt-0.5 font-mono"
+      showClose={false}
+      onClose={onClose}
+    >
         <div className="px-6 py-5">
           <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
             <p className="text-xs font-semibold text-red-700">
@@ -372,8 +329,7 @@ function VoidModal({ payout, onClose, onConfirm, saving }) {
             Void payout
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }
 
@@ -381,15 +337,7 @@ function DetailModal({ id, onClose }) {
   const { payout, isLoadingPayout, isErrorPayout } = useGetAffiliatePayout(id);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <p className="text-sm font-bold text-gray-900">Payout detail</p>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition">
-            <X size={15} />
-          </button>
-        </div>
+    <Modal size="lg" title="Payout detail" onClose={onClose}>
 
         {isLoadingPayout ? (
           <div className="flex items-center justify-center py-20">
@@ -466,26 +414,21 @@ function DetailModal({ id, onClose }) {
             )}
           </div>
         )}
-      </div>
-    </div>
+    </Modal>
   );
 }
 
 function PayoutsContent() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
   const { adminUser, isLoadingAdminAuth } = useAdminAuth();
   const canManage = !isLoadingAdminAuth && adminUser?.role === 'admin';
 
-  const page = Number(searchParams.get('page') || 1);
-  const urlStatus = searchParams.get('status') || '';
-  const urlPeriod = searchParams.get('period') || '';
-  const urlAffiliateId = searchParams.get('affiliateId') || '';
+  const { params, page, setParam, goToPage, activeFilterCount } = useAdminListParams({
+    defaults: { status: '', period: '', affiliateId: '' },
+  });
+  const urlStatus = params.status;
+  const urlPeriod = params.period;
+  const urlAffiliateId = params.affiliateId;
 
-  const [localStatus, setLocalStatus] = useState(urlStatus);
-  const [localPeriod, setLocalPeriod] = useState(urlPeriod);
   const [localAffiliateId, setLocalAffiliateId] = useState(urlAffiliateId);
   const [filtersOpen, setFiltersOpen] = useState(false);
 
@@ -494,8 +437,6 @@ function PayoutsContent() {
   const [payingPayout, setPayingPayout] = useState(null);
   const [voidingTarget, setVoidingTarget] = useState(null);
 
-  useEffect(() => setLocalStatus(urlStatus), [urlStatus]);
-  useEffect(() => setLocalPeriod(urlPeriod), [urlPeriod]);
   useEffect(() => setLocalAffiliateId(urlAffiliateId), [urlAffiliateId]);
 
   const queryParams = useMemo(
@@ -516,22 +457,6 @@ function PayoutsContent() {
 
   const totalPages = pagination?.totalPages ?? 1;
   const total = pagination?.total ?? 0;
-
-  function setParam(key, value) {
-    const params = new URLSearchParams(searchParams.toString());
-    if (value) params.set(key, value);
-    else params.delete(key);
-    params.delete('page');
-    router.push(`${pathname}?${params.toString()}`);
-  }
-
-  function goToPage(p) {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('page', String(p));
-    router.push(`${pathname}?${params.toString()}`);
-  }
-
-  const activeFilterCount = [urlStatus !== '', urlPeriod !== '', urlAffiliateId !== ''].filter(Boolean).length;
 
   const totals = useMemo(() => {
     const acc = { pending: 0, paid: 0, absorbed: 0, pendingCount: 0, currencies: new Set() };
@@ -568,11 +493,8 @@ function PayoutsContent() {
 
   const statusControl = (className = '') => (
     <select
-      value={localStatus}
-      onChange={(e) => {
-        setLocalStatus(e.target.value);
-        setParam('status', e.target.value);
-      }}
+      value={urlStatus}
+      onChange={(e) => setParam('status', e.target.value)}
       className={`${selectCls} ${className}`}
     >
       {STATUS_OPTIONS.map(({ value, label }) => (
@@ -701,23 +623,14 @@ function PayoutsContent() {
         </div>
 
         {filtersOpen && (
-          <div
-            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40"
-            onClick={() => setFiltersOpen(false)}
+          <Sheet
+            size="md"
+            title="Filters"
+            titleClass="text-base font-bold text-gray-900"
+            spacing="space-y-5"
+            maxHeight="max-h-[85vh]"
+            onClose={() => setFiltersOpen(false)}
           >
-            <div
-              className="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-5 space-y-5 max-h-[85vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between">
-                <h3 className="text-base font-bold text-gray-900">Filters</h3>
-                <button
-                  onClick={() => setFiltersOpen(false)}
-                  className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition"
-                >
-                  <X size={18} />
-                </button>
-              </div>
 
               <div className="space-y-1.5">
                 <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Status</label>
@@ -728,11 +641,8 @@ function PayoutsContent() {
                 <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Period</label>
                 <input
                   type="month"
-                  value={localPeriod}
-                  onChange={(e) => {
-                    setLocalPeriod(e.target.value);
-                    setParam('period', e.target.value);
-                  }}
+                  value={urlPeriod}
+                  onChange={(e) => setParam('period', e.target.value)}
                   className={inputCls}
                 />
               </div>
@@ -760,8 +670,7 @@ function PayoutsContent() {
               >
                 Done
               </button>
-            </div>
-          </div>
+          </Sheet>
         )}
 
         <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
@@ -908,29 +817,14 @@ function PayoutsContent() {
                 </table>
               </div>
 
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-                  <p className="text-sm text-gray-400">
-                    Page {page} of {totalPages} · {total} total
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <button
-                      disabled={!pagination?.hasPrevPage}
-                      onClick={() => goToPage(page - 1)}
-                      className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-primary-300 hover:text-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition"
-                    >
-                      <ChevronLeft size={14} />
-                    </button>
-                    <button
-                      disabled={!pagination?.hasNextPage}
-                      onClick={() => goToPage(page + 1)}
-                      className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-primary-300 hover:text-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition"
-                    >
-                      <ChevronRight size={14} />
-                    </button>
-                  </div>
-                </div>
-              )}
+              <Pagination
+                page={page}
+                totalPages={totalPages}
+                total={total}
+                hasPrev={pagination?.hasPrevPage}
+                hasNext={pagination?.hasNextPage}
+                onPageChange={goToPage}
+              />
             </>
           )}
         </div>
@@ -941,14 +835,8 @@ function PayoutsContent() {
 
 export default function AdminAffiliatePayoutsPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <Loader2 size={24} className="animate-spin text-gray-300" />
-        </div>
-      }
-    >
+    <AdminSuspense>
       <PayoutsContent />
-    </Suspense>
+    </AdminSuspense>
   );
 }

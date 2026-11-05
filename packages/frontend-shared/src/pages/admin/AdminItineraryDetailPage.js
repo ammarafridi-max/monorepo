@@ -13,6 +13,7 @@ import { useDeleteItineraryOrder } from '../../hooks/itineraries/useDeleteItiner
 import { convertToDubaiDate, convertToDubaiTime } from '../../utils/dates';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 import AttributionCard from '../../components/admin/AttributionCard';
+import { DetailCard as Card, InfoRow } from '../../components/admin/DetailCard';
 
 const PAYMENT_CFG = {
   PAID:     { dot: 'bg-green-500', cls: 'bg-green-50 text-green-700 border-green-200' },
@@ -34,29 +35,6 @@ function Badge({ status, cfgMap }) {
       <span className={`w-2 h-2 rounded-full ${cfg.dot}`} />
       {status ?? '—'}
     </span>
-  );
-}
-
-function Card({ title, icon: Icon, children }) {
-  return (
-    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-      <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-gray-100">
-        {Icon && <Icon size={14} className="text-gray-400 shrink-0" />}
-        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{title}</p>
-      </div>
-      <div className="p-5">{children}</div>
-    </div>
-  );
-}
-
-function InfoRow({ label, value, mono }) {
-  return (
-    <div className="flex items-start justify-between gap-4 py-2 border-b border-gray-50 last:border-0">
-      <span className="text-sm text-gray-400 shrink-0">{label}</span>
-      <span className={`text-sm font-semibold text-gray-800 text-right break-all ${mono ? 'font-mono' : ''}`}>
-        {value ?? '—'}
-      </span>
-    </div>
   );
 }
 

@@ -9,8 +9,9 @@ import { UserAuthContext } from "@travel-suite/frontend-shared/contexts/AuthCont
 import AppMegaLayout from "@travel-suite/frontend-shared/layouts/AppMegaLayout";
 import MobileTabBar from "@/components/app/MobileTabBar";
 import ServiceWorker from "@/components/app/ServiceWorker";
+import HomeShell from "@/components/layout/HomeShell";
 import { LP_BRAND } from "@/lib/lp";
-import { UserAuthProvider } from "@travel-suite/frontend-shared/contexts/UserAuthProvider";
+import { UserAuthProvider } from "@travel-suite/frontend-shared/contexts/UserAuthContext";
 import Footer from "@travel-suite/frontend-shared/components/sections/v2/Footer";
 import StickyWhatsApp from "@travel-suite/frontend-shared/components/ui/v2/StickyWhatsApp";
 import AnalyticsInit from "@travel-suite/frontend-shared/components/shared/AnalyticsInit";
@@ -175,6 +176,7 @@ export default function Providers({ children }) {
   const isAdminRoute = pathname?.startsWith("/admin");
   const isLandingRoute = pathname?.startsWith("/lp/");
   const isApplyRoute = pathname?.startsWith("/apply");
+  const isHomeRoute = pathname === "/";
   const AuthProvider = isApplyRoute ? UserAuthProvider : GuestAuthProvider;
 
   const [queryClient] = useState(
@@ -190,6 +192,21 @@ export default function Providers({ children }) {
         <Toaster />
         <QueryClientProvider client={queryClient}>
           {children}
+        </QueryClientProvider>
+      </>
+    );
+  }
+
+  if (isHomeRoute) {
+    return (
+      <>
+        <AnalyticsInit />
+        <Toaster />
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <HomeShell>{children}</HomeShell>
+            <ServiceWorker />
+          </AuthProvider>
         </QueryClientProvider>
       </>
     );

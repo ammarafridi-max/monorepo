@@ -29,8 +29,6 @@ export function createAdminActionsRouter({
     return order;
   }
 
-  // Refund. Idempotent + safe: only when a captured payment exists and it is not
-  // already refunded; the Stripe idempotency key collapses any double-fire to one.
   router.post(
     '/orders/:id/refund',
     ...adminOnly,
@@ -50,8 +48,6 @@ export function createAdminActionsRouter({
     })
   );
 
-  // keeps it idempotent; we remove any finished/failed job with that id first so a
-  // fresh run is accepted. The worker itself is idempotent (never retrains or
   router.post(
     '/orders/:id/retry',
     ...adminOnly,
@@ -167,7 +163,15 @@ export function createAdminActionsRouter({
         }
       }
 
-      const deleted = results.filter((r) => r.deleted).length;
+      const totals = results.reduce(
+        (acc, r) => ({
+          deleted: acc.deleted + (r.deleted ? 1 : 0),
+          deletedObjects: acc.deletedObjects + (r.deletedObjects ?? 0),
+          failedObjects: acc.failedObjects + (r.failedObjects ?? 0),
+        }),
+        { deleted: 0, deletedObjects: 0, failedObjects: 0 },
+      );
+      const deleted = totals.deleted;
       const failed = results.length - deleted;
 
       res.json({
@@ -180,8 +184,8 @@ export function createAdminActionsRouter({
           requested: unique.length,
           deleted,
           failed,
-          deletedObjects: results.reduce((n, r) => n + (r.deletedObjects ?? 0), 0),
-          failedObjects: results.reduce((n, r) => n + (r.failedObjects ?? 0), 0),
+          deletedObjects: totals.deletedObjects,
+          failedObjects: totals.failedObjects,
           results,
         },
       });

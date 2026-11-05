@@ -1,4 +1,5 @@
-export const TARGET = {
+import { defineTarget } from '../../src/define-target.mjs';
+export const TARGET = defineTarget({
   key: 'dt365',
   jobs: ['affiliate-payouts', 'meta-audiences'],
   name: 'Dummy Ticket 365',
@@ -6,4 +7,4 @@ export const TARGET = {
 
   adminEmailEnv: 'DT365_ADMIN_EMAIL',
   adminPasswordEnv: 'DT365_ADMIN_PASSWORD',
-};
+});

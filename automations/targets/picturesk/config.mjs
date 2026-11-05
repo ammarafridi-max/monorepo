@@ -1,8 +1,9 @@
+import { defineTarget } from '../../src/define-target.mjs';
 
 const SITE = 'https://www.picturesk.ai';
 const page = (path) => `${SITE}${path}`;
 
-export const TARGET = {
+export const TARGET = defineTarget({
   key: 'picturesk',
   name: 'Picturesk',
   backendUrl: process.env.PICTURESK_BACKEND_URL || 'https://api.picturesk.ai',
@@ -20,11 +21,6 @@ export const TARGET = {
     excludeSlugs: [],
   },
 
-  formatsByTier: {
-    short: 'quick-answer',
-    medium: 'sourced-guide',
-    long: 'sourced-guide',
-  },
 
   citationDomains: [
     'linkedin.com',            
@@ -103,7 +99,6 @@ export const TARGET = {
     return `Editorial lifestyle photograph, ${scene}, soft natural window light, muted warm palette with deep green accents, shallow depth of field, 35mm, no text, no words, no letters, no logos, no watermarks, no labels`;
   },
 
-  blogUrl: (slug) => `${SITE}/blog/${slug}`,
   adminBlogUrl: (id) => `${SITE}/admin/blog/${id}/edit`,
 
   writerIdentity:
@@ -184,7 +179,7 @@ Example shape (write your own copy, do not reuse this wording verbatim):
 
     return links;
   },
-};
+});
 
 export const BRAND = TARGET;
 export default TARGET;

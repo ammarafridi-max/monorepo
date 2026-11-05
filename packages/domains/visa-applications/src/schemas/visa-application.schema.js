@@ -40,7 +40,7 @@ export const APPOINTMENT_STATUSES = ['NOT_BOOKED', 'BOOKED', 'ATTENDED', 'RESCHE
 
 export const REMINDER_STATES = ['ACTIVE', 'PAUSED', 'ESCALATED'];
 
-const visaApplicationSchema = new Schema(
+const VisaApplicationSchema = new Schema(
   {
     applicationRef: { type: String, required: true, unique: true, index: true, uppercase: true, trim: true },
 
@@ -105,10 +105,10 @@ const visaApplicationSchema = new Schema(
   },
 );
 
-visaApplicationSchema.pre('save', function () {
+VisaApplicationSchema.pre('save', function () {
   if (this.isNew) {
     this.activityLog.push({ action: 'created', performedAt: new Date() });
   }
 });
 
-export default visaApplicationSchema;
+export default VisaApplicationSchema;

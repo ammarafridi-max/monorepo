@@ -88,8 +88,6 @@ function makePersister({ crashOnCall } = {}) {
   return persist;
 }
 
-// (stripe.refunds.create(params, { idempotencyKey })). It records call count and
-// the idempotency keys it saw, the same way the fake Replicate client counts
 function makeFakeStripe() {
   const idempotencyKeys = [];
   return {

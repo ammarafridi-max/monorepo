@@ -15,21 +15,22 @@ const mdt = {
     primaryColor: '#14948f',
     accentColor: '#ff603a',
   },
-  features: {
-    dummyTickets: true,
-    insurance: true,
-    hotelBookings: false,
-  },
   seo: {
     titleTemplate: '%s | My Dummy Ticket',
     defaultTitle: 'My Dummy Ticket',
     defaultDescription:
-      'Get a verifiable dummy flight ticket for your visa application. Instant delivery. Trusted by UAE residents.',
+      'Need a dummy ticket for your visa application? Get a verifiable flight reservation with a real PNR, emailed in minutes. Trusted by UAE residents.',
     ogImage: '/og-image.png',
   },
   legal: {
     companyName: 'TRAVL Technologies',
     address: 'Abraj Al Mamzar, Al Mamzar, Dubai, United Arab Emirates',
+    postalAddress: {
+      streetAddress: 'Abraj Al Mamzar',
+      addressLocality: 'Al Mamzar',
+      addressRegion: 'Dubai',
+      addressCountry: 'AE',
+    },
   },
 };
 

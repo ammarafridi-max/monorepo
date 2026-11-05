@@ -3,7 +3,6 @@ const REQUIRED_STRINGS = [
 ];
 const REQUIRED_EMAILS = ['from', 'support', 'noReply'];
 const REQUIRED_THEME = ['primaryColor', 'accentColor'];
-const REQUIRED_FEATURES = ['dummyTickets', 'insurance', 'hotelBookings'];
 const REQUIRED_SEO = ['titleTemplate', 'defaultTitle', 'defaultDescription', 'ogImage'];
 const REQUIRED_LEGAL = ['companyName', 'address'];
 
@@ -23,11 +22,6 @@ export function validateBrand(config) {
   for (const field of REQUIRED_THEME) {
     if (typeof config.theme?.[field] !== 'string' || !config.theme[field]) {
       errors.push(`missing or empty: theme.${field}`);
-    }
-  }
-  for (const field of REQUIRED_FEATURES) {
-    if (typeof config.features?.[field] !== 'boolean') {
-      errors.push(`missing or non-boolean: features.${field}`);
     }
   }
   for (const field of REQUIRED_SEO) {

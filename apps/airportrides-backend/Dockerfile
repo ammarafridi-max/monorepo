@@ -23,6 +23,8 @@ COPY packages/integrations/brevo/package.json      packages/integrations/brevo/p
 COPY packages/integrations/cloudinary/package.json packages/integrations/cloudinary/package.json
 COPY packages/shared/notifications/package.json   packages/shared/notifications/package.json
 COPY packages/shared/utils/package.json           packages/shared/utils/package.json
+COPY packages/shared/backend-app/package.json   packages/shared/backend-app/package.json
+COPY packages/shared/config/package.json        packages/shared/config/package.json
 COPY apps/airportrides-backend/package.json       apps/airportrides-backend/package.json
 
 RUN pnpm install --frozen-lockfile

@@ -5,7 +5,7 @@ import { createCurrencyConversionService } from '@travel-suite/currencies/conver
 import { createHotelPricingService } from './pricing.service.js';
 import { createHotelBookingController } from './controller.js';
 import { createHotelBookingRouter, createHotelPricingRouter } from './router.js';
-import { createPaidOrderBus } from './paidOrderBus.js';
+import { createPaidOrderBus } from './paid-order-bus.js';
 import { getOrRegisterModel } from '@travel-suite/utils/model';
 
 

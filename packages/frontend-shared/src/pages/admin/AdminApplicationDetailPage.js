@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useOutsideClick } from '../../hooks/general/useOutsideClick';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import {
@@ -17,6 +18,12 @@ import { NATIONALITIES } from '../../data/nationalities.js';
 import { adminGetDocumentStreamBlobApi } from '../../services/apiVisaApplications.js';
 import DatePicker from '../../components/form-elements/v1/DatePicker.js';
 import NationalitySelect from '../../components/form-elements/v2/NationalitySelect.js';
+import { fmtDate } from '../../components/admin/format';
+import { Sheet } from '../../components/admin/ModalShell';
+import { InfoRow as InfoRowBase } from '../../components/admin/DetailCard';
+import { inputCls } from '../../components/admin/formClasses';
+
+const InfoRow = (props) => <InfoRowBase {...props} labelTone="text-gray-500" />;
 
 const RELATIONSHIP_OPTIONS = [
   'Self', 'Father', 'Mother', 'Husband', 'Wife', 'Spouse', 'Son', 'Daughter', 'Brother', 'Sister',
@@ -72,15 +79,6 @@ function Card({ title, icon: Icon, children, action, collapsible = false, defaul
   );
 }
 
-function InfoRow({ label, value, mono }) {
-  return (
-    <div className="flex items-start justify-between gap-4 py-2 border-b border-gray-50 last:border-0">
-      <span className="text-sm text-gray-500 shrink-0">{label}</span>
-      <span className={`text-sm font-semibold text-gray-800 text-right break-all ${mono ? 'font-mono' : ''}`}>{value ?? '—'}</span>
-    </div>
-  );
-}
-
 function DocStatusBadge({ status }) {
   const cfg = DOC_CFG[status] || DOC_CFG.REQUIRED;
   return (
@@ -89,11 +87,6 @@ function DocStatusBadge({ status }) {
       {String(status).toLowerCase().replace(/_/g, ' ').replace(/^\w/, (c) => c.toUpperCase())}
     </span>
   );
-}
-
-function fmtDate(str) {
-  if (!str) return '—';
-  return new Date(str).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
 function todayStr() {
@@ -259,11 +252,7 @@ function ComboSelect({ value, onChange, options = [], placeholder = 'Search…',
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   const inputRef = useRef(null);
-  useEffect(() => {
-    function onOut(e) { if (ref.current && !ref.current.contains(e.target)) { setOpen(false); setQuery(''); } }
-    document.addEventListener('mousedown', onOut);
-    return () => document.removeEventListener('mousedown', onOut);
-  }, []);
+  useOutsideClick(ref, () => { setOpen(false); setQuery(''); });
   const q = query.trim().toLowerCase();
   const filtered = options.filter((o) => o.toLowerCase().includes(q));
   const showCustom = query.trim() && !options.some((o) => o.toLowerCase() === q);
@@ -308,7 +297,6 @@ function ApplicantModal({ applicationId, applicant, onClose }) {
   });
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
   const setVal = (k) => (v) => setForm((f) => ({ ...f, [k]: v }));
-  const inputCls = 'w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500';
   const name = `${applicant.firstName || ''} ${applicant.lastName || ''}`.trim() || 'Applicant';
 
   const natList = NATIONALITIES;
@@ -320,15 +308,17 @@ function ApplicantModal({ applicationId, applicant, onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40" onClick={onClose}>
-      <form onClick={(e) => e.stopPropagation()} onSubmit={submit} className="bg-white w-full sm:max-w-lg rounded-t-2xl sm:rounded-2xl p-5 space-y-4 max-h-[85vh] overflow-y-auto">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h3 className="text-base font-bold text-gray-900">Edit {name}</h3>
-            {applicant.isPrimary && <span className="text-[10px] font-semibold uppercase tracking-wide text-primary-700 bg-primary-50 rounded-full px-2 py-0.5">Primary</span>}
-          </div>
-          <button type="button" onClick={onClose} className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 transition"><X size={18} /></button>
-        </div>
+    <Sheet
+      as="form"
+      onSubmit={submit}
+      size="lg"
+      title={`Edit ${name}`}
+      titleClass="text-base font-bold text-gray-900"
+      titleExtra={applicant.isPrimary ? <span className="text-[10px] font-semibold uppercase tracking-wide text-primary-700 bg-primary-50 rounded-full px-2 py-0.5">Primary</span> : null}
+      maxHeight="max-h-[85vh]"
+      closeTone="dark"
+      onClose={onClose}
+    >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Field label="First name"><input type="text" value={form.firstName} onChange={set('firstName')} className={inputCls} /></Field>
           <Field label="Last name"><input type="text" value={form.lastName} onChange={set('lastName')} className={inputCls} /></Field>
@@ -353,8 +343,7 @@ function ApplicantModal({ applicationId, applicant, onClose }) {
         <button type="submit" disabled={isPending} className="w-full inline-flex items-center justify-center gap-2 py-2.5 text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 rounded-xl transition disabled:opacity-60">
           {isPending ? <Loader2 size={14} className="animate-spin" /> : 'Save changes'}
         </button>
-      </form>
-    </div>
+    </Sheet>
   );
 }
 
@@ -462,7 +451,6 @@ export default function AdminApplicationDetailPage() {
   }
 
   const customer = application.user ? `${application.user.firstName || ''} ${application.user.lastName || ''}`.trim() || application.user.email : '—';
-  const inputCls = 'w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500';
 
   const applicants = application.applicants || [];
   const nameById = new Map(applicants.map((a) => [String(a._id), `${a.firstName || ''} ${a.lastName || ''}`.trim() || 'Applicant']));

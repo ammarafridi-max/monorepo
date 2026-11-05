@@ -15,21 +15,22 @@ const emirateslimo = {
     primaryColor: "#14948f",
     accentColor: "#0d6a66",
   },
-  features: {
-    dummyTickets: false,
-    insurance: false,
-    hotelBookings: false,
-  },
   seo: {
     titleTemplate: "%s | Emirates Limo",
     defaultTitle: "Emirates Limo | Premium Chauffeur & Airport Transfer Dubai",
     defaultDescription:
       "Premium chauffeur service and airport transfers in Dubai and across the UAE. Professional drivers, luxury vehicles, and always on time.",
-    ogImage: "/logo-light.webp",
+    ogImage: "/hero-bg.webp",
   },
   legal: {
-    companyName: "Emirates Limo",
+    companyName: "TRAVL Technologies",
     address: "Dubai, United Arab Emirates",
+    postalAddress: {
+      streetAddress: "A Block, Abraj Al Mamzar",
+      addressLocality: "Dubai",
+      addressRegion: "Dubai",
+      addressCountry: "AE",
+    },
   },
 };
 

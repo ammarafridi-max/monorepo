@@ -2,7 +2,7 @@ import PrimarySection from '@travel-suite/frontend-shared/components/shared/layo
 import Container from '@travel-suite/frontend-shared/components/shared/layout/Container';
 import SectionTitle from '@travel-suite/frontend-shared/components/shared/layout/SectionTitle';
 import BookCta from './BookCta';
-import { CURRENCY, PRICING_OPTIONS } from './pricing';
+import { CURRENCY, PRICING_OPTIONS } from './Pricing';
 
 const bestFor = {
   '2 Days': 'Short-notice visa appointments',

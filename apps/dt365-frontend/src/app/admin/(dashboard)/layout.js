@@ -48,7 +48,7 @@ const nav = [
   {
     section: 'Catalogue',
     items: [
-      { label: 'Airlines', href: '/admin/airline-logos', icon: 'Plane', roles: ['admin'] },
+      { label: 'Airlines', href: '/admin/airlines', icon: 'Plane', roles: ['admin'] },
       { label: 'Currencies', href: '/admin/currencies', icon: 'CircleDollarSign', roles: ['admin'] },
     ],
   },
@@ -73,7 +73,7 @@ const brand = { name: 'DT365', icon: 'Ticket' };
 
 export default function Layout({ children }) {
   return (
-    <AdminDashboardLayout nav={nav} brand={brand}>
+    <AdminDashboardLayout nav={nav} brand={brand} hotelOrderPing>
       {children}
     </AdminDashboardLayout>
   );

@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { ArrowLeft, Trash2, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useDeleteVehicleImage } from '../../hooks/vehicles/useDeleteVehicleImage.js';
+import { FormCard as Card } from './DetailCard';
 
 const TYPES = ['Sedan', 'Crossover', 'SUV', 'Van'];
 const FUELS = ['Petrol', 'Diesel', 'Electric', 'Hybrid'];
@@ -56,17 +57,6 @@ function buildFormData(data) {
   }
 
   return fd;
-}
-
-function Card({ title, children }) {
-  return (
-    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-        <h3 className="text-sm font-bold text-gray-700">{title}</h3>
-      </div>
-      <div className="p-5">{children}</div>
-    </div>
-  );
 }
 
 function Field({ label, hint, children }) {

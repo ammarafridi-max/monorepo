@@ -4,7 +4,12 @@ import Container from "../../shared/layout/Container.js";
 import SectionHead from "./VisaSectionHead.js";
 import VisaGuideLink from "./VisaGuideLink.js";
 
-export default function VisaPricingBreakdown({ rows = [], countryName = "", guide, term = "visa" }) {
+export default function VisaPricingBreakdown({
+  rows = [],
+  countryName = "",
+  guide,
+  term = "visa",
+}) {
   const Term = term.charAt(0).toUpperCase() + term.slice(1);
   const subject = countryName ? `${countryName} ${term}` : term;
   if (!rows.length) return null;
@@ -25,9 +30,6 @@ export default function VisaPricingBreakdown({ rows = [], countryName = "", guid
                 <th className="text-left font-outfit font-semibold text-[11px] text-gray-600 uppercase tracking-wider px-5 py-3">
                   Item
                 </th>
-                <th className="text-left font-outfit font-semibold text-[11px] text-gray-600 uppercase tracking-wider px-5 py-3">
-                  Paid to
-                </th>
                 <th className="text-right font-outfit font-semibold text-[11px] text-gray-600 uppercase tracking-wider px-5 py-3">
                   Amount
                 </th>
@@ -46,11 +48,9 @@ export default function VisaPricingBreakdown({ rows = [], countryName = "", guid
                       </p>
                     )}
                   </td>
-                  <td className="px-5 py-3.5 font-outfit font-normal text-[14px] text-gray-600 whitespace-nowrap">
-                    {row.paidTo || "—"}
-                  </td>
                   <td className="px-5 py-3.5 text-right font-outfit font-semibold text-[15px] text-gray-900 whitespace-nowrap">
-                    {row.currency || currency} {Number(row.amount).toLocaleString()}
+                    {row.currency || currency}{" "}
+                    {Number(row.amount).toLocaleString()}
                   </td>
                 </tr>
               ))}
@@ -75,7 +75,10 @@ export default function VisaPricingBreakdown({ rows = [], countryName = "", guid
           through at cost and may change without notice.
         </p>
 
-        <VisaGuideLink guide={guide} label={`Read our guide on the full cost breakdown of a ${subject}`} />
+        <VisaGuideLink
+          guide={guide}
+          label={`Read our guide on the full cost breakdown of a ${subject}`}
+        />
       </Container>
     </section>
   );

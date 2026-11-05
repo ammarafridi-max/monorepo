@@ -1,6 +1,7 @@
 import "@travel-suite/utils/sentry";
 import cron from "node-cron";
 import { logger } from "@travel-suite/utils";
+import { startServer } from "@travel-suite/backend-app/server";
 import { connectDB } from "./utils/db.js";
 import config from "./utils/config.js";
 // must stay above the ./app.js import: routes/index.js builds the domain factories at module load
@@ -19,62 +20,40 @@ function nextDailyRun(hour, timeZone) {
   const wallNow = Date.UTC(+parts.year, +parts.month - 1, +parts.day, hr, +parts.minute, +parts.second);
   const offsetMs = wallNow - now.getTime();
   let wallTarget = Date.UTC(+parts.year, +parts.month - 1, +parts.day, hour, 0, 0);
-  if (wallTarget <= wallNow) wallTarget += 86400000; 
+  if (wallTarget <= wallNow) wallTarget += 86400000;
   return new Date(wallTarget - offsetMs);
 }
 
-const start = async () => {
-  await connectDB();
-
-  const server = app.listen(config.port, () => {
-    logger.info("visawadi-backend started", {
-      port: config.port,
-      env: config.nodeEnv,
-    });
-  });
-
-
+function scheduleReminderSweep() {
   // The sweep is idempotent, but running it from a single machine avoids waste.
-  if (config.enableReminderCron) {
-    cron.schedule(
-      '0 9 * * *',
-      () => {
-        runVisaReminderSweep()
-          .then((summary) => logger.info('[visa-reminders] daily sweep', {
-            trackASent: summary.trackA.sent.length,
-            trackAEscalated: summary.trackA.escalated.length,
-            trackBSent: summary.trackB.sent.length,
-          }))
-          .catch((err) => logger.error('[visa-reminders] daily sweep failed', { error: err.message }));
-      },
-      { timezone: 'Asia/Dubai' },
-    );
-    const nextRun = nextDailyRun(9, 'Asia/Dubai');
-    const fmt = (tz) => new Intl.DateTimeFormat('en-GB', { timeZone: tz, dateStyle: 'medium', timeStyle: 'short', hour12: false }).format(nextRun);
-    logger.info('[visa-reminders] daily reminder cron scheduled (09:00 Asia/Dubai)', {
-      nextRunDubai: `${fmt('Asia/Dubai')} (Asia/Dubai)`,
-      nextRunUtc: `${fmt('UTC')} (UTC)`,
-    });
-  }
+  if (!config.enableReminderCron) return;
 
-  const shutdown = (signal) => {
-    logger.info(`${signal} received, shutting down`);
-    server.close(() => {
-      logger.info("Server closed");
-      process.exit(0);
-    });
-  };
+  cron.schedule(
+    '0 9 * * *',
+    () => {
+      runVisaReminderSweep()
+        .then((summary) => logger.info('[visa-reminders] daily sweep', {
+          trackASent: summary.trackA.sent.length,
+          trackAEscalated: summary.trackA.escalated.length,
+          trackBSent: summary.trackB.sent.length,
+        }))
+        .catch((err) => logger.error('[visa-reminders] daily sweep failed', { error: err.message }));
+    },
+    { timezone: 'Asia/Dubai' },
+  );
 
-  process.on("SIGTERM", () => shutdown("SIGTERM"));
-  process.on("SIGINT", () => shutdown("SIGINT"));
-
-  process.on("unhandledRejection", (err) => {
-    logger.error("Unhandled rejection", { error: err });
-    server.close(() => process.exit(1));
+  const nextRun = nextDailyRun(9, 'Asia/Dubai');
+  const fmt = (tz) => new Intl.DateTimeFormat('en-GB', { timeZone: tz, dateStyle: 'medium', timeStyle: 'short', hour12: false }).format(nextRun);
+  logger.info('[visa-reminders] daily reminder cron scheduled (09:00 Asia/Dubai)', {
+    nextRunDubai: `${fmt('Asia/Dubai')} (Asia/Dubai)`,
+    nextRunUtc: `${fmt('UTC')} (UTC)`,
   });
-};
+}
 
-start().catch((err) => {
-  console.error("Failed to start server", err);
-  process.exit(1);
+startServer({
+  app,
+  config,
+  name: "visawadi-backend",
+  connect: connectDB,
+  onListening: scheduleReminderSweep,
 });

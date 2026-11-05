@@ -18,8 +18,7 @@ export function currencyDecimals(code) {
   return 2;
 }
 
-// Stripe rejects three-decimal amounts that are not divisible by 10, so we only ever quote and charge
-// two decimals for those currencies. Prices must round to something a gateway will actually accept.
+// Stripe rejects three-decimal amounts not divisible by 10, so never quote or charge more than two.
 export function payableDecimals(code) {
   return Math.min(currencyDecimals(code), 2);
 }

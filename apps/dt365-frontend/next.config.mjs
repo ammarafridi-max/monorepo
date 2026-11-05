@@ -8,6 +8,11 @@ const nextConfig = {
   async redirects() {
     return [
       {
+        source: '/admin/airline-logos',
+        destination: '/admin/airlines',
+        permanent: true,
+      },
+      {
         source: '/blog/what-is-a-pnr-in-flight-reservations-and-how-does-it-work',
         destination: '/verifiable-dummy-ticket',
         permanent: true,

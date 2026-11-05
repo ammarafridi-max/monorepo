@@ -29,6 +29,10 @@ COPY packages/domains/payments/package.json        packages/domains/payments/pac
 COPY packages/domains/tickets/package.json         packages/domains/tickets/package.json
 COPY packages/domains/users/package.json           packages/domains/users/package.json
 COPY packages/shared/utils/package.json           packages/shared/utils/package.json
+COPY packages/shared/backend-app/package.json   packages/shared/backend-app/package.json
+COPY packages/shared/config/package.json        packages/shared/config/package.json
+COPY packages/integrations/google-ads-conversions/package.json   packages/integrations/google-ads-conversions/package.json
+COPY packages/integrations/paypal/package.json   packages/integrations/paypal/package.json
 COPY apps/thedt-backend/package.json         apps/thedt-backend/package.json
 
 RUN pnpm install --frozen-lockfile

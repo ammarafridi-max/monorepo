@@ -1,5 +1,6 @@
 
 import { PRODUCTS, DEFAULT_PRODUCT, productOf } from './products.js';
+import { byId, hasId } from './byId.js';
 
 
 export const LOOKS = Object.freeze([
@@ -359,10 +360,10 @@ export const FACIAL_HAIR = Object.freeze([
   { id: 'goatee', label: 'Goatee', promptFragment: 'with a goatee' },
 ]);
 
-const LOOKS_BY_ID = Object.freeze(Object.fromEntries(LOOKS.map((l) => [l.id, l])));
-const ATTIRE_BY_ID = Object.freeze(Object.fromEntries(ATTIRE.map((a) => [a.id, a])));
-const DATING_LOOKS_BY_ID = Object.freeze(Object.fromEntries(DATING_LOOKS.map((l) => [l.id, l])));
-const DATING_ATTIRE_BY_ID = Object.freeze(Object.fromEntries(DATING_ATTIRE.map((a) => [a.id, a])));
+const LOOKS_BY_ID = byId(LOOKS);
+const ATTIRE_BY_ID = byId(ATTIRE);
+const DATING_LOOKS_BY_ID = byId(DATING_LOOKS);
+const DATING_ATTIRE_BY_ID = byId(DATING_ATTIRE);
 
 export function catalogFor(product) {
   if (product === PRODUCTS.DATING) {
@@ -371,37 +372,25 @@ export function catalogFor(product) {
   return { looks: LOOKS, attire: ATTIRE, looksById: LOOKS_BY_ID, attireById: ATTIRE_BY_ID };
 }
 
-const AGE_RANGES_BY_ID = Object.freeze(Object.fromEntries(AGE_RANGES.map((a) => [a.id, a])));
-const GENDERS_BY_ID = Object.freeze(Object.fromEntries(GENDERS.map((g) => [g.id, g])));
-const RACES_BY_ID = Object.freeze(Object.fromEntries(RACES.map((r) => [r.id, r])));
-const FACIAL_HAIR_BY_ID = Object.freeze(Object.fromEntries(FACIAL_HAIR.map((f) => [f.id, f])));
-const BUILDS_BY_ID = Object.freeze(Object.fromEntries(BUILDS.map((b) => [b.id, b])));
-const HEIGHTS_BY_ID = Object.freeze(Object.fromEntries(HEIGHTS.map((h) => [h.id, h])));
+const AGE_RANGES_BY_ID = byId(AGE_RANGES);
+const GENDERS_BY_ID = byId(GENDERS);
+const RACES_BY_ID = byId(RACES);
+const FACIAL_HAIR_BY_ID = byId(FACIAL_HAIR);
+const BUILDS_BY_ID = byId(BUILDS);
+const HEIGHTS_BY_ID = byId(HEIGHTS);
 
 export function isValidLook(id, product = DEFAULT_PRODUCT) {
-  return Object.prototype.hasOwnProperty.call(catalogFor(product).looksById, id);
+  return hasId(catalogFor(product).looksById)(id);
 }
 export function isValidAttire(id, product = DEFAULT_PRODUCT) {
-  return Object.prototype.hasOwnProperty.call(catalogFor(product).attireById, id);
+  return hasId(catalogFor(product).attireById)(id);
 }
-export function isValidAgeRange(id) {
-  return Object.prototype.hasOwnProperty.call(AGE_RANGES_BY_ID, id);
-}
-export function isValidGender(id) {
-  return Object.prototype.hasOwnProperty.call(GENDERS_BY_ID, id);
-}
-export function isValidRace(id) {
-  return Object.prototype.hasOwnProperty.call(RACES_BY_ID, id);
-}
-export function isValidFacialHair(id) {
-  return Object.prototype.hasOwnProperty.call(FACIAL_HAIR_BY_ID, id);
-}
-export function isValidBuild(id) {
-  return Object.prototype.hasOwnProperty.call(BUILDS_BY_ID, id);
-}
-export function isValidHeight(id) {
-  return Object.prototype.hasOwnProperty.call(HEIGHTS_BY_ID, id);
-}
+export const isValidAgeRange = hasId(AGE_RANGES_BY_ID);
+export const isValidGender = hasId(GENDERS_BY_ID);
+export const isValidRace = hasId(RACES_BY_ID);
+export const isValidFacialHair = hasId(FACIAL_HAIR_BY_ID);
+export const isValidBuild = hasId(BUILDS_BY_ID);
+export const isValidHeight = hasId(HEIGHTS_BY_ID);
 
 export function buildSubject({ gender, ageRange, race, facialHair, build, height } = {}) {
   let subject = GENDERS_BY_ID[gender]?.promptFragment || 'a person';

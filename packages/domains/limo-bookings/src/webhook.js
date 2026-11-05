@@ -1,6 +1,7 @@
 import { logger } from '@travel-suite/utils';
 import { googleClickIdsFrom } from '@travel-suite/google-ads-conversions';
 import { fromStripeMinorUnits } from '@travel-suite/utils/currency';
+import { metaUser, toE164 } from '@travel-suite/utils/contact';
 import BookingSchema from './schema.js';
 import { deliverPaymentConfirmations } from './confirmation-delivery.js';
 import { getOrRegisterModel } from '@travel-suite/utils/model';
@@ -11,25 +12,24 @@ export function createBookingPaymentHandler({ db, notifications, metaCapi, googl
 
   const reportPurchaseToMeta = async (booking) => {
     if (!metaCapi?.isConfigured?.()) return;
-    const { firstName, lastName, email, phoneNumber } = booking.bookingDetails || {};
-    const phone = phoneNumber?.code && phoneNumber?.number ? `${phoneNumber.code}${phoneNumber.number}` : undefined;
+    const { firstName, lastName, title, email, phoneNumber } = booking.bookingDetails || {};
     try {
       await metaCapi.trackPurchase({
         eventId: `limo-booking:${booking._id}`,
         eventSourceUrl: frontendUrl ? `${frontendUrl}/payment` : undefined,
         value: booking.payment.amount,
         currency: booking.payment.currency,
-        user: {
+        user: metaUser({
           email,
-          phone,
+          phone: phoneNumber,
           firstName,
           lastName,
-          externalId: email?.toLowerCase(),
-          clientIp: booking.metaAttribution?.clientIp,
-          userAgent: booking.metaAttribution?.userAgent,
-          fbp: booking.metaAttribution?.fbp,
-          fbc: booking.metaAttribution?.fbc,
-        },
+          title,
+          currency: booking.payment.currency,
+          attribution: booking.attribution,
+          metaAttribution: booking.metaAttribution,
+          createdAt: booking.createdAt,
+        }),
       });
     } catch (err) {
       logger.warn('[limo-bookings] Meta purchase event failed', { bookingId: String(booking._id), error: err.message });
@@ -43,7 +43,7 @@ export function createBookingPaymentHandler({ db, notifications, metaCapi, googl
       await googleAds.uploadConversion({
         ...googleClickIdsFrom(booking.attribution),
         email,
-        phone: phoneNumber?.code && phoneNumber?.number ? `${phoneNumber.code}${phoneNumber.number}` : undefined,
+        phone: toE164(phoneNumber?.code, phoneNumber?.number),
         orderId: String(booking._id),
         value: booking.payment.amount,
         currency: booking.payment.currency,

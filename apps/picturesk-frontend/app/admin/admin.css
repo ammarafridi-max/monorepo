@@ -1,8 +1,3 @@
-/*
- * Tailwind, scoped to the /admin subtree. The customer-facing site is plain CSS
- * (globals.css) and stays that way; this file is only pulled into the bundle for
- * routes under app/admin, so Preflight never touches the marketing pages.
- */
 @import 'tailwindcss';
 
 @source "../../../../packages/frontend-shared/src/components";
@@ -10,11 +5,6 @@
 @source "../../../../packages/frontend-shared/src/layouts";
 
 @theme inline {
-  /* Forest & Gold, from docs/picturesk/BRAND.md. The shared admin design system
-     is parameterised on `primary`, exactly like each travel brand, so Picturesk
-     keeps its own identity while the layout, spacing, and components stay
-     identical across the monorepo. primary-700 is the brand indigo (#3A3FB0);
-     white on it measures far past AA. */
   --color-primary-50:  #f2f3fc;
   --color-primary-100: #e8e9fb;
   --color-primary-200: #cdcff3;
@@ -27,7 +17,6 @@
   --color-primary-900: #22256d;
   --color-primary-950: #16163a;
 
-  /* Gold is the second accent, kept restrained per BRAND.md. */
   --color-accent-50:  #f5f3ff;
   --color-accent-100: #ede9fe;
   --color-accent-200: #ddd6fe;
@@ -43,10 +32,6 @@
   --font-sans: 'Commissioner', ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
 
-/* The root layout's globals.css sets a sand page background for the marketing
-   site. The admin is a working surface, not a brand showcase, so it resets to the
-   shared dashboard's neutral ground. Commissioner (loaded once in the root
-   layout) carries across, so admin and site share one typeface. */
 body:has(.picturesk-admin) {
   background: #f9fafb;
   font-family: var(--font-sans);

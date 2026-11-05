@@ -88,13 +88,10 @@ const orderSchema = new Schema(
 
     persistedImageUrls: [String],
 
-    // score, best-first. This is the idempotency anchor for SELECTION
     deliveredImageUrls: [String],
 
-    // Set the moment the delivery email is successfully sent. The idempotency
     deliveredEmailSentAt: Date,
 
-    // idempotency anchor for refunds (same receipt-before-acting pattern as the
     refundedAt: Date,
 
     computeCostCents: { type: Number, default: 0 },

@@ -101,7 +101,7 @@ export async function refundDummyTicketApi(transactionId) {
   return result;
 }
 
-export async function getStripePaymentURL(ticketData) {
+export async function getStripePaymentUrl(ticketData) {
   const sessionId = localStorage.getItem('SESSION_ID');
 
   if (!sessionId) {
@@ -120,6 +120,14 @@ export async function createDummyTicketApi(data) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ ...data, attribution: getAttribution() }),
+  });
+}
+
+export async function saveDummyTicketApi(sessionId, data) {
+  return await apiFetch(`${URL}/${sessionId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
   });
 }
 

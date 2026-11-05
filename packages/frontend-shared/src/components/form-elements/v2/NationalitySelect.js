@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
+import { useOutsideClick } from '../../../hooks/general/useOutsideClick';
 import { ChevronDown, Check } from 'lucide-react';
 
 export default function NationalitySelect({ value, onChange, nationalities = [], inputClassName, required }) {
@@ -13,16 +14,10 @@ export default function NationalitySelect({ value, onChange, nationalities = [],
     n.nationality.toLowerCase().includes(query.toLowerCase())
   );
 
-  useEffect(() => {
-    function onClickOutside(e) {
-      if (containerRef.current && !containerRef.current.contains(e.target)) {
-        setOpen(false);
-        setQuery('');
-      }
-    }
-    document.addEventListener('mousedown', onClickOutside);
-    return () => document.removeEventListener('mousedown', onClickOutside);
-  }, []);
+  useOutsideClick(containerRef, () => {
+    setOpen(false);
+    setQuery('');
+  });
 
   function handleFocus() {
     setQuery('');

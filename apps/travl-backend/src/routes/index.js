@@ -19,7 +19,13 @@ import {
   createAffiliatesRouter,
   registerAffiliateModels,
 } from "@travel-suite/affiliates";
-import { createNotificationsService } from "@travel-suite/notifications";
+import { createBrandStorage } from "@travel-suite/backend-app/storage";
+import { createBrandNotifications } from "@travel-suite/backend-app/notifications";
+import { createPaymentLinkSuccessHandler } from "@travel-suite/backend-app/payment-link";
+import {
+  createGoogleAdsConversions,
+  createMetaCapi,
+} from "@travel-suite/backend-app/tracking";
 import {
   createStripeClient,
   createStripeWebhookHandler,
@@ -29,7 +35,6 @@ import {
   PaymentLinkSchema,
   StripeProductSchema,
 } from "@travel-suite/payments";
-import { createCloudinaryStorage } from "@travel-suite/cloudinary";
 import { logger } from "@travel-suite/utils";
 import { db } from "../utils/db.js";
 import { wis } from "../utils/wis.js";
@@ -45,20 +50,13 @@ const { Affiliate: AffiliateModel } = registerAffiliateModels({ db });
 
 const router = Router();
 
-const googleAds = createGoogleAdsConversionsClient({
-  customerId: config.googleAds.customerId,
-  loginCustomerId: config.googleAds.loginCustomerId,
-  developerToken: config.googleAds.developerToken,
-  clientId: config.googleAds.clientId,
-  clientSecret: config.googleAds.clientSecret,
-  refreshToken: config.googleAds.refreshToken,
-  apiVersion: config.googleAds.apiVersion,
-  timezoneOffset: config.googleAds.timezoneOffset,
+const storage = createBrandStorage({ config });
+
+const googleAds = createGoogleAdsConversions({
+  create: createGoogleAdsConversionsClient,
+  config: config.googleAds,
   logger,
 });
-if (!googleAds.isConfigured()) {
-  logger.warn("[google-ads-conversions] Credentials not configured — server-side conversion uploads disabled");
-}
 const insuranceConversions = googleAds.forAction(config.googleAds.insurance);
 const ticketsConversions = googleAds.forAction(config.googleAds.tickets);
 
@@ -71,10 +69,8 @@ const { router: authRouter, middleware: auth, AdminUser } = createAuthRouter({
   jwtExpiresIn: config.jwtExpiresIn,
   cookieExpiresInDays: config.jwtCookieExpiresInDays,
   nodeEnv: config.nodeEnv,
-  // Without sendEmail the OTP service reports itself disabled and every
-  // /auth/otp/* call answers 503, which is what these routes did until now.
   sendEmail,
-  brandName: "Travl",
+  brandName: config.brand.name,
   loginUrl: `${config.frontendUrl}/admin/login`,
   logger,
 });
@@ -83,15 +79,11 @@ router.use("/auth", authRouter);
 
 router.use("/admin-users", createAdminUsersRouter({ AdminUser, auth }));
 
-const metaCapi = createMetaCapiClient({
-  pixelId: config.meta.pixelId,
-  accessToken: config.meta.capiAccessToken,
-  testEventCode: config.meta.testEventCode,
+const metaCapi = createMetaCapi({
+  create: createMetaCapiClient,
+  config: config.meta,
   logger,
 });
-if (!metaCapi.isConfigured()) {
-  logger.warn("[meta-capi] Pixel ID or access token not configured — server-side purchase events disabled");
-}
 
 router.use(
   "/insurance",
@@ -107,13 +99,7 @@ router.use(
   }),
 );
 
-const imageStorage = createCloudinaryStorage({
-  cloudName: config.cloudinary.cloudName,
-  apiKey: config.cloudinary.apiKey,
-  apiSecret: config.cloudinary.apiSecret,
-  logger,
-  folder: "travl/blog",
-});
+const imageStorage = storage("blog");
 router.use("/blogs", createBlogRouter({ db, auth, imageStorage, anthropicApiKey: config.anthropicApiKey }));
 router.use("/blog-tags", createBlogTagRouter({ db, auth }));
 
@@ -124,30 +110,15 @@ citiesOnlyLocations.get("/cities", createLocationsRouter({ airlabs }));
 router.use("/locations", citiesOnlyLocations);
 router.use("/airports", createAirportsRouter({ airlabs }));
 const serpapi = createSerpApiClient({ apiKey: config.serpapi.apiKey });
-const airlineLogoStorage = createCloudinaryStorage({
-  cloudName: config.cloudinary.cloudName,
-  apiKey: config.cloudinary.apiKey,
-  apiSecret: config.cloudinary.apiSecret,
-  logger,
-  folder: "travl/airlines",
-});
+const airlineLogoStorage = storage("airlines");
 router.use("/flights", createFlightRouter({ db, airlabs, serpapi, auth, logoStorage: airlineLogoStorage }));
 
 
-const notifications = createNotificationsService({
+const notifications = createBrandNotifications({
+  config,
   sendEmail,
-  logger,
-  brand: {
-    name: "Travl",
-    teamName: "Travl Team",
-    adminEmail: config.adminEmail,
-    website: "https://travl.ae",
-    paymentsSenderName: "Travl Payments",
-    deliverySenderName: "Travl Delivery",
-    customerSenderName: "Travl",
-    productNoun: "flight reservation",
-    theme: { primaryColor: "#1a1a2e", accentColor: "#e94560", linkColor: "#0f3460" },
-  },
+  extras: { productNoun: "flight reservation" },
+  theme: { primaryColor: "#1a1a2e", accentColor: "#e94560", linkColor: "#0f3460" },
 });
 
 
@@ -161,13 +132,7 @@ const itineraryGenerateLimiter = rateLimit({
   message: { status: "fail", message: "Too many itinerary generations from this network. Please try again later." },
 });
 
-const itineraryStorage = createCloudinaryStorage({
-  cloudName: config.cloudinary.cloudName,
-  apiKey: config.cloudinary.apiKey,
-  apiSecret: config.cloudinary.apiSecret,
-  logger,
-  folder: "travl/travel-itineraries",
-});
+const itineraryStorage = storage("travel-itineraries");
 
 const { router: itinerariesRouter, handleStripeSuccess: handleItinerarySuccess } = createItinerariesRouter({
   db,
@@ -189,13 +154,7 @@ const { router: itinerariesRouter, handleStripeSuccess: handleItinerarySuccess }
 });
 router.use("/itineraries", itinerariesRouter);
 
-const reservationStorage = createCloudinaryStorage({
-  cloudName: config.cloudinary.cloudName,
-  apiKey: config.cloudinary.apiKey,
-  apiSecret: config.cloudinary.apiSecret,
-  logger,
-  folder: "travl/flight-reservations",
-});
+const reservationStorage = storage("flight-reservations");
 
 const {
   router: ticketsRouter,
@@ -246,27 +205,11 @@ const paymentService = createPaymentService({ stripe, db, PaymentLinkSchema, Str
 const paymentsController = createPaymentsController({ service: paymentService });
 router.use("/payments", createPaymentsAdminRouter({ controller: paymentsController, auth }));
 
-async function handlePaymentLinkSuccess(session) {
-  const updated = await paymentService.markPaymentLinkPaid({ session });
-  if (!updated) {
-    logger.warn("[payment-link] No matching record for session", {
-      sessionId: session.id,
-      paymentLink: session.payment_link,
-    });
-    return;
-  }
-  await notifications.sendPaymentLinkPaidToAdmin({
-    amount: updated.amount,
-    currency: updated.currency,
-    payerName: updated.paidByName || session.customer_details?.name,
-    payerEmail: updated.paidByEmail || session.customer_details?.email,
-    description: updated.description,
-    createdByName: updated.createdBy?.name,
-    paymentLinkId: updated.stripePaymentLinkId,
-    sessionId: updated.sessionId,
-    paidAt: updated.paidAt,
-  });
-}
+const handlePaymentLinkSuccess = createPaymentLinkSuccessHandler({
+  paymentService,
+  notifications,
+  logger,
+});
 
 if (config.anthropicApiKey) {
   const { router: assistantRouter } = createAssistantRouter({
@@ -274,7 +217,7 @@ if (config.anthropicApiKey) {
     auth,
     anthropicApiKey: config.anthropicApiKey,
     stripe,
-    brand: { name: "Travl" },
+    brand: { name: config.brand.name },
     logger,
     datasets: [
       assistantDatasets.insuranceApplications(db.models["insurance-application"]),

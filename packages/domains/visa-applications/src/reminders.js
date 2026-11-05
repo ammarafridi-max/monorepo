@@ -11,9 +11,9 @@ const humanize = (t) => String(t || '').replace(/_/g, ' ').toLowerCase().replace
 const ms = (d) => (d ? new Date(d).getTime() : 0);
 const travellerName = (a) => `${a.firstName || ''} ${a.lastName || ''}`.trim() || (a.isPrimary ? 'Primary applicant' : 'Applicant');
 
-export function createReminderEngine({ VisaApplication, Applicant, ApplicationDocument, DocumentType, User, notifications, appBaseUrl = '', logger }) {
+export function createReminderEngine({ VisaApplication, Applicant, ApplicationDocument, DocumentType, User, notifications, frontendUrl = '', logger }) {
   const log = logger || console;
-  const base = String(appBaseUrl || '').replace(/\/+$/, '');
+  const base = String(frontendUrl || '').replace(/\/+$/, '');
   const linkFor = (ref) => `${base}/apply/${ref}`;
 
   async function customerEmailFor(userId) {

@@ -4,7 +4,7 @@ import {
   blogPostStaticParams,
   buildBlogPostSchema,
   loadBlogPost,
-} from '@travel-suite/frontend-shared/services/blogPost';
+} from '@travel-suite/frontend-shared/services/apiBlogPost';
 import BlogPostPage from '@travel-suite/frontend-shared/pages/client/BlogPostPage';
 import * as schema from '@/lib/schema';
 import { getBlogOffers, getBlogInlineOffer } from '@/config/blogOffers';

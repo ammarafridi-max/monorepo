@@ -13,7 +13,7 @@ function redactForPublic(booking) {
   };
 }
 
-export function createBookingController({ service }) {
+export function createTransferBookingController({ service }) {
   const list = catchAsync(async (req, res) => {
     const page  = Math.max(1, parseInt(req.query.page)  || 1);
     const limit = Math.min(100, parseInt(req.query.limit) || 20);

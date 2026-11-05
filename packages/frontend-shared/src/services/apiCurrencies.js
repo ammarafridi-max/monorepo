@@ -15,10 +15,6 @@ export async function getCurrenciesApi(params = {}) {
   return await apiFetch(`${URL}${currencyQuery(params)}`);
 }
 
-export async function getCurrencyApi(code) {
-  return await apiFetch(`${URL}/${code}`);
-}
-
 export async function createCurrencyApi(currencyData) {
   return await apiFetch(URL, {
     method: 'POST',

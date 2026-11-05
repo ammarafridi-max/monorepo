@@ -28,6 +28,7 @@ function safeGetItem(key, fallback = '') {
 export const TicketContext = createContext();
 const AFFILIATE_STORAGE_KEY = 'affiliate_attribution_v1';
 const SEARCH_STORAGE_KEY = 'ticket_search_v1';
+export const DRAFT_STORAGE_KEY = 'ticket_draft_v1';
 const AFFILIATE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 function isValidAffiliateId(value) {
@@ -67,22 +68,66 @@ export function TicketProvider({ children }) {
   const [hydrated, setHydrated] = useState(false);
 
   const initializePassengers = useCallback((quantity) => {
-    const newPassengers = [];
-    [
-      ['Adult', quantity.adults],
-      ['Child', quantity.children],
-      ['Infant', quantity.infants],
-    ].forEach(([type, count]) => {
-      for (let i = 0; i < count; i++) {
-        newPassengers.push({
-          type,
-          title: '',
-          firstName: '',
-          lastName: '',
-        });
-      }
+    setPassengers((current) => {
+      const existing = { Adult: [], Child: [], Infant: [] };
+      current.forEach((passenger) => {
+        if (existing[passenger.type]) existing[passenger.type].push(passenger);
+      });
+
+      const next = [];
+      [
+        ['Adult', quantity.adults],
+        ['Child', quantity.children],
+        ['Infant', quantity.infants],
+      ].forEach(([type, count]) => {
+        for (let i = 0; i < count; i++) {
+          next.push(existing[type][i] ?? { type, title: '', firstName: '', lastName: '' });
+        }
+      });
+
+      const unchanged =
+        next.length === current.length && next.every((passenger, i) => passenger === current[i]);
+      return unchanged ? current : next;
     });
-    setPassengers(newPassengers);
+  }, []);
+
+  const hydrateFromOrder = useCallback((order) => {
+    if (!order) return;
+    setType(order.type === 'Return' ? 'Return' : 'One Way');
+    setFrom(order.from || '');
+    setTo(order.to || '');
+    setDepartureDate(order.departureDate || '');
+    setReturnDate(order.returnDate || '');
+    setQuantity({
+      adults: Number(order.quantity?.adults) || 1,
+      children: Number(order.quantity?.children) || 0,
+      infants: Number(order.quantity?.infants) || 0,
+    });
+    if (Array.isArray(order.passengers)) {
+      setPassengers(
+        order.passengers.map(({ type, title, firstName, lastName }) => ({
+          type,
+          title: title || '',
+          firstName: firstName || '',
+          lastName: lastName || '',
+        })),
+      );
+    }
+    if (order.email) setEmail(order.email);
+    if (order.phoneNumber) {
+      setPhoneNumber({
+        code: order.phoneNumber.code || '',
+        digits: order.phoneNumber.digits || '',
+      });
+    }
+    if (order.message) setMessage(order.message);
+    if (order.ticketValidity) setTicketValidity(order.ticketValidity);
+    if (order.ticketDelivery) {
+      setReceiveNow(Boolean(order.ticketDelivery.immediate));
+      setDeliveryDate(order.ticketDelivery.deliveryDate || '');
+    }
+    setDepartureFlight(order.flightDetails?.departureFlight || '');
+    setReturnFlight(order.flightDetails?.returnFlight || '');
   }, []);
 
   const updatePassengerData = useCallback((index, field, value) => {
@@ -111,8 +156,52 @@ export function TicketProvider({ children }) {
         if (saved.ticketValidity) setTicketValidity(saved.ticketValidity);
       }
     } catch {}
+
+    try {
+      const draft = JSON.parse(sessionStorage.getItem(DRAFT_STORAGE_KEY) || 'null');
+      if (draft) {
+        if (Array.isArray(draft.passengers)) setPassengers(draft.passengers);
+        if (draft.email) setEmail(draft.email);
+        if (draft.phoneNumber) setPhoneNumber(draft.phoneNumber);
+        if (draft.message) setMessage(draft.message);
+        if (typeof draft.receiveNow === 'boolean') setReceiveNow(draft.receiveNow);
+        if (draft.deliveryDate) setDeliveryDate(draft.deliveryDate);
+        if (draft.departureFlight) setDepartureFlight(draft.departureFlight);
+        if (draft.returnFlight) setReturnFlight(draft.returnFlight);
+      }
+    } catch {}
+
     setHydrated(true);
   }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      sessionStorage.setItem(
+        DRAFT_STORAGE_KEY,
+        JSON.stringify({
+          passengers,
+          email,
+          phoneNumber,
+          message,
+          receiveNow,
+          deliveryDate,
+          departureFlight,
+          returnFlight,
+        }),
+      );
+    } catch {}
+  }, [
+    hydrated,
+    passengers,
+    email,
+    phoneNumber,
+    message,
+    receiveNow,
+    deliveryDate,
+    departureFlight,
+    returnFlight,
+  ]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -214,6 +303,7 @@ export function TicketProvider({ children }) {
         initializePassengers,
         updatePassengerData,
         updatePricing,
+        hydrateFromOrder,
       }}
     >
       {children}

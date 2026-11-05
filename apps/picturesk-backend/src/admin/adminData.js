@@ -16,33 +16,27 @@ const NON_TERMINAL = [
   ORDER_STATES.GENERATING,
 ];
 
+const ENTERED_AT_FIELDS = {
+  [ORDER_STATES.AWAITING_PAYMENT]: ['createdAt'],
+  [ORDER_STATES.PAID]: ['paidAt', 'createdAt'],
+  [ORDER_STATES.TRAINING]: ['trainingStartedAt', 'paidAt', 'createdAt'],
+  [ORDER_STATES.GENERATING]: ['generatingStartedAt', 'createdAt'],
+};
+
 function enteredCurrentStateAt(order) {
-  switch (order.status) {
-    case ORDER_STATES.AWAITING_PAYMENT:
-      return order.createdAt;
-    case ORDER_STATES.PAID:
-      return order.paidAt || order.createdAt;
-    case ORDER_STATES.TRAINING:
-      return order.trainingStartedAt || order.paidAt || order.createdAt;
-    case ORDER_STATES.GENERATING:
-      return order.generatingStartedAt || order.createdAt;
-    default:
-      return null; 
+  const fields = ENTERED_AT_FIELDS[order.status] ?? [];
+  for (const field of fields) {
+    if (order[field]) return order[field];
   }
+  return null;
 }
 
 function stuckFilter() {
   const cutoff = new Date(Date.now() - STUCK_AFTER_MS);
-  const enteredAt = {
-    [ORDER_STATES.AWAITING_PAYMENT]: ['$createdAt'],
-    [ORDER_STATES.PAID]: ['$paidAt', '$createdAt'],
-    [ORDER_STATES.TRAINING]: ['$trainingStartedAt', '$paidAt', '$createdAt'],
-    [ORDER_STATES.GENERATING]: ['$generatingStartedAt', '$createdAt'],
-  };
   const firstSet = (fields) =>
-    fields.length === 1 ? fields[0] : { $ifNull: [fields[0], firstSet(fields.slice(1))] };
+    fields.length === 1 ? `$${fields[0]}` : { $ifNull: [`$${fields[0]}`, firstSet(fields.slice(1))] };
   return {
-    $or: Object.entries(enteredAt).map(([state, fields]) => ({
+    $or: Object.entries(ENTERED_AT_FIELDS).map(([state, fields]) => ({
       status: state,
       $expr: { $lt: [firstSet(fields), cutoff] },
     })),

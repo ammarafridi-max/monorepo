@@ -49,7 +49,7 @@ export default function VisaHero({
         <div className="max-w-4xl lg:mx-auto lg:text-center">
           {headline && (
             <h1
-              className={`font-outfit font-bold text-[32px] md:text-[44px] lg:text-[52px] leading-[1.1] tracking-[-0.025em] mb-5 max-w-3xl lg:mx-auto ${
+              className={`font-outfit font-bold text-[28px] md:text-[44px] lg:text-[52px] leading-[1.1] tracking-[-0.025em] mb-5 max-w-3xl lg:mx-auto ${
                 hasImage ? "text-white" : "text-gray-900"
               }`}
             >
@@ -58,7 +58,9 @@ export default function VisaHero({
                 <>
                   {" "}
                   <span
-                    className={hasImage ? "text-primary-300" : "text-primary-600"}
+                    className={
+                      hasImage ? "text-primary-300" : "text-primary-600"
+                    }
                   >
                     {headSecond}
                   </span>
@@ -69,8 +71,8 @@ export default function VisaHero({
 
           {subheadline && (
             <p
-              className={`font-outfit font-light text-[17px] md:text-[19px] leading-[1.7] mb-7 max-w-2xl lg:mx-auto ${
-                hasImage ? "text-gray-200" : "text-gray-600"
+              className={`font-outfit font-normal text-[16px] md:text-[19px] leading-[1.6] mb-7 max-w-2xl lg:mx-auto ${
+                hasImage ? "text-white" : "text-gray-600"
               }`}
             >
               {subheadline}
@@ -101,18 +103,18 @@ export default function VisaHero({
             {trustItems.map(({ icon, label }) => {
               const Icon = LucideIcons[icon] || LucideIcons.Check;
               return (
-              <span
-                key={label}
-                className={`inline-flex items-center gap-1.5 text-[13px] font-outfit font-normal ${
-                  hasImage ? "text-gray-200" : "text-gray-600"
-                }`}
-              >
-                <Icon
-                  size={14}
-                  className={`shrink-0 ${hasImage ? "text-primary-300" : "text-primary-600"}`}
-                />
-                {label}
-              </span>
+                <span
+                  key={label}
+                  className={`inline-flex items-center gap-1.5 text-[13px] font-outfit font-normal ${
+                    hasImage ? "text-gray-200" : "text-gray-600"
+                  }`}
+                >
+                  <Icon
+                    size={14}
+                    className={`shrink-0 ${hasImage ? "text-primary-300" : "text-primary-600"}`}
+                  />
+                  {label}
+                </span>
               );
             })}
           </div>

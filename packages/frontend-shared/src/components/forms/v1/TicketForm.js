@@ -13,7 +13,9 @@ import SelectAirport from '../../form-elements/v1/SelectAirport';
 import DatePicker from '../../form-elements/v1/DatePicker';
 import Counter from '../../form-elements/v1/Counter';
 import FieldError from '../../ui/v1/FieldError';
-import { todayDateOnlyDubai } from '../../../utils/dates';
+import { todayDateOnlyDubai, compareDateOnly } from '../../../utils/dates';
+
+const MAX_PASSENGERS = 9;
 
 export default function TicketForm() {
   const router = useRouter();
@@ -39,12 +41,22 @@ export default function TicketForm() {
     setQuantity,
   } = useContext(TicketContext);
 
+  const totalPassengers = quantity.adults + quantity.children + quantity.infants;
+
   function buildErrors() {
     const next = {};
     if (!from) next.from = 'Select a departure airport';
     if (!to) next.to = 'Select a destination airport';
     if (!departureDate) next.departureDate = 'Select a departure date';
     if (type === 'Return' && !returnDate) next.returnDate = 'Select a return date';
+    if (
+      type === 'Return' &&
+      departureDate &&
+      returnDate &&
+      compareDateOnly(returnDate, departureDate) < 0
+    ) {
+      next.returnDate = 'Your return date cannot be before your departure date';
+    }
     return next;
   }
 
@@ -64,19 +76,28 @@ export default function TicketForm() {
     }
   }
 
+  function clearError(field) {
+    setErrors((prev) => {
+      if (!prev[field]) return prev;
+      const { [field]: _removed, ...rest } = prev;
+      void _removed;
+      return rest;
+    });
+  }
+
   function handleFieldChange(field, value) {
     if (field === 'type') setType(value);
     if (field === 'from') setFrom(value);
     if (field === 'to') setTo(value);
-    if (field === 'departureDate') setDepartureDate(value);
     if (field === 'returnDate') setReturnDate(value);
-    if (value && errors[field]) {
-      setErrors((prev) => {
-        const { [field]: _removed, ...rest } = prev;
-        void _removed;
-        return rest;
-      });
+    if (field === 'departureDate') {
+      setDepartureDate(value);
+      if (value && returnDate && compareDateOnly(returnDate, value) < 0) {
+        setReturnDate('');
+        clearError('returnDate');
+      }
     }
+    if (value && errors[field]) clearError(field);
   }
 
   function handleQuantityChange(field, value) {
@@ -85,11 +106,15 @@ export default function TicketForm() {
       [field]: quantity[field] + value,
     };
 
-    const totalPassengers =
+    const nextTotal =
       updatedQuantity.adults + updatedQuantity.children + updatedQuantity.infants;
 
-    if (totalPassengers > 9 || updatedQuantity.adults < 1) {
-      toast.error('Total passengers cannot be less than 1 or exceed 9.');
+    if (nextTotal > MAX_PASSENGERS) {
+      toast.error(`You can book up to ${MAX_PASSENGERS} passengers per reservation.`);
+      return;
+    }
+    if (updatedQuantity.infants > updatedQuantity.adults) {
+      toast.error('Each infant needs an adult travelling with them.');
       return;
     }
 
@@ -122,6 +147,7 @@ export default function TicketForm() {
     <form
       className="m-0 py-7 px-4 md:p-6 rounded-2xl shadow-[0px_0px_10px_0px_rgba(0,0,0,0.1)] bg-white"
       onSubmit={handleFormSubmit}
+      noValidate
     >
       <div className="flex gap-2.5" role="radiogroup" aria-label="Trip type">
         {['One Way', 'Return'].map(tripType => (
@@ -150,8 +176,9 @@ export default function TicketForm() {
 
       <div className="block md:flex gap-3 md:gap-3.5">
         <div className="w-full md:w-[50%] flex flex-col gap-1 mb-3 md:mb-3">
-          <Label htmlFor="from">From</Label>
+          <Label htmlFor="ticket-from">From</Label>
           <SelectAirport
+            id="ticket-from"
             value={from || ''}
             onChange={airport => handleFieldChange('from', airport)}
             icon={<PlaneTakeoff size={19} className="text-gray-500" />}
@@ -161,8 +188,9 @@ export default function TicketForm() {
           {errors.from && <FieldError>{errors.from}</FieldError>}
         </div>
         <div className="w-full md:w-[50%] flex flex-col gap-1 mb-3 md:mb-3">
-          <Label htmlFor="to">To</Label>
+          <Label htmlFor="ticket-to">To</Label>
           <SelectAirport
+            id="ticket-to"
             value={to || ''}
             onChange={airport => handleFieldChange('to', airport)}
             icon={<PlaneLandingIcon size={19} className="text-gray-500" />}
@@ -173,7 +201,7 @@ export default function TicketForm() {
         </div>
       </div>
 
-      <div className="flex gap-3 md:gap-3.5">
+      <div className="flex flex-col md:flex-row gap-3 md:gap-3.5">
         <div
           className={`w-full flex flex-col gap-1 mb-3 md:mb-3 ${
             type === 'Return' ? 'md:w-[50%]' : 'md:w-full'
@@ -207,7 +235,11 @@ export default function TicketForm() {
         )}
       </div>
 
-      <QuantityCounter quantity={quantity} onQuantityChange={handleQuantityChange} />
+      <QuantityCounter
+        quantity={quantity}
+        onQuantityChange={handleQuantityChange}
+        remaining={MAX_PASSENGERS - totalPassengers}
+      />
 
       <div className="w-full flex mt-5">
         <PrimaryButton
@@ -227,28 +259,32 @@ export default function TicketForm() {
   );
 }
 
-function QuantityCounter({ quantity, onQuantityChange, error }) {
+function QuantityCounter({ quantity, onQuantityChange, remaining, error }) {
   const categories = [
-    { label: 'Adults', ageRange: '(12+)', field: 'adults' },
-    { label: 'Children', ageRange: '(2 - 11)', field: 'children' },
-    { label: 'Infants', ageRange: '(0 - 1)', field: 'infants' },
+    { label: 'Adults', ageRange: '(12+)', field: 'adults', min: 1 },
+    { label: 'Children', ageRange: '(2 - 11)', field: 'children', min: 0 },
+    { label: 'Infants', ageRange: '(0 - 1)', field: 'infants', min: 0 },
   ];
 
   return (
     <>
       <div className="border border-gray-200 rounded-xl px-4 py-3 flex flex-col gap-3 mt-3">
-        {categories.map(({ label, ageRange, field }, i) => (
+        {categories.map(({ label, ageRange, field, min }, i) => (
           <Fragment key={field}>
             {i > 0 && <div className="border-t border-gray-100" />}
             <Counter
               ageGroup={label}
               age={ageRange}
+              min={min}
               onAdd={() => onQuantityChange(field, 1)}
               onSubtract={() => onQuantityChange(field, -1)}
               value={quantity[field]}
             />
           </Fragment>
         ))}
+        <p className="text-xs text-gray-400">
+          Up to {MAX_PASSENGERS} passengers per reservation. You have {remaining} left.
+        </p>
       </div>
       {error && <FieldError>{error}</FieldError>}
     </>

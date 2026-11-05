@@ -33,7 +33,6 @@ export default function TicketSelectFlightsPage({ supportEmail, searchPath = '/'
     hydrated,
     setDepartureFlight,
     setReturnFlight,
-    setPassengers,
     initializePassengers,
   } = useContext(TicketContext);
   const hasSearch = Boolean(from && to && departureDate);
@@ -79,10 +78,8 @@ export default function TicketSelectFlightsPage({ supportEmail, searchPath = '/'
   }
 
   useEffect(() => {
-    if (quantity) {
-      initializePassengers(quantity, setPassengers);
-    }
-  }, [initializePassengers, quantity, setPassengers]);
+    if (quantity) initializePassengers(quantity);
+  }, [initializePassengers, quantity]);
 
   if (!hydrated || !hasSearch) {
     return Array.from({ length: 3 }).map((_, i) => <FlightSkeleton key={i} />);

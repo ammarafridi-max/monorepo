@@ -1,9 +1,10 @@
+import { defineTarget } from '../../src/define-target.mjs';
 
 const SITE = 'https://www.travl.ae';
 const VISAWADI = 'https://www.visawadi.com';
 const visaUrl = (slug) => `${VISAWADI}/uae/visa/${slug}`;
 
-export const TARGET = {
+export const TARGET = defineTarget({
   key: 'travl',
   name: 'Travl',
   backendUrl: 'https://api.travl.ae',
@@ -28,11 +29,6 @@ export const TARGET = {
     excludeSlugs: ['why-you-need-travel-insurance-for-your-schengen-visa-application'],
   },
 
-  formatsByTier: {
-    short: 'quick-answer',
-    medium: 'sourced-guide',
-    long: 'sourced-guide',
-  },
 
   citationDomains: [
     'europa.eu',            
@@ -87,7 +83,6 @@ export const TARGET = {
     },
   ],
 
-  blogUrl: (slug) => `${SITE}/blog/${slug}`,
   adminBlogUrl: (id) => `${SITE}/admin/blogs/${id}`,
 
   writerIdentity:
@@ -250,7 +245,7 @@ Example shape (write your own copy, do not reuse this wording verbatim):
 
     return links;
   },
-};
+});
 
 export const BRAND = TARGET;
 export default TARGET;

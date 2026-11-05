@@ -4,7 +4,6 @@ import { useContext, useState } from "react";
 import Link from "next/link";
 import {
   ShieldCheck,
-  Pencil,
   Check,
   User,
   Mail,
@@ -25,6 +24,13 @@ import {
   getBaseBenefits,
   parsePlanName,
 } from '../../../utils/insuranceHelpers.js';
+import { fmtDateLooseOrRaw as formatDate } from '../../admin/format';
+import { ReviewSectionCard, ReviewRow } from './ReviewCard';
+
+const SectionCard = (props) => (
+  <ReviewSectionCard {...props} titleClass="text-sm font-bold text-gray-900" linkClass="text-xs font-semibold" iconSize={11} />
+);
+const Row = (props) => <ReviewRow {...props} weight="font-medium" />;
 
 function BenefitsModal({ quote, onClose }) {
   const benefits = getBaseBenefits(quote.benefits);
@@ -70,17 +76,6 @@ function BenefitsModal({ quote, onClose }) {
   );
 }
 
-function formatDate(str) {
-  if (!str) return "—";
-  const d = new Date(str);
-  if (isNaN(d)) return str;
-  return d.toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
-
 function formatDOB(str) {
   if (!str) return "—";
   const [y, m, d] = str.split('-').map(Number);
@@ -91,37 +86,6 @@ function formatDOB(str) {
     month: "short",
     year: "numeric",
   });
-}
-
-function SectionCard({ title, editHref, children }) {
-  return (
-    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-      <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-        <h2 className="text-sm font-bold text-gray-900">{title}</h2>
-        <Link
-          href={editHref}
-          className="inline-flex items-center gap-1 text-xs font-semibold text-primary-700 hover:text-primary-900 transition-colors"
-        >
-          <Pencil size={11} strokeWidth={2.5} />
-          Edit
-        </Link>
-      </div>
-      <div className="px-6 py-5">{children}</div>
-    </div>
-  );
-}
-
-function Row({ label, value }) {
-  return (
-    <div className="flex items-baseline justify-between gap-4 py-2 border-b border-gray-50 last:border-0">
-      <span className="text-xs text-gray-400 font-medium shrink-0">
-        {label}
-      </span>
-      <span className="text-sm text-gray-900 font-medium text-right">
-        {value || "—"}
-      </span>
-    </div>
-  );
 }
 
 function PassengerBlock({

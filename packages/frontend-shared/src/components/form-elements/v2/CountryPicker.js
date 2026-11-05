@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useOutsideClick } from '../../../hooks/general/useOutsideClick';
 import { ChevronDown, Search, X } from 'lucide-react';
 
 function Flag({ code, className = 'text-base' }) {
@@ -40,22 +41,17 @@ export default function CountryPicker({
     if (open) searchRef.current?.focus();
   }, [open]);
 
+  useOutsideClick(rootRef, () => {
+    setOpen(false);
+    setQuery('');
+  });
+
   useEffect(() => {
-    function onClickOutside(e) {
-      if (rootRef.current && !rootRef.current.contains(e.target)) {
-        setOpen(false);
-        setQuery('');
-      }
-    }
     function onEsc(e) {
       if (e.key === 'Escape') { setOpen(false); setQuery(''); }
     }
-    document.addEventListener('mousedown', onClickOutside);
     document.addEventListener('keydown', onEsc);
-    return () => {
-      document.removeEventListener('mousedown', onClickOutside);
-      document.removeEventListener('keydown', onEsc);
-    };
+    return () => document.removeEventListener('keydown', onEsc);
   }, []);
 
   function pick(option) {

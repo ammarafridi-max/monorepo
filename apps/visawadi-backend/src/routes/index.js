@@ -14,7 +14,14 @@ import { createOpenAIEventsRouter } from "./openaiEvents.js";
 import { createVisaRequirementsRouter } from "@travel-suite/visa-requirements";
 import { createUsersRouter } from "@travel-suite/users";
 import { createVisaApplicationsRouter } from "@travel-suite/visa-applications";
-import { createNotificationsService } from "@travel-suite/notifications";
+import { createBrandStorage } from "@travel-suite/backend-app/storage";
+import { createBrandNotifications } from "@travel-suite/backend-app/notifications";
+import { createPaymentLinkSuccessHandler } from "@travel-suite/backend-app/payment-link";
+import {
+  createGoogleAdsConversions,
+  createMetaCapi,
+  createOpenAICapi,
+} from "@travel-suite/backend-app/tracking";
 import {
   createStripeClient,
   createStripeWebhookHandler,
@@ -24,7 +31,6 @@ import {
   PaymentLinkSchema,
   StripeProductSchema,
 } from "@travel-suite/payments";
-import { createCloudinaryStorage } from "@travel-suite/cloudinary";
 import { logger } from "@travel-suite/utils";
 import { db } from "../utils/db.js";
 import { sendEmail } from "../utils/email.js";
@@ -32,20 +38,13 @@ import config from "../utils/config.js";
 
 const router = Router();
 
-const googleAds = createGoogleAdsConversionsClient({
-  customerId: config.googleAds.customerId,
-  loginCustomerId: config.googleAds.loginCustomerId,
-  developerToken: config.googleAds.developerToken,
-  clientId: config.googleAds.clientId,
-  clientSecret: config.googleAds.clientSecret,
-  refreshToken: config.googleAds.refreshToken,
-  apiVersion: config.googleAds.apiVersion,
-  timezoneOffset: config.googleAds.timezoneOffset,
+const storage = createBrandStorage({ config });
+
+const googleAds = createGoogleAdsConversions({
+  create: createGoogleAdsConversionsClient,
+  config: config.googleAds,
   logger,
 });
-if (!googleAds.isConfigured()) {
-  logger.warn("[google-ads-conversions] Credentials not configured — server-side conversion uploads disabled");
-}
 const leadConversions = googleAds.forAction(config.googleAds.lead);
 
 
@@ -55,10 +54,8 @@ const { router: authRouter, middleware: auth, AdminUser } = createAuthRouter({
   jwtExpiresIn: config.jwtExpiresIn,
   cookieExpiresInDays: config.jwtCookieExpiresInDays,
   nodeEnv: config.nodeEnv,
-  // Without sendEmail the OTP service reports itself disabled and every
-  // /auth/otp/* call answers 503, which is what these routes did until now.
   sendEmail,
-  brandName: "VisaWadi",
+  brandName: config.brand.name,
   loginUrl: `${config.frontendUrl}/admin/login`,
   logger,
 });
@@ -67,72 +64,47 @@ router.use("/auth", authRouter);
 
 router.use("/admin-users", createAdminUsersRouter({ AdminUser, auth }));
 
-const imageStorage = createCloudinaryStorage({
-  cloudName: config.cloudinary.cloudName,
-  apiKey: config.cloudinary.apiKey,
-  apiSecret: config.cloudinary.apiSecret,
-  logger,
-  folder: "visawadi/blog",
-});
+const imageStorage = storage("blog");
 router.use("/blogs", createBlogRouter({ db, auth, imageStorage, anthropicApiKey: config.anthropicApiKey }));
 router.use("/blog-tags", createBlogTagRouter({ db, auth }));
 
-const visaImageStorage = createCloudinaryStorage({
-  cloudName: config.cloudinary.cloudName,
-  apiKey: config.cloudinary.apiKey,
-  apiSecret: config.cloudinary.apiSecret,
-  logger,
-  folder: "visawadi/visa",
-});
+const visaImageStorage = storage("visa");
 router.use("/visas", createVisaRouter({ db, auth, imageStorage: visaImageStorage }));
 
-const notifications = createNotificationsService({
+const notifications = createBrandNotifications({
+  config,
   sendEmail,
-  logger,
-  brand: {
-    name: "VisaWadi",
-    teamName: "VisaWadi Team",
-    adminEmail: config.adminEmail,
-    website: config.siteUrl,
-    paymentsSenderName: "VisaWadi Payments",
-    deliverySenderName: "VisaWadi Delivery",
-    customerSenderName: "VisaWadi",
-    whatsappUrl: "https://wa.me/971569964924",
-    theme: { primaryColor: "#254b8e", accentColor: "#F26B4E", linkColor: "#2b5cb0" },
-  },
+  website: config.siteUrl,
+  extras: { whatsappUrl: "https://wa.me/971569964924" },
+  theme: { primaryColor: "#254b8e", accentColor: "#F26B4E", linkColor: "#2b5cb0" },
 });
 
-const metaCapi = createMetaCapiClient({
-  pixelId: config.meta.pixelId,
-  accessToken: config.meta.capiAccessToken,
-  testEventCode: config.meta.testEventCode,
+const metaCapi = createMetaCapi({
+  create: createMetaCapiClient,
+  config: config.meta,
   logger,
+  eventKind: "lead",
 });
-if (!metaCapi.isConfigured()) {
-  logger.warn("[meta-capi] Pixel ID or access token not configured — server-side lead events disabled");
-}
 
-const openaiCapi = createOpenAICapiClient({
+const openaiCapi = createOpenAICapi({
+  create: createOpenAICapiClient,
   pixelId: config.openai.pixelId,
   apiKey: config.openai.capiApiKey,
   logger,
+  message: "[openai-capi] Pixel ID or API key not configured — server-side lead events disabled",
 });
-if (!openaiCapi.isConfigured()) {
-  logger.warn("[openai-capi] Pixel ID or API key not configured — server-side lead events disabled");
-}
 
-const openaiWhatsappCapi = createOpenAICapiClient({
+const openaiWhatsappCapi = createOpenAICapi({
+  create: createOpenAICapiClient,
   pixelId: config.openai.pixelId,
   apiKey: config.openai.whatsappCapiApiKey,
   logger,
+  message: "[openai-capi] WhatsApp conversion key not configured — click-to-chat events disabled",
 });
-if (!openaiWhatsappCapi.isConfigured()) {
-  logger.warn("[openai-capi] WhatsApp conversion key not configured — click-to-chat events disabled");
-}
 
 router.use(
   "/visa-leads",
-  createVisaLeadRouter({ db, auth, notificationsService: notifications, metaCapi, openaiCapi, googleAds: leadConversions, frontendUrl: config.frontendUrl }),
+  createVisaLeadRouter({ db, auth, notifications, metaCapi, openaiCapi, googleAds: leadConversions, frontendUrl: config.frontendUrl }),
 );
 
 router.use(
@@ -178,27 +150,11 @@ const paymentService = createPaymentService({ stripe, db, PaymentLinkSchema, Str
 const paymentsController = createPaymentsController({ service: paymentService });
 router.use("/payments", createPaymentsAdminRouter({ controller: paymentsController, auth }));
 
-async function handlePaymentLinkSuccess(session) {
-  const updated = await paymentService.markPaymentLinkPaid({ session });
-  if (!updated) {
-    logger.warn("[payment-link] No matching record for session", {
-      sessionId: session.id,
-      paymentLink: session.payment_link,
-    });
-    return;
-  }
-  await notifications.sendPaymentLinkPaidToAdmin({
-    amount: updated.amount,
-    currency: updated.currency,
-    payerName: updated.paidByName || session.customer_details?.name,
-    payerEmail: updated.paidByEmail || session.customer_details?.email,
-    description: updated.description,
-    createdByName: updated.createdBy?.name,
-    paymentLinkId: updated.stripePaymentLinkId,
-    sessionId: updated.sessionId,
-    paidAt: updated.paidAt,
-  });
-}
+const handlePaymentLinkSuccess = createPaymentLinkSuccessHandler({
+  paymentService,
+  notifications,
+  logger,
+});
 
 export const stripeWebhookHandler = createStripeWebhookHandler({
   stripe,
@@ -222,13 +178,7 @@ const { router: usersRouter, middleware: userAuth, User } = createUsersRouter({
 
 router.use("/users", usersRouter);
 
-const visaApplicationStorage = createCloudinaryStorage({
-  cloudName: config.cloudinary.cloudName,
-  apiKey: config.cloudinary.apiKey,
-  apiSecret: config.cloudinary.apiSecret,
-  logger,
-  folder: "visawadi/visa-applications",
-});
+const visaApplicationStorage = storage("visa-applications");
 
 const { router: visaApplicationsRouter, runReminderSweep } = createVisaApplicationsRouter({
   db,
@@ -237,8 +187,8 @@ const { router: visaApplicationsRouter, runReminderSweep } = createVisaApplicati
   User,
   storage: visaApplicationStorage,
   notifications,
-  apiBaseUrl: config.backendUrl,
-  appBaseUrl: config.frontendUrl,
+  apiUrl: config.backendUrl,
+  frontendUrl: config.frontendUrl,
   logger,
 });
 router.use("/visa-applications", visaApplicationsRouter);
@@ -249,7 +199,7 @@ if (config.anthropicApiKey) {
     auth,
     anthropicApiKey: config.anthropicApiKey,
     stripe,
-    brand: { name: "VisaWadi" },
+    brand: { name: config.brand.name },
     logger,
     datasets: [
       assistantDatasets.visaLeads(db.models["visa-lead"]),

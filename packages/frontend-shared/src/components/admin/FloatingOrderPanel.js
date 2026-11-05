@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Copy, Check, Plane, Pin, X, RefreshCw, ArrowRight, AlertTriangle } from 'lucide-react';
+import { paymentStatusConfig } from './paymentStatus';
 
 const isPiPSupported =
   typeof window !== 'undefined' && 'documentPictureInPicture' in window;
@@ -50,77 +51,75 @@ const PIP_CSS = `
     background:#0b0f14;color:#eef1f4;
     -webkit-font-smoothing:antialiased;
   }
-  .mdt-pip{padding:10px;}
-  .mdt-head{
+  .ordp-pip{padding:10px;}
+  .ordp-head{
     display:flex;align-items:center;gap:8px;
     padding:8px 4px 12px;color:#7d8794;font-size:11px;letter-spacing:.04em;
   }
-  .mdt-head .sp{margin-left:auto;display:flex;gap:12px;color:#5a6470;cursor:pointer;}
-  .mdt-card{
+  .ordp-head .sp{margin-left:auto;display:flex;gap:12px;color:#5a6470;cursor:pointer;}
+  .ordp-card{
     background:#11161d;border:.5px solid rgba(93,202,165,.28);
     border-radius:12px;overflow:hidden;padding-bottom:12px;
   }
-  .mdt-name{
+  .ordp-name{
     display:flex;align-items:center;justify-content:space-between;
     padding:12px 14px 0;
   }
-  .mdt-name b{font-size:15px;font-weight:500;}
-  .mdt-pills{display:flex;gap:5px;}
-  .mdt-pill{font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px;}
-  .mdt-seg{
+  .ordp-name b{font-size:15px;font-weight:500;}
+  .ordp-pills{display:flex;gap:5px;}
+  .ordp-pill{font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px;}
+  .ordp-seg{
     margin:10px 14px 0;background:#0d1117;border:.5px solid rgba(255,255,255,.06);
     border-radius:8px;padding:11px 12px;
   }
-  .mdt-seg-top{display:flex;align-items:center;justify-content:space-between;}
-  .mdt-route{display:flex;align-items:center;gap:9px;}
-  .mdt-route .iata{font-size:19px;font-weight:500;}
-  .mdt-flight{font-size:13px;font-weight:500;color:#9fe1cb;}
-  .mdt-sub{font-size:11px;color:#7d8794;margin-top:3px;}
-  .mdt-copy{
+  .ordp-seg-top{display:flex;align-items:center;justify-content:space-between;}
+  .ordp-route{display:flex;align-items:center;gap:9px;}
+  .ordp-route .iata{font-size:19px;font-weight:500;}
+  .ordp-flight{font-size:13px;font-weight:500;color:#9fe1cb;}
+  .ordp-sub{font-size:11px;color:#7d8794;margin-top:3px;}
+  .ordp-copy{
     width:calc(100% - 28px);margin:8px 14px 0;display:flex;align-items:center;
     justify-content:space-between;gap:8px;background:#0d1117;
     border:.5px solid rgba(255,255,255,.08);border-radius:8px;padding:9px 12px;
     cursor:pointer;text-align:left;color:inherit;font:inherit;transition:border-color .15s;
   }
-  .mdt-copy:hover{border-color:rgba(93,202,165,.5);}
-  .mdt-copy.key{border-color:rgba(93,202,165,.4);}
-  .mdt-copy .lbl{font-size:10px;color:#7d8794;letter-spacing:.04em;display:block;}
-  .mdt-copy .val{font-size:13px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;margin-top:2px;display:block;}
-  .mdt-copy .ic{display:flex;align-items:center;gap:5px;font-size:11px;color:#5dcaa5;white-space:nowrap;}
-  .mdt-meta{display:flex;gap:6px;margin:10px 14px 14px;}
-  .mdt-meta div{
+  .ordp-copy:hover{border-color:rgba(93,202,165,.5);}
+  .ordp-copy.key{border-color:rgba(93,202,165,.4);}
+  .ordp-copy .lbl{font-size:10px;color:#7d8794;letter-spacing:.04em;display:block;}
+  .ordp-copy .val{font-size:13px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;margin-top:2px;display:block;}
+  .ordp-copy .ic{display:flex;align-items:center;gap:5px;font-size:11px;color:#5dcaa5;white-space:nowrap;}
+  .ordp-meta{display:flex;gap:6px;margin:10px 14px 14px;}
+  .ordp-meta div{
     flex:1;background:#0d1117;border-radius:8px;padding:6px 8px;text-align:center;
     font-size:10px;color:#7d8794;
   }
-  .mdt-meta div span{display:block;color:#cdd3da;font-size:12px;margin-top:2px;}
-  .mdt-foot{padding:0 14px 12px;font-size:10px;color:#5a6470;display:flex;align-items:center;gap:6px;cursor:pointer;}
-  .mdt-empty{padding:24px 14px;text-align:center;color:#7d8794;font-size:13px;}
-  .mdt-msg{
+  .ordp-meta div span{display:block;color:#cdd3da;font-size:12px;margin-top:2px;}
+  .ordp-foot{padding:0 14px 12px;font-size:10px;color:#5a6470;display:flex;align-items:center;gap:6px;cursor:pointer;}
+  .ordp-empty{padding:24px 14px;text-align:center;color:#7d8794;font-size:13px;}
+  .ordp-msg{
     margin:0 0 10px;background:#3a0d0d;border:1px solid #f0595e;
-    border-radius:10px;padding:10px 12px;animation:mdt-msg-pulse 1.4s ease-in-out infinite;
+    border-radius:10px;padding:10px 12px;animation:ordp-msg-pulse 1.4s ease-in-out infinite;
   }
-  .mdt-msg .mdt-msg-lbl{
+  .ordp-msg .ordp-msg-lbl{
     display:flex;align-items:center;gap:6px;font-size:10px;font-weight:700;
     letter-spacing:.06em;color:#ff9ea1;text-transform:uppercase;margin-bottom:4px;
   }
-  .mdt-msg .mdt-msg-txt{font-size:13px;line-height:1.4;color:#ffe3e4;white-space:pre-wrap;word-break:break-word;}
-  @keyframes mdt-msg-pulse{
+  .ordp-msg .ordp-msg-txt{font-size:13px;line-height:1.4;color:#ffe3e4;white-space:pre-wrap;word-break:break-word;}
+  @keyframes ordp-msg-pulse{
     0%,100%{box-shadow:0 0 0 0 rgba(240,89,94,.55);}
     50%{box-shadow:0 0 0 4px rgba(240,89,94,0);}
   }
 `;
 
+const ORDER_PILL = {
+  PROGRESS:  { bg: '#85b7eb', fg: '#042c53' },
+  PENDING:   { bg: '#fac775', fg: '#633806' },
+  DELIVERED: { bg: '#97c459', fg: '#173404' },
+};
+
 const pillStyle = (text) => {
-  const map = {
-    PAID:      { bg: '#5dcaa5', fg: '#04342c' },
-    PROGRESS:  { bg: '#85b7eb', fg: '#042c53' },
-    PENDING:   { bg: '#fac775', fg: '#633806' },
-    DELIVERED: { bg: '#97c459', fg: '#173404' },
-    REFUNDED:  { bg: '#f09595', fg: '#501313' },
-    PARTIALLY_REFUNDED: { bg: '#f5c08a', fg: '#4a2c06' },
-    UNPAID:    { bg: '#5f5e5a', fg: '#ffffff' },
-  };
-  const c = map[String(text).toUpperCase()] || { bg: '#5f5e5a', fg: '#fff' };
+  const key = String(text).toUpperCase();
+  const c = ORDER_PILL[key] ?? paymentStatusConfig(key).pill;
   return { background: c.bg, color: c.fg };
 };
 
@@ -142,7 +141,7 @@ function CopyRow({ label, value, highlight }) {
   }, [value]);
 
   return (
-    <button className={`mdt-copy${highlight ? ' key' : ''}`} onClick={onCopy}>
+    <button className={`ordp-copy${highlight ? ' key' : ''}`} onClick={onCopy}>
       <span>
         <span className="lbl">{label}</span>
         <span className="val">{value}</span>
@@ -156,7 +155,7 @@ function CopyRow({ label, value, highlight }) {
 }
 
 function OrderPanel({ order, onRefresh, onClose }) {
-  if (!order) return <div className="mdt-empty">No order loaded.</div>;
+  if (!order) return <div className="ordp-empty">No order loaded.</div>;
 
   const {
     message,
@@ -172,7 +171,7 @@ function OrderPanel({ order, onRefresh, onClose }) {
 
   return (
     <>
-      <div className="mdt-head">
+      <div className="ordp-head">
         <span>ORDER OVERVIEW</span>
         <span className="sp">
           {onRefresh && (
@@ -186,20 +185,20 @@ function OrderPanel({ order, onRefresh, onClose }) {
       </div>
 
       {message && (
-        <div className="mdt-msg">
-          <span className="mdt-msg-lbl">
+        <div className="ordp-msg">
+          <span className="ordp-msg-lbl">
             <AlertTriangle size={12} />
             Customer message
           </span>
-          <div className="mdt-msg-txt">{message}</div>
+          <div className="ordp-msg-txt">{message}</div>
         </div>
       )}
 
-      <div className="mdt-card">
-        <div className="mdt-name">
-          <span className="mdt-pills">
+      <div className="ordp-card">
+        <div className="ordp-name">
+          <span className="ordp-pills">
             {status.map((s) => (
-              <span key={s} className="mdt-pill" style={pillStyle(s)}>
+              <span key={s} className="ordp-pill" style={pillStyle(s)}>
                 {s}
               </span>
             ))}
@@ -207,23 +206,23 @@ function OrderPanel({ order, onRefresh, onClose }) {
         </div>
 
         {segments.map((seg, i) => (
-          <div className="mdt-seg" key={i}>
-            <div className="mdt-seg-top">
-              <span className="mdt-route">
+          <div className="ordp-seg" key={i}>
+            <div className="ordp-seg-top">
+              <span className="ordp-route">
                 <span className="iata">{seg.from}</span>
                 <ArrowRight size={15} color="#5dcaa5" />
                 <span className="iata">{seg.to}</span>
               </span>
-              <span className="mdt-flight">{seg.flight}</span>
+              <span className="ordp-flight">{seg.flight}</span>
             </div>
-            <div className="mdt-sub">
+            <div className="ordp-sub">
               {seg.date}
               {seg.stops?.length ? ` · Stops in ${seg.stops.join(', ')}` : ' · Direct'}
             </div>
           </div>
         ))}
 
-        <div className="mdt-meta">
+        <div className="ordp-meta">
           <div>
             Validity<span>{validity}</span>
           </div>
@@ -276,9 +275,9 @@ function useDocumentPiP({ width = 340, height = 480 } = {}) {
     win.document.head.appendChild(style);
 
     const root = win.document.createElement('div');
-    root.className = 'mdt-pip';
+    root.className = 'ordp-pip';
     win.document.body.appendChild(root);
-    win.__mdtRoot = root;
+    win.__orderPanelRoot = root;
 
     win.addEventListener('pagehide', () => {
       closingRef.current = true;
@@ -302,7 +301,7 @@ function useDocumentPiP({ width = 340, height = 480 } = {}) {
   return { pipWindow, open, close, isSupported: isPiPSupported };
 }
 
-export function OrderPiPButton({
+export function FloatingOrderPanel({
   order: orderProp,
   sessionId,
   apiBase = '/api/admin',
@@ -369,10 +368,10 @@ export function OrderPiPButton({
             onRefresh={!orderProp && sessionId ? refresh : undefined}
             onClose={close}
           />,
-          pipWindow.__mdtRoot,
+          pipWindow.__orderPanelRoot,
         )}
     </>
   );
 }
 
-export default OrderPiPButton;
+export default FloatingOrderPanel;

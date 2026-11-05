@@ -6,7 +6,7 @@ export const DOCUMENT_SOURCES = ['CUSTOMER', 'AGENT', 'IN_PERSON'];
 
 export const DEFAULT_ACCEPTED_MIME = ['application/pdf', 'image/jpeg', 'image/png'];
 
-const documentTypeSchema = new Schema(
+const DocumentTypeSchema = new Schema(
   {
     key: { type: String, required: true, unique: true, uppercase: true, trim: true, index: true },
     label: { type: String, required: true, trim: true, maxlength: 120 },
@@ -19,4 +19,4 @@ const documentTypeSchema = new Schema(
   { timestamps: true },
 );
 
-export default documentTypeSchema;
+export default DocumentTypeSchema;

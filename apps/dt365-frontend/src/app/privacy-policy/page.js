@@ -91,16 +91,17 @@ export default function Page() {
               how visitors use our website and to improve our services.
             </li>
             <li className="pl-2">
-              We also use Hotjar to understand how visitors interact with our pages. Hotjar may record
-              anonymised session data, such as pages visited, clicks, taps, scrolling, and mouse
-              movement, and produce aggregated heatmaps. By default, Hotjar suppresses the text you
-              type into form fields (for example contact, passport, or payment details); we use this
-              data only in aggregate to improve usability, never to identify you personally.
+              We also use Microsoft Clarity to understand how visitors interact with our pages.
+              Clarity may record anonymised session data, such as pages visited, clicks, taps,
+              scrolling, and mouse movement, and produce aggregated heatmaps. By default, Clarity
+              masks the text you type into form fields (for example contact, passport, or payment
+              details); we use this data only in aggregate to improve usability, never to identify
+              you personally.
             </li>
             <li className="pl-2">
-              You can opt out of Hotjar at any time via its opt-out page
-              (https://www.hotjar.com/legal/compliance/opt-out) or by enabling &quot;Do Not Track&quot;
-              in your browser.
+              You can read how Microsoft handles this data in its privacy statement
+              (https://privacy.microsoft.com/privacystatement), and you can opt out at any time by
+              enabling &quot;Do Not Track&quot; in your browser.
             </li>
           </ul>
 

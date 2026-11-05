@@ -39,6 +39,8 @@ export function createTicketRouter({ controller, auth }) {
   router.get('/stats', protect, restrictTo('admin', 'agent'), controller.getTicketStats);
   router.get('/events', protect, restrictTo('admin', 'agent'), controller.streamEvents);
 
+  router.patch('/:sessionId', createRequestLimiter, controller.updateTicketRequest);
+
   router.get('/:sessionId/quote', controller.getTicketQuote);
   router.get('/:sessionId/reservation', protect, restrictTo('admin', 'agent'), controller.getReservationFile);
   router.get('/:sessionId', identify, controller.getTicketBySessionId);

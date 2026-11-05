@@ -1,18 +1,16 @@
+import { getBrand } from '@travel-suite/config';
+import { buildRobots } from '@travel-suite/frontend-shared/seo/robots';
+
 export default function robots() {
-  return {
-    rules: {
-      userAgent: "*",
-      allow: "/",
-      disallow: [
-        "/admin",
-        "/booking",
-        "/insurance-booking/quote",
-        "/insurance-booking/passengers",
-        "/insurance-booking/review",
-        "/insurance-booking/payment",
-        "/itinerary-booking/*",
-      ],
-    },
-    sitemap: "https://www.travl.ae/sitemap.xml",
-  };
+  return buildRobots(getBrand('travl'), {
+    disallow: [
+      '/admin',
+      '/booking',
+      '/insurance-booking/quote',
+      '/insurance-booking/passengers',
+      '/insurance-booking/review',
+      '/insurance-booking/payment',
+      '/itinerary-booking/*',
+    ],
+  });
 }

@@ -1,3 +1,5 @@
+import { catchAsync } from '@travel-suite/utils';
+
 export function createUserController({ service, cookieExpiresInDays, nodeEnv, appBaseUrl }) {
   const COOKIE_NAME = 'userJwt';
 
@@ -24,63 +26,43 @@ export function createUserController({ service, cookieExpiresInDays, nodeEnv, ap
     });
   }
 
-  const register = async (req, res, next) => {
-    try {
-      const { jwt: token, user } = await service.register(req.body);
-      sendTokenCookie(res, token);
-      res.status(201).json({ status: 'success', token, data: user });
-    } catch (err) {
-      next(err);
-    }
-  };
+  const register = catchAsync(async (req, res) => {
+    const { jwt: token, user } = await service.register(req.body);
+    sendTokenCookie(res, token);
+    res.status(201).json({ status: 'success', token, data: user });
+  });
 
-  const login = async (req, res, next) => {
-    try {
-      const { token, user } = await service.login(req.body);
-      sendTokenCookie(res, token);
-      res.json({ status: 'success', token, data: user });
-    } catch (err) {
-      next(err);
-    }
-  };
+  const login = catchAsync(async (req, res) => {
+    const { token, user } = await service.login(req.body);
+    sendTokenCookie(res, token);
+    res.json({ status: 'success', token, data: user });
+  });
 
   const logout = (req, res) => {
     clearTokenCookie(res);
     res.json({ status: 'success' });
   };
 
-  const verifyEmail = async (req, res, next) => {
-    try {
-      const { token, user } = await service.verifyEmail(req.params.token);
-      sendTokenCookie(res, token);
-      res.json({ status: 'success', token, data: user });
-    } catch (err) {
-      next(err);
-    }
-  };
+  const verifyEmail = catchAsync(async (req, res) => {
+    const { token, user } = await service.verifyEmail(req.params.token);
+    sendTokenCookie(res, token);
+    res.json({ status: 'success', token, data: user });
+  });
 
-  const forgotPassword = async (req, res, next) => {
-    try {
-      const base = String(appBaseUrl || '').replace(/\/+$/, '');
-      const resetUrl = `${base}/api/users/reset-password`;
-      await service.forgotPassword({ email: req.body.email, resetUrl });
-      res.json({ status: 'success', message: 'If that email is registered, a reset link has been sent.' });
-    } catch (err) {
-      next(err);
-    }
-  };
+  const forgotPassword = catchAsync(async (req, res) => {
+    const base = String(appBaseUrl || '').replace(/\/+$/, '');
+    const resetUrl = `${base}/api/users/reset-password`;
+    await service.forgotPassword({ email: req.body.email, resetUrl });
+    res.json({ status: 'success', message: 'If that email is registered, a reset link has been sent.' });
+  });
 
-  const resetPassword = async (req, res, next) => {
-    try {
-      const { token, user } = await service.resetPassword({ token: req.params.token, password: req.body.password });
-      sendTokenCookie(res, token);
-      res.json({ status: 'success', token, data: user });
-    } catch (err) {
-      next(err);
-    }
-  };
+  const resetPassword = catchAsync(async (req, res) => {
+    const { token, user } = await service.resetPassword({ token: req.params.token, password: req.body.password });
+    sendTokenCookie(res, token);
+    res.json({ status: 'success', token, data: user });
+  });
 
-  const requestMagicLink = async (req, res, next) => {
+  const requestMagicLink = async (req, res) => {
     try {
       await service.requestMagicLink({ email: req.body.email });
       res.json({ status: 'success', message: 'If that email is valid, a sign-in link has been sent.' });
@@ -89,7 +71,7 @@ export function createUserController({ service, cookieExpiresInDays, nodeEnv, ap
     }
   };
 
-  const verifyMagicLink = async (req, res, next) => {
+  const verifyMagicLink = async (req, res) => {
     try {
       const { token } = await service.verifyMagicLink(req.params.token);
       sendTokenCookie(res, token);
@@ -101,43 +83,27 @@ export function createUserController({ service, cookieExpiresInDays, nodeEnv, ap
     }
   };
 
-  const getProfile = async (req, res, next) => {
-    try {
-      const user = await service.getProfile(req.user._id);
-      res.json({ status: 'success', data: user });
-    } catch (err) {
-      next(err);
-    }
-  };
+  const getProfile = catchAsync(async (req, res) => {
+    const user = await service.getProfile(req.user._id);
+    res.json({ status: 'success', data: user });
+  });
 
-  const updateProfile = async (req, res, next) => {
-    try {
-      const user = await service.updateProfile(req.user._id, req.body);
-      res.json({ status: 'success', data: user });
-    } catch (err) {
-      next(err);
-    }
-  };
+  const updateProfile = catchAsync(async (req, res) => {
+    const user = await service.updateProfile(req.user._id, req.body);
+    res.json({ status: 'success', data: user });
+  });
 
-  const updatePassword = async (req, res, next) => {
-    try {
-      const { token, user } = await service.updatePassword(req.user._id, req.body);
-      sendTokenCookie(res, token);
-      res.json({ status: 'success', token, data: user });
-    } catch (err) {
-      next(err);
-    }
-  };
+  const updatePassword = catchAsync(async (req, res) => {
+    const { token, user } = await service.updatePassword(req.user._id, req.body);
+    sendTokenCookie(res, token);
+    res.json({ status: 'success', token, data: user });
+  });
 
-  const deleteAccount = async (req, res, next) => {
-    try {
-      await service.deleteAccount(req.user._id, req.body || {});
-      clearTokenCookie(res);
-      res.status(204).send();
-    } catch (err) {
-      next(err);
-    }
-  };
+  const deleteAccount = catchAsync(async (req, res) => {
+    await service.deleteAccount(req.user._id, req.body || {});
+    clearTokenCookie(res);
+    res.status(204).send();
+  });
 
   return { register, login, logout, verifyEmail, forgotPassword, resetPassword, requestMagicLink, verifyMagicLink, getProfile, updateProfile, updatePassword, deleteAccount };
 }

@@ -1,6 +1,7 @@
 
 
 import { PRODUCTS, DEFAULT_PRODUCT, productOf } from './products.js';
+import { byId, hasId } from './byId.js';
 
 export const TIERS = Object.freeze([
   Object.freeze({
@@ -118,11 +119,9 @@ export function defaultTierFor(product) {
   return productOf(product) === DEFAULT_PRODUCT ? DEFAULT_TIER : `${productOf(product)}_starter`;
 }
 
-const TIERS_BY_ID = Object.freeze(Object.fromEntries(TIERS.map((t) => [t.id, t])));
+const TIERS_BY_ID = byId(TIERS);
 
-export function isValidTier(id) {
-  return Object.prototype.hasOwnProperty.call(TIERS_BY_ID, id);
-}
+export const isValidTier = hasId(TIERS_BY_ID);
 
 export function getTier(id) {
   return TIERS_BY_ID[id] || TIERS_BY_ID[DEFAULT_TIER];

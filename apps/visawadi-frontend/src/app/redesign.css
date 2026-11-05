@@ -1,0 +1,87 @@
+/* Redesign tokens. Additive only: nothing here redefines --color-primary-* or
+   --color-accent-*, which `.blog_post` and every pre-redesign page still read. */
+
+@theme {
+  --color-brand-50: #eef2ff;
+  --color-brand-100: #e0e7ff;
+  --color-brand-200: #c7d2fe;
+  --color-brand-300: #a5b4fc;
+  --color-brand-400: #818cf8;
+  --color-brand-500: #6366f1;
+  --color-brand-600: #4f46e5;
+  --color-brand-700: #4338ca;
+  --color-brand-800: #3730a3;
+  --color-brand-900: #312e81;
+
+  --color-ink: #101828;
+  --color-ink-body: #344054;
+  --color-ink-soft: #667085;
+  --color-ink-faint: #8a94a6;
+
+  --color-canvas: #f8fafc;
+  --color-surface: #ffffff;
+  --color-line: #e2e8f0;
+  --color-line-soft: #eef2f6;
+
+  --color-positive: #14b8a6;
+  --color-positive-soft: #f0fdfa;
+  --color-notice: #f59e0b;
+  --color-notice-soft: #fffbeb;
+
+  --radius-field: 16px;
+  --radius-card: 24px;
+  --radius-panel: 32px;
+
+  --shadow-raised: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --shadow-float:
+    0 1px 2px rgba(16, 24, 40, 0.04), 0 12px 32px -14px rgba(16, 24, 40, 0.18);
+  --shadow-panel:
+    0 1px 3px rgba(16, 24, 40, 0.05), 0 24px 60px -30px rgba(16, 24, 40, 0.3);
+  --shadow-sheet: 0 24px 56px -28px rgba(16, 24, 40, 0.28);
+
+  --text-display: clamp(2.125rem, 1.35rem + 3.3vw, 3.5rem);
+  --text-display--line-height: 1.06;
+  --text-display--letter-spacing: -0.032em;
+
+  --text-title: clamp(1.875rem, 1.4rem + 1.9vw, 2.5rem);
+  --text-title--line-height: 1.14;
+  --text-title--letter-spacing: -0.024em;
+
+  --text-subtitle: clamp(1.25rem, 1.1rem + 0.7vw, 1.5rem);
+  --text-subtitle--line-height: 1.25;
+  --text-subtitle--letter-spacing: -0.018em;
+
+  --text-card: 1.1875rem;
+  --text-card--line-height: 1.32;
+  --text-card--letter-spacing: -0.014em;
+
+  --text-lede: clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem);
+  --text-lede--line-height: 1.6;
+
+  --text-body: 1rem;
+  --text-body--line-height: 1.7;
+
+  --text-meta: 0.9375rem;
+  --text-meta--line-height: 1.6;
+
+  --text-label: 0.8125rem;
+  --text-label--line-height: 1.2;
+  --text-label--letter-spacing: 0.02em;
+}
+
+[data-vw-root] {
+  background-color: var(--color-surface);
+  color: var(--color-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-vw-root],
+  [data-vw-root] *,
+  [data-vw-root] *::before,
+  [data-vw-root] *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

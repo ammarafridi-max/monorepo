@@ -28,7 +28,7 @@ const ruleSchema = new Schema(
   { _id: true },
 );
 
-const checklistTemplateSchema = new Schema(
+const ChecklistTemplateSchema = new Schema(
   {
     visaTypeKey: { type: String, required: true, uppercase: true, trim: true, index: true },
     name: { type: String, trim: true, maxlength: 120, default: '' },
@@ -38,4 +38,4 @@ const checklistTemplateSchema = new Schema(
   { timestamps: true },
 );
 
-export default checklistTemplateSchema;
+export default ChecklistTemplateSchema;

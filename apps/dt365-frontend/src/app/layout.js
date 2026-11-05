@@ -1,6 +1,8 @@
 import { Commissioner } from 'next/font/google';
 import './globals.css';
 import Providers from './Providers';
+import { getBrand } from '@travel-suite/config';
+import { buildRootMetadata } from '@travel-suite/frontend-shared/seo/metadata';
 
 const commissioner = Commissioner({
   variable: '--font-commissioner',
@@ -13,21 +15,7 @@ export const viewport = {
   initialScale: 1,
 };
 
-export const metadata = {
-  metadataBase: new URL('https://www.dummyticket365.com'),
-  title: 'Dummy Ticket 365',
-  description: 'Dummy Ticket 365',
-  icons: {
-    icon: '/favicon.png',
-  },
-  openGraph: {
-    title: 'Dummy Ticket 365',
-    description: 'Dummy Ticket 365',
-    url: 'https://www.dummyticket365.com',
-    siteName: 'Dummy Ticket 365',
-    images: ['/og-image.png'],
-  },
-};
+export const metadata = buildRootMetadata(getBrand('dt365'));
 
 export default function RootLayout({ children }) {
   return (

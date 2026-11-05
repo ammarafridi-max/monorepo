@@ -1,7 +1,8 @@
 'use client';
 
 import { Suspense, useState } from 'react';
-import { Handshake, Plus, Pencil, Trash2, X, Loader2, ChevronLeft, ChevronRight, Eye, ArrowUpDown, Wallet } from 'lucide-react';
+import { Handshake, Plus, Pencil, Trash2, Loader2, ChevronLeft, ChevronRight, Eye, ArrowUpDown, Wallet } from 'lucide-react';
+import { Modal } from '../../components/admin/ModalShell';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useGetAffiliates } from '../../hooks/affiliates/useGetAffiliates';
@@ -12,35 +13,12 @@ import { useToggleAffiliateStatus } from '../../hooks/affiliates/useToggleAffili
 import AdminSearchInput from '../../components/admin/AdminSearchInput';
 import FilterMenu from '../../components/admin/FilterMenu';
 import AdminFab from '../../components/admin/AdminFab';
+import { fmtDate } from '../../components/admin/format';
+import { Toggle } from '../../components/admin/DetailCard';
+import { Pagination } from '../../components/admin/Pagination';
+import { AdminSuspense } from '../../components/admin/AdminSuspense';
+import { inputSoftCls as inputCls } from '../../components/admin/formClasses';
 
-function fmtDate(iso) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-}
-
-function Toggle({ checked, onChange, disabled }) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      disabled={disabled}
-      onClick={onChange}
-      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed ${
-        checked ? 'bg-green-500' : 'bg-gray-200'
-      }`}
-    >
-      <span
-        className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm ring-0 transition-transform duration-200 ${
-          checked ? 'translate-x-4' : 'translate-x-0'
-        }`}
-      />
-    </button>
-  );
-}
-
-const inputCls =
-  'w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300 transition disabled:bg-gray-50 disabled:text-gray-400';
 
 function AffiliateModal({ initial, onClose, onSave, saving }) {
   const isEdit = !!initial;
@@ -55,21 +33,13 @@ function AffiliateModal({ initial, onClose, onSave, saving }) {
   const canSave = form.name.trim() && form.email.trim() && form.commissionPercent !== '';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
-
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <div>
-            <p className="text-sm font-bold text-gray-900">{isEdit ? 'Edit Affiliate' : 'New Affiliate'}</p>
-            {isEdit && (
-              <p className="text-[11px] text-gray-400 mt-0.5 font-mono">ID: {initial.affiliateId}</p>
-            )}
-          </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition">
-            <X size={15} />
-          </button>
-        </div>
+    <Modal
+      size="md"
+      title={isEdit ? 'Edit Affiliate' : 'New Affiliate'}
+      subtitle={isEdit ? `ID: ${initial.affiliateId}` : null}
+      subtitleClass="text-[11px] text-gray-400 mt-0.5 font-mono"
+      onClose={onClose}
+    >
 
         <div className="px-6 py-5 space-y-4">
 
@@ -121,8 +91,7 @@ function AffiliateModal({ initial, onClose, onSave, saving }) {
             {isEdit ? 'Save Changes' : 'Create Affiliate'}
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }
 
@@ -350,19 +319,7 @@ function AffiliatesContent() {
                 </table>
               </div>
 
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-                  <p className="text-xs text-gray-400">Page {page} of {totalPages}</p>
-                  <div className="flex items-center gap-2">
-                    <button disabled={page === 1} onClick={() => goToPage(page - 1)} className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-primary-300 hover:text-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition">
-                      <ChevronLeft size={14} />
-                    </button>
-                    <button disabled={page === totalPages} onClick={() => goToPage(page + 1)} className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-primary-300 hover:text-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition">
-                      <ChevronRight size={14} />
-                    </button>
-                  </div>
-                </div>
-              )}
+              <Pagination page={page} totalPages={totalPages} onPageChange={goToPage} labelSize="text-xs" />
             </>
           )}
         </div>
@@ -373,12 +330,8 @@ function AffiliatesContent() {
 
 export default function AdminAffiliatesPage() {
   return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 size={24} className="animate-spin text-gray-300" />
-      </div>
-    }>
+    <AdminSuspense>
       <AffiliatesContent />
-    </Suspense>
+    </AdminSuspense>
   );
 }

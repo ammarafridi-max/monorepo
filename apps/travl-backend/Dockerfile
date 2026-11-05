@@ -45,6 +45,10 @@ COPY packages/shared/utils/package.json           packages/shared/utils/package.
 COPY packages/domains/visa/package.json            packages/domains/visa/package.json
 COPY packages/domains/visa-leads/package.json      packages/domains/visa-leads/package.json
 COPY packages/domains/visa-applications/package.json  packages/domains/visa-applications/package.json
+COPY packages/shared/backend-app/package.json   packages/shared/backend-app/package.json
+COPY packages/shared/config/package.json        packages/shared/config/package.json
+COPY packages/integrations/google-ads-conversions/package.json   packages/integrations/google-ads-conversions/package.json
+COPY packages/integrations/paypal/package.json   packages/integrations/paypal/package.json
 COPY apps/travl-backend/package.json       apps/travl-backend/package.json
 
 RUN pnpm install --frozen-lockfile

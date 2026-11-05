@@ -3,16 +3,41 @@ import { dialCodeToCountry, genderFromTitle, toE164 } from '@travel-suite/utils/
 const RECENT_WINDOW_DAYS = 90;
 const EMAIL_SHAPE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
+const FORMULA_LEAD = /^[=+\-@\t\r]/;
+
 const csvCell = (value) => {
   const text = String(value ?? '');
-  return /[",\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+  const safe = FORMULA_LEAD.test(text) ? `'${text}` : text;
+  return /[",\n\r]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
 };
 
 export function toCsv(header, rows) {
   return [header.join(','), ...rows.map((row) => row.map(csvCell).join(','))].join('\n') + '\n';
 }
 
-export function buildAudiences(tickets, { rates = {}, now = new Date() } = {}) {
+const baseAmount = ({ amount, currency }, rates) => {
+  const value = Number(amount);
+  if (!Number.isFinite(value)) return null;
+  const rate = Number(rates[String(currency ?? '').toUpperCase()]);
+  return Number.isFinite(rate) && rate > 0 ? value / rate : null;
+};
+
+const paidBase = (ticket, rates) => {
+  const base = Number(ticket.amountPaidBase?.amount);
+  if (Number.isFinite(base)) return base;
+  return baseAmount(ticket.amountPaid ?? {}, rates);
+};
+
+const refundedBase = (ticket, rates) =>
+  baseAmount(
+    {
+      amount: ticket.refundedAmount?.amount,
+      currency: ticket.refundedAmount?.currency ?? ticket.amountPaid?.currency,
+    },
+    rates,
+  );
+
+export function buildAudiences(tickets, { rates = {}, now = new Date(), prefix = 'audience' } = {}) {
   const recentCutoff = now.getTime() - RECENT_WINDOW_DAYS * 24 * 60 * 60 * 1000;
   const byEmail = new Map();
 
@@ -26,16 +51,13 @@ export function buildAudiences(tickets, { rates = {}, now = new Date() } = {}) {
       byEmail.set(key, record);
     }
 
-    if (ticket.paymentStatus === 'PAID') {
+    if (ticket.paymentStatus === 'PAID' || ticket.paymentStatus === 'PARTIALLY_REFUNDED') {
       record.paid += 1;
-      const base = ticket.amountPaidBase?.amount;
-      if (base != null && Number.isFinite(Number(base))) {
-        record.value += Number(base);
-      } else {
-        const code = String(ticket.amountPaid?.currency ?? '').toUpperCase();
-        const rate = Number(rates[code]);
-        const amount = Number(ticket.amountPaid?.amount);
-        if (Number.isFinite(amount) && Number.isFinite(rate) && rate > 0) record.value += amount / rate;
+      const gross = paidBase(ticket, rates);
+      if (gross != null) {
+        const refunded =
+          ticket.paymentStatus === 'PARTIALLY_REFUNDED' ? refundedBase(ticket, rates) ?? 0 : 0;
+        record.value += Math.max(gross - refunded, 0);
       }
     } else if (ticket.paymentStatus === 'UNPAID') {
       record.unpaid += 1;
@@ -76,7 +98,7 @@ export function buildAudiences(tickets, { rates = {}, now = new Date() } = {}) {
 
   return {
     purchasers: {
-      name: 'dt365-purchasers.csv',
+      name: `${prefix}-purchasers.csv`,
       rows: purchasers.length,
       csv: toCsv(
         [...identityHeader, 'value'],
@@ -84,17 +106,23 @@ export function buildAudiences(tickets, { rates = {}, now = new Date() } = {}) {
       ),
     },
     abandoners: {
-      name: 'dt365-abandoned-never-bought.csv',
+      name: `${prefix}-abandoned-never-bought.csv`,
       rows: abandoners.length,
       csv: toCsv(identityHeader, abandoners.map(identity)),
     },
     recentAbandoners: {
-      name: `dt365-abandoned-last-${RECENT_WINDOW_DAYS}-days.csv`,
+      name: `${prefix}-abandoned-last-${RECENT_WINDOW_DAYS}-days.csv`,
       rows: recentAbandoners.length,
       csv: toCsv(identityHeader, recentAbandoners.map(identity)),
     },
   };
 }
+
+const filePrefix = (brandName) =>
+  String(brandName ?? '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'audience';
 
 export function createAudienceService({ Ticket, Currency, sendEmail, recipient, brandName, logger }) {
   const exportAudiences = async ({ now = new Date() } = {}) => {
@@ -110,11 +138,14 @@ export function createAudienceService({ Ticket, Currency, sendEmail, recipient, 
     );
 
     const tickets = await Ticket.find(
-      { paymentStatus: { $in: ['PAID', 'UNPAID', 'REFUNDED'] }, email: { $nin: [null, ''] } },
-      'email phoneNumber passengers paymentStatus paidAt createdAt amountPaid amountPaidBase currency',
+      {
+        paymentStatus: { $in: ['PAID', 'PARTIALLY_REFUNDED', 'UNPAID', 'REFUNDED'] },
+        email: { $nin: [null, ''] },
+      },
+      'email phoneNumber passengers paymentStatus paidAt createdAt amountPaid amountPaidBase refundedAmount currency',
     ).lean();
 
-    const audiences = buildAudiences(tickets, { rates, now });
+    const audiences = buildAudiences(tickets, { rates, now, prefix: filePrefix(brandName) });
     const files = [audiences.purchasers, audiences.abandoners, audiences.recentAbandoners];
 
     await sendEmail({

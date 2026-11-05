@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useOutsideClick } from '../../../hooks/general/useOutsideClick';
 import { ChevronDown, Search, X } from 'lucide-react';
 
 const COUNTRIES = [
@@ -129,16 +130,10 @@ export default function PhoneInput({ value, onChange, required, inputId, default
     if (open) searchRef.current?.focus();
   }, [open]);
 
-  useEffect(() => {
-    function handleClickOutside(e) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setOpen(false);
-        setQuery('');
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  useOutsideClick(dropdownRef, () => {
+    setOpen(false);
+    setQuery('');
+  });
 
   return (
     <div className="flex gap-0 relative" ref={dropdownRef}>

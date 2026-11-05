@@ -1,78 +1,30 @@
-const parseList = (value, fallback = []) => {
-  if (!value || typeof value !== "string") return fallback;
-  return value
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-};
+import {
+  createBackendConfig,
+  googleAdsConfig,
+  metaConfig,
+} from "@travel-suite/backend-app/config";
 
-const parseNumber = (value, fallback) => {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
-};
+export default createBackendConfig({
+  brandKey: "emirateslimo",
+  port: 3001,
+  frontendUrl: "http://localhost:5173",
+  corsOrigins: ["http://localhost:5173"],
+  overrides: ({ brand }) => ({
+    contactEmail: process.env.CONTACT_EMAIL ?? brand.emails.from,
 
-const parseRate = (value) => {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 && parsed <= 1 ? parsed : 1;
-};
+    adminUrl: process.env.ADMIN_URL ?? "http://localhost:5173",
 
-export default {
-  nodeEnv: process.env.NODE_ENV ?? "development",
-  port: parseNumber(process.env.PORT, 3001),
-  mongoUri: process.env.MONGO_URI,
-
-  jwtSecret: process.env.JWT_SECRET,
-  jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? "30d",
-  jwtCookieExpiresInDays: parseNumber(process.env.JWT_COOKIE_EXPIRES_IN, 30),
-
-  brevoApiKey: process.env.BREVO_API_KEY,
-  contactEmail: process.env.CONTACT_EMAIL ?? "contact@emirateslimo.com",
-
-  corsOrigins: parseList(process.env.CORS_ORIGINS, ["http://localhost:5173"]),
-
-  frontendUrl: process.env.FRONTEND_URL ?? "http://localhost:5173",
-  adminUrl: process.env.ADMIN_URL ?? "http://localhost:5173",
-
-  googleMaps: {
-    apiKey: process.env.GOOGLE_MAPS_API_KEY,
-  },
-
-  ipInfo: {
-    apiKey: process.env.IPINFO_API_KEY,
-  },
-
-  cloudinary: {
-    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
-    apiKey: process.env.CLOUDINARY_API_KEY,
-    apiSecret: process.env.CLOUDINARY_API_SECRET,
-  },
-
-  stripe: {
-    secretKey: process.env.STRIPE_SECRET_KEY,
-    webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
-  },
-
-  meta: {
-    pixelId: process.env.META_PIXEL_ID,
-    capiAccessToken: process.env.META_CAPI_ACCESS_TOKEN,
-    testEventCode: process.env.META_TEST_EVENT_CODE,
-  },
-
-  googleAds: {
-    customerId: process.env.GOOGLE_ADS_CUSTOMER_ID,
-    loginCustomerId: process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID,
-    developerToken: process.env.GOOGLE_ADS_DEVELOPER_TOKEN,
-    clientId: process.env.GOOGLE_ADS_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_ADS_CLIENT_SECRET,
-    refreshToken: process.env.GOOGLE_ADS_REFRESH_TOKEN,
-    apiVersion: process.env.GOOGLE_ADS_API_VERSION ?? "v26",
-    timezoneOffset: process.env.GOOGLE_ADS_TIMEZONE_OFFSET ?? "+04:00",
-    booking: {
-      conversionAction: process.env.GOOGLE_ADS_CONVERSION_ACTION_BOOKING,
-      valueRate: parseRate(process.env.GOOGLE_ADS_VALUE_RATE_BOOKING),
+    googleMaps: {
+      apiKey: process.env.GOOGLE_MAPS_API_KEY,
     },
-  },
 
-  anthropicApiKey: process.env.ANTHROPIC_API_KEY,
-  openaiApiKey: process.env.OPENAI_API_KEY,
-};
+    ipInfo: {
+      apiKey: process.env.IPINFO_API_KEY,
+    },
+
+    meta: metaConfig(),
+    googleAds: googleAdsConfig({ booking: "BOOKING" }),
+
+    openaiApiKey: process.env.OPENAI_API_KEY,
+  }),
+});

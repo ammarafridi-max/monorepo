@@ -12,7 +12,7 @@ export const EMPLOYMENT_STATUSES = [
   'UNEMPLOYED',
 ];
 
-const applicantSchema = new Schema(
+const ApplicantSchema = new Schema(
   {
     application: { type: ObjectId, ref: 'visa-application', required: true, index: true },
     isPrimary: { type: Boolean, default: false },
@@ -38,4 +38,4 @@ const applicantSchema = new Schema(
   },
 );
 
-export default applicantSchema;
+export default ApplicantSchema;

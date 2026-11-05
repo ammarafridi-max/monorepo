@@ -20,7 +20,7 @@ const documentHistorySchema = new Schema(
   { _id: false },
 );
 
-const applicationDocumentSchema = new Schema(
+const ApplicationDocumentSchema = new Schema(
   {
     application: { type: ObjectId, ref: 'visa-application', required: true, index: true },
     applicant: { type: ObjectId, ref: 'applicant', required: true, index: true },
@@ -57,6 +57,6 @@ const applicationDocumentSchema = new Schema(
   },
 );
 
-applicationDocumentSchema.index({ applicant: 1, docTypeKey: 1 }, { unique: true });
+ApplicationDocumentSchema.index({ applicant: 1, docTypeKey: 1 }, { unique: true });
 
-export default applicationDocumentSchema;
+export default ApplicationDocumentSchema;

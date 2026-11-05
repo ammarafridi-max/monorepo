@@ -1,13 +1,13 @@
 import mongoose from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
-import { AppError, logger, sanitizeAttribution, attributionChannelFilter } from '@travel-suite/utils';
+import { AppError, logger, sanitizeAttribution, attributionChannelFilter, escapeRegex } from '@travel-suite/utils';
 import {
   fromStripeMinorUnits,
   normalizeCurrencyCode,
   roundToCurrency,
   toStripeMinorUnits,
 } from '@travel-suite/utils/currency';
-import { dialCodeToCountry, genderFromTitle, toE164 } from '@travel-suite/utils/contact';
+import { dialCodeToCountry, genderFromTitle, metaUser, toE164 } from '@travel-suite/utils/contact';
 import { payPalCurrencyFor } from '@travel-suite/paypal';
 import { googleClickIdsFrom } from '@travel-suite/google-ads-conversions';
 import { TICKET_VALIDITIES, VALIDITY_DAYS, SHORTEST_VALIDITY } from './validity.js';
@@ -35,9 +35,6 @@ function isAffiliateAttributionWithinWindow(capturedAt, now = new Date()) {
   return age <= AFFILIATE_ATTRIBUTION_TTL_MS;
 }
 
-function escapeRegex(value = '') {
-  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
 
 function trimmedString(value) {
   return typeof value === 'string' ? value.trim() : undefined;
@@ -124,6 +121,67 @@ function pickTicketInput(payload = {}) {
       returnFlight: pickFlight(payload.flightDetails?.returnFlight),
     },
   };
+}
+
+const EDIT_LABELS = {
+  type: 'Trip type',
+  from: 'From',
+  to: 'To',
+  departureDate: 'Departure date',
+  returnDate: 'Return date',
+  email: 'Email',
+  ticketValidity: 'Ticket validity',
+};
+
+function flightSummary(flightDetails) {
+  return [flightDetails?.departureFlight, flightDetails?.returnFlight]
+    .map((flight) =>
+      (flight?.segments || [])
+        .map((segment) => [segment?.carrierCode, segment?.flightNumber].filter(Boolean).join(''))
+        .filter(Boolean)
+        .join('+'),
+    )
+    .filter(Boolean)
+    .join(' / ');
+}
+
+function passengerSummary(passengers) {
+  return (Array.isArray(passengers) ? passengers : [])
+    .map((p) => [p?.title, p?.firstName, p?.lastName].filter(Boolean).join(' '))
+    .filter(Boolean)
+    .join(', ');
+}
+
+function describeTicketChanges(before, after) {
+  const changes = [];
+
+  for (const [key, label] of Object.entries(EDIT_LABELS)) {
+    const previous = before?.[key] ?? '';
+    const next = after?.[key] ?? '';
+    if (String(previous) !== String(next)) {
+      changes.push(`${label}: ${previous || '-'} -> ${next || '-'}`);
+    }
+  }
+
+  const previousQuantity = `${before?.quantity?.adults ?? 0}A/${before?.quantity?.children ?? 0}C/${before?.quantity?.infants ?? 0}I`;
+  const nextQuantity = `${after?.quantity?.adults ?? 0}A/${after?.quantity?.children ?? 0}C/${after?.quantity?.infants ?? 0}I`;
+  if (previousQuantity !== nextQuantity) {
+    changes.push(`Passenger count: ${previousQuantity} -> ${nextQuantity}`);
+  }
+
+  const previousFlights = flightSummary(before?.flightDetails);
+  const nextFlights = flightSummary(after?.flightDetails);
+  if (previousFlights !== nextFlights) {
+    changes.push(`Flights: ${previousFlights || '-'} -> ${nextFlights || '-'}`);
+  }
+
+  const previousPassengers = passengerSummary(before?.passengers);
+  const nextPassengers = passengerSummary(after?.passengers);
+  if (previousPassengers !== nextPassengers) {
+    changes.push(`Passengers: ${previousPassengers || '-'} -> ${nextPassengers || '-'}`);
+  }
+
+  return changes;
 }
 
 function carrierCodesOf(flightDetails) {
@@ -295,18 +353,6 @@ function buildTicketFilter(query = {}) {
 
 const countWhen = (condition) => ({ $sum: { $cond: [condition, 1, 0] } });
 const IS_PAID = { $eq: ['$paymentStatus', 'PAID'] };
-
-function rebuildFbc(ticket) {
-  const touches = [ticket?.attribution?.last, ticket?.attribution?.first];
-  for (const touch of touches) {
-    const fbclid = typeof touch?.fbclid === 'string' ? touch.fbclid.trim() : '';
-    if (!fbclid) continue;
-    const capturedAt = new Date(touch.capturedAt ?? ticket?.createdAt ?? Date.now()).getTime();
-    const stamp = Number.isFinite(capturedAt) ? capturedAt : Date.now();
-    return `fb.1.${stamp}.${fbclid}`;
-  }
-  return undefined;
-}
 
 export function createTicketService({ Ticket, Affiliate, pricingService, currencyService, stripe, paypal, notifications, frontendUrl, brevo, reviewListId, paidOrderBus, reservationStorage, sendEmail, metaCapi, openaiCapi, googleAds, airlineRules = null }) {
   // getUnitPrice already prices in the requested currency, so nothing here converts a second time.
@@ -705,6 +751,55 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     return ticket;
   };
 
+  const updateTicketRequest = async (sessionId, payload) => {
+    const id = String(sessionId ?? '').trim();
+    if (!id) throw new AppError('A session id is required', 400);
+
+    const ticket = await Ticket.findOne({ sessionId: id });
+    if (!ticket) throw new AppError('Booking not found', 404);
+    if (ticket.paymentStatus === 'PAID') {
+      throw new AppError('This booking is already paid, so it can no longer be changed', 409);
+    }
+
+    assertTripShape(payload);
+    assertDeliveryAndValidity(payload);
+
+    const input = pickTicketInput(payload);
+
+    if (airlineRules) {
+      await airlineRules.assertSellable({
+        carrierCodes: carrierCodesOf(input.flightDetails),
+        validity: input.ticketValidity,
+      });
+    }
+
+    const requestedCurrency = pickCurrencyCode(payload?.currency);
+    const { currency: quotedCurrency } = await pricingService.getUnitPrice(
+      input.ticketValidity,
+      requestedCurrency,
+    );
+
+    const normalizedEmail = normalizeEmail(payload?.email);
+    const next = { ...input, email: normalizedEmail };
+    const changes = describeTicketChanges(ticket.toObject(), next);
+
+    Object.assign(ticket, next, { currency: requestedCurrency || quotedCurrency });
+    if (input.type !== 'Return') ticket.returnDate = undefined;
+
+    if (changes.length > 0) {
+      ticket.events.push(
+        ticketEvent({
+          actor: null,
+          action: 'EDITED_BEFORE_PAYMENT',
+          detail: changes.join('; '),
+        }),
+      );
+    }
+
+    await ticket.save();
+    return ticket;
+  };
+
   const saveCheckoutAttribution = async ({ sessionId, formData, totalAmount, currencyCode }) => {
     const metaAttribution = {
       fbp: typeof formData.fbp === 'string' ? formData.fbp.slice(0, 200) : undefined,
@@ -801,9 +896,7 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
         currency: ticket.amountPaid?.currency,
         user: {
           email: ticket.email,
-          phone: ticket.phoneNumber?.code && ticket.phoneNumber?.digits
-            ? `${ticket.phoneNumber.code}${ticket.phoneNumber.digits}`
-            : undefined,
+          phone: toE164(ticket.phoneNumber?.code, ticket.phoneNumber?.digits),
           firstName: lead?.firstName,
           lastName: lead?.lastName,
           externalId: ticket.email?.toLowerCase(),
@@ -820,21 +913,17 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
 
   const metaUserFromTicket = (ticket) => {
     const lead = ticket.passengers?.[0];
-    return {
+    return metaUser({
       email: ticket.email,
-      phone: toE164(ticket.phoneNumber?.code, ticket.phoneNumber?.digits),
+      phone: ticket.phoneNumber,
       firstName: lead?.firstName,
       lastName: lead?.lastName,
-      gender: genderFromTitle(lead?.title),
-      country: dialCodeToCountry(ticket.phoneNumber?.code, {
-        currency: ticket.amountPaid?.currency ?? ticket.currency,
-      }),
-      externalId: ticket.email?.trim().toLowerCase(),
-      clientIp: ticket.metaAttribution?.clientIp,
-      userAgent: ticket.metaAttribution?.userAgent,
-      fbp: ticket.metaAttribution?.fbp,
-      fbc: ticket.metaAttribution?.fbc || rebuildFbc(ticket),
-    };
+      title: lead?.title,
+      currency: ticket.amountPaid?.currency ?? ticket.currency,
+      attribution: ticket.attribution,
+      metaAttribution: ticket.metaAttribution,
+      createdAt: ticket.createdAt,
+    });
   };
 
   const reportPurchaseToMeta = async (ticket) => {
@@ -1312,5 +1401,5 @@ export function createTicketService({ Ticket, Affiliate, pricingService, currenc
     return refund;
   };
 
-  return { getAllTickets, getTicketStats, getLatestPaidTicket, getTicketBySessionId, getTicketQuote, getReservationDownloadUrl, updateOrderStatus, updateDeliveryDate, deleteTicket, sendReservation, createTicketRequest, createStripePaymentUrl, handleStripeSuccess, createPayPalOrder, capturePayPalOrder, refundByTransactionId };
+  return { getAllTickets, getTicketStats, getLatestPaidTicket, getTicketBySessionId, getTicketQuote, getReservationDownloadUrl, updateOrderStatus, updateDeliveryDate, deleteTicket, sendReservation, createTicketRequest, updateTicketRequest, createStripePaymentUrl, handleStripeSuccess, createPayPalOrder, capturePayPalOrder, refundByTransactionId };
 }

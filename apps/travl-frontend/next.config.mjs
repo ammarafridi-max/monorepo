@@ -69,6 +69,11 @@ const nextConfig = {
   },
   async redirects() {
     return [
+      {
+        source: '/admin/airline-logos',
+        destination: '/admin/airlines',
+        permanent: true,
+      },
       ...MOVED_TO_VISAWADI.map((slug) => ({
         source: `/blog/${slug}`,
         destination: `https://www.visawadi.com/blog/${slug}`,

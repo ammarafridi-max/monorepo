@@ -26,6 +26,3 @@ export async function getDistanceApi({ originLat, originLng, destLat, destLng })
   return await apiFetchPublic(`${BASE}/distance?${params}`);
 }
 
-export async function getUserLocationApi() {
-  return await apiFetchPublic(`${BASE}/user-location`);
-}

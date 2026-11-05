@@ -19,6 +19,7 @@ import toast from "react-hot-toast";
 import { useGetBlogTags } from "../../hooks/blog-tags/useGetBlogTags.js";
 import TinyEditor from "../forms/v2/TinyEditor.js";
 import { generateCoverImageApi, improveContentApi } from "../../services/apiBlog.js";
+import { FormCard as Card } from './DetailCard';
 
 function slugify(str) {
   return str
@@ -51,30 +52,6 @@ function buildFormData(data, editorRef, isEdit, generatedFile) {
     fd.append(isEdit ? "newCoverImage" : "coverImage", imageFile);
   }
   return fd;
-}
-
-function Card({ title, children, collapsible = false, headerAction }) {
-  const [open, setOpen] = useState(true);
-  return (
-    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-      <div
-        className={`flex items-center justify-between px-5 py-4 border-b border-gray-100 ${collapsible ? "cursor-pointer select-none" : ""}`}
-        onClick={collapsible ? () => setOpen((o) => !o) : undefined}
-      >
-        <h3 className="text-sm font-bold text-gray-700">{title}</h3>
-        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-          {headerAction}
-          {collapsible &&
-            (open ? (
-              <ChevronUp size={15} className="text-gray-400" />
-            ) : (
-              <ChevronDown size={15} className="text-gray-400" />
-            ))}
-        </div>
-      </div>
-      {open && <div className="p-5">{children}</div>}
-    </div>
-  );
 }
 
 function Field({ label, hint, children }) {

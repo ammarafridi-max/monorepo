@@ -3,16 +3,11 @@ import { resolve } from 'node:path';
 import mongoose from 'mongoose';
 import ExcelJS from 'exceljs';
 import { GoogleAdsApi } from 'google-ads-api';
+import { flagValue } from '../../src/args.mjs';
 
 const CLICK_VIEW_WINDOW_DAYS = 90;
 const PAID_STATUSES = ['PAID'];
 
-function flagValue(argv, name, fallback = null) {
-  const i = argv.indexOf(`--${name}`);
-  if (i !== -1 && argv[i + 1] && !argv[i + 1].startsWith('--')) return argv[i + 1];
-  const eq = argv.find((a) => a.startsWith(`--${name}=`));
-  return eq ? eq.slice(name.length + 3) : fallback;
-}
 
 const digits = (value) => String(value ?? '').replace(/\D/g, '');
 
@@ -317,59 +312,69 @@ function styleHeader(sheet) {
   sheet.views = [{ state: 'frozen', ySplit: 1 }];
 }
 
+const MONEY = '#,##0.00';
+const COUNT = '#,##0';
+
+const METRIC_KEYS = [
+  'impressions',
+  'clicks',
+  'conversions',
+  'spend',
+  'orders',
+  'revenue',
+  'commission',
+  'profit',
+];
+
+const metricColumns = (currency, commission) => [
+  { header: 'Impressions', key: 'impressions', width: 13, style: { numFmt: COUNT } },
+  { header: 'Clicks', key: 'clicks', width: 10, style: { numFmt: COUNT } },
+  { header: 'Ads conversions', key: 'conversions', width: 16, style: { numFmt: MONEY } },
+  { header: `Spend (${currency})`, key: 'spend', width: 14, style: { numFmt: MONEY } },
+  { header: 'Orders', key: 'orders', width: 9, style: { numFmt: COUNT } },
+  { header: `Order revenue (${currency})`, key: 'revenue', width: 20, style: { numFmt: MONEY } },
+  { header: commission.header, key: 'commission', width: commission.width, style: { numFmt: MONEY } },
+  { header: `Profit (${currency})`, key: 'profit', width: 14, style: { numFmt: MONEY } },
+];
+
+const metricTotals = (list) => Object.fromEntries(METRIC_KEYS.map((key) => [key, sum(list, key)]));
+
+function addTotalsRow(sheet, values) {
+  const row = sheet.addRow(values);
+  row.font = { bold: true };
+  row.border = { top: { style: 'thin' } };
+  return row;
+}
+
 export async function writeWorkbook({ path, meta, rows, weekly }) {
   const workbook = new ExcelJS.Workbook();
   workbook.creator = 'travel-suite automations';
   workbook.created = new Date();
 
-  const money = `#,##0.00`;
   const daily = workbook.addWorksheet('Daily');
   daily.columns = [
     { header: 'Date', key: 'day', width: 12 },
-    { header: 'Impressions', key: 'impressions', width: 13, style: { numFmt: '#,##0' } },
-    { header: 'Clicks', key: 'clicks', width: 10, style: { numFmt: '#,##0' } },
-    { header: 'Ads conversions', key: 'conversions', width: 16, style: { numFmt: '#,##0.00' } },
-    { header: `Spend (${meta.currency})`, key: 'spend', width: 14, style: { numFmt: money } },
-    { header: 'Orders', key: 'orders', width: 9, style: { numFmt: '#,##0' } },
-    { header: `Order revenue (${meta.currency})`, key: 'revenue', width: 20, style: { numFmt: money } },
-    { header: `Commission ${Math.round(meta.commissionRate * 100)}% (${meta.currency})`, key: 'commission', width: 22, style: { numFmt: money } },
-    { header: `Profit (${meta.currency})`, key: 'profit', width: 14, style: { numFmt: money } },
-    { header: 'Cum. spend', key: 'cumSpend', width: 14, style: { numFmt: money } },
-    { header: 'Cum. revenue', key: 'cumRevenue', width: 14, style: { numFmt: money } },
-    { header: 'Cum. commission', key: 'cumCommission', width: 16, style: { numFmt: money } },
-    { header: 'Cum. profit', key: 'cumProfit', width: 14, style: { numFmt: money } },
+    ...metricColumns(meta.currency, {
+      header: `Commission ${Math.round(meta.commissionRate * 100)}% (${meta.currency})`,
+      width: 22,
+    }),
+    { header: 'Cum. spend', key: 'cumSpend', width: 14, style: { numFmt: MONEY } },
+    { header: 'Cum. revenue', key: 'cumRevenue', width: 14, style: { numFmt: MONEY } },
+    { header: 'Cum. commission', key: 'cumCommission', width: 16, style: { numFmt: MONEY } },
+    { header: 'Cum. profit', key: 'cumProfit', width: 14, style: { numFmt: MONEY } },
   ];
   rows.forEach((row) => daily.addRow(row));
 
-  const totals = daily.addRow({
-    day: 'TOTAL',
-    impressions: sum(rows, 'impressions'),
-    clicks: sum(rows, 'clicks'),
-    conversions: sum(rows, 'conversions'),
-    spend: sum(rows, 'spend'),
-    orders: sum(rows, 'orders'),
-    revenue: sum(rows, 'revenue'),
-    commission: sum(rows, 'commission'),
-    profit: sum(rows, 'profit'),
-  });
-  totals.font = { bold: true };
-  totals.border = { top: { style: 'thin' } };
+  addTotalsRow(daily, { day: 'TOTAL', ...metricTotals(rows) });
   styleHeader(daily);
 
   const weeks = workbook.addWorksheet('Weekly');
   weeks.columns = [
     { header: 'Week starting', key: 'weekStart', width: 14 },
     { header: 'Week ending', key: 'weekEnd', width: 14 },
-    { header: 'Impressions', key: 'impressions', width: 13, style: { numFmt: '#,##0' } },
-    { header: 'Clicks', key: 'clicks', width: 10, style: { numFmt: '#,##0' } },
-    { header: 'Ads conversions', key: 'conversions', width: 16, style: { numFmt: '#,##0.00' } },
-    { header: `Spend (${meta.currency})`, key: 'spend', width: 14, style: { numFmt: money } },
-    { header: 'Orders', key: 'orders', width: 9, style: { numFmt: '#,##0' } },
-    { header: `Order revenue (${meta.currency})`, key: 'revenue', width: 20, style: { numFmt: money } },
-    { header: `Commission (${meta.currency})`, key: 'commission', width: 18, style: { numFmt: money } },
-    { header: `Profit (${meta.currency})`, key: 'profit', width: 14, style: { numFmt: money } },
+    ...metricColumns(meta.currency, { header: `Commission (${meta.currency})`, width: 18 }),
     { header: 'ROAS (commission/spend)', key: 'roas', width: 24, style: { numFmt: '0.00' } },
-    { header: `Cost per order (${meta.currency})`, key: 'cpo', width: 20, style: { numFmt: money } },
+    { header: `Cost per order (${meta.currency})`, key: 'cpo', width: 20, style: { numFmt: MONEY } },
   ];
   for (const week of weekly) {
     weeks.addRow({
@@ -378,22 +383,15 @@ export async function writeWorkbook({ path, meta, rows, weekly }) {
       cpo: week.orders ? week.spend / week.orders : null,
     });
   }
-  const weekTotals = weeks.addRow({
+
+  const weekSums = metricTotals(weekly);
+  addTotalsRow(weeks, {
     weekStart: 'TOTAL',
     weekEnd: '',
-    impressions: sum(weekly, 'impressions'),
-    clicks: sum(weekly, 'clicks'),
-    conversions: sum(weekly, 'conversions'),
-    spend: sum(weekly, 'spend'),
-    orders: sum(weekly, 'orders'),
-    revenue: sum(weekly, 'revenue'),
-    commission: sum(weekly, 'commission'),
-    profit: sum(weekly, 'profit'),
-    roas: sum(weekly, 'spend') ? sum(weekly, 'commission') / sum(weekly, 'spend') : null,
-    cpo: sum(weekly, 'orders') ? sum(weekly, 'spend') / sum(weekly, 'orders') : null,
+    ...weekSums,
+    roas: weekSums.spend ? weekSums.commission / weekSums.spend : null,
+    cpo: weekSums.orders ? weekSums.spend / weekSums.orders : null,
   });
-  weekTotals.font = { bold: true };
-  weekTotals.border = { top: { style: 'thin' } };
   styleHeader(weeks);
 
   const notes = workbook.addWorksheet('Notes');

@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import mongoose from 'mongoose';
-import { AppError } from '@travel-suite/utils';
+import { AppError, escapeRegex } from '@travel-suite/utils';
 import { APPLICATION_STATUSES, APPOINTMENT_STATUSES } from './schemas/visa-application.schema.js';
 import { ACCOMMODATION_TYPES } from './schemas/checklist-template.schema.js';
 import { deriveAgeGroup, evaluateTemplate, neededProfileFields, templateReferencesCondition } from './matcher.js';
@@ -16,9 +16,6 @@ function randomSuffix(len = 4) {
   return out;
 }
 
-function escapeRegex(value = '') {
-  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
 
 const humanize = (k) => String(k || '').replace(/_/g, ' ').toLowerCase().replace(/^\w/, (c) => c.toUpperCase());
 
@@ -60,8 +57,8 @@ export function createVisaApplicationService({
   User,
   storage,
   notifications,
-  apiBaseUrl = '',
-  appBaseUrl = '',
+  apiUrl = '',
+  frontendUrl = '',
 }) {
   async function generateApplicationRef() {
     const now = new Date();
@@ -78,7 +75,7 @@ export function createVisaApplicationService({
   async function buildMagicLink(user) {
     const rawToken = user.createMagicLinkToken();
     await user.save({ validateBeforeSave: false });
-    const base = String(apiBaseUrl || '').replace(/\/+$/, '');
+    const base = String(apiUrl || '').replace(/\/+$/, '');
     return `${base}/api/users/magic-link/${rawToken}`;
   }
 
@@ -461,7 +458,21 @@ export function createVisaApplicationService({
   }
 
   const ACTIVE_STATES = ['DRAFT', 'INFO_PENDING', 'INFO_COMPLETE', 'DOCS_READY'];
-  const QUEUE_FILTERS = ['all', 'needs_review', 'your_turn', 'gone_quiet', 'escalated', 'rejected_pending', 'ready_to_submit'];
+  const QUEUES = {
+    all: {},
+    needs_review: { afterCounts: { uploadedCount: { $gt: 0 } } },
+    your_turn: {
+      base: { customerCompletenessPercent: 100, fileCompletenessPercent: { $lt: 100 } },
+      sort: { customerCompletedAt: 1 },
+    },
+    gone_quiet: {
+      afterLastAction: ({ fiveDaysAgo }) => ({ effectiveLastAction: { $lt: fiveDaysAgo }, status: { $in: ACTIVE_STATES } }),
+    },
+    escalated: { base: { reminderState: 'ESCALATED' } },
+    rejected_pending: { afterCounts: { rejectedCount: { $gt: 0 } } },
+    ready_to_submit: { base: { readyToSubmit: true } },
+  };
+  const QUEUE_FILTERS = Object.keys(QUEUES);
 
   async function adminList({ page, limit, status, assignedTo, search, queue = 'all' }) {
     const currentPage = Math.max(1, parseInt(page, 10) || 1);
@@ -485,17 +496,16 @@ export function createVisaApplicationService({
       const regex = new RegExp(escapeRegex(search), 'i');
       baseMatch.$or = [{ applicationRef: regex }, { destinationCountry: regex }];
     }
-    if (queue === 'escalated') baseMatch.reminderState = 'ESCALATED';
-    if (queue === 'ready_to_submit') baseMatch.readyToSubmit = true;
-    if (queue === 'your_turn') { baseMatch.customerCompletenessPercent = 100; baseMatch.fileCompletenessPercent = { $lt: 100 }; }
+    const spec = QUEUES[queue] ?? QUEUES.all;
+    const fragment = (part) => (typeof part === 'function' ? part({ fiveDaysAgo }) : part);
+    Object.assign(baseMatch, fragment(spec.base));
 
     const pipeline = [
       { $match: baseMatch },
       { $addFields: { effectiveLastAction: { $ifNull: ['$lastCustomerActionAt', '$createdAt'] } } },
     ];
-    if (queue === 'gone_quiet') {
-      pipeline.push({ $match: { effectiveLastAction: { $lt: fiveDaysAgo }, status: { $in: ACTIVE_STATES } } });
-    }
+    const afterLastAction = fragment(spec.afterLastAction);
+    if (afterLastAction) pipeline.push({ $match: afterLastAction });
     pipeline.push(
       { $lookup: { from: docColl, localField: '_id', foreignField: 'application', as: 'docs' } },
       {
@@ -505,11 +515,10 @@ export function createVisaApplicationService({
         },
       },
     );
-    if (queue === 'needs_review') pipeline.push({ $match: { uploadedCount: { $gt: 0 } } });
-    if (queue === 'rejected_pending') pipeline.push({ $match: { rejectedCount: { $gt: 0 } } });
-    const sortStage = queue === 'your_turn' ? { $sort: { customerCompletedAt: 1 } } : { $sort: { effectiveLastAction: 1 } };
+    const afterCounts = fragment(spec.afterCounts);
+    if (afterCounts) pipeline.push({ $match: afterCounts });
     pipeline.push(
-      sortStage,
+      { $sort: spec.sort ?? { effectiveLastAction: 1 } },
       {
         $facet: {
           meta: [{ $count: 'total' }],
@@ -741,7 +750,7 @@ export function createVisaApplicationService({
     await recalcCompleteness(application);
 
     const user = await User.findById(application.user).select('email').lean();
-    const base = String(appBaseUrl || '').replace(/\/+$/, '');
+    const base = String(frontendUrl || '').replace(/\/+$/, '');
     if (decision === 'REJECTED') {
       notifications?.sendDocumentRejected?.({
         email: user?.email, applicationRef: application.applicationRef, docType: doc.docTypeKey,

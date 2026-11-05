@@ -31,7 +31,9 @@ It expects `visawadi-backend` to be running and reachable at `NEXT_PUBLIC_BACKEN
 | `/admin/document-registry` | Document types and checklist templates |
 | `/admin/visa` | Visa landing pages |
 | `/admin/blog`, `/admin/blog-tags` | Blog content |
-| `/admin/revenue`, `/admin/payment-links`, `/admin/products`, `/admin/currencies` | Finance |
+| `/admin/revenue`, `/admin/payment-links`, `/admin/products` | Finance. There is **no** `/admin/currencies` here, despite an earlier version of this table listing one. |
+| `/admin/chatgpt-ads` | ChatGPT Ads |
+| `/admin/assistant` | Admin assistant |
 | `/admin/users`, `/admin/account` | People and settings |
 
 Pages are thin re-exports of shared `pages/admin/*` components. Change behaviour in the shared component, not here.

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CURRENCY, LOWEST_PRICE } from './pricing';
+import { CURRENCY, LOWEST_PRICE } from './Pricing';
 
 export default function StickyBookingBar({ targetId = 'form', label = 'Book now', product = 'flight reservation' }) {
   const [visible, setVisible] = useState(false);

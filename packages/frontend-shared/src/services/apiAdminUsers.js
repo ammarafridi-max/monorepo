@@ -13,10 +13,6 @@ export async function getAdminUsersApi(params = {}) {
   return await apiFetch(queryString ? `${URL}?${queryString}` : URL);
 }
 
-export async function getAdminUserApi(username) {
-  return await apiFetch(`${URL}/${username}`);
-}
-
 export async function createAdminUserApi(userData) {
   return await apiFetch(URL, {
     method: 'POST',

@@ -15,11 +15,6 @@ const travl = {
     primaryColor: '#14948f',
     accentColor: '#ff603a',
   },
-  features: {
-    dummyTickets: false,
-    insurance: true,
-    hotelBookings: false,
-  },
   seo: {
     titleTemplate: '%s | Travl',
     defaultTitle: 'Travl',
@@ -30,6 +25,12 @@ const travl = {
   legal: {
     companyName: 'TRAVL Technologies',
     address: 'Abraj Al Mamzar, Al Mamzar, Dubai, United Arab Emirates',
+    postalAddress: {
+      streetAddress: 'Abraj Al Mamzar',
+      addressLocality: 'Al Mamzar',
+      addressRegion: 'Dubai',
+      addressCountry: 'AE',
+    },
   },
 };
 

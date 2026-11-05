@@ -15,26 +15,7 @@ import { useGetBookings } from '../../hooks/limo-bookings/useGetBookings';
 import FilterMenu from '../../components/admin/FilterMenu';
 import SourceBadge from '../../components/admin/SourceBadge';
 import { CHANNEL_OPTIONS } from '../../utils/attribution';
-
-function fmtDate(iso) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
-}
-
-function fmtDateTime(iso) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
+import { fmtDate, fmtDatetime as fmtDateTime } from '../../components/admin/format';
 
 const PAYMENT_CFG = {
   paid: { label: 'PAID', cls: 'bg-green-50 text-green-700 border-green-200' },

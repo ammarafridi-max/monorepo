@@ -1,11 +1,11 @@
 import BlogSchema from './schemas/blog.schema.js';
 import BlogTagSchema from './schemas/blog-tag.schema.js';
 import { createBlogService } from './service.js';
-import { createBlogTagService } from './blogTag.service.js';
+import { createBlogTagService } from './blog-tag.service.js';
 import { createBlogController } from './controller.js';
-import { createBlogTagController } from './blogTag.controller.js';
+import { createBlogTagController } from './blog-tag.controller.js';
 import { createBlogRouterFromParts } from './router.js';
-import { createBlogTagRouterFromParts } from './blogTag.router.js';
+import { createBlogTagRouterFromParts } from './blog-tag.router.js';
 import { getOrRegisterModel } from '@travel-suite/utils/model';
 
 

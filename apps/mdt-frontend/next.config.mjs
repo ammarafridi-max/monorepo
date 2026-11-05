@@ -8,6 +8,11 @@ const nextConfig = {
   async redirects() {
     return [
       {
+        source: '/admin/airline-logos',
+        destination: '/admin/airlines',
+        permanent: true,
+      },
+      {
         source: '/travel-insurance/schengen-visa',
         destination: '/schengen-travel-insurance',
         permanent: true,

@@ -1,13 +1,11 @@
-import {
-  createSchemaBuilders,
-  buildFAQPage,
-  buildBreadcrumbList as _buildBreadcrumbList,
-  buildGraph,
-} from '@travel-suite/frontend-shared/utils/schema';
-import { buildMetadata as _buildMetadata } from '@travel-suite/frontend-shared/utils/publicMetadata';
+import { createBrandSchema } from '@travel-suite/frontend-shared/seo/schema';
+import { brandSiteUrl } from '@travel-suite/frontend-shared/seo/siteUrl';
+import { getBrand } from '@travel-suite/config';
 import { EMAIL, WHATSAPP_NUMBER, SOCIALS, LEGAL_NAME } from '@/config/contact';
 
-export const SITE_URL = 'https://www.visawadi.com';
+const brand = getBrand('visawadi');
+
+export const SITE_URL = brandSiteUrl(brand);
 
 export const {
   buildOrganization,
@@ -20,30 +18,21 @@ export const {
   buildProfilePage,
   buildService,
   buildProduct,
-} = createSchemaBuilders({
+  buildFAQPage,
+  buildGraph,
+  buildBreadcrumbList,
+  buildMetadata,
+} = createBrandSchema({
   siteUrl: SITE_URL,
-  siteName: 'VisaWadi',
+  siteName: brand.name,
   legalName: LEGAL_NAME,
-  telephone: WHATSAPP_NUMBER,
-  sameAs: SOCIALS.map((s) => s.href),
   logoUrl: `${SITE_URL}/logo-dark.png`,
   email: EMAIL,
+  telephone: WHATSAPP_NUMBER,
+  sameAs: SOCIALS.map((s) => s.href),
   address: {
     addressLocality: 'Dubai',
     addressRegion: 'Dubai',
     addressCountry: 'AE',
   },
-  contactPoint: {
-    email: EMAIL,
-    contactType: 'customer support',
-    availableLanguage: 'English',
-    hoursAvailable: 'Mo-Su 00:00-24:00',
-  },
 });
-
-export { buildFAQPage, buildGraph };
-
-export const buildBreadcrumbList = (opts = {}) =>
-  _buildBreadcrumbList({ baseUrl: SITE_URL, ...opts });
-
-export const buildMetadata = (opts) => _buildMetadata({ siteUrl: SITE_URL, ...opts });

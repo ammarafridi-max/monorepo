@@ -209,7 +209,6 @@ async function onDelivered(orderId) {
   console.log(`[worker] order ${orderId} delivery email sent to ${order.customerEmail}`);
 }
 
-// Idempotent auto-refund for a FAILED order (logic in refund.js so the Stripe
 const ensureRefund = createEnsureRefund({ stripe });
 
 const subjectAnchorFor = (order) => {
@@ -308,7 +307,6 @@ worker.on('failed', async (job, err) => {
 
   if (job.attemptsMade < attempts) return;
 
-  // Move the order to FAILED (recording the error) and issue the idempotent
   try {
     await pipeline.failOrder(job.data.orderId, err);
   } catch (e) {

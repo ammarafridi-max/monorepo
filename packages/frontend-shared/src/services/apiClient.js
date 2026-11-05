@@ -8,9 +8,9 @@ const internalHeaders = () => {
   return token ? { 'x-internal-token': token } : {};
 };
 
-async function checkError(res) {
+async function checkError(res, fallbackMessage = 'Something went wrong') {
   if (!res.ok) {
-    let message = 'Something went wrong';
+    let message = fallbackMessage;
     try {
       const json = await res.json();
       message = json.message || json.error || message;
@@ -49,6 +49,21 @@ export async function apiFetch(path, options = {}) {
 
   await checkError(res);
   return await returnData(res);
+}
+
+export async function apiFetchEnvelope(path, { errorMessage, ...options } = {}) {
+  const res = await fetch(`${BACKEND}${path}`, {
+    ...options,
+    headers: {
+      ...csrfHeader(options.method ?? 'GET'),
+      ...(options.headers || {}),
+    },
+    credentials: 'include',
+  });
+
+  await checkError(res, errorMessage);
+  if (res.status === 204) return null;
+  return await res.json();
 }
 
 export async function apiFetchPublic(path, { timeoutMs = 8000, ...options } = {}) {

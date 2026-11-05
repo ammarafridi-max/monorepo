@@ -12,6 +12,7 @@ export default function AdminDashboardLayout({
   roleRules,
   roleDefaultPath,
   newOrderPing = true,
+  hotelOrderPing = false,
   assistant = true,
   globalSearch = true,
   searchCategories,
@@ -21,7 +22,9 @@ export default function AdminDashboardLayout({
   return (
     <AdminAuthProvider>
       <AdminShell roleRules={roleRules} roleDefaultPath={roleDefaultPath}>
-        {newOrderPing && <NewOrderPinger />}
+        {(newOrderPing || hotelOrderPing) && (
+          <NewOrderPinger tickets={newOrderPing} hotels={hotelOrderPing} />
+        )}
         <div className="flex h-screen bg-gray-50 overflow-hidden relative">
           <AdminSidebar nav={nav} brand={brand} />
           <div className="flex flex-col flex-1 min-w-0 overflow-hidden">

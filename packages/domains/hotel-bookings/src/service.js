@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { AppError, logger, sanitizeAttribution } from '@travel-suite/utils';
+import { AppError, logger, sanitizeAttribution, escapeRegex } from '@travel-suite/utils';
 import { fromStripeMinorUnits, toStripeMinorUnits } from '@travel-suite/utils/currency';
 
 const RECENCY_HOURS = { '4_hours': 4, '24_hours': 24, '7_days': 168 };
@@ -31,9 +31,6 @@ function assertStayDates(payload) {
   return { checkIn, checkOut, nights };
 }
 
-function escapeRegex(value = '') {
-  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
 
 function buildSearchFilter(search) {
   if (!search) return null;
@@ -376,6 +373,29 @@ export function createHotelBookingService({
     }
   };
 
+  const notifyAdminOfPayment = async (reservation) => {
+    const claimed = await HotelBooking.findOneAndUpdate(
+      { sessionId: reservation.sessionId, adminDeliveryEmailSent: { $ne: true } },
+      { $set: { adminDeliveryEmailSent: true } },
+    );
+    if (!claimed) return;
+
+    const sent = await notifications.sendHotelBookingPaymentToAdmin?.({
+      sessionId: reservation.sessionId,
+      email: reservation.email,
+      leadGuest: reservation.leadGuest,
+      hotel: reservation.hotel,
+      checkIn: reservation.checkIn,
+      checkOut: reservation.checkOut,
+      nights: reservation.nights,
+    });
+
+    if (sent === false) {
+      await HotelBooking.updateOne({ sessionId: reservation.sessionId }, { $set: { adminDeliveryEmailSent: false } });
+      logger?.error?.('[hotel-bookings] admin was not told about a paid booking', { sessionId: reservation.sessionId });
+    }
+  };
+
   const handleStripeSuccess = async (session) => {
     if (session.payment_status !== 'paid') return null;
 
@@ -401,15 +421,7 @@ export function createHotelBookingService({
 
     paidOrderBus?.publish({ sessionId: reservation.sessionId, paidAt: reservation.paidAt });
 
-    await notifications.sendHotelBookingPaymentToAdmin?.({
-      sessionId: reservation.sessionId,
-      email: reservation.email,
-      leadGuest: reservation.leadGuest,
-      hotel: reservation.hotel,
-      checkIn: reservation.checkIn,
-      checkOut: reservation.checkOut,
-      nights: reservation.nights,
-    });
+    await notifyAdminOfPayment(reservation);
 
     return bookWithSupplier(sessionId);
   };

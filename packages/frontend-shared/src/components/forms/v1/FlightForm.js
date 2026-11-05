@@ -1,7 +1,7 @@
 'use client';
 
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { useCreateDummyTicket } from '../../../hooks/dummy-tickets/useCreateDummyTicket';
+import { useSaveDummyTicket } from '../../../hooks/dummy-tickets/useSaveDummyTicket';
 import { isEmail } from 'validator';
 import { TicketContext } from '../../../contexts/TicketContext.js';
 import Input from '../../form-elements/v1/Input';
@@ -57,7 +57,7 @@ const FormItem = ({ children }) => (
 export default function FlightForm() {
   const [errors, setErrors] = useState({});
   const formRef = useRef(null);
-  const { createDummyTicket, isCreatingDummyTicket } = useCreateDummyTicket();
+  const { saveDummyTicket, isSavingDummyTicket } = useSaveDummyTicket();
   const { selectedCurrency, formatMoney } = useCurrency();
   const { pricing, isLoadingPricing, isErrorPricing } = useDummyTicketPricing(selectedCurrency?.code);
   const {
@@ -205,7 +205,7 @@ export default function FlightForm() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (isCreatingDummyTicket || pricingUnavailable) return;
+    if (isSavingDummyTicket || pricingUnavailable) return;
     const next = buildErrors();
     if (Object.keys(next).length > 0) {
       setErrors(next);
@@ -233,7 +233,7 @@ export default function FlightForm() {
       eventId: `dummy-ticket-lead:${leadEventId}`,
     });
 
-    createDummyTicket({
+    saveDummyTicket({
       leadEventId,
       type,
       from,
@@ -311,9 +311,9 @@ export default function FlightForm() {
 
       <PrimaryButton
         className="w-full mt-5"
-        disabled={isCreatingDummyTicket || isLoadingPricing || pricingUnavailable}
+        disabled={isSavingDummyTicket || isLoadingPricing || pricingUnavailable}
       >
-        {isCreatingDummyTicket ? 'Processing...' : 'Review Your Information'}
+        {isSavingDummyTicket ? 'Processing...' : 'Review Your Information'}
       </PrimaryButton>
     </form>
   );

@@ -1,4 +1,4 @@
-import { AppError } from '@travel-suite/utils';
+import { AppError, escapeRegex } from '@travel-suite/utils';
 
 export const ACCESS_DENIED = 'You are not allowed to access this data.';
 
@@ -9,9 +9,6 @@ const FILTER_OPS = ['eq', 'ne', 'in', 'nin', 'gt', 'gte', 'lt', 'lte', 'contains
 const GROUPABLE_TYPES = ['string', 'enum', 'boolean'];
 const ORDER_OPS = ['gt', 'gte', 'lt', 'lte'];
 
-function escapeRegex(value) {
-  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
 
 function normaliseField(field) {
   const type = field.type ?? 'string';

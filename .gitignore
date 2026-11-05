@@ -43,7 +43,7 @@ migration-output/
 # Database backups and dumps (rollback artifacts, never source). These can
 # contain customer data, so they must never reach the remote.
 backups/
-*-backup-*.json
+*backup*.json
 
 # Written and re-added by `next dev` (see node_modules/next/dist/server/lib/
 # generate-agent-files.js), not by us. It points agents at the Next docs bundled

@@ -2,6 +2,7 @@ import { randomBytes } from "crypto";
 import { AppError, coverEndDate, sanitizeAttribution } from "@travel-suite/utils";
 import { googleClickIdsFrom } from "@travel-suite/google-ads-conversions";
 import { parseAmount } from "@travel-suite/utils/currency";
+import { metaUser, toE164 } from "@travel-suite/utils/contact";
 
 const QUOTE_VALIDITY_DAYS = 7;
 
@@ -285,9 +286,6 @@ export function createInsuranceService({
   const reportPurchaseToMeta = async (application) => {
     if (!metaCapi?.isConfigured?.()) return;
     const lead = application.passengers?.[0];
-    const phone = application.mobile?.code && application.mobile?.digits
-      ? `${application.mobile.code}${application.mobile.digits}`
-      : undefined;
     try {
       await metaCapi.trackPurchase({
         eventId: `insurance:${application.sessionId}`,
@@ -295,17 +293,17 @@ export function createInsuranceService({
         eventSourceUrl: frontendUrl ? `${frontendUrl}/insurance-booking/payment` : undefined,
         value: application.amountPaid?.amount,
         currency: application.amountPaid?.currency,
-        user: {
+        user: metaUser({
           email: application.email,
-          phone,
+          phone: application.mobile,
           firstName: lead?.firstName,
           lastName: lead?.lastName,
-          externalId: application.email?.toLowerCase(),
-          clientIp: application.metaAttribution?.clientIp,
-          userAgent: application.metaAttribution?.userAgent,
-          fbp: application.metaAttribution?.fbp,
-          fbc: application.metaAttribution?.fbc,
-        },
+          title: lead?.title,
+          currency: application.amountPaid?.currency ?? application.currency,
+          attribution: application.attribution,
+          metaAttribution: application.metaAttribution,
+          createdAt: application.createdAt,
+        }),
       });
     } catch (err) {
       logger?.warn("[insurance] Meta purchase event failed", { sessionId: application.sessionId, error: err.message });
@@ -318,9 +316,7 @@ export function createInsuranceService({
       await googleAds.uploadConversion({
         ...googleClickIdsFrom(application.attribution),
         email: application.email,
-        phone: application.mobile?.code && application.mobile?.digits
-          ? `${application.mobile.code}${application.mobile.digits}`
-          : undefined,
+        phone: toE164(application.mobile?.code, application.mobile?.digits),
         orderId: application.sessionId,
         value: application.amountPaid?.amount,
         currency: application.amountPaid?.currency,

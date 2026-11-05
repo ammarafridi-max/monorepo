@@ -1,10 +1,8 @@
+import { getBrand } from '@travel-suite/config';
+import { buildRobots } from '@travel-suite/frontend-shared/seo/robots';
+
 export default function robots() {
-  return {
-    rules: {
-      userAgent: "*",
-      allow: "/",
-      disallow: ["/admin", "/apply"],
-    },
-    sitemap: "https://www.visawadi.com/sitemap.xml",
-  };
+  return buildRobots(getBrand('visawadi'), {
+    disallow: ['/admin', '/apply'],
+  });
 }

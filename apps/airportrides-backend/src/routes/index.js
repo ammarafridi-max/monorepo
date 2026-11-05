@@ -3,13 +3,14 @@ import { createAssistantRouter, assistantDatasets } from "@travel-suite/assistan
 import { createAuthRouter } from "@travel-suite/auth";
 import { createAdminUsersRouter } from "@travel-suite/admin-users";
 import { createBlogRouter, createBlogTagRouter } from "@travel-suite/blog";
-import { createCloudinaryStorage } from "@travel-suite/cloudinary";
 import { createCurrenciesRouter } from "@travel-suite/currencies";
 import { createAirportsRouter } from "@travel-suite/flights";
 import { createAirLabsClient } from "@travel-suite/airlabs";
 import { createTransferBookingsRouter } from "@travel-suite/transfer-bookings";
 import { createLocationsRouter } from "@travel-suite/locations";
-import { createNotificationsService } from "@travel-suite/notifications";
+import { createBrandStorage } from "@travel-suite/backend-app/storage";
+import { createBrandNotifications } from "@travel-suite/backend-app/notifications";
+import { createPaymentLinkSuccessHandler } from "@travel-suite/backend-app/payment-link";
 import {
   createStripeClient,
   createStripeWebhookHandler,
@@ -37,10 +38,8 @@ const {
   jwtExpiresIn: config.jwtExpiresIn,
   cookieExpiresInDays: config.jwtCookieExpiresInDays,
   nodeEnv: config.nodeEnv,
-  // Without sendEmail the OTP service reports itself disabled and every
-  // /auth/otp/* call answers 503, which is what these routes did until now.
   sendEmail,
-  brandName: "Airport Rides",
+  brandName: config.brand.name,
   loginUrl: `${config.frontendUrl}/admin/login`,
   logger,
 });
@@ -49,13 +48,7 @@ router.use("/auth", authRouter);
 
 router.use("/admin-users", createAdminUsersRouter({ AdminUser, auth }));
 
-const imageStorage = createCloudinaryStorage({
-  cloudName: config.cloudinary.cloudName,
-  apiKey: config.cloudinary.apiKey,
-  apiSecret: config.cloudinary.apiSecret,
-  logger,
-  folder: "airportrides/blog",
-});
+const imageStorage = createBrandStorage({ config })("blog");
 router.use("/blogs", createBlogRouter({ db, auth, imageStorage }));
 router.use("/blog-tags", createBlogTagRouter({ db, auth }));
 
@@ -87,23 +80,10 @@ router.use(
   }),
 );
 
-const notifications = createNotificationsService({
+const notifications = createBrandNotifications({
+  config,
   sendEmail,
-  logger,
-  brand: {
-    name: "Airport Rides",
-    teamName: "Airport Rides Team",
-    adminEmail: config.adminEmail,
-    website: "https://www.airportrides.com",
-    paymentsSenderName: "Airport Rides Payments",
-    deliverySenderName: "Airport Rides Delivery",
-    customerSenderName: "Airport Rides",
-    theme: {
-      primaryColor: "#1e60a6",
-      accentColor: "#ff603a",
-      linkColor: "#1e60a6",
-    },
-  },
+  website: `https://www.${config.brand.domain}`,
 });
 
 const stripe = createStripeClient({ secretKey: config.stripe.secretKey });
@@ -207,27 +187,11 @@ async function handleBookingPaymentSuccess(session) {
   }
 }
 
-async function handlePaymentLinkSuccess(session) {
-  const updated = await paymentService.markPaymentLinkPaid({ session });
-  if (!updated) {
-    logger.warn("[payment-link] No matching record for session", {
-      sessionId: session.id,
-      paymentLink: session.payment_link,
-    });
-    return;
-  }
-  await notifications.sendPaymentLinkPaidToAdmin({
-    amount: updated.amount,
-    currency: updated.currency,
-    payerName: updated.paidByName || session.customer_details?.name,
-    payerEmail: updated.paidByEmail || session.customer_details?.email,
-    description: updated.description,
-    createdByName: updated.createdBy?.name,
-    paymentLinkId: updated.stripePaymentLinkId,
-    sessionId: updated.sessionId,
-    paidAt: updated.paidAt,
-  });
-}
+const handlePaymentLinkSuccess = createPaymentLinkSuccessHandler({
+  paymentService,
+  notifications,
+  logger,
+});
 
 if (config.anthropicApiKey) {
   const { router: assistantRouter } = createAssistantRouter({
@@ -235,7 +199,7 @@ if (config.anthropicApiKey) {
     auth,
     anthropicApiKey: config.anthropicApiKey,
     stripe,
-    brand: { name: "Airport Rides" },
+    brand: { name: config.brand.name },
     logger,
     datasets: [
       assistantDatasets.transferBookings(db.models["transfer-booking"]),

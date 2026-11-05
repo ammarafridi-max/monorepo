@@ -1,6 +1,4 @@
 // Usage: node --env-file=.env.local automations/scripts/google-ads-refresh-token.mjs [--port 8713] [--print]
-// Runs the Google OAuth loopback flow against GOOGLE_ADS_CLIENT_ID/SECRET and rewrites
-// GOOGLE_ADS_REFRESH_TOKEN in .env.local in place. The token is never printed unless --print.
 
 import { createServer } from 'node:http';
 import { readFile, writeFile, chmod } from 'node:fs/promises';

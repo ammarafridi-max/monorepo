@@ -84,15 +84,6 @@ export async function regenerateItineraryApi(sessionId) {
   });
 }
 
-export async function editItineraryApi({ sessionId, updates }) {
-  return apiFetchPublic(`${URL}/${sessionId}/edit`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(updates),
-    signal: AbortSignal.timeout(GENERATE_TIMEOUT_MS),
-  });
-}
-
 export async function sendItineraryChatApi({ sessionId, message }) {
   return apiFetchPublic(`${URL}/${sessionId}/chat`, {
     method: 'POST',
@@ -118,10 +109,6 @@ export async function parseDocumentsApi(files) {
 
 export async function checkoutItineraryApi(sessionId) {
   return apiFetchPublic(`${URL}/${sessionId}/checkout`, { method: 'POST' });
-}
-
-export function itineraryPreviewUrl(sessionId) {
-  return `${BACKEND}${URL}/${sessionId}/preview`;
 }
 
 export function itineraryDocumentUrl(sessionId) {

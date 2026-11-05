@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { ArrowRight, CalendarDays, Car, CheckCircle2, Clock, DollarSign, Loader2, MapPin } from 'lucide-react';
+import { fmtDate, fmtTime, fmtTodayLong } from '../../components/admin/format';
 
 const DEFAULT_STATUS_CFG = {
   pending_payment: { label: 'Pending payment', cls: 'bg-amber-50 text-amber-700 border-amber-200' },
@@ -37,10 +38,6 @@ function StatCard({ icon: Icon, label, value, iconCls }) {
   );
 }
 
-const fmtDate = (iso) =>
-  iso ? new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
-const fmtTime = (iso) => (iso ? new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '');
-
 export default function AdminTransferDashboardPage({
   useBookings,
   toRow,
@@ -55,7 +52,7 @@ export default function AdminTransferDashboardPage({
   const { bookings = [], total, isLoadingBookings } = useBookings({ limit: 10 });
   const rows = (bookings || []).map(toRow);
 
-  const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const today = fmtTodayLong();
   const countBy = (key) => rows.filter((r) => r.status === key || r.statusGroup === key).length;
 
   return (

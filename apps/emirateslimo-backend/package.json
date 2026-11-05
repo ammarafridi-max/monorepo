@@ -15,6 +15,7 @@
     "@travel-suite/assistant": "workspace:*",
     "@travel-suite/auth": "workspace:*",
     "@travel-suite/availability-rules": "workspace:*",
+    "@travel-suite/backend-app": "workspace:*",
     "@travel-suite/blog": "workspace:*",
     "@travel-suite/brevo": "workspace:*",
     "@travel-suite/cloudinary": "workspace:*",

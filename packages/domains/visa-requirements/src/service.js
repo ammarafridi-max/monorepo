@@ -3,7 +3,7 @@ import { OUTCOMES } from './schemas/visa-rule.schema.js';
 
 const ISO2 = /^[A-Za-z]{2}$/;
 
-export function createVisaRequirementsService({ VisaRule, VisaRequirementSearch, providers = [], servicedSlugs = [] }) {
+export function createVisaRequirementsService({ VisaRule, VisaRequirementSearch, provider = null, servicedSlugs = [] }) {
   const serviced = new Set(servicedSlugs);
 
   const norm = (v) => (v ? String(v).toUpperCase().trim() : null);
@@ -18,11 +18,7 @@ export function createVisaRequirementsService({ VisaRule, VisaRequirementSearch,
     if (res && !ISO2.test(res)) throw new AppError('Residence must be a valid country code', 400);
     if (nat === dest) throw new AppError('Pick a destination different from your nationality', 400);
 
-    let answer = null;
-    for (const provider of providers) {
-      answer = await provider.resolve({ nationality: nat, residence: res, destination: dest });
-      if (answer) break;
-    }
+    let answer = provider ? await provider.resolve({ nationality: nat, residence: res, destination: dest }) : null;
 
     if (!answer) {
       answer = {

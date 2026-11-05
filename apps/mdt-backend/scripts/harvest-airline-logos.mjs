@@ -1,11 +1,4 @@
-/**
- * Usage: node --env-file=.env.production scripts/harvest-airline-logos.mjs [--apply] [--report] [--only AA,EK]
- *
- * Finds high-resolution logo candidates for airlines that have no logo, or that
- * still point at a bundled /airlines/* file. Writes only logoCandidates, never
- * logo: the candidates are reviewed and chosen in the admin Airlines page.
- * Dry run unless --apply.
- */
+// Usage: node --env-file=.env.production scripts/harvest-airline-logos.mjs [--apply] [--report] [--only AA,EK]
 import mongoose from 'mongoose';
 import { writeFileSync } from 'node:fs';
 import {

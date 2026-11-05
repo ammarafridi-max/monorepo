@@ -1,219 +1,97 @@
 import { SITE_URL } from "@/lib/schema";
-import { getPublishedBlogsApi } from "@travel-suite/frontend-shared/services/apiBlog";
-import { getBlogTagsApi } from "@travel-suite/frontend-shared/services/apiBlogTags";
-import { getAuthorsApi } from "@travel-suite/frontend-shared/services/apiAuthors";
+import {
+  fetchPublishedPosts,
+  fetchBlogTags,
+  fetchAuthors,
+  staticEntries,
+  postEntries,
+  authorEntries,
+} from "@travel-suite/frontend-shared/seo/sitemap";
 
 export const revalidate = 3600;
+
+const monthly = (url, priority = 0.8) => ({
+  url,
+  changeFrequency: "monthly",
+  priority,
+});
+
+const insuranceSlugs = [
+  "schengen-visa",
+  "france-visa",
+  "spain-visa",
+  "italy-visa",
+  "germany-visa",
+  "greece-visa",
+  "switzerland-visa",
+  "netherlands-visa",
+  "austria-visa",
+  "uk-visa",
+  "us-visa",
+  "canada-visa",
+  "australia-visa",
+  "medical",
+  "annual-multi-trip",
+  "international",
+  "single-trip",
+  "indonesia",
+  "family",
+];
+
 const staticPages = [
   { url: "/", changeFrequency: "weekly", priority: 1.0 },
-  {
-    url: "/travel-insurance",
-    changeFrequency: "monthly",
-    priority: 0.8,
-  },
-  {
-    url: "/travel-itinerary",
-    changeFrequency: "monthly",
-    priority: 0.8,
-  },
-  {
-    url: "/travel-insurance/schengen-visa",
-    changeFrequency: "monthly",
-    priority: 0.8,
-  },
-  {
-    url: "/travel-insurance/france-visa",
-    changeFrequency: "monthly",
-    priority: 0.8,
-  },
-  {
-    url: "/travel-insurance/spain-visa",
-    changeFrequency: "monthly",
-    priority: 0.8,
-  },
-  {
-    url: "/travel-insurance/italy-visa",
-    changeFrequency: "monthly",
-    priority: 0.8,
-  },
-  {
-    url: "/travel-insurance/germany-visa",
-    changeFrequency: "monthly",
-    priority: 0.8,
-  },
-  {
-    url: "/travel-insurance/greece-visa",
-    changeFrequency: "monthly",
-    priority: 0.8,
-  },
-  {
-    url: "/travel-insurance/switzerland-visa",
-    changeFrequency: "monthly",
-    priority: 0.8,
-  },
-  {
-    url: "/travel-insurance/netherlands-visa",
-    changeFrequency: "monthly",
-    priority: 0.8,
-  },
-  {
-    url: "/travel-insurance/austria-visa",
-    changeFrequency: "monthly",
-    priority: 0.8,
-  },
-  {
-    url: "/travel-insurance/uk-visa",
-    changeFrequency: "monthly",
-    priority: 0.8,
-  },
-  {
-    url: "/travel-insurance/us-visa",
-    changeFrequency: "monthly",
-    priority: 0.8,
-  },
-  {
-    url: "/travel-insurance/canada-visa",
-    changeFrequency: "monthly",
-    priority: 0.8,
-  },
-  {
-    url: "/travel-insurance/australia-visa",
-    changeFrequency: "monthly",
-    priority: 0.8,
-  },
-  {
-    url: "/travel-insurance/medical",
-    changeFrequency: "monthly",
-    priority: 0.8,
-  },
-  {
-    url: "/travel-insurance/annual-multi-trip",
-    changeFrequency: "monthly",
-    priority: 0.8,
-  },
-  {
-    url: "/travel-insurance/international",
-    changeFrequency: "monthly",
-    priority: 0.8,
-  },
-  {
-    url: "/travel-insurance/single-trip",
-    changeFrequency: "monthly",
-    priority: 0.8,
-  },
-  {
-    url: "/travel-insurance/indonesia",
-    changeFrequency: "monthly",
-    priority: 0.8,
-  },
-  {
-    url: "/travel-insurance/family",
-    changeFrequency: "monthly",
-    priority: 0.8,
-  },
-  {
-    url: "/blog",
-    changeFrequency: "daily",
-    priority: 0.8,
-  },
-  {
-    url: "/blog/tags",
-    changeFrequency: "weekly",
-    priority: 0.6,
-  },
-  {
-    url: "/faq",
-    changeFrequency: "monthly",
-    priority: 0.7,
-  },
-  {
-    url: "/about",
-    changeFrequency: "monthly",
-    priority: 0.5,
-  },
-  {
-    url: "/contact",
-    changeFrequency: "monthly",
-    priority: 0.5,
-  },
-  {
-    url: "/claims",
-    changeFrequency: "monthly",
-    priority: 0.6,
-  },
-  {
-    url: "/terms-and-conditions",
-    changeFrequency: "yearly",
-    priority: 0.3,
-  },
-  {
-    url: "/privacy-policy",
-    changeFrequency: "yearly",
-    priority: 0.3,
-  },
+  monthly("/travel-insurance"),
+  monthly("/travel-itinerary"),
+  ...insuranceSlugs.map((slug) => monthly(`/travel-insurance/${slug}`)),
+  { url: "/blog", changeFrequency: "daily", priority: 0.8 },
+  { url: "/blog/tags", changeFrequency: "weekly", priority: 0.6 },
+  monthly("/faq", 0.7),
+  monthly("/about", 0.5),
+  monthly("/contact", 0.5),
+  monthly("/claims", 0.6),
+  { url: "/terms-and-conditions", changeFrequency: "yearly", priority: 0.3 },
+  { url: "/privacy-policy", changeFrequency: "yearly", priority: 0.3 },
 ];
+
+const countPostsPerTag = (posts) => {
+  const counts = new Map();
+  for (const post of posts) {
+    for (const tag of post?.tags || []) {
+      const name = typeof tag === "string" ? tag : tag?.name;
+      if (name) counts.set(name, (counts.get(name) || 0) + 1);
+    }
+  }
+  return counts;
+};
 
 export default async function sitemap() {
   const now = new Date().toISOString();
 
-  const staticEntries = staticPages.map(({ url, changeFrequency, priority }) => ({
-    url: `${SITE_URL}${url}`,
-    changeFrequency,
-    priority,
-  }));
+  const [posts, tags, authors] = await Promise.all([
+    fetchPublishedPosts(),
+    fetchBlogTags(),
+    fetchAuthors(),
+  ]);
 
-  let blogEntries = [];
-  const postsPerTag = new Map();
-  try {
-    const data = await getPublishedBlogsApi({ page: 1, limit: 1000 });
-    const blogs = data?.blogs || [];
-    for (const blog of blogs) {
-      for (const tag of blog?.tags || []) {
-        const name = typeof tag === "string" ? tag : tag?.name;
-        if (name) postsPerTag.set(name, (postsPerTag.get(name) || 0) + 1);
-      }
-    }
-    blogEntries = blogs
-      .filter((blog) => blog?.slug)
-      .map((blog) => ({
-        url: `${SITE_URL}/blog/${blog.slug}`,
-        lastModified: blog.updatedAt || blog.createdAt || now,
-        changeFrequency: "weekly",
-        priority: 0.7,
-      }));
-  } catch (err) {
-    console.error("[sitemap] fetch failed:", err);
-  }
+  const postsPerTag = countPostsPerTag(posts);
 
-  let tagEntries = [];
-  try {
-    const data = await getBlogTagsApi();
-    const tags = data?.tags || data || [];
-    tagEntries = tags
-      .filter((tag) => tag?.slug && postsPerTag.get(tag.name) > 0)
-      .map((tag) => ({
-        url: `${SITE_URL}/blog/tags/${tag.slug}`,
-        changeFrequency: "weekly",
-        priority: 0.5,
-      }));
-  } catch (err) {
-    console.error("[sitemap] fetch failed:", err);
-  }
+  const tagEntries = tags
+    .filter((tag) => tag?.slug && postsPerTag.get(tag.name) > 0)
+    .map((tag) => ({
+      url: `${SITE_URL}/blog/tags/${tag.slug}`,
+      changeFrequency: "weekly",
+      priority: 0.5,
+    }));
 
-  let authorEntries = [];
-  try {
-    const authors = await getAuthorsApi();
-    authorEntries = (authors || [])
-      .filter((author) => author?.authorProfile?.slug)
-      .map((author) => ({
-        url: `${SITE_URL}/authors/${author.authorProfile.slug}`,
-        lastModified: author.updatedAt || now,
-        changeFrequency: "monthly",
-        priority: 0.5,
-      }));
-  } catch (err) {
-    console.error("[sitemap] authors fetch failed:", err);
-  }
-
-  return [...staticEntries, ...blogEntries, ...tagEntries, ...authorEntries];
+  return [
+    ...staticEntries({
+      siteUrl: SITE_URL,
+      pages: staticPages,
+      now,
+      lastModified: false,
+    }),
+    ...postEntries({ siteUrl: SITE_URL, posts, now }),
+    ...tagEntries,
+    ...authorEntries({ siteUrl: SITE_URL, authors, now }),
+  ];
 }

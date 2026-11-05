@@ -13,7 +13,7 @@ function resolveServiceName(booking) {
   return 'Chauffeur Service';
 }
 
-export function createBookingService({ Booking, stripe, frontendUrl, pricing }) {
+export function createLimoBookingService({ Booking, stripe, frontendUrl, pricing }) {
   const getVehiclesForTrip = (query) => pricing.getVehiclesForTrip(query);
 
   const authoritativeTotal = (booking) =>

@@ -57,10 +57,6 @@ export function pixelEvent(event, data = {}, eventId) {
   else fbq("track", event, data);
 }
 
-export function pixelCustomEvent(event, data = {}) {
-  fbq("trackCustom", event, data);
-}
-
 export function newEventKey() {
   try {
     if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -72,14 +68,6 @@ export function newEventKey() {
 
 export function pixelLead({ currency, value = 0, eventId } = {}) {
   pixelEvent("Lead", { currency, value }, eventId);
-}
-
-export function pixelViewContent({
-  currency,
-  value = 0,
-  numItems = 0,
-} = {}) {
-  pixelEvent("ViewContent", { currency, value, num_items: numItems });
 }
 
 export function pixelInitiateCheckout({

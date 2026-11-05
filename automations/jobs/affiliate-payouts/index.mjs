@@ -1,14 +1,9 @@
 import { createApiClient } from '../../src/lib/blog-utils.mjs';
+import { flagValue } from '../../src/args.mjs';
 
 const PERIOD_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
 const ENDPOINT = '/api/affiliates/payouts';
 
-function flagValue(argv, name) {
-  const i = argv.indexOf(`--${name}`);
-  if (i !== -1 && argv[i + 1] && !argv[i + 1].startsWith('--')) return argv[i + 1];
-  const eq = argv.find((a) => a.startsWith(`--${name}=`));
-  return eq ? eq.slice(name.length + 3) : null;
-}
 
 export function previousMonth(now = new Date()) {
   const year = now.getUTCFullYear();

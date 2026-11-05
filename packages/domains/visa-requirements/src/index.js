@@ -11,9 +11,9 @@ export function createVisaRequirementsRouter({ db, auth, servicedSlugs = [], log
   const VisaRule = getOrRegisterModel(db, 'visa-rule', VisaRuleSchema);
   const VisaRequirementSearch = getOrRegisterModel(db, 'visa-requirement-search', VisaRequirementSearchSchema);
 
-  const providers = [createCuratedProvider({ VisaRule })];
+  const provider = createCuratedProvider({ VisaRule });
 
-  const service = createVisaRequirementsService({ VisaRule, VisaRequirementSearch, providers, servicedSlugs });
+  const service = createVisaRequirementsService({ VisaRule, VisaRequirementSearch, provider, servicedSlugs });
   const controller = createVisaRequirementsController({ service });
   const router = createVisaRequirementsRouterFromParts({ controller, auth });
 

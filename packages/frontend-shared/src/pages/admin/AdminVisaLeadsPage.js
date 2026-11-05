@@ -13,6 +13,7 @@ import AdminSearchInput from '../../components/admin/AdminSearchInput';
 import FilterMenu from '../../components/admin/FilterMenu';
 import SourceBadge from '../../components/admin/SourceBadge';
 import { CHANNEL_OPTIONS } from '../../utils/attribution';
+import { timeAgoWordy as timeAgo } from '../../components/admin/format';
 
 const STATUSES = ['new', 'contacted', 'qualified', 'converted', 'lost'];
 
@@ -32,23 +33,6 @@ function StatusBadge({ status }) {
       {cfg.label}
     </span>
   );
-}
-
-function timeAgo(iso) {
-  if (!iso) return '—';
-  const secs = Math.floor((Date.now() - new Date(iso)) / 1000);
-  if (secs < 60)  return 'just now';
-  if (secs < 3600) {
-    const m = Math.floor(secs / 60);
-    return `${m} minute${m !== 1 ? 's' : ''} ago`;
-  }
-  if (secs < 86400) {
-    const h = Math.floor(secs / 3600);
-    return `${h} hour${h !== 1 ? 's' : ''} ago`;
-  }
-  const d = Math.floor(secs / 86400);
-  if (d < 7)   return `${d} day${d !== 1 ? 's' : ''} ago`;
-  return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
 const dateCls =

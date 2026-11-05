@@ -338,13 +338,11 @@ export function createPipeline({
           break;
 
         case ORDER_STATES.DELIVERED:
-          // Reached delivery. Run the idempotent delivery side effect (email)
           if (onDelivered) await onDelivered(orderId);
           console.log(`[worker] order ${orderId} DELIVERED`);
           return;
 
         case ORDER_STATES.FAILED:
-          // idempotent failure side effect (refund) and stop. Its refundedAt
           if (onFailed) await onFailed(orderId);
           console.log(`[worker] order ${orderId} FAILED (terminal)`);
           return;

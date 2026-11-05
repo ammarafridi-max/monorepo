@@ -173,6 +173,17 @@ describe('audience identity columns', () => {
     assert.match(out.purchasers.csv, /"Khan, Jr"/);
   });
 
+  it('defuses a name that would run as a spreadsheet formula', () => {
+    const out = buildAudiences(
+      [ticket({ passengers: [{ title: 'Mr.', firstName: '=HYPERLINK("http://evil.test","x")', lastName: '+1' }] })],
+      { rates: RATES, now: NOW },
+    );
+
+    const row = parse(out.purchasers.csv)[0];
+    assert.match(row, /"'=HYPERLINK/);
+    assert.match(row, /,'\+1,/);
+  });
+
   it('leaves a cell empty rather than guessing', () => {
     const out = buildAudiences(
       [ticket({ phoneNumber: { code: '+999', digits: '1' }, passengers: [{ title: 'Dr.', firstName: 'A', lastName: 'B' }] })],
@@ -182,6 +193,58 @@ describe('audience identity columns', () => {
     assert.equal(phone, '');
     assert.equal(gen, '');
     assert.equal(country, '');
+  });
+});
+
+describe('a partly refunded buyer', () => {
+  const partlyRefunded = (overrides = {}) =>
+    ticket({
+      paymentStatus: 'PARTIALLY_REFUNDED',
+      amountPaid: { currency: 'USD', amount: 40 },
+      amountPaidBase: null,
+      refundedAmount: { currency: 'USD', amount: 15 },
+      ...overrides,
+    });
+
+  it('counts as a purchaser, not as someone who never bought', () => {
+    const out = buildAudiences([partlyRefunded()], { rates: RATES, now: NOW });
+
+    assert.equal(out.purchasers.rows, 1);
+    assert.equal(out.abandoners.rows, 0);
+  });
+
+  it('keeps an unpaid ticket from dragging a real buyer into the never-bought file', () => {
+    const out = buildAudiences(
+      [partlyRefunded(), ticket({ paymentStatus: 'UNPAID', paidAt: null, amountPaid: null })],
+      { rates: RATES, now: NOW },
+    );
+
+    assert.equal(out.purchasers.rows, 1);
+    assert.equal(out.abandoners.rows, 0);
+  });
+
+  it('reports the value net of what was given back', () => {
+    const out = buildAudiences([partlyRefunded()], { rates: RATES, now: NOW });
+
+    assert.equal(parse(out.purchasers.csv)[0].split(',').at(-1), '25.00');
+  });
+
+  it('converts a refund booked in another currency before subtracting it', () => {
+    const out = buildAudiences(
+      [partlyRefunded({ refundedAmount: { currency: 'AED', amount: 36.725 } })],
+      { rates: RATES, now: NOW },
+    );
+
+    assert.equal(parse(out.purchasers.csv)[0].split(',').at(-1), '30.00');
+  });
+
+  it('never reports a negative value when the refund exceeds the recorded payment', () => {
+    const out = buildAudiences(
+      [partlyRefunded({ refundedAmount: { currency: 'USD', amount: 90 } })],
+      { rates: RATES, now: NOW },
+    );
+
+    assert.equal(parse(out.purchasers.csv)[0].split(',').at(-1), '0.00');
   });
 });
 
@@ -207,7 +270,11 @@ describe('audience export delivery', () => {
     assert.equal(sent[0].attachment.length, 3);
     assert.deepEqual(
       sent[0].attachment.map((a) => a.name),
-      ['dt365-purchasers.csv', 'dt365-abandoned-never-bought.csv', 'dt365-abandoned-last-90-days.csv'],
+      [
+        'dummy-ticket-365-purchasers.csv',
+        'dummy-ticket-365-abandoned-never-bought.csv',
+        'dummy-ticket-365-abandoned-last-90-days.csv',
+      ],
     );
     assert.equal(result.sentTo, 'owner@example.com');
     assert.equal(result.files.length, 3);

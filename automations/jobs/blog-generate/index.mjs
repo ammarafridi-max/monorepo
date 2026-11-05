@@ -3,6 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { readFileSync, writeFileSync, existsSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
+import { flagValue } from "../../src/args.mjs";
 
 import {
   LENGTH_TIERS,
@@ -34,12 +35,6 @@ const modelFor = (target) => target?.model ?? DEFAULT_MODEL;
 const GENERATE_ONLY = process.argv.includes("--generate-only");
 const VERIFY_ONLY = process.argv.includes("--verify-only");
 
-function parseFlag(argv, name) {
-  const i = argv.indexOf(`--${name}`);
-  if (i !== -1 && argv[i + 1]) return argv[i + 1];
-  const inline = argv.find((a) => a.startsWith(`--${name}=`));
-  return inline ? inline.split("=")[1] : null;
-}
 
 function parseStatusArg(argv) {
   const i = argv.indexOf("--status");
@@ -59,12 +54,6 @@ function getTodayUAE() {
   return uaeNow.toISOString().slice(0, 10);
 }
 
-function parseDateArg(argv) {
-  const i = argv.indexOf("--date");
-  if (i !== -1 && argv[i + 1]) return argv[i + 1];
-  const inline = argv.find((a) => a.startsWith("--date="));
-  return inline ? inline.split("=")[1] : null;
-}
 
 function loadTopics(brand) {
   return JSON.parse(readFileSync(join(brand.dir, "topics.json"), "utf8"));
@@ -78,6 +67,20 @@ function getTopicForDate(brand, dateOverride) {
     throw new Error(`No topic scheduled for ${today}. Check ${brand.key}/topics.json.`);
   }
   return entry;
+}
+
+async function validatePost(post, { requiredLinks, lengthTier, brand, format, verifyUrls }) {
+  validateFieldLengths(post);
+  validateRequiredLinks(post, requiredLinks);
+  validateContentQuality(post, lengthTier, brand, { minWords: format?.minWords });
+  if (!format) return;
+
+  const citations = validateCitations(post, brand, { minCitations: format.minCitations });
+  if (verifyUrls) {
+    post.__citations = citations;
+    await verifyCitationUrls(citations);
+  }
+  validateParagraphs(post);
 }
 
 async function generateBlogContent({
@@ -326,16 +329,7 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
   if (format) parsed.content = splitLongParagraphs(parsed.content);
 
   try {
-    validateFieldLengths(parsed);
-    validateRequiredLinks(parsed, requiredLinks);
-    validateContentQuality(parsed, lengthTier, brand, { minWords: format?.minWords });
-    if (format) {
-      parsed.__citations = validateCitations(parsed, brand, {
-        minCitations: format.minCitations,
-      });
-      await verifyCitationUrls(parsed.__citations);
-      validateParagraphs(parsed);
-    }
+    await validatePost(parsed, { requiredLinks, lengthTier, brand, format, verifyUrls: true });
   } catch (err) {
     lastValidationError = err;
     lastGoodDraft = parsed;
@@ -363,11 +357,7 @@ All values must be strings or arrays of strings/objects as shown. The "content" 
     if (repaired) {
       const candidate = { ...lastGoodDraft, content: repaired.content, __citations: repaired.citations };
       try {
-        validateFieldLengths(candidate);
-        validateRequiredLinks(candidate, requiredLinks);
-        validateContentQuality(candidate, lengthTier, brand, { minWords: format.minWords });
-        validateCitations(candidate, brand, { minCitations: format.minCitations });
-        validateParagraphs(candidate);
+        await validatePost(candidate, { requiredLinks, lengthTier, brand, format, verifyUrls: false });
       } catch (err) {
         console.warn(`⚠ Salvage rejected: ${err.message}`);
         throw lastValidationError;
@@ -447,7 +437,7 @@ export async function run({ target, dryRun }) {
   console.log(`\n=== ${brand.name} Blog Draft Generator ===`);
   console.log(`Date (UAE): ${getTodayUAE()}\n`);
 
-  const dateArg = parseDateArg(process.argv.slice(2));
+  const dateArg = flagValue(process.argv.slice(2), "date");
 
   if (DRY_RUN) {
     const topic = dateArg
@@ -497,7 +487,7 @@ export async function run({ target, dryRun }) {
 
   const siteContext = readFileSync(join(brand.dir, "site-context.md"), "utf8");
 
-  const draftCache = parseFlag(process.argv.slice(2), "draft-file");
+  const draftCache = flagValue(process.argv.slice(2), "draft-file");
   const cached = draftCache && existsSync(draftCache)
     ? JSON.parse(readFileSync(draftCache, "utf8"))
     : null;
@@ -547,7 +537,7 @@ export async function run({ target, dryRun }) {
     console.log("\nFact-checking against the cited official sources...");
     verification = await verifyDraft({
       apiKey: ANTHROPIC_API_KEY,
-      model: parseFlag(process.argv.slice(2), "verify-model") ?? modelFor(brand),
+      model: flagValue(process.argv.slice(2), "verify-model") ?? modelFor(brand),
       title: topic.title,
       content: content.content,
       citations: content.__citations,
@@ -555,7 +545,7 @@ export async function run({ target, dryRun }) {
 
     if (VERIFY_ONLY) {
       reportVerification(verification);
-      const out = parseFlag(process.argv.slice(2), "verdict-file");
+      const out = flagValue(process.argv.slice(2), "verdict-file");
       if (out) {
         writeFileSync(out, JSON.stringify(verification, null, 2));
         console.log(`Verdict saved to ${out}`);

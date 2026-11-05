@@ -18,7 +18,7 @@ function redactForPublic(booking) {
   };
 }
 
-export function createBookingController({ service }) {
+export function createLimoBookingController({ service }) {
   const getVehicles = catchAsync(async (req, res) => {
     const { vehicles, unavailable } = await service.getVehiclesForTrip(req.query);
     res.status(200).json({ status: 'success', results: vehicles.length, data: { vehicles, unavailable } });

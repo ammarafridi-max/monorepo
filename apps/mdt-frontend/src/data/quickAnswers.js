@@ -1,12 +1,3 @@
-/**
- * The verdict-first answer that opens each landing page, drafted from that
- * page's own FAQ entries so nothing here states a fact the page did not
- * already make and stand behind.
- *
- * First sentence carries the verdict. Nothing claims a figure that is not in
- * src/config.js or the page's FAQ array.
- */
-
 export const QUICK_ANSWERS = {
   home: {
     question: 'What is a dummy ticket?',

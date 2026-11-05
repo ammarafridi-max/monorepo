@@ -4,11 +4,9 @@ import { join } from "node:path";
 import { loadTarget } from "../src/registry.mjs";
 import { createApiClient, fetchCoverImage } from "../src/lib/blog-utils.mjs";
 import { CSRF_HEADER, CSRF_HEADER_VALUE } from '@travel-suite/utils/csrf';
+import { flagValue } from "../src/args.mjs";
 
-const arg = (name) => {
-  const i = process.argv.indexOf(`--${name}`);
-  return i !== -1 ? process.argv[i + 1] : null;
-};
+const arg = (name) => flagValue(process.argv.slice(2), name);
 const APPLY = process.argv.includes("--apply");
 const STEP_MS = 86400000;
 

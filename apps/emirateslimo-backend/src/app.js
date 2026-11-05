@@ -1,69 +1,13 @@
-import express from "express";
-import cors from "cors";
-import helmet from "helmet";
-import compression from "compression";
-import cookieParser from "cookie-parser";
-import rateLimit from "express-rate-limit";
-import { randomUUID } from "crypto";
-import { logger, AppError, createErrorHandler } from "@travel-suite/utils";
-import { setupSentryErrorHandler } from "@travel-suite/utils/sentry";
-import { redactUrl } from "@travel-suite/utils/redact-url";
+import { createApp } from "@travel-suite/backend-app/app";
 import config from "./utils/config.js";
 import indexRouter, { stripeWebhookHandler } from "./routes/index.js";
 
-const app = express();
-app.set("trust proxy", 1);
-
-app.use((req, res, next) => {
-  req.id = req.headers["x-request-id"] || randomUUID();
-  res.setHeader("x-request-id", req.id);
-  const start = Date.now();
-  res.on("finish", () => {
-    logger.info("HTTP", {
-      method: req.method,
-      url: redactUrl(req.originalUrl),
-      status: res.statusCode,
-      ms: Date.now() - start,
-      requestId: req.id,
-    });
-  });
-  next();
+const app = createApp({
+  brandKey: "emirateslimo",
+  config,
+  router: indexRouter,
+  webhooks: [{ path: "/api/webhook", handler: stripeWebhookHandler }],
+  urlencodedLimit: "10mb",
 });
-
-// -- Stripe webhook (raw body required — must be before express.json) ----------
-app.post(
-  "/api/webhook",
-  express.raw({ type: "application/json" }),
-  stripeWebhookHandler,
-);
-
-app.use(helmet());
-app.use(cors({ origin: config.corsOrigins, credentials: true }));
-app.use(compression());
-app.use(cookieParser());
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
-
-app.use(
-  "/api",
-  rateLimit({
-    windowMs: 60 * 60 * 1000,
-    max: 500,
-    standardHeaders: true,
-    legacyHeaders: false,
-  }),
-);
-
-app.get("/health", (_req, res) =>
-  res.status(200).json({ status: "ok", brand: "emirateslimo" }),
-);
-app.use("/api", indexRouter);
-
-app.all("/{*path}", (req, _res, next) =>
-  next(new AppError(`Route ${redactUrl(req.originalUrl)} not found`, 404)),
-);
-
-setupSentryErrorHandler(app);
-app.use(createErrorHandler({ logger, nodeEnv: config.nodeEnv }));
 
 export default app;

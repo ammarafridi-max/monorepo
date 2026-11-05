@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Loader2, X, FileText, ListChecks } from 'lucide-react';
+import { Loader2, FileText, ListChecks } from 'lucide-react';
+import { Sheet } from '../../components/admin/ModalShell';
 import {
   useDocumentTypes, useCreateDocumentType, useUpdateDocumentType,
   useTemplates, useUpsertTemplate, usePreviewTemplate,
 } from '../../hooks/visa-applications/useRegistry.js';
 import AdminFab from '../../components/admin/AdminFab';
+import { inputCls } from '../../components/admin/formClasses';
 
 const SOURCE_BADGE = {
   CUSTOMER: 'bg-primary-50 text-primary-700', AGENT: 'bg-indigo-50 text-indigo-600', IN_PERSON: 'bg-amber-50 text-amber-700',
@@ -14,7 +16,6 @@ const SOURCE_BADGE = {
 const SUBMITTER = { CUSTOMER: 'Customer', AGENT: 'Team', IN_PERSON: 'In person' };
 
 const SOURCES = ['CUSTOMER', 'AGENT', 'IN_PERSON'];
-const inputCls = 'w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500';
 
 function DocumentTypeModal({ initial, onClose }) {
   const create = useCreateDocumentType();
@@ -34,12 +35,17 @@ function DocumentTypeModal({ initial, onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40" onClick={onClose}>
-      <form onClick={(e) => e.stopPropagation()} onSubmit={submit} className="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-5 space-y-3 max-h-[85vh] overflow-y-auto">
-        <div className="flex items-center justify-between">
-          <h3 className="text-base font-bold text-gray-900">{editing ? `Edit ${initial.key}` : 'New document type'}</h3>
-          <button type="button" onClick={onClose} className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100"><X size={18} /></button>
-        </div>
+    <Sheet
+      as="form"
+      onSubmit={submit}
+      size="md"
+      title={editing ? `Edit ${initial.key}` : 'New document type'}
+      titleClass="text-base font-bold text-gray-900"
+      spacing="space-y-3"
+      maxHeight="max-h-[85vh]"
+      closeTone="dark"
+      onClose={onClose}
+    >
         <div className="space-y-1.5">
           <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Key {editing && '(stable, not editable)'}</label>
           <input value={form.key} onChange={set('key')} disabled={editing} placeholder="EMPLOYMENT_NOC" className={`${inputCls} font-mono uppercase disabled:bg-gray-50`} />
@@ -68,8 +74,7 @@ function DocumentTypeModal({ initial, onClose }) {
         <button type="submit" disabled={busy} className="w-full inline-flex items-center justify-center gap-2 py-2.5 text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 rounded-xl transition disabled:opacity-60">
           {busy ? <Loader2 size={14} className="animate-spin" /> : 'Save'}
         </button>
-      </form>
-    </div>
+    </Sheet>
   );
 }
 

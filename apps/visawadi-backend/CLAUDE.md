@@ -14,11 +14,13 @@ Note the distinction that matters most in this codebase: a **travel insurance po
 
 The composition root wires these domains — the set is brand-specific, so don't assume a domain exists just because another brand mounts it:
 
-`auth`, `admin-users`, `blog` (+ blog-tags), `visa`, `visa-leads`, `visa-applications`, `currencies`, `payments`, `users`.
+`auth`, `admin-users`, `blogs` (+ `blog-tags`), `visas`, `visa-leads`, `visa-applications`, `visa-requirements`, `payments`, `users`, `openai-ads`, `openai-events` (a local router in `src/routes/openaiEvents.js`), `assistant`.
 
-Deliberately **not** mounted, and their packages are not dependencies: `insurance` (which also owns the `Nationality` model), `itineraries`, `flights`/`airports`/`locations` (and the `airlabs` + `serpapi` clients that fed them), `tickets`, `bookings`, `affiliates`.
+**`currencies` is not mounted.** An earlier version of this file listed it.
 
-The airline logos still bundled at `src/public/airlines/` and served from `/airlines` belong to the removed flights domain. They are harmless but unused; delete them if they are still there when you next touch this app.
+Deliberately **not** mounted, and their packages are not dependencies: `insurance` (which also owns the `Nationality` model), `itineraries`, `flights`/`airports`/`locations` (and the `airlabs` + `serpapi` clients that fed them), `tickets`, `currencies`, the booking domains, `affiliates`.
+
+The leftover airline logos under `src/public/airlines/` are gone, along with the `/airlines` static mount. Nothing to clean up there any more.
 
 VisaWadi-specific wiring worth knowing:
 
@@ -39,10 +41,10 @@ Runs on Node's built-in env-file loader and watcher, no nodemon or dotenv:
 ```bash
 pnpm dev     # node --env-file=.env.development --watch src/server.js
 pnpm start   # node --env-file=.env.production src/server.js
-
-node --env-file=.env.development scripts/seed-admin.js            # seed an admin user
-node --env-file=.env.development src/scripts/seedVisas.js         # seed visa landing pages
-node --env-file=.env.development scripts/seed-schengen-checklist.mjs
 ```
+
+There is **no `scripts/` directory** in this app. The seed-admin, seed-visas and
+seed-schengen-checklist commands that an earlier version of this file listed do
+not exist; that data goes in directly against the database.
 
 Secrets live only in Fly.io secrets. Never echo an `.env` file, print a Mongo URI or a `sk_`/`whsec_` key, or hardcode one in a `fly.*.toml`.

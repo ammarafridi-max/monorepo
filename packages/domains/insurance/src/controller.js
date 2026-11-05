@@ -1,12 +1,9 @@
 import { v4 as uuidv4 } from 'uuid';
-import { AppError, catchAsync, attributionChannelFilter } from '@travel-suite/utils';
+import { AppError, catchAsync, attributionChannelFilter, escapeRegex } from '@travel-suite/utils';
 import { normalizeCurrencyCode } from '@travel-suite/utils/currency';
 
 const FALLBACK_PREMIUM_CURRENCY = 'AED';
 
-function escapeRegex(value = '') {
-  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
 
 function buildApplicationsFilter(query = {}) {
   const queryObj = { ...query };

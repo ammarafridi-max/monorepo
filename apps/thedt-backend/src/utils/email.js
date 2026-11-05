@@ -1,9 +1,4 @@
-import { createBrevoMailer } from '@travel-suite/brevo';
-import { logger } from '@travel-suite/utils';
-import config from './config.js';
+import { createBrandMailer } from "@travel-suite/backend-app/email";
+import config from "./config.js";
 
-export const { sendEmail } = createBrevoMailer({
-  apiKey: config.brevoApiKey,
-  sender: { name: 'The Dummy Ticket AE', email: config.adminEmail },
-  logger,
-});
+export const { sendEmail } = createBrandMailer({ config });

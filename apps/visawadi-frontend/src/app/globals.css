@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import './redesign.css';
 @source "../../../../packages/frontend-shared/src/components";
 @source "../../../../packages/frontend-shared/src/pages";
 @source "../../../../packages/frontend-shared/src/layouts";
@@ -10,12 +11,6 @@
 }
 
 @theme inline {
-  /* Cobalt & Stone. Replaced the teal inherited from Travl when the brands
-     split — a visa brand should not look like the insurance one.
-     Deep blue reads institutional and document-adjacent, and its hue sits well
-     clear of the visa checker's green / amber / red result states, so the brand
-     never competes with the answer on screen.
-     White on primary-700 measures 8.48:1, comfortably past AA. */
   --color-primary-50:  #f3f4f7;
   --color-primary-100: #e1e6ef;
   --color-primary-200: #becce4;
@@ -41,12 +36,6 @@
   --color-accent-900: #762913;
   --color-accent-950: #441a0e;
 
-  /* VisaWadi uses Commissioner (UI/body) + Geist Mono (reference codes). The
-     historical --font-outfit / --font-nunito / --font-merriweather aliases are
-     repointed here rather than chased through the components, so every existing
-     `font-outfit`/`var(--font-nunito)` usage inherits the brand face. The token
-     is named for its role, not the face, so swapping fonts is one line in
-     layout.js and nothing here. */
   --font-sans:         var(--font-brand), ui-sans-serif, system-ui, sans-serif;
   /* IBM Plex Mono, set in layout.js. Figures only: fees, deadlines, dates. */
   --font-mono:         var(--font-data), var(--font-geist-mono), ui-monospace, monospace;
@@ -278,12 +267,6 @@ a {
     min-width: 140px;
     padding: 12px 14px;
   }
-
-  /* p {
-    font-size: 15px;
-    line-height: 1.7;
-    font-weight: 300;
-  } */
 }
 
 @utility py-section {

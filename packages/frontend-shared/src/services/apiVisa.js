@@ -69,12 +69,6 @@ export function getPublicVisaForResidenceApi(slug, residence) {
   });
 }
 
-export function getPublicVisaBySlugApi(slug) {
-  return apiFetchPublic(`${URL}/slug/${encodeURIComponent(slug)}`, {
-    next: { revalidate: 300 },
-  });
-}
-
 export function getAdminVisasApi({ page = 1, limit = 20, status, search } = {}) {
   const params = new URLSearchParams({ page, limit });
   if (status && status !== 'all') params.append('status', status);
@@ -129,12 +123,6 @@ export function getOverlaysApi({ visaSlug, residence } = {}) {
   if (residence) params.append('residence', residence);
   const qs = params.toString();
   return apiFetch(`${URL}/overlays/all${qs ? `?${qs}` : ''}`);
-}
-
-export function getOverlayApi({ residence, visaSlug }) {
-  return apiFetch(
-    `${URL}/overlays/${encodeURIComponent(residence)}/${encodeURIComponent(visaSlug)}`,
-  );
 }
 
 export function upsertOverlayApi(payload) {

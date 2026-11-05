@@ -23,7 +23,7 @@ const activityLogSchema = new Schema(
   { _id: true },
 );
 
-const visaLeadSchema = new Schema(
+const VisaLeadSchema = new Schema(
   {
 
     firstName:        { type: String, required: true, trim: true, maxlength: 50 },
@@ -63,7 +63,7 @@ const visaLeadSchema = new Schema(
   },
 );
 
-visaLeadSchema.pre('save', async function () {
+VisaLeadSchema.pre('save', async function () {
   if (this.isNew) {
     this.activityLog.push({
       action: 'created',
@@ -72,4 +72,4 @@ visaLeadSchema.pre('save', async function () {
   }
 });
 
-export default visaLeadSchema;
+export default VisaLeadSchema;

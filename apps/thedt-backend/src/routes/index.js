@@ -7,7 +7,6 @@ import {
   registerAffiliateModels,
 } from "@travel-suite/affiliates";
 import { createBlogRouter, createBlogTagRouter } from "@travel-suite/blog";
-import { createCloudinaryStorage } from "@travel-suite/cloudinary";
 import {
   createFlightRouter,
   createAirportsRouter,
@@ -17,7 +16,14 @@ import { createAirLabsClient } from "@travel-suite/airlabs";
 import { createSerpApiClient } from "@travel-suite/serpapi";
 import { createInsuranceRouter } from "@travel-suite/insurance";
 import { createTicketsRouter } from "@travel-suite/tickets";
-import { createNotificationsService } from "@travel-suite/notifications";
+import { createBrandStorage } from "@travel-suite/backend-app/storage";
+import { createBrandNotifications } from "@travel-suite/backend-app/notifications";
+import { createPaymentLinkSuccessHandler } from "@travel-suite/backend-app/payment-link";
+import {
+  createMetaCapi,
+  createOpenAICapi,
+  createTicketConversionCounter,
+} from "@travel-suite/backend-app/tracking";
 import {
   createStripeClient,
   createStripeWebhookHandler,
@@ -42,6 +48,9 @@ import { logger } from "@travel-suite/utils";
 const { Affiliate: AffiliateModel } = registerAffiliateModels({ db });
 
 const router = Router();
+
+const storage = createBrandStorage({ config });
+
 const brevo = createBrevoClient({ apiKey: config.brevoApiKey, logger });
 
 
@@ -56,7 +65,7 @@ const {
   cookieExpiresInDays: config.jwtCookieExpiresInDays,
   nodeEnv: config.nodeEnv,
   sendEmail,
-  brandName: "The Dummy Ticket AE",
+  brandName: config.brand.name,
   loginUrl: `${config.frontendUrl}/admin/login`,
   logger,
 });
@@ -65,38 +74,22 @@ router.use("/auth", authRouter);
 
 router.use("/admin-users", createAdminUsersRouter({ AdminUser, auth }));
 
-const imageStorage = createCloudinaryStorage({
-  cloudName: config.cloudinary.cloudName,
-  apiKey: config.cloudinary.apiKey,
-  apiSecret: config.cloudinary.apiSecret,
-  logger,
-  folder: "thedt/blog",
-});
+const imageStorage = storage("blog");
 router.use("/blogs", createBlogRouter({ db, auth, imageStorage, anthropicApiKey: config.anthropicApiKey }));
 router.use("/blog-tags", createBlogTagRouter({ db, auth }));
 
 
 const airlabs = createAirLabsClient({ apiKey: config.airlabs.apiKey });
 const serpapi = createSerpApiClient({ apiKey: config.serpapi.apiKey });
-const airlineLogoStorage = createCloudinaryStorage({
-  cloudName: config.cloudinary.cloudName,
-  apiKey: config.cloudinary.apiKey,
-  apiSecret: config.cloudinary.apiSecret,
-  logger,
-  folder: "thedt/airlines",
-});
+const airlineLogoStorage = storage("airlines");
 router.use("/flights", createFlightRouter({ db, airlabs, serpapi, auth, logoStorage: airlineLogoStorage }));
 router.use("/airports", createAirportsRouter({ airlabs }));
 
-const metaCapi = createMetaCapiClient({
-  pixelId: config.meta.pixelId,
-  accessToken: config.meta.capiAccessToken,
-  testEventCode: config.meta.testEventCode,
+const metaCapi = createMetaCapi({
+  create: createMetaCapiClient,
+  config: config.meta,
   logger,
 });
-if (!metaCapi.isConfigured()) {
-  logger.warn("[meta-capi] Pixel ID or access token not configured — server-side purchase events disabled");
-}
 
 router.use(
   "/insurance",
@@ -112,45 +105,20 @@ router.use(
   }),
 );
 
-const openaiCapi = createOpenAICapiClient({
+const openaiCapi = createOpenAICapi({
+  create: createOpenAICapiClient,
   pixelId: config.openai.pixelId,
   apiKey: config.openai.capiApiKey,
   logger,
 });
-if (!openaiCapi.isConfigured()) {
-  logger.warn("[openai-capi] Pixel ID or API key not configured — server-side order events disabled");
-}
 
-const notifications = createNotificationsService({
-  sendEmail,
-  logger,
-  brand: {
-    name: "The Dummy Ticket AE",
-    teamName: "The Dummy Ticket AE Team",
-    adminEmail: config.adminEmail,
-    website: "https://thedummyticket.ae",
-    paymentsSenderName: "The Dummy Ticket AE Payments",
-    deliverySenderName: "The Dummy Ticket AE Delivery",
-    customerSenderName: "The Dummy Ticket AE",
-    theme: {
-      primaryColor: "#053d6c",
-      accentColor: "#de3700",
-      linkColor: "#053d6c",
-    },
-  },
-});
+const notifications = createBrandNotifications({ config, sendEmail });
 
 notifications.sendTicketPaymentToAdmin = async () => {};
 
 const stripe = createStripeClient({ secretKey: config.stripe.secretKey });
 
-const reservationStorage = createCloudinaryStorage({
-  cloudName: config.cloudinary.cloudName,
-  apiKey: config.cloudinary.apiKey,
-  apiSecret: config.cloudinary.apiSecret,
-  logger,
-  folder: "thedt/dummy-tickets",
-});
+const reservationStorage = storage("dummy-tickets");
 const {
   router: ticketsRouter,
   pricingRouter,
@@ -205,26 +173,7 @@ if (adsConfigured) {
     auth,
     maxDailyBudget: config.openai.adsMaxDailyBudget,
     logger,
-    countOwnConversions: async ({ from, to }) => {
-      const rows = await TicketModel.aggregate([
-        {
-          $match: {
-            paymentStatus: "PAID",
-            paidAt: { $gte: from, $lt: to },
-            $or: [
-              { "attribution.last.channel": "chatgpt_ads" },
-              { "attribution.last.oppref": { $nin: [null, ""] } },
-              { "openaiAttribution.oppref": { $nin: [null, ""] } },
-            ],
-          },
-        },
-        { $group: { _id: "$amountPaid.currency", orders: { $sum: 1 }, amount: { $sum: "$amountPaid.amount" } } },
-      ]);
-      return {
-        orders: rows.reduce((n, r) => n + r.orders, 0),
-        revenue: rows.map((r) => ({ currency: r._id, amount: Math.round(r.amount * 100) / 100 })),
-      };
-    },
+    countOwnConversions: createTicketConversionCounter(TicketModel),
   });
   openaiAdsService = service;
   router.use("/openai-ads", openaiAdsRouter);
@@ -246,27 +195,11 @@ router.use(
   createPaymentsAdminRouter({ controller: paymentsController, auth }),
 );
 
-async function handlePaymentLinkSuccess(session) {
-  const updated = await paymentService.markPaymentLinkPaid({ session });
-  if (!updated) {
-    logger.warn("[payment-link] No matching record for session", {
-      sessionId: session.id,
-      paymentLink: session.payment_link,
-    });
-    return;
-  }
-  await notifications.sendPaymentLinkPaidToAdmin({
-    amount: updated.amount,
-    currency: updated.currency,
-    payerName: updated.paidByName || session.customer_details?.name,
-    payerEmail: updated.paidByEmail || session.customer_details?.email,
-    description: updated.description,
-    createdByName: updated.createdBy?.name,
-    paymentLinkId: updated.stripePaymentLinkId,
-    sessionId: updated.sessionId,
-    paidAt: updated.paidAt,
-  });
-}
+const handlePaymentLinkSuccess = createPaymentLinkSuccessHandler({
+  paymentService,
+  notifications,
+  logger,
+});
 
 if (config.anthropicApiKey) {
   const { router: assistantRouter } = createAssistantRouter({
@@ -275,7 +208,7 @@ if (config.anthropicApiKey) {
     anthropicApiKey: config.anthropicApiKey,
     stripe,
     ads: openaiAdsService,
-    brand: { name: "The Dummy Ticket AE" },
+    brand: { name: config.brand.name },
     logger,
     datasets: [
       assistantDatasets.dummyTickets(TicketModel),

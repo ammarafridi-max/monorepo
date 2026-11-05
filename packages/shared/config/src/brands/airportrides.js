@@ -1,6 +1,6 @@
 const airportrides = {
   key: "airportrides",
-  name: "Airport Rides",
+  name: "AirportRides",
   domain: "airportrides.com",
   cloudinaryFolder: "airportrides",
   currency: "USD",
@@ -15,21 +15,22 @@ const airportrides = {
     primaryColor: "#1e60a6",
     accentColor: "#ff603a",
   },
-  features: {
-    dummyTickets: true,
-    insurance: false,
-    hotelBookings: false,
-  },
   seo: {
-    titleTemplate: "%s | Airport Rides",
-    defaultTitle: "Airport Rides",
+    titleTemplate: "%s | AirportRides",
+    defaultTitle: "AirportRides",
     defaultDescription:
-      "Get a verifiable dummy flight ticket for your visa application. Instant delivery. Serving travellers worldwide.",
+      "Book a private airport transfer with a fixed fare and a driver who tracks your flight. Door to door, worldwide.",
     ogImage: "/og-image.png",
   },
   legal: {
     companyName: "TRAVL Technologies",
     address: "Abraj Al Mamzar, Al Mamzar, Dubai, United Arab Emirates",
+    postalAddress: {
+      streetAddress: "Abraj Al Mamzar",
+      addressLocality: "Al Mamzar",
+      addressRegion: "Dubai",
+      addressCountry: "AE",
+    },
   },
 };
 

@@ -48,14 +48,6 @@ export async function getAdminMeApi() {
   return await apiFetch('/api/admin-users/me');
 }
 
-export async function getMeApi() {
-  return await getAdminMeApi();
-}
-
-export async function getUserMeApi() {
-  return await apiFetch('/api/users/me');
-}
-
 export async function logoutUserSessionApi() {
   const res = await fetch(`${BACKEND}/api/users/logout`, {
     method: 'POST',

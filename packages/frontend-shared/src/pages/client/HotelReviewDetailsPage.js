@@ -7,40 +7,15 @@ import { Check, Lock, Loader2, ArrowLeft, Mail, User, ShieldCheck } from 'lucide
 import { toast } from 'react-hot-toast';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useHotelBooking } from '../../hooks/hotel-bookings/useHotelBooking';
-import { useHotelStripePaymentURL } from '../../hooks/hotel-bookings/useHotelStripePaymentURL';
+import { useHotelStripePaymentUrl } from '../../hooks/hotel-bookings/useHotelStripePaymentUrl';
 import { useHotelPricing, getHotelPrice } from '../../hooks/hotel-bookings/useHotelPricing';
 import { formatAmount } from '../../utils/currency';
 import { getMetaBrowserIds, pixelInitiateCheckout } from '../../utils/pixel';
 import { formatDate } from '../../utils/dates';
 import PageLoader from '../../components/ui/v1/PageLoader';
+import { ReviewSectionCard, ReviewRow as Row } from '../../components/ui/v1/ReviewCard';
 
-function SectionCard({ title, editHref, children }) {
-  return (
-    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-      <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-gray-900">{title}</h2>
-        {editHref && (
-          <Link
-            href={editHref}
-            className="inline-flex items-center gap-1 text-xs font-medium text-primary-700 hover:text-primary-900 transition-colors"
-          >
-            Edit
-          </Link>
-        )}
-      </div>
-      <div className="px-6 py-5">{children}</div>
-    </div>
-  );
-}
-
-function Row({ label, value }) {
-  return (
-    <div className="flex items-baseline justify-between gap-4 py-2 border-b border-gray-50 last:border-0">
-      <span className="text-xs text-gray-400 font-normal shrink-0">{label}</span>
-      <span className="text-sm text-gray-900 font-normal text-right">{value || '—'}</span>
-    </div>
-  );
-}
+const SectionCard = (props) => <ReviewSectionCard {...props} />;
 
 export default function HotelReviewDetailsPage({ onBeginCheckout, searchPath = '/hotel-booking' }) {
   const router = useRouter();
@@ -54,7 +29,7 @@ export default function HotelReviewDetailsPage({ onBeginCheckout, searchPath = '
   const { selectedCurrency, formatMoney } = useCurrency();
   const { pricing } = useHotelPricing(selectedCurrency?.code);
   const { reservation, isLoadingReservation, isErrorReservation } = useHotelBooking(sessionId);
-  const { createHotelStripePayment, isLoadingHotelPaymentURL, isErrorHotelPaymentURL } = useHotelStripePaymentURL();
+  const { createHotelStripePayment, isLoadingHotelPaymentUrl, isErrorHotelPaymentUrl } = useHotelStripePaymentUrl();
 
   const nights = reservation?.nights ?? 1;
   const basePrice = getHotelPrice(pricing, nights);
@@ -66,13 +41,13 @@ export default function HotelReviewDetailsPage({ onBeginCheckout, searchPath = '
   }, [sessionId, router, searchPath]);
 
   useEffect(() => {
-    if (isErrorHotelPaymentURL) {
+    if (isErrorHotelPaymentUrl) {
       toast.error('Could not get payment URL. Please send us an email.');
     }
-  }, [isErrorHotelPaymentURL]);
+  }, [isErrorHotelPaymentUrl]);
 
   function handleConfirm() {
-    if (!agreed || isLoadingHotelPaymentURL || !sessionId) return;
+    if (!agreed || isLoadingHotelPaymentUrl || !sessionId) return;
     onBeginCheckout?.({
       currency: currencyCode,
       value: totalAmount,
@@ -232,10 +207,10 @@ export default function HotelReviewDetailsPage({ onBeginCheckout, searchPath = '
 
             <button
               onClick={handleConfirm}
-              disabled={!agreed || isLoadingHotelPaymentURL}
+              disabled={!agreed || isLoadingHotelPaymentUrl}
               className="cursor-pointer w-full inline-flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-bold py-3.5 rounded-xl transition-colors bg-accent-500 hover:bg-accent-600"
             >
-              {isLoadingHotelPaymentURL ? (
+              {isLoadingHotelPaymentUrl ? (
                 <>
                   <Loader2 size={14} className="animate-spin" />
                   Processing…

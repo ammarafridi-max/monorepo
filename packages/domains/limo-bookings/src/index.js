@@ -4,8 +4,8 @@ import { PricingRuleSchema } from '@travel-suite/pricing-rules';
 import { AvailabilityRuleSchema } from '@travel-suite/availability-rules';
 import BookingSchema from './schema.js';
 import { createBookingPricingService } from './pricing.service.js';
-import { createBookingService } from './service.js';
-import { createBookingController } from './controller.js';
+import { createLimoBookingService } from './service.js';
+import { createLimoBookingController } from './controller.js';
 import { createBookingRouterFromParts } from './router.js';
 import { getOrRegisterModel } from '@travel-suite/utils/model';
 
@@ -18,8 +18,8 @@ export function createBookingsRouter({ db, auth, stripe, frontendUrl }) {
   const Booking = getOrRegisterModel(db, 'booking', BookingSchema);
 
   const pricing = createBookingPricingService({ AvailabilityRule, PricingRule });
-  const service = createBookingService({ Booking, stripe, frontendUrl, pricing });
-  const controller = createBookingController({ service });
+  const service = createLimoBookingService({ Booking, stripe, frontendUrl, pricing });
+  const controller = createLimoBookingController({ service });
   return createBookingRouterFromParts({ controller, auth });
 }
 

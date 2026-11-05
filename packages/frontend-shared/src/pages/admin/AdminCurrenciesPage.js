@@ -19,23 +19,7 @@ import AdminCurrencyModal from './AdminCurrencyModal';
 import AdminSearchInput from '../../components/admin/AdminSearchInput';
 import FilterMenu from '../../components/admin/FilterMenu';
 import AdminFab from '../../components/admin/AdminFab';
-
-function fmtDate(iso) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
-}
-
-function fmtRate(rate) {
-  if (rate == null) return '—';
-  return Number(rate).toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 6,
-  });
-}
+import { fmtDate, fmtRate } from '../../components/admin/format';
 
 export default function AdminCurrenciesPage() {
   const [modal, setModal] = useState(null);

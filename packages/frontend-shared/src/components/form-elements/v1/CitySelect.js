@@ -1,7 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useId } from 'react';
+import { useOutsideClick } from '../../../hooks/general/useOutsideClick';
 import { ChevronDown, Check, MapPin, Loader2 } from 'lucide-react';
+import { COUNTRY_BY_CODE } from '../../../data/countries.js';
 
 export default function CitySelect({
   value,
@@ -10,37 +12,40 @@ export default function CitySelect({
   inputClassName,
   inputId,
   inputRef: externalRef,
-  placeholder = 'Search a city…',
+  placeholder = 'City or destination',
   minChars = 2,
   debounceMs = 250,
+  error,
 }) {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
   const containerRef = useRef(null);
+  const listRef = useRef(null);
   const internalRef = useRef(null);
   const inputRef = externalRef ?? internalRef;
+  const generatedId = useId();
+  const fieldId = inputId || `city-${generatedId}`;
+  const listboxId = `${fieldId}-listbox`;
 
-  useEffect(() => {
-    function onClickOutside(e) {
-      if (containerRef.current && !containerRef.current.contains(e.target)) {
-        setOpen(false);
-        setQuery('');
-      }
-    }
-    document.addEventListener('mousedown', onClickOutside);
-    return () => document.removeEventListener('mousedown', onClickOutside);
-  }, []);
+  useOutsideClick(containerRef, () => {
+    setOpen(false);
+    setIsTyping(false);
+    setQuery('');
+  });
 
   useEffect(() => {
     if (!open || query.trim().length < minChars) {
       setResults([]);
+      setLoading(false);
       return;
     }
     const controller = new AbortController();
+    setLoading(true);
     const timer = setTimeout(async () => {
-      setLoading(true);
       try {
         const found = await onSearch(query.trim(), { signal: controller.signal });
         if (!controller.signal.aborted) setResults(found ?? []);
@@ -57,15 +62,67 @@ export default function CitySelect({
     };
   }, [query, open, minChars, debounceMs, onSearch]);
 
+  useEffect(() => {
+    setActiveIndex(results.length > 0 ? 0 : -1);
+  }, [results]);
+
+  useEffect(() => {
+    if (activeIndex < 0) return;
+    const option = listRef.current?.querySelector(`[data-index="${activeIndex}"]`);
+    option?.scrollIntoView({ block: 'nearest' });
+  }, [activeIndex]);
+
   function handleSelect(city) {
     onChange(city);
     setOpen(false);
+    setIsTyping(false);
     setQuery('');
-    inputRef.current?.blur();
+    setActiveIndex(-1);
   }
 
-  const displayValue = open ? query : (value?.label ?? '');
-  const showEmpty = !loading && query.trim().length >= minChars && results.length === 0;
+  function handleKeyDown(e) {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (!open) {
+        setOpen(true);
+        return;
+      }
+      if (results.length === 0) return;
+      const step = e.key === 'ArrowDown' ? 1 : -1;
+      setActiveIndex((prev) => {
+        const next = prev + step;
+        if (next < 0) return results.length - 1;
+        if (next >= results.length) return 0;
+        return next;
+      });
+      return;
+    }
+
+    if (e.key === 'Enter') {
+      if (open && activeIndex >= 0 && results[activeIndex]) {
+        e.preventDefault();
+        handleSelect(results[activeIndex]);
+      }
+      return;
+    }
+
+    if (e.key === 'Escape' && open) {
+      e.preventDefault();
+      setOpen(false);
+      setIsTyping(false);
+      setQuery('');
+      setActiveIndex(-1);
+      return;
+    }
+
+    if (e.key === 'Tab' && open) setOpen(false);
+  }
+
+  const displayValue = isTyping ? query : (value?.label ?? '');
+  const trimmed = query.trim();
+  const showHelper = !loading && open && trimmed.length > 0 && trimmed.length < minChars;
+  const showEmpty = !loading && trimmed.length >= minChars && results.length === 0;
+  const isListOpen = open && (trimmed.length > 0 || results.length > 0);
 
   return (
     <div className="relative" ref={containerRef}>
@@ -75,12 +132,21 @@ export default function CitySelect({
         </span>
         <input
           ref={inputRef}
-          id={inputId}
+          id={fieldId}
           type="text"
+          role="combobox"
           placeholder={placeholder}
           value={displayValue}
-          onFocus={() => { setQuery(''); setOpen(true); }}
-          onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => setOpen(true)}
+          onChange={(e) => { setIsTyping(true); setQuery(e.target.value); setOpen(true); }}
+          onKeyDown={handleKeyDown}
+          aria-invalid={error ? 'true' : undefined}
+          aria-expanded={isListOpen}
+          aria-controls={isListOpen ? listboxId : undefined}
+          aria-autocomplete="list"
+          aria-activedescendant={
+            isListOpen && activeIndex >= 0 ? `${fieldId}-option-${activeIndex}` : undefined
+          }
           className={inputClassName}
           autoComplete="off"
         />
@@ -94,32 +160,67 @@ export default function CitySelect({
         )}
       </div>
 
-      {open && (query.trim().length >= minChars || results.length > 0) && (
-        <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-56 overflow-y-auto">
-          {showEmpty ? (
-            <p className="text-xs text-gray-400 px-4 py-3">No cities found for &quot;{query}&quot;</p>
-          ) : (
-            results.map((city) => {
-              const isSelected = value?.name === city.name && value?.countryCode === city.countryCode;
+      {isListOpen && (
+        <ul
+          id={listboxId}
+          role="listbox"
+          ref={listRef}
+          aria-label="City suggestions"
+          className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-56 overflow-y-auto"
+        >
+          {loading && (
+            <li className="flex items-center gap-2 px-4 py-3 text-xs text-gray-400">
+              <Loader2 size={13} className="animate-spin" />
+              Searching cities…
+            </li>
+          )}
+
+          {showHelper && (
+            <li className="px-4 py-3 text-xs text-gray-400">
+              Keep typing — at least {minChars} characters
+            </li>
+          )}
+
+          {showEmpty && (
+            <li className="px-4 py-3 text-xs text-gray-500">
+              <span className="block font-medium text-gray-700">
+                No cities match &quot;{trimmed}&quot;
+              </span>
+              <span className="block text-gray-400 mt-0.5">Try a nearby or larger city.</span>
+            </li>
+          )}
+
+          {!loading &&
+            results.map((city, index) => {
+              const isSelected =
+                value?.name === city.name && value?.countryCode === city.countryCode;
+              const isActive = index === activeIndex;
+              const country = COUNTRY_BY_CODE[city.countryCode] || city.countryCode;
               return (
-                <button
+                <li
                   key={`${city.name}-${city.countryCode}-${city.cityCode ?? ''}`}
-                  type="button"
+                  id={`${fieldId}-option-${index}`}
+                  role="option"
+                  aria-selected={isSelected}
+                  data-index={index}
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => handleSelect(city)}
-                  className={`w-full text-left px-4 py-2.5 text-sm flex items-center justify-between gap-2 hover:bg-primary-50 transition-colors ${
-                    isSelected ? 'text-primary-700 font-semibold bg-primary-50/60' : 'text-gray-700'
-                  }`}
+                  onMouseEnter={() => setActiveIndex(index)}
+                  className={`w-full cursor-pointer px-4 py-2.5 text-sm flex items-center justify-between gap-2 transition-colors ${
+                    isActive ? 'bg-primary-50' : ''
+                  } ${isSelected ? 'text-primary-700 font-semibold' : 'text-gray-700'}`}
                 >
-                  <span className="truncate">
-                    {city.name}
-                    <span className="text-gray-400 font-normal">, {city.countryCode}</span>
+                  <span className="min-w-0">
+                    <span className="block truncate">{city.name}</span>
+                    <span className="block truncate text-xs font-normal text-gray-500">
+                      {[country, city.cityCode].filter(Boolean).join(' · ')}
+                    </span>
                   </span>
                   {isSelected && <Check size={13} className="text-primary-600 shrink-0" />}
-                </button>
+                </li>
               );
-            })
-          )}
-        </div>
+            })}
+        </ul>
       )}
     </div>
   );

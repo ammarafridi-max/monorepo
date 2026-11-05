@@ -11,7 +11,7 @@ import { createReminderEngine } from './reminders.js';
 import { getOrRegisterModel } from '@travel-suite/utils/model';
 
 
-export function createVisaApplicationsRouter({ db, auth, userAuth, User, storage, notifications, apiBaseUrl, appBaseUrl, logger }) {
+export function createVisaApplicationsRouter({ db, auth, userAuth, User, storage, notifications, apiUrl, frontendUrl, logger }) {
   const VisaApplication = getOrRegisterModel(db, 'visa-application', VisaApplicationSchema);
   const Applicant = getOrRegisterModel(db, 'applicant', ApplicantSchema);
   const ApplicationDocument = getOrRegisterModel(db, 'application-document', ApplicationDocumentSchema);
@@ -27,8 +27,8 @@ export function createVisaApplicationsRouter({ db, auth, userAuth, User, storage
     User,
     storage,
     notifications,
-    apiBaseUrl,
-    appBaseUrl,
+    apiUrl,
+    frontendUrl,
   });
 
   const registry = createRegistryService({ DocumentType, ChecklistTemplate });
@@ -40,7 +40,7 @@ export function createVisaApplicationsRouter({ db, auth, userAuth, User, storage
     DocumentType,
     User,
     notifications,
-    appBaseUrl,
+    frontendUrl,
     logger,
   });
 

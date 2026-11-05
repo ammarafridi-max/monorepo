@@ -1,8 +1,8 @@
 # airportrides-frontend
 
-The customer-facing web app for **airportrides.com** — a worldwide airport-transfer booking platform. It's a Next.js 15 (App Router) + React 19 + Tailwind v4 app that serves the marketing site, the multi-step transfer-booking funnel, and the admin dashboard. Data comes from `airportrides-backend` over `NEXT_PUBLIC_BACKEND_URL`.
+The customer-facing web app for **airportrides.com** — a worldwide airport-transfer booking platform. It's a Next.js 16 (App Router) + React 19 + Tailwind v4 app that serves the marketing site, the multi-step transfer-booking funnel, and the admin dashboard. Data comes from `airportrides-backend` over `NEXT_PUBLIC_BACKEND_URL`.
 
-It is one of six brand frontends in the `travel-suite` monorepo. Most components, hooks, contexts, services, and admin pages live in `@travel-suite/frontend-shared`; this app supplies the airportrides-specific pages, sections, theme, and copy.
+It is one of eight frontends in the `travel-suite` monorepo (seven travel brands plus Picturesk, which is not a travel brand). Most components, hooks, contexts, services, and admin pages live in `@travel-suite/frontend-shared`; this app supplies the airportrides-specific pages, sections, theme, and copy.
 
 ---
 
@@ -13,7 +13,7 @@ It is one of six brand frontends in the `travel-suite` monorepo. Most components
 - **The booking funnel:** [src/app/transfer-booking/](src/app/transfer-booking/) — `select-vehicle → details → review → payment`, state held in the shared `TransferBookingContext`.
 - **Shared code:** anything imported from `@travel-suite/frontend-shared/...` lives in `packages/frontend-shared`. Local UI lives in [src/components/](src/components/) and [src/sections/](src/sections/).
 - **Config:** [src/config.js](src/config.js) reads `NEXT_PUBLIC_*` env vars. Public build-time vars are committed in `.env.build`.
-- **No test suite. Linting** is `next lint` only.
+- **No test suite. Linting** is a bare `eslint` against the flat [eslint.config.mjs](eslint.config.mjs). `next lint` is gone.
 
 ---
 
@@ -27,7 +27,7 @@ pnpm install
 pnpm dev     # next dev   → http://localhost:3000
 pnpm build   # next build (standalone output)
 pnpm start   # next start
-pnpm lint    # next lint
+pnpm lint    # eslint (flat config in eslint.config.mjs)
 ```
 
 ---
@@ -65,7 +65,7 @@ src/
 ├── sections/                 # local home/marketing page sections
 ├── lib/schema.js             # JSON-LD builders wired to airportrides identity
 ├── config.js                 # NEXT_PUBLIC_* env → constants
-└── proxy.js                  # middleware (apex→www + legacy redirects)
+└── (no proxy.js / middleware.js — redirects live in next.config.mjs)
 ```
 
 ### Providers — [src/app/Providers.js](src/app/Providers.js)
@@ -99,18 +99,18 @@ Tailwind **v4**, configured entirely in [src/app/globals.css](src/app/globals.cs
 
 ## SEO
 
-SEO is handled per-page with Next's Metadata API plus hand-written JSON-LD — there is no global metadata helper in use here.
+SEO scaffolding now comes from `@travel-suite/frontend-shared/seo/*`, which owns root metadata, robots, sitemap entries and the brand schema graph for every brand. This app's files are thin wrappers over it; per-page metadata is still Next's Metadata API.
 
-- **Root metadata** ([layout.js](src/app/layout.js)) — `metadataBase` from `SITE_URL`, default title/description, favicon, and Open Graph (`/og-image.png`). Individual pages override it.
+- **Root metadata** ([layout.js](src/app/layout.js)) — `buildRootMetadata` from `frontend-shared/seo/metadata`, fed `getBrand('airportrides')` and `SITE_URL`. Individual pages override it.
 - **Marketing pages** (`about`, `faq`, `blog`, `privacy-policy`, `terms-and-conditions`) are **server components** that export a plain `metadata` object with `title`, `description`, and `alternates.canonical`. `blog` adds Open Graph and `export const revalidate = 3600` (ISR). `contact` is a client component, so its metadata lives in a sibling `contact/layout.js`.
 - **Home page** exports no metadata (inherits the root) and emits no JSON-LD.
 - **Structured data (JSON-LD):**
   - `PageHero` (used by every marketing page) emits a **BreadcrumbList** via `buildBreadcrumbList` from `@travel-suite/frontend-shared/utils/breadcrumb`.
   - `/faq` injects a hand-built **FAQPage** schema inline.
-- **[src/lib/schema.js](src/lib/schema.js)** wires the shared schema builders (`buildOrganization`, `buildWebsite`, `buildService`, …) to the airportrides identity (Dubai address, `info@airportrides.com`, 24/7 contact). It's ready for use but **currently not imported by any page** — reach for it when adding Organization/Service/Product schema.
-- **[robots.js](src/app/robots.js)** — allows `/`, disallows `/admin` and `/api`, points at the sitemap.
-- **[sitemap.js](src/app/sitemap.js)** — lists the static marketing pages with change frequencies/priorities. It's `async` and structured so airport-landing and blog URLs can be appended once those routes exist.
-- **[proxy.js](src/proxy.js)** (Next middleware) — 308 redirects apex → `www` and legacy `/blog/tag/*` → `/blog/tags/*`.
+- **[src/lib/schema.js](src/lib/schema.js)** calls `createBrandSchema` from `frontend-shared/seo/schema` with `getBrand('airportrides')` and re-exports the bound builders (`buildOrganization`, `buildWebsite`, `buildWebPage`, …) plus `SITE_URL` (from `brandSiteUrl`). Reach for it when adding Organization/Service/Product schema.
+- **[robots.js](src/app/robots.js)** — `buildRobots` from `frontend-shared/seo/robots`; allows `/`, disallows `/admin` and `/api`, points at the sitemap.
+- **[sitemap.js](src/app/sitemap.js)** — a local list of static marketing pages with change frequencies/priorities, passed to `staticEntries` from `frontend-shared/seo/sitemap`. It's `async` and structured so airport-landing and blog URLs can be appended once those routes exist.
+- **Redirects** — 308s for apex → `www` and legacy `/blog/tag/*` → `/blog/tags/*` are `async redirects()` entries in [next.config.mjs](next.config.mjs). There is **no `proxy.js` and no middleware**, and adding one would do nothing: Next silently ignores middleware under `output: "standalone"`, which this app uses.
 
 **Copy style** across the site follows the house style: conversational, no em dashes, verdict-first, question-as-H2 with short answers, FAQ structure, and a natural CTA toward booking.
 
@@ -188,5 +188,3 @@ The home page ([page.js](src/app/page.js)) is a server component that defines al
 - **Public secrets only:** the only values safe to commit (in `.env.build`) are `NEXT_PUBLIC_*` public keys.
 - **House style for copy:** conversational, no em dashes, GEO-structured (verdict first, question-as-H2 + short answer, FAQ), with a natural CTA toward booking.
 - **No test suite.** State plainly what you did and did not verify after a change.
-```
-</content>

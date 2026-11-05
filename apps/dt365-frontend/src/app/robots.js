@@ -1,10 +1,8 @@
+import { getBrand } from '@travel-suite/config';
+import { buildRobots } from '@travel-suite/frontend-shared/seo/robots';
+
 export default function robots() {
-  return {
-    rules: {
-      userAgent: '*',
-      allow: '/',
-      disallow: ['/admin', '/booking', '/insurance-booking'],
-    },
-    sitemap: 'https://www.dummyticket365.com/sitemap.xml',
-  };
+  return buildRobots(getBrand('dt365'), {
+    disallow: ['/admin', '/booking', '/insurance-booking'],
+  });
 }

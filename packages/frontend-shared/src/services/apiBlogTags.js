@@ -11,10 +11,6 @@ export async function getBlogTagsApi(search = '') {
   });
 }
 
-export async function getBlogTagApi(id) {
-  return await apiFetch(`${URL}/${id}`);
-}
-
 export async function getBlogTagBySlugApi(slug) {
   return await apiFetchPublic(`${URL}/slug/${encodeURIComponent(slug)}`, {
     next: { revalidate: 300 },

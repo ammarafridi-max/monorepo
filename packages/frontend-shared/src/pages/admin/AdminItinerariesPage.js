@@ -1,0 +1,297 @@
+'use client';
+
+import { Suspense } from 'react';
+import Link from 'next/link';
+
+import {
+  Plane, ChevronLeft, ChevronRight, Loader2, ArrowUpRight, Download, Trash2,
+  ClipboardList, CalendarDays, Megaphone,
+} from 'lucide-react';
+import { useItineraryOrders } from '../../hooks/itineraries/useItineraryOrders';
+import { useDeleteItineraryOrder } from '../../hooks/itineraries/useDeleteItineraryOrder';
+import { itineraryDocumentUrl } from '../../services/apiItineraries';
+import { convertToDubaiDate } from '../../utils/dates';
+import { useAdminAuth } from '../../contexts/AdminAuthContext';
+import AdminSearchInput from '../../components/admin/AdminSearchInput';
+import { useAdminListParams } from '../../hooks/admin/useAdminListParams';
+import FilterMenu from '../../components/admin/FilterMenu';
+import SourceBadge from '../../components/admin/SourceBadge';
+import { CHANNEL_OPTIONS } from '../../utils/attribution';
+import { fmtDayMonthUTC as fmtShort } from '../../components/admin/format';
+import { Pagination } from '../../components/admin/Pagination';
+import { AdminSuspense } from '../../components/admin/AdminSuspense';
+
+const PAYMENT_OPTIONS = [
+  { value: '',       label: 'All payments' },
+  { value: 'PAID',   label: 'Paid'         },
+  { value: 'UNPAID', label: 'Unpaid'       },
+];
+
+const STATUS_OPTIONS = [
+  { value: '',           label: 'All statuses' },
+  { value: 'GENERATED',  label: 'Generated'    },
+  { value: 'GENERATING', label: 'Generating'   },
+  { value: 'FAILED',     label: 'Failed'       },
+  { value: 'DRAFT',      label: 'Draft'        },
+];
+
+const TIME_OPTIONS = [
+  { value: 'all_time', label: 'All time'      },
+  { value: '6_hours',  label: 'Last 6 hours'  },
+  { value: '12_hours', label: 'Last 12 hours' },
+  { value: '24_hours', label: 'Last 24 hours' },
+  { value: '7_days',   label: 'Last 7 days'   },
+  { value: '14_days',  label: 'Last 14 days'  },
+  { value: '30_days',  label: 'Last 30 days'  },
+  { value: '90_days',  label: 'Last 90 days'  },
+];
+
+const PAYMENT_CFG = {
+  PAID:     { dot: 'bg-green-500', cls: 'bg-green-50 text-green-700 border-green-200' },
+  UNPAID:   { dot: 'bg-amber-400', cls: 'bg-amber-50 text-amber-700 border-amber-200' },
+  REFUNDED: { dot: 'bg-gray-400',  cls: 'bg-gray-100 text-gray-600  border-gray-200'  },
+};
+
+const STATUS_CFG = {
+  GENERATED:  { dot: 'bg-green-500', cls: 'bg-green-50 text-green-700 border-green-200' },
+  GENERATING: { dot: 'bg-blue-400',  cls: 'bg-blue-50  text-blue-700  border-blue-200'  },
+  DRAFT:      { dot: 'bg-gray-400',  cls: 'bg-gray-100 text-gray-600  border-gray-200'  },
+  FAILED:     { dot: 'bg-red-400',   cls: 'bg-red-50   text-red-700   border-red-200'   },
+};
+
+function Badge({ status, cfgMap }) {
+  const cfg = cfgMap[status] ?? { dot: 'bg-gray-400', cls: 'bg-gray-100 text-gray-500 border-gray-200' };
+  return (
+    <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-full border ${cfg.cls}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+      {status ?? '—'}
+    </span>
+  );
+}
+
+function fmtAmount(order) {
+  const paid = order?.paymentStatus === 'PAID' && order?.amountPaid?.amount;
+  const currency = (paid ? order.amountPaid.currency : order?.currency) ?? 'AED';
+  const amount = paid ? order.amountPaid.amount : order?.price;
+  if (amount == null) return '—';
+  return `${currency} ${Number(amount).toLocaleString('en-US')}`;
+}
+
+function ItinerariesContent() {
+  const { adminUser } = useAdminAuth();
+  const isAdmin = adminUser?.role === 'admin';
+
+  const { orders = [], pagination, isLoadingOrders, isErrorOrders } = useItineraryOrders();
+  const { deleteItineraryOrder, isDeleting } = useDeleteItineraryOrder({ redirect: false });
+
+  const { params, page, search, setSearch, setParam, goToPage } = useAdminListParams({
+    defaults: { search: '', paymentStatus: '', status: '', createdAt: 'all_time', channel: '' },
+  });
+
+  const paymentFilter = params.paymentStatus;
+  const statusFilter  = params.status;
+  const createdAt     = params.createdAt;
+  const channel       = params.channel;
+  const totalPages    = pagination?.totalPages ?? 1;
+  const total         = pagination?.total       ?? 0;
+
+  return (
+    <div className="max-w-7xl mx-auto space-y-5">
+
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-extrabold text-gray-900">Travel Itineraries</h2>
+          <p className="text-sm text-gray-400 mt-0.5">
+            {isLoadingOrders ? 'Loading…' : `${total} itinerar${total !== 1 ? 'ies' : 'y'} total`}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <AdminSearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="Search by name, email, country, session..."
+          className="flex-1"
+        />
+        <FilterMenu
+          value={paymentFilter}
+          onChange={(value) => setParam('paymentStatus', value)}
+          options={PAYMENT_OPTIONS}
+          label="Filter by payment"
+        />
+        <FilterMenu
+          value={statusFilter}
+          onChange={(value) => setParam('status', value)}
+          options={STATUS_OPTIONS}
+          label="Filter by status"
+          icon={ClipboardList}
+        />
+        <FilterMenu
+          value={createdAt}
+          onChange={(value) => setParam('createdAt', value)}
+          options={TIME_OPTIONS}
+          label="Filter by date"
+          icon={CalendarDays}
+        />
+        <FilterMenu
+          value={channel}
+          onChange={(value) => setParam('channel', value)}
+          options={[{ value: '', label: 'All sources' }, ...CHANNEL_OPTIONS]}
+          label="Filter by source"
+          icon={Megaphone}
+        />
+      </div>
+
+      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+        {isLoadingOrders ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 size={22} className="animate-spin text-gray-300" />
+          </div>
+        ) : isErrorOrders ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
+            <p className="text-sm font-bold text-red-600">Couldn&apos;t load itineraries</p>
+            <p className="text-xs text-gray-400 max-w-xs">
+              The request failed — likely a rate limit or backend error. Refresh in a moment.
+            </p>
+          </div>
+        ) : orders.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center">
+              <Plane size={22} className="text-gray-400" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-gray-600">No itineraries found</p>
+              <p className="text-xs text-gray-400 mt-1">Try adjusting the filters above.</p>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[1000px]">
+                <thead>
+                  <tr className="border-b border-gray-100 bg-gray-50/60">
+                    {['Traveller', 'Email', 'Applying To', 'Route', 'Travel Dates', 'Status', 'Payment', 'Amount', 'Source', 'Created', ''].map((hd, i) => (
+                      <th key={i} className="text-left text-xs font-bold text-gray-400 uppercase tracking-wide px-4 py-3 whitespace-nowrap">
+                        {hd}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {orders.map((item) => {
+                    const input = item?.input ?? {};
+                    const t = input.traveller ?? {};
+                    const route = input.arrival?.city === input.departure?.city
+                      ? `${input.arrival?.city ?? '—'}`
+                      : `${input.arrival?.city ?? '—'} → ${input.departure?.city ?? '—'}`;
+                    const isPaid = item?.paymentStatus === 'PAID';
+                    const canDownload = isPaid && item?.status === 'GENERATED';
+                    return (
+                      <tr key={item?.sessionId || item?._id} className="hover:bg-gray-50/60 transition-colors group">
+
+                        <td className="px-4 py-3">
+                          <Link
+                            href={`/admin/itineraries/${item?.sessionId}`}
+                            className="block font-semibold text-gray-900 capitalize leading-snug hover:text-primary-700 hover:underline transition-colors"
+                          >
+                            {String(t.fullName || t.firstName || '—').toLowerCase()}
+                          </Link>
+                          {input.travellers > 1 && (
+                            <p className="text-xs text-gray-400 mt-0.5">{input.travellers} travellers</p>
+                          )}
+                        </td>
+
+                        <td className="px-4 py-3 text-sm text-gray-600 max-w-[160px] truncate">
+                          {t.email ?? '—'}
+                        </td>
+
+                        <td className="px-4 py-3 text-sm text-gray-700 font-semibold whitespace-nowrap">
+                          {input.visaCountry ?? '—'}
+                        </td>
+
+                        <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">
+                          {route}
+                        </td>
+
+                        <td className="px-4 py-3 text-sm text-gray-500 whitespace-nowrap">
+                          {input.startDate ? `${fmtShort(input.startDate)} – ${fmtShort(input.endDate)}` : '—'}
+                        </td>
+
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <Badge status={item?.status} cfgMap={STATUS_CFG} />
+                        </td>
+
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <Badge status={item?.paymentStatus} cfgMap={PAYMENT_CFG} />
+                        </td>
+
+                        <td className="px-4 py-3 text-sm text-gray-700 font-semibold whitespace-nowrap">
+                          {fmtAmount(item)}
+                        </td>
+
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <SourceBadge attribution={item?.attribution} />
+                        </td>
+
+                        <td className="px-4 py-3 text-sm text-gray-400 whitespace-nowrap">
+                          {convertToDubaiDate(item?.createdAt)}
+                        </td>
+
+                        <td className="px-4 py-3 w-24">
+                          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Link
+                              href={`/admin/itineraries/${item?.sessionId}`}
+                              className="p-1.5 rounded-lg text-gray-400 hover:text-primary-700 hover:bg-primary-50 transition"
+                              title="View details"
+                            >
+                              <ArrowUpRight size={14} />
+                            </Link>
+                            {canDownload && (
+                              <a
+                                href={itineraryDocumentUrl(item?.sessionId)}
+                                className="p-1.5 rounded-lg text-gray-400 hover:text-primary-700 hover:bg-primary-50 transition"
+                                title="Download PDF"
+                              >
+                                <Download size={14} />
+                              </a>
+                            )}
+                            <button
+                              onClick={() => deleteItineraryOrder(item?.sessionId)}
+                              disabled={!isAdmin || isDeleting || isPaid}
+                              className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition disabled:opacity-30 disabled:cursor-not-allowed"
+                              title={
+                                !isAdmin
+                                  ? 'Only admins can delete itineraries'
+                                  : isPaid
+                                    ? 'Paid itineraries cannot be deleted'
+                                    : 'Delete'
+                              }
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </td>
+
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <Pagination page={page} totalPages={totalPages} total={total} onPageChange={goToPage} />
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default function AdminItinerariesPage() {
+  return (
+    <AdminSuspense>
+      <ItinerariesContent />
+    </AdminSuspense>
+  );
+}

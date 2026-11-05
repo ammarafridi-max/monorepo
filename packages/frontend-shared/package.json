@@ -4,6 +4,7 @@
   "private": true,
   "exports": {
     "./services/*": "./src/services/*.js",
+    "./seo/*": "./src/seo/*.js",
     "./hooks/*": "./src/hooks/*.js",
     "./hooks/*/*": "./src/hooks/*/*.js",
     "./contexts/*": "./src/contexts/*.js",

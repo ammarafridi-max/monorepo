@@ -24,6 +24,9 @@ COPY packages/domains/pricing-rules/package.json         packages/domains/pricin
 COPY packages/domains/availability-rules/package.json    packages/domains/availability-rules/package.json
 COPY packages/domains/limo-bookings/package.json         packages/domains/limo-bookings/package.json
 COPY packages/integrations/meta-capi/package.json        packages/integrations/meta-capi/package.json
+COPY packages/shared/backend-app/package.json   packages/shared/backend-app/package.json
+COPY packages/shared/config/package.json        packages/shared/config/package.json
+COPY packages/integrations/google-ads-conversions/package.json   packages/integrations/google-ads-conversions/package.json
 COPY apps/emirateslimo-backend/package.json              apps/emirateslimo-backend/package.json
 
 RUN pnpm install --frozen-lockfile

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { CURRENCY, LOWEST_PRICE } from './pricing';
+import { CURRENCY, LOWEST_PRICE } from './Pricing';
 
 export default function BookCta({
   text = 'Ready when you are. Search a flight, add passenger names, pay, and your reservation lands in your inbox within 10 to 15 minutes.',

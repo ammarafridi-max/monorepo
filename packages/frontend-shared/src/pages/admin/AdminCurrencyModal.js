@@ -1,5 +1,7 @@
-import { Loader2, X } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import { Modal } from '../../components/admin/ModalShell';
 import { useState } from 'react';
+import { inputSoftCls as inputCls } from '../../components/admin/formClasses';
 
 const EMPTY = {
   code: '',
@@ -9,8 +11,6 @@ const EMPTY = {
   isBaseCurrency: false,
 };
 
-const inputCls =
-  'w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300 transition disabled:bg-gray-50 disabled:text-gray-400';
 
 export default function AdminCurrencyModal({ initial, onClose, onSave, saving }) {
   const isEdit = !!initial;
@@ -41,23 +41,7 @@ export default function AdminCurrencyModal({ initial, onClose, onSave, saving })
   const canSave = (isEdit || !codeInvalid) && form.name.trim() && form.symbol.trim() && !rateInvalid;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <p className="text-sm font-bold text-gray-900">
-            {isEdit ? 'Edit Currency' : 'New Currency'}
-          </p>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition"
-          >
-            <X size={15} />
-          </button>
-        </div>
+    <Modal size="md" title={isEdit ? 'Edit Currency' : 'New Currency'} onClose={onClose}>
 
         <div className="px-6 py-5 space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -162,7 +146,6 @@ export default function AdminCurrencyModal({ initial, onClose, onSave, saving })
             {isEdit ? 'Save Changes' : 'Create Currency'}
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

@@ -113,4 +113,44 @@ export function toE164(code, number) {
   return full.length >= 8 && full.length <= 15 ? full : undefined;
 }
 
+export function metaClickIdFrom(attribution, { fallbackDate } = {}) {
+  for (const touch of [attribution?.last, attribution?.first]) {
+    const fbclid = typeof touch?.fbclid === 'string' ? touch.fbclid.trim() : '';
+    if (!fbclid) continue;
+    const capturedAt = new Date(touch.capturedAt ?? fallbackDate ?? Date.now()).getTime();
+    return `fb.1.${Number.isFinite(capturedAt) ? capturedAt : Date.now()}.${fbclid}`;
+  }
+  return undefined;
+}
+
+export function metaUser({
+  email,
+  phone,
+  country,
+  externalId,
+  title,
+  currency,
+  firstName,
+  lastName,
+  attribution,
+  metaAttribution,
+  createdAt,
+} = {}) {
+  const dialCode = typeof phone === 'string' ? undefined : phone?.code;
+  const national = typeof phone === 'string' ? undefined : phone?.digits ?? phone?.number;
+  return {
+    email,
+    phone: typeof phone === 'string' ? phone : toE164(dialCode, national),
+    firstName,
+    lastName,
+    gender: genderFromTitle(title),
+    country: country ?? dialCodeToCountry(dialCode, { currency }),
+    externalId: externalId ?? email?.trim().toLowerCase(),
+    clientIp: metaAttribution?.clientIp,
+    userAgent: metaAttribution?.userAgent,
+    fbp: metaAttribution?.fbp,
+    fbc: metaAttribution?.fbc || metaClickIdFrom(attribution, { fallbackDate: createdAt }),
+  };
+}
+
 export { DIAL_CODE_COUNTRY };

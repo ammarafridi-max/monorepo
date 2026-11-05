@@ -1,8 +1,5 @@
-import { AppError } from '@travel-suite/utils';
+import { AppError, escapeRegex } from '@travel-suite/utils';
 
-function escapeRegex(value = '') {
-  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
 
 const DUPLICATE_KEY_MESSAGES = {
   email: 'Email is already in use by another admin user.',

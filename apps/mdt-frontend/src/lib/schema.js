@@ -1,12 +1,10 @@
-import {
-  createSchemaBuilders,
-  buildFAQPage,
-  buildBreadcrumbList as _buildBreadcrumbList,
-  buildGraph,
-} from "@travel-suite/frontend-shared/utils/schema";
-import { buildMetadata as _buildMetadata } from "@travel-suite/frontend-shared/utils/publicMetadata";
+import { createBrandSchema } from '@travel-suite/frontend-shared/seo/schema';
+import { brandSiteUrl } from '@travel-suite/frontend-shared/seo/siteUrl';
+import { getBrand } from '@travel-suite/config';
 
-export const SITE_URL = "https://www.mydummyticket.ae";
+const brand = getBrand('mdt');
+
+export const SITE_URL = brandSiteUrl(brand);
 
 export const {
   buildOrganization,
@@ -15,33 +13,18 @@ export const {
   buildCollectionPage,
   buildBlog,
   buildBlogPosting,
-  buildService,
-  buildProduct,
   buildPerson,
   buildProfilePage,
-} = createSchemaBuilders({
+  buildService,
+  buildProduct,
+  buildFAQPage,
+  buildGraph,
+  buildBreadcrumbList,
+  buildMetadata,
+} = createBrandSchema({
   siteUrl: SITE_URL,
-  siteName: "My Dummy Ticket",
+  siteName: brand.name,
   logoUrl: `${SITE_URL}/logo-icon.png`,
-  email: "info@mydummyticket.ae",
-  address: {
-    streetAddress: "Abraj Al Mamzar",
-    addressLocality: "Al Mamzar",
-    addressRegion: "Dubai",
-    addressCountry: "AE",
-  },
-  contactPoint: {
-    email: "info@mydummyticket.ae",
-    contactType: "customer support",
-    availableLanguage: "English",
-    hoursAvailable: "Mo-Su 00:00-24:00",
-  },
+  email: brand.emails.support,
+  address: brand.legal.postalAddress,
 });
-
-export { buildFAQPage, buildGraph };
-
-export const buildBreadcrumbList = (opts = {}) =>
-  _buildBreadcrumbList({ baseUrl: SITE_URL, ...opts });
-
-export const buildMetadata = (opts) =>
-  _buildMetadata({ siteUrl: SITE_URL, ...opts });

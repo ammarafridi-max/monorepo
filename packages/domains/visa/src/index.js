@@ -15,4 +15,4 @@ export function createVisaRouter({ db, auth, imageStorage }) {
 }
 
 export { VisaOverlaySchema };
-export { resolveVisaForResidence } from './resolveForResidence.js';
+export { resolveVisaForResidence } from './resolve-for-residence.js';

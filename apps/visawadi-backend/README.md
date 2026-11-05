@@ -20,16 +20,15 @@ pnpm dev      # node --env-file=.env.development --watch src/server.js
 pnpm start    # node --env-file=.env.production src/server.js
 ```
 
-There is no test suite in this repo yet.
+There is no test suite for this app. (Six other workspaces do have `node --test` suites; see the root `CLAUDE.md`.)
 
 ## Scripts
 
-```bash
-node --env-file=.env.development scripts/seed-admin.js              # create the first admin user
-node --env-file=.env.development src/scripts/seedVisas.js           # seed visa landing pages
-node --env-file=.env.development scripts/seed-schengen-checklist.mjs # seed the Schengen document checklist
-node --env-file=.env.development scripts/verify/verify-reminders.mjs # dry-run the reminder sweep
-```
+There are none. This app has no `scripts/` directory at all: the seed-admin,
+seed-visas, seed-schengen-checklist and verify-reminders scripts that earlier
+versions of this file listed have all been removed. Seed data and the first
+admin go in directly against the database, and the reminder sweep runs from the
+cron in `src/server.js`.
 
 ## API surface
 
@@ -43,9 +42,14 @@ Everything is mounted under `/api`.
 | `/visas` | Visa landing pages (public reads, admin writes) |
 | `/visa-leads` | Consultation enquiries from the public site |
 | `/visa-applications` | The application system: applicants, documents, checklists, reminders |
+| `/visa-requirements` | Per-nationality visa requirement lookups |
 | `/blogs`, `/blog-tags` | Blog content, AI-assisted authoring |
-| `/currencies` | Currency reference data |
 | `/payments` | Admin-created Stripe payment links |
+| `/openai-ads`, `/openai-events` | The ChatGPT Ads admin surface and its event intake |
+| `/assistant` | Admin assistant; mounted only when `ANTHROPIC_API_KEY` is set |
+
+`currencies` is **not** mounted here, despite earlier versions of this file
+listing it.
 
 `GET /health` returns `{ status: "ok", brand: "visawadi" }`.
 

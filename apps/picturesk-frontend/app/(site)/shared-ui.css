@@ -1,35 +1,8 @@
-/*
- * Tailwind for the @travel-suite/frontend-shared components the CUSTOMER SITE
- * reuses: the FAQ accordion the travel brands ship, and the whole client blog
- * (BlogPage, BlogPostPage and the cards, rails and breadcrumb they pull in). The
- * site is otherwise plain CSS and stays that way; this exists so a shared page can
- * be rendered as-is rather than re-implemented.
- *
- * Three deliberate limits keep it from leaking into the marketing pages:
- *
- * 1. NO PREFLIGHT. The full `@import 'tailwindcss'` pulls in Preflight, whose
- *    element resets would re-style every marketing page. We import only the theme
- *    variables and the utilities. The handful of resets those components actually
- *    depend on are re-created at the bottom, scoped to `.shared-ui`.
- * 2. `source(none)` plus explicit `@source` lines means Tailwind scans ONLY the
- *    shared trees we render, never this app, so /admin's classes never land here.
- * 3. The `.shared-ui` wrapper is required on any subtree using these components.
- *
- * UNLAYERED on purpose. globals.css styles bare elements (`a { color: green }`)
- * outside any cascade layer, and unlayered rules beat layered ones no matter their
- * specificity, so a layered `.text-white` on a link inside the dark blog hero would
- * lose and render green on green. Keeping utilities unlayered puts them back under
- * normal specificity rules, where a class beats a bare element selector. Nothing
- * collides: this app's own CSS is all BEM-ish class names, never utility names.
- */
-
 @layer theme;
 @import 'tailwindcss/theme.css' layer(theme);
+/* The utilities must stay unlayered: globals.css styles bare elements unlayered, and a layered utility would lose to them. */
 @import 'tailwindcss/utilities.css' source(none);
 
-/* The only files Tailwind reads: exactly the components this site renders, so the
-   stylesheet carries no utilities for pages we never show. ADD A LINE HERE when a
-   shared component starts being rendered on the site, or it ships unstyled. */
 @source "../../../../packages/frontend-shared/src/pages/client/BlogPage.js";
 @source "../../../../packages/frontend-shared/src/pages/client/BlogPostPage.js";
 @source "../../../../packages/frontend-shared/src/pages/client/BlogTagDetailPage.js";
@@ -51,9 +24,6 @@
 @source "../../../../packages/frontend-shared/src/components/sections/v2/BlogRelatedPosts.js";
 
 @theme inline {
-  /* Forest & Gold, from docs/picturesk/BRAND.md. Shared components are
-     parameterised on `primary` and `accent`, exactly like the travel brands and
-     like app/admin/admin.css, so they pick up Picturesk's indigo and violet. */
   --color-primary-50: #f2f3fc;
   --color-primary-100: #e8e9fb;
   --color-primary-200: #cdcff3;
@@ -78,21 +48,10 @@
   --color-accent-900: #4c1d95;
   --color-accent-950: #2e1065;
 
-  /* Primary text in the shared components is text-gray-800 / text-gray-900. The
-     site sets its own copy to pure black, so these two are remapped to match;
-     gray-600 and below stay neutral greys for secondary text. */
   --color-gray-800: #000000;
   --color-gray-900: #000000;
 }
 
-/*
- * The Preflight normalisations those components assume, scoped to the wrapper so
- * they touch nothing else on the site. Written as `:where(.shared-ui) element`,
- * which is specificity 0,0,1: high enough to beat the browser default and (being
- * later in the cascade) globals.css's bare-element rules, low enough that any
- * utility class on the element still wins. Getting that ordering wrong is what
- * makes an unstyled or a green-on-green blog, so do not raise it to `.shared-ui a`.
- */
 :where(.shared-ui) h1,
 :where(.shared-ui) h2,
 :where(.shared-ui) h3,
@@ -126,6 +85,7 @@
   font-weight: inherit;
 }
 
+/* Must stay at :where() specificity: raising it to .shared-ui a beats globals.css and renders the blog green-on-green. */
 :where(.shared-ui) a {
   color: inherit;
   text-decoration: inherit;

@@ -1,6 +1,8 @@
 import { Commissioner, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import Providers from './Providers';
+import { getBrand } from '@travel-suite/config';
+import { buildRootMetadata } from '@travel-suite/frontend-shared/seo/metadata';
 
 const commissioner = Commissioner({
   variable: '--font-commissioner',
@@ -19,22 +21,9 @@ export const viewport = {
   initialScale: 1,
 };
 
-export const metadata = {
-  metadataBase: new URL('https://www.travl.ae'),
-  title: 'Travl',
-  description: 'Travl',
+export const metadata = buildRootMetadata(getBrand('travl'), {
   robots: { index: true, follow: true },
-  icons: {
-    icon: '/favicon.png',
-  },
-  openGraph: {
-    title: 'Travl',
-    description: 'Travl',
-    url: 'https://www.travl.ae',
-    siteName: 'Travl',
-    images: ['/og-image.png'],
-  },
-};
+});
 
 export default function RootLayout({ children }) {
   return (

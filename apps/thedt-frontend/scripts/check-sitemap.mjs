@@ -1,5 +1,4 @@
 // Usage: node scripts/check-sitemap.mjs
-// Fails the build when a public page route is absent from the sitemap's static list.
 
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, dirname, relative } from 'node:path';
@@ -8,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 const APP_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'src', 'app');
 const SITEMAP = join(APP_DIR, 'sitemap.js');
 
-const EXCLUDED_PREFIXES = ['/admin', '/booking', '/insurance-booking'];
+const EXCLUDED_PREFIXES = ['/admin', '/booking', '/insurance-booking', '/lp'];
 
 function pageRoutes(dir, base = '') {
   const found = [];

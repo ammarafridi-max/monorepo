@@ -1,7 +1,8 @@
 import { SITE_URL } from '@/lib/schema';
-import { getPublishedBlogsApi } from '@travel-suite/frontend-shared/services/apiBlog';
-import { getBlogTagsApi } from '@travel-suite/frontend-shared/services/apiBlogTags';
-import { getAuthorsApi } from '@travel-suite/frontend-shared/services/apiAuthors';
+import {
+  staticEntries,
+  buildContentEntries,
+} from '@travel-suite/frontend-shared/seo/sitemap';
 
 export const revalidate = 3600;
 
@@ -23,59 +24,8 @@ const staticPages = [
 export default async function sitemap() {
   const now = new Date().toISOString();
 
-  const staticEntries = staticPages.map(({ url, changeFrequency, priority }) => ({
-    url: `${SITE_URL}${url}`,
-    lastModified: now,
-    changeFrequency,
-    priority,
-  }));
-
-  let blogEntries = [];
-  try {
-    const data = await getPublishedBlogsApi({ page: 1, limit: 1000 });
-    const blogs = data?.blogs || [];
-    blogEntries = blogs
-      .filter((blog) => blog?.slug)
-      .map((blog) => ({
-        url: `${SITE_URL}/blog/${blog.slug}`,
-        lastModified: blog.updatedAt || blog.createdAt || now,
-        changeFrequency: 'weekly',
-        priority: 0.7,
-      }));
-  } catch (err) {
-    console.error('[sitemap] blog posts fetch failed:', err);
-  }
-
-  let tagEntries = [];
-  try {
-    const data = await getBlogTagsApi();
-    const tags = data?.tags || data || [];
-    tagEntries = tags
-      .filter((tag) => tag?.slug)
-      .map((tag) => ({
-        url: `${SITE_URL}/blog/tags/${tag.slug}`,
-        lastModified: now,
-        changeFrequency: 'weekly',
-        priority: 0.5,
-      }));
-  } catch (err) {
-    console.error('[sitemap] blog tags fetch failed:', err);
-  }
-
-  let authorEntries = [];
-  try {
-    const authors = await getAuthorsApi();
-    authorEntries = (authors || [])
-      .filter((author) => author?.authorProfile?.slug)
-      .map((author) => ({
-        url: `${SITE_URL}/authors/${author.authorProfile.slug}`,
-        lastModified: author.updatedAt || now,
-        changeFrequency: 'monthly',
-        priority: 0.5,
-      }));
-  } catch (err) {
-    console.error('[sitemap] authors fetch failed:', err);
-  }
-
-  return [...staticEntries, ...blogEntries, ...tagEntries, ...authorEntries];
+  return [
+    ...staticEntries({ siteUrl: SITE_URL, pages: staticPages, now }),
+    ...(await buildContentEntries(SITE_URL, { now })),
+  ];
 }

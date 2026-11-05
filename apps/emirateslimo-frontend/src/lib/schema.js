@@ -1,29 +1,23 @@
-import {
-  createSchemaBuilders,
-  buildFAQPage,
-  buildBreadcrumbList as _buildBreadcrumbList,
-  buildGraph,
-} from '@travel-suite/frontend-shared/utils/schema';
-import { buildMetadata as _buildMetadata } from '@travel-suite/frontend-shared/utils/publicMetadata';
+import { createBrandSchema } from '@travel-suite/frontend-shared/seo/schema';
+import { brandSiteUrl } from '@travel-suite/frontend-shared/seo/siteUrl';
+import { getBrand } from '@travel-suite/config';
 
-export const SITE_URL = 'https://www.emirateslimo.com';
+const brand = getBrand('emirateslimo');
+
+export const SITE_URL = brandSiteUrl(brand);
 export const PHONE = '+971569964924';
-export const EMAIL = 'contact@emirateslimo.com';
+export const EMAIL = brand.emails.support;
 
-const builders = createSchemaBuilders({
+const schema = createBrandSchema({
   siteUrl: SITE_URL,
-  siteName: 'Emirates Limo',
+  siteName: brand.name,
   legalName: 'TRAVL Technologies',
   logoUrl: `${SITE_URL}/logo-light.webp`,
   email: EMAIL,
   telephone: PHONE,
+  defaultImages: [`${SITE_URL}/hero-bg.webp`],
   sameAs: ['https://www.facebook.com/emirateslimo', 'https://www.instagram.com/emirateslimo'],
-  address: {
-    streetAddress: 'A Block, Abraj Al Mamzar',
-    addressLocality: 'Dubai',
-    addressRegion: 'Dubai',
-    addressCountry: 'AE',
-  },
+  address: brand.legal.postalAddress,
   contactPoint: {
     telephone: PHONE,
     email: EMAIL,
@@ -39,14 +33,18 @@ export const {
   buildCollectionPage,
   buildBlog,
   buildBlogPosting,
-  buildService,
-  buildProduct,
   buildPerson,
   buildProfilePage,
-} = builders;
+  buildService,
+  buildProduct,
+  buildFAQPage,
+  buildGraph,
+  buildBreadcrumbList,
+  buildMetadata,
+} = schema;
 
 export const buildOrganization = () => ({
-  ...builders.buildOrganization(),
+  ...schema.buildOrganization(),
   '@type': ['Organization', 'LimousineService'],
   image: `${SITE_URL}/logo-light.webp`,
   priceRange: '$$',
@@ -58,11 +56,3 @@ export const buildOrganization = () => ({
     { '@type': 'City', name: 'Sharjah' },
   ],
 });
-
-export { buildFAQPage, buildGraph };
-
-export const buildBreadcrumbList = (opts = {}) =>
-  _buildBreadcrumbList({ baseUrl: SITE_URL, ...opts });
-
-export const buildMetadata = (opts) =>
-  _buildMetadata({ siteUrl: SITE_URL, images: [`${SITE_URL}/hero-bg.webp`], ...opts });

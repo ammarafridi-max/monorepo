@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useOutsideClick } from '../../hooks/general/useOutsideClick';
 import toast from 'react-hot-toast';
 import { MessageSquare, Loader2, Clock, AlertTriangle, Send, Paperclip, Zap, Trash2, Plus, X, FileText, Download, UserCheck, ArrowLeft, ChevronDown, Copy, Reply, Check, CheckCheck } from 'lucide-react';
 import { useConversations } from '../../hooks/conversations/useConversations';
@@ -16,29 +16,15 @@ import { useAssignableAgents, useConversationAssignment } from '../../hooks/conv
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 import FilterMenu from '../../components/admin/FilterMenu';
 import AdminSearchInput from '../../components/admin/AdminSearchInput';
+import { useAdminListParams } from '../../hooks/admin/useAdminListParams';
+import { fmtTimeOrDate as fmtTime, fmtDayMonthTime as fmtFullTime } from '../../components/admin/format';
+import { AdminSuspense } from '../../components/admin/AdminSuspense';
 
 const STATUS_TABS = [
   { value: '', label: 'All' },
   { value: 'OPEN', label: 'Open' },
   { value: 'CLOSED', label: 'Closed' },
 ];
-
-function fmtTime(value) {
-  if (!value) return '';
-  const date = new Date(value);
-  const today = new Date();
-  const sameDay = date.toDateString() === today.toDateString();
-  return sameDay
-    ? date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
-    : date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
-}
-
-function fmtFullTime(value) {
-  if (!value) return '';
-  return new Date(value).toLocaleString('en-GB', {
-    day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
-  });
-}
 
 function ConversationMeta({ conversation, myId }) {
   const holder = conversation.assignedTo;
@@ -227,12 +213,7 @@ function MessageMenu({ message, onReply }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
-  useEffect(() => {
-    if (!open) return undefined;
-    const close = (e) => { if (!ref.current?.contains(e.target)) setOpen(false); };
-    document.addEventListener('mousedown', close);
-    return () => document.removeEventListener('mousedown', close);
-  }, [open]);
+  useOutsideClick(ref, () => setOpen(false));
 
   const copy = async () => {
     const text = message.text || message.media?.filename || '';
@@ -334,14 +315,15 @@ function MessageBubble({ message, quoted, onReply }) {
 }
 
 function ChatContent() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const { params, search, setSearch, setParam } = useAdminListParams({
+    defaults: { waId: '', status: '' },
+    syncSearch: false,
+    resetPage: false,
+  });
 
-  const activeWaId = searchParams.get('waId') ?? '';
-  const urlStatus = searchParams.get('status') ?? '';
+  const activeWaId = params.waId;
+  const urlStatus = params.status;
 
-  const [search, setSearch] = useState('');
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
   const toolsRef = useRef(null);
@@ -399,12 +381,7 @@ function ChatContent() {
     }
   }, [conversations]);
 
-  useEffect(() => {
-    if (!toolsOpen) return undefined;
-    const close = (e) => { if (!toolsRef.current?.contains(e.target)) setToolsOpen(false); };
-    document.addEventListener('mousedown', close);
-    return () => document.removeEventListener('mousedown', close);
-  }, [toolsOpen]);
+  useOutsideClick(toolsRef, () => setToolsOpen(false));
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -415,12 +392,6 @@ function ChatContent() {
         c.waId?.includes(term.replace(/\D/g, '')),
     );
   }, [conversations, search]);
-
-  function setParam(key, value) {
-    const p = new URLSearchParams(searchParams.toString());
-    if (value) p.set(key, value); else p.delete(key);
-    router.push(`${pathname}?${p.toString()}`);
-  }
 
   return (
     <div className="max-w-7xl mx-auto -mx-4 -mt-4 -mb-[calc(3.5rem+1rem+env(safe-area-inset-bottom))] lg:m-0 lg:mx-auto">
@@ -819,14 +790,8 @@ function ChatContent() {
 
 export default function AdminChatPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-[60vh] flex items-center justify-center">
-          <Loader2 size={24} className="animate-spin text-gray-300" />
-        </div>
-      }
-    >
+    <AdminSuspense>
       <ChatContent />
-    </Suspense>
+    </AdminSuspense>
   );
 }

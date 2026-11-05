@@ -43,7 +43,7 @@ const nav = [
   {
     section: 'Catalogue',
     items: [
-      { label: 'Airlines', href: '/admin/airline-logos', icon: 'Plane', roles: ['admin'] },
+      { label: 'Airlines', href: '/admin/airlines', icon: 'Plane', roles: ['admin'] },
     ],
   },
   {

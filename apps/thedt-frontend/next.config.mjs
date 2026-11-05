@@ -5,8 +5,21 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const nextConfig = {
   output: 'standalone',
+  async headers() {
+    return [
+      {
+        source: '/lp/:path*',
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' }],
+      },
+    ];
+  },
   async redirects() {
     return [
+      {
+        source: '/admin/airline-logos',
+        destination: '/admin/airlines',
+        permanent: true,
+      },
       {
         source: '/travel-insurance/schengen-visa',
         destination: '/schengen-travel-insurance',

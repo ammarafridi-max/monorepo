@@ -1,6 +1,8 @@
 import { Commissioner } from 'next/font/google';
 import './globals.css';
 import Providers from './Providers';
+import { getBrand } from '@travel-suite/config';
+import { buildRootMetadata } from '@travel-suite/frontend-shared/seo/metadata';
 
 const commissioner = Commissioner({
   variable: '--font-commissioner',
@@ -13,22 +15,9 @@ export const viewport = {
   initialScale: 1,
 };
 
-export const metadata = {
-  metadataBase: new URL('https://www.thedummyticket.ae'),
-  title: 'The Dummy Ticket AE',
-  description: 'The Dummy Ticket AE',
-  icons: {
-    icon: '/logo-dark.png',
-    apple: '/apple-touch-icon.png',
-  },
-  openGraph: {
-    title: 'The Dummy Ticket AE',
-    description: 'The Dummy Ticket AE',
-    url: 'https://www.thedummyticket.ae',
-    siteName: 'The Dummy Ticket AE',
-    images: ['/og-image.png'],
-  },
-};
+export const metadata = buildRootMetadata(getBrand('thedt'), {
+  icons: { icon: '/logo-dark.png', apple: '/apple-touch-icon.png' },
+});
 
 export default function RootLayout({ children }) {
   return (

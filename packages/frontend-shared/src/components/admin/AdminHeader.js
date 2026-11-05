@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useRef, Suspense } from 'react';
+import { useOutsideClick } from '../../hooks/general/useOutsideClick';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Search, X, Loader2 } from 'lucide-react';
@@ -118,15 +119,7 @@ function GlobalSearch({ categories, useSearchResults, placeholder }) {
   const containerRef = useRef(null);
   const inputRef = useRef(null);
 
-  useEffect(() => {
-    function handleClick(e) {
-      if (containerRef.current && !containerRef.current.contains(e.target)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, []);
+  useOutsideClick(containerRef, () => setOpen(false));
 
   useEffect(() => {
     function handleKey(e) {

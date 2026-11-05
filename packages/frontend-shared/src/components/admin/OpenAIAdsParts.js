@@ -12,14 +12,13 @@ import {
 } from '../../hooks/openai-ads/useOpenAIAdsMutations';
 import { useOpenAIAdGroupSettings, useOpenAICampaignSettings } from '../../hooks/openai-ads/useOpenAIAdsSettings';
 import { searchOpenAIAdsLocationsApi } from '../../services/apiOpenAIAds';
+import { fmtMoneyCompact as fmtMoney, fmtInt, fmtPct } from './format';
+import { Sheet } from './ModalShell';
+import { inputFieldCls as inputCls } from './formClasses';
+export { fmtMoney, fmtInt, fmtPct };
+export { Sheet };
+export { inputCls };
 
-export const inputCls =
-  'w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white';
-
-export const fmtMoney = (n, currency = 'AED') =>
-  n == null ? '—' : `${currency} ${Number(n).toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
-export const fmtInt = (n) => (n == null ? '—' : Number(n).toLocaleString('en-US'));
-export const fmtPct = (n) => (n == null ? '—' : `${(Number(n) * 100).toFixed(2)}%`);
 
 const STATUS_CFG = {
   active:   { label: 'Running', cls: 'bg-green-50 text-green-700 border-green-200', dot: 'bg-green-500' },
@@ -88,25 +87,6 @@ export function ReviewPill({ review, reason }) {
       : undefined;
 
   return <Pill cfg={cfg} title={title} hint={reason ? <Info size={11} className="opacity-70" /> : null} />;
-}
-
-export function Sheet({ title, onClose, children }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40" onClick={onClose}>
-      <div
-        className="bg-white w-full sm:max-w-lg rounded-t-2xl sm:rounded-2xl p-5 space-y-4 max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between">
-          <h3 className="text-base font-semibold text-gray-900">{title}</h3>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition">
-            <X size={18} />
-          </button>
-        </div>
-        {children}
-      </div>
-    </div>
-  );
 }
 
 const KIND_NOUN = { campaigns: 'campaign', 'ad-groups': 'ad group', ads: 'ad' };
@@ -506,11 +486,19 @@ export function LocationPicker({ value, onChange }) {
 
 const GOAL_TEXT = { sales: 'Get orders', clicks: 'Get clicks', impressions: 'Get impressions' };
 
-function SheetLoading() {
+function SettingsSheet({ title, isLoading, settings, error, onClose, children }) {
   return (
-    <div className="flex items-center justify-center py-10">
-      <Loader2 size={20} className="animate-spin text-gray-300" />
-    </div>
+    <Sheet title={title} onClose={onClose}>
+      {isLoading ? (
+        <div className="flex items-center justify-center py-10">
+          <Loader2 size={20} className="animate-spin text-gray-300" />
+        </div>
+      ) : settings ? (
+        children
+      ) : (
+        <p className="text-sm text-red-600">{error?.message || 'Could not load the settings.'}</p>
+      )}
+    </Sheet>
   );
 }
 
@@ -579,15 +567,15 @@ function CampaignSettingsForm({ settings, onClose }) {
 export function CampaignSettingsSheet({ campaignId, onClose }) {
   const { settings, isLoadingSettings, settingsError } = useOpenAICampaignSettings(campaignId);
   return (
-    <Sheet title="Campaign settings" onClose={onClose}>
-      {isLoadingSettings ? (
-        <SheetLoading />
-      ) : settings ? (
-        <CampaignSettingsForm settings={settings} onClose={onClose} />
-      ) : (
-        <p className="text-sm text-red-600">{settingsError?.message || 'Could not load the settings.'}</p>
-      )}
-    </Sheet>
+    <SettingsSheet
+      title="Campaign settings"
+      isLoading={isLoadingSettings}
+      settings={settings}
+      error={settingsError}
+      onClose={onClose}
+    >
+      <CampaignSettingsForm settings={settings} onClose={onClose} />
+    </SettingsSheet>
   );
 }
 
@@ -664,14 +652,14 @@ function AdGroupSettingsForm({ settings, campaignId, goal, currency, onClose }) 
 export function AdGroupSettingsSheet({ adGroupId, campaignId, goal, currency = 'AED', onClose }) {
   const { settings, isLoadingSettings, settingsError } = useOpenAIAdGroupSettings(adGroupId);
   return (
-    <Sheet title="Ad group settings" onClose={onClose}>
-      {isLoadingSettings ? (
-        <SheetLoading />
-      ) : settings ? (
-        <AdGroupSettingsForm settings={settings} campaignId={campaignId} goal={goal} currency={currency} onClose={onClose} />
-      ) : (
-        <p className="text-sm text-red-600">{settingsError?.message || 'Could not load the settings.'}</p>
-      )}
-    </Sheet>
+    <SettingsSheet
+      title="Ad group settings"
+      isLoading={isLoadingSettings}
+      settings={settings}
+      error={settingsError}
+      onClose={onClose}
+    >
+      <AdGroupSettingsForm settings={settings} campaignId={campaignId} goal={goal} currency={currency} onClose={onClose} />
+    </SettingsSheet>
   );
 }

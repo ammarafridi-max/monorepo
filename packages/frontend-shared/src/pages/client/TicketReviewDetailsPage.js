@@ -10,14 +10,13 @@ import {
   ArrowLeft,
   Mail,
   User,
-  Pencil,
 } from 'lucide-react';
 import { FaPaypal, FaStripe } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
 import { TicketContext } from '../../contexts/TicketContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useGetDummyTicket } from '../../hooks/dummy-tickets/useGetDummyTicket';
-import { useStripePaymentURL } from '../../hooks/dummy-tickets/useStripePaymentURL';
+import { useStripePaymentUrl } from '../../hooks/dummy-tickets/useStripePaymentUrl';
 import { usePayPalOrder } from '../../hooks/dummy-tickets/usePayPalOrder';
 import { useDummyTicketPricing } from '../../hooks/pricing/useDummyTicketPricing';
 import { useTicketQuote } from '../../hooks/dummy-tickets/useTicketQuote';
@@ -27,35 +26,9 @@ import { getOpenAIBrowserIds, openaiCheckoutStarted } from '../../utils/openaiPi
 import { formatDate } from '../../utils/dates';
 import { getTicketPriceByValidity } from '../../utils/dummyTicketPricing';
 import PageLoader from '../../components/ui/v1/PageLoader';
+import { ReviewSectionCard, ReviewRow as Row } from '../../components/ui/v1/ReviewCard';
 
-function SectionCard({ title, editHref, children }) {
-  return (
-    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-      <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-gray-900">{title}</h2>
-        {editHref && (
-          <Link
-            href={editHref}
-            className="inline-flex items-center gap-1 text-xs font-medium text-primary-700 hover:text-primary-900 transition-colors"
-          >
-            <Pencil size={12} strokeWidth={2.5} />
-            Edit
-          </Link>
-        )}
-      </div>
-      <div className="px-6 py-5">{children}</div>
-    </div>
-  );
-}
-
-function Row({ label, value }) {
-  return (
-    <div className="flex items-baseline justify-between gap-4 py-2 border-b border-gray-50 last:border-0">
-      <span className="text-xs text-gray-400 font-normal shrink-0">{label}</span>
-      <span className="text-sm text-gray-900 font-normal text-right">{value || '—'}</span>
-    </div>
-  );
-}
+const SectionCard = (props) => <ReviewSectionCard {...props} iconSize={12} />;
 
 export default function TicketReviewDetailsPage({ onBeginCheckout, enablePayPal = false, searchPath = '/' }) {
   const router = useRouter();
@@ -63,10 +36,10 @@ export default function TicketReviewDetailsPage({ onBeginCheckout, enablePayPal 
   useEffect(() => {
     setSessionId(localStorage.getItem('SESSION_ID') || '');
   }, []);
-  const { type } = useContext(TicketContext);
+  const { type, from: searchFrom, hydrateFromOrder } = useContext(TicketContext);
   const { selectedCurrency, formatMoney } = useCurrency();
   const { pricing } = useDummyTicketPricing(selectedCurrency?.code);
-  const { createStripePayment, isLoadingStripePaymentURL, isErrorStripePaymentURL } = useStripePaymentURL();
+  const { createStripePayment, isLoadingStripePaymentUrl, isErrorStripePaymentUrl } = useStripePaymentUrl();
   const { createPayPalOrder, isLoadingPayPalOrder } = usePayPalOrder();
   const { dummyTicket, isLoadingDummyTicket, isErrorDummyTicket } = useGetDummyTicket(sessionId);
   const [agreed, setAgreed] = useState(false);
@@ -103,12 +76,16 @@ export default function TicketReviewDetailsPage({ onBeginCheckout, enablePayPal 
   }, [sessionId, router, searchPath]);
 
   useEffect(() => {
-    if (isErrorStripePaymentURL) {
+    if (!searchFrom && dummyTicket) hydrateFromOrder(dummyTicket);
+  }, [searchFrom, dummyTicket, hydrateFromOrder]);
+
+  useEffect(() => {
+    if (isErrorStripePaymentUrl) {
       toast.error('Could not get payment URL. Please send us an email.');
     }
-  }, [isErrorStripePaymentURL]);
+  }, [isErrorStripePaymentUrl]);
 
-  const isLoading = isLoadingStripePaymentURL || isLoadingPayPalOrder;
+  const isLoading = isLoadingStripePaymentUrl || isLoadingPayPalOrder;
 
   const handleConfirm = () => {
     if (!agreed || isLoading || !sessionId || chargeTotal === null) return;

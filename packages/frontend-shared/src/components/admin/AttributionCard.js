@@ -2,6 +2,7 @@
 
 import { Megaphone } from 'lucide-react';
 import { CHANNEL_LABELS, describeChannel } from '../../utils/attribution';
+import { fmtDatetimeOrNull as fmtDatetime } from './format';
 
 const CLICK_IDS = [
   ['gclid', 'Google click ID'],
@@ -12,13 +13,6 @@ const CLICK_IDS = [
   ['ttclid', 'TikTok click ID'],
   ['oppref', 'ChatGPT ad click ID'],
 ];
-
-function fmtDatetime(value) {
-  if (!value) return null;
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return null;
-  return d.toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-}
 
 function Row({ label, value, mono }) {
   if (!value) return null;

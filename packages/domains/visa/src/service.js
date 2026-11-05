@@ -1,10 +1,7 @@
 import slugify from 'slugify';
-import { AppError } from '@travel-suite/utils';
-import { resolveVisaForResidence } from './resolveForResidence.js';
+import { AppError, escapeRegex } from '@travel-suite/utils';
+import { resolveVisaForResidence } from './resolve-for-residence.js';
 
-function escapeRegex(value = '') {
-  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
 
 function parseJsonField(value, fieldName) {
   if (value === undefined) return undefined;

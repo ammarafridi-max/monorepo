@@ -100,7 +100,9 @@ export function createOpenAIAdsService({ adsClient, countOwnConversions, maxDail
       return await fn();
     } catch (err) {
       if (err instanceof AppError) throw err;
-      throw new AppError(`OpenAI Ads API: ${err.message}`, 502);
+      const wrapped = new AppError(`OpenAI Ads API: ${err.message}`, 502);
+      wrapped.httpStatus = err.httpStatus;
+      throw wrapped;
     }
   };
 
@@ -516,6 +518,20 @@ export function createOpenAIAdsService({ adsClient, countOwnConversions, maxDail
     };
   };
 
+  const locationIdsFrom = (value) => {
+    const ids = (Array.isArray(value) ? value : []).filter((id) => /^\d{1,12}$/.test(String(id)));
+    if (!ids.length) throw new AppError('Choose at least one location', 400);
+    if (ids.length > 50) throw new AppError('Choose at most 50 locations', 400);
+    return ids;
+  };
+
+  const purchaseConversionSettingId = async () => {
+    const settings = await callApi(() => adsClient.listConversionEventSettings());
+    const id = settings.find((s) => !s.archived && s.event_type === 'order_created')?.id;
+    if (!id) throw new AppError('No purchase conversion is set up in OpenAI Ads Manager', 400);
+    return id;
+  };
+
   const createAdInGroup = async (adGroupId, input, performedBy) => {
     ensureConfigured();
     assertId('ad_groups', adGroupId);
@@ -550,18 +566,11 @@ export function createOpenAIAdsService({ adsClient, countOwnConversions, maxDail
     if (!goal) throw new AppError('Choose a goal', 400);
     const name = text(input?.name, { field: 'Campaign name', min: 3, max: 200 });
     const dailyBudget = amount(input?.dailyBudget, { field: 'Daily budget', max: maxDailyBudget });
-    const locationIds = (Array.isArray(input?.locationIds) ? input.locationIds : []).filter((id) => /^\d{1,12}$/.test(String(id)));
-    if (!locationIds.length) throw new AppError('Choose at least one location', 400);
-    if (locationIds.length > 50) throw new AppError('Choose at most 50 locations', 400);
+    const locationIds = locationIdsFrom(input?.locationIds);
     const adGroup = buildAdGroup(input?.adGroup, { goal, dailyBudget });
     const ad = await buildAd(input?.ad);
 
-    let conversionSettingId;
-    if (goal === 'sales') {
-      const settings = await callApi(() => adsClient.listConversionEventSettings());
-      conversionSettingId = settings.find((s) => !s.archived && s.event_type === 'order_created')?.id;
-      if (!conversionSettingId) throw new AppError('No purchase conversion is set up in OpenAI Ads Manager', 400);
-    }
+    const conversionSettingId = goal === 'sales' ? await purchaseConversionSettingId() : undefined;
 
     const campaign = await callApi(() =>
       adsClient.createCampaign({
@@ -597,12 +606,7 @@ export function createOpenAIAdsService({ adsClient, countOwnConversions, maxDail
     const goal = input?.goal ?? (source.bidding_type === 'conversions' ? 'sales' : 'clicks');
     if (!Object.keys(GOALS).includes(goal)) throw new AppError('Goal must be sales or clicks', 400);
 
-    let locationIds = null;
-    if (input?.locationIds !== undefined) {
-      locationIds = (Array.isArray(input.locationIds) ? input.locationIds : []).filter((id) => /^\d{1,12}$/.test(String(id)));
-      if (!locationIds.length) throw new AppError('Choose at least one location', 400);
-      if (locationIds.length > 50) throw new AppError('Choose at most 50 locations', 400);
-    }
+    const locationIds = input?.locationIds === undefined ? null : locationIdsFrom(input.locationIds);
 
     const clearBid = input?.clearBid === true;
     const bid = input?.bid != null && input.bid !== '' ? amount(input.bid, { field: 'Bid', max: dailyBudget }) : null;
@@ -611,12 +615,7 @@ export function createOpenAIAdsService({ adsClient, countOwnConversions, maxDail
     const targetUrl = input?.targetUrl ? await assertOwnSite(text(input.targetUrl, { field: 'Landing page', min: 1, max: 2000 })) : null;
 
     let conversionSettingIds = source.conversion_event_setting_ids ?? [];
-    if (goal === 'sales' && !conversionSettingIds.length) {
-      const settings = await callApi(() => adsClient.listConversionEventSettings());
-      const purchase = settings.find((x) => !x.archived && x.event_type === 'order_created');
-      if (!purchase) throw new AppError('No purchase conversion is set up in OpenAI Ads Manager', 400);
-      conversionSettingIds = [purchase.id];
-    }
+    if (goal === 'sales' && !conversionSettingIds.length) conversionSettingIds = [await purchaseConversionSettingId()];
     if (goal === 'clicks') conversionSettingIds = [];
 
     const groups = (await callApi(() => adsClient.listAdGroups(sourceId))).filter((g) => g.status !== 'archived');
@@ -756,7 +755,9 @@ export function createOpenAIAdsService({ adsClient, countOwnConversions, maxDail
     return { ...created, replaced: adId };
   };
 
-  const sameCreative = (a, b) =>
+  const isEditRefusal = (err) => err?.httpStatus >= 400 && err.httpStatus < 500;
+
+const sameCreative = (a, b) =>
     Boolean(a) && ['title', 'body', 'target_url', 'file_id'].every((key) => a[key] === b[key]);
 
   const updateAd = async (adId, adGroupId, input, performedBy) => {
@@ -775,7 +776,8 @@ export function createOpenAIAdsService({ adsClient, countOwnConversions, maxDail
         logger?.info('[openai-ads] ad edit already applied', { adId, performedBy });
         return { id: adId, edited: true };
       }
-      logger?.warn('[openai-ads] editing in place failed, replacing the ad instead', { adId, error: err.message });
+      if (!isEditRefusal(err)) throw err;
+      logger?.warn('[openai-ads] OpenAI refused the edit, replacing the ad instead', { adId, status: err.httpStatus, error: err.message });
     }
 
     const replaced = await replaceAd(adId, adGroupId, input, performedBy);

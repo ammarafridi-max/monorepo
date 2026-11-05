@@ -1,7 +1,5 @@
-import { apiFetch } from './apiClient.js';
+import { apiFetch, apiFetchEnvelope } from './apiClient.js';
 import { getAttribution } from '../utils/attribution.js';
-
-const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 const URL = `/api/insurance`;
 
@@ -121,45 +119,17 @@ export async function getInsuranceApplicationsApi(params = {}) {
   const queryString = new URLSearchParams(params).toString();
 
   try {
-    const res = await fetch(`${BACKEND}${URL}?${queryString}`, {
-      credentials: 'include',
+    const json = await apiFetchEnvelope(`${URL}?${queryString}`, {
+      errorMessage: 'Error fetching data',
     });
 
-    if (res.status === 204) return emptyResponse;
-
-    if (!res.ok) {
-      let errorMessage = 'Error fetching data';
-
-      try {
-        const error = await res.json();
-        errorMessage = error.message || errorMessage;
-      } catch (err) {
-        void err;
-      }
-
-      if (res.status === 401 || res.status === 403) {
-        throw new Error(errorMessage);
-      }
-
-      if ([502, 503, 504].includes(res.status)) {
-        return emptyResponse;
-      }
-
-      throw new Error(errorMessage);
-    }
-
-    try {
-      const json = await res.json();
-      return {
-        data: Array.isArray(json?.data) ? json.data : [],
-        pagination: json?.pagination || emptyResponse.pagination,
-      };
-    } catch (err) {
-      void err;
-      return emptyResponse;
-    }
+    return {
+      data: Array.isArray(json?.data) ? json.data : [],
+      pagination: json?.pagination || emptyResponse.pagination,
+    };
   } catch (err) {
-    if (err instanceof TypeError) return emptyResponse;
+    if (err instanceof TypeError || err instanceof SyntaxError) return emptyResponse;
+    if ([502, 503, 504].includes(err?.status)) return emptyResponse;
     throw err;
   }
 }
@@ -179,12 +149,6 @@ export async function confirmInsurancePaymentApi(sessionId, paymentSyncToken, pa
 
 export async function getInsuranceDocumentsApi(policyId) {
   return await apiFetch(`${URL}/documents/${policyId}`);
-}
-
-export async function downloadInsurancePolicyApi(policyOrPayload, index = 0) {
-  const policyId = typeof policyOrPayload === 'object' ? policyOrPayload?.policyId : policyOrPayload;
-  const docIndex = typeof policyOrPayload === 'object' ? policyOrPayload?.index ?? 0 : index;
-  return await apiFetch(`${URL}/download/${policyId}/${docIndex}`);
 }
 
 export async function deleteInsuranceApplicationApi(sessionId) {

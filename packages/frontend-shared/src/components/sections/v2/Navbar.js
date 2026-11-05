@@ -58,8 +58,8 @@ export default function Navbar({
 
   return (
     <header className="absolute top-0 left-0 right-0 bg-white border-b border-gray-100 shadow-sm z-50">
-      <Container className="py-5 flex items-center justify-between gap-10">
-        <Link href="/" className="h-5 lg:h-7 flex items-center shrink-0">
+      <Container className="py-3 flex items-center justify-between gap-10">
+        <Link href="/" className="h-4.5 lg:h-7 flex items-center shrink-0">
           <Image
             src={logoSrc}
             alt={logoAlt}

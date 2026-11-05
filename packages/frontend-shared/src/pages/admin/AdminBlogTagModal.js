@@ -1,4 +1,5 @@
-import { Loader2, X } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import { Modal } from '../../components/admin/ModalShell';
 import { useState } from 'react';
 
 const EMPTY_FORM = {
@@ -46,31 +47,14 @@ export default function AdminBlogTagModal({ initial, onClose, onSave, saving }) 
   const canSave = Boolean(form.name.trim()) && Boolean(normalizedSlug);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-        onClick={onClose}
-      />
-
-      <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <div>
-            <p className="font-bold text-gray-900 text-sm">
-              {isEdit ? 'Edit Tag' : 'New Tag'}
-            </p>
-            {form.slug && (
-              <p className="text-[11px] text-gray-400 mt-0.5 font-mono">
-                /blog/tags/{form.slug}
-              </p>
-            )}
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition"
-          >
-            <X size={16} />
-          </button>
-        </div>
+    <Modal
+      size="lg"
+      title={isEdit ? 'Edit Tag' : 'New Tag'}
+      subtitle={form.slug ? `/blog/tags/${form.slug}` : null}
+      subtitleClass="text-[11px] text-gray-400 mt-0.5 font-mono"
+      closeSize={16}
+      onClose={onClose}
+    >
 
         <div className="px-6 py-5 space-y-4 max-h-[70vh] overflow-y-auto">
           <div>
@@ -178,7 +162,6 @@ export default function AdminBlogTagModal({ initial, onClose, onSave, saving }) 
             {isEdit ? 'Save Changes' : 'Create Tag'}
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

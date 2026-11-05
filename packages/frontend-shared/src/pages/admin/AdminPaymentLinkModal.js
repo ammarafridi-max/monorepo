@@ -1,16 +1,17 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
+import { useOutsideClick } from '../../hooks/general/useOutsideClick';
 import { Check, ChevronDown, Loader2, Search, X } from 'lucide-react';
+import { Modal } from '../../components/admin/ModalShell';
 import { useProducts } from '../../hooks/payments/useProducts';
+import { inputSoftCls as inputCls } from '../../components/admin/formClasses';
 
 const CURRENCIES = [
   'AED', 'USD', 'EUR', 'GBP', 'SAR', 'INR', 'PKR',
   'CAD', 'AUD', 'CHF', 'JPY', 'SGD', 'HKD', 'NZD',
 ];
 
-const inputCls =
-  'w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-300 transition disabled:bg-gray-50 disabled:text-gray-400';
 
 const EMPTY = {
   mode: 'product',
@@ -111,18 +112,7 @@ export default function AdminPaymentLinkModal({ onClose, onSave, saving }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <p className="text-sm font-bold text-gray-900">New Payment Link</p>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition"
-          >
-            <X size={15} />
-          </button>
-        </div>
+    <Modal size="lg" title="New Payment Link" panelClass="max-h-[90vh] flex flex-col" onClose={onClose}>
 
         <div className="px-6 pt-5">
           <div className="inline-flex rounded-xl border border-gray-200 bg-gray-50 p-0.5 text-xs font-semibold">
@@ -243,8 +233,7 @@ export default function AdminPaymentLinkModal({ onClose, onSave, saving }) {
             Create payment link
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }
 
@@ -263,16 +252,7 @@ function ProductPickerSection({
   const [search, setSearch] = useState('');
   const wrapperRef = useRef(null);
 
-  useEffect(() => {
-    if (!open) return;
-    function onDown(e) {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', onDown);
-    return () => document.removeEventListener('mousedown', onDown);
-  }, [open]);
+  useOutsideClick(wrapperRef, () => setOpen(false));
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();

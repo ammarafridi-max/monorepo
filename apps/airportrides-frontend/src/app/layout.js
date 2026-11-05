@@ -1,6 +1,8 @@
 import { Plus_Jakarta_Sans, Hanken_Grotesk } from 'next/font/google';
 import './globals.css';
 import Providers from './Providers';
+import { getBrand } from '@travel-suite/config';
+import { buildRootMetadata } from '@travel-suite/frontend-shared/seo/metadata';
 import { SITE_URL } from '@/config';
 
 const jakarta = Plus_Jakarta_Sans({
@@ -21,21 +23,12 @@ export const viewport = {
   initialScale: 1,
 };
 
-export const metadata = {
-  metadataBase: new URL(SITE_URL),
+export const metadata = buildRootMetadata(getBrand('airportrides'), {
+  siteUrl: SITE_URL,
   title: 'AirportRides',
   description: 'Airport transfers worldwide',
-  icons: {
-    icon: '/favicon.png',
-  },
-  openGraph: {
-    title: 'AirportRides',
-    description: 'Airport transfers worldwide',
-    url: SITE_URL,
-    siteName: 'AirportRides',
-    images: ['/og-image.png'],
-  },
-};
+  openGraph: { siteName: 'AirportRides' },
+});
 
 export default function RootLayout({ children }) {
   return (

@@ -1,16 +1,15 @@
-import Link from "next/link";
-import Hero from "@travel-suite/frontend-shared/components/sections/v2/Hero";
-import HowItWorks from "@travel-suite/frontend-shared/components/sections/v2/HowItWorks";
-import About from "@travel-suite/frontend-shared/components/sections/v2/About";
-import Benefits from "@travel-suite/frontend-shared/components/sections/v2/Benefits";
-import Faqs from "@travel-suite/frontend-shared/components/sections/v2/Faqs";
-import Contact from "@travel-suite/frontend-shared/components/sections/v2/Contact";
-import BlogPosts from "@travel-suite/frontend-shared/components/sections/v2/BlogPosts";
-import VisaCard from "@travel-suite/frontend-shared/components/cards/VisaCard";
-import VisaCheckerInline from "@travel-suite/frontend-shared/components/ui/v2/VisaCheckerInline";
-import Container from "@travel-suite/frontend-shared/components/shared/layout/Container";
-import PrimarySection from "@travel-suite/frontend-shared/components/shared/layout/PrimarySection";
+import { Globe, Headphones } from "lucide-react";
+import { MdOutlineFactCheck } from "react-icons/md";
 import { getPublicVisasApi } from "@travel-suite/frontend-shared/services/apiVisa";
+import Hero from "@/components/home/Hero";
+import TrustStrip from "@/components/home/TrustStrip";
+import Destinations from "@/components/home/Destinations";
+import HowItWorks from "@/components/home/HowItWorks";
+import WhyVisaWadi from "@/components/home/WhyVisaWadi";
+import Testimonials from "@/components/home/Testimonials";
+import Faqs from "@/components/home/Faqs";
+import BlogPreview from "@/components/home/BlogPreview";
+import FinalCta from "@/components/home/FinalCta";
 import {
   SITE_URL,
   buildFAQPage,
@@ -21,50 +20,11 @@ import {
   buildWebsite,
 } from "@/lib/schema";
 import { homepageFaqs } from "@/data/faqs";
-import { EMAIL } from "@/config/contact";
+import { EMAIL, WHATSAPP_URL } from "@/config/contact";
 import { DEFAULT_COUNTRY } from "@/config/countries";
-import {
-  ArrowRight,
-  FileCheck,
-  Globe,
-  Headphones,
-  Banknote,
-  Stamp,
-} from "lucide-react";
-import { MdOutlineTravelExplore, MdOutlineFactCheck } from "react-icons/md";
+import { TRUST_ASSURANCES, TRUST_SUBTITLE } from "@/config/trust";
 
-const benefits = [
-  {
-    icon: FileCheck,
-    title: "Every Document Checked Before You Submit",
-    text: "A specialist reviews your file against current embassy requirements and flags the gaps that cause refusals, before it reaches the counter.",
-  },
-  {
-    icon: Globe,
-    title: "Schengen, UK, US and Canada",
-    text: "Application support for the destinations UAE residents apply to most, including France, Germany, Italy and Spain individually.",
-  },
-  {
-    icon: Headphones,
-    title: "Average Response Time 10 Minutes",
-    text: "Message us during business hours and you will hear back in about ten minutes on average. Outside them, within the hour.",
-  },
-  {
-    icon: Stamp,
-    title: "Refusals Reanalysed",
-    text: "Been refused before? We start with the refusal notice, work out the exact grounds, and rebuild the file around them.",
-  },
-  {
-    icon: MdOutlineFactCheck,
-    title: "Embassy-Accepted Formats",
-    text: "Everything we prepare is formatted to meet the requirements of embassies, VFS Global and BLS International.",
-  },
-  {
-    icon: Banknote,
-    title: "No Hidden Fees",
-    text: "The price you see is the price you pay. Embassy and visa-centre fees are passed through at cost and never marked up.",
-  },
-];
+const DIRECTORY = `/${DEFAULT_COUNTRY.slug}`;
 
 const HOW_IT_WORKS = [
   {
@@ -81,22 +41,30 @@ const HOW_IT_WORKS = [
   },
 ];
 
+const WHY_US = [
+  {
+    icon: Globe,
+    title: "Schengen, UK, US and Canada",
+    text: "Application support for the destinations UAE residents apply to most, including France, Germany, Italy and Spain individually.",
+  },
+  {
+    icon: Headphones,
+    title: "Average Response Time 10 Minutes",
+    text: "Message us during business hours and you will hear back in about ten minutes on average. Outside them, within the hour.",
+  },
+  {
+    icon: MdOutlineFactCheck,
+    title: "Embassy-Accepted Formats",
+    text: "Everything we prepare is formatted to meet the requirements of embassies, VFS Global and BLS International.",
+  },
+];
+
 const pageData = {
   meta: {
     title: "Schengen, UK, US & Canada Visa Help for UAE Residents",
     description:
       "Schengen, UK, US and Canada visas from AED 299. We check every document against embassy requirements and book your VFS appointment. Free consultation first.",
     canonical: SITE_URL,
-  },
-  hero: {
-    title: "Visa Assistance for UAE Residents",
-    text: "Most refusals come from document errors that were preventable. Our Dubai specialists build your application and check every page before it goes in.",
-    pills: [
-      "Packages from AED 299",
-      "Average Response Time 10 Mins",
-      "Document Review Included",
-      "Native-Language Support",
-    ],
   },
 };
 
@@ -143,51 +111,27 @@ function orderDestinations(visas) {
   );
 }
 
-function VisaDestinations({ visas }) {
-  if (!visas.length) return null;
-
-  return (
-    <PrimarySection className="py-14 md:py-25">
-      <Container>
-        <div className="mb-10 max-w-2xl">
-          <h2 className="text-xl font-bold text-gray-900 md:text-4xl">
-            Visas We Handle
-          </h2>
-          <p className="text-sm md:text-base mt-3 leading-relaxed text-gray-500">
-            Full application support for the destinations UAE residents apply to
-            most. Every package includes document review, file preparation and
-            appointment booking.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {visas.map((visa, i) => (
-            <VisaCard
-              key={visa.slug}
-              visa={visa}
-              basePath={`/${DEFAULT_COUNTRY.slug}`}
-              priority={i === 0}
-            />
-          ))}
-        </div>
-
-        <div className="mt-10">
-          <Link
-            href={`/${DEFAULT_COUNTRY.slug}`}
-            className="inline-flex items-center gap-2 text-sm font-semibold text-primary-700 transition-colors hover:text-primary-800"
-          >
-            See all destinations <ArrowRight size={15} />
-          </Link>
-        </div>
-      </Container>
-    </PrimarySection>
-  );
+function featuredTestimonials(visas, limit = 3) {
+  const seen = new Set();
+  const picked = [];
+  for (const visa of visas) {
+    for (const t of visa.testimonials ?? []) {
+      if (!t?.isFeatured || !t.quote || !t.name) continue;
+      const key = t.quote.trim().slice(0, 60).toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      picked.push(t);
+      if (picked.length === limit) return picked;
+    }
+  }
+  return picked;
 }
 
 export default async function HomePage() {
   const visas = await getPublicVisasApi().catch(() => []);
   const all = Array.isArray(visas) ? visas : visas?.visas || [];
-  const list = orderDestinations(all).slice(0, 6);
+  const ordered = orderDestinations(all);
+  const list = ordered.slice(0, 6);
 
   const schema = buildGraph([
     buildOrganization(),
@@ -231,63 +175,68 @@ export default async function HomePage() {
       />
 
       <Hero
-        title={pageData.hero.title}
-        text={pageData.hero.text}
-        pills={pageData.hero.pills}
-        layout="centered"
-        dark
-        below={
-          <>
-            <VisaCheckerInline
-              basePath={`/${DEFAULT_COUNTRY.slug}`}
-              consultHref={`/${DEFAULT_COUNTRY.slug}`}
-              resultPath="/visa-check"
-            />
-            <p className="mt-4 text-center text-sm text-gray-300">
-              Already know you need a visa?{" "}
-              <Link
-                href={`/${DEFAULT_COUNTRY.slug}`}
-                className="inline-flex min-h-11 items-center gap-1 font-semibold text-white underline underline-offset-4 decoration-white/40 hover:decoration-white"
-              >
-                See packages from AED 299 <ArrowRight size={14} />
-              </Link>
-            </p>
-          </>
-        }
+        title="Visa assistance for UAE residents, made simple"
+        lede="Most refusals come from document errors that were preventable. Our Dubai specialists build your application and check every page before it goes in. Packages from AED 299."
+        primary={{ label: "See visa packages", href: DIRECTORY }}
+        secondary={{ label: "How it works", href: "#how-it-works" }}
+        note="Free to check. No account needed."
+        quickLinks={list.slice(0, 4).map((v) => ({
+          label: v.countryName,
+          href: `${DIRECTORY}/visa/${v.slug}`,
+        }))}
       />
-      <VisaDestinations visas={list} />
+
+      <TrustStrip items={TRUST_ASSURANCES} caption={TRUST_SUBTITLE} />
+
+      <Destinations
+        visas={list}
+        basePath={DIRECTORY}
+        allHref={DIRECTORY}
+        heading="Visas We Handle"
+        description="Full application support for the destinations UAE residents apply to most. Every package includes document review, file preparation and appointment booking."
+      />
+
       <HowItWorks
-        title="How It Works"
-        subtitle="Three steps from first consultation to a decision, with a specialist on your file throughout"
+        heading="How It Works"
+        description="Three steps from first consultation to a decision, with a specialist on your file throughout."
         steps={HOW_IT_WORKS}
       />
-      <About
-        title="About Us"
-        text="VisaWadi helps residents across the UAE and GCC apply for visas. We prepare the documents embassies ask for, check them before submission, and stay with the application until there is a decision."
-        services={[
-          {
-            icon: <MdOutlineTravelExplore />,
-            title: "Visa Assistance",
-            description:
-              "Application support for Schengen, UK, US and Canada, plus France, Germany, Italy and Spain individually. We review your documents, prepare the full file, book your appointment and track the application until a decision is made. Packages from AED 299.",
-          },
-        ]}
+
+      <WhyVisaWadi
+        heading="Why UAE Residents Choose VisaWadi"
+        description="A Dubai-based team that does visa applications, and only visa applications."
+        intro="VisaWadi helps residents across the UAE and GCC apply for visas. We prepare the documents embassies ask for, check them before submission, and stay with the application until there is a decision."
+        items={WHY_US}
       />
-      <Benefits
-        title="Why UAE Residents Choose VisaWadi"
-        subtitle="A Dubai-based team that does visa applications, and only visa applications"
-        benefits={benefits}
+
+      <Testimonials
+        heading="What Our Clients Say"
+        description="Feedback from people who applied with us, quoted as written."
+        testimonials={featuredTestimonials(ordered)}
       />
+
       <Faqs
-        title="Frequently Asked Questions"
-        subtitle="Common questions about our service, timelines, and what your application needs"
+        heading="Frequently Asked Questions"
+        description="Common questions about our service, timelines, and what your application needs."
         faqs={homepageFaqs}
+        allHref="/faq"
       />
-      <BlogPosts
-        title="From the Blog"
-        subtitle="Guides on visa applications and travel documents for UAE residents"
+
+      <BlogPreview
+        heading="From the Blog"
+        description="Guides on visa applications and travel documents for UAE residents."
       />
-      <Contact email={EMAIL} />
+
+      <FinalCta
+        heading="Still Have Questions?"
+        text="Tell us where you are going and what you are applying for. A specialist will tell you what your file needs, before you commit to anything."
+        primary={{ label: "Find your visa", href: DIRECTORY }}
+        secondary={
+          WHATSAPP_URL
+            ? { label: "Chat on WhatsApp", href: WHATSAPP_URL, external: true }
+            : { label: `Email ${EMAIL}`, href: `mailto:${EMAIL}` }
+        }
+      />
     </>
   );
 }

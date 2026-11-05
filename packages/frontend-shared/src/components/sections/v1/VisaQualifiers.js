@@ -4,7 +4,11 @@ import { Check } from "lucide-react";
 import Container from "../../shared/layout/Container.js";
 import SectionHead from "./VisaSectionHead.js";
 
-export default function VisaQualifiers({ items = [], countryName = "", term = "visa" }) {
+export default function VisaQualifiers({
+  items = [],
+  countryName = "",
+  term = "visa",
+}) {
   if (!items.length) return null;
   const Term = term.charAt(0).toUpperCase() + term.slice(1);
 

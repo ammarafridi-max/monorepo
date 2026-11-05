@@ -34,10 +34,6 @@
   --color-accent-900: #701700;
   --color-accent-950: #3d0d00;
 
-  /* Travl uses Commissioner (UI/body) + Geist Mono (reference codes). The
-     historical --font-outfit / --font-nunito / --font-merriweather aliases are
-     repointed to it so every existing `font-outfit`/`var(--font-outfit)` usage
-     inherits it. */
   --font-sans:         var(--font-commissioner), ui-sans-serif, system-ui, sans-serif;
   --font-mono:         var(--font-geist-mono), ui-monospace, monospace;
   --font-nunito:       var(--font-commissioner), sans-serif;
@@ -268,12 +264,6 @@ a {
     min-width: 140px;
     padding: 12px 14px;
   }
-
-  /* p {
-    font-size: 15px;
-    line-height: 1.7;
-    font-weight: 300;
-  } */
 }
 
 @utility py-section {

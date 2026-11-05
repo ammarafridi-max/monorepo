@@ -108,18 +108,9 @@ export function adminReviewDocumentApi({ documentId, decision, rejectionReason }
   });
 }
 
-export function adminGetDocumentViewUrlApi(documentId, version) {
-  const qs = version != null ? `?version=${encodeURIComponent(version)}` : '';
-  return apiFetch(`${URL}/admin/documents/${documentId}/view${qs}`);
-}
-
 export function adminGetDocumentStreamBlobApi(documentId, version) {
   const qs = version != null ? `?version=${encodeURIComponent(version)}` : '';
   return apiFetchBlob(`${URL}/admin/documents/${documentId}/stream${qs}`);
-}
-
-export function adminRunRemindersApi({ dryRun = false } = {}) {
-  return apiFetch(`${URL}/admin/reminders/run${dryRun ? '?dryRun=1' : ''}`, { method: 'POST' });
 }
 
 export function adminAddNoteApi({ id, text }) {
@@ -178,7 +169,4 @@ export function upsertTemplateApi(body) {
 }
 export function previewTemplateApi(rules) {
   return apiFetch(`${URL}/admin/templates/preview`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rules }) });
-}
-export function updateTemplateApi({ id, patch }) {
-  return apiFetch(`${URL}/admin/templates/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(patch) });
 }

@@ -1,7 +1,7 @@
-export function getOrRegisterModel(conn, name, schema) {
+export function getOrRegisterModel(db, name, schema) {
   try {
-    return conn.model(name);
+    return db.model(name);
   } catch {
-    return conn.model(name, schema);
+    return db.model(name, schema);
   }
 }

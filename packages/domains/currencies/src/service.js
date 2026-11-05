@@ -1,8 +1,5 @@
-import { AppError } from '@travel-suite/utils';
+import { AppError, escapeRegex } from '@travel-suite/utils';
 
-function escapeRegex(value = '') {
-  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
 
 function buildSort(sort = 'base_first') {
   const map = {

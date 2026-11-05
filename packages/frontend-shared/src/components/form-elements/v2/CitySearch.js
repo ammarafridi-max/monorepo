@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
+import { useOutsideClick } from '../../../hooks/general/useOutsideClick';
 import { MapPin, Loader2, ChevronDown } from 'lucide-react';
 import { useCitySearch } from '../../../hooks/locations/useCitySearch.js';
 
@@ -24,16 +25,10 @@ export default function CitySearch({ city = '', country = '', onChange, placehol
   const containerRef = useRef(null);
   const { cities, isLoadingCities } = useCitySearch(query);
 
-  useEffect(() => {
-    function onClickOutside(e) {
-      if (containerRef.current && !containerRef.current.contains(e.target)) {
-        setOpen(false);
-        setQuery('');
-      }
-    }
-    document.addEventListener('mousedown', onClickOutside);
-    return () => document.removeEventListener('mousedown', onClickOutside);
-  }, []);
+  useOutsideClick(containerRef, () => {
+    setOpen(false);
+    setQuery('');
+  });
 
   const inputCls =
     inputClassName ||

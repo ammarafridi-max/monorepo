@@ -1,12 +1,18 @@
 import { SITE_URL } from "@/lib/schema";
-import { getPublishedBlogsApi } from "@travel-suite/frontend-shared/services/apiBlog";
-import { getBlogTagsApi } from "@travel-suite/frontend-shared/services/apiBlogTags";
-import { getAuthorsApi } from "@travel-suite/frontend-shared/services/apiAuthors";
+import {
+  fetchPublishedPosts,
+  fetchBlogTags,
+  fetchAuthors,
+  staticEntries,
+  postEntries,
+  authorEntries,
+} from "@travel-suite/frontend-shared/seo/sitemap";
 import { getPublicVisasForResidenceApi } from "@travel-suite/frontend-shared/services/apiVisa";
 import { getVisaDestinationsApi } from "@travel-suite/frontend-shared/services/apiVisaRequirements";
 import { LIVE_COUNTRIES } from "@/config/countries";
 
 export const revalidate = 3600;
+
 const staticPages = [
   { url: "/", changeFrequency: "weekly", priority: 1.0 },
   { url: "/uae", changeFrequency: "weekly", priority: 0.9 },
@@ -20,39 +26,27 @@ const staticPages = [
   { url: "/privacy-policy", changeFrequency: "yearly", priority: 0.3 },
 ];
 
-export default async function sitemap() {
-  const now = new Date().toISOString();
-
-  const staticEntries = staticPages.map(({ url, changeFrequency, priority }) => ({
-    url: url === "/" ? SITE_URL : `${SITE_URL}${url}`,
-    changeFrequency,
-    priority,
-  }));
-
-  let blogEntries = [];
-  let blogPool = [];
-  try {
-    const data = await getPublishedBlogsApi({ page: 1, limit: 1000 });
-    const blogs = data?.blogs || [];
-    blogPool = blogs;
-    blogEntries = blogs
-      .filter((blog) => blog?.slug)
-      .map((blog) => ({
-        url: `${SITE_URL}/blog/${blog.slug}`,
-        lastModified: blog.updatedAt || blog.createdAt || now,
-        changeFrequency: "weekly",
-        priority: 0.7,
-      }));
-  } catch (err) {
-    console.error("[sitemap] fetch failed:", err);
+const newestPostPerTag = (posts) => {
+  const newest = new Map();
+  for (const post of posts) {
+    const stamp = post.updatedAt || post.createdAt;
+    if (!stamp) continue;
+    for (const tag of post.tags || []) {
+      const name = tag?.name || tag?.slug || tag;
+      const current = newest.get(name);
+      if (!current || new Date(stamp) > new Date(current)) newest.set(name, stamp);
+    }
   }
+  return newest;
+};
 
-  let visaEntries = [];
+async function visaEntries(now) {
+  const entries = [];
   for (const country of LIVE_COUNTRIES) {
     try {
       const res = await getPublicVisasForResidenceApi(country.code);
       const visas = Array.isArray(res) ? res : res?.data || [];
-      visaEntries.push(
+      entries.push(
         ...visas
           .filter((visa) => visa?.slug)
           .map((visa) => ({
@@ -66,40 +60,13 @@ export default async function sitemap() {
       console.error(`[sitemap] visas for ${country.slug} failed:`, err);
     }
   }
+  return entries;
+}
 
-  let tagEntries = [];
-  try {
-    const data = await getBlogTagsApi();
-    const tags = data?.tags || data || [];
-    const newestByTag = new Map();
-    for (const blog of blogPool) {
-      const stamp = blog.updatedAt || blog.createdAt;
-      if (!stamp) continue;
-      for (const tag of blog.tags || []) {
-        const name = tag?.name || tag?.slug || tag;
-        const current = newestByTag.get(name);
-        if (!current || new Date(stamp) > new Date(current)) newestByTag.set(name, stamp);
-      }
-    }
-    tagEntries = tags
-      .filter((tag) => tag?.slug)
-      .map((tag) => {
-        const newest = newestByTag.get(tag.name) || newestByTag.get(tag.slug);
-        return {
-          url: `${SITE_URL}/blog/tags/${tag.slug}`,
-          ...(newest ? { lastModified: newest } : {}),
-          changeFrequency: "weekly",
-          priority: 0.5,
-        };
-      });
-  } catch (err) {
-    console.error("[sitemap] fetch failed:", err);
-  }
-
-  let visaCheckEntries = [];
+async function visaCheckEntries() {
   try {
     const list = await getVisaDestinationsApi();
-    visaCheckEntries = (list?.data || list || [])
+    return (list?.data || list || [])
       .filter((d) => d?.code)
       .map((d) => ({
         url: `${SITE_URL}/visa-check/${String(d.code).toLowerCase()}`,
@@ -108,29 +75,45 @@ export default async function sitemap() {
       }));
   } catch (err) {
     console.error("[sitemap] visa-check destinations failed:", err);
+    return [];
   }
+}
 
-  let authorEntries = [];
-  try {
-    const authors = await getAuthorsApi();
-    authorEntries = (authors || [])
-      .filter((author) => author?.authorProfile?.slug)
-      .map((author) => ({
-        url: `${SITE_URL}/authors/${author.authorProfile.slug}`,
-        lastModified: author.updatedAt || now,
-        changeFrequency: "monthly",
+export default async function sitemap() {
+  const now = new Date().toISOString();
+
+  const [posts, tags, authors] = await Promise.all([
+    fetchPublishedPosts(),
+    fetchBlogTags(),
+    fetchAuthors(),
+  ]);
+
+  const newestByTag = newestPostPerTag(posts);
+
+  const tagEntries = tags
+    .filter((tag) => tag?.slug)
+    .map((tag) => {
+      const newest = newestByTag.get(tag.name) || newestByTag.get(tag.slug);
+      return {
+        url: `${SITE_URL}/blog/tags/${tag.slug}`,
+        ...(newest ? { lastModified: newest } : {}),
+        changeFrequency: "weekly",
         priority: 0.5,
-      }));
-  } catch (err) {
-    console.error("[sitemap] authors fetch failed:", err);
-  }
+      };
+    });
 
   return [
-    ...staticEntries,
-    ...blogEntries,
+    ...staticEntries({
+      siteUrl: SITE_URL,
+      pages: staticPages,
+      now,
+      lastModified: false,
+      bareRoot: true,
+    }),
+    ...postEntries({ siteUrl: SITE_URL, posts, now }),
     ...tagEntries,
-    ...visaEntries,
-    ...visaCheckEntries,
-    ...authorEntries,
+    ...(await visaEntries(now)),
+    ...(await visaCheckEntries()),
+    ...authorEntries({ siteUrl: SITE_URL, authors, now }),
   ];
 }

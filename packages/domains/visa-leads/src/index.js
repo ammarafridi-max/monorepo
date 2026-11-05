@@ -6,11 +6,11 @@ import { createVisaLeadRouterFromParts } from './router.js';
 import { getOrRegisterModel } from '@travel-suite/utils/model';
 
 
-export function createVisaLeadRouter({ db, auth, notificationsService, metaCapi, openaiCapi, googleAds, frontendUrl }) {
+export function createVisaLeadRouter({ db, auth, notifications, metaCapi, openaiCapi, googleAds, frontendUrl }) {
   const VisaLead = getOrRegisterModel(db, 'visa-lead', VisaLeadSchema);
   const Visa     = getOrRegisterModel(db, 'visa', VisaSchema);
 
-  const service    = createVisaLeadService({ VisaLead, Visa, notificationsService, metaCapi, openaiCapi, googleAds, frontendUrl });
+  const service    = createVisaLeadService({ VisaLead, Visa, notifications, metaCapi, openaiCapi, googleAds, frontendUrl });
   const controller = createVisaLeadController({ service });
   return createVisaLeadRouterFromParts({ controller, auth });
 }

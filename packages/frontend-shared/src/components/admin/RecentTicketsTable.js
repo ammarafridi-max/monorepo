@@ -2,45 +2,7 @@ import Link from "next/link";
 import { Ticket, ArrowRight } from "lucide-react";
 import { extractIataCode } from '../../utils/extractIataCode.js';
 import { convertToDubaiDate } from '../../utils/dates.js';
-
-function PaymentBadge({ status }) {
-  const cfg =
-    {
-      PAID: {
-        label: "Paid",
-        cls: "bg-green-50 text-green-700 border-green-200",
-        dot: "bg-green-500",
-      },
-      UNPAID: {
-        label: "Unpaid",
-        cls: "bg-amber-50 text-amber-700 border-amber-200",
-        dot: "bg-amber-400",
-      },
-      REFUNDED: {
-        label: "Refunded",
-        cls: "bg-gray-100 text-gray-600 border-gray-200",
-        dot: "bg-gray-400",
-      },
-      PARTIALLY_REFUNDED: {
-        label: "Partly refunded",
-        cls: "bg-orange-50 text-orange-700 border-orange-200",
-        dot: "bg-orange-400",
-      },
-    }[status] || {
-      label: status || "—",
-      cls: "bg-gray-100 text-gray-600 border-gray-200",
-      dot: "bg-gray-400",
-    };
-
-  return (
-    <span
-      className={`inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${cfg.cls}`}
-    >
-      <span className={`w-1.5 h-1.5 rounded-full inline-block ${cfg.dot}`} />
-      {cfg.label}
-    </span>
-  );
-}
+import { PaymentBadge } from './paymentStatus';
 
 function OrderBadge({ status }) {
   const cfg =

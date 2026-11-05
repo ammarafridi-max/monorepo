@@ -36,6 +36,10 @@ export async function getHotelBookingApi(sessionId) {
   return await apiFetch(`${URL}/${sessionId}`);
 }
 
+export async function getLatestPaidHotelBookingApi() {
+  return await apiFetch(`${URL}/latest-paid`);
+}
+
 export async function getHotelBookingsApi(params = {}) {
   const query = new URLSearchParams(
     Object.entries(params).filter(([, v]) => v !== '' && v != null),

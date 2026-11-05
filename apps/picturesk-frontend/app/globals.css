@@ -1,11 +1,3 @@
-/*
- * Picturesk brand tokens + base styles. See BRAND.md.
- * Forest & Gold: warm sand body, deep-green ink, green as the workhorse accent
- * (CTAs, links, focus) with gold as the second accent. Commissioner (humanist
- * sans) for both display and body. Token NAMES kept (--cobalt = green, --serif
- * = sans) to avoid churn across existing var() refs.
- */
-
 :root {
   --ink: #16163a;
   --bone: #ffffff;
@@ -99,11 +91,6 @@ a {
   outline-offset: 2px;
 }
 
-/* Layout ------------------------------------------------------------------ */
-
-/* Vertical rhythm for a standalone page (login, success, account, the funnel).
-   The column width and side padding come from <Container>, so a page never
-   hand-rolls its own gutter. Marketing sections use .section instead. */
 .page {
   padding: 72px 0 96px;
 }
@@ -118,8 +105,6 @@ a {
   display: inline-flex;
   align-items: center;
 }
-/* The wordmark logo in the header. Height-driven so it scales cleanly; width auto
-   keeps the aspect ratio. Slightly smaller on narrow screens. */
 .brand__logo {
   height: 20px;
   width: auto;
@@ -147,7 +132,6 @@ a {
   color: var(--cobalt);
 }
 
-/* A logout button that reads as a link. */
 .navlink--button {
   background: none;
   border: none;
@@ -156,8 +140,6 @@ a {
   cursor: pointer;
 }
 
-/* Logged-out nav auth: "[icon] Sign Up / Log in". Inherits the ivory .navlink
-   color; the icon (currentColor) matches the text, the slash is a muted divider. */
 .nav-auth {
   display: inline-flex;
   align-items: center;
@@ -178,9 +160,6 @@ a {
   font-weight: 400;
 }
 
-/* The nav's primary action: a fully rounded grey pill that fills with the accent
-   green on hover and focus. Quiet at rest so it does not fight the hero CTA, and
-   unmistakably the button on the bar once you go near it. */
 .navcta {
   display: inline-flex;
   align-items: center;
@@ -205,10 +184,6 @@ a {
   color: #ffffff;
 }
 
-/* --- Mobile menu ---------------------------------------------------------
-   Below 820px the links move into a drawer behind a burger. The bar used to hide
-   items by media query as it narrowed, which meant a phone could not reach Blog or
-   Sign Up at all. */
 .burger {
   display: none;
   flex-direction: column;
@@ -297,7 +272,6 @@ a {
   }
 }
 
-/* Account order list. */
 .orders {
   list-style: none;
   margin: 32px 0 0;
@@ -332,10 +306,6 @@ a {
   flex: none;
 }
 
-/* Social sign-in ---------------------------------------------------------- */
-
-/* Secondary actions: bordered, ink text. Cobalt stays reserved for the one
- * primary CTA (the email form's submit), per BRAND's single-accent rule. */
 .social {
   margin-top: 40px;
 }
@@ -361,8 +331,6 @@ a {
   flex-shrink: 0;
 }
 
-/* Cookie-consent banner. Bone surface, hairline border, one cobalt accent (Accept),
-   soft rare shadow (BRAND.md). Fixed to the bottom, centered, out of the way. */
 .consent {
   position: fixed;
   left: 16px;
@@ -426,12 +394,9 @@ a {
   padding: 0 12px;
 }
 
-/* When social buttons precede it, the email card's own top margin is too much. */
 .social + .card {
   margin-top: 18px;
 }
-
-/* Type -------------------------------------------------------------------- */
 
 .display {
   font-family: var(--serif);
@@ -461,8 +426,6 @@ a {
   line-height: 1.1;
   margin: 0 0 10px;
 }
-
-/* Upload form ------------------------------------------------------------- */
 
 .card {
   margin-top: 40px;
@@ -502,9 +465,6 @@ a {
   margin: 0;
 }
 
-/* Photo requirements: a calm do / avoid box. Good inputs are the biggest lever on
- * likeness, so this sits up front. Green/warn dots, no second accent (cobalt stays
- * reserved), no emoji per BRAND. */
 .reqs {
   list-style: none;
   margin: 28px 0 0;
@@ -536,7 +496,6 @@ a {
   background: var(--warn);
 }
 
-/* Photos are the loudest thing on screen: big, edge to edge in a grid. */
 .thumbs {
   margin-top: 20px;
   display: grid;
@@ -575,7 +534,6 @@ a {
   cursor: pointer;
 }
 
-/* A photo that failed the quality check: dim it and show the reason. */
 .thumb--bad {
   border-color: var(--warn);
 }
@@ -597,7 +555,6 @@ a {
   text-align: left;
 }
 
-/* A photo still being checked in the browser. */
 .thumb--checking::after {
   content: '';
   position: absolute;
@@ -625,7 +582,6 @@ a {
   }
 }
 
-/* An accepted photo: a small green check, top-left (opposite the remove button). */
 .thumb--ok {
   border-color: var(--ok);
 }
@@ -686,13 +642,10 @@ a {
   box-shadow: inset 0 0 0 100px var(--fg-card);
 }
 
-/* A white-background input variant, to lift the field off the sand page. */
 .input--onwhite {
   background: #fff;
 }
 
-/* Wrapper that floats a leading inline-SVG icon over an input. The input gets
-   extra left padding so its text and placeholder clear the icon. */
 .input-icon {
   position: relative;
 }
@@ -710,8 +663,6 @@ a {
   padding-left: 44px;
 }
 
-/* The one primary action per screen. Considered: subtle radius, a single soft
- * cobalt-tinted shadow, and clear hover / active / focus / disabled states. */
 .cta {
   margin-top: 22px;
   width: 100%;
@@ -761,8 +712,6 @@ a {
   font-size: 14px;
 }
 
-/* Status stepper ---------------------------------------------------------- */
-
 .steps {
   list-style: none;
   margin: 32px 0 0;
@@ -800,9 +749,6 @@ a {
   color: var(--ink);
 }
 
-/* The in-progress step spins: a hairline ring with a cobalt arc sweeping around
- * it, so "now" reads as active motion rather than a static dot. `align-self`
- * centers the (larger) spinner on the row while the other dots stay baseline. */
 .step--current .step__dot {
   width: 14px;
   height: 14px;
@@ -821,7 +767,6 @@ a {
   }
 }
 
-/* Respect reduced-motion: fall back to a solid cobalt dot, no spin. */
 @media (prefers-reduced-motion: reduce) {
   .step--current .step__dot {
     animation: none;
@@ -839,8 +784,6 @@ a {
   color: var(--ash);
 }
 
-/* Processing clock: a muted label + a tabular-figure value. Tabular numbers keep
- * the live "m:ss" from jittering as digits change. */
 .timer {
   display: inline-flex;
   align-items: baseline;
@@ -857,8 +800,6 @@ a {
   font-variant-numeric: tabular-nums;
 }
 
-/* Generation progress ----------------------------------------------------- */
-
 .progress {
   margin-top: 28px;
 }
@@ -870,8 +811,6 @@ a {
   overflow: hidden;
 }
 
-/* Ink fill on a hairline track: calm, no second accent (cobalt stays reserved
-   for the current-step dot and links). Width animates as more shots land. */
 .progress__fill {
   height: 100%;
   border-radius: var(--radius-pill);
@@ -879,8 +818,6 @@ a {
   transition: width 600ms ease;
 }
 
-/* Indeterminate state, before the first count arrives: a short bar drifting
-   across the track. No spinner, no scary language, just motion. */
 .progress__fill--idle {
   width: 35%;
   animation: progress-idle 1.7s ease-in-out infinite;
@@ -901,14 +838,10 @@ a {
   color: var(--ash);
 }
 
-/* Results ----------------------------------------------------------------- */
-
 .gallery {
   margin-top: 28px;
 }
 
-/* Toolbar above the grid: a quiet count on the left, the one primary action
-   (download all) on the right. One accent, one obvious action. */
 .gallery__bar {
   display: flex;
   align-items: center;
@@ -926,17 +859,15 @@ a {
 
 .gallery__grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr); /* 4 per row on desktop */
+  grid-template-columns: repeat(4, 1fr);
   gap: 14px;
 }
 @media (max-width: 620px) {
   .gallery__grid {
-    grid-template-columns: repeat(2, 1fr); /* 2 per row on phones */
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
-/* Let the photo be the loudest thing: the card is just the image, with the
-   download control floating over it. No bar, no chrome stealing height. */
 .shot {
   position: relative;
   margin: 0;
@@ -952,9 +883,6 @@ a {
   object-fit: cover;
 }
 
-/* Floating view + download controls, top-right of each shot. Bone discs, ink
-   glyphs, turn cobalt on hover/focus. Understated so the face dominates; always
-   visible so they work on touch (no hover to rely on). */
 .shot__actions {
   position: absolute;
   top: 10px;
@@ -986,7 +914,6 @@ a {
   transform: translateY(-1px);
 }
 
-/* Image lightbox (modal) used by /success and the admin order page. */
 .lightbox {
   position: fixed;
   inset: 0;
@@ -1058,25 +985,12 @@ a {
   text-align: center;
 }
 
-/* ========================================================================== *
- * Landing page. Full-bleed sections with an inner container; the portfolio is
- * the loudest element, cobalt stays a scalpel (one CTA colour + section ticks).
- * ========================================================================== */
-
 @media (prefers-reduced-motion: no-preference) {
   html {
     scroll-behavior: smooth;
   }
 }
 
-/* THE page measure, matched to the travel brands so Picturesk is never the narrow
-   one: frontend-shared's Container is `w-[90%] md:w-[85%] lg:w-[80%] mx-auto`, a
-   percentage of the viewport with NO max-width, so the column keeps growing with
-   the display. This is that rule in plain CSS. The gutter IS the leftover
-   percentage, so there is no horizontal padding to add on top.
-
-   The size modifiers cap that percentage for columns that are about reading, not
-   layout: a login form or a legal page must not run 1500px wide. */
 .container {
   width: 90%;
   margin: 0 auto;
@@ -1107,9 +1021,6 @@ a {
   scroll-margin-top: 32px;
 }
 
-/* Section heading block (SectionHeading.js): eyebrow + heading + optional lede.
- * Its bottom margin is THE gap between a section's title and its content, so the
- * content grids below set no top margin of their own. */
 .sechead {
   margin: 0 0 var(--space-6);
 }
@@ -1146,8 +1057,6 @@ a {
   margin-right: auto;
 }
 
-/* Section eyebrow: quiet uppercase label with a single short cobalt tick, the
- * one repeated accent that marks structure. */
 .eyebrow {
   display: flex;
   align-items: center;
@@ -1174,8 +1083,6 @@ a {
   max-width: 54ch;
   margin: 10px 0 0;
 }
-
-/* Buttons (anchor CTAs) ---------------------------------------------------- */
 
 .btn {
   display: inline-flex;
@@ -1207,7 +1114,6 @@ a {
   transform: translateY(0);
 }
 
-/* Disabled buttons (e.g. Continue before a step is complete). */
 .btn:disabled {
   opacity: 0.5;
   box-shadow: none;
@@ -1237,7 +1143,6 @@ a {
   margin-top: 24px;
 }
 
-/* Portfolio frame: an image, or a labelled placeholder until real URLs land. */
 .frame {
   position: relative;
   aspect-ratio: 1 / 1;
@@ -1254,9 +1159,6 @@ a {
   display: block;
 }
 
-/* A frame whose grid cell is taller than it is wide. The hero's first frame spans
-   two rows, so a 1/1 aspect-ratio was being stretched by the row track and the
-   image was cropped to roughly 1:2, clipping the subject's shoulders. */
 .frame--portrait {
   aspect-ratio: 3 / 4;
 }
@@ -1272,8 +1174,6 @@ a {
   text-transform: uppercase;
   color: var(--ash);
 }
-
-/* Hero -------------------------------------------------------------------- */
 
 .hero {
   padding: clamp(20px, 3vw, 36px) 0 clamp(28px, 4vw, 48px);
@@ -1365,8 +1265,6 @@ a {
   grid-row: 2;
 }
 
-/* Showcase (the portfolio) ------------------------------------------------ */
-
 .samples {
   margin-top: 0;
 }
@@ -1442,10 +1340,6 @@ a {
   gap: 14px;
 }
 
-/* How it works ------------------------------------------------------------ */
-
-/* The steps sit on a single rail so the order is read, not just numbered: the
-   markers are the beads, the hairline between them is the thread. */
 .steps-grid {
   list-style: none;
   margin: 0;
@@ -1466,10 +1360,6 @@ a {
   margin-bottom: 18px;
 }
 
-/* The rail: drawn from each marker to the next one, so it never dangles off the
-   last step. It runs under the marker and on into the grid gap. ::before (not
-   ::after) so it paints BEHIND the marker and the meta label, both of which are
-   opaque and mask it; a negative z-index would put it behind the section itself. */
 .stepcard:not(:last-child)::before {
   content: '';
   position: absolute;
@@ -1505,8 +1395,6 @@ a {
   font-size: 15px;
   line-height: 1.65;
 }
-
-/* What you get ------------------------------------------------------------ */
 
 .get__cols {
   display: grid;
@@ -1553,9 +1441,6 @@ a {
   gap: 8px;
 }
 
-/* Use-cases grid ("Who it's for"): scannable cards, subtle radius per BRAND. */
-/* Three columns with the lead panel spanning two, so eight entries fill exactly
-   three rows with no hole. */
 .usecases__grid {
   list-style: none;
   margin: 0;
@@ -1565,8 +1450,6 @@ a {
   gap: 14px;
 }
 
-/* The even variant: no lead panel, so the tiles just flow. Used by landing pages,
-   whose use-case counts do not tile into the featured layout. */
 .usecases__grid--even {
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
@@ -1614,7 +1497,6 @@ a {
   transform: translateY(-2px);
 }
 
-/* A card whose title links to that vertical's own page. */
 .usecase--link .usecase__title a {
   color: inherit;
   text-decoration: none;
@@ -1647,8 +1529,6 @@ a {
   font-size: 14px;
   background: var(--fg-card);
 }
-
-/* Pricing ----------------------------------------------------------------- */
 
 .pricecard {
   max-width: 460px;
@@ -1696,13 +1576,6 @@ a {
   text-align: center;
 }
 
-/* FAQ --------------------------------------------------------------------- */
-
-/* The rows themselves are the SHARED FaqAccordion the travel brands use, styled
-   by its own Tailwind classes (see app/(site)/shared-ui.css). What lives here is the
-   CARD that groups them, the way MDT and DT365 present theirs (frontend-shared
-   sections/v2/Faqs): one grey bordered, rounded container with the rows divided
-   inside it, spanning the full width of the section. */
 .faq__list {
   margin-top: 0;
   border: 1px solid var(--fg-line);
@@ -1710,27 +1583,20 @@ a {
   overflow: hidden;
 }
 
-/* Breathing room inside the card, on top of each row's own padding. */
 .faq__list > div {
   padding-left: 8px;
   padding-right: 8px;
 }
 
-/* The accordion sets border-b on every row; the last one would double up with the
-   card's own border, so it goes. A class selector beats the utility. */
 .faq__list > div:last-child {
   border-bottom-width: 0;
 }
-
-/* Start (the one uploader) ------------------------------------------------ */
 
 .start__inner {
   max-width: 620px;
   margin: 0 auto;
   text-align: center;
 }
-
-/* Footer ------------------------------------------------------------------ */
 
 .footer {
   background: var(--ink);
@@ -1799,8 +1665,6 @@ a {
   color: #8a8a90;
 }
 
-/* Responsive -------------------------------------------------------------- */
-
 @media (max-width: 860px) {
   .hero__inner,
   .get__cols {
@@ -1840,21 +1704,15 @@ a {
   }
 }
 
-/* Multi-step funnel (/generator) ------------------------------------------ */
-
 .generator {
   padding-top: 40px;
   padding-bottom: 48px;
 }
 
-/* Everything under the funnel top bar, padded so the fixed action bar never
-   covers the footer's last line. */
 .funnel-shell {
   padding-bottom: 88px;
 }
 
-/* The funnel needs more room than the narrow reading column so the option-card
-   grids breathe. Widens the container for all four steps. */
 .generator .container {
   max-width: 900px;
 }
@@ -1911,7 +1769,6 @@ a {
   color: var(--bone);
 }
 
-/* Section subheads on the merged select step. */
 .gen-subhead {
   font-family: var(--serif);
   font-weight: 700;
@@ -1924,7 +1781,6 @@ a {
   color: var(--ash);
 }
 
-/* Sub-label for a single-select group (gender, age, race). */
 .gen-fieldlabel {
   margin: 18px 0 8px;
   font-size: 14px;
@@ -1938,8 +1794,6 @@ a {
   color: var(--ash);
 }
 
-/* Info tooltip: a small (i) next to a field label; the hint appears ABOVE the icon
-   on hover or keyboard focus, so the label stays uncluttered. */
 .info-tip {
   position: relative;
   display: inline-flex;
@@ -1981,7 +1835,6 @@ a {
   pointer-events: none;
   z-index: 20;
 }
-/* Little arrow pointing down at the icon. */
 .info-tip__bubble::after {
   content: '';
   position: absolute;
@@ -1997,8 +1850,6 @@ a {
   transform: translateY(0);
 }
 
-/* Single-select chips: text-only pills for demographics (no preview image).
- * Cobalt marks the selected state, one accent only. */
 .chips {
   display: flex;
   flex-wrap: wrap;
@@ -2026,8 +1877,6 @@ a {
   font-weight: 600;
 }
 
-/* Selection cards: each option has a preview image (or a placeholder). The
- * choices are the visual interest; cobalt marks the selected state. */
 .cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -2035,9 +1884,6 @@ a {
   margin-top: 16px;
 }
 
-/* On small screens the grid eats too much vertical space, so switch to a horizontal
-   swipe slider that shows ~2.2 cards at a time (the partial third hints there's more
-   to swipe). Scroll-snap keeps it feeling deliberate; no JS/library needed. */
 @media (max-width: 560px) {
   .cards {
     display: flex;
@@ -2045,15 +1891,14 @@ a {
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     gap: 10px;
-    /* a touch of end padding so the last card can snap fully into view */
     scroll-padding-inline: 0;
-    scrollbar-width: none; /* Firefox: hide the bar, the peeking card is the cue */
+    scrollbar-width: none;
   }
   .cards::-webkit-scrollbar {
-    display: none; /* WebKit */
+    display: none;
   }
   .cards > * {
-    flex: 0 0 44%; /* ~2.2 cards visible (100 / 44 ≈ 2.27) */
+    flex: 0 0 44%;
     scroll-snap-align: start;
   }
 }
@@ -2085,7 +1930,6 @@ a {
   background: rgba(231, 178, 76, 0.1);
 }
 
-/* Preview image / placeholder. */
 .option-card__media {
   display: grid;
   place-items: center;
@@ -2105,8 +1949,6 @@ a {
   text-transform: uppercase;
   color: var(--ash);
 }
-/* Solid-color preview for a background option that has no photo yet: fills the
-   media area with the backdrop's tone. */
 .option-card__swatch {
   width: 100%;
   height: 100%;
@@ -2128,7 +1970,6 @@ a {
   color: var(--ash);
 }
 
-/* Selected tick, top-right over the image. */
 .option-card__check {
   position: absolute;
   top: 10px;
@@ -2155,8 +1996,6 @@ a {
   transform: rotate(45deg);
 }
 
-/* Guided camera capture ---------------------------------------------------- */
-
 .capture__prompt {
   font-family: var(--serif);
   font-weight: 600;
@@ -2169,8 +2008,6 @@ a {
   color: var(--ash);
 }
 
-/* The live preview. Mirrored so it feels like looking in a mirror; the captured
- * frame itself is drawn un-mirrored (natural orientation). */
 .capture__stage {
   position: relative;
   max-width: 380px;
@@ -2188,7 +2025,6 @@ a {
   display: block;
 }
 
-/* Centered oval guide: green when the face is well placed, hairline otherwise. */
 .capture__ring {
   position: absolute;
   top: 12%;
@@ -2224,7 +2060,6 @@ a {
   white-space: nowrap;
 }
 
-/* Progress dots for the pose sequence. */
 .capture__dots {
   display: flex;
   justify-content: center;
@@ -2244,7 +2079,6 @@ a {
   background: var(--cobalt);
 }
 
-/* A callout on the upload step offering the guided camera path. */
 .capture-cta {
   display: flex;
   align-items: center;
@@ -2277,7 +2111,6 @@ a {
   background: #f1f5f4;
 }
 
-/* Step navigation (back / continue). */
 .gennav {
   display: flex;
   align-items: center;
@@ -2286,7 +2119,6 @@ a {
   margin-top: 32px;
 }
 
-/* Review summary (details step). */
 .review {
   margin: 28px 0 0;
   padding: 0;
@@ -2328,17 +2160,6 @@ a {
 .review__change a:hover {
   text-decoration: underline;
 }
-
-/* ========================================================================== *
- * Blog. The PAGES are the shared client BlogPage / BlogPostPage (Tailwind, see
- * app/(site)/shared-ui.css). Two things stay here, because they are ours:
- *
- *   .blogpage   brand overrides on the shared markup
- *   .blog_post  the article body, which every brand styles itself. The post's
- *               HTML comes from the editor with no classes on it, so it is styled
- *               by element. These sit INSIDE .shared-ui, whose resets zero the
- *               element margins, so every rule here has to restore what it wants.
- * ========================================================================== */
 
 .blogpage section.bg-linear-to-br {
   background-image: none;
@@ -2542,13 +2363,10 @@ a {
   }
 }
 
-/* Content pages (privacy, terms, refunds, contact, faq) ------------------- */
-
 .content {
   padding: clamp(48px, 7vw, 88px) 0 clamp(64px, 9vw, 112px);
 }
 
-/* A narrow reading measure, left-aligned with the rest of the site. */
 .content__inner {
   max-width: 720px;
 }
@@ -2584,7 +2402,6 @@ a {
   color: var(--ash);
 }
 
-/* Prose: the long-form body. Generous line height per BRAND. */
 .prose {
   margin-top: 8px;
 }
@@ -2624,8 +2441,6 @@ a {
   margin-top: 4px;
 }
 
-/* Contact ----------------------------------------------------------------- */
-
 .contactcard {
   margin-top: 36px;
   border: 1px solid var(--line);
@@ -2659,8 +2474,6 @@ a {
   margin-top: 20px;
 }
 
-/* Small cross-links ------------------------------------------------------- */
-
 .faq__more {
   margin: 20px 0 0;
   font-size: 15px;
@@ -2684,8 +2497,6 @@ a {
   }
 }
 
-/* Pricing plans: single-select cards on the pay step. Mirrors .option-card.
-   Cobalt only marks the chosen plan and the "Most popular" badge (single accent). */
 .plans {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -2746,19 +2557,6 @@ a {
   }
 }
 
-/* =========================================================================== *
- * Forest & Gold — GLOBAL brand. See BRAND rebrand.
- *
- * The "Forest & Gold" direction, applied site-wide: a DARK GREEN hero into a
- * LIGHT sand body, ivory + gold accents, humanist sans (Commissioner) headings.
- * The --fg-* custom props live in :root, and the base body/link rules already theme
- * via the tokens, so these rules layer the marketing/chrome treatment on top.
- * `.hero` only affects the home page (only Hero.js renders it).
- * =========================================================================== */
-
-/* --- Nav: a white bar on the white page, separated by a hairline rather than by
-       a change of colour. Full-bleed; the inner <Container> aligns the brand and
-       links to the page measure. -- */
 .topbar {
   max-width: none;
   margin: 0;
@@ -2781,9 +2579,6 @@ a {
 
 
 
-/* Nav links carry an explicit, fixed size + weight so every current and future
-   link renders identically. Hover lifts to the brand green. They sit a step below
-   the CTA pill, which stays at 600 so the button remains the emphasis on the bar. */
 .navlink {
   color: var(--fg-ink);
   font-size: 15px;
@@ -2795,10 +2590,6 @@ a {
   color: var(--fg-green);
 }
 
-/* --- Profile menu (authed nav identity) ----------------------------------
-   Avatar (gold circle, dark-green initial) + first name + chevron in a rounded
-   pill trigger; a deep-green dropdown reads on the green chrome. Opens on hover,
-   click, and keyboard focus (see ProfileMenu.js). ------------------------------ */
 .profile {
   position: relative;
   display: inline-block;
@@ -2819,7 +2610,6 @@ a {
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 
-/* Hover / open: a quiet grey wash on the white bar. */
 .profile:hover .profile__trigger,
 .profile__trigger:hover,
 .profile__trigger[aria-expanded='true'] {
@@ -2855,7 +2645,6 @@ a {
   transform: rotate(180deg);
 }
 
-/* Dropdown panel: a white card with a hairline border + soft shadow. */
 .profile__menu {
   position: absolute;
   top: calc(100% + 8px);
@@ -2873,7 +2662,6 @@ a {
   display: none;
 }
 
-/* Transparent bridge across the 8px gap so hovering trigger -> panel never closes. */
 .profile__menu::before {
   content: '';
   position: absolute;
@@ -2922,9 +2710,6 @@ a {
   color: var(--fg-green);
 }
 
-/* --- Hero: the same white ground as the rest of the page. The photos carry it,
-   so the type is ink on white and the accents behave exactly as they do in every
-   other section: green eyebrow, green primary. -- */
 .hero {
   background: var(--fg-card);
   color: var(--fg-ink);
@@ -2941,7 +2726,6 @@ a {
   color: var(--fg-muted);
 }
 
-/* --- Headings + ledes in the light body ----------------------------------- */
 .h2 {
   font-family: var(--sans);
   font-weight: 700;
@@ -2953,7 +2737,6 @@ a {
   color: var(--fg-muted);
 }
 
-/* --- Body eyebrows: green label + green tick ------------------------------ */
 .eyebrow {
   color: var(--fg-green);
   font-weight: 700;
@@ -2963,7 +2746,6 @@ a {
   background: var(--fg-green);
 }
 
-/* --- Buttons: pill shape, no cobalt glow ---------------------------------- */
 .btn {
   border-radius: var(--radius-pill);
 }
@@ -2973,7 +2755,6 @@ a {
   opacity: 0.72;
 }
 
-/* Primary = bright green pill, white text. */
 .btn--primary {
   background: var(--fg-cta);
   color: #ffffff;
@@ -2986,9 +2767,6 @@ a {
   transform: translateY(-1px);
 }
 
-/* Secondary action ("See real results", the funnel's Back links) = ink with a
-   quiet underline. It was ivory for the dark hero, which on the white page made
-   every one of them invisible. */
 .btn--link {
   color: var(--fg-ink);
   background: none;
@@ -3003,7 +2781,6 @@ a {
   border-bottom-color: var(--fg-green);
 }
 
-/* --- Frames / showcase ---------------------------------------------------- */
 .frame {
   border-color: var(--fg-line);
   background: var(--fg-sink);
@@ -3031,7 +2808,6 @@ a {
   color: var(--fg-ink);
 }
 
-/* --- How it works: gold numeral in a green marker on a hairline rail -------- */
 .stepcard__num {
   font-family: var(--sans);
   font-weight: 800;
@@ -3048,8 +2824,6 @@ a {
   color: var(--fg-muted);
 }
 
-/* --- Who it's for: the lead panel gets the solid-green treatment, the same one
-   the popular pricing plan uses, so the section has a focal point. ------------ */
 .usecase {
   background: var(--fg-card);
   border-color: var(--fg-line);
@@ -3085,7 +2859,6 @@ a {
   border-color: var(--fg-green);
 }
 
-/* --- Comparison table (the "vs" page) ------------------------------------ */
 .comparison__scroll {
   overflow-x: auto;
   border: 1px solid var(--fg-line);
@@ -3139,8 +2912,6 @@ a {
   border-bottom: 0;
 }
 
-/* --- Why us: four cards in a row on a quiet grey fill, numbered so the arguments
-       still read in order. Two up on a tablet, stacked on a phone. --- */
 .benefits__grid {
   list-style: none;
   margin: 0;
@@ -3156,8 +2927,6 @@ a {
   background: var(--fg-band);
 }
 
-/* A white chip lifts the glyph off the grey card, at the same 40px as the process
-   markers so the two sections share one scale. */
 .benefit__icon {
   display: grid;
   place-items: center;
@@ -3198,7 +2967,6 @@ a {
   }
 }
 
-/* --- Testimonials --------------------------------------------------------- */
 .quotes {
   list-style: none;
   margin: 0;
@@ -3218,7 +2986,6 @@ a {
   background: var(--fg-card);
 }
 
-/* Gold, the one place a rating earns the second accent. */
 .quote__stars {
   display: inline-flex;
   gap: 3px;
@@ -3226,8 +2993,6 @@ a {
   font-size: 14px;
 }
 
-/* The attribution sits at the bottom whatever the quote length, so a row of
-   cards lines up. */
 .quote__who {
   margin-top: auto;
 }
@@ -3292,7 +3057,6 @@ a {
   }
 }
 
-/* --- What you get --------------------------------------------------------- */
 .checklist__item {
   color: var(--fg-ink);
 }
@@ -3311,7 +3075,6 @@ a {
   color: var(--fg-ink);
 }
 
-/* --- Pricing plans -------------------------------------------------------- */
 .plan {
   background: var(--fg-card);
   border-color: var(--fg-line);
@@ -3319,7 +3082,6 @@ a {
   padding: 22px 20px 24px;
 }
 
-/* What the plan includes, ticked. Built from the tier data in Pricing.js. */
 .plan__includes {
   list-style: none;
   margin: 16px 0 0;
@@ -3344,7 +3106,6 @@ a {
   color: var(--fg-cta);
 }
 
-/* The verdict line: who this plan is actually for. */
 .plan__best {
   margin: 18px 0 0;
   padding-top: 16px;
@@ -3355,8 +3116,6 @@ a {
   color: var(--fg-ink);
 }
 
-/* The one place the plan runs out. A dash, not a cross: it is a limit of the
-   plan, not a failure of it. */
 .plan__limits {
   list-style: none;
   margin: 10px 0 0;
@@ -3394,7 +3153,6 @@ a {
   opacity: 0.75;
 }
 
-/* The popular plan is a solid green panel, so its inner type has to invert. */
 .plan--on .plan__include {
   color: var(--fg-hero-fg);
 }
@@ -3431,7 +3189,6 @@ a {
   color: var(--fg-muted);
 }
 
-/* The "popular" plan: solid green fill, ivory text, overhanging gold badge. */
 .plan--on {
   background: var(--fg-green);
   border-color: var(--fg-green);
@@ -3469,12 +3226,10 @@ a {
   color: var(--fg-green);
 }
 
-/* --- FAQ ------------------------------------------------------------------ */
 .faq__more a {
   color: var(--fg-green);
 }
 
-/* --- Footer: deep green, ivory brand, muted teal links -------------------- */
 .footer {
   background: var(--fg-footer);
   color: var(--fg-hero-muted);
@@ -3505,9 +3260,6 @@ a {
   color: var(--fg-hero-muted);
 }
 
-/* --- Visible focus stays; recolour to gold on the dark/green surfaces ------ */
-/* Green, not gold: the chrome is white now, and gold on white is too faint to
-   read as a focus ring. Elements that sit on the dark footer keep a gold one. */
 a:focus-visible,
 button:focus-visible,
 .btn:focus-visible {
@@ -3525,13 +3277,7 @@ button:focus-visible,
     transform: none;
   }
 }
-/* ==== end Forest & Gold — GLOBAL brand ==== */
 
-/* ========================================================================== *
- * Account dashboard (/account). Current bone/ink/cobalt brand (BRAND.md):
- * subtle radius, hairline borders, cobalt reserved for the one primary action;
- * warn (never a second accent) marks the destructive delete zone.
- * ========================================================================== */
 .acct__head {
   border-bottom: 1px solid var(--line);
   padding-bottom: 24px;
@@ -3612,7 +3358,6 @@ button:focus-visible,
   color: var(--ash);
 }
 
-/* Order list: a media thumb, the plan + count, a status pill, and actions. */
 .ords {
   list-style: none;
   margin: 0;
@@ -3669,8 +3414,6 @@ button:focus-visible,
   align-items: center;
   gap: 2px;
 }
-/* View / Download: real, visible buttons (not the ivory hero link style that
-   leaks onto .btn--link). Outlined green on the near-white row, filling on hover. */
 .ord .btn--link {
   padding: 8px 14px;
   font-size: 13.5px;
@@ -3716,7 +3459,6 @@ button:focus-visible,
   }
 }
 
-/* Account forms + destructive delete zone. */
 .acct-form .field:first-of-type {
   margin-top: 0;
 }
@@ -3729,8 +3471,6 @@ button:focus-visible,
   font-size: 14px;
 }
 
-/* Dev-only per-order delete button (rendered only in development), sized to sit next
-   to View/Download in the order row and warn-tinted to read as destructive. */
 .ord__del {
   padding: 8px 12px;
   font-size: 13.5px;
@@ -3782,8 +3522,6 @@ button:focus-visible,
   margin-top: 16px;
 }
 
-/* Account tabs: a hairline tab bar with a single cobalt underline on the active
- * tab (the one repeated accent), server-rendered panels toggled client-side. */
 .tabs {
   margin-top: 8px;
 }
@@ -3911,7 +3649,6 @@ button:focus-visible,
   color: var(--cobalt);
 }
 
-/* Services dropdown in the top bar: two product columns, same card as .profile__menu. */
 .services {
   position: relative;
   display: inline-block;
@@ -4033,7 +3770,6 @@ button:focus-visible,
   outline: none;
 }
 
-/* The same groups inside the mobile drawer, as plain lists. */
 .services-list {
   display: grid;
   gap: 16px;
@@ -4062,7 +3798,6 @@ button:focus-visible,
   color: var(--fg-green);
 }
 
-/* Hub hero: two service picks where the product hero has one button. */
 .hub-picks {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -4119,7 +3854,6 @@ button:focus-visible,
   }
 }
 
-/* Services grid on the hub. */
 .svc-grid {
   list-style: none;
   margin: 0;
@@ -4200,7 +3934,6 @@ button:focus-visible,
   color: var(--fg-green);
 }
 
-/* The service picker modal behind the generic "Get started" CTA. */
 .picker {
   position: fixed;
   inset: 0;
@@ -4339,7 +4072,6 @@ button:focus-visible,
   cursor: default;
 }
 
-/* Photos step: reuse the trained model or upload again. */
 .reuse {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -4392,7 +4124,6 @@ button:focus-visible,
   line-height: 1.55;
 }
 
-/* Funnel progress: a full-width bar with the percentage under it, above the steps. */
 .stepper__bar {
   width: 100%;
   height: 6px;
@@ -4416,7 +4147,6 @@ button:focus-visible,
   color: var(--fg-muted);
 }
 
-/* Plan cards in the funnel: room above for the badge, and a checklist body. */
 .gen-hint + .plans {
   margin-top: 26px;
 }
@@ -4474,7 +4204,6 @@ button:focus-visible,
   color: #7fa19a;
 }
 
-/* The fixed action bar under every funnel step. */
 .stepbar {
   position: fixed;
   left: 0;
@@ -4533,7 +4262,6 @@ button:focus-visible,
   }
 }
 
-/* The photos card without its outer frame: dropzone and thumbs sit on the page. */
 .card--bare {
   border: none;
   padding: 0;
@@ -4564,7 +4292,6 @@ button:focus-visible,
   background: var(--line);
 }
 
-/* Free tools: the analyzer card. */
 .tool {
   margin-top: 28px;
 }
@@ -4768,7 +4495,6 @@ button:focus-visible,
   grid-template-columns: minmax(260px, max-content);
 }
 
-/* Tool pages: centred intro, the tool full width beneath it. */
 .hero__copy--center {
   max-width: 62ch;
   margin: 0 auto;

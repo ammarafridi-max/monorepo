@@ -1,8 +1,9 @@
+import { defineTarget } from '../../src/define-target.mjs';
 
 const SITE = 'https://www.visawadi.com';
 const visaUrl = (slug) => `${SITE}/uae/visa/${slug}`;
 
-export const TARGET = {
+export const TARGET = defineTarget({
   key: 'visawadi',
   name: 'VisaWadi',
   backendUrl: 'https://api.visawadi.com',
@@ -21,11 +22,6 @@ export const TARGET = {
     excludeSlugs: [],
   },
 
-  formatsByTier: {
-    short: 'quick-answer',
-    medium: 'sourced-guide',
-    long: 'sourced-guide',
-  },
 
   citationDomains: [
     'gov.uk',
@@ -84,7 +80,6 @@ export const TARGET = {
     },
   ],
 
-  blogUrl: (slug) => `${SITE}/blog/${slug}`,
   adminBlogUrl: (id) => `${SITE}/admin/blogs/${id}`,
 
   writerIdentity:
@@ -211,7 +206,7 @@ Example shape (write your own copy, do not reuse this wording verbatim):
 
     return links;
   },
-};
+});
 
 export const BRAND = TARGET;
 export default TARGET;
